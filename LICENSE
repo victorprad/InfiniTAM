@@ -73,5 +73,9 @@ external organisation for which payment is received. If you are
 interested in using the Software commercially, please contact Isis to
 negotiate a licence. Contact details are: innovation@isis.ox.ac.uk.
 
-This software also contains source code provided by NVIDIA Corporation 
-for the NVTimer implementation.
+This software also contains source code provided by NVIDIA Corporation.
+
+This software also contains code based on the Nießner et al implementation
+of their voxel-hashing paper [https://github.com/nachtmar/VoxelHashing]. 
+The author has waived the NonCommercial and ShareAlike conditions for these 
+parts of the code.
