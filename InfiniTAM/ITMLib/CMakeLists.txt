@@ -29,7 +29,7 @@ IF(CUDA_FOUND)
 	${ITMLIB_CPU_OBJECTS}
 	${ITMLIB_CUDA_OBJECTS}
 	${ITMLIB_COMMON_OBJECTS}
-	OPTIONS -gencode arch=compute_30,code=sm_30)
+	OPTIONS -gencode arch=compute_11,code=compute_11 -gencode arch=compute_30,code=compute_30)
   target_link_libraries(ITMLib ${CUDA_LIBRARY})
 ELSE(CUDA_FOUND)
   add_definitions(-DCOMPILE_WITHOUT_CUDA)
