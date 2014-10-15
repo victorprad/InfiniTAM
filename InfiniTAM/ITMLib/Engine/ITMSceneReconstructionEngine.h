@@ -22,7 +22,7 @@ namespace ITMLib
 
 		    These classes basically manage
 		    an ITMLib::Objects::ITMScene and fuse new image information
-		    into them or extract renderings by raycasting.
+		    into them.
 		*/
 		template<class TVoxel, class TIndex>
 		class ITMSceneReconstructionEngine
@@ -38,16 +38,6 @@ namespace ITMLib
 			    possibly colour information from the given view.
 			*/
 			virtual void IntegrateIntoScene(ITMScene<TVoxel,TIndex> *scene, const ITMView *view, const ITMPose *pose) = 0;
-			/** Create a point cloud as required by the
-			    ITMLib::Engine::ITMColorTracker classes.
-			*/
-			virtual void CreatePointCloud(const ITMScene<TVoxel,TIndex> *scene, const ITMView *view, ITMTrackingState *trackingState, bool skipPoints) = 0;
-
-			/** Create an image of reference points and normals as
-			    required by the ITMLib::Engine::ITMDepthTracker
-			    classes.
-			*/
-			virtual void CreateICPMaps(const ITMScene<TVoxel,TIndex> *scene, const ITMView *view, ITMTrackingState *trackingState) = 0;
 
 			ITMSceneReconstructionEngine(void) { }
 			virtual ~ITMSceneReconstructionEngine(void) { }

@@ -135,7 +135,7 @@ void ITMSwappingEngine_CPU<TVoxel,ITMVoxelBlockHash>::SaveToGlobalMemory(ITMScen
 		int localPtr = hashTable[entryDestId].ptr;
 		ITMHashCacheState &cacheState = cacheStates[entryDestId];
 
-		if (cacheState.cacheToHost == 1 && cacheState.cacheFromHost == 2 && localPtr >= 0 && entriesVisibleType[entryDestId] == 0)
+		if (cacheState.cacheFromHost == 2 && localPtr >= 0 && entriesVisibleType[entryDestId] == 0)
 		{
 			TVoxel *localVBALocation = localVBA + localPtr * SDF_BLOCK_SIZE3;
 
@@ -144,7 +144,6 @@ void ITMSwappingEngine_CPU<TVoxel,ITMVoxelBlockHash>::SaveToGlobalMemory(ITMScen
 			hasSyncedData_local[noNeededEntries] = true;
 			memcpy(syncedVoxelBlocks_local + noNeededEntries * SDF_BLOCK_SIZE3, localVBALocation, SDF_BLOCK_SIZE3 * sizeof(TVoxel));
 
-			cacheStates[entryDestId].cacheToHost = 0;
 			cacheStates[entryDestId].cacheFromHost = 0;
 
 			int vbaIdx = noAllocatedVoxelEntries;

@@ -23,7 +23,7 @@ namespace ITMLib
 			    scene from @p viewFrustum_min in front of the camera
 			    to a distance of @p viewFrustum_max. Usually the
 			    actual depth range should be determined
-			    automatically by a ITMLib::Engine::ITMBlockProjectionEngine.
+			    automatically by a ITMLib::Engine::ITMVisualisationEngine.
 			*/
 			float viewFrustum_min, viewFrustum_max;
 			/** @} */

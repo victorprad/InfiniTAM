@@ -19,7 +19,6 @@ ITMMainEngine::ITMMainEngine(const ITMLibSettings *settings, const ITMRGBDCalib 
 	{
 #ifndef COMPILE_WITHOUT_CUDA
 		lowLevelEngine = new ITMLowLevelEngine_CUDA();
-		blockProjectionEngine = new ITMBlockProjectionEngine_CUDA<ITMVoxel,ITMVoxelIndex>();
 
 		sceneRecoEngine = new ITMSceneReconstructionEngine_CUDA<ITMVoxel,ITMVoxelIndex>();
 
@@ -28,12 +27,12 @@ ITMMainEngine::ITMMainEngine(const ITMLibSettings *settings, const ITMRGBDCalib 
 		else tracker = new ITMColorTracker_CUDA(imgSize, settings->noHierarchyLevels, settings->noRotationOnlyLevels, lowLevelEngine);
 
 		if (settings->useSwapping) swappingEngine = new ITMSwappingEngine_CUDA<ITMVoxel,ITMVoxelIndex>();
+		visualisationEngine = new ITMVisualisationEngine_CUDA<ITMVoxel,ITMVoxelIndex>();
 #endif
 	}
 	else
 	{
 		lowLevelEngine = new ITMLowLevelEngine_CPU();
-		blockProjectionEngine = new ITMBlockProjectionEngine_CPU<ITMVoxel,ITMVoxelIndex>();
 
 		sceneRecoEngine = new ITMSceneReconstructionEngine_CPU<ITMVoxel,ITMVoxelIndex>();
 
@@ -42,7 +41,10 @@ ITMMainEngine::ITMMainEngine(const ITMLibSettings *settings, const ITMRGBDCalib 
 		else tracker = new ITMColorTracker_CPU(imgSize, settings->noHierarchyLevels, settings->noRotationOnlyLevels, lowLevelEngine);
 
 		if (settings->useSwapping) swappingEngine = new ITMSwappingEngine_CPU<ITMVoxel,ITMVoxelIndex>();
+		visualisationEngine = new ITMVisualisationEngine_CPU<ITMVoxel,ITMVoxelIndex>();
 	}
+
+	visualisationState = NULL;
 
 	hasStartedObjectReconstruction = false;
 }
@@ -52,7 +54,6 @@ ITMMainEngine::~ITMMainEngine()
 	delete sceneRecoEngine;
 	delete tracker;
 	delete lowLevelEngine;
-	delete blockProjectionEngine;
 
 	if (settings->useSwapping) delete swappingEngine;
 
@@ -105,21 +106,21 @@ void ITMMainEngine::ProcessFrame(void)
 	if (useTrackerICP)
 	{
 		// raycasting
-		blockProjectionEngine->CreateExpectedDepths(scene, trackingState->pose_d, &(view->calib->intrinsics_d), trackingState->renderingRangeImage);
-		sceneRecoEngine->CreateICPMaps(scene, view, trackingState);
+		visualisationEngine->CreateExpectedDepths(scene, trackingState->pose_d, &(view->calib->intrinsics_d), trackingState->renderingRangeImage);
+		visualisationEngine->CreateICPMaps(scene, view, trackingState);
 	}
 	else
 	{
 		// raycasting
 		ITMPose pose_rgb(view->calib->trafo_rgb_to_depth.calib_inv * trackingState->pose_d->M);
-		blockProjectionEngine->CreateExpectedDepths(scene, &pose_rgb, &(view->calib->intrinsics_rgb), trackingState->renderingRangeImage);
-		sceneRecoEngine->CreatePointCloud(scene, view, trackingState, skipPoints);
+		visualisationEngine->CreateExpectedDepths(scene, &pose_rgb, &(view->calib->intrinsics_rgb), trackingState->renderingRangeImage);
+		visualisationEngine->CreatePointCloud(scene, view, trackingState, skipPoints);
 	}
 
 	hasStartedObjectReconstruction = true;
 }
 
-void ITMMainEngine::GetImage(ITMUChar4Image *out, GetImageType getImageType)
+void ITMMainEngine::GetImage(ITMUChar4Image *out, GetImageType getImageType, ITMPose *pose, ITMIntrinsics *intrinsics)
 {
 	out->Clear();
 
@@ -131,11 +132,24 @@ void ITMMainEngine::GetImage(ITMUChar4Image *out, GetImageType getImageType)
 		break;
 	case ITMMainEngine::InfiniTAM_IMAGE_ORIGINAL_DEPTH:
 		if (settings->useGPU) view->depth->UpdateHostFromDevice();
-		ITMVisualisationEngine::DepthToUchar4(out, view->depth);
+		ITMVisualisationEngine<ITMVoxel,ITMVoxelIndex>::DepthToUchar4(out, view->depth);
 		break;
 	case ITMMainEngine::InfiniTAM_IMAGE_SCENERAYCAST:
 		if (settings->useGPU) trackingState->rendering->UpdateHostFromDevice();
 		out->SetFrom(trackingState->rendering);
+		break;
+	case ITMMainEngine::InfiniTAM_IMAGE_SCENERAYCAST_FREECAMERA:
+		if (pose != NULL && intrinsics != NULL)
+		{
+			if (visualisationState == NULL) visualisationState = visualisationEngine->allocateInternalState(out->noDims);
+
+			visualisationEngine->FindVisibleBlocks(scene, pose, intrinsics, visualisationState);
+			visualisationEngine->CreateExpectedDepths(scene, pose, intrinsics, visualisationState->minmaxImage, visualisationState);
+			visualisationEngine->RenderImage(scene, pose, intrinsics, visualisationState, visualisationState->outputImage);
+
+			if (settings->useGPU) visualisationState->outputImage->UpdateHostFromDevice();
+			out->SetFrom(visualisationState->outputImage);
+		}
 		break;
 	};
 }

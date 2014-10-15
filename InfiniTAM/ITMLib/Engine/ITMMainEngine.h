@@ -56,13 +56,15 @@ namespace ITMLib
 			ITMTracker *tracker;
 			ITMLowLevelEngine *lowLevelEngine;
 			ITMSwappingEngine<ITMVoxel,ITMVoxelIndex> *swappingEngine;
-			ITMBlockProjectionEngine<ITMVoxel,ITMVoxelIndex> *blockProjectionEngine;
+			ITMVisualisationEngine<ITMVoxel,ITMVoxelIndex> *visualisationEngine;
+			ITMVisualisationState *visualisationState;
 		public:
 			enum GetImageType
 			{
 				InfiniTAM_IMAGE_ORIGINAL_RGB,
 				InfiniTAM_IMAGE_ORIGINAL_DEPTH,
-				InfiniTAM_IMAGE_SCENERAYCAST
+				InfiniTAM_IMAGE_SCENERAYCAST,
+				InfiniTAM_IMAGE_SCENERAYCAST_FREECAMERA
 			};
 
 			/// Pointer to the current model of the 3D scene
@@ -79,7 +81,7 @@ namespace ITMLib
 			void ProcessFrame(void);
 
 			/// Get a result image as output
-			void GetImage(ITMUChar4Image *out, GetImageType getImageType);
+			void GetImage(ITMUChar4Image *out, GetImageType getImageType, ITMPose *pose = NULL, ITMIntrinsics *intrinsics = NULL);
 
 			void SaveAll();
 

@@ -27,7 +27,7 @@ namespace ITMLib
 			    depth. The raycasting step would use this
 			    information to reduce the range for searching an
 			    intersection with the actual surface. Should be
-			    updated by a ITMLib::Engine::ITMBlockProjectionEngine
+			    updated by a ITMLib::Engine::ITMVisualisationEngine
 			    before any raycasting operation.
 			*/
 			ITMImage<Vector2f> *renderingRangeImage;

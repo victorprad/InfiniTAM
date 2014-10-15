@@ -8,6 +8,7 @@
 #include "Objects/ITMScene.h"
 #include "Objects/ITMView.h"
 #include "Objects/ITMTrackingState.h"
+#include "Objects/ITMVisualisationState.h"
 
 #include "Engine/ITMLowLevelEngine.h"
 #include "Engine/DeviceSpecific/CPU/ITMLowLevelEngine_CPU.h"
@@ -27,10 +28,10 @@
 #include "Engine/DeviceSpecific/CUDA/ITMSceneReconstructionEngine_CUDA.h"
 #endif
 
-#include "Engine/ITMBlockProjectionEngine.h"
-#include "Engine/DeviceSpecific/CPU/ITMBlockProjectionEngine_CPU.h"
+#include "Engine/ITMVisualisationEngine.h"
+#include "Engine/DeviceSpecific/CPU/ITMVisualisationEngine_CPU.h"
 #ifndef COMPILE_WITHOUT_CUDA
-#include "Engine/DeviceSpecific/CUDA/ITMBlockProjectionEngine_CUDA.h"
+#include "Engine/DeviceSpecific/CUDA/ITMVisualisationEngine_CUDA.h"
 #endif
 
 #include "Engine/ITMColorTracker.h"

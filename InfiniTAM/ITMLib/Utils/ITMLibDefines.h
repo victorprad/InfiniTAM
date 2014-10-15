@@ -62,7 +62,6 @@ struct ITMHashEntry
 struct ITMHashCacheState
 {
 	uchar cacheFromHost;	// 0 - don't do anything, 1 - should cache from host, 2 - has cached from host
-	uchar cacheToHost;		// 0 - don't do anything, 1 - should cache to host, 2 - has cached to host
 };
 
 #include "../Objects/ITMVoxelBlockHash.h"

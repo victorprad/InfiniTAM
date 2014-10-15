@@ -28,10 +28,17 @@ void UIEngine::glutDisplayFunction()
 {
 	UIEngine *uiEngine = UIEngine::Instance();
 
+	// get updated images from processing thread
+	if (uiEngine->freeviewActive) 
+		uiEngine->mainEngine->GetImage(uiEngine->outImage[0], uiEngine->outImageType[0], &uiEngine->freeviewPose, &uiEngine->freeviewIntrinsics);
+	else uiEngine->mainEngine->GetImage(uiEngine->outImage[0], uiEngine->outImageType[0]);
+
+	for (int w = 1; w < NUM_WIN; w++) uiEngine->mainEngine->GetImage(uiEngine->outImage[w], uiEngine->outImageType[w]);
+
+	// do the actual drawing
 	glClear(GL_COLOR_BUFFER_BIT);
 	glColor3f(1.0f, 1.0f, 1.0f);
 	glEnable(GL_TEXTURE_2D);
-
 	
 	ITMUChar4Image** showImgs = uiEngine->outImage;
 	Vector4f *winReg = uiEngine->winReg;
@@ -71,10 +78,11 @@ void UIEngine::glutDisplayFunction()
 	safe_glutBitmapString(GLUT_BITMAP_HELVETICA_18, (const char*)str);
 
 	glRasterPos2f(-0.95f, -0.95f);
-	sprintf(str, "n - next frame \t b - all frames \t e - exit");
+	sprintf(str, "n - next frame \t b - all frames \t e - exit \t f - %s", uiEngine->freeviewActive?"follow camera":"free viewpoint");
 	safe_glutBitmapString(GLUT_BITMAP_HELVETICA_12, (const char*)str);
 
 	glutSwapBuffers();
+	uiEngine->needsRefresh = false;
 }
 
 void UIEngine::glutIdleFunction()
@@ -84,12 +92,9 @@ void UIEngine::glutIdleFunction()
 	switch (uiEngine->mainLoopAction)
 	{
 	case PROCESS_FRAME:
-		if (!uiEngine->actionDone)
-		{
-			uiEngine->ProcessFrame(); uiEngine->processedFrameNo++;
-			uiEngine->actionDone = true; uiEngine->needsRefresh = true;
-		}
-		else uiEngine->needsRefresh = false;
+		uiEngine->ProcessFrame(); uiEngine->processedFrameNo++;
+		uiEngine->mainLoopAction = PROCESS_PAUSED;
+		uiEngine->needsRefresh = true;
 		break;
 	case PROCESS_VIDEO:
 		uiEngine->ProcessFrame(); uiEngine->processedFrameNo++;
@@ -118,11 +123,14 @@ void UIEngine::glutIdleFunction()
 		exit(0);
 #endif
 		break;
+	case PROCESS_PAUSED:
 	default:
 		break;
 	}
 
-	if (UIEngine::Instance()->needsRefresh) glutPostRedisplay();
+	if (uiEngine->needsRefresh) {
+		glutPostRedisplay();
+	}
 }
 
 void UIEngine::glutKeyUpFunction(unsigned char key, int x, int y)
@@ -147,15 +155,147 @@ void UIEngine::glutKeyUpFunction(unsigned char key, int x, int y)
 		printf("exiting ...\n");
 		uiEngine->mainLoopAction = UIEngine::EXIT;
 		break;
+	case 'f':
+		if (uiEngine->freeviewActive)
+		{
+			uiEngine->outImageType[0] = ITMMainEngine::InfiniTAM_IMAGE_SCENERAYCAST;
+			uiEngine->outImageType[1] = ITMMainEngine::InfiniTAM_IMAGE_ORIGINAL_DEPTH;
+
+			uiEngine->freeviewActive = false;
+		}
+		else
+		{
+			uiEngine->outImageType[0] = ITMMainEngine::InfiniTAM_IMAGE_SCENERAYCAST_FREECAMERA;
+			uiEngine->outImageType[1] = ITMMainEngine::InfiniTAM_IMAGE_SCENERAYCAST;
+
+			uiEngine->freeviewPose.SetFrom(uiEngine->mainEngine->trackingState->pose_d);
+			uiEngine->freeviewIntrinsics = uiEngine->mainEngine->GetView()->calib->intrinsics_d;
+			uiEngine->freeviewActive = true;
+		}
+		uiEngine->needsRefresh = true;
 	default:
 		break;
 	}
+}
 
-	uiEngine->actionDone = false;
+void UIEngine::glutMouseButtonFunction(int button, int state, int x, int y)
+{
+	UIEngine *uiEngine = UIEngine::Instance();
+
+	if (state == GLUT_DOWN)
+	{
+		switch (button)
+		{
+		case GLUT_LEFT_BUTTON: uiEngine->mouseState = 1; break;
+		case GLUT_MIDDLE_BUTTON: uiEngine->mouseState = 3; break;
+		case GLUT_RIGHT_BUTTON: uiEngine->mouseState = 2; break;
+		default: break;
+		}
+		uiEngine->mouseLastClick.x = x;
+		uiEngine->mouseLastClick.y = y;
+	}
+	else if (state == GLUT_UP) uiEngine->mouseState = 0;
+}
+
+static inline Matrix3f createRotation(const Vector3f & _axis, float angle)
+{
+	Vector3f axis = normalize(_axis);
+	float si = sinf(angle);
+	float co = cosf(angle);
+
+	Matrix3f ret;
+	ret.setIdentity();
+
+	ret *= co;
+	for (int r = 0; r < 3; ++r) for (int c = 0; c < 3; ++c) ret.at(c,r) += (1.0f - co) * axis[c] * axis[r];
+
+	Matrix3f skewmat;
+	skewmat.setZeros();
+	skewmat.at(1,0) = -axis.z;
+	skewmat.at(0,1) =  axis.z;
+	skewmat.at(2,0) =  axis.y;
+	skewmat.at(0,2) = -axis.y;
+	skewmat.at(2,1) =  axis.x;
+	skewmat.at(1,2) = -axis.x;
+	skewmat *= si;
+	ret += skewmat;
+
+	return ret;
+}
+
+void UIEngine::glutMouseMoveFunction(int x, int y)
+{
+	UIEngine *uiEngine = UIEngine::Instance();
+
+	if (!uiEngine->freeviewActive) return;
+
+	Vector2i movement;
+	movement.x = x - uiEngine->mouseLastClick.x;
+	movement.y = y - uiEngine->mouseLastClick.y;
+	uiEngine->mouseLastClick.x = x;
+	uiEngine->mouseLastClick.y = y;
+
+	if ((movement.x == 0) && (movement.y == 0)) return;
+
+	static const float scale_rotation = 0.005f;
+	static const float scale_translation = 0.0025f;
+
+	switch (uiEngine->mouseState)
+	{
+	case 1:
+	{
+		// left button: rotation
+		Vector3f axis((float)-movement.y, (float)-movement.x, 0.0f);
+		float angle = scale_rotation * sqrtf((float)(movement.x * movement.x + movement.y*movement.y));
+		Matrix3f rot = createRotation(axis, angle);
+		uiEngine->freeviewPose.R = rot * uiEngine->freeviewPose.R;
+		uiEngine->freeviewPose.T = rot * uiEngine->freeviewPose.T;
+		uiEngine->freeviewPose.SetParamsFromModelView();
+		uiEngine->freeviewPose.SetModelViewFromParams();
+		uiEngine->needsRefresh = true;
+		break;
+	}
+	case 2:
+	{
+		// right button: translation in x and y direction
+		uiEngine->freeviewPose.T.x += scale_translation * movement.x;
+		uiEngine->freeviewPose.T.y += scale_translation * movement.y;
+		uiEngine->freeviewPose.SetParamsFromModelView();
+		uiEngine->freeviewPose.SetModelViewFromParams();
+		uiEngine->needsRefresh = true;
+		break;
+	}
+	case 3:
+	{
+		// middle button: translation along z axis
+		uiEngine->freeviewPose.T.z += scale_translation * movement.y;
+		uiEngine->freeviewPose.SetParamsFromModelView();
+		uiEngine->freeviewPose.SetModelViewFromParams();
+		uiEngine->needsRefresh = true;
+		break;
+	}
+	default: break;
+	}
+}
+
+void UIEngine::glutMouseWheelFunction(int button, int dir, int x, int y)
+{
+	UIEngine *uiEngine = UIEngine::Instance();
+
+	static const float scale_translation = 0.05f;
+
+	if (dir > 0) uiEngine->freeviewPose.T.z -= scale_translation;
+	else uiEngine->freeviewPose.T.z += scale_translation;
+
+	uiEngine->freeviewPose.SetParamsFromModelView();
+	uiEngine->freeviewPose.SetModelViewFromParams();
+	uiEngine->needsRefresh = true;
 }
 
 void UIEngine::Initialise(int & argc, char** argv, ImageSourceEngine *imageSource, ITMMainEngine *mainEngine, const char *outFolder)
 {
+	this->freeviewActive = false;
+
 	this->imageSource = imageSource;
 	this->mainEngine = mainEngine;
 	{
@@ -179,9 +319,9 @@ void UIEngine::Initialise(int & argc, char** argv, ImageSourceEngine *imageSourc
 	winSize.x = (int)(1.5f * (float)MAX(imageSource->getRGBImageSize().x, imageSource->getDepthImageSize().x));
 	winSize.y = MAX(imageSource->getRGBImageSize().y, imageSource->getDepthImageSize().y) + textHeight;
 	float h1 = textHeight / (float)winSize.y, h2 = (1.f + h1) / 2;
-	winReg[0] = Vector4f(0.0f, h1, 0.665f, 1.0f); // Main render
-	winReg[1] = Vector4f(0.665f, h2, 1.0f, 1.0f); // Side sub window 0
-	winReg[2] = Vector4f(0.665f, h1, 1.0f, h2); // Side sub window 2
+	winReg[0] = Vector4f(0.0f, h1, 0.665f, 1.0f);	// Main render
+	winReg[1] = Vector4f(0.665f, h2, 1.0f, 1.0f);	// Side sub window 0
+	winReg[2] = Vector4f(0.665f, h1, 1.0f, h2);		// Side sub window 2
 
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE);
@@ -191,9 +331,12 @@ void UIEngine::Initialise(int & argc, char** argv, ImageSourceEngine *imageSourc
 	
 	glutDisplayFunc(UIEngine::glutDisplayFunction);
 	glutKeyboardUpFunc(UIEngine::glutKeyUpFunction);
+	glutMouseFunc(UIEngine::glutMouseButtonFunction);
+	glutMotionFunc(UIEngine::glutMouseMoveFunction);
 	glutIdleFunc(UIEngine::glutIdleFunction);
 
 #ifdef FREEGLUT
+	glutMouseWheelFunc(UIEngine::glutMouseWheelFunction);
 	glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE, 1);
 #endif
 
@@ -208,7 +351,8 @@ void UIEngine::Initialise(int & argc, char** argv, ImageSourceEngine *imageSourc
 	//outImageType[3] = ITMMainEngine::InfiniTAM_IMAGE_SCENERAYCAST;
 	//outImageType[4] = ITMMainEngine::InfiniTAM_IMAGE_SCENERAYCAST;
 
-	actionDone = true;
+	mainLoopAction = PROCESS_PAUSED;
+	mouseState = 0;
 	needsRefresh = false;
 	processedFrameNo = 0;
 	processedTime = 0.0f;
@@ -241,9 +385,6 @@ void UIEngine::ProcessFrame()
 	mainEngine->ProcessFrame();
 
 	sdkStopTimer(&timer); processedTime = sdkGetTimerValue(&timer);
-
-	for (int w = 0; w < NUM_WIN; w++)
-		mainEngine->GetImage(outImage[w], outImageType[w]);
 }
 
 void UIEngine::Run() { glutMainLoop(); }

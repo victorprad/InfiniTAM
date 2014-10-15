@@ -3,15 +3,15 @@ set(ITMLIB_CPU_OBJECTS
 	Engine/DeviceSpecific/CPU/ITMColorTracker_CPU.cpp
 	Engine/DeviceSpecific/CPU/ITMDepthTracker_CPU.cpp
 	Engine/DeviceSpecific/CPU/ITMSceneReconstructionEngine_CPU.cpp
-	Engine/DeviceSpecific/CPU/ITMBlockProjectionEngine_CPU.cpp
-	Engine/DeviceSpecific/CPU/ITMSwappingEngine_CPU.cpp)
+	Engine/DeviceSpecific/CPU/ITMSwappingEngine_CPU.cpp
+	Engine/DeviceSpecific/CPU/ITMVisualisationEngine_CPU.cpp)
 set(ITMLIB_CUDA_OBJECTS
 	Engine/DeviceSpecific/CUDA/ITMLowLevelEngine_CUDA.cu
 	Engine/DeviceSpecific/CUDA/ITMColorTracker_CUDA.cu
 	Engine/DeviceSpecific/CUDA/ITMDepthTracker_CUDA.cu
 	Engine/DeviceSpecific/CUDA/ITMSceneReconstructionEngine_CUDA.cu
-	Engine/DeviceSpecific/CUDA/ITMBlockProjectionEngine_CUDA.cu
-	Engine/DeviceSpecific/CUDA/ITMSwappingEngine_CUDA.cu)
+	Engine/DeviceSpecific/CUDA/ITMSwappingEngine_CUDA.cu
+	Engine/DeviceSpecific/CUDA/ITMVisualisationEngine_CUDA.cu)
 set(ITMLIB_COMMON_OBJECTS
 	Engine/ITMColorTracker.cpp
 	Engine/ITMDepthTracker.cpp

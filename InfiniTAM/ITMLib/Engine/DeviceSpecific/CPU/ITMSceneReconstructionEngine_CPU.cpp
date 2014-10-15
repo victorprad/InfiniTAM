@@ -54,12 +54,6 @@ void ITMSceneReconstructionEngine_CPU<TVoxel,ITMVoxelBlockHash>::IntegrateIntoSc
 
 		if (currentHashEntry.ptr < 0) continue;
 
-		if (useSwapping)
-		{
-			if (cacheStates[liveEntryIDs[entryId]].cacheToHost != 2)
-				cacheStates[liveEntryIDs[entryId]].cacheToHost = 1;
-		}
-
 		globalPos.x = currentHashEntry.pos.x;
 		globalPos.y = currentHashEntry.pos.y;
 		globalPos.z = currentHashEntry.pos.z;
@@ -260,177 +254,6 @@ void ITMSceneReconstructionEngine_CPU<TVoxel,ITMVoxelBlockHash>::AllocateSceneFr
 	scene->index.lastFreeExcessListId = lastFreeExcessListId;
 }
 
-template<class TVoxel, class TIndex>
-static void CreatePointCloud_common(const ITMScene<TVoxel,TIndex> *scene, const ITMView *view, ITMTrackingState *trackingState, bool skipPoints)
-{
-	Vector2i imgSize = view->depth->noDims;
-	float voxelSize = scene->sceneParams->voxelSize;
-	float oneOverVoxelSize = 1.0f / scene->sceneParams->voxelSize;
-
-	//Matrix4f invM = trackingState->pose->invM;
-	Matrix4f invM = trackingState->pose_d->invM * view->calib->trafo_rgb_to_depth.calib;
-	Vector4f projParams = view->calib->intrinsics_rgb.projectionParamsSimple.all;
-	projParams.x = 1.0f / projParams.x;
-	projParams.y = 1.0f / projParams.y;
-
-	//float presetViewFrustum_min = scene->sceneParams->viewFrustum_min;
-	//float presetViewFrustum_max = scene->sceneParams->viewFrustum_max;
-
-	Vector4f *locations = trackingState->pointCloud->locations->GetData(false);
-	Vector4f *colours = trackingState->pointCloud->colours->GetData(false);
-	Vector4u *outRendering = trackingState->rendering->GetData(false);
-	const Vector2f *minmaximg = trackingState->renderingRangeImage->GetData(false);
-
-	float mu = scene->sceneParams->mu;
-	Vector3f lightSource = -Vector3f(invM.getColumn(2));
-
-	memset(outRendering, 0, sizeof(Vector4u)* imgSize.x * imgSize.y);
-
-	int offset = 0;
-	for (int y = 0; y < imgSize.y; y++) for (int x = 0; x < imgSize.x; x++)
-	{
-		Vector3f pt_ray; Vector4f tmp;
-		float angle;
-
-		int locId = x + y * imgSize.x;
-
-//		float viewFrustum_min = presetViewFrustum_min;
-//		float viewFrustum_max = presetViewFrustum_max;
-		float viewFrustum_min = minmaximg[locId].x;
-		float viewFrustum_max = minmaximg[locId].y;
-
-		bool foundPoint = false;
-		foundPoint = castRay(pt_ray, x, y, scene->localVBA.GetVoxelBlocks(), scene->index.getIndexData(), invM, projParams, imgSize, oneOverVoxelSize, mu, viewFrustum_min, viewFrustum_max);
-
-		if (foundPoint)
-		{
-			Vector3f outNormal = computeSingleNormalFromSDF(scene->localVBA.GetVoxelBlocks(), scene->index.getIndexData(), pt_ray);
-
-			float normScale = 1.0f / sqrtf(outNormal.x * outNormal.x + outNormal.y * outNormal.y + outNormal.z * outNormal.z);
-			outNormal *= normScale;
-
-			angle = outNormal.x * lightSource.x + outNormal.y * lightSource.y + outNormal.z * lightSource.z;
-			if (!(angle>0.0f)) foundPoint = false;
-		}
-
-		if (foundPoint) {
-			float outRes = (0.8f * angle + 0.2f) * 255.0f;
-			outRendering[x + y * imgSize.x] = (uchar)outRes;
-		}
-
-		if (skipPoints && ((x % 2 == 0) || (y % 2 == 0))) foundPoint = false;
-
-		if (foundPoint)
-		{
-			Vector4f pt_ray_out;
-
-			tmp = VoxelColorReader<TVoxel::hasColorInformation,TVoxel, typename TIndex::IndexData>::interpolate(scene->localVBA.GetVoxelBlocks(), scene->index.getIndexData(), pt_ray);
-			if (tmp.w > 0.0f) { tmp.x /= tmp.w; tmp.y /= tmp.w; tmp.z /= tmp.w; tmp.w = 1.0f; }
-			colours[offset] = tmp;
-
-			pt_ray_out.x = pt_ray.x * voxelSize; pt_ray_out.y = pt_ray.y * voxelSize;
-			pt_ray_out.z = pt_ray.z * voxelSize; pt_ray_out.w = 1.0f;
-			locations[offset] = pt_ray_out;
-
-			offset++;
-		}
-	}
-
-	trackingState->pointCloud->noTotalPoints = offset;
-}
-
-template<class TVoxel, class TIndex>
-static void CreateICPMaps_common(const ITMScene<TVoxel,TIndex> *scene, const ITMView *view, ITMTrackingState *trackingState)
-{
-	Vector2i imgSize = view->depth->noDims;
-	float voxelSize = scene->sceneParams->voxelSize;
-	float oneOverVoxelSize = 1.0f / scene->sceneParams->voxelSize;
-
-	Matrix4f invM = trackingState->pose_d->invM;
-	Vector4f projParams = view->calib->intrinsics_d.projectionParamsSimple.all;
-	projParams.x = 1.0f / projParams.x;
-	projParams.y = 1.0f / projParams.y;
-
-	//float presetViewFrustum_min = scene->sceneParams->viewFrustum_min;
-	//float presetViewFrustum_max = scene->sceneParams->viewFrustum_max;
-
-	float mu = scene->sceneParams->mu;
-	Vector3f lightSource = -Vector3f(invM.getColumn(2));
-
-	Vector4f *pointsMap = trackingState->pointCloud->locations->GetData(false);
-	Vector4f *normalsMap = trackingState->pointCloud->colours->GetData(false);
-	Vector4u *outRendering = trackingState->rendering->GetData(false);
-	const Vector2f *minmaximg = trackingState->renderingRangeImage->GetData(false);
-
-	memset(outRendering, 0, sizeof(Vector4u)* imgSize.x * imgSize.y);
-	memset(pointsMap, 0, sizeof(Vector4f)* imgSize.x * imgSize.y);
-	memset(normalsMap, 0, sizeof(Vector4f)* imgSize.x * imgSize.y);
-
-	for (int y = 0; y < imgSize.y; y++) for (int x = 0; x < imgSize.x; x++)
-	{
-		Vector3f pt_ray; Vector4f tmp;
-		Vector3f outNormal;
-		float angle;
-
-		int locId = x + y * imgSize.x;
-
-//		float viewFrustum_min = presetViewFrustum_min;
-//		float viewFrustum_max = presetViewFrustum_max;
-		float viewFrustum_min = minmaximg[locId].x;
-		float viewFrustum_max = minmaximg[locId].y;
-
-		bool foundPoint = false;
-		foundPoint = castRay(pt_ray, x, y, scene->localVBA.GetVoxelBlocks(), scene->index.getIndexData(), invM, projParams, imgSize, oneOverVoxelSize, mu, viewFrustum_min, viewFrustum_max);
-
-		if (foundPoint)
-		{
-			outNormal = computeSingleNormalFromSDF(scene->localVBA.GetVoxelBlocks(), scene->index.getIndexData(), pt_ray);
-
-			float normScale = 1.0f / sqrtf(outNormal.x * outNormal.x + outNormal.y * outNormal.y + outNormal.z * outNormal.z);
-			outNormal *= normScale;
-
-			angle = outNormal.x * lightSource.x + outNormal.y * lightSource.y + outNormal.z * lightSource.z;
-			if (!(angle > 0.0)) foundPoint = false;
-		}
-		if (foundPoint)
-		{
-			float outRes = (0.8f * angle + 0.2f) * 255.0f;
-
-			outRendering[x + y * imgSize.x] = (uchar)outRes;
-
-			Vector4f outNormal4;
-			outNormal4.x = outNormal.x; outNormal4.y = outNormal.y; outNormal4.z = outNormal.z; outNormal4.w = 0.0f;
-
-			Vector4f outPoint4;
-			outPoint4.x = pt_ray.x * voxelSize; outPoint4.y = pt_ray.y * voxelSize;
-			outPoint4.z = pt_ray.z * voxelSize; outPoint4.w = 1.0f;
-
-			pointsMap[locId] = outPoint4;
-			normalsMap[locId] = outNormal4;
-		}
-		else
-		{
-			Vector4f out4;
-			out4.x = 0.0f; out4.y = 0.0f; out4.z = 0.0f; out4.w = -1.0f;
-
-			pointsMap[x + y * imgSize.x] = out4;
-			normalsMap[x + y * imgSize.x] = out4;
-		}
-	}
-}
-
-template<class TVoxel>
-void ITMSceneReconstructionEngine_CPU<TVoxel,ITMVoxelBlockHash>::CreatePointCloud(const ITMScene<TVoxel,ITMVoxelBlockHash> *scene, const ITMView *view, ITMTrackingState *trackingState, bool skipPoints)
-{
-	CreatePointCloud_common(scene, view, trackingState, skipPoints);
-}
-
-template<class TVoxel>
-void ITMSceneReconstructionEngine_CPU<TVoxel,ITMVoxelBlockHash>::CreateICPMaps(const ITMScene<TVoxel,ITMVoxelBlockHash> *scene, const ITMView *view, ITMTrackingState *trackingState)
-{
-	CreateICPMaps_common(scene, view, trackingState);
-}
-
 template<class TVoxel>
 ITMSceneReconstructionEngine_CPU<TVoxel,ITMPlainVoxelArray>::ITMSceneReconstructionEngine_CPU(void) 
 {}
@@ -480,18 +303,6 @@ void ITMSceneReconstructionEngine_CPU<TVoxel,ITMPlainVoxelArray>::IntegrateIntoS
 
 		ComputeUpdatedVoxelInfo<TVoxel::hasColorInformation,TVoxel>::compute(voxelArray[locId], pt_model, M_d, projParams_d, M_rgb, projParams_rgb, mu, maxW, depth, depthImgSize, rgb, rgbImgSize);
 	}
-}
-
-template<class TVoxel>
-void ITMSceneReconstructionEngine_CPU<TVoxel,ITMPlainVoxelArray>::CreatePointCloud(const ITMScene<TVoxel,ITMPlainVoxelArray> *scene, const ITMView *view, ITMTrackingState *trackingState, bool skipPoints)
-{
-	CreatePointCloud_common(scene, view, trackingState, skipPoints);
-}
-
-template<class TVoxel>
-void ITMSceneReconstructionEngine_CPU<TVoxel,ITMPlainVoxelArray>::CreateICPMaps(const ITMScene<TVoxel,ITMPlainVoxelArray> *scene, const ITMView *view, ITMTrackingState *trackingState)
-{
-	CreateICPMaps_common(scene, view, trackingState);
 }
 
 template class ITMSceneReconstructionEngine_CPU<ITMVoxel,ITMVoxelIndex>;

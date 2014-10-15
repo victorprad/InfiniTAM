@@ -6,13 +6,6 @@
 
 using namespace ITMLib::Engine;
 
-inline dim3 getGridSize(dim3 taskSize, dim3 blockSize)
-{
-	return dim3((taskSize.x + blockSize.x - 1) / blockSize.x, (taskSize.y + blockSize.y - 1) / blockSize.y, (taskSize.z + blockSize.z - 1) / blockSize.z);
-}
-
-inline dim3 getGridSize(Vector2i taskSize, dim3 blockSize) { return getGridSize(dim3(taskSize.x, taskSize.y), blockSize); }
-
 template<class TVoxel>
 __global__ void integrateIntoScene_device(TVoxel *localVBA, const ITMHashEntry *hashTable, int *noLiveEntryIDs, ITMHashCacheState *cacheStates,
 	bool useSwapping, const Vector4u *rgb, Vector2i rgbImgSize, const float *depth, Vector2i imgSize, Matrix4f M_d, Matrix4f M_rgb, Vector4f projParams_d, 
@@ -22,17 +15,6 @@ template<class TVoxel>
 __global__ void integrateIntoScene_device(TVoxel *voxelArray, const ITMPlainVoxelArray::ITMVoxelArrayInfo *arrayInfo,
 	const Vector4u *rgb, Vector2i rgbImgSize, const float *depth, Vector2i depthImgSize, Matrix4f M_d, Matrix4f M_rgb, Vector4f projParams_d, 
 	Vector4f projParams_rgb, float _voxelSize, float mu, int maxW);
-
-template<class TVoxel, class TIndex>
-__global__ void createPointCloud_device(uint *noTotalPoints, Vector4f *colours, Vector4f *locations, Vector4u *outRendering,
-	const TVoxel *voxelData, const TIndex *voxelIndex, Vector2i imgSize, Matrix4f invM, Vector4f projParams, float voxelSize, 
-	float oneOverVoxelSize, const Vector2f *minmaxdata, float mu, bool skipPoints, Vector3f lightSource);
-
-template<class TVoxel, class TIndex>
-__global__ void createICPMaps_device(float *depth, Vector4f *pointsMap, Vector4f *normalsMap, Vector4u *outRendering, 
-	const TVoxel *voxelData, const TIndex *voxelIndex, Vector2i imgSize, Matrix4f invM, Vector4f projParams, 
-	float voxelSize, float oneOverVoxelSize, const Vector2f *minmaxdata, float mu, 
-	Vector3f lightSource);
 
 __global__ void buildHashAllocAndVisibleType_device(uchar *entriesAllocType, uchar *entriesVisibleType, Vector3s *blockCoords, const float *depth,
 	Matrix4f invM_d, Vector4f projParams_d, float mu, Vector2i _imgSize, float _voxelSize, ITMHashEntry *hashTable, float viewFrustum_min,
@@ -52,7 +34,6 @@ __global__ void buildVisibleList_device(ITMHashEntry *hashTable, ITMHashCacheSta
 template<class TVoxel>
 ITMSceneReconstructionEngine_CUDA<TVoxel,ITMVoxelBlockHash>::ITMSceneReconstructionEngine_CUDA(void) 
 {
-	ITMSafeCall(cudaMalloc((void**)&noTotalPoints_device, sizeof(uint)));
 	ITMSafeCall(cudaMalloc((void**)&noLiveEntries_device, sizeof(int)));
 	ITMSafeCall(cudaMalloc((void**)&noAllocatedVoxelEntries_device, sizeof(int)));
 	ITMSafeCall(cudaMalloc((void**)&noAllocatedExcessEntries_device, sizeof(int)));
@@ -65,7 +46,6 @@ ITMSceneReconstructionEngine_CUDA<TVoxel,ITMVoxelBlockHash>::ITMSceneReconstruct
 template<class TVoxel>
 ITMSceneReconstructionEngine_CUDA<TVoxel,ITMVoxelBlockHash>::~ITMSceneReconstructionEngine_CUDA(void) 
 {
-	ITMSafeCall(cudaFree(noTotalPoints_device));
 	ITMSafeCall(cudaFree(noLiveEntries_device));
 	ITMSafeCall(cudaFree(noAllocatedVoxelEntries_device));
 	ITMSafeCall(cudaFree(noAllocatedExcessEntries_device));
@@ -171,107 +151,7 @@ void ITMSceneReconstructionEngine_CUDA<TVoxel,ITMVoxelBlockHash>::IntegrateIntoS
 		scene->useSwapping, rgb, rgbImgSize, depth, depthImgSize, M_d, M_rgb, projParams_d, projParams_rgb, voxelSize, mu, maxW);
 }
 
-
-template<class TVoxel, class TIndex>
-static void CreatePointCloud_common(const ITMScene<TVoxel,TIndex> *scene, const ITMView *view, ITMTrackingState *trackingState, bool skipPoints, uint *noTotalPoints_device)
-{
-	Vector2i imgSize = view->depth->noDims;
-	float voxelSize = scene->sceneParams->voxelSize;
-	float oneOverVoxelSize = 1.0f / scene->sceneParams->voxelSize;
-
-	Matrix4f invM = trackingState->pose_d->invM * view->calib->trafo_rgb_to_depth.calib;
-	Vector4f projParams = view->calib->intrinsics_rgb.projectionParamsSimple.all;
-	projParams.x = 1.0f / projParams.x;
-	projParams.y = 1.0f / projParams.y;
-
-	//float presetViewFrustum_min = scene->sceneParams->viewFrustum_min;
-	//float presetViewFrustum_max = scene->sceneParams->viewFrustum_max;
-
-	Vector4f *locations = trackingState->pointCloud->locations->GetData(true);
-	Vector4f *colours = trackingState->pointCloud->colours->GetData(true);
-	Vector4u *outRendering = trackingState->rendering->GetData(true);
-	Vector2f *minmaxdata = trackingState->renderingRangeImage->GetData(true);
-
-	float mu = scene->sceneParams->mu;
-	Vector3f lightSource = -Vector3f(invM.getColumn(2));
-
-	dim3 cudaBlockSize(16, 16);
-	dim3 gridSize = getGridSize(imgSize, cudaBlockSize);
-
-	ITMSafeCall(cudaMemset(noTotalPoints_device, 0, sizeof(uint)));
-	ITMSafeCall(cudaMemset(outRendering, 0, sizeof(Vector4u) * imgSize.x * imgSize.y));
-
-	createPointCloud_device << <gridSize, cudaBlockSize >> >(noTotalPoints_device, colours, locations, outRendering,
-		scene->localVBA.GetVoxelBlocks(), scene->index.getIndexData(), imgSize, invM, projParams, voxelSize, oneOverVoxelSize, minmaxdata,
-		mu, skipPoints, lightSource);
-
-	ITMSafeCall(cudaMemcpy(&trackingState->pointCloud->noTotalPoints, noTotalPoints_device, sizeof(uint), cudaMemcpyDeviceToHost));
-}
-
-template<class TVoxel, class TIndex>
-void CreateICPMaps_common(const ITMScene<TVoxel,TIndex> *scene, const ITMView *view, ITMTrackingState *trackingState)
-{
-	Vector2i imgSize = view->depth->noDims;
-	float voxelSize = scene->sceneParams->voxelSize;
-	float oneOverVoxelSize = 1.0f / scene->sceneParams->voxelSize;
-
-	Matrix4f invM = trackingState->pose_d->invM;
-	Vector4f projParams = view->calib->intrinsics_d.projectionParamsSimple.all;
-	projParams.x = 1.0f / projParams.x;
-	projParams.y = 1.0f / projParams.y;
-
-	//float presetViewFrustum_min = scene->sceneParams->viewFrustum_min;
-	//float presetViewFrustum_max = scene->sceneParams->viewFrustum_max;
-
-	float mu = scene->sceneParams->mu;
-	Vector3f lightSource = -Vector3f(invM.getColumn(2));
-
-	float *depth = view->depth->GetData(true);
-
-	Vector4f *pointsMap = trackingState->pointCloud->locations->GetData(true);
-	Vector4f *normalsMap = trackingState->pointCloud->colours->GetData(true);
-	Vector4u *outRendering = trackingState->rendering->GetData(true);
-	Vector2f *minmaxdata = trackingState->renderingRangeImage->GetData(true);
-
-	dim3 cudaBlockSize(8, 8);
-	dim3 gridSize((int)ceil((float)imgSize.x / (float)cudaBlockSize.x), (int)ceil((float)imgSize.y / (float)cudaBlockSize.y));
-
-	ITMSafeCall(cudaMemset(outRendering, 0, sizeof(Vector4u)* imgSize.x * imgSize.y));
-	ITMSafeCall(cudaMemset(pointsMap, 0, sizeof(Vector4f)* imgSize.x * imgSize.y));
-	ITMSafeCall(cudaMemset(normalsMap, 0, sizeof(Vector4f)* imgSize.x * imgSize.y));
-
-	createICPMaps_device << <gridSize, cudaBlockSize >> >(depth, pointsMap, normalsMap, outRendering,
-		scene->localVBA.GetVoxelBlocks(), scene->index.getIndexData(), imgSize, invM, projParams, voxelSize, oneOverVoxelSize, minmaxdata, 
-		mu, lightSource);
-
-	ITMSafeCall(cudaThreadSynchronize());
-}
-
-template<class TVoxel>
-void ITMSceneReconstructionEngine_CUDA<TVoxel,ITMVoxelBlockHash>::CreatePointCloud(const ITMScene<TVoxel,ITMVoxelBlockHash> *scene, const ITMView *view, ITMTrackingState *trackingState, bool skipPoints)
-{
-	CreatePointCloud_common(scene, view, trackingState, skipPoints, noTotalPoints_device);
-}
-
-template<class TVoxel>
-void ITMSceneReconstructionEngine_CUDA<TVoxel,ITMVoxelBlockHash>::CreateICPMaps(const ITMScene<TVoxel,ITMVoxelBlockHash> *scene, const ITMView *view, ITMTrackingState *trackingState)
-{
-	CreateICPMaps_common(scene, view, trackingState);
-}
-
 // plain voxel array
-
-template<class TVoxel>
-ITMSceneReconstructionEngine_CUDA<TVoxel,ITMPlainVoxelArray>::ITMSceneReconstructionEngine_CUDA(void) 
-{
-	ITMSafeCall(cudaMalloc((void**)&noTotalPoints_device, sizeof(uint)));
-}
-
-template<class TVoxel>
-ITMSceneReconstructionEngine_CUDA<TVoxel,ITMPlainVoxelArray>::~ITMSceneReconstructionEngine_CUDA(void) 
-{
-	ITMSafeCall(cudaFree(noTotalPoints_device));
-}
 
 template<class TVoxel>
 void ITMSceneReconstructionEngine_CUDA<TVoxel,ITMPlainVoxelArray>::AllocateSceneFromDepth(ITMScene<TVoxel,ITMPlainVoxelArray> *scene, const ITMView *view, const ITMPose *pose_d)
@@ -306,19 +186,6 @@ void ITMSceneReconstructionEngine_CUDA<TVoxel,ITMPlainVoxelArray>::IntegrateInto
 
 	integrateIntoScene_device << <gridSize, cudaBlockSize >> >(localVBA, arrayInfo,
 		rgb, rgbImgSize, depth, depthImgSize, M_d, M_rgb, projParams_d, projParams_rgb, voxelSize, mu, maxW);
-}
-
-
-template<class TVoxel>
-void ITMSceneReconstructionEngine_CUDA<TVoxel,ITMPlainVoxelArray>::CreatePointCloud(const ITMScene<TVoxel,ITMPlainVoxelArray> *scene, const ITMView *view, ITMTrackingState *trackingState, bool skipPoints)
-{
-	CreatePointCloud_common(scene, view, trackingState, skipPoints, noTotalPoints_device);
-}
-
-template<class TVoxel>
-void ITMSceneReconstructionEngine_CUDA<TVoxel,ITMPlainVoxelArray>::CreateICPMaps(const ITMScene<TVoxel,ITMPlainVoxelArray> *scene, const ITMView *view, ITMTrackingState *trackingState)
-{
-	CreateICPMaps_common(scene, view, trackingState);
 }
 
 // device functions
@@ -356,8 +223,6 @@ __global__ void integrateIntoScene_device(TVoxel *localVBA, const ITMHashEntry *
 
 	if (currentHashEntry.ptr < 0) return;
 
-	if (useSwapping) { if (cacheStates[entryId].cacheToHost != 2) cacheStates[entryId].cacheToHost = 1; }
-
 	globalPos = currentHashEntry.pos.toInt() * SDF_BLOCK_SIZE;
 
 	TVoxel *localVoxelBlock = &(localVBA[currentHashEntry.ptr * SDF_BLOCK_SIZE3]);
@@ -374,135 +239,6 @@ __global__ void integrateIntoScene_device(TVoxel *localVBA, const ITMHashEntry *
 	pt_model.w = 1.0f;
 
 	ComputeUpdatedVoxelInfo<TVoxel::hasColorInformation,TVoxel>::compute(localVoxelBlock[locId], pt_model, M_d, projParams_d, M_rgb, projParams_rgb, mu, maxW, depth, depthImgSize, rgb, rgbImgSize);
-}
-
-template<class TVoxel, class TAccess>
-__global__ void createPointCloud_device(uint *noTotalPoints, Vector4f *colours, Vector4f *locations, Vector4u *outRendering,
-	const TVoxel *voxelData, const TAccess *voxelIndex, Vector2i imgSize, Matrix4f invM, Vector4f projParams, float voxelSize, 
-	float oneOverVoxelSize, const Vector2f *minmaxdata, float mu, bool skipPoints, Vector3f lightSource)
-{
-	int x = (threadIdx.x + blockIdx.x * blockDim.x), y = (threadIdx.y + blockIdx.y * blockDim.y);
-
-	if (x >= imgSize.x || y >= imgSize.y) return;
-
-	__shared__ bool shouldPrefix;
-
-	Vector3f pt_ray; Vector4f tmp;
-	float angle;
-
-	int locId = x + y * imgSize.x;
-
-//	float viewFrustum_min = presetViewFrustum_min;
-//	float viewFrustum_max = presetViewFrustum_max;
-	float viewFrustum_min = minmaxdata[locId].x;
-	float viewFrustum_max = minmaxdata[locId].y;
-
-	shouldPrefix = false;
-
-	bool foundPoint = false;
-	foundPoint = castRay(pt_ray, x, y, voxelData, voxelIndex, invM, projParams, imgSize, oneOverVoxelSize, mu, viewFrustum_min, viewFrustum_max);
-
-	if (foundPoint)
-	{
-		Vector3f outNormal = computeSingleNormalFromSDF(voxelData, voxelIndex, pt_ray);
-
-		float normScale = 1.0f / sqrtf(outNormal.x * outNormal.x + outNormal.y * outNormal.y + outNormal.z * outNormal.z);
-		outNormal *= normScale;
-
-		angle = outNormal.x * lightSource.x + outNormal.y * lightSource.y + outNormal.z * lightSource.z;
-		if (!(angle>0.0f)) foundPoint = false;
-	}
-	if (foundPoint)
-	{
-		float outRes = (0.8f * angle + 0.2f) * 255.0f;
-
-		outRendering[x + y * imgSize.x] = (uchar)outRes;
-
-		shouldPrefix = true;
-	}
-
-	__syncthreads();
-
-	if (skipPoints && ((x % 2 == 0) || (y % 2 == 0))) foundPoint = false;
-
-	if (shouldPrefix)
-	{
-		int offset = computePrefixSum_device<uint>(foundPoint, noTotalPoints, blockDim.x * blockDim.y, threadIdx.x + threadIdx.y * blockDim.x);
-
-		if (offset != -1)
-		{
-			Vector4f pt_ray_out;
-
-			tmp = VoxelColorReader<TVoxel::hasColorInformation,TVoxel,TAccess>::interpolate(voxelData, voxelIndex, pt_ray);
-			if (tmp.w > 0.0f) { tmp.x /= tmp.w; tmp.y /= tmp.w; tmp.z /= tmp.w; tmp.w = 1.0f; }
-			colours[offset] = tmp;
-
-			pt_ray_out.x = pt_ray.x * voxelSize; pt_ray_out.y = pt_ray.y * voxelSize;
-			pt_ray_out.z = pt_ray.z * voxelSize; pt_ray_out.w = 1.0f;
-			locations[offset] = pt_ray_out;
-		}
-	}
-}
-
-template<class TVoxel, class TAccess>
-__global__ void createICPMaps_device(float *depth, Vector4f *pointsMap, Vector4f *normalsMap, Vector4u *outRendering, 
-	const TVoxel *voxelData, const TAccess *voxelIndex, Vector2i imgSize, Matrix4f invM, Vector4f projParams, 
-	float voxelSize, float oneOverVoxelSize, const Vector2f *minmaxdata, float mu, 
-	Vector3f lightSource)
-{
-	int x = (threadIdx.x + blockIdx.x * blockDim.x), y = (threadIdx.y + blockIdx.y * blockDim.y);
-
-	if (x >= imgSize.x || y >= imgSize.y) return;
-
-	Vector3f pt_ray; Vector4f tmp;
-	Vector3f outNormal;
-	float angle;
-
-	int locId = x + y * imgSize.x;
-
-	//float viewFrustum_min = 0.20; //presetViewFrustum_min
-	//float viewFrustum_max = 3.00; //presetViewFrustum_max
-	float viewFrustum_min = minmaxdata[locId].x;
-	float viewFrustum_max = minmaxdata[locId].y;
-
-	bool foundPoint = false;
-	foundPoint = castRay(pt_ray, x, y, voxelData, voxelIndex, invM, projParams, imgSize, oneOverVoxelSize, mu, viewFrustum_min, viewFrustum_max);
-
-	if (foundPoint)
-	{
-		outNormal = computeSingleNormalFromSDF(voxelData, voxelIndex, pt_ray);
-
-		float normScale = 1.0f / sqrtf(outNormal.x * outNormal.x + outNormal.y * outNormal.y + outNormal.z * outNormal.z);
-		outNormal *= normScale;
-
-		angle = outNormal.x * lightSource.x + outNormal.y * lightSource.y + outNormal.z * lightSource.z;
-		if (!(angle > 0.0)) foundPoint = false;
-	}
-
-	if (foundPoint)
-	{
-		float outRes = (0.8f * angle + 0.2f) * 255.0f;
-
-		outRendering[x + y * imgSize.x] = (uchar)outRes;
-
-		Vector4f outNormal4;
-		outNormal4.x = outNormal.x; outNormal4.y = outNormal.y; outNormal4.z = outNormal.z; outNormal4.w = 0.0f;
-
-		Vector4f outPoint4;
-		outPoint4.x = pt_ray.x * voxelSize; outPoint4.y = pt_ray.y * voxelSize;
-		outPoint4.z = pt_ray.z * voxelSize; outPoint4.w = 1.0f;
-
-		pointsMap[locId] = outPoint4;
-		normalsMap[locId] = outNormal4;
-	}
-	else
-	{
-		Vector4f out4;
-		out4.x = 0.0f; out4.y = 0.0f; out4.z = 0.0f; out4.w = -1.0f;
-
-		pointsMap[x + y * imgSize.x] = out4;
-		normalsMap[x + y * imgSize.x] = out4;
-	}
 }
 
 __global__ void buildHashAllocAndVisibleType_device(uchar *entriesAllocType, uchar *entriesVisibleType, Vector3s *blockCoords, const float *depth,

@@ -19,7 +19,7 @@ namespace InfiniTAM
 
 			enum MainLoopAction
 			{
-				PROCESS_FRAME, PROCESS_VIDEO, EXIT, SAVE_TO_DISK
+				PROCESS_PAUSED, PROCESS_FRAME, PROCESS_VIDEO, EXIT, SAVE_TO_DISK
 			}mainLoopAction;
 
 
@@ -37,6 +37,13 @@ namespace InfiniTAM
 			ITMUChar4Image *outImage[NUM_WIN];
 			ITMMainEngine::GetImageType outImageType[NUM_WIN];
 
+			bool freeviewActive;
+			ITMPose freeviewPose;
+			ITMIntrinsics freeviewIntrinsics;
+
+			int mouseState;
+			Vector2i mouseLastClick;
+
 		public:
 			static UIEngine* Instance(void) {
 				if (instance == NULL) instance = new UIEngine();
@@ -46,6 +53,9 @@ namespace InfiniTAM
 			static void glutDisplayFunction();
 			static void glutIdleFunction();
 			static void glutKeyUpFunction(unsigned char key, int x, int y);
+			static void glutMouseButtonFunction(int button, int state, int x, int y);
+			static void glutMouseMoveFunction(int x, int y);
+			static void glutMouseWheelFunction(int button, int dir, int x, int y);
 
 			const Vector2i & getWindowSize(void) const
 			{ return winSize; }
@@ -53,7 +63,7 @@ namespace InfiniTAM
 			float processedTime;
 			int processedFrameNo;
 			char *outFolder;
-			bool actionDone, needsRefresh;
+			bool needsRefresh;
 			ITMUChar4Image *saveImage;
 
 			void Initialise(int & argc, char** argv, ImageSourceEngine *imageSource, ITMMainEngine *mainEngine, const char *outFolder);

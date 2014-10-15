@@ -25,7 +25,7 @@ namespace ITMLib
 			/** Scene parameters like voxel size etc. */
 			const ITMSceneParams *sceneParams;
 
-			/** Current local content of the 8x8x8 voxel blocks -- stored host and device */
+			/** Current local content of the 8x8x8 voxel blocks -- stored host or device */
 			ITMLocalVBA<TVoxel> localVBA;
 
 			/** Global content of the 8x8x8 voxel blocks -- stored on host only */

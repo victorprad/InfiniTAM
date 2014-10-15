@@ -177,10 +177,11 @@ void ITMSwappingEngine_CUDA<TVoxel,ITMVoxelBlockHash>::SaveToGlobalMemory(ITMSce
 				neededEntryIDs_local, noNeededEntries);
 
 			ITMSafeCall(cudaMemcpy(&scene->localVBA.lastFreeBlockId, noAllocatedVoxelEntries_device, sizeof(int), cudaMemcpyDeviceToHost));
+			scene->localVBA.lastFreeBlockId = MAX(scene->localVBA.lastFreeBlockId, 0);
 			scene->localVBA.lastFreeBlockId = MIN(scene->localVBA.lastFreeBlockId, SDF_LOCAL_BLOCK_NUM);
 		}
 
-		if (scene->localVBA.lastFreeBlockId != noBeforeCleanup)
+		if (scene->localVBA.lastFreeBlockId > noBeforeCleanup && noBeforeCleanup > 0)
 		{
 			blockSize = dim3(SDF_BLOCK_SIZE, SDF_BLOCK_SIZE, SDF_BLOCK_SIZE);
 			gridSize = dim3(scene->localVBA.lastFreeBlockId - noBeforeCleanup);
@@ -235,8 +236,7 @@ __global__ void buildNeededListToHost_device(int *neededEntryIDs, int *noNeededE
 
 	ITMHashCacheState &cacheState = cacheStates[targetIdx];
 
-	bool isNeededId = (
-		cacheState.cacheToHost == 1 && cacheState.cacheFromHost == 2 &&
+	bool isNeededId = ( cacheState.cacheFromHost == 2 &&
 		hashTable[targetIdx].ptr >= 0 && entriesVisibleType[targetIdx] == 0);
 
 	if (isNeededId) shouldPrefix = true;
@@ -259,7 +259,6 @@ __global__ void cleanMemory_device(int *voxelAllocationList, int *noAllocatedVox
 
 	int entryDestId = neededEntryIDs_local[locId];
 	
-	cacheStates[entryDestId].cacheToHost = 0;
 	cacheStates[entryDestId].cacheFromHost = 0;
 
 	int vbaIdx = atomicAdd(&noAllocatedVoxelEntries[0], 1);
@@ -306,10 +305,13 @@ __global__ void integrateGlobalIntoLocal_device(TVoxel *localVBA, ITMHashCacheSt
 template<class TVoxel>
 __global__ void cleanVBA(TVoxel *localVBA, int *voxelAllocationList, int baseAddressToClean)
 {
-	int vbaIdx = voxelAllocationList[baseAddressToClean + blockIdx.x];
-	TVoxel *dstVB = localVBA + vbaIdx * SDF_BLOCK_SIZE3;
-	int vIdx = threadIdx.x + threadIdx.y * SDF_BLOCK_SIZE + threadIdx.z * SDF_BLOCK_SIZE * SDF_BLOCK_SIZE;
-	dstVB[vIdx] = TVoxel();
+	//if ((baseAddressToClean + blockIdx.x) < SDF_LOCAL_BLOCK_NUM)
+	{
+		int vbaIdx = voxelAllocationList[baseAddressToClean + blockIdx.x];
+		TVoxel *dstVB = localVBA + vbaIdx * SDF_BLOCK_SIZE3;
+		int vIdx = threadIdx.x + threadIdx.y * SDF_BLOCK_SIZE + threadIdx.z * SDF_BLOCK_SIZE * SDF_BLOCK_SIZE;
+		dstVB[vIdx] = TVoxel();
+	}
 }
 
 template class ITMSwappingEngine_CUDA<ITMVoxel,ITMVoxelIndex>;

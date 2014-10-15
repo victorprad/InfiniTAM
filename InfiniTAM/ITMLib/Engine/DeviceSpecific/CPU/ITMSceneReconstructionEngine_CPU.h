@@ -24,9 +24,6 @@ namespace ITMLib
 			
 			void IntegrateIntoScene(ITMScene<TVoxel,ITMVoxelBlockHash> *scene, const ITMView *view, const ITMPose *pose);
 
-			void CreatePointCloud(const ITMScene<TVoxel,ITMVoxelBlockHash> *scene, const ITMView *view, ITMTrackingState *trackingState, bool skipPoints);
-			void CreateICPMaps(const ITMScene<TVoxel,ITMVoxelBlockHash> *scene, const ITMView *view, ITMTrackingState *trackingState);
-
 			ITMSceneReconstructionEngine_CPU(void);
 			~ITMSceneReconstructionEngine_CPU(void);
 		};
@@ -42,9 +39,6 @@ namespace ITMLib
 			void AllocateSceneFromDepth(ITMScene<TVoxel,ITMPlainVoxelArray> *scene, const ITMView *view, const ITMPose *pose);
 			
 			void IntegrateIntoScene(ITMScene<TVoxel,ITMPlainVoxelArray> *scene, const ITMView *view, const ITMPose *pose);
-
-			void CreatePointCloud(const ITMScene<TVoxel,ITMPlainVoxelArray> *scene, const ITMView *view, ITMTrackingState *trackingState, bool skipPoints);
-			void CreateICPMaps(const ITMScene<TVoxel,ITMPlainVoxelArray> *scene, const ITMView *view, ITMTrackingState *trackingState);
 
 			ITMSceneReconstructionEngine_CPU(void);
 			~ITMSceneReconstructionEngine_CPU(void);

@@ -112,7 +112,7 @@
     <ClCompile Include="ITMLib\Engine\DeviceSpecific\CPU\ITMSwappingEngine_CPU.cpp">
       <Filter>ITMLib\Engine\DeviceSpecific\CPU</Filter>
     </ClCompile>
-    <ClCompile Include="ITMLib\Engine\DeviceSpecific\CPU\ITMBlockProjectionEngine_CPU.cpp">
+    <ClCompile Include="ITMLib\Engine\DeviceSpecific\CPU\ITMVisualisationEngine_CPU.cpp">
       <Filter>ITMLib\Engine\DeviceSpecific\CPU</Filter>
     </ClCompile>
   </ItemGroup>
@@ -276,18 +276,6 @@
     <ClInclude Include="ITMLib\Objects\ITMGlobalCache.h">
       <Filter>ITMLib\Objects\Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ITMLib\Engine\DeviceSpecific\CUDA\ITMBlockProjectionEngine_CUDA.h">
-      <Filter>ITMLib\Engine\DeviceSpecific\CUDA</Filter>
-    </ClInclude>
-    <ClInclude Include="ITMLib\Engine\DeviceSpecific\CPU\ITMBlockProjectionEngine_CPU.h">
-      <Filter>ITMLib\Engine\DeviceSpecific\CPU</Filter>
-    </ClInclude>
-    <ClInclude Include="ITMLib\Engine\ITMBlockProjectionEngine.h">
-      <Filter>ITMLib\Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="ITMLib\Engine\DeviceAgnostic\ITMBlockProjectionEngine.h">
-      <Filter>ITMLib\Engine\DeviceAgnostic</Filter>
-    </ClInclude>
     <ClInclude Include="ITMLib\Objects\ITMTrackingState.h">
       <Filter>ITMLib\Objects\Header Files</Filter>
     </ClInclude>
@@ -296,6 +284,18 @@
     </ClInclude>
     <ClInclude Include="ITMLib\Objects\ITMVoxelBlockHash.h">
       <Filter>ITMLib\Objects\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ITMLib\Engine\DeviceAgnostic\ITMSwappingEngine.h">
+      <Filter>ITMLib\Engine\DeviceAgnostic</Filter>
+    </ClInclude>
+    <ClInclude Include="ITMLib\Engine\DeviceAgnostic\ITMVisualisationEngine.h">
+      <Filter>ITMLib\Engine\DeviceAgnostic</Filter>
+    </ClInclude>
+    <ClInclude Include="ITMLib\Engine\DeviceSpecific\CPU\ITMVisualisationEngine_CPU.h">
+      <Filter>ITMLib\Engine\DeviceSpecific\CPU</Filter>
+    </ClInclude>
+    <ClInclude Include="ITMLib\Engine\DeviceSpecific\CUDA\ITMVisualisationEngine_CUDA.h">
+      <Filter>ITMLib\Engine\DeviceSpecific\CUDA</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -314,7 +314,7 @@
     <CudaCompile Include="ITMLib\Engine\DeviceSpecific\CUDA\ITMSwappingEngine_CUDA.cu">
       <Filter>ITMLib\Engine\DeviceSpecific\CUDA</Filter>
     </CudaCompile>
-    <CudaCompile Include="ITMLib\Engine\DeviceSpecific\CUDA\ITMBlockProjectionEngine_CUDA.cu">
+    <CudaCompile Include="ITMLib\Engine\DeviceSpecific\CUDA\ITMVisualisationEngine_CUDA.cu">
       <Filter>ITMLib\Engine\DeviceSpecific\CUDA</Filter>
     </CudaCompile>
   </ItemGroup>

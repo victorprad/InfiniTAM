@@ -352,31 +352,4 @@ namespace ITMLib {
 			return os;
 		}
 	};
-
-//	class Matrix3f: public Matrix3<float>{
-//	public:
-//		_CPU_AND_GPU_CODE_ inline friend Matrix3f operator + (const Matrix3f &lhs, const Matrix3f &rhs){
-//			Matrix3f res;
-//#ifdef __ARM_NEON__
-//			*(float32x4_t *)&(res.m[0]) = vaddq_f32(*(float32x4_t *)&(lhs.m[0]), *(float32x4_t *)&(rhs.m[0]));
-//			*(float32x4_t *)&(res.m[4]) = vaddq_f32(*(float32x4_t *)&(lhs.m[4]), *(float32x4_t *)&(rhs.m[4]));
-//			res.m[8] = lhs.m[8] + rhs.m[8];
-//#else
-//			for (int i = 0; i < 9; ++i) res.m[i] = lhs.m[i] + rhs.m[i];
-//#endif // __ARM_NEON__
-//			return res;
-//		}
-//
-//		_CPU_AND_GPU_CODE_ inline friend Matrix3f operator - (const Matrix3f &lhs, const Matrix3f &rhs){
-//			Matrix3f res;
-//#ifdef __ARM_NEON__
-//			*(float32x4_t *)&(res.m[0]) = vsubq_f32(*(float32x4_t *)&(lhs.m[0]), *(float32x4_t *)&(rhs.m[0]));
-//			*(float32x4_t *)&(res.m[4]) = vsubq_f32(*(float32x4_t *)&(lhs.m[4]), *(float32x4_t *)&(rhs.m[4]));
-//			res.m[8] = lhs.m[8] - rhs.m[8];
-//#else
-//			for (int i = 0; i < 9; ++i) res.m[i] = lhs.m[i] - rhs.m[i];
-//#endif // __ARM_NEON__
-//			return res;
-//		}
-//	};
 };
