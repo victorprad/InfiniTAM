@@ -30,6 +30,8 @@ namespace ITMLib
 
 			ITMTrackingState *trackingState; const ITMView *view;
 
+			int *noIterationsPerLevel;
+
 			int levelId;
 			bool rotationOnly;
 

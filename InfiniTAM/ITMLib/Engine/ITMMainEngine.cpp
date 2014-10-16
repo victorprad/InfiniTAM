@@ -27,7 +27,6 @@ ITMMainEngine::ITMMainEngine(const ITMLibSettings *settings, const ITMRGBDCalib 
 		else tracker = new ITMColorTracker_CUDA(imgSize, settings->noHierarchyLevels, settings->noRotationOnlyLevels, lowLevelEngine);
 
 		if (settings->useSwapping) swappingEngine = new ITMSwappingEngine_CUDA<ITMVoxel,ITMVoxelIndex>();
-
 		visualisationEngine = new ITMVisualisationEngine_CUDA<ITMVoxel,ITMVoxelIndex>();
 #endif
 	}
@@ -42,7 +41,6 @@ ITMMainEngine::ITMMainEngine(const ITMLibSettings *settings, const ITMRGBDCalib 
 		else tracker = new ITMColorTracker_CPU(imgSize, settings->noHierarchyLevels, settings->noRotationOnlyLevels, lowLevelEngine);
 
 		if (settings->useSwapping) swappingEngine = new ITMSwappingEngine_CPU<ITMVoxel,ITMVoxelIndex>();
-
 		visualisationEngine = new ITMVisualisationEngine_CPU<ITMVoxel,ITMVoxelIndex>();
 	}
 
@@ -58,11 +56,6 @@ ITMMainEngine::~ITMMainEngine()
 	delete lowLevelEngine;
 
 	if (settings->useSwapping) delete swappingEngine;
-
-	delete visualisationEngine;
-
-	if (visualisationState != NULL) 
-		delete visualisationState;
 
 	delete trackingState;
 	delete scene;

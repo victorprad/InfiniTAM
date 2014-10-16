@@ -7,8 +7,8 @@
 using namespace ITMLib::Engine;
 
 template<class TVoxel>
-__global__ void integrateIntoScene_device(TVoxel *localVBA, const ITMHashEntry *hashTable, int *noLiveEntryIDs, ITMHashCacheState *cacheStates,
-	bool useSwapping, const Vector4u *rgb, Vector2i rgbImgSize, const float *depth, Vector2i imgSize, Matrix4f M_d, Matrix4f M_rgb, Vector4f projParams_d, 
+__global__ void integrateIntoScene_device(TVoxel *localVBA, const ITMHashEntry *hashTable, int *noLiveEntryIDs,
+	const Vector4u *rgb, Vector2i rgbImgSize, const float *depth, Vector2i imgSize, Matrix4f M_d, Matrix4f M_rgb, Vector4f projParams_d, 
 	Vector4f projParams_rgb, float _voxelSize, float mu, int maxW);
 
 template<class TVoxel>
@@ -141,14 +141,13 @@ void ITMSceneReconstructionEngine_CUDA<TVoxel,ITMVoxelBlockHash>::IntegrateIntoS
 	Vector4u *rgb = view->rgb->GetData(true);
 	TVoxel *localVBA = scene->localVBA.GetVoxelBlocks();
 	ITMHashEntry *hashTable = scene->index.GetEntries();
-	ITMHashCacheState *cacheStates = scene->useSwapping ? scene->globalCache->GetCacheStates(true) : 0;
 	int *liveEntryIDs = scene->index.GetLiveEntryIDs();
 
 	dim3 cudaBlockSize(SDF_BLOCK_SIZE, SDF_BLOCK_SIZE, SDF_BLOCK_SIZE);
 	dim3 gridSize(scene->index.noLiveEntries);
 
-	integrateIntoScene_device << <gridSize, cudaBlockSize >> >(localVBA, hashTable, liveEntryIDs, cacheStates,
-		scene->useSwapping, rgb, rgbImgSize, depth, depthImgSize, M_d, M_rgb, projParams_d, projParams_rgb, voxelSize, mu, maxW);
+	integrateIntoScene_device << <gridSize, cudaBlockSize >> >(localVBA, hashTable, liveEntryIDs,
+		rgb, rgbImgSize, depth, depthImgSize, M_d, M_rgb, projParams_d, projParams_rgb, voxelSize, mu, maxW);
 }
 
 // plain voxel array
@@ -212,8 +211,8 @@ __global__ void integrateIntoScene_device(TVoxel *voxelArray, const ITMPlainVoxe
 }
 
 template<class TVoxel>
-__global__ void integrateIntoScene_device(TVoxel *localVBA, const ITMHashEntry *hashTable, int *liveEntryIDs, ITMHashCacheState *cacheStates,
-	bool useSwapping, const Vector4u *rgb, Vector2i rgbImgSize, const float *depth, Vector2i depthImgSize, Matrix4f M_d, Matrix4f M_rgb, Vector4f projParams_d, 
+__global__ void integrateIntoScene_device(TVoxel *localVBA, const ITMHashEntry *hashTable, int *liveEntryIDs,
+	const Vector4u *rgb, Vector2i rgbImgSize, const float *depth, Vector2i depthImgSize, Matrix4f M_d, Matrix4f M_rgb, Vector4f projParams_d, 
 	Vector4f projParams_rgb, float _voxelSize, float mu, int maxW)
 {
 	Vector3i globalPos;

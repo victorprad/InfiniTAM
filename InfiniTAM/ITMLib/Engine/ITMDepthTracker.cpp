@@ -9,9 +9,17 @@ using namespace ITMLib::Engine;
 using namespace ITMLib::Utils;
 
 ITMDepthTracker::ITMDepthTracker(Vector2i imgSize, int noHierarchyLevels, int noRotationOnlyLevels, float distThresh, ITMLowLevelEngine *lowLevelEngine, bool useGPU)
-{ 
+{
 	viewHierarchy = new ITMImageHierarchy<ITMViewHierarchyLevel>(imgSize, noHierarchyLevels, noRotationOnlyLevels, useGPU);
 	sceneHierarchy = new ITMImageHierarchy<ITMSceneHierarchyLevel>(imgSize, noHierarchyLevels, noRotationOnlyLevels, useGPU);
+
+	this->noIterationsPerLevel = new int[noHierarchyLevels];
+
+	this->noIterationsPerLevel[0] = 2; //TODO -> make parameter
+	for (int levelId = 1; levelId < noHierarchyLevels; levelId++)
+	{
+		noIterationsPerLevel[levelId] = noIterationsPerLevel[levelId - 1] + 2;
+	}
 
 	this->lowLevelEngine = lowLevelEngine;
 
@@ -22,6 +30,8 @@ ITMDepthTracker::~ITMDepthTracker(void)
 { 
 	delete this->viewHierarchy;
 	delete this->sceneHierarchy;
+
+	delete this->noIterationsPerLevel;
 }
 
 void ITMDepthTracker::SetEvaluationData(ITMTrackingState *trackingState, const ITMView *view)
@@ -97,8 +107,6 @@ void ITMDepthTracker::TrackCamera(ITMTrackingState *trackingState, const ITMView
 
 	this->PrepareForEvaluation();
 
-	//int noTotalIterations[] = { 10, 8, 6 }; //TODO move somewhere else -- make parameters
-
 	Matrix4f approxInvPose = trackingState->pose_d->invM, imagePose = trackingState->pose_d->M;
 
 	for (int levelId = viewHierarchy->noLevels - 1; levelId >= 0; levelId--)
@@ -106,11 +114,11 @@ void ITMDepthTracker::TrackCamera(ITMTrackingState *trackingState, const ITMView
 		this->SetEvaluationParams(levelId);
 
 		int noValidPoints;
-		//int noLevelIterations = (levelId == 0) ? noTotalIterations[0] : (rotationOnly ? noTotalIterations[2] : noTotalIterations[1]);
+
 		ITMSceneHierarchyLevel *sceneHierarchyLevel = sceneHierarchy->levels[0];
 		ITMViewHierarchyLevel *viewHierarchyLevel = viewHierarchy->levels[levelId];
 
-		for (int iterNo = 0; iterNo < 1; iterNo++)
+		for (int iterNo = 0; iterNo < noIterationsPerLevel[levelId]; iterNo++)
 		{
 			noValidPoints = this->ComputeGandH(sceneHierarchyLevel, viewHierarchyLevel, approxInvPose, imagePose, rotationOnly);
 

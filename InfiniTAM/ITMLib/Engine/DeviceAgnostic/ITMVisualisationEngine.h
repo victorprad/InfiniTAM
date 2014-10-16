@@ -93,7 +93,7 @@ _CPU_AND_GPU_CODE_ inline bool castRay(Vector3f &pt_out, int x, int y, const TVo
 	Vector3f pt_camera_f, pt_block_s, pt_block_e, rayDirection, pt_result;
 	bool pt_found, hash_found;
 	float sdfValue = 1.0f;
-	float totalLength, stepLength, next_SDFvalue, totalLengthMax, stepScale;
+	float totalLength, stepLength, totalLengthMax, stepScale;
 
 	stepScale = mu * oneOverVoxelSize;
 
@@ -118,6 +118,8 @@ _CPU_AND_GPU_CODE_ inline bool castRay(Vector3f &pt_out, int x, int y, const TVo
 	if (!hash_found) state = SEARCH_BLOCK_COARSE;
 	else if (sdfValue <= 0.0f) state = WRONG_SIDE;
 	else state = SEARCH_SURFACE;
+
+	Vector3i blockPos_prev(INT_MAX); int blockPtr_prev = -1;
 
 	pt_found = false;
 	while (state != BEHIND_SURFACE)
@@ -153,12 +155,8 @@ _CPU_AND_GPU_CODE_ inline bool castRay(Vector3f &pt_out, int x, int y, const TVo
 		pt_result += stepLength * rayDirection; totalLength += stepLength;
 		if (totalLength > totalLengthMax) break;
 
-		sdfValue = readFromSDF_float_uninterpolated(voxelData, voxelIndex, pt_result, hash_found);
-		if ((sdfValue > -1.0f) && (sdfValue < 1.0f))
-		{
-			sdfValue = readFromSDF_float_interpolated(voxelData, voxelIndex, pt_result, hash_found);
-			hash_found = true;
-		}
+		sdfValue = readFromSDF_float_maybe_interpolate(voxelData, voxelIndex, pt_result, hash_found,
+			blockPos_prev, blockPtr_prev);
 
 		if (sdfValue <= 0.0f) if (state == SEARCH_BLOCK_FINE) state = WRONG_SIDE; else state = BEHIND_SURFACE;
 		else if (state == WRONG_SIDE) state = SEARCH_SURFACE;
@@ -166,13 +164,13 @@ _CPU_AND_GPU_CODE_ inline bool castRay(Vector3f &pt_out, int x, int y, const TVo
 
 	if (state == BEHIND_SURFACE)
 	{
-		stepLength = MIN(sdfValue * stepScale, -1.0f);
+		stepLength = MIN(sdfValue * stepScale, -0.5f);
 
 		pt_result += stepLength * rayDirection;
 
-		next_SDFvalue = readFromSDF_float_interpolated(voxelData, voxelIndex, pt_result, hash_found);
+		sdfValue = readFromSDF_float_interpolated(voxelData, voxelIndex, pt_result, hash_found);
 
-		stepLength = next_SDFvalue * stepScale;
+		stepLength = sdfValue * stepScale;
 
 		pt_result += stepLength * rayDirection;
 		pt_found = true;

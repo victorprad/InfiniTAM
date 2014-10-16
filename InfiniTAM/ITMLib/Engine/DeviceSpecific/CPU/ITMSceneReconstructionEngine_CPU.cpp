@@ -42,10 +42,7 @@ void ITMSceneReconstructionEngine_CPU<TVoxel,ITMVoxelBlockHash>::IntegrateIntoSc
 	Vector4u *rgb = view->rgb->GetData(false);
 	TVoxel *localVBA = scene->localVBA.GetVoxelBlocks();
 	ITMHashEntry *hashTable = scene->index.GetEntries();
-	ITMHashCacheState *cacheStates = scene->useSwapping ? scene->globalCache->GetCacheStates(false) : 0;
 	int *liveEntryIDs = scene->index.GetLiveEntryIDs();
-
-	bool useSwapping = scene->useSwapping;
 
 	for (int entryId = 0; entryId < scene->index.noLiveEntries; entryId++)
 	{

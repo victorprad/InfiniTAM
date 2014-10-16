@@ -638,8 +638,8 @@ __global__ void createICPMaps_device(float *depth, Vector4f *pointsMap, Vector4f
 		Vector4f out4;
 		out4.x = 0.0f; out4.y = 0.0f; out4.z = 0.0f; out4.w = -1.0f;
 
-		pointsMap[x + y * imgSize.x] = out4;
-		normalsMap[x + y * imgSize.x] = out4;
+		pointsMap[locId] = out4;
+		normalsMap[locId] = out4;
 	}
 }
 

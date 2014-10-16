@@ -125,6 +125,7 @@
     <ClInclude Include="ITMLib\Engine\DeviceAgnostic\ITMColorTracker.h" />
     <ClInclude Include="ITMLib\Engine\DeviceAgnostic\ITMDepthTracker.h" />
     <ClInclude Include="ITMLib\Engine\DeviceAgnostic\ITMLowLevelEngine.h" />
+    <ClInclude Include="ITMLib\Engine\DeviceAgnostic\ITMRepresentationAccess.h" />
     <ClInclude Include="ITMLib\Engine\DeviceAgnostic\ITMSceneReconstructionEngine.h" />
     <ClInclude Include="ITMLib\Engine\DeviceAgnostic\ITMSwappingEngine.h" />
     <ClInclude Include="ITMLib\Engine\DeviceAgnostic\ITMVisualisationEngine.h" />

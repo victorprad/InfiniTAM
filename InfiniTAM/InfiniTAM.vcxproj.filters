@@ -297,6 +297,9 @@
     <ClInclude Include="ITMLib\Engine\DeviceSpecific\CUDA\ITMVisualisationEngine_CUDA.h">
       <Filter>ITMLib\Engine\DeviceSpecific\CUDA</Filter>
     </ClInclude>
+    <ClInclude Include="ITMLib\Engine\DeviceAgnostic\ITMRepresentationAccess.h">
+      <Filter>ITMLib\Engine\DeviceAgnostic</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CudaCompile Include="ITMLib\Engine\DeviceSpecific\CUDA\ITMColorTracker_CUDA.cu">

@@ -18,7 +18,7 @@ ITMLibSettings::ITMLibSettings(void)
 #else
 	useGPU = false;
 #endif
-
+		
 	useSwapping = false; // HERE BE DRAGONS: It should work, but requires more testing
 
 	//trackerType = TRACKER_COLOR;
