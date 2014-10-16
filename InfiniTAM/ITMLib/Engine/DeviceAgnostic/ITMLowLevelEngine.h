@@ -18,6 +18,14 @@ _CPU_AND_GPU_CODE_ inline void convertDisparityToDepth(float *d_out, int x, int 
 	d_out[locId] = (depth > 0) ? depth : -1.0f;
 }
 
+_CPU_AND_GPU_CODE_ inline void convertDepthMMToFloat(float *d_out, int x, int y, const short *d_in, Vector2i imgSize)
+{
+	int locId = x + y * imgSize.x;
+
+	short depth_in = d_in[locId];
+	d_out[locId] = (depth_in == 0) ? -1.0f : (float)depth_in / 1000.0f;
+}
+
 _CPU_AND_GPU_CODE_ inline void filterSubsample(Vector4u *imageData_out, int x, int y, Vector2i newDims, const Vector4u *imageData_in, Vector2i oldDims)
 {
 	int src_pos_x = x * 2, src_pos_y = y * 2;

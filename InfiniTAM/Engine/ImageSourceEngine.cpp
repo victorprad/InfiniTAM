@@ -40,9 +40,15 @@ void ImageFileReader::loadIntoCache(void)
 
 	char str[2048];
 	sprintf(str, rgbImageMask, currentFrameNo);
-	if (!ReadImageFromFile(cached_rgb, str)) { delete cached_rgb; cached_rgb = NULL; }
+	if (!ReadImageFromFile(cached_rgb, str)) {
+		delete cached_rgb; cached_rgb = NULL;
+		printf("error reading file '%s'\n", str);
+	}
 	sprintf(str, depthImageMask, currentFrameNo);
-	if (!ReadImageFromFile(cached_depth, str)) { delete cached_depth; cached_depth = NULL; }
+	if (!ReadImageFromFile(cached_depth, str)) {
+		delete cached_depth; cached_depth = NULL;
+		printf("error reading file '%s'\n", str);
+	}
 }
 
 bool ImageFileReader::hasMoreImages(void)
@@ -70,12 +76,18 @@ void ImageFileReader::getImages(ITMView *out)
 	if (!bUsedCache) {
 		char str[2048];
 		sprintf(str, rgbImageMask, currentFrameNo);
-		ReadImageFromFile(out->rgb, str);
+		if (!ReadImageFromFile(out->rgb, str)) {
+			printf("error reading file '%s'\n", str);
+		}
+
 		sprintf(str, depthImageMask, currentFrameNo);
-		ReadImageFromFile(out->rawDepth, str);
+		if (!ReadImageFromFile(out->rawDepth, str)) {
+			printf("error reading file '%s'\n", str);
+		}
 	}
 
-	out->inputImageType = ITMView::InfiniTAM_DISPARITY_IMAGE;
+	if (calib.disparityCalib.params.y == 0) out->inputImageType = ITMView::InfiniTAM_SHORT_DEPTH_IMAGE;
+	else out->inputImageType = ITMView::InfiniTAM_DISPARITY_IMAGE;
 
 	++currentFrameNo;
 }

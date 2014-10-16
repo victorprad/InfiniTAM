@@ -5,21 +5,26 @@
 #include <stdio.h>
 #include <fstream>
 
+static const char *pgm_ascii_id = "P2";
+static const char *ppm_ascii_id = "P3";
 static const char *pgm_id = "P5";
 static const char *ppm_id = "P6";
 
 typedef enum { PNM_PGM, PNM_PPM, PNM_PGM_16u, PNM_PGM_16s, PNM_UNKNOWN = -1 } PNMtype;
 
-static PNMtype pnm_readheader(FILE *f, int *xsize, int *ysize)
+static PNMtype pnm_readheader(FILE *f, int *xsize, int *ysize, bool *binary)
 {
 	char tmp[1024];
 	PNMtype type = PNM_UNKNOWN;
 	int xs = 0, ys = 0, max_i = 0;
+	bool isBinary = true;
 
 	/* read identifier */
 	fscanf(f, "%[^ \n\t]", tmp);
 	if (!strcmp(tmp, pgm_id)) type = PNM_PGM;
+	else if (!strcmp(tmp, pgm_ascii_id)) { type = PNM_PGM; isBinary = false; }
 	else if (!strcmp(tmp, ppm_id)) type = PNM_PPM;
+	else if (!strcmp(tmp, ppm_ascii_id)) { type = PNM_PPM; isBinary = false; }
 	else return type;
 
 	/* read size */
@@ -36,11 +41,45 @@ static PNMtype pnm_readheader(FILE *f, int *xsize, int *ysize)
 
 	if (xsize) *xsize = xs;
 	if (ysize) *ysize = ys;
+	if (binary) *binary = isBinary;
 
 	return type;
 }
 
-static bool pnm_readdata(FILE *f, int xsize, int ysize, PNMtype type, void *data)
+template<class T>
+static bool pnm_readdata_ascii_helper(FILE *f, int xsize, int ysize, int channels, T *data)
+{
+	for (int y = 0; y < ysize; ++y) for (int x = 0; x < xsize; ++x) for (int c = 0; c < channels; ++c) {
+		int v;
+		if (!fscanf(f, "%i", &v)) return false;
+		*data++ = v;
+	}
+	return true;
+}
+
+static bool pnm_readdata_ascii(FILE *f, int xsize, int ysize, PNMtype type, void *data)
+{
+	int channels = 0;
+	switch (type) 
+	{
+	case PNM_PGM:
+		channels = 1;
+		return pnm_readdata_ascii_helper(f, xsize, ysize, channels, (unsigned char*)data);
+	case PNM_PPM:
+		channels = 3;
+		return pnm_readdata_ascii_helper(f, xsize, ysize, channels, (unsigned char*)data);
+	case PNM_PGM_16s:
+		channels = 1;
+		return pnm_readdata_ascii_helper(f, xsize, ysize, channels, (short*)data);
+	case PNM_PGM_16u:
+		channels = 1;
+		return pnm_readdata_ascii_helper(f, xsize, ysize, channels, (unsigned short*)data);
+	case PNM_UNKNOWN: break;
+	}
+	return false;
+}
+
+static bool pnm_readdata_binary(FILE *f, int xsize, int ysize, PNMtype type, void *data)
 {
 	int channels = 0;
 	int bytesPerSample = 0;
@@ -164,12 +203,17 @@ void SaveImageToFile(const ITMFloatImage* image, const char* fileName)
 bool ReadImageFromFile(ITMUChar4Image* image, const char* fileName)
 {
 	int xsize, ysize;
+	bool binary;
 	FILE *f = fopen(fileName, "rb");
 	if (f == NULL) return false;
-	if (pnm_readheader(f, &xsize, &ysize)!=PNM_PPM) { fclose(f); return false; }
+	if (pnm_readheader(f, &xsize, &ysize, &binary)!=PNM_PPM) { fclose(f); return false; }
 
 	unsigned char *data = new unsigned char[xsize*ysize*3];
-	if (!pnm_readdata(f, xsize, ysize, PNM_PPM, data)) { fclose(f); delete[] data; return false; }
+	if (binary) {
+		if (!pnm_readdata_binary(f, xsize, ysize, PNM_PPM, data)) { fclose(f); delete[] data; return false; }
+	} else {
+		if (!pnm_readdata_ascii(f, xsize, ysize, PNM_PPM, data)) { fclose(f); delete[] data; return false; }
+	}
 	fclose(f);
 
 	Vector2i newSize(xsize, ysize);
@@ -190,19 +234,30 @@ bool ReadImageFromFile(ITMUChar4Image* image, const char* fileName)
 bool ReadImageFromFile(ITMShortImage *image, const char *fileName)
 {
 	int xsize, ysize;
+	bool binary;
 	FILE *f = fopen(fileName, "rb");
 	if (f == NULL) return false;
-	PNMtype type = pnm_readheader(f, &xsize, &ysize);
+	PNMtype type = pnm_readheader(f, &xsize, &ysize, &binary);
 	if ((type != PNM_PGM_16s)&&(type != PNM_PGM_16u)) { fclose(f); return false; }
 
 	unsigned short *data = new unsigned short[xsize*ysize];
-	if (!pnm_readdata(f, xsize, ysize, type, data)) { fclose(f); delete[] data; return false; }
+	if (binary) {
+		if (!pnm_readdata_binary(f, xsize, ysize, type, data)) { fclose(f); delete[] data; return false; }
+	} else {
+		if (!pnm_readdata_ascii(f, xsize, ysize, type, data)) { fclose(f); delete[] data; return false; }
+	}
 	fclose(f);
 
 	Vector2i newSize(xsize, ysize);
 	image->ChangeDims(newSize);
-	for (int i = 0; i < image->noDims.x*image->noDims.y; ++i) {
-		image->GetData(false)[i] = (data[i]<<8) | ((data[i]>>8)&255);
+	if (binary) {
+		for (int i = 0; i < image->noDims.x*image->noDims.y; ++i) {
+			image->GetData(false)[i] = (data[i]<<8) | ((data[i]>>8)&255);
+		}
+	} else {
+		for (int i = 0; i < image->noDims.x*image->noDims.y; ++i) {
+			image->GetData(false)[i] = data[i];
+		}
 	}
 	delete[] data;
 

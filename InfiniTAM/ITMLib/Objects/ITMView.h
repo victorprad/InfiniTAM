@@ -22,6 +22,8 @@ namespace ITMLib
 				//! Raw disparity images as received from the
 				//! Kinect
 				InfiniTAM_DISPARITY_IMAGE,
+				//! Short valued depth image in millimetres
+				InfiniTAM_SHORT_DEPTH_IMAGE,
 				//! Floating point valued depth images in meters
 				InfiniTAM_FLOAT_DEPTH_IMAGE
 			};
@@ -39,24 +41,24 @@ namespace ITMLib
 			/// Raw disparity image, if available according to @ref inputImageType.
 			ITMShortImage *rawDepth; 
 
-			ITMView(const ITMRGBDCalib & calib, Vector2i imgSize, bool useGPU)
+			ITMView(const ITMRGBDCalib & calib, Vector2i imgSize_rgb, Vector2i imgSize_d, bool useGPU)
 			{
 				this->calib = new ITMRGBDCalib(calib);
-			
-				this->rgb = new ITMUChar4Image(imgSize, useGPU);
-				this->depth = new ITMFloatImage(imgSize, useGPU);
 
-				this->rawDepth = new ITMShortImage(imgSize, useGPU);
+				this->rgb = new ITMUChar4Image(imgSize_rgb, useGPU);
+				this->depth = new ITMFloatImage(imgSize_d, useGPU);
+
+				this->rawDepth = new ITMShortImage(imgSize_d, useGPU);
 				this->inputImageType = InfiniTAM_DISPARITY_IMAGE;
 			}
 
 			~ITMView(void)
 			{
 				delete calib;
-				
+
 				delete rgb;
 				delete depth;
-				
+
 				delete rawDepth;
 			}
 

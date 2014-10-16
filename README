@@ -95,12 +95,12 @@ out-of-the-box without problems for live reconstruction. If you have
 calibration information for your specific device, you can pass it as the first
 argument to the program, e.g.:
 
-  $ ./InfiniTAM Files/Teddy/calib.txt
+  $ ./InfiniTAM Teddy/calib.txt
 
   If no OpenNI support has been compiled in, the program can be used for
 offline processing:
 
-  $ ./InfiniTAM Files/Teddy/calib.txt Files/Teddy/Frames/{video,depth}%04i.ppm
+  $ ./InfiniTAM Teddy/calib.txt Teddy/Frames/%04i.ppm Teddy/Frames/%04i.pgm
 
   The arguments are essentially masks for sprintf and the %04i will be replaced
 by a running number, accordingly.

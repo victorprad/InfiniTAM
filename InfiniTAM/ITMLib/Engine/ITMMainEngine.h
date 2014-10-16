@@ -85,8 +85,11 @@ namespace ITMLib
 
 			void SaveAll();
 
-			/// Constructor
-			ITMMainEngine(const ITMLibSettings *settings, const ITMRGBDCalib *calib, Vector2i imgSize);
+			/** \brief Constructor
+			    Ommitting a separate image size for the depth images
+			    will assume same resolution as for the RGB images.
+			*/
+			ITMMainEngine(const ITMLibSettings *settings, const ITMRGBDCalib *calib, Vector2i imgSize_rgb, Vector2i imgSize_d = Vector2i(-1,-1));
 			~ITMMainEngine();
 		};
 	}

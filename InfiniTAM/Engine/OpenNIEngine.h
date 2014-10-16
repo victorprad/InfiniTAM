@@ -17,6 +17,7 @@ namespace InfiniTAM
 		private:
 			class PrivateData;
 			PrivateData *data;
+			Vector2i imageSize_rgb, imageSize_d;
 			bool colorAvailable, depthAvailable;
 		public:
 			OpenNIEngine(const char *calibFilename, const char *deviceURI = NULL, const bool useInternalCalibration = false);

@@ -45,7 +45,7 @@ int main(int argc, char** argv)
 		imageSource = new ImageFileReader(calibFile, imagesource_part1, imagesource_part2);
 	}
 		
-	ITMMainEngine *mainEngine = new ITMMainEngine(internalSettings, &imageSource->calib, imageSource->getDepthImageSize());
+	ITMMainEngine *mainEngine = new ITMMainEngine(internalSettings, &imageSource->calib, imageSource->getRGBImageSize(), imageSource->getDepthImageSize());
 
 	UIEngine::Instance()->Initialise(argc, argv, imageSource, mainEngine, "./Files/Out");
 	UIEngine::Instance()->Run();

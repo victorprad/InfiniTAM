@@ -116,6 +116,17 @@ void ITMLowLevelEngine_CPU::ConvertDisparityToDepth(ITMFloatImage *depth_out, co
 	disparityCalibParams.y = disparityCalib->params.y;
 	fx_depth = depthIntrinsics->projectionParamsSimple.fx;
 
-	for (int y = 0, locId = 0; y < imgSize.y; y++) for (int x = 0; x < imgSize.x; x++, locId++)
+	for (int y = 0; y < imgSize.y; y++) for (int x = 0; x < imgSize.x; x++)
 		convertDisparityToDepth(d_out, x, y, d_in, disparityCalibParams, fx_depth, imgSize);
+}
+
+void ITMLowLevelEngine_CPU::ConvertDepthMMToFloat(ITMFloatImage *depth_out, const ITMShortImage *depth_in)
+{
+	Vector2i imgSize = depth_in->noDims;
+
+	const short *d_in = depth_in->GetData(false);
+	float *d_out = depth_out->GetData(false);
+
+	for (int y = 0; y < imgSize.y; y++) for (int x = 0; x < imgSize.x; x++)
+		convertDepthMMToFloat(d_out, x, y, d_in, imgSize);
 }

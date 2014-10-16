@@ -21,13 +21,15 @@ ITMDepthTracker_CUDA::ITMDepthTracker_CUDA(Vector2i imgSize, int noHierarchyLeve
 	int dim_g = 6;
 	int dim_h = 6 + 5 + 4 + 3 + 2 + 1;
 
-	na_host = new int[imgSize.x * imgSize.y / 256];
-	g_host = new float[dim_g * (imgSize.x * imgSize.y / 256)];
-	h_host = new float[dim_h * (imgSize.x * imgSize.y / 256)];
+	Vector2i gridSize((imgSize.x+15)/16, (imgSize.y+15)/16);
 
-	ITMSafeCall(cudaMalloc((void**)&na_device, sizeof(int)* (imgSize.x * imgSize.y / 256)));
-	ITMSafeCall(cudaMalloc((void**)&g_device, sizeof(float)* dim_g * (imgSize.x * imgSize.y / 128)));
-	ITMSafeCall(cudaMalloc((void**)&h_device, sizeof(float)* dim_h * (imgSize.x * imgSize.y / 128)));
+	na_host = new int[gridSize.x * gridSize.y];
+	g_host = new float[dim_g * gridSize.x * gridSize.y];
+	h_host = new float[dim_h * gridSize.x * gridSize.y];
+
+	ITMSafeCall(cudaMalloc((void**)&na_device, sizeof(int)* gridSize.x * gridSize.y));
+	ITMSafeCall(cudaMalloc((void**)&g_device, sizeof(float)* dim_g * gridSize.x * gridSize.y));
+	ITMSafeCall(cudaMalloc((void**)&h_device, sizeof(float)* dim_h * gridSize.x * gridSize.y));
 }
 
 ITMDepthTracker_CUDA::~ITMDepthTracker_CUDA(void)

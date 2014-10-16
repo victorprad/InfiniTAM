@@ -170,6 +170,7 @@ void UIEngine::glutKeyUpFunction(unsigned char key, int x, int y)
 
 			uiEngine->freeviewPose.SetFrom(uiEngine->mainEngine->trackingState->pose_d);
 			uiEngine->freeviewIntrinsics = uiEngine->mainEngine->GetView()->calib->intrinsics_d;
+			uiEngine->outImage[0]->ChangeDims(uiEngine->imageSource->getDepthImageSize());
 			uiEngine->freeviewActive = true;
 		}
 		uiEngine->needsRefresh = true;
@@ -316,12 +317,14 @@ void UIEngine::Initialise(int & argc, char** argv, ImageSourceEngine *imageSourc
 	//winReg[4] = Vector4f(0.75, h1, 1, h2); // Side sub window 3
 
 	int textHeight = 30; // Height of text area
-	winSize.x = (int)(1.5f * (float)MAX(imageSource->getRGBImageSize().x, imageSource->getDepthImageSize().x));
-	winSize.y = MAX(imageSource->getRGBImageSize().y, imageSource->getDepthImageSize().y) + textHeight;
+	//winSize.x = (int)(1.5f * (float)MAX(imageSource->getImageSize().x, imageSource->getDepthImageSize().x));
+	//winSize.y = MAX(imageSource->getRGBImageSize().y, imageSource->getDepthImageSize().y) + textHeight;
+	winSize.x = (int)(1.5f * (float)(imageSource->getDepthImageSize().x));
+	winSize.y = imageSource->getDepthImageSize().y + textHeight;
 	float h1 = textHeight / (float)winSize.y, h2 = (1.f + h1) / 2;
-	winReg[0] = Vector4f(0.0f, h1, 0.665f, 1.0f);	// Main render
-	winReg[1] = Vector4f(0.665f, h2, 1.0f, 1.0f);	// Side sub window 0
-	winReg[2] = Vector4f(0.665f, h1, 1.0f, h2);		// Side sub window 2
+	winReg[0] = Vector4f(0.0f, h1, 0.665f, 1.0f);   // Main render
+	winReg[1] = Vector4f(0.665f, h2, 1.0f, 1.0f);   // Side sub window 0
+	winReg[2] = Vector4f(0.665f, h1, 1.0f, h2);     // Side sub window 2
 
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE);

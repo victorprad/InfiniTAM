@@ -25,8 +25,13 @@ class OpenNIEngine::PrivateData {
 OpenNIEngine::OpenNIEngine(const char *calibFilename, const char *deviceURI, const bool useInternalCalibration)
 	: ImageSourceEngine(calibFilename)
 {
-	data = new PrivateData();
 	if (deviceURI==NULL) deviceURI = openni::ANY_DEVICE;
+
+	data = new PrivateData();
+
+	// temporary default values, will be overwritten later...
+	imageSize_rgb = Vector2i(320,240);
+	imageSize_d = Vector2i(320,240);
 
 	openni::Status rc = openni::STATUS_OK;
 
@@ -47,7 +52,10 @@ OpenNIEngine::OpenNIEngine(const char *calibFilename, const char *deviceURI, con
 	if (rc == openni::STATUS_OK)
 	{
 		openni::VideoMode depthMode = data->depthStream.getVideoMode();
-		depthMode.setResolution(640, 480); depthMode.setFps(30); depthMode.setPixelFormat(openni::PIXEL_FORMAT_DEPTH_1_MM);
+		depthMode.setFps(30); depthMode.setPixelFormat(openni::PIXEL_FORMAT_DEPTH_1_MM);
+		imageSize_d.x = depthMode.getResolutionX();
+		imageSize_d.y = depthMode.getResolutionY();
+		//depthMode.setResolution(640, 480); depthMode.setFps(30); depthMode.setPixelFormat(openni::PIXEL_FORMAT_DEPTH_1_MM);
 		rc = data->depthStream.setVideoMode(depthMode);
 		if (rc != openni::STATUS_OK)
 		{
@@ -75,7 +83,10 @@ OpenNIEngine::OpenNIEngine(const char *calibFilename, const char *deviceURI, con
 	if (rc == openni::STATUS_OK)
 	{
 		openni::VideoMode colourMode = data->colorStream.getVideoMode();
-		colourMode.setResolution(640, 480); colourMode.setFps(30);
+		colourMode.setFps(30);
+		imageSize_rgb.x = colourMode.getResolutionX();
+		imageSize_rgb.y = colourMode.getResolutionY();
+		//colourMode.setResolution(640, 480); colourMode.setFps(30);
 		rc = data->colorStream.setVideoMode(colourMode);
 		if (rc != openni::STATUS_OK)
 		{
@@ -181,9 +192,9 @@ void OpenNIEngine::getImages(ITMView *out)
 bool OpenNIEngine::hasMoreImages(void)
 { return true; }
 Vector2i OpenNIEngine::getDepthImageSize(void)
-{ return Vector2i(640,480); }
+{ return imageSize_d; }
 Vector2i OpenNIEngine::getRGBImageSize(void)
-{ return Vector2i(640,480); }
+{ return imageSize_rgb; }
 
 #else
 

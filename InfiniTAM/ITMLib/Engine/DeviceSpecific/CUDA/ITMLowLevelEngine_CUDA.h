@@ -24,6 +24,7 @@ namespace ITMLib
 
 			void ConvertDisparityToDepth(ITMFloatImage *depth_out, const ITMShortImage *depth_in, const ITMIntrinsics *depthIntrinsics, 
 				const ITMDisparityCalib *disparityCalib);
+			void ConvertDepthMMToFloat(ITMFloatImage *depth_out, const ITMShortImage *depth_in);
 
 			ITMLowLevelEngine_CUDA(void);
 			~ITMLowLevelEngine_CUDA(void);

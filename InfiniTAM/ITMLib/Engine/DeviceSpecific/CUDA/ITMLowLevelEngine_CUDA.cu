@@ -12,6 +12,8 @@ ITMLowLevelEngine_CUDA::~ITMLowLevelEngine_CUDA(void) { }
 
 __global__ void convertDisparityToDepth_device(float *depth_out, const short *depth_in, Vector2f disparityCalibParams, float fx_depth, Vector2i imgSize);
 
+__global__ void convertDepthMMToFloat_device(float *d_out, const short *d_in, Vector2i imgSize);
+
 __global__ void filterSubsample_device(Vector4u *imageData_out, Vector2i newDims, const Vector4u *imageData_in, Vector2i oldDims);
 
 __global__ void filterSubsampleWithHoles_device(float *imageData_out, Vector2i newDims, const float *imageData_in, Vector2i oldDims);
@@ -145,6 +147,19 @@ void ITMLowLevelEngine_CUDA::ConvertDisparityToDepth(ITMFloatImage *depth_out, c
 	convertDisparityToDepth_device << <gridSize, blockSize >> >(d_out, d_in, disparityCalibParams, fx_depth, imgSize);
 }
 
+void ITMLowLevelEngine_CUDA::ConvertDepthMMToFloat(ITMFloatImage *depth_out, const ITMShortImage *depth_in)
+{
+	Vector2i imgSize = depth_in->noDims;
+
+	const short *d_in = depth_in->GetData(true);
+	float *d_out = depth_out->GetData(true);
+
+	dim3 blockSize(16, 16);
+	dim3 gridSize((int)ceil((float)imgSize.x / (float)blockSize.x), (int)ceil((float)imgSize.y / (float)blockSize.y));
+
+	convertDepthMMToFloat_device << <gridSize, blockSize >> >(d_out, d_in, imgSize);
+}
+
 // device functions
 
 __global__ void convertDisparityToDepth_device(float *d_out, const short *d_in, Vector2f disparityCalibParams, float fx_depth, Vector2i imgSize)
@@ -155,6 +170,16 @@ __global__ void convertDisparityToDepth_device(float *d_out, const short *d_in, 
 	if ((x >= imgSize.x) || (y >= imgSize.y)) return;
 
 	convertDisparityToDepth(d_out, x, y, d_in, disparityCalibParams, fx_depth, imgSize);
+}
+
+__global__ void convertDepthMMToFloat_device(float *d_out, const short *d_in, Vector2i imgSize)
+{
+	int x = threadIdx.x + blockIdx.x * blockDim.x;
+	int y = threadIdx.y + blockIdx.y * blockDim.y;
+
+	if ((x >= imgSize.x) || (y >= imgSize.y)) return;
+
+	convertDepthMMToFloat(d_out, x, y, d_in, imgSize);
 }
 
 __global__ void filterSubsample_device(Vector4u *imageData_out, Vector2i newDims, const Vector4u *imageData_in, Vector2i oldDims)

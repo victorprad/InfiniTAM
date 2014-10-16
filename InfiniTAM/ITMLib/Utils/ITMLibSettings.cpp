@@ -23,4 +23,8 @@ ITMLibSettings::ITMLibSettings(void)
 
 	//trackerType = TRACKER_COLOR;
 	trackerType = TRACKER_ICP;
+
+	if ((trackerType == TRACKER_COLOR)&&(!ITMVoxel::hasColorInformation)) {
+		printf("Error: Color tracker requires a voxel type with color information!\n");
+	}
 }
