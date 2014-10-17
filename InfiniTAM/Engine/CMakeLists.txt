@@ -13,7 +13,14 @@ ELSE(OPENNI_FOUND)
   add_definitions(-DCOMPILE_WITHOUT_OpenNI)
 ENDIF(OPENNI_FOUND)
 
+IF(MSKINECTAPI_FOUND)
+  include_directories(${MSKINECTAPI_INCLUDE_DIR})
+ELSE(MSKINECTAPI_FOUND)
+  add_definitions(-DCOMPILE_WITHOUT_Kinect2)
+ENDIF(MSKINECTAPI_FOUND)
+
 add_library(Engine OpenNIEngine.cpp
+	Kinect2Engine.cpp
 	ImageSourceEngine.cpp
 	UIEngine.cpp)
 

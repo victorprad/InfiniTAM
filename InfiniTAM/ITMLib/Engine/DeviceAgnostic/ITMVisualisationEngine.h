@@ -119,7 +119,7 @@ _CPU_AND_GPU_CODE_ inline bool castRay(Vector3f &pt_out, int x, int y, const TVo
 	else if (sdfValue <= 0.0f) state = WRONG_SIDE;
 	else state = SEARCH_SURFACE;
 
-	Vector3i blockPos_prev(INT_MAX); int blockPtr_prev = -1;
+	Vector3i blockPos_prev(0x7fffffff); int blockPtr_prev = -1;
 
 	pt_found = false;
 	while (state != BEHIND_SURFACE)

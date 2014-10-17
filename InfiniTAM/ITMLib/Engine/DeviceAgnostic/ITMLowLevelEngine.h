@@ -23,7 +23,7 @@ _CPU_AND_GPU_CODE_ inline void convertDepthMMToFloat(float *d_out, int x, int y,
 	int locId = x + y * imgSize.x;
 
 	short depth_in = d_in[locId];
-	d_out[locId] = (depth_in == 0) ? -1.0f : (float)depth_in / 1000.0f;
+	d_out[locId] = ((depth_in <= 0)||(depth_in > 32000)) ? -1.0f : (float)depth_in / 1000.0f;
 }
 
 _CPU_AND_GPU_CODE_ inline void filterSubsample(Vector4u *imageData_out, int x, int y, Vector2i newDims, const Vector4u *imageData_in, Vector2i oldDims)

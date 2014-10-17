@@ -2,6 +2,8 @@
 
 #include "ITMLibSettings.h"
 
+#include <stdio.h>
+
 using namespace ITMLib::Objects;
 
 ITMLibSettings::ITMLibSettings(void)
