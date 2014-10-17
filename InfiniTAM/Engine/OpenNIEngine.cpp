@@ -137,7 +137,7 @@ OpenNIEngine::OpenNIEngine(const char *calibFilename, const char *deviceURI, con
 		{
 			printf("OpenNI: Failed to set color mode\n");
 		}
-		data->depthStream.setMirroringEnabled(false);
+		data->colorStream.setMirroringEnabled(false);
 
 		rc = data->colorStream.start();
 		if (rc != openni::STATUS_OK)
