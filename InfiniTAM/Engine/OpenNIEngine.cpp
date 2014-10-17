@@ -22,16 +22,16 @@ class OpenNIEngine::PrivateData {
 	openni::VideoStream **streams;
 };
 
-OpenNIEngine::OpenNIEngine(const char *calibFilename, const char *deviceURI, const bool useInternalCalibration)
+OpenNIEngine::OpenNIEngine(const char *calibFilename, const char *deviceURI, const bool useInternalCalibration,
+	Vector2i imageSize_rgb, Vector2i imageSize_d)
 	: ImageSourceEngine(calibFilename)
 {
+	this->imageSize_d = imageSize_d;
+	this->imageSize_rgb = imageSize_rgb;
+
 	if (deviceURI==NULL) deviceURI = openni::ANY_DEVICE;
 
 	data = new PrivateData();
-
-	// temporary default values, will be overwritten later...
-	imageSize_rgb = Vector2i(320,240);
-	imageSize_d = Vector2i(320,240);
 
 	openni::Status rc = openni::STATUS_OK;
 
@@ -52,10 +52,8 @@ OpenNIEngine::OpenNIEngine(const char *calibFilename, const char *deviceURI, con
 	if (rc == openni::STATUS_OK)
 	{
 		openni::VideoMode depthMode = data->depthStream.getVideoMode();
+		depthMode.setResolution(imageSize_d.x, imageSize_d.y); 
 		depthMode.setFps(30); depthMode.setPixelFormat(openni::PIXEL_FORMAT_DEPTH_1_MM);
-		imageSize_d.x = depthMode.getResolutionX();
-		imageSize_d.y = depthMode.getResolutionY();
-		//depthMode.setResolution(640, 480); depthMode.setFps(30); depthMode.setPixelFormat(openni::PIXEL_FORMAT_DEPTH_1_MM);
 		rc = data->depthStream.setVideoMode(depthMode);
 		if (rc != openni::STATUS_OK)
 		{
@@ -63,13 +61,15 @@ OpenNIEngine::OpenNIEngine(const char *calibFilename, const char *deviceURI, con
 			openni::OpenNI::shutdown();
 			return;
 		}
-
+		
 		rc = data->depthStream.start();
 		if (rc != openni::STATUS_OK)
 		{
 			printf("OpenNI: Couldn't start depthStream stream:\n%s\n", openni::OpenNI::getExtendedError());
 			data->depthStream.destroy();
 		}
+
+		printf("Initialised OpenNI depth camera with resolution: %d x %d\n", imageSize_d.x, imageSize_d.y);
 
 		depthAvailable = true;
 	}
@@ -83,10 +83,7 @@ OpenNIEngine::OpenNIEngine(const char *calibFilename, const char *deviceURI, con
 	if (rc == openni::STATUS_OK)
 	{
 		openni::VideoMode colourMode = data->colorStream.getVideoMode();
-		colourMode.setFps(30);
-		imageSize_rgb.x = colourMode.getResolutionX();
-		imageSize_rgb.y = colourMode.getResolutionY();
-		//colourMode.setResolution(640, 480); colourMode.setFps(30);
+		colourMode.setResolution(imageSize_rgb.x, imageSize_rgb.y); colourMode.setFps(30);
 		rc = data->colorStream.setVideoMode(colourMode);
 		if (rc != openni::STATUS_OK)
 		{
@@ -98,9 +95,11 @@ OpenNIEngine::OpenNIEngine(const char *calibFilename, const char *deviceURI, con
 		rc = data->colorStream.start();
 		if (rc != openni::STATUS_OK)
 		{
-			printf("SimpleViewer: Couldn't start colorStream stream:\n%s\n", openni::OpenNI::getExtendedError());
+			printf("OpenNI: Couldn't start colorStream stream:\n%s\n", openni::OpenNI::getExtendedError());
 			data->colorStream.destroy();
 		}
+
+		printf("Initialised OpenNI color camera with resolution: %d x %d\n", imageSize_rgb.x, imageSize_rgb.y);
 
 		colorAvailable = true;
 	}
@@ -189,12 +188,9 @@ void OpenNIEngine::getImages(ITMView *out)
 	return /*true*/;
 }
 
-bool OpenNIEngine::hasMoreImages(void)
-{ return true; }
-Vector2i OpenNIEngine::getDepthImageSize(void)
-{ return imageSize_d; }
-Vector2i OpenNIEngine::getRGBImageSize(void)
-{ return imageSize_rgb; }
+bool OpenNIEngine::hasMoreImages(void) { return true; }
+Vector2i OpenNIEngine::getDepthImageSize(void) { return imageSize_d; }
+Vector2i OpenNIEngine::getRGBImageSize(void) { return imageSize_rgb; }
 
 #else
 

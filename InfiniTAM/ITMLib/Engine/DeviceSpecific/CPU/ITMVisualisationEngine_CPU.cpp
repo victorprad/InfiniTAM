@@ -1,7 +1,5 @@
 // Copyright 2014 Isis Innovation Limited and the authors of InfiniTAM
 
-#include <values.h>
-
 #include "ITMVisualisationEngine_CPU.h"
 #include "../../DeviceAgnostic/ITMSceneReconstructionEngine.h"
 #include "../../DeviceAgnostic/ITMVisualisationEngine.h"
