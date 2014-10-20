@@ -49,8 +49,8 @@ namespace ITMLib
 				~EvaluationPoint(void)
 				{
 					delete mPara;
-					delete[] cacheNabla;
-					delete[] cacheHessian;
+					if (cacheNabla != NULL) delete[] cacheNabla;
+					if (cacheHessian != NULL) delete[] cacheHessian;
 				}
 
 			protected:

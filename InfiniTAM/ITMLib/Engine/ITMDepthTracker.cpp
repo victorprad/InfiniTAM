@@ -31,7 +31,7 @@ ITMDepthTracker::~ITMDepthTracker(void)
 	delete this->viewHierarchy;
 	delete this->sceneHierarchy;
 
-	delete this->noIterationsPerLevel;
+	delete[] this->noIterationsPerLevel;
 }
 
 void ITMDepthTracker::SetEvaluationData(ITMTrackingState *trackingState, const ITMView *view)

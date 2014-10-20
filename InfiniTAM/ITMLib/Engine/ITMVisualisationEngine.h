@@ -32,6 +32,8 @@ namespace ITMLib
 		class ITMVisualisationEngine
 		{
 		public:
+			virtual ~ITMVisualisationEngine(void) {}
+
 			static void DepthToUchar4(ITMUChar4Image *dst, ITMFloatImage *src);
 
 			/** This will allocate an appropriate internal state

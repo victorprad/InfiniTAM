@@ -59,6 +59,7 @@ ITMMainEngine::~ITMMainEngine()
 {
 	delete sceneRecoEngine;
 	delete tracker;
+	delete visualisationEngine;
 	delete lowLevelEngine;
 
 	if (settings->useSwapping) delete swappingEngine;
