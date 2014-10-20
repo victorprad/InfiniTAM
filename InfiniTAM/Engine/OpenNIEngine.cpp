@@ -239,7 +239,7 @@ Vector2i OpenNIEngine::getRGBImageSize(void) { return imageSize_rgb; }
 
 using namespace InfiniTAM::Engine;
 
-OpenNIEngine::OpenNIEngine(const char *calibFilename, const char *deviceURI, const bool useInternalCalibration)
+OpenNIEngine::OpenNIEngine(const char *calibFilename, const char *deviceURI, const bool useInternalCalibration, Vector2i requested_imageSize_rgb, Vector2i requested_imageSize_d)
 	: ImageSourceEngine(calibFilename)
 {
 	printf("compiled without OpenNI support\n");
