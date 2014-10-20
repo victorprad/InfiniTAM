@@ -13,7 +13,7 @@ using namespace InfiniTAM::Engine;
 
 class OpenNIEngine::PrivateData {
 	public:
-	PrivateData(void) {}
+	PrivateData(void) : streams(NULL) {}
 	openni::Device device;
 	openni::VideoStream depthStream, colorStream;
 
