@@ -1,11 +1,11 @@
 include_directories(${OPENGL_INCLUDE_DIR})
 include_directories(${GLUT_INCLUDE_DIR})
 
-IF(CUDA_FOUND)
+IF(WITH_CUDA)
   include_directories(${CUDA_INCLUDE_DIRS})
-ELSE(CUDA_FOUND)
+ELSE()
   add_definitions(-DCOMPILE_WITHOUT_CUDA)
-ENDIF(CUDA_FOUND)
+ENDIF()
 
 IF(OPENNI_FOUND)
   include_directories(${OpenNI_INCLUDE_DIR})
@@ -27,10 +27,9 @@ add_library(Engine OpenNIEngine.cpp
 target_link_libraries(Engine ${GLUT_LIBRARIES})
 target_link_libraries(Engine ${OPENGL_LIBRARIES})
 target_link_libraries(Engine ITMLib)
-IF(CUDA_FOUND)
+IF(WITH_CUDA)
   target_link_libraries(Engine ${CUDA_LIBRARY})
-ENDIF(CUDA_FOUND)
+ENDIF()
 IF(OPENNI_FOUND)
   target_link_libraries(Engine ${OpenNI_LIBRARY})
 ENDIF(OPENNI_FOUND)
-

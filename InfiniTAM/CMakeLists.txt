@@ -8,6 +8,8 @@ find_package(OpenGL REQUIRED)
 find_package(CUDA)
 find_package(OpenNI)
 
+OPTION(WITH_CUDA "Build with CUDA support?" ${CUDA_FOUND})
+
 IF(MSVC_IDE)
   add_definitions(-D_CRT_SECURE_NO_WARNINGS)
   add_definitions(-DUSING_CMAKE=1)
@@ -26,13 +28,12 @@ add_subdirectory(ITMLib)
 add_subdirectory(Utils)
 add_subdirectory(Engine)
 
-IF(CUDA_FOUND)
+IF(WITH_CUDA)
   include_directories(${CUDA_INCLUDE_DIRS})
-ELSE(CUDA_FOUND)
+ELSE()
   add_definitions(-DCOMPILE_WITHOUT_CUDA)
-ENDIF(CUDA_FOUND)
+ENDIF()
 
 add_executable(InfiniTAM InfiniTAM.cpp)
 target_link_libraries(InfiniTAM Engine)
 target_link_libraries(InfiniTAM Utils)
-
