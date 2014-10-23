@@ -26,8 +26,8 @@ namespace ITMLib
 			
 			bool dataIsOnGPU;
 		public:
-			_CPU_AND_GPU_CODE_ TVoxel *GetVoxelBlocks(void) { return voxelBlocks; }
-			_CPU_AND_GPU_CODE_ const TVoxel *GetVoxelBlocks(void) const { return voxelBlocks; }
+			_CPU_AND_GPU_CODE_ inline TVoxel *GetVoxelBlocks(void) { return voxelBlocks; }
+			_CPU_AND_GPU_CODE_ inline const TVoxel *GetVoxelBlocks(void) const { return voxelBlocks; }
 			int *GetAllocationList(void) { return allocationList; }
 
 			int lastFreeBlockId;

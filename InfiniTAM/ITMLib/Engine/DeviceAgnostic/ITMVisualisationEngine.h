@@ -86,8 +86,8 @@ _CPU_AND_GPU_CODE_ inline void CreateRenderingBlocks(RenderingBlock *renderingBl
 	}
 }
 
-template<class TVoxel, class TAccess>
-_CPU_AND_GPU_CODE_ inline bool castRay(Vector3f &pt_out, int x, int y, const TVoxel *voxelData, const TAccess *voxelIndex, Matrix4f invM,
+template<class TVoxel, class TIndex>
+_CPU_AND_GPU_CODE_ inline bool castRay(Vector3f &pt_out, int x, int y, const TVoxel *voxelData, const typename TIndex::IndexData *voxelIndex, Matrix4f invM,
 	Vector4f projParams, Vector2i imgSize, float oneOverVoxelSize, float mu, float viewFrustum_min, float viewFrustum_max)
 {
 	Vector3f pt_camera_f, pt_block_s, pt_block_e, rayDirection, pt_result;
@@ -119,7 +119,7 @@ _CPU_AND_GPU_CODE_ inline bool castRay(Vector3f &pt_out, int x, int y, const TVo
 	else if (sdfValue <= 0.0f) state = WRONG_SIDE;
 	else state = SEARCH_SURFACE;
 
-	Vector3i blockPos_prev(0x7fffffff); int blockPtr_prev = -1;
+	typename TIndex::IndexCache cache;
 
 	pt_found = false;
 	while (state != BEHIND_SURFACE)
@@ -155,8 +155,7 @@ _CPU_AND_GPU_CODE_ inline bool castRay(Vector3f &pt_out, int x, int y, const TVo
 		pt_result += stepLength * rayDirection; totalLength += stepLength;
 		if (totalLength > totalLengthMax) break;
 
-		sdfValue = readFromSDF_float_maybe_interpolate(voxelData, voxelIndex, pt_result, hash_found,
-			blockPos_prev, blockPtr_prev);
+		sdfValue = readFromSDF_float_maybe_interpolate(voxelData, voxelIndex, pt_result, hash_found, cache);
 
 		if (sdfValue <= 0.0f) if (state == SEARCH_BLOCK_FINE) state = WRONG_SIDE; else state = BEHIND_SURFACE;
 		else if (state == WRONG_SIDE) state = SEARCH_SURFACE;

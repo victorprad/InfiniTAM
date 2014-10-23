@@ -8,9 +8,9 @@
 using namespace ITMLib::Engine;
 using namespace ITMLib::Utils;
 
-ITMDepthTracker::ITMDepthTracker(Vector2i imgSize, int noHierarchyLevels, int noRotationOnlyLevels, float distThresh, ITMLowLevelEngine *lowLevelEngine, bool useGPU)
+ITMDepthTracker::ITMDepthTracker(Vector2i imgSize, int noHierarchyLevels, int noRotationOnlyLevels, int noICPRunTillLevel, float distThresh, ITMLowLevelEngine *lowLevelEngine, bool useGPU)
 {
-	viewHierarchy = new ITMImageHierarchy<ITMViewHierarchyLevel>(imgSize, noHierarchyLevels, noRotationOnlyLevels, useGPU);
+	viewHierarchy = new ITMImageHierarchy<ITMTemplatedHierarchyLevel<ITMFloatImage> >(imgSize, noHierarchyLevels, noRotationOnlyLevels, useGPU);
 	sceneHierarchy = new ITMImageHierarchy<ITMSceneHierarchyLevel>(imgSize, noHierarchyLevels, noRotationOnlyLevels, useGPU);
 
 	this->noIterationsPerLevel = new int[noHierarchyLevels];
@@ -24,6 +24,8 @@ ITMDepthTracker::ITMDepthTracker(Vector2i imgSize, int noHierarchyLevels, int no
 	this->lowLevelEngine = lowLevelEngine;
 
 	this->distThresh = distThresh;
+
+	this->noICPLevel = noICPRunTillLevel;
 }
 
 ITMDepthTracker::~ITMDepthTracker(void) 
@@ -53,7 +55,7 @@ void ITMDepthTracker::PrepareForEvaluation()
 
 	for (int i = 1; i < viewHierarchy->noLevels; i++)
 	{
-		ITMViewHierarchyLevel *currentLevelView = viewHierarchy->levels[i], *previousLevelView = viewHierarchy->levels[i - 1];
+		ITMTemplatedHierarchyLevel<ITMFloatImage> *currentLevelView = viewHierarchy->levels[i], *previousLevelView = viewHierarchy->levels[i - 1];
 		lowLevelEngine->FilterSubsampleWithHoles(currentLevelView->depth, previousLevelView->depth);
 		currentLevelView->intrinsics = previousLevelView->intrinsics * 0.5f;
 
@@ -109,14 +111,15 @@ void ITMDepthTracker::TrackCamera(ITMTrackingState *trackingState, const ITMView
 
 	Matrix4f approxInvPose = trackingState->pose_d->invM, imagePose = trackingState->pose_d->M;
 
-	for (int levelId = viewHierarchy->noLevels - 1; levelId >= 0; levelId--)
+	for (int levelId = viewHierarchy->noLevels - 1; levelId >= noICPLevel; levelId--)
 	{
+		
 		this->SetEvaluationParams(levelId);
 
 		int noValidPoints;
 
 		ITMSceneHierarchyLevel *sceneHierarchyLevel = sceneHierarchy->levels[0];
-		ITMViewHierarchyLevel *viewHierarchyLevel = viewHierarchy->levels[levelId];
+		ITMTemplatedHierarchyLevel<ITMFloatImage> *viewHierarchyLevel = viewHierarchy->levels[levelId];
 
 		for (int iterNo = 0; iterNo < noIterationsPerLevel[levelId]; iterNo++)
 		{

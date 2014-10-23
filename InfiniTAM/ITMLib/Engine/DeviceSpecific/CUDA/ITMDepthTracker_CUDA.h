@@ -16,11 +16,11 @@ namespace ITMLib
 
 		protected:
 			void ChangeIgnorePixelToZero(ITMFloatImage *image);
-			int ComputeGandH(ITMSceneHierarchyLevel *sceneHierarchyLevel, ITMViewHierarchyLevel *viewHierarchyLevel,
+			int ComputeGandH(ITMSceneHierarchyLevel *sceneHierarchyLevel, ITMTemplatedHierarchyLevel<ITMFloatImage> *viewHierarchyLevel,
 				Matrix4f approxInvPose, Matrix4f imagePose, bool rotationOnly);
 
 		public:
-			ITMDepthTracker_CUDA(Vector2i imgSize, int noHierarchyLevels, int noRotationOnlyLevels, float distThresh, ITMLowLevelEngine *lowLevelEngine);
+			ITMDepthTracker_CUDA(Vector2i imgSize, int noHierarchyLevels, int noRotationOnlyLevels, int noICPRunTillLevel , float distThresh, ITMLowLevelEngine *lowLevelEngine);
 			~ITMDepthTracker_CUDA(void);
 		};
 	}

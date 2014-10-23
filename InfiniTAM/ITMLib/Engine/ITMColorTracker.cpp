@@ -104,6 +104,7 @@ ITMColorTracker::EvaluationPoint::EvaluationPoint(ITMPose *pos, const ITMColorTr
 	parent->F_oneLevel(localF, mPara);
 
 	cacheF = localF[0];
+
 	cacheHessian = NULL; cacheNabla = NULL;
 }
 

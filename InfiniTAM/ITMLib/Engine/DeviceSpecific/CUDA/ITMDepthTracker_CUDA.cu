@@ -15,8 +15,8 @@ __global__ void depthTrackerOneLevel_g_rt_device(int *noValidPoints, float *ATA,
 
 // host methods
 
-ITMDepthTracker_CUDA::ITMDepthTracker_CUDA(Vector2i imgSize, int noHierarchyLevels, int noRotationOnlyLevels, float distThresh, ITMLowLevelEngine *lowLevelEngine)
-	:ITMDepthTracker(imgSize, noHierarchyLevels, noRotationOnlyLevels, distThresh, lowLevelEngine, true)
+ITMDepthTracker_CUDA::ITMDepthTracker_CUDA(Vector2i imgSize, int noHierarchyLevels, int noRotationOnlyLevels, int noICPRunTillLevel,  float distThresh, ITMLowLevelEngine *lowLevelEngine)
+	:ITMDepthTracker(imgSize, noHierarchyLevels, noRotationOnlyLevels, noICPRunTillLevel, distThresh, lowLevelEngine, true)
 {
 	int dim_g = 6;
 	int dim_h = 6 + 5 + 4 + 3 + 2 + 1;
@@ -54,7 +54,7 @@ void ITMDepthTracker_CUDA::ChangeIgnorePixelToZero(ITMFloatImage *image)
 	changeIgnorePixelToZero_device << <gridSize, blockSize >> >(imageData, dims);
 }
 
-int ITMDepthTracker_CUDA::ComputeGandH(ITMSceneHierarchyLevel *sceneHierarchyLevel, ITMViewHierarchyLevel *viewHierarchyLevel,
+int ITMDepthTracker_CUDA::ComputeGandH(ITMSceneHierarchyLevel *sceneHierarchyLevel, ITMTemplatedHierarchyLevel<ITMFloatImage> *viewHierarchyLevel,
 	Matrix4f approxInvPose, Matrix4f scenePose, bool rotationOnly)
 {
 	int noValidPoints;

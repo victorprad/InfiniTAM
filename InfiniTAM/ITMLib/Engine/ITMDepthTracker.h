@@ -5,7 +5,7 @@
 #include "../Utils/ITMLibDefines.h"
 
 #include "../Objects/ITMImageHierarchy.h"
-#include "../Objects/ITMViewHierarchyLevel.h"
+#include "../Objects/ITMTemplatedHierarchyLevel.h"
 #include "../Objects/ITMSceneHierarchyLevel.h"
 
 #include "../Engine/ITMTracker.h"
@@ -26,11 +26,12 @@ namespace ITMLib
 		private:
 			ITMLowLevelEngine *lowLevelEngine;
 			ITMImageHierarchy<ITMSceneHierarchyLevel> *sceneHierarchy;
-			ITMImageHierarchy<ITMViewHierarchyLevel> *viewHierarchy;
+			ITMImageHierarchy<ITMTemplatedHierarchyLevel<ITMFloatImage> > *viewHierarchy;
 
 			ITMTrackingState *trackingState; const ITMView *view;
 
 			int *noIterationsPerLevel;
+			int noICPLevel;
 
 			int levelId;
 			bool rotationOnly;
@@ -49,13 +50,13 @@ namespace ITMLib
 			float distThresh;
 
 			virtual void ChangeIgnorePixelToZero(ITMFloatImage *image) = 0;
-			virtual int ComputeGandH(ITMSceneHierarchyLevel *sceneHierarchyLevel, ITMViewHierarchyLevel *viewHierarchyLevel,
+			virtual int ComputeGandH(ITMSceneHierarchyLevel *sceneHierarchyLevel, ITMTemplatedHierarchyLevel<ITMFloatImage> *viewHierarchyLevel,
 				Matrix4f approxInvPose, Matrix4f imagePose, bool rotationOnly) = 0;
 
 		public:
 			void TrackCamera(ITMTrackingState *trackingState, const ITMView *view);
 
-			ITMDepthTracker(Vector2i imgSize, int noHierarchyLevels, int noRotationOnlyLevels, float distThresh, ITMLowLevelEngine *lowLevelEngine, bool useGPU);
+			ITMDepthTracker(Vector2i imgSize, int noHierarchyLevels, int noRotationOnlyLevels, int noICPRunTillLevel, float distThresh, ITMLowLevelEngine *lowLevelEngine, bool useGPU);
 			virtual ~ITMDepthTracker(void);
 		};
 	}

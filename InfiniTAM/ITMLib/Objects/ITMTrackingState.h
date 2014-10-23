@@ -7,6 +7,7 @@
 #include "ITMPose.h"
 #include "ITMImage.h"
 #include "ITMPointCloud.h"
+#include "ITMScene.h"
 
 namespace ITMLib
 {
@@ -50,6 +51,9 @@ namespace ITMLib
 			/// Current pose of the depth camera.
 			ITMPose *pose_d;
 
+			/// Pointer to the main ITMScene 
+			ITMScene<ITMVoxel, ITMVoxelIndex> *scene;
+
 			ITMTrackingState(Vector2i imgSize, bool useGPU)
 			{
 				this->rendering = new ITMUChar4Image(imgSize, useGPU);
@@ -57,6 +61,8 @@ namespace ITMLib
 				this->pointCloud = new ITMPointCloud(imgSize, useGPU);
 
 				this->pose_d = new ITMPose();
+
+				this->scene = NULL;
 			}
 
 			~ITMTrackingState(void)

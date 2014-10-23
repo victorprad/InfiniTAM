@@ -22,6 +22,12 @@ namespace ITMLib
 			public:
 			typedef ITMHashTable IndexData;
 
+			struct IndexCache {
+				Vector3i blockPos;
+				int blockPtr;
+				_CPU_AND_GPU_CODE_ IndexCache(void) : blockPos(0x7fffffff), blockPtr(-1) {}
+			};
+
 			/** Maximum number of total entries. */
 			static const int noVoxelBlocks = IndexData::noTotalEntries;
 			static const int voxelBlockSize = SDF_BLOCK_SIZE * SDF_BLOCK_SIZE * SDF_BLOCK_SIZE;
@@ -91,7 +97,7 @@ namespace ITMLib
 			*/
 			uchar *GetEntriesVisibleType(void) { return hashData->entriesVisibleType; }
 
-			const IndexData* getIndexData(void) const { return hashData; }
+			_CPU_AND_GPU_CODE_ inline const IndexData* getIndexData(void) const { return hashData; }
 
 			// Suppress the default copy constructor and assignment operator
 			ITMVoxelBlockHash(const ITMVoxelBlockHash&);

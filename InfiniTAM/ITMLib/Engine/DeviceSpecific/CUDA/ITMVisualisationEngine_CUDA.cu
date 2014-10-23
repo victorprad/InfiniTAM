@@ -33,17 +33,17 @@ __global__ void fillBlocks_device(const uint *noTotalBlocks, const RenderingBloc
 
 template<class TVoxel, class TIndex>
 __global__ void renderImage_device(Vector4u *outRendering,
-        const TVoxel *voxelData, const TIndex *voxelIndex, Vector2i imgSize, Matrix4f invM, Vector4f projParams,
+        const TVoxel *voxelData, const typename TIndex::IndexData *voxelIndex, Vector2i imgSize, Matrix4f invM, Vector4f projParams,
         float oneOverVoxelSize, const Vector2f *minmaxdata, float mu, Vector3f lightSource);
 
 template<class TVoxel, class TIndex>
 __global__ void createPointCloud_device(uint *noTotalPoints, Vector4f *colours, Vector4f *locations, Vector4u *outRendering,
-	const TVoxel *voxelData, const TIndex *voxelIndex, Vector2i imgSize, Matrix4f invM, Vector4f projParams, float voxelSize, 
+	const TVoxel *voxelData, const typename TIndex::IndexData *voxelIndex, Vector2i imgSize, Matrix4f invM, Vector4f projParams, float voxelSize, 
 	float oneOverVoxelSize, const Vector2f *minmaxdata, float mu, bool skipPoints, Vector3f lightSource);
 
 template<class TVoxel, class TIndex>
 __global__ void createICPMaps_device(float *depth, Vector4f *pointsMap, Vector4f *normalsMap, Vector4u *outRendering, 
-	const TVoxel *voxelData, const TIndex *voxelIndex, Vector2i imgSize, Matrix4f invM, Vector4f projParams, 
+	const TVoxel *voxelData, const typename TIndex::IndexData *voxelIndex, Vector2i imgSize, Matrix4f invM, Vector4f projParams, 
 	float voxelSize, float oneOverVoxelSize, const Vector2f *minmaxdata, float mu, 
 	Vector3f lightSource);
 
@@ -212,7 +212,7 @@ static void RenderImage_common(const ITMScene<TVoxel,TIndex> *scene, const ITMPo
 	dim3 cudaBlockSize(8, 8);
 	dim3 gridSize((int)ceil((float)imgSize.x / (float)cudaBlockSize.x), (int)ceil((float)imgSize.y / (float)cudaBlockSize.y));
 
-	renderImage_device << <gridSize, cudaBlockSize >> >(outRendering,
+	renderImage_device<TVoxel,TIndex> << <gridSize, cudaBlockSize >> >(outRendering,
 		scene->localVBA.GetVoxelBlocks(), scene->index.getIndexData(), imgSize, invM, projParams, oneOverVoxelSize, minmaximg,
 		mu, lightSource);
 }
@@ -243,7 +243,7 @@ static void CreatePointCloud_common(const ITMScene<TVoxel,TIndex> *scene, const 
 	ITMSafeCall(cudaMemset(noTotalPoints_device, 0, sizeof(uint)));
 	ITMSafeCall(cudaMemset(outRendering, 0, sizeof(Vector4u) * imgSize.x * imgSize.y));
 
-	createPointCloud_device << <gridSize, cudaBlockSize >> >(noTotalPoints_device, colours, locations, outRendering,
+	createPointCloud_device<TVoxel,TIndex> << <gridSize, cudaBlockSize >> >(noTotalPoints_device, colours, locations, outRendering,
 		scene->localVBA.GetVoxelBlocks(), scene->index.getIndexData(), imgSize, invM, projParams, voxelSize, oneOverVoxelSize, minmaxdata,
 		mu, skipPoints, lightSource);
 
@@ -279,7 +279,7 @@ void CreateICPMaps_common(const ITMScene<TVoxel,TIndex> *scene, const ITMView *v
 	ITMSafeCall(cudaMemset(pointsMap, 0, sizeof(Vector4f)* imgSize.x * imgSize.y));
 	ITMSafeCall(cudaMemset(normalsMap, 0, sizeof(Vector4f)* imgSize.x * imgSize.y));
 
-	createICPMaps_device << <gridSize, cudaBlockSize >> >(depth, pointsMap, normalsMap, outRendering,
+	createICPMaps_device<TVoxel,TIndex> << <gridSize, cudaBlockSize >> >(depth, pointsMap, normalsMap, outRendering,
 		scene->localVBA.GetVoxelBlocks(), scene->index.getIndexData(), imgSize, invM, projParams, voxelSize, oneOverVoxelSize, minmaxdata, 
 		mu, lightSource);
 
@@ -475,9 +475,9 @@ __global__ void fillBlocks_device(const uint *noTotalBlocks, const RenderingBloc
 	atomicMax(&pixel.y, b.zRange.y);
 }
 
-template<class TVoxel, class TAccess>
+template<class TVoxel, class TIndex>
 __global__ void renderImage_device(Vector4u *outRendering,
-	const TVoxel *voxelData, const TAccess *voxelIndex, Vector2i imgSize, Matrix4f invM, Vector4f projParams,
+	const TVoxel *voxelData, const typename TIndex::IndexData *voxelIndex, Vector2i imgSize, Matrix4f invM, Vector4f projParams,
 	float oneOverVoxelSize, const Vector2f *minmaxdata, float mu, Vector3f lightSource)
 {
 	int x = (threadIdx.x + blockIdx.x * blockDim.x), y = (threadIdx.y + blockIdx.y * blockDim.y);
@@ -494,7 +494,7 @@ __global__ void renderImage_device(Vector4u *outRendering,
 	float viewFrustum_max = minmaxdata[locId].y;
 
 	bool foundPoint = false;
-	foundPoint = castRay(pt_ray, x, y, voxelData, voxelIndex, invM, projParams, imgSize, oneOverVoxelSize, mu, viewFrustum_min, viewFrustum_max);
+	foundPoint = castRay<TVoxel,TIndex>(pt_ray, x, y, voxelData, voxelIndex, invM, projParams, imgSize, oneOverVoxelSize, mu, viewFrustum_min, viewFrustum_max);
 
 	if (foundPoint)
 	{
@@ -518,9 +518,9 @@ __global__ void renderImage_device(Vector4u *outRendering,
 	}
 }
 
-template<class TVoxel, class TAccess>
+template<class TVoxel, class TIndex>
 __global__ void createPointCloud_device(uint *noTotalPoints, Vector4f *colours, Vector4f *locations, Vector4u *outRendering,
-	const TVoxel *voxelData, const TAccess *voxelIndex, Vector2i imgSize, Matrix4f invM, Vector4f projParams, float voxelSize, 
+	const TVoxel *voxelData, const typename TIndex::IndexData *voxelIndex, Vector2i imgSize, Matrix4f invM, Vector4f projParams, float voxelSize, 
 	float oneOverVoxelSize, const Vector2f *minmaxdata, float mu, bool skipPoints, Vector3f lightSource)
 {
 	int x = (threadIdx.x + blockIdx.x * blockDim.x), y = (threadIdx.y + blockIdx.y * blockDim.y);
@@ -540,7 +540,7 @@ __global__ void createPointCloud_device(uint *noTotalPoints, Vector4f *colours, 
 	shouldPrefix = false;
 
 	bool foundPoint = false;
-	foundPoint = castRay(pt_ray, x, y, voxelData, voxelIndex, invM, projParams, imgSize, oneOverVoxelSize, mu, viewFrustum_min, viewFrustum_max);
+	foundPoint = castRay<TVoxel,TIndex>(pt_ray, x, y, voxelData, voxelIndex, invM, projParams, imgSize, oneOverVoxelSize, mu, viewFrustum_min, viewFrustum_max);
 
 	if (foundPoint)
 	{
@@ -573,7 +573,7 @@ __global__ void createPointCloud_device(uint *noTotalPoints, Vector4f *colours, 
 		{
 			Vector4f pt_ray_out;
 
-			tmp = VoxelColorReader<TVoxel::hasColorInformation,TVoxel,TAccess>::interpolate(voxelData, voxelIndex, pt_ray);
+			tmp = VoxelColorReader<TVoxel::hasColorInformation,TVoxel,typename TIndex::IndexData>::interpolate(voxelData, voxelIndex, pt_ray);
 			if (tmp.w > 0.0f) { tmp.x /= tmp.w; tmp.y /= tmp.w; tmp.z /= tmp.w; tmp.w = 1.0f; }
 			colours[offset] = tmp;
 
@@ -584,9 +584,9 @@ __global__ void createPointCloud_device(uint *noTotalPoints, Vector4f *colours, 
 	}
 }
 
-template<class TVoxel, class TAccess>
+template<class TVoxel, class TIndex>
 __global__ void createICPMaps_device(float *depth, Vector4f *pointsMap, Vector4f *normalsMap, Vector4u *outRendering, 
-	const TVoxel *voxelData, const TAccess *voxelIndex, Vector2i imgSize, Matrix4f invM, Vector4f projParams, 
+	const TVoxel *voxelData, const typename TIndex::IndexData *voxelIndex, Vector2i imgSize, Matrix4f invM, Vector4f projParams, 
 	float voxelSize, float oneOverVoxelSize, const Vector2f *minmaxdata, float mu, 
 	Vector3f lightSource)
 {
@@ -604,7 +604,7 @@ __global__ void createICPMaps_device(float *depth, Vector4f *pointsMap, Vector4f
 	float viewFrustum_max = minmaxdata[locId].y;
 
 	bool foundPoint = false;
-	foundPoint = castRay(pt_ray, x, y, voxelData, voxelIndex, invM, projParams, imgSize, oneOverVoxelSize, mu, viewFrustum_min, viewFrustum_max);
+	foundPoint = castRay<TVoxel,TIndex>(pt_ray, x, y, voxelData, voxelIndex, invM, projParams, imgSize, oneOverVoxelSize, mu, viewFrustum_min, viewFrustum_max);
 
 	if (foundPoint)
 	{

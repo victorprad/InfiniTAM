@@ -22,7 +22,9 @@ namespace ITMLib
 				//! Identifies a tracker based on colour image
 				TRACKER_COLOR,
 				//! Identifies a tracker based on depth image
-				TRACKER_ICP
+				TRACKER_ICP,
+				//! Identifies a tracker based on depth image (Ren et al, 2012)
+				TRACKER_REN
 			} TrackerType;
 			/// Select the type of tracker to use
 			TrackerType trackerType;
@@ -33,6 +35,9 @@ namespace ITMLib
 			/// Number of resolution levels to track only rotation instead of full SE3.
 			int noRotationOnlyLevels;
 			
+			/// Run ICP till # Hierarchy level, then switch to ITMRenTracker for local refinement.
+			int noICPRunTillLevel;
+
 			/// For ITMColorTracker: skip every other point in energy function evaluation.
 			bool skipPoints;
 

@@ -46,6 +46,12 @@
 #include "Engine/DeviceSpecific/CUDA/ITMSwappingEngine_CUDA.h"
 #endif
 
+#include "Engine/ITMRenTracker.h"
+#include "Engine/DeviceSpecific/CPU/ITMRenTracker_CPU.h"
+#ifndef COMPILE_WITHOUT_CUDA
+#include "Engine/DeviceSpecific/CUDA/ITMRenTracker_CUDA.h"
+#endif
+
 #include "Engine/ITMVisualisationEngine.h"
 #include "Engine/ITMMainEngine.h"
 

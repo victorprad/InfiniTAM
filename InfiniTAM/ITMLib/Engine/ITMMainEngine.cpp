@@ -12,12 +12,13 @@ ITMMainEngine::ITMMainEngine(const ITMLibSettings *settings, const ITMRGBDCalib 
 
 	this->scene = new ITMScene<ITMVoxel,ITMVoxelIndex>(&(settings->sceneParams), settings->useSwapping, settings->useGPU);
 
-	if (settings->trackerType == ITMLibSettings::TRACKER_ICP) {
+	if (settings->trackerType != ITMLibSettings::TRACKER_COLOR) 
 		this->trackingState = new ITMTrackingState(imgSize_d, settings->useGPU);
-	} else {
-		this->trackingState = new ITMTrackingState(imgSize_rgb, settings->useGPU);
-	}
+	else this->trackingState = new ITMTrackingState(imgSize_rgb, settings->useGPU);
+
 	trackingState->pose_d->SetFrom(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f); 
+
+	trackingState->scene = scene;
 
 	this->view = new ITMView(*calib, imgSize_rgb, imgSize_d, settings->useGPU);
 
@@ -28,11 +29,24 @@ ITMMainEngine::ITMMainEngine(const ITMLibSettings *settings, const ITMRGBDCalib 
 
 		sceneRecoEngine = new ITMSceneReconstructionEngine_CUDA<ITMVoxel,ITMVoxelIndex>();
 
-		if (settings->trackerType == ITMLibSettings::TRACKER_ICP)
-			tracker = new ITMDepthTracker_CUDA(imgSize_d, settings->noHierarchyLevels, settings->noRotationOnlyLevels, settings->depthTrackerICPThreshold, lowLevelEngine);
-		else tracker = new ITMColorTracker_CUDA(imgSize_rgb, settings->noHierarchyLevels, settings->noRotationOnlyLevels, lowLevelEngine);
+		switch (settings->trackerType)
+		{
+		case ITMLibSettings::TRACKER_ICP: 
+			trackerPrimary = new ITMDepthTracker_CUDA(imgSize_d, settings->noHierarchyLevels, settings->noRotationOnlyLevels, settings->noICPRunTillLevel, settings->depthTrackerICPThreshold, lowLevelEngine);
+			trackerSecondary = NULL;
+			break;
+		case ITMLibSettings::TRACKER_REN:
+			trackerPrimary = new ITMDepthTracker_CUDA(imgSize_d, settings->noHierarchyLevels, settings->noRotationOnlyLevels, settings->noICPRunTillLevel, settings->depthTrackerICPThreshold, lowLevelEngine);
+			trackerSecondary = new ITMRenTracker_CUDA<ITMVoxel, ITMVoxelIndex>(imgSize_d, settings->noICPRunTillLevel, lowLevelEngine);
+			break;
+		case ITMLibSettings::TRACKER_COLOR: 
+			trackerPrimary = new ITMColorTracker_CUDA(imgSize_rgb, settings->noHierarchyLevels, settings->noRotationOnlyLevels, lowLevelEngine);
+			trackerSecondary = NULL;
+			break;
+		}
 
 		if (settings->useSwapping) swappingEngine = new ITMSwappingEngine_CUDA<ITMVoxel,ITMVoxelIndex>();
+
 		visualisationEngine = new ITMVisualisationEngine_CUDA<ITMVoxel,ITMVoxelIndex>();
 #endif
 	}
@@ -42,11 +56,24 @@ ITMMainEngine::ITMMainEngine(const ITMLibSettings *settings, const ITMRGBDCalib 
 
 		sceneRecoEngine = new ITMSceneReconstructionEngine_CPU<ITMVoxel,ITMVoxelIndex>();
 
-		if (settings->trackerType == ITMLibSettings::TRACKER_ICP)
-			tracker = new ITMDepthTracker_CPU(imgSize_d, settings->noHierarchyLevels, settings->noRotationOnlyLevels, settings->depthTrackerICPThreshold, lowLevelEngine);
-		else tracker = new ITMColorTracker_CPU(imgSize_rgb, settings->noHierarchyLevels, settings->noRotationOnlyLevels, lowLevelEngine);
+		switch (settings->trackerType)
+		{
+		case ITMLibSettings::TRACKER_ICP:
+			trackerPrimary = new ITMDepthTracker_CPU(imgSize_d, settings->noHierarchyLevels, settings->noRotationOnlyLevels, settings->noICPRunTillLevel, settings->depthTrackerICPThreshold, lowLevelEngine);
+			trackerSecondary = NULL;
+			break;
+		case ITMLibSettings::TRACKER_REN:
+			trackerPrimary = new ITMDepthTracker_CPU(imgSize_d, settings->noHierarchyLevels, settings->noRotationOnlyLevels, settings->noICPRunTillLevel, settings->depthTrackerICPThreshold, lowLevelEngine);
+			trackerSecondary = new ITMRenTracker_CPU<ITMVoxel, ITMVoxelIndex>(imgSize_d, settings->noICPRunTillLevel, lowLevelEngine);
+			break;
+		case ITMLibSettings::TRACKER_COLOR:
+			trackerPrimary = new ITMColorTracker_CPU(imgSize_rgb, settings->noHierarchyLevels, settings->noRotationOnlyLevels, lowLevelEngine);
+			trackerSecondary = NULL;
+			break;
+		}
 
 		if (settings->useSwapping) swappingEngine = new ITMSwappingEngine_CPU<ITMVoxel,ITMVoxelIndex>();
+
 		visualisationEngine = new ITMVisualisationEngine_CPU<ITMVoxel,ITMVoxelIndex>();
 	}
 
@@ -58,7 +85,8 @@ ITMMainEngine::ITMMainEngine(const ITMLibSettings *settings, const ITMRGBDCalib 
 ITMMainEngine::~ITMMainEngine()
 {
 	delete sceneRecoEngine;
-	delete tracker;
+	if (trackerPrimary != NULL) delete trackerPrimary;
+	if (trackerSecondary != NULL) delete trackerSecondary;
 	delete visualisationEngine;
 	delete lowLevelEngine;
 
@@ -75,8 +103,6 @@ void ITMMainEngine::ProcessFrame(void)
 {
 	bool useGPU = settings->useGPU;
 	bool useSwapping = settings->useSwapping;
-	bool skipPoints = settings->skipPoints;
-	bool useTrackerICP = settings->trackerType == ITMLibSettings::TRACKER_ICP;
 
 	// prepare image and move it to GPU, if required
 	if (useGPU)
@@ -102,7 +128,12 @@ void ITMMainEngine::ProcessFrame(void)
 	}
 
 	// tracking
-	if (hasStartedObjectReconstruction) tracker->TrackCamera(trackingState, view);
+	if (hasStartedObjectReconstruction)
+	{
+		if (trackerPrimary != NULL) trackerPrimary->TrackCamera(trackingState, view);
+		if (trackerSecondary != NULL) trackerSecondary->TrackCamera(trackingState, view);
+
+	}
 
 	// allocation
 	sceneRecoEngine->AllocateSceneFromDepth(scene, view, trackingState->pose_d);
@@ -117,18 +148,20 @@ void ITMMainEngine::ProcessFrame(void)
 		swappingEngine->SaveToGlobalMemory(scene, view);
 	}
 
-	if (useTrackerICP)
+	switch (settings->trackerType)
 	{
+	case ITMLibSettings::TRACKER_ICP:
+	case ITMLibSettings::TRACKER_REN:
 		// raycasting
 		visualisationEngine->CreateExpectedDepths(scene, trackingState->pose_d, &(view->calib->intrinsics_d), trackingState->renderingRangeImage);
 		visualisationEngine->CreateICPMaps(scene, view, trackingState);
-	}
-	else
-	{
+		break;
+	case ITMLibSettings::TRACKER_COLOR:
 		// raycasting
 		ITMPose pose_rgb(view->calib->trafo_rgb_to_depth.calib_inv * trackingState->pose_d->M);
 		visualisationEngine->CreateExpectedDepths(scene, &pose_rgb, &(view->calib->intrinsics_rgb), trackingState->renderingRangeImage);
-		visualisationEngine->CreatePointCloud(scene, view, trackingState, skipPoints);
+		visualisationEngine->CreatePointCloud(scene, view, trackingState, settings->skipPoints);
+		break;
 	}
 
 	hasStartedObjectReconstruction = true;

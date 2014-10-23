@@ -210,7 +210,7 @@ static void RenderImage_common(const ITMScene<TVoxel,TIndex> *scene, const ITMPo
 		float viewFrustum_max = minmaximg[locId].y;
 
 		bool foundPoint = false;
-		foundPoint = castRay(pt_ray, x, y, scene->localVBA.GetVoxelBlocks(), scene->index.getIndexData(), invM, projParams, imgSize, oneOverVoxelSize, mu, viewFrustum_min, viewFrustum_max);
+		foundPoint = castRay<TVoxel,TIndex>(pt_ray, x, y, scene->localVBA.GetVoxelBlocks(), scene->index.getIndexData(), invM, projParams, imgSize, oneOverVoxelSize, mu, viewFrustum_min, viewFrustum_max);
 
 		if (foundPoint)
 		{
@@ -269,7 +269,7 @@ static void CreatePointCloud_common(const ITMScene<TVoxel,TIndex> *scene, const 
 		float viewFrustum_max = minmaximg[locId].y;
 
 		bool foundPoint = false;
-		foundPoint = castRay(pt_ray, x, y, scene->localVBA.GetVoxelBlocks(), scene->index.getIndexData(), invM, projParams, imgSize, oneOverVoxelSize, mu, viewFrustum_min, viewFrustum_max);
+		foundPoint = castRay<TVoxel,TIndex>(pt_ray, x, y, scene->localVBA.GetVoxelBlocks(), scene->index.getIndexData(), invM, projParams, imgSize, oneOverVoxelSize, mu, viewFrustum_min, viewFrustum_max);
 
 		if (foundPoint)
 		{
@@ -344,7 +344,7 @@ static void CreateICPMaps_common(const ITMScene<TVoxel,TIndex> *scene, const ITM
 		float viewFrustum_max = minmaximg[locId].y;
 
 		bool foundPoint = false;
-		foundPoint = castRay(pt_ray, x, y, scene->localVBA.GetVoxelBlocks(), scene->index.getIndexData(), invM, projParams, imgSize, oneOverVoxelSize, mu, viewFrustum_min, viewFrustum_max);
+		foundPoint = castRay<TVoxel,TIndex>(pt_ray, x, y, scene->localVBA.GetVoxelBlocks(), scene->index.getIndexData(), invM, projParams, imgSize, oneOverVoxelSize, mu, viewFrustum_min, viewFrustum_max);
 
 		if (foundPoint)
 		{

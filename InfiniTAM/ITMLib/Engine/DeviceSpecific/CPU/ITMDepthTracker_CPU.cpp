@@ -5,8 +5,8 @@
 
 using namespace ITMLib::Engine;
 
-ITMDepthTracker_CPU::ITMDepthTracker_CPU(Vector2i imgSize, int noHierarchyLevels, int noRotationOnlyLevels, float distThresh, ITMLowLevelEngine *lowLevelEngine)
-	:ITMDepthTracker(imgSize, noHierarchyLevels, noRotationOnlyLevels, distThresh, lowLevelEngine, false) { }
+ITMDepthTracker_CPU::ITMDepthTracker_CPU(Vector2i imgSize, int noHierarchyLevels, int noICPRunTillLevel, int noRotationOnlyLevels, float distThresh, ITMLowLevelEngine *lowLevelEngine)
+	:ITMDepthTracker(imgSize, noHierarchyLevels, noRotationOnlyLevels, noICPRunTillLevel, distThresh, lowLevelEngine, false) { }
 
 ITMDepthTracker_CPU::~ITMDepthTracker_CPU(void) { }
 
@@ -18,7 +18,7 @@ void ITMDepthTracker_CPU::ChangeIgnorePixelToZero(ITMFloatImage *image)
 	for (int i = 0; i < dims.x * dims.y; i++) if (imageData[i] < 0.0f) imageData[i] = 0.0f;
 }
 
-int ITMDepthTracker_CPU::ComputeGandH(ITMSceneHierarchyLevel *sceneHierarchyLevel, ITMViewHierarchyLevel *viewHierarchyLevel,
+int ITMDepthTracker_CPU::ComputeGandH(ITMSceneHierarchyLevel *sceneHierarchyLevel, ITMTemplatedHierarchyLevel<ITMFloatImage> *viewHierarchyLevel,
 	Matrix4f approxInvPose, Matrix4f scenePose, bool rotationOnly)
 {
 	int noValidPoints;

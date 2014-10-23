@@ -53,7 +53,7 @@ namespace ITMLib
 			bool hasStartedObjectReconstruction;
 
 			ITMSceneReconstructionEngine<ITMVoxel,ITMVoxelIndex> *sceneRecoEngine;
-			ITMTracker *tracker;
+			ITMTracker *trackerPrimary, *trackerSecondary;
 			ITMLowLevelEngine *lowLevelEngine;
 			ITMSwappingEngine<ITMVoxel,ITMVoxelIndex> *swappingEngine;
 			ITMVisualisationEngine<ITMVoxel,ITMVoxelIndex> *visualisationEngine;

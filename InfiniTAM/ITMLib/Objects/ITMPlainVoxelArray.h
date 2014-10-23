@@ -34,6 +34,7 @@ namespace ITMLib
 			};
 
 			typedef ITMVoxelArrayInfo IndexData;
+			struct IndexCache {};
 
 			private:
 			IndexData *indexData_device;

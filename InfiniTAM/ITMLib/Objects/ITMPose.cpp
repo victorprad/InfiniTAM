@@ -78,7 +78,7 @@ void ITMPose::SetFrom(const Matrix4f & src)
 	M = src;
 	for (int r = 0; r < 3; r++) for (int c = 0; c < 3; c++) R.m[r+3*c] = src.m[r+4*c];
 	for (int r = 0; r < 3; r++) T.v[r] = R.m[r+3*4];
-this->SetRTInvM_FromM();
+	this->SetRTInvM_FromM();
 	SetParamsFromModelView();
 	SetModelViewFromParams();
 }
