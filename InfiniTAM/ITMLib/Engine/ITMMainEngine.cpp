@@ -2,6 +2,7 @@
 
 #include "ITMMainEngine.h"
 
+#include "ITMTrackerFactory.h"
 using namespace ITMLib::Engine;
 
 ITMMainEngine::ITMMainEngine(const ITMLibSettings *settings, const ITMRGBDCalib *calib, Vector2i imgSize_rgb, Vector2i imgSize_d)
@@ -12,12 +13,8 @@ ITMMainEngine::ITMMainEngine(const ITMLibSettings *settings, const ITMRGBDCalib 
 
 	this->scene = new ITMScene<ITMVoxel,ITMVoxelIndex>(&(settings->sceneParams), settings->useSwapping, settings->useGPU);
 
-	if (settings->trackerType != ITMLibSettings::TRACKER_COLOR) 
-		this->trackingState = new ITMTrackingState(imgSize_d, settings->useGPU);
-	else this->trackingState = new ITMTrackingState(imgSize_rgb, settings->useGPU);
-
+	this->trackingState = ITMTrackerFactory::MakeTrackingState(*settings, imgSize_rgb, imgSize_d);
 	trackingState->pose_d->SetFrom(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f); 
-
 	trackingState->scene = scene;
 
 	this->view = new ITMView(*calib, imgSize_rgb, imgSize_d, settings->useGPU);
@@ -26,56 +23,21 @@ ITMMainEngine::ITMMainEngine(const ITMLibSettings *settings, const ITMRGBDCalib 
 	{
 #ifndef COMPILE_WITHOUT_CUDA
 		lowLevelEngine = new ITMLowLevelEngine_CUDA();
-
 		sceneRecoEngine = new ITMSceneReconstructionEngine_CUDA<ITMVoxel,ITMVoxelIndex>();
-
-		switch (settings->trackerType)
-		{
-		case ITMLibSettings::TRACKER_ICP: 
-			trackerPrimary = new ITMDepthTracker_CUDA(imgSize_d, settings->noHierarchyLevels, settings->noRotationOnlyLevels, settings->noICPRunTillLevel, settings->depthTrackerICPThreshold, lowLevelEngine);
-			trackerSecondary = NULL;
-			break;
-		case ITMLibSettings::TRACKER_REN:
-			trackerPrimary = new ITMDepthTracker_CUDA(imgSize_d, settings->noHierarchyLevels, settings->noRotationOnlyLevels, settings->noICPRunTillLevel, settings->depthTrackerICPThreshold, lowLevelEngine);
-			trackerSecondary = new ITMRenTracker_CUDA<ITMVoxel, ITMVoxelIndex>(imgSize_d, settings->noICPRunTillLevel, lowLevelEngine);
-			break;
-		case ITMLibSettings::TRACKER_COLOR: 
-			trackerPrimary = new ITMColorTracker_CUDA(imgSize_rgb, settings->noHierarchyLevels, settings->noRotationOnlyLevels, lowLevelEngine);
-			trackerSecondary = NULL;
-			break;
-		}
-
 		if (settings->useSwapping) swappingEngine = new ITMSwappingEngine_CUDA<ITMVoxel,ITMVoxelIndex>();
-
 		visualisationEngine = new ITMVisualisationEngine_CUDA<ITMVoxel,ITMVoxelIndex>();
 #endif
 	}
 	else
 	{
 		lowLevelEngine = new ITMLowLevelEngine_CPU();
-
 		sceneRecoEngine = new ITMSceneReconstructionEngine_CPU<ITMVoxel,ITMVoxelIndex>();
-
-		switch (settings->trackerType)
-		{
-		case ITMLibSettings::TRACKER_ICP:
-			trackerPrimary = new ITMDepthTracker_CPU(imgSize_d, settings->noHierarchyLevels, settings->noRotationOnlyLevels, settings->noICPRunTillLevel, settings->depthTrackerICPThreshold, lowLevelEngine);
-			trackerSecondary = NULL;
-			break;
-		case ITMLibSettings::TRACKER_REN:
-			trackerPrimary = new ITMDepthTracker_CPU(imgSize_d, settings->noHierarchyLevels, settings->noRotationOnlyLevels, settings->noICPRunTillLevel, settings->depthTrackerICPThreshold, lowLevelEngine);
-			trackerSecondary = new ITMRenTracker_CPU<ITMVoxel, ITMVoxelIndex>(imgSize_d, settings->noICPRunTillLevel, lowLevelEngine);
-			break;
-		case ITMLibSettings::TRACKER_COLOR:
-			trackerPrimary = new ITMColorTracker_CPU(imgSize_rgb, settings->noHierarchyLevels, settings->noRotationOnlyLevels, lowLevelEngine);
-			trackerSecondary = NULL;
-			break;
-		}
-
 		if (settings->useSwapping) swappingEngine = new ITMSwappingEngine_CPU<ITMVoxel,ITMVoxelIndex>();
-
 		visualisationEngine = new ITMVisualisationEngine_CPU<ITMVoxel,ITMVoxelIndex>();
 	}
+
+	trackerPrimary = ITMTrackerFactory::MakePrimaryTracker(*settings, imgSize_rgb, imgSize_d, lowLevelEngine);
+	trackerSecondary = ITMTrackerFactory::MakeSecondaryTracker<ITMVoxel,ITMVoxelIndex>(*settings, imgSize_rgb, imgSize_d, lowLevelEngine);
 
 	visualisationState = NULL;
 

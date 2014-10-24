@@ -18,6 +18,7 @@ set(ITMLIB_COMMON_OBJECTS
 	Engine/ITMColorTracker.cpp
 	Engine/ITMDepthTracker.cpp
 	Engine/ITMRenTracker.cpp
+	Engine/ITMTrackerFactory.cpp
 	Engine/ITMVisualisationEngine.cpp
 	Engine/ITMMainEngine.cpp
 	Objects/ITMDisparityCalib.cpp
