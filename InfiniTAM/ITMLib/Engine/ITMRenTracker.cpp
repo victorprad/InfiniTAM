@@ -56,7 +56,7 @@ void ComputeSingleStep(float *step, float *ATA, float *ATb, float lambda)
 
 
 template<class TVoxel, class TIndex>
-ITMRenTracker<TVoxel, TIndex>::ITMRenTracker(Vector2i imgSize, int noHierarchyLevels, ITMLowLevelEngine *lowLevelEngine, bool useGPU)
+ITMRenTracker<TVoxel, TIndex>::ITMRenTracker(Vector2i imgSize, int noHierarchyLevels, ITMLowLevelEngine *lowLevelEngine, ITMScene<TVoxel,TIndex> *scene, bool useGPU)
 { 
 	//TODO from parameters, rotationOnly not implemented
 
@@ -66,6 +66,7 @@ ITMRenTracker<TVoxel, TIndex>::ITMRenTracker(Vector2i imgSize, int noHierarchyLe
 	tempImage2 = new ITMFloatImage(imgSize, useGPU);
 
 	this->lowLevelEngine = lowLevelEngine;
+	this->scene = scene;
 };
 
 template<class TVoxel, class TIndex>
@@ -107,7 +108,6 @@ void ITMRenTracker<TVoxel,TIndex>::PrepareForEvaluation(const ITMView *view)
 template<class TVoxel, class TIndex>
 void ITMRenTracker<TVoxel,TIndex>::TrackCamera(ITMTrackingState *trackingState, const ITMView *view)
 {
-	this->scene = trackingState->scene;
 	this->PrepareForEvaluation(view);
 
 	// // Olaf LM

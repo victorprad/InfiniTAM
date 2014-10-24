@@ -90,7 +90,7 @@ namespace ITMLib
 
 			void TrackCamera(ITMTrackingState *trackingState, const ITMView *view);
 
-			ITMRenTracker(Vector2i imgSize, int noHierarchyLevels, ITMLowLevelEngine *lowLevelEngine, bool useGPU);
+			ITMRenTracker(Vector2i imgSize, int noHierarchyLevels, ITMLowLevelEngine *lowLevelEngine, ITMScene<TVoxel,TIndex> *scene, bool useGPU);
 			virtual ~ITMRenTracker(void);
 		};
 	}

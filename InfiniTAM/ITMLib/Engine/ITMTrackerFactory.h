@@ -52,15 +52,16 @@ namespace ITMLib
          * \param imgSize_rgb     The dimensions of the RGB frames we're using.
          * \param imgSize_d       The dimensions of the depth frames we're using.
          * \param lowLevelEngine  A pointer to the low-level image processing engine we're using.
+         * \param scene           A pointer to the scene.
          * \return                A pointer to the new tracker, if any, or NULL otherwise.
          */
         template <typename TVoxel, typename TIndex>
-        static ITMTracker *MakeSecondaryTracker(const ITMLibSettings& settings, const Vector2i& imgSize_rgb, const Vector2i& imgSize_d, ITMLowLevelEngine *lowLevelEngine)
+        static ITMTracker *MakeSecondaryTracker(const ITMLibSettings& settings, const Vector2i& imgSize_rgb, const Vector2i& imgSize_d, ITMLowLevelEngine *lowLevelEngine, ITMScene<TVoxel,TIndex> *scene)
         {
           if(settings.useGPU)
           {
 #ifndef COMPILE_WITHOUT_CUDA
-            return settings.trackerType == ITMLibSettings::TRACKER_REN ? new ITMRenTracker_CUDA<TVoxel,TIndex>(imgSize_d, settings.noICPRunTillLevel, lowLevelEngine) : NULL;
+            return settings.trackerType == ITMLibSettings::TRACKER_REN ? new ITMRenTracker_CUDA<TVoxel,TIndex>(imgSize_d, settings.noICPRunTillLevel, lowLevelEngine, scene) : NULL;
 #else
             // This should never happen.
             throw std::runtime_error("Error: ITMTrackerFactory::MakeSecondaryTracker: CUDA support not currently available.");
@@ -68,7 +69,7 @@ namespace ITMLib
           }
           else
           {
-            return settings.trackerType == ITMLibSettings::TRACKER_REN ? new ITMRenTracker_CPU<TVoxel,TIndex>(imgSize_d, settings.noICPRunTillLevel, lowLevelEngine) : NULL;
+            return settings.trackerType == ITMLibSettings::TRACKER_REN ? new ITMRenTracker_CPU<TVoxel,TIndex>(imgSize_d, settings.noICPRunTillLevel, lowLevelEngine, scene) : NULL;
           }
         }
 

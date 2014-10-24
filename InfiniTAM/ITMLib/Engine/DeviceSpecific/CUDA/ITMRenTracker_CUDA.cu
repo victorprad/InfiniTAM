@@ -19,8 +19,8 @@ __global__ void renTrackerOneLevel_g_device(float *g_device, float *h_device, Ve
 // host functions
 
 template<class TVoxel, class TIndex>
-ITMRenTracker_CUDA<TVoxel, TIndex>::ITMRenTracker_CUDA(Vector2i imgSize, int noHierarchyLevels, ITMLowLevelEngine *lowLevelEngine) 
-	: ITMRenTracker<TVoxel, TIndex>(imgSize, noHierarchyLevels, lowLevelEngine, true)
+ITMRenTracker_CUDA<TVoxel, TIndex>::ITMRenTracker_CUDA(Vector2i imgSize, int noHierarchyLevels, ITMLowLevelEngine *lowLevelEngine, ITMScene<TVoxel,TIndex> *scene) 
+	: ITMRenTracker<TVoxel, TIndex>(imgSize, noHierarchyLevels, lowLevelEngine, scene, true)
 { 
 	int dim_f = 1, dim_g = 6, dim_h = 6 + 5 + 4 + 3 + 2 + 1;
 

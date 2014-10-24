@@ -51,18 +51,12 @@ namespace ITMLib
 			/// Current pose of the depth camera.
 			ITMPose *pose_d;
 
-			/// Pointer to the main ITMScene 
-			ITMScene<ITMVoxel, ITMVoxelIndex> *scene;
-
 			ITMTrackingState(Vector2i imgSize, bool useGPU)
 			{
 				this->rendering = new ITMUChar4Image(imgSize, useGPU);
 				this->renderingRangeImage = new ITMImage<Vector2f>(imgSize, useGPU);
 				this->pointCloud = new ITMPointCloud(imgSize, useGPU);
-
 				this->pose_d = new ITMPose();
-
-				this->scene = NULL;
 			}
 
 			~ITMTrackingState(void)
