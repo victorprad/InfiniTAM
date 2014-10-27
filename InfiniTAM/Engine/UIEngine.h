@@ -44,6 +44,7 @@ namespace InfiniTAM
 			int mouseState;
 			Vector2i mouseLastClick;
 
+			int currentFrameNo; bool isRecording;
 		public:
 			static UIEngine* Instance(void) {
 				if (instance == NULL) instance = new UIEngine();

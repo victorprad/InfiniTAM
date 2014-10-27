@@ -39,13 +39,17 @@ void ImageFileReader::loadIntoCache(void)
 	cached_depth = new ITMShortImage();
 
 	char str[2048];
+
 	sprintf(str, rgbImageMask, currentFrameNo);
-	if (!ReadImageFromFile(cached_rgb, str)) {
+	if (!ReadImageFromFile(cached_rgb, str)) 
+	{
 		delete cached_rgb; cached_rgb = NULL;
 		printf("error reading file '%s'\n", str);
 	}
+
 	sprintf(str, depthImageMask, currentFrameNo);
-	if (!ReadImageFromFile(cached_depth, str)) {
+	if (!ReadImageFromFile(cached_depth, str)) 
+	{
 		delete cached_depth; cached_depth = NULL;
 		printf("error reading file '%s'\n", str);
 	}
@@ -101,6 +105,7 @@ Vector2i ImageFileReader::getDepthImageSize(void)
 Vector2i ImageFileReader::getRGBImageSize(void)
 {
 	loadIntoCache();
-	return cached_rgb->noDims;
+	if (cached_rgb != NULL) return cached_rgb->noDims;
+	return cached_depth->noDims;
 }
 

@@ -13,6 +13,8 @@
 #include <GL/freeglut.h>
 #endif
 
+#include "../Utils/FileUtils.h"
+
 using namespace InfiniTAM::Engine;
 UIEngine* UIEngine::instance;
 
@@ -147,10 +149,19 @@ void UIEngine::glutKeyUpFunction(unsigned char key, int x, int y)
 		printf("processing input source ...\n");
 		uiEngine->mainLoopAction = UIEngine::PROCESS_VIDEO;
 		break;
-	//case 's':
-	//	printf("saving to disk ...\n");
-	//	uiEngine->mainLoopAction = UIEngine::SAVE_TO_DISK;
-	//	break;
+	case 's':
+		if (uiEngine->isRecording)
+		{
+			printf("stopped recoding disk ...\n");
+			uiEngine->isRecording = false;
+		}
+		else
+		{
+			printf("started recoding disk ...\n");
+			uiEngine->currentFrameNo = 0;
+			uiEngine->isRecording = true;
+		}
+		break;
 	case 'e':
 		printf("exiting ...\n");
 		uiEngine->mainLoopAction = UIEngine::EXIT;
@@ -326,6 +337,9 @@ void UIEngine::Initialise(int & argc, char** argv, ImageSourceEngine *imageSourc
 	winReg[1] = Vector4f(0.665f, h2, 1.0f, 1.0f);   // Side sub window 0
 	winReg[2] = Vector4f(0.665f, h1, 1.0f, h2);     // Side sub window 2
 
+	this->isRecording = false; 
+	this->currentFrameNo = 0;
+
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE);
 	glutInitWindowSize(winSize.x, winSize.y);
@@ -384,10 +398,23 @@ void UIEngine::ProcessFrame()
 
 	sdkResetTimer(&timer); sdkStartTimer(&timer);
 
+	if (isRecording)
+	{
+		char str[250];
+
+		sprintf(str, "%s/%04d.pgm", outFolder, currentFrameNo);
+		SaveImageToFile(mainEngine->view->rawDepth, str);
+
+		sprintf(str, "%s/%04d.ppm", outFolder, currentFrameNo);
+		SaveImageToFile(mainEngine->view->rgb, str);
+	}
+
 	//actual processing on the mailEngine
 	mainEngine->ProcessFrame();
 
 	sdkStopTimer(&timer); processedTime = sdkGetTimerValue(&timer);
+
+	currentFrameNo++;
 }
 
 void UIEngine::Run() { glutMainLoop(); }

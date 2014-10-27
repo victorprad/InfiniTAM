@@ -173,12 +173,18 @@ void SaveImageToFile(const ITMUChar4Image* image, const char* fileName, bool fli
 
 void SaveImageToFile(const ITMShortImage* image, const char* fileName)
 {
+	short *data = (short*)malloc(sizeof(short) * image->dataSize);
+	const short *dataSource = image->GetData(false);
+	for (int i = 0; i < image->dataSize; i++) data[i] = (dataSource[i] << 8) | ((dataSource[i] >> 8) & 255);
+
 	FILE *f = fopen(fileName, "wb");
 	if (!pnm_writeheader(f, image->noDims.x, image->noDims.y, PNM_PGM_16u)) {
 		fclose(f); return;
 	}
-	pnm_writedata(f, image->noDims.x, image->noDims.y, PNM_PGM_16u, image->GetData(false));
+	pnm_writedata(f, image->noDims.x, image->noDims.y, PNM_PGM_16u, data);
 	fclose(f);
+
+	delete data;
 }
 
 void SaveImageToFile(const ITMFloatImage* image, const char* fileName)
@@ -240,7 +246,7 @@ bool ReadImageFromFile(ITMShortImage *image, const char *fileName)
 	PNMtype type = pnm_readheader(f, &xsize, &ysize, &binary);
 	if ((type != PNM_PGM_16s)&&(type != PNM_PGM_16u)) { fclose(f); return false; }
 
-	unsigned short *data = new unsigned short[xsize*ysize];
+	short *data = new short[xsize*ysize];
 	if (binary) {
 		if (!pnm_readdata_binary(f, xsize, ysize, type, data)) { fclose(f); delete[] data; return false; }
 	} else {

@@ -27,14 +27,14 @@ ITMLibSettings::ITMLibSettings(void)
 	useSwapping = false; // HERE BE DRAGONS: It should work, but requires more testing
 
 	//trackerType = TRACKER_COLOR;
-	//trackerType = TRACKER_ICP;
+	trackerType = TRACKER_ICP;
 
 	/** Use ITMRenTracker to reduce the wiggling when the depth sensor has missing data
 		Using this option, the tracking will frist start ICP from higher hierachy for
 		initialial pose estimation, then run Ren's tracker at lowest level of hierachy.
 		The processing time on each frame is increased by around 50% (~5ms on a GTX Titan Black)**/
 	
-	trackerType = TRACKER_REN;
+	//trackerType = TRACKER_REN;
 
 
 	if (trackerType == TRACKER_REN) noICPRunTillLevel = 1;
