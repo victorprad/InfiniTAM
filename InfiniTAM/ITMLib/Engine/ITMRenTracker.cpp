@@ -176,7 +176,7 @@ void ITMRenTracker<TVoxel,TIndex>::TrackCamera(ITMTrackingState *trackingState, 
 
 	for (int mlevelId = viewHierarchy->noLevels - 1; mlevelId >= 0; mlevelId--)
 	{
-		this->levelId = levelId;
+		this->levelId = mlevelId;
 		
 		for (int iterNo = 0; iterNo < 10; iterNo++)
 		{
@@ -362,5 +362,4 @@ static inline bool minimizeLM(const ITMRenTracker<TVoxel,TIndex> & tracker, ITMP
 }
 
 template class ITMRenTracker<ITMVoxel,ITMVoxelIndex>;
-
 
