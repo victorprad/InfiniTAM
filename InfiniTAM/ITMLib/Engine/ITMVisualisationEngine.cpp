@@ -57,4 +57,4 @@ void ITMVisualisationEngine<TVoxel,TIndex>::DepthToUchar4(ITMUChar4Image *dst, I
 	}
 }
 
-template class ITMVisualisationEngine<ITMVoxel,ITMVoxelIndex>;
+template class ITMLib::Engine::ITMVisualisationEngine<ITMVoxel, ITMVoxelIndex>;

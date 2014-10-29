@@ -314,4 +314,4 @@ __global__ void cleanVBA(TVoxel *localVBA, int *voxelAllocationList, int baseAdd
 	}
 }
 
-template class ITMSwappingEngine_CUDA<ITMVoxel,ITMVoxelIndex>;
+template class ITMLib::Engine::ITMSwappingEngine_CUDA<ITMVoxel, ITMVoxelIndex>;

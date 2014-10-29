@@ -174,4 +174,4 @@ void ITMSwappingEngine_CPU<TVoxel,ITMVoxelBlockHash>::SaveToGlobalMemory(ITMScen
 	}
 }
 
-template class ITMSwappingEngine_CPU<ITMVoxel,ITMVoxelIndex>;
+template class ITMLib::Engine::ITMSwappingEngine_CPU<ITMVoxel, ITMVoxelIndex>;

@@ -283,7 +283,7 @@ _CPU_AND_GPU_CODE_ inline void buildHashAllocAndVisibleTypePP(uchar *entriesAllo
 		hashIdx = hashIndex(pt_block_a, SDF_HASH_MASK) * SDF_ENTRY_NUM_PER_BUCKET;
 
 		//check if hash table contains entry
-		lastFreeInBucketIdx = -1; bool foundValue = false; int offsetExcess;
+		lastFreeInBucketIdx = -1; bool foundValue = false; int offsetExcess = 0;
 		for (int inBucketIdx = 0; inBucketIdx < SDF_ENTRY_NUM_PER_BUCKET; inBucketIdx++)
 		{
 			const ITMHashEntry &hashEntry = hashTable[hashIdx + inBucketIdx];

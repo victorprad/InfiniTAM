@@ -202,7 +202,7 @@ static void RenderImage_common(const ITMScene<TVoxel,TIndex> *scene, const ITMPo
 	{
 		Vector3f pt_ray; Vector4f tmp;
 		Vector3f outNormal;
-		float angle;
+		float angle = 0.0f;
 
 		int locId = x + y * imgSize.x;
 
@@ -261,7 +261,7 @@ static void CreatePointCloud_common(const ITMScene<TVoxel,TIndex> *scene, const 
 	for (int y = 0; y < imgSize.y; y++) for (int x = 0; x < imgSize.x; x++)
 	{
 		Vector3f pt_ray; Vector4f tmp;
-		float angle;
+		float angle = 0.0f;
 
 		int locId = x + y * imgSize.x;
 
@@ -336,7 +336,7 @@ static void CreateICPMaps_common(const ITMScene<TVoxel,TIndex> *scene, const ITM
 	{
 		Vector3f pt_ray; Vector4f tmp;
 		Vector3f outNormal;
-		float angle;
+		float angle = 0.0f;
 
 		int locId = x + y * imgSize.x;
 
@@ -419,4 +419,4 @@ void ITMVisualisationEngine_CPU<TVoxel,ITMVoxelBlockHash>::CreateICPMaps(const I
 	CreateICPMaps_common(scene, view, trackingState);
 }
 
-template class ITMVisualisationEngine_CPU<ITMVoxel,ITMVoxelIndex>;
+template class ITMLib::Engine::ITMVisualisationEngine_CPU<ITMVoxel, ITMVoxelIndex>;

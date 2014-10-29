@@ -274,4 +274,4 @@ __global__ void renTrackerOneLevel_g_device(float *g_device, float *h_device, Ve
 	//}
 }
 
-template class ITMRenTracker_CUDA<ITMVoxel,ITMVoxelIndex>;
+template class ITMLib::Engine::ITMRenTracker_CUDA<ITMVoxel, ITMVoxelIndex>;

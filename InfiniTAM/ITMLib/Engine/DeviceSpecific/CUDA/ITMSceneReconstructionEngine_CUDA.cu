@@ -393,5 +393,5 @@ __global__ void buildVisibleList_device(ITMHashEntry *hashTable, ITMHashCacheSta
 	}
 }
 
-template class ITMSceneReconstructionEngine_CUDA<ITMVoxel,ITMVoxelIndex>;
+template class ITMLib::Engine::ITMSceneReconstructionEngine_CUDA<ITMVoxel, ITMVoxelIndex>;
 

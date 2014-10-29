@@ -486,7 +486,7 @@ __global__ void renderImage_device(Vector4u *outRendering,
 
 	Vector3f pt_ray; Vector4f tmp;
 	Vector3f outNormal;
-	float angle;
+	float angle = 0.0f;
 
 	int locId = x + y * imgSize.x;
 
@@ -530,7 +530,7 @@ __global__ void createPointCloud_device(uint *noTotalPoints, Vector4f *colours, 
 	__shared__ bool shouldPrefix;
 
 	Vector3f pt_ray; Vector4f tmp;
-	float angle;
+	float angle = 0.0f;
 
 	int locId = x + y * imgSize.x;
 
@@ -596,7 +596,7 @@ __global__ void createICPMaps_device(float *depth, Vector4f *pointsMap, Vector4f
 
 	Vector3f pt_ray; Vector4f tmp;
 	Vector3f outNormal;
-	float angle;
+	float angle = 0.0f;
 
 	int locId = x + y * imgSize.x;
 
@@ -643,4 +643,4 @@ __global__ void createICPMaps_device(float *depth, Vector4f *pointsMap, Vector4f
 	}
 }
 
-template class ITMVisualisationEngine_CUDA<ITMVoxel,ITMVoxelIndex>;
+template class ITMLib::Engine::ITMVisualisationEngine_CUDA<ITMVoxel, ITMVoxelIndex>;

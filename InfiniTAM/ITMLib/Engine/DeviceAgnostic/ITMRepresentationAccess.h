@@ -36,7 +36,7 @@ _CPU_AND_GPU_CODE_ inline TVoxel readVoxel(const TVoxel *voxelData, const ITMVox
 	}
 
 	const ITMHashEntry *hashTable = voxelIndex->entries_all;
-	int offsetExcess;
+	int offsetExcess = 0;
 
 	int hashIdx = hashIndex(blockPos, SDF_HASH_MASK) * SDF_ENTRY_NUM_PER_BUCKET;
 
@@ -78,7 +78,7 @@ template<class TVoxel>
 _CPU_AND_GPU_CODE_ inline TVoxel readVoxel(const TVoxel *voxelData, const ITMVoxelBlockHash::IndexData *voxelIndex, const Vector3i & point, bool &isFound)
 {
 	const ITMHashEntry *hashTable = voxelIndex->entries_all;
-	Vector3i blockPos; int offsetExcess;
+	Vector3i blockPos; int offsetExcess = 0;
 
 	int linearIdx = pointPosParse(point, blockPos);
 	int hashIdx = hashIndex(blockPos, SDF_HASH_MASK) * SDF_ENTRY_NUM_PER_BUCKET;
