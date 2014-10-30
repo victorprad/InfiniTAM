@@ -330,9 +330,6 @@
     <ClInclude Include="ITMLib\Objects\ITMTemplatedHierarchyLevel.h">
       <Filter>ITMLib\Objects\Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ITMLib\Objects\ITMObject.h">
-      <Filter>ITMLib\Objects\Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CudaCompile Include="ITMLib\Engine\DeviceSpecific\CUDA\ITMColorTracker_CUDA.cu">

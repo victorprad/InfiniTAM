@@ -5,6 +5,9 @@
 #include <stdlib.h>
 
 #include "../Utils/ITMLibDefines.h"
+#ifndef COMPILE_WITHOUT_CUDA
+#include "../Engine/DeviceSpecific/CUDA/ITMCUDADefines.h"
+#endif
 
 #include "ITMHashTable.h"
 
@@ -31,7 +34,7 @@ namespace ITMLib
 			/** Maximum number of total entries. */
 			static const int noVoxelBlocks = IndexData::noTotalEntries;
 			static const int voxelBlockSize = SDF_BLOCK_SIZE * SDF_BLOCK_SIZE * SDF_BLOCK_SIZE;
-
+            
 			private:
 			IndexData *hashData;
 			bool dataIsOnGPU;
@@ -57,25 +60,16 @@ namespace ITMLib
 #endif
 					delete hashData_host;
 				}
-				else
-				{
-					hashData = hashData_host;
-				}
+				else hashData = hashData_host;
 				lastFreeExcessListId = SDF_EXCESS_LIST_SIZE - 1;
 			}
 
 			~ITMVoxelBlockHash(void)	
 			{
-				if (!dataIsOnGPU)
-				{
-					delete hashData;
-				}
-				else
-				{
+				if (!dataIsOnGPU) delete hashData;
 #ifndef COMPILE_WITHOUT_CUDA
-					ITMSafeCall(cudaFree(hashData));
+				else ITMSafeCall(cudaFree(hashData));
 #endif
-				}
 			}
 
 			/** Get the list of actual entries in the hash table. */
@@ -99,9 +93,13 @@ namespace ITMLib
 
 			_CPU_AND_GPU_CODE_ inline const IndexData* getIndexData(void) const { return hashData; }
 
+			/** Maximum number of total entries. */
+			int getNumAllocatedVoxelBlocks(void) { return SDF_LOCAL_BLOCK_NUM; }
+			int getVoxelBlockSize(void) { return SDF_BLOCK_SIZE3; }
+
 			// Suppress the default copy constructor and assignment operator
 			ITMVoxelBlockHash(const ITMVoxelBlockHash&);
-			ITMVoxelBlockHash& operator=(const ITMVoxelBlockHash&);
+			ITMVoxelBlockHash& operator=(const ITMVoxelBlockHash&);           
 		};
 	}
 }

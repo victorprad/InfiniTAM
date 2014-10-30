@@ -11,13 +11,13 @@ namespace ITMLib
 	namespace Objects
 	{
 		/** \brief
-		    This is the central class for the original fixed size volume
-		    representation. It contains the data needed on the CPU and
-		    a pointer to the data structure on the GPU.
-		*/
+			This is the central class for the original fixed size volume
+			representation. It contains the data needed on the CPU and
+			a pointer to the data structure on the GPU.
+			*/
 		class ITMPlainVoxelArray
 		{
-			public:
+		public:
 			struct ITMVoxelArrayInfo {
 				/// Size in voxels
 				Vector3i size;
@@ -36,13 +36,13 @@ namespace ITMLib
 			typedef ITMVoxelArrayInfo IndexData;
 			struct IndexCache {};
 
-			private:
+		private:
 			IndexData *indexData_device;
 			IndexData indexData_host;
 
 			bool dataIsOnGPU;
 
-			public:
+		public:
 			ITMPlainVoxelArray(bool allocateGPU)
 			{
 				dataIsOnGPU = allocateGPU;
@@ -54,13 +54,10 @@ namespace ITMLib
 					ITMSafeCall(cudaMemcpy(indexData_device, &indexData_host, sizeof(IndexData), cudaMemcpyHostToDevice));
 #endif
 				}
-				else
-				{
-					indexData_device = NULL;
-				}
+				else indexData_device = NULL;
 			}
 
-			~ITMPlainVoxelArray(void)	
+			~ITMPlainVoxelArray(void)
 			{
 				if (indexData_device != NULL) {
 #ifndef COMPILE_WITHOUT_CUDA
@@ -70,7 +67,7 @@ namespace ITMLib
 			}
 
 			/** Maximum number of total entries. */
-			int getNumVoxelBlocks(void) { return 1; }
+			int getNumAllocatedVoxelBlocks(void) { return 1; }
 			int getVoxelBlockSize(void) { return indexData_host.size.x * indexData_host.size.y * indexData_host.size.z; }
 
 			const Vector3i getVolumeSize(void) { return indexData_host.size; }

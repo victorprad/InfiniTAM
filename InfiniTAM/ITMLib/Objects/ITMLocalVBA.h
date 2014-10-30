@@ -34,23 +34,22 @@ namespace ITMLib
 
 			int allocatedSize;
 
-			ITMLocalVBA(bool allocateGPU)
+			ITMLocalVBA(bool allocateGPU, int noBlocks, int blockSize)
 			{	
 				this->dataIsOnGPU = allocateGPU;
 
-				allocatedSize = SDF_LOCAL_BLOCK_NUM * SDF_BLOCK_SIZE3;
+				allocatedSize = noBlocks * blockSize;
 
 				TVoxel *voxelBlocks_host = (TVoxel*)malloc(allocatedSize * sizeof(TVoxel));
+
 				int *allocationList_host = (int*)malloc(allocatedSize * sizeof(int));
 
-				for (int i = 0; i < SDF_LOCAL_BLOCK_NUM; i++) allocationList_host[i] = i;
+				for (int i = 0; i < noBlocks; i++) allocationList_host[i] = i;
 
 				for (int i = 0; i < allocatedSize; i++)
-				{
 					voxelBlocks_host[i] = TVoxel();
-				}
 
-				lastFreeBlockId = SDF_LOCAL_BLOCK_NUM - 1;
+				lastFreeBlockId = noBlocks - 1;
 
 				if (allocateGPU)
 				{

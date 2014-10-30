@@ -25,19 +25,17 @@ namespace ITMLib
 			/** Scene parameters like voxel size etc. */
 			const ITMSceneParams *sceneParams;
 
+			/** Hash table to reference the 8x8x8 blocks */
+			TIndex index;
+
 			/** Current local content of the 8x8x8 voxel blocks -- stored host or device */
 			ITMLocalVBA<TVoxel> localVBA;
 
 			/** Global content of the 8x8x8 voxel blocks -- stored on host only */
 			ITMGlobalCache<TVoxel> *globalCache;
 
-			/** Hash table to reference the 8x8x8 blocks */
-			TIndex index;
-
-			ITMScene(const ITMSceneParams *sceneParams, bool useSwapping,
-				bool allocateGPU)
-			 : localVBA(allocateGPU),
-			   index(allocateGPU)
+			ITMScene(const ITMSceneParams *sceneParams, bool useSwapping, bool allocateGPU) 
+				: index(allocateGPU), localVBA(allocateGPU, index.getNumAllocatedVoxelBlocks(), index.getVoxelBlockSize())
 			{
 				this->sceneParams = sceneParams;
 				this->useSwapping = useSwapping;

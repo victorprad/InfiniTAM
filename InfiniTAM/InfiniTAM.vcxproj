@@ -159,7 +159,6 @@
     <ClInclude Include="ITMLib\Engine\ITMSwappingEngine.h" />
     <ClInclude Include="ITMLib\Engine\ITMTracker.h" />
     <ClInclude Include="ITMLib\Engine\ITMVisualisationEngine.h" />
-    <ClInclude Include="ITMLib\Objects\ITMObject.h" />
     <ClInclude Include="ITMLib\Objects\ITMTemplatedHierarchyLevel.h" />
     <ClInclude Include="ITMLib\Objects\ITMGlobalCache.h" />
     <ClInclude Include="ITMLib\Objects\ITMPlainVoxelArray.h" />
