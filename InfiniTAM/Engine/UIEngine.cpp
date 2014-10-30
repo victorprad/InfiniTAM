@@ -424,6 +424,7 @@ void UIEngine::Shutdown()
 
 	for (int w = 0; w < NUM_WIN; w++)
 		delete outImage[w]; 
+	delete[] outFolder;
 	delete saveImage; 
 	delete instance; 
 }
