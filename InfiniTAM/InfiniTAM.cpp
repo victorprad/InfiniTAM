@@ -1,5 +1,7 @@
 // Copyright 2014 Isis Innovation Limited and the authors of InfiniTAM
 
+#include <cstdlib>
+
 #include "Engine/UIEngine.h"
 #include "Engine/ImageSourceEngine.h"
 #include "Engine/OpenNIEngine.h"
@@ -8,6 +10,7 @@
 using namespace InfiniTAM::Engine;
 
 int main(int argc, char** argv)
+try
 {
 	const char *calibFile = "./Files/Teddy/calib.txt";
 	const char *imagesource_part1 = NULL;
@@ -62,3 +65,9 @@ int main(int argc, char** argv)
 	delete imageSource;
 	return 0;
 }
+catch(std::exception& e)
+{
+	std::cerr << e.what() << '\n';
+	return EXIT_FAILURE;
+}
+

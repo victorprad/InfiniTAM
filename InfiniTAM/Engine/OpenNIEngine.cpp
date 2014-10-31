@@ -4,7 +4,8 @@
 
 #include "../Utils/FileUtils.h"
 
-#include <stdio.h>
+#include <cstdio>
+#include <stdexcept>
 
 #ifndef COMPILE_WITHOUT_OpenNI
 #include <OpenNI.h>
@@ -82,9 +83,9 @@ OpenNIEngine::OpenNIEngine(const char *calibFilename, const char *deviceURI, con
 	rc = data->device.open(deviceURI);
 	if (rc != openni::STATUS_OK)
 	{
-		printf("OpenNI: Device open failed:\n%s\n", openni::OpenNI::getExtendedError());
 		openni::OpenNI::shutdown();
-		return;
+		delete data;
+		throw std::runtime_error(std::string("OpenNI: Device open failed!\n") + openni::OpenNI::getExtendedError());
 	}
 
 	openni::PlaybackControl *control = data->device.getPlaybackControl();
@@ -158,9 +159,9 @@ OpenNIEngine::OpenNIEngine(const char *calibFilename, const char *deviceURI, con
 
 	if (!depthAvailable)
 	{
-		printf("OpenNI: No valid streams. Exiting\n");
 		openni::OpenNI::shutdown();
-		return;
+		delete data;
+		throw std::runtime_error("OpenNI: No valid streams. Exiting.");
 	}
 	
 	data->streams = new openni::VideoStream*[2];
