@@ -181,7 +181,7 @@ void UIEngine::glutKeyUpFunction(unsigned char key, int x, int y)
 
 			uiEngine->freeviewPose.SetFrom(uiEngine->mainEngine->trackingState->pose_d);
 			uiEngine->freeviewIntrinsics = uiEngine->mainEngine->GetView()->calib->intrinsics_d;
-			uiEngine->outImage[0]->ChangeDims(uiEngine->imageSource->getDepthImageSize());
+			uiEngine->outImage[0]->ChangeDims(uiEngine->mainEngine->GetView()->depth->noDims);
 			uiEngine->freeviewActive = true;
 		}
 		uiEngine->needsRefresh = true;
