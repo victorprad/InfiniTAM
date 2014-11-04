@@ -4,7 +4,8 @@
 
 #include "../Utils/FileUtils.h"
 
-#include <stdio.h>
+#include <cstdio>
+#include <stdexcept>
 
 #ifndef COMPILE_WITHOUT_OpenNI
 #include <OpenNI.h>
@@ -29,7 +30,7 @@ static openni::VideoMode findBestMode(const openni::SensorInfo *sensorInfo, int 
 	for (int m = 0; m < modes.getSize(); ++m) {
 		//fprintf(stderr, "mode %i: %ix%i, %i %i\n", m, modes[m].getResolutionX(), modes[m].getResolutionY(), modes[m].getFps(), modes[m].getPixelFormat());
 		const openni::VideoMode & curMode = modes[m];
-		if ((requiredPixelFormat != -1)&&(curMode.getPixelFormat() != requiredPixelFormat)) continue;
+		if ((requiredPixelFormat != (openni::PixelFormat)-1)&&(curMode.getPixelFormat() != requiredPixelFormat)) continue;
 
 		bool acceptAsBest = false;
 		if ((curMode.getResolutionX() == bestMode.getResolutionX())&&
@@ -82,9 +83,9 @@ OpenNIEngine::OpenNIEngine(const char *calibFilename, const char *deviceURI, con
 	rc = data->device.open(deviceURI);
 	if (rc != openni::STATUS_OK)
 	{
-		printf("OpenNI: Device open failed:\n%s\n", openni::OpenNI::getExtendedError());
 		openni::OpenNI::shutdown();
-		return;
+		delete data;
+		throw std::runtime_error(std::string("OpenNI: Device open failed!\n") + openni::OpenNI::getExtendedError());
 	}
 
 	openni::PlaybackControl *control = data->device.getPlaybackControl();
@@ -158,9 +159,9 @@ OpenNIEngine::OpenNIEngine(const char *calibFilename, const char *deviceURI, con
 
 	if (!depthAvailable)
 	{
-		printf("OpenNI: No valid streams. Exiting\n");
 		openni::OpenNI::shutdown();
-		return;
+		delete data;
+		throw std::runtime_error("OpenNI: No valid streams. Exiting.");
 	}
 	
 	data->streams = new openni::VideoStream*[2];
