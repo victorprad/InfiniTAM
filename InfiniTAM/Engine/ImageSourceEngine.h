@@ -33,8 +33,9 @@ namespace InfiniTAM
 			ITMShortImage *cached_depth;
 
 			void loadIntoCache();
-		public:
+			int cachedFrameNo;
 			int currentFrameNo;
+		public:
 
 			ImageFileReader(const char *calibFilename, const char *rgbImageMask, const char *depthImageMask);
 			~ImageFileReader();

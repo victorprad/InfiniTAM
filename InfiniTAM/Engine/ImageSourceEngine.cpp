@@ -20,6 +20,7 @@ ImageFileReader::ImageFileReader(const char *calibFilename, const char *rgbImage
 	strncpy(this->depthImageMask, depthImageMask, BUF_SIZE);
 
 	currentFrameNo = 0;
+	cachedFrameNo = -1;
 
 	cached_rgb = NULL;
 	cached_depth = NULL;
@@ -33,7 +34,8 @@ ImageFileReader::~ImageFileReader()
 
 void ImageFileReader::loadIntoCache(void)
 {
-	if ((cached_rgb != NULL) || (cached_depth != NULL)) return;
+	if (currentFrameNo == cachedFrameNo) return;
+	cachedFrameNo = currentFrameNo;
 
 	cached_rgb = new ITMUChar4Image();
 	cached_depth = new ITMShortImage();
