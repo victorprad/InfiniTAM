@@ -21,7 +21,7 @@ struct RenderingBlock {
 static const int renderingBlockSizeX = 16;
 static const int renderingBlockSizeY = 16;
 
-static const int MAX_RENDERING_BLOCKS = 65536;
+static const int MAX_RENDERING_BLOCKS = 65536*4;
 //static const int MAX_RENDERING_BLOCKS = 16384;
 
 _CPU_AND_GPU_CODE_ inline bool ProjectSingleBlock(const Vector3s & blockPos, const Matrix4f & pose, const Vector4f & intrinsics, const Vector2i & imgSize, float voxelSize, Vector2i & upperLeft, Vector2i & lowerRight, Vector2f & zRange)
