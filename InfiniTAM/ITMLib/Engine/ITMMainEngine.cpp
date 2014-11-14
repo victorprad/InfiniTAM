@@ -156,7 +156,7 @@ void ITMMainEngine::GetImage(ITMUChar4Image *out, GetImageType getImageType, ITM
 
 			visualisationEngine->FindVisibleBlocks(scene, pose, intrinsics, visualisationState);
 			visualisationEngine->CreateExpectedDepths(scene, pose, intrinsics, visualisationState->minmaxImage, visualisationState);
-			visualisationEngine->RenderImage(scene, pose, intrinsics, visualisationState, visualisationState->outputImage);
+			visualisationEngine->RenderImage(scene, pose, intrinsics, visualisationState, visualisationState->outputImage, false);
 
 			if (settings->useGPU) visualisationState->outputImage->UpdateHostFromDevice();
 			out->SetFrom(visualisationState->outputImage);
