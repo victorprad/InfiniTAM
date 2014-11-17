@@ -182,7 +182,7 @@ void ITMVisualisationEngine_CPU<TVoxel,ITMVoxelBlockHash>::CreateExpectedDepths(
 }
 
 template<class TVoxel, class TIndex>
-static void RenderImage_common(const ITMScene<TVoxel,TIndex> *scene, const ITMPose *pose, const ITMIntrinsics *intrinsics, const ITMVisualisationState *state, ITMUChar4Image *outputImage)
+static void RenderImage_common(const ITMScene<TVoxel,TIndex> *scene, const ITMPose *pose, const ITMIntrinsics *intrinsics, const ITMVisualisationState *state, ITMUChar4Image *outputImage, bool useColour)
 {
 	Vector2i imgSize = outputImage->noDims;
 	float oneOverVoxelSize = 1.0f / scene->sceneParams->voxelSize;
@@ -222,14 +222,29 @@ static void RenderImage_common(const ITMScene<TVoxel,TIndex> *scene, const ITMPo
 			angle = outNormal.x * lightSource.x + outNormal.y * lightSource.y + outNormal.z * lightSource.z;
 			if (!(angle > 0.0)) foundPoint = false;
 		}
+
+		Vector4u& outRef = outRendering[locId];
 		if (foundPoint)
 		{
-			float outRes = (0.8f * angle + 0.2f) * 255.0f;
-			outRendering[locId] = Vector4u((uchar)outRes);
+			if (useColour && TVoxel::hasColorInformation)
+			{
+				const TVoxel *voxelData = scene->localVBA.GetVoxelBlocks();
+				const typename TIndex::IndexData *voxelIndex = scene->index.getIndexData();
+				Vector4f clr = VoxelColorReader<TVoxel::hasColorInformation,TVoxel,typename TIndex::IndexData>::interpolate(voxelData, voxelIndex, pt_ray);
+				outRef.x = (uchar)(clr.r * 255.0f);
+				outRef.y = (uchar)(clr.g * 255.0f);
+				outRef.z = (uchar)(clr.b * 255.0f);
+				outRef.w = 255;
+			}
+			else
+			{
+				float outRes = (0.8f * angle + 0.2f) * 255.0f;
+				outRef = Vector4u((uchar)outRes);
+			}
 		}
 		else
 		{
-			outRendering[locId] = Vector4u((const uchar&)0);
+			outRef = Vector4u((const uchar&)0);
 		}
 	}
 }
@@ -384,15 +399,15 @@ static void CreateICPMaps_common(const ITMScene<TVoxel,TIndex> *scene, const ITM
 }
 
 template<class TVoxel, class TIndex>
-void ITMVisualisationEngine_CPU<TVoxel,TIndex>::RenderImage(const ITMScene<TVoxel,TIndex> *scene, const ITMPose *pose, const ITMIntrinsics *intrinsics, const ITMVisualisationState *state, ITMUChar4Image *outputImage)
+void ITMVisualisationEngine_CPU<TVoxel,TIndex>::RenderImage(const ITMScene<TVoxel,TIndex> *scene, const ITMPose *pose, const ITMIntrinsics *intrinsics, const ITMVisualisationState *state, ITMUChar4Image *outputImage, bool useColour)
 {
-	RenderImage_common(scene, pose, intrinsics, state, outputImage);
+	RenderImage_common(scene, pose, intrinsics, state, outputImage, useColour);
 }
 
 template<class TVoxel>
-void ITMVisualisationEngine_CPU<TVoxel,ITMVoxelBlockHash>::RenderImage(const ITMScene<TVoxel,ITMVoxelBlockHash> *scene, const ITMPose *pose, const ITMIntrinsics *intrinsics, const ITMVisualisationState *state, ITMUChar4Image *outputImage)
+void ITMVisualisationEngine_CPU<TVoxel,ITMVoxelBlockHash>::RenderImage(const ITMScene<TVoxel,ITMVoxelBlockHash> *scene, const ITMPose *pose, const ITMIntrinsics *intrinsics, const ITMVisualisationState *state, ITMUChar4Image *outputImage, bool useColour)
 {
-	RenderImage_common(scene, pose, intrinsics, state, outputImage);
+	RenderImage_common(scene, pose, intrinsics, state, outputImage, useColour);
 }
 
 template<class TVoxel, class TIndex>

@@ -56,7 +56,7 @@ namespace ITMLib
 				const ITMIntrinsics *intrinsics, ITMFloat2Image *minmaxImg, const ITMVisualisationState *state = NULL) = 0;
 
 			/** This will render an image using raycasting. */
-			virtual void RenderImage(const ITMScene<TVoxel,TIndex> *scene, const ITMPose *pose, const ITMIntrinsics *intrinsics, const ITMVisualisationState *state, ITMUChar4Image *outputImage) = 0;
+			virtual void RenderImage(const ITMScene<TVoxel,TIndex> *scene, const ITMPose *pose, const ITMIntrinsics *intrinsics, const ITMVisualisationState *state, ITMUChar4Image *outputImage, bool useColour) = 0;
 
 			/** Create a point cloud as required by the
 			    ITMLib::Engine::ITMColorTracker classes.

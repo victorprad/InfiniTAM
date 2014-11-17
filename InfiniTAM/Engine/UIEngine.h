@@ -38,6 +38,7 @@ namespace InfiniTAM
 			ITMMainEngine::GetImageType outImageType[NUM_WIN];
 
 			bool freeviewActive;
+			bool colourActive;
 			ITMPose freeviewPose;
 			ITMIntrinsics freeviewIntrinsics;
 

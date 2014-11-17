@@ -81,7 +81,7 @@ namespace ITMLib
 			void ProcessFrame(void);
 
 			/// Get a result image as output
-			void GetImage(ITMUChar4Image *out, GetImageType getImageType, ITMPose *pose = NULL, ITMIntrinsics *intrinsics = NULL);
+			void GetImage(ITMUChar4Image *out, GetImageType getImageType, bool useColour, ITMPose *pose = NULL, ITMIntrinsics *intrinsics = NULL);
 
 			void SaveAll();
 
