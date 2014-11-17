@@ -128,7 +128,7 @@ void ITMMainEngine::ProcessFrame(void)
 	hasStartedObjectReconstruction = true;
 }
 
-void ITMMainEngine::GetImage(ITMUChar4Image *out, GetImageType getImageType, ITMPose *pose, ITMIntrinsics *intrinsics)
+void ITMMainEngine::GetImage(ITMUChar4Image *out, GetImageType getImageType, bool useColour, ITMPose *pose, ITMIntrinsics *intrinsics)
 {
 	out->Clear();
 
@@ -156,7 +156,7 @@ void ITMMainEngine::GetImage(ITMUChar4Image *out, GetImageType getImageType, ITM
 
 			visualisationEngine->FindVisibleBlocks(scene, pose, intrinsics, visualisationState);
 			visualisationEngine->CreateExpectedDepths(scene, pose, intrinsics, visualisationState->minmaxImage, visualisationState);
-			visualisationEngine->RenderImage(scene, pose, intrinsics, visualisationState, visualisationState->outputImage, false);
+			visualisationEngine->RenderImage(scene, pose, intrinsics, visualisationState, visualisationState->outputImage, useColour);
 
 			if (settings->useGPU) visualisationState->outputImage->UpdateHostFromDevice();
 			out->SetFrom(visualisationState->outputImage);

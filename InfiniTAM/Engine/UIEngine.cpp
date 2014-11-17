@@ -32,10 +32,10 @@ void UIEngine::glutDisplayFunction()
 
 	// get updated images from processing thread
 	if (uiEngine->freeviewActive) 
-		uiEngine->mainEngine->GetImage(uiEngine->outImage[0], uiEngine->outImageType[0], &uiEngine->freeviewPose, &uiEngine->freeviewIntrinsics);
-	else uiEngine->mainEngine->GetImage(uiEngine->outImage[0], uiEngine->outImageType[0]);
+		uiEngine->mainEngine->GetImage(uiEngine->outImage[0], uiEngine->outImageType[0], uiEngine->colourActive, &uiEngine->freeviewPose, &uiEngine->freeviewIntrinsics);
+	else uiEngine->mainEngine->GetImage(uiEngine->outImage[0], uiEngine->outImageType[0], false);
 
-	for (int w = 1; w < NUM_WIN; w++) uiEngine->mainEngine->GetImage(uiEngine->outImage[w], uiEngine->outImageType[w]);
+	for (int w = 1; w < NUM_WIN; w++) uiEngine->mainEngine->GetImage(uiEngine->outImage[w], uiEngine->outImageType[w], false);
 
 	// do the actual drawing
 	glClear(GL_COLOR_BUFFER_BIT);
@@ -80,7 +80,14 @@ void UIEngine::glutDisplayFunction()
 	safe_glutBitmapString(GLUT_BITMAP_HELVETICA_18, (const char*)str);
 
 	glRasterPos2f(-0.95f, -0.95f);
-	sprintf(str, "n - next frame \t b - all frames \t e - exit \t f - %s", uiEngine->freeviewActive?"follow camera":"free viewpoint");
+	if (ITMVoxel::hasColorInformation)
+	{
+		sprintf(str, "n - next frame \t b - all frames \t e - exit \t f - %s \t c - %s", uiEngine->freeviewActive?"follow camera":"free viewpoint", uiEngine->colourActive?"stop using colour":"use colour");
+	}
+	else
+	{
+		sprintf(str, "n - next frame \t b - all frames \t e - exit \t f - %s", uiEngine->freeviewActive?"follow camera":"free viewpoint");
+	}
 	safe_glutBitmapString(GLUT_BITMAP_HELVETICA_12, (const char*)str);
 
 	glutSwapBuffers();
@@ -185,6 +192,11 @@ void UIEngine::glutKeyUpFunction(unsigned char key, int x, int y)
 			uiEngine->freeviewActive = true;
 		}
 		uiEngine->needsRefresh = true;
+		break;
+	case 'c':
+		uiEngine->colourActive = !uiEngine->colourActive;
+		uiEngine->needsRefresh = true;
+		break;
 	default:
 		break;
 	}
@@ -307,6 +319,7 @@ void UIEngine::glutMouseWheelFunction(int button, int dir, int x, int y)
 void UIEngine::Initialise(int & argc, char** argv, ImageSourceEngine *imageSource, ITMMainEngine *mainEngine, const char *outFolder)
 {
 	this->freeviewActive = false;
+	this->colourActive = false;
 
 	this->imageSource = imageSource;
 	this->mainEngine = mainEngine;
