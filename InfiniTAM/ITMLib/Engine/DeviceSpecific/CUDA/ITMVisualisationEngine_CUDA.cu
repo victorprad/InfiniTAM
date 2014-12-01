@@ -187,7 +187,7 @@ void ITMVisualisationEngine_CUDA<TVoxel,ITMVoxelBlockHash>::CreateExpectedDepths
 	{
 		// fill minmaxData
 		dim3 blockSize(16, 16);
-		dim3 gridSize(ceil((float)noTotalBlocks/4.0f), 4);
+		dim3 gridSize((unsigned int)ceil((float)noTotalBlocks/4.0f), 4);
 		fillBlocks_device << <gridSize, blockSize >> >(noTotalBlocks_device, renderingBlockList_device, imgSize, minmaxData);
 	}
 }
