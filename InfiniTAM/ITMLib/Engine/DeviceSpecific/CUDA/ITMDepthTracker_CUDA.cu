@@ -120,10 +120,7 @@ __global__ void depthTrackerOneLevel_g_rt_device(int *noValidPoints, float *ATA,
 
 	int locId_local = threadIdx.x + threadIdx.y * blockDim.x;
 	int blockId_global = blockIdx.x + blockIdx.y * gridDim.x;
-	__shared__ float dim_shared[256];
-
-	dim_shared[locId_local] = 0;
-	__syncthreads();
+	__shared__ float dim_shared[3*256];
 
 	float localNabla[6], localHessian[21]; bool isValidPoint = false;
 
@@ -156,37 +153,65 @@ __global__ void depthTrackerOneLevel_g_rt_device(int *noValidPoints, float *ATA,
 	__syncthreads();
 
 	//reduction for nabla
-	for (int paraId = 0; paraId < noPara; paraId++)
+	for (int paraId = 0; paraId < noPara; paraId+=3)
 	{
-		dim_shared[locId_local] = localNabla[paraId];
+		dim_shared[3*locId_local+0] = localNabla[paraId+0];
+		dim_shared[3*locId_local+1] = localNabla[paraId+1];
+		dim_shared[3*locId_local+2] = localNabla[paraId+2];
 		__syncthreads();
 
-		if (locId_local < 128) dim_shared[locId_local] += dim_shared[locId_local + 128];
+		if (locId_local < 128) {
+			dim_shared[3*locId_local+0] += dim_shared[3*(locId_local + 128)+0];
+			dim_shared[3*locId_local+1] += dim_shared[3*(locId_local + 128)+1];
+			dim_shared[3*locId_local+2] += dim_shared[3*(locId_local + 128)+2];
+		}
 		__syncthreads();
-		if (locId_local < 64) dim_shared[locId_local] += dim_shared[locId_local + 64];
+		if (locId_local < 64) {
+			dim_shared[3*locId_local+0] += dim_shared[3*(locId_local + 64)+0];
+			dim_shared[3*locId_local+1] += dim_shared[3*(locId_local + 64)+1];
+			dim_shared[3*locId_local+2] += dim_shared[3*(locId_local + 64)+2];
+		}
 		__syncthreads();
 
-		if (locId_local < 32) warpReduce(dim_shared, locId_local);
+		if (locId_local < 32) warpReduce3(dim_shared, locId_local);
 
-		if (locId_local == 0) ATb[blockId_global * noPara + paraId] = dim_shared[locId_local];
+		if (locId_local == 0) {
+			ATb[blockId_global * noPara + paraId+0] = dim_shared[0];
+			ATb[blockId_global * noPara + paraId+1] = dim_shared[1];
+			ATb[blockId_global * noPara + paraId+2] = dim_shared[2];
+		}
 	}
 
 	__syncthreads();
 
 	//reduction for hessian
-	for (int paraId = 0; paraId < noParaSQ; paraId++)
+	for (int paraId = 0; paraId < noParaSQ; paraId+=3)
 	{
-		dim_shared[locId_local] = localHessian[paraId];
+		dim_shared[3*locId_local+0] = localHessian[paraId+0];
+		dim_shared[3*locId_local+1] = localHessian[paraId+1];
+		dim_shared[3*locId_local+2] = localHessian[paraId+2];
 		__syncthreads();
 
-		if (locId_local < 128) dim_shared[locId_local] += dim_shared[locId_local + 128];
+		if (locId_local < 128) {
+			dim_shared[3*locId_local+0] += dim_shared[3*(locId_local + 128)+0];
+			dim_shared[3*locId_local+1] += dim_shared[3*(locId_local + 128)+1];
+			dim_shared[3*locId_local+2] += dim_shared[3*(locId_local + 128)+2];
+		}
 		__syncthreads();
-		if (locId_local < 64) dim_shared[locId_local] += dim_shared[locId_local + 64];
+		if (locId_local < 64) {
+			dim_shared[3*locId_local+0] += dim_shared[3*(locId_local + 64)+0];
+			dim_shared[3*locId_local+1] += dim_shared[3*(locId_local + 64)+1];
+			dim_shared[3*locId_local+2] += dim_shared[3*(locId_local + 64)+2];
+		}
 		__syncthreads();
 
-		if (locId_local < 32) warpReduce(dim_shared, locId_local);
+		if (locId_local < 32) warpReduce3(dim_shared, locId_local);
 
-		if (locId_local == 0) ATA[blockId_global * noParaSQ + paraId] = dim_shared[locId_local];
+		if (locId_local == 0) {
+			ATA[blockId_global * noParaSQ + paraId+0] = dim_shared[0];
+			ATA[blockId_global * noParaSQ + paraId+1] = dim_shared[1];
+			ATA[blockId_global * noParaSQ + paraId+2] = dim_shared[2];
+		}
 
 		//int sdataTargetOffset;
 		//for (uint s = (blockDim.x * blockDim.y) >> 1; s > 0; s >>= 1)

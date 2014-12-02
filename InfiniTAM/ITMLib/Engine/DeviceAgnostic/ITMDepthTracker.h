@@ -5,9 +5,9 @@
 #include "../../Utils/ITMLibDefines.h"
 #include "../../Utils/ITMPixelUtils.h"
 
-_CPU_AND_GPU_CODE_ inline bool computePerPointGH_Depth(float *localNabla, float *localHessian, int x, int y, float *depth, Vector2i viewImageSize, Vector4f viewIntrinsics,
-	Vector2i sceneImageSize, Vector4f sceneIntrinsics, Matrix4f approxInvPose, Matrix4f scenePose, Vector4f *pointsMap, Vector4f *normalsMap, float distThresh, 
-	bool rotationOnly, int noPara)
+_CPU_AND_GPU_CODE_ inline bool computePerPointGH_Depth(float *localNabla, float *localHessian, const int & x, const int & y, const float *depth, const Vector2i & viewImageSize, const Vector4f & viewIntrinsics,
+	const Vector2i & sceneImageSize, const Vector4f & sceneIntrinsics, const Matrix4f & approxInvPose, const Matrix4f & scenePose, const Vector4f *pointsMap, const Vector4f *normalsMap, const float & distThresh, 
+	const bool & rotationOnly, const int & noPara)
 {
 	float tmpD = depth[x + y * viewImageSize.x];
 
