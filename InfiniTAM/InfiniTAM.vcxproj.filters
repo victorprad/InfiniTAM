@@ -127,6 +127,9 @@
     <ClCompile Include="ITMLib\Engine\ITMRenTracker.cpp">
       <Filter>ITMLib\Engine\Trackers</Filter>
     </ClCompile>
+    <ClCompile Include="ITMLib\Engine\ITMTrackerFactory.cpp">
+      <Filter>ITMLib\Engine</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Utils\FileUtils.h">
@@ -329,6 +332,9 @@
     </ClInclude>
     <ClInclude Include="ITMLib\Objects\ITMTemplatedHierarchyLevel.h">
       <Filter>ITMLib\Objects\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ITMLib\Engine\ITMTrackerFactory.h">
+      <Filter>ITMLib\Engine</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

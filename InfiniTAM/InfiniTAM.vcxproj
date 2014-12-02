@@ -112,6 +112,7 @@
     <ClCompile Include="ITMLib\Engine\ITMDepthTracker.cpp" />
     <ClCompile Include="ITMLib\Engine\ITMMainEngine.cpp" />
     <ClCompile Include="ITMLib\Engine\ITMRenTracker.cpp" />
+    <ClCompile Include="ITMLib\Engine\ITMTrackerFactory.cpp" />
     <ClCompile Include="ITMLib\Engine\ITMVisualisationEngine.cpp" />
     <ClCompile Include="ITMLib\Utils\ITMLibSettings.cpp" />
     <ClCompile Include="ITMLib\Utils\ITMCalibIO.cpp" />
@@ -158,6 +159,7 @@
     <ClInclude Include="ITMLib\Engine\ITMSceneReconstructionEngine.h" />
     <ClInclude Include="ITMLib\Engine\ITMSwappingEngine.h" />
     <ClInclude Include="ITMLib\Engine\ITMTracker.h" />
+    <ClInclude Include="ITMLib\Engine\ITMTrackerFactory.h" />
     <ClInclude Include="ITMLib\Engine\ITMVisualisationEngine.h" />
     <ClInclude Include="ITMLib\Objects\ITMTemplatedHierarchyLevel.h" />
     <ClInclude Include="ITMLib\Objects\ITMGlobalCache.h" />
