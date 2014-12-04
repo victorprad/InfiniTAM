@@ -88,7 +88,7 @@ _CPU_AND_GPU_CODE_ inline void CreateRenderingBlocks(RenderingBlock *renderingBl
 
 template<class TVoxel, class TIndex>
 _CPU_AND_GPU_CODE_ inline bool castRay(Vector3f &pt_out, int x, int y, const TVoxel *voxelData, const typename TIndex::IndexData *voxelIndex, Matrix4f invM,
-	Vector4f projParams, Vector2i imgSize, float oneOverVoxelSize, float mu, float viewFrustum_min, float viewFrustum_max)
+	Vector4f projParams, float oneOverVoxelSize, float mu, float viewFrustum_min, float viewFrustum_max)
 {
 	Vector3f pt_camera_f, pt_block_s, pt_block_e, rayDirection, pt_result;
 	bool pt_found, hash_found;
@@ -179,4 +179,135 @@ _CPU_AND_GPU_CODE_ inline bool castRay(Vector3f &pt_out, int x, int y, const TVo
 	return pt_found;
 }
 
+template<class TVoxel, class TIndex>
+_CPU_AND_GPU_CODE_ inline void computeNormalAndAngle(bool & foundPoint, const Vector3f & point, const TVoxel *voxelBlockData, const typename TIndex::IndexData *indexData, const Vector3f & lightSource, Vector3f & outNormal, float & angle)
+{
+	if (!foundPoint) return;
+
+	outNormal = computeSingleNormalFromSDF(voxelBlockData, indexData, point);
+
+	float normScale = 1.0f / sqrtf(outNormal.x * outNormal.x + outNormal.y * outNormal.y + outNormal.z * outNormal.z);
+	outNormal *= normScale;
+
+	angle = outNormal.x * lightSource.x + outNormal.y * lightSource.y + outNormal.z * lightSource.z;
+	if (!(angle > 0.0)) foundPoint = false;
+}
+
+_CPU_AND_GPU_CODE_ inline void drawRendering(const bool & foundPoint, const float & angle, Vector4u & dest)
+{
+	if (!foundPoint)
+	{
+		dest = Vector4u((const uchar&)0);
+		return;
+	}
+
+	float outRes = (0.8f * angle + 0.2f) * 255.0f;
+	dest = Vector4u((uchar)outRes);
+}
+
+template<class TVoxel, class TIndex>
+_CPU_AND_GPU_CODE_ inline void drawColourRendering(const bool & foundPoint, const Vector3f & point, const TVoxel *voxelBlockData, const typename TIndex::IndexData *indexData, Vector4u & dest)
+{
+	if (!foundPoint)
+	{
+		dest = Vector4u((const uchar&)0);
+		return;
+	}
+
+	Vector4f clr = VoxelColorReader<TVoxel::hasColorInformation,TVoxel,typename TIndex::IndexData>::interpolate(voxelBlockData, indexData, point);
+
+	dest.x = (uchar)(clr.r * 255.0f);
+	dest.y = (uchar)(clr.g * 255.0f);
+	dest.z = (uchar)(clr.b * 255.0f);
+	dest.w = 255;
+}
+
+class RaycastRenderer_GrayImage {
+	private:
+	Vector4u *outRendering;
+	public:
+	RaycastRenderer_GrayImage(Vector4u *out)
+	{ outRendering = out; }
+
+	_CPU_AND_GPU_CODE_ inline void processPixel(int x, int y, int locId, bool foundPoint, const Vector3f & point, const Vector3f & outNormal, float angle)
+	{
+		drawRendering(foundPoint, angle, outRendering[locId]);
+	}
+};
+
+template<class TVoxel, class TIndex>
+class RaycastRenderer_ColourImage {
+	private:
+	const TVoxel *voxelData;
+	const typename TIndex::IndexData *voxelIndex;
+
+	Vector4u *outRendering;
+
+	public:
+	RaycastRenderer_ColourImage(Vector4u *out, const TVoxel *_voxelData, const typename TIndex::IndexData *_voxelIndex)
+	{ outRendering = out; voxelData = _voxelData; voxelIndex = _voxelIndex; }
+
+	_CPU_AND_GPU_CODE_ inline void processPixel(int x, int y, int locId, bool foundPoint, const Vector3f & point, const Vector3f & outNormal, float angle)
+	{
+		drawColourRendering<TVoxel,TIndex>(foundPoint, point, voxelData, voxelIndex, outRendering[locId]);
+	}
+};
+
+class RaycastRenderer_ICPMaps {
+	private:
+	Vector4u *outRendering;
+	Vector4f *pointsMap;
+	Vector4f *normalsMap;
+	float voxelSize;
+
+	public:
+	RaycastRenderer_ICPMaps(Vector4u *_outRendering, Vector4f *_pointsMap, Vector4f *_normalsMap, float _voxelSize)
+	 : outRendering(_outRendering), pointsMap(_pointsMap), normalsMap(_normalsMap), voxelSize(_voxelSize)
+	{}
+
+	_CPU_AND_GPU_CODE_ inline void processPixel(int x, int y, int locId, bool foundPoint, const Vector3f & point, const Vector3f & outNormal, float angle)
+	{
+		drawRendering(foundPoint, angle, outRendering[locId]);
+		if (foundPoint)
+		{
+			Vector4f outPoint4;
+			outPoint4.x = point.x * voxelSize; outPoint4.y = point.y * voxelSize;
+			outPoint4.z = point.z * voxelSize; outPoint4.w = 1.0f;
+			pointsMap[locId] = outPoint4;
+
+			Vector4f outNormal4;
+			outNormal4.x = outNormal.x; outNormal4.y = outNormal.y; outNormal4.z = outNormal.z; outNormal4.w = 0.0f;
+			normalsMap[locId] = outNormal4;
+		}
+		else
+		{
+			Vector4f out4;
+			out4.x = 0.0f; out4.y = 0.0f; out4.z = 0.0f; out4.w = -1.0f;
+
+			pointsMap[locId] = out4;
+			normalsMap[locId] = out4;
+		}
+	}
+};
+
+template<class TVoxel, class TIndex, class TRaycastRenderer>
+_CPU_AND_GPU_CODE_ inline void genericRaycastAndRender(int x, int y, TRaycastRenderer & renderer,
+	const TVoxel *voxelData, const typename TIndex::IndexData *voxelIndex, Vector2i imgSize, Matrix4f invM, Vector4f projParams,
+	float oneOverVoxelSize, const Vector2f *minmaxdata, float mu, Vector3f lightSource)
+{
+	Vector3f pt_ray;
+	Vector3f outNormal;
+	float angle;
+
+	int locId = x + y * imgSize.x;
+
+	float viewFrustum_min = minmaxdata[locId].x;
+	float viewFrustum_max = minmaxdata[locId].y;
+
+	bool foundPoint = castRay<TVoxel,TIndex>(pt_ray, x, y, voxelData, voxelIndex, invM, projParams, oneOverVoxelSize, mu, viewFrustum_min, viewFrustum_max);
+
+	computeNormalAndAngle<TVoxel,TIndex>(foundPoint, pt_ray, voxelData, voxelIndex, lightSource, outNormal, angle);
+
+	renderer.processPixel(x,y, locId, foundPoint, pt_ray, outNormal, angle);
+}
 
