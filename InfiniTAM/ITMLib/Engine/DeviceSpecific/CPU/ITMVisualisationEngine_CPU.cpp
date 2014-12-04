@@ -184,6 +184,9 @@ void ITMVisualisationEngine_CPU<TVoxel,ITMVoxelBlockHash>::CreateExpectedDepths(
 template<class TVoxel, class TIndex>
 static void RenderImage_common(const ITMScene<TVoxel,TIndex> *scene, const ITMPose *pose, const ITMIntrinsics *intrinsics, const ITMVisualisationState *state, ITMUChar4Image *outputImage, bool useColour)
 {
+	const TVoxel *voxelData = scene->localVBA.GetVoxelBlocks();
+	const typename TIndex::IndexData *voxelIndex = scene->index.getIndexData();
+
 	Vector2i imgSize = outputImage->noDims;
 	float oneOverVoxelSize = 1.0f / scene->sceneParams->voxelSize;
 
@@ -198,65 +201,73 @@ static void RenderImage_common(const ITMScene<TVoxel,TIndex> *scene, const ITMPo
 	Vector4u *outRendering = outputImage->GetData(false);
 	const Vector2f *minmaximg = state->minmaxImage->GetData(false);
 
-	for (int y = 0; y < imgSize.y; y++) for (int x = 0; x < imgSize.x; x++)
-	{
-		Vector3f pt_ray; Vector4f tmp;
-		Vector3f outNormal;
-		float angle = 0.0f;
-
-		int locId = x + y * imgSize.x;
-
-		float viewFrustum_min = minmaximg[locId].x;
-		float viewFrustum_max = minmaximg[locId].y;
-
-		bool foundPoint = false;
-		foundPoint = castRay<TVoxel,TIndex>(pt_ray, x, y, scene->localVBA.GetVoxelBlocks(), scene->index.getIndexData(), invM, projParams, imgSize, oneOverVoxelSize, mu, viewFrustum_min, viewFrustum_max);
-
-		if (foundPoint)
+	if (useColour&&TVoxel::hasColorInformation) {
+		RaycastRenderer_ColourImage<TVoxel,TIndex> renderer(outRendering, voxelData, voxelIndex);
+		for (int y = 0; y < imgSize.y; y++) for (int x = 0; x < imgSize.x; x++)
 		{
-			outNormal = computeSingleNormalFromSDF(scene->localVBA.GetVoxelBlocks(), scene->index.getIndexData(), pt_ray);
-
-			float normScale = 1.0f / sqrtf(outNormal.x * outNormal.x + outNormal.y * outNormal.y + outNormal.z * outNormal.z);
-			outNormal *= normScale;
-
-			angle = outNormal.x * lightSource.x + outNormal.y * lightSource.y + outNormal.z * lightSource.z;
-			if (!(angle > 0.0)) foundPoint = false;
+			genericRaycastAndRender<TVoxel,TIndex>(x,y, renderer, voxelData, voxelIndex, imgSize, invM, projParams, oneOverVoxelSize, minmaximg, mu, lightSource);
 		}
-
-		Vector4u& outRef = outRendering[locId];
-		if (foundPoint)
+	} else {
+		RaycastRenderer_GrayImage renderer(outRendering);
+		for (int y = 0; y < imgSize.y; y++) for (int x = 0; x < imgSize.x; x++)
 		{
-			if (useColour && TVoxel::hasColorInformation)
-			{
-				const TVoxel *voxelData = scene->localVBA.GetVoxelBlocks();
-				const typename TIndex::IndexData *voxelIndex = scene->index.getIndexData();
-				Vector4f clr = VoxelColorReader<TVoxel::hasColorInformation,TVoxel,typename TIndex::IndexData>::interpolate(voxelData, voxelIndex, pt_ray);
-				outRef.x = (uchar)(clr.r * 255.0f);
-				outRef.y = (uchar)(clr.g * 255.0f);
-				outRef.z = (uchar)(clr.b * 255.0f);
-				outRef.w = 255;
-			}
-			else
-			{
-				float outRes = (0.8f * angle + 0.2f) * 255.0f;
-				outRef = Vector4u((uchar)outRes);
-			}
-		}
-		else
-		{
-			outRef = Vector4u((const uchar&)0);
+			genericRaycastAndRender<TVoxel,TIndex>(x,y, renderer, voxelData, voxelIndex, imgSize, invM, projParams, oneOverVoxelSize, minmaximg, mu, lightSource);
 		}
 	}
 }
 
 template<class TVoxel, class TIndex>
+class RaycastRenderer_PointCloud {
+	private:
+	Vector4u *outRendering;
+	Vector4f *locations;
+	Vector4f *colours;
+	uint & noTotalPoints;
+	float voxelSize;
+	bool skipPoints;
+	const TVoxel *voxelData;
+	const typename TIndex::IndexData *voxelIndex;
+
+	public:
+	RaycastRenderer_PointCloud(Vector4u *_outRendering, Vector4f *_locations, Vector4f *_colours, uint & _noTotalPoints, float _voxelSize, bool _skipPoints, const TVoxel *_voxelData, const typename TIndex::IndexData *_voxelIndex)
+	 : outRendering(_outRendering), locations(_locations), colours(_colours),
+	   noTotalPoints(_noTotalPoints), voxelSize(_voxelSize), skipPoints(_skipPoints),
+	   voxelData(_voxelData), voxelIndex(_voxelIndex)
+	{}
+
+	inline void processPixel(int x, int y, int locId, bool foundPoint, const Vector3f & point, const Vector3f & outNormal, float angle)
+	{
+		drawRendering(foundPoint, angle, outRendering[locId]);
+
+		if (skipPoints && ((x % 2 == 0) || (y % 2 == 0))) foundPoint = false;
+
+		if (foundPoint)
+		{
+			Vector4f tmp;
+			tmp = VoxelColorReader<TVoxel::hasColorInformation,TVoxel, typename TIndex::IndexData>::interpolate(voxelData, voxelIndex, point);
+			if (tmp.w > 0.0f) { tmp.x /= tmp.w; tmp.y /= tmp.w; tmp.z /= tmp.w; tmp.w = 1.0f; }
+			colours[noTotalPoints] = tmp;
+
+			Vector4f pt_ray_out;
+			pt_ray_out.x = point.x * voxelSize; pt_ray_out.y = point.y * voxelSize;
+			pt_ray_out.z = point.z * voxelSize; pt_ray_out.w = 1.0f;
+			locations[noTotalPoints] = pt_ray_out;
+
+			noTotalPoints++;
+		}
+	}
+};
+
+template<class TVoxel, class TIndex>
 static void CreatePointCloud_common(const ITMScene<TVoxel,TIndex> *scene, const ITMView *view, ITMTrackingState *trackingState, bool skipPoints)
 {
+	const TVoxel *voxelData = scene->localVBA.GetVoxelBlocks();
+	const typename TIndex::IndexData *voxelIndex = scene->index.getIndexData();
+
 	Vector2i imgSize = view->depth->noDims;
 	float voxelSize = scene->sceneParams->voxelSize;
 	float oneOverVoxelSize = 1.0f / scene->sceneParams->voxelSize;
 
-	//Matrix4f invM = trackingState->pose->invM;
 	Matrix4f invM = trackingState->pose_d->invM * view->calib->trafo_rgb_to_depth.calib;
 	Vector4f projParams = view->calib->intrinsics_rgb.projectionParamsSimple.all;
 	projParams.x = 1.0f / projParams.x;
@@ -270,62 +281,21 @@ static void CreatePointCloud_common(const ITMScene<TVoxel,TIndex> *scene, const 
 	float mu = scene->sceneParams->mu;
 	Vector3f lightSource = -Vector3f(invM.getColumn(2));
 
-	memset(outRendering, 0, sizeof(Vector4u)* imgSize.x * imgSize.y);
+	RaycastRenderer_PointCloud<TVoxel,TIndex> renderer(outRendering, locations, colours, trackingState->pointCloud->noTotalPoints, voxelSize, skipPoints, voxelData, voxelIndex);
+	trackingState->pointCloud->noTotalPoints = 0;
 
-	int offset = 0;
 	for (int y = 0; y < imgSize.y; y++) for (int x = 0; x < imgSize.x; x++)
 	{
-		Vector3f pt_ray; Vector4f tmp;
-		float angle = 0.0f;
-
-		int locId = x + y * imgSize.x;
-
-		float viewFrustum_min = minmaximg[locId].x;
-		float viewFrustum_max = minmaximg[locId].y;
-
-		bool foundPoint = false;
-		foundPoint = castRay<TVoxel,TIndex>(pt_ray, x, y, scene->localVBA.GetVoxelBlocks(), scene->index.getIndexData(), invM, projParams, imgSize, oneOverVoxelSize, mu, viewFrustum_min, viewFrustum_max);
-
-		if (foundPoint)
-		{
-			Vector3f outNormal = computeSingleNormalFromSDF(scene->localVBA.GetVoxelBlocks(), scene->index.getIndexData(), pt_ray);
-
-			float normScale = 1.0f / sqrtf(outNormal.x * outNormal.x + outNormal.y * outNormal.y + outNormal.z * outNormal.z);
-			outNormal *= normScale;
-
-			angle = outNormal.x * lightSource.x + outNormal.y * lightSource.y + outNormal.z * lightSource.z;
-			if (!(angle>0.0f)) foundPoint = false;
-		}
-
-		if (foundPoint) {
-			float outRes = (0.8f * angle + 0.2f) * 255.0f;
-			outRendering[x + y * imgSize.x] = (uchar)outRes;
-		}
-
-		if (skipPoints && ((x % 2 == 0) || (y % 2 == 0))) foundPoint = false;
-
-		if (foundPoint)
-		{
-			Vector4f pt_ray_out;
-
-			tmp = VoxelColorReader<TVoxel::hasColorInformation,TVoxel, typename TIndex::IndexData>::interpolate(scene->localVBA.GetVoxelBlocks(), scene->index.getIndexData(), pt_ray);
-			if (tmp.w > 0.0f) { tmp.x /= tmp.w; tmp.y /= tmp.w; tmp.z /= tmp.w; tmp.w = 1.0f; }
-			colours[offset] = tmp;
-
-			pt_ray_out.x = pt_ray.x * voxelSize; pt_ray_out.y = pt_ray.y * voxelSize;
-			pt_ray_out.z = pt_ray.z * voxelSize; pt_ray_out.w = 1.0f;
-			locations[offset] = pt_ray_out;
-
-			offset++;
-		}
+		genericRaycastAndRender<TVoxel,TIndex>(x,y, renderer, voxelData, voxelIndex, imgSize, invM, projParams, oneOverVoxelSize, minmaximg, mu, lightSource);
 	}
-
-	trackingState->pointCloud->noTotalPoints = offset;
 }
 
 template<class TVoxel, class TIndex>
 static void CreateICPMaps_common(const ITMScene<TVoxel,TIndex> *scene, const ITMView *view, ITMTrackingState *trackingState)
 {
+	const TVoxel *voxelData = scene->localVBA.GetVoxelBlocks();
+	const typename TIndex::IndexData *voxelIndex = scene->index.getIndexData();
+
 	Vector2i imgSize = view->depth->noDims;
 	float voxelSize = scene->sceneParams->voxelSize;
 	float oneOverVoxelSize = 1.0f / scene->sceneParams->voxelSize;
@@ -343,58 +313,11 @@ static void CreateICPMaps_common(const ITMScene<TVoxel,TIndex> *scene, const ITM
 	Vector4u *outRendering = trackingState->rendering->GetData(false);
 	const Vector2f *minmaximg = trackingState->renderingRangeImage->GetData(false);
 
-	memset(outRendering, 0, sizeof(Vector4u)* imgSize.x * imgSize.y);
-	memset(pointsMap, 0, sizeof(Vector4f)* imgSize.x * imgSize.y);
-	memset(normalsMap, 0, sizeof(Vector4f)* imgSize.x * imgSize.y);
+	RaycastRenderer_ICPMaps renderer(outRendering, pointsMap, normalsMap, voxelSize);
 
 	for (int y = 0; y < imgSize.y; y++) for (int x = 0; x < imgSize.x; x++)
 	{
-		Vector3f pt_ray; Vector4f tmp;
-		Vector3f outNormal;
-		float angle = 0.0f;
-
-		int locId = x + y * imgSize.x;
-
-		float viewFrustum_min = minmaximg[locId].x;
-		float viewFrustum_max = minmaximg[locId].y;
-
-		bool foundPoint = false;
-		foundPoint = castRay<TVoxel,TIndex>(pt_ray, x, y, scene->localVBA.GetVoxelBlocks(), scene->index.getIndexData(), invM, projParams, imgSize, oneOverVoxelSize, mu, viewFrustum_min, viewFrustum_max);
-
-		if (foundPoint)
-		{
-			outNormal = computeSingleNormalFromSDF(scene->localVBA.GetVoxelBlocks(), scene->index.getIndexData(), pt_ray);
-
-			float normScale = 1.0f / sqrtf(outNormal.x * outNormal.x + outNormal.y * outNormal.y + outNormal.z * outNormal.z);
-			outNormal *= normScale;
-
-			angle = outNormal.x * lightSource.x + outNormal.y * lightSource.y + outNormal.z * lightSource.z;
-			if (!(angle > 0.0)) foundPoint = false;
-		}
-		if (foundPoint)
-		{
-			float outRes = (0.8f * angle + 0.2f) * 255.0f;
-
-			outRendering[x + y * imgSize.x] = (uchar)outRes;
-
-			Vector4f outNormal4;
-			outNormal4.x = outNormal.x; outNormal4.y = outNormal.y; outNormal4.z = outNormal.z; outNormal4.w = 0.0f;
-
-			Vector4f outPoint4;
-			outPoint4.x = pt_ray.x * voxelSize; outPoint4.y = pt_ray.y * voxelSize;
-			outPoint4.z = pt_ray.z * voxelSize; outPoint4.w = 1.0f;
-
-			pointsMap[locId] = outPoint4;
-			normalsMap[locId] = outNormal4;
-		}
-		else
-		{
-			Vector4f out4;
-			out4.x = 0.0f; out4.y = 0.0f; out4.z = 0.0f; out4.w = -1.0f;
-
-			pointsMap[x + y * imgSize.x] = out4;
-			normalsMap[x + y * imgSize.x] = out4;
-		}
+		genericRaycastAndRender<TVoxel,TIndex>(x,y, renderer, voxelData, voxelIndex, imgSize, invM, projParams, oneOverVoxelSize, minmaximg, mu, lightSource);
 	}
 }
 
