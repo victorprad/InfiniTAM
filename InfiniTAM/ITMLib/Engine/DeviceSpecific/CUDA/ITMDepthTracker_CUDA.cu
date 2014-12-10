@@ -9,9 +9,10 @@ using namespace ITMLib::Engine;
 
 __global__ void changeIgnorePixelToZero_device(float *imageData_out, Vector2i imgSize);
 
+template<bool rotationOnly>
 __global__ void depthTrackerOneLevel_g_rt_device(int *noValidPoints, float *ATA, float *ATb, float *depth, Matrix4f approxInvPose, Vector4f *pointsMap,
 	Vector4f *normalsMap, Vector4f sceneIntrinsics, Vector2i sceneImageSize, Matrix4f scenePose, Vector4f viewIntrinsics, Vector2i viewImageSize,
-	float distThresh, bool rotationOnly);
+	float distThresh);
 
 // host methods
 
@@ -80,8 +81,13 @@ int ITMDepthTracker_CUDA::ComputeGandH(ITMSceneHierarchyLevel *sceneHierarchyLev
 	ITMSafeCall(cudaMemset(h_device, 0, gridSizeTotal * noParaSQ * sizeof(float)));
 	ITMSafeCall(cudaMemset(g_device, 0, gridSizeTotal * noPara * sizeof(float)));
 
-	depthTrackerOneLevel_g_rt_device << <gridSize, blockSize >> >(na_device, h_device, g_device, depth, approxInvPose, pointsMap,
-		normalsMap, sceneIntrinsics, sceneImageSize, scenePose, viewIntrinsics, viewImageSize, distThresh, rotationOnly);
+	if (rotationOnly) {
+		depthTrackerOneLevel_g_rt_device<true> << <gridSize, blockSize >> >(na_device, h_device, g_device, depth, approxInvPose, pointsMap,
+			normalsMap, sceneIntrinsics, sceneImageSize, scenePose, viewIntrinsics, viewImageSize, distThresh);
+	} else {
+		depthTrackerOneLevel_g_rt_device<false> << <gridSize, blockSize >> >(na_device, h_device, g_device, depth, approxInvPose, pointsMap,
+			normalsMap, sceneIntrinsics, sceneImageSize, scenePose, viewIntrinsics, viewImageSize, distThresh);
+	}
 
 	ITMSafeCall(cudaMemcpy(na_host, na_device, sizeof(int)* gridSizeTotal, cudaMemcpyDeviceToHost));
 	ITMSafeCall(cudaMemcpy(h_host, h_device, sizeof(float)* gridSizeTotal * noParaSQ, cudaMemcpyDeviceToHost));
@@ -112,9 +118,10 @@ __global__ void changeIgnorePixelToZero_device(float *imageData, Vector2i imgSiz
 	if (imageData[x + y * imgSize.x] < 0.0f) imageData[x + y * imgSize.x] = 0.0f;
 }
 
+template<bool rotationOnly>
 __global__ void depthTrackerOneLevel_g_rt_device(int *noValidPoints, float *ATA, float *ATb, float *depth, Matrix4f approxInvPose, Vector4f *pointsMap,
 	Vector4f *normalsMap, Vector4f sceneIntrinsics, Vector2i sceneImageSize, Matrix4f scenePose, Vector4f viewIntrinsics, Vector2i viewImageSize,
-	float distThresh, bool rotationOnly)
+	float distThresh)
 {
 	int x = threadIdx.x + blockIdx.x * blockDim.x, y = threadIdx.y + blockIdx.y * blockDim.y;
 
@@ -124,17 +131,17 @@ __global__ void depthTrackerOneLevel_g_rt_device(int *noValidPoints, float *ATA,
 	__shared__ float dim_shared2[256];
 	__shared__ float dim_shared3[256];
 
-	float localNabla[6], localHessian[21]; bool isValidPoint = false;
-
-	int noPara = rotationOnly ? 3 : 6, noParaSQ = rotationOnly ? 3 + 2 + 1 : 6 + 5 + 4 + 3 + 2 + 1;
+	const int noPara = rotationOnly ? 3 : 6;
+	const int noParaSQ = rotationOnly ? 3 + 2 + 1 : 6 + 5 + 4 + 3 + 2 + 1;
+	float localNabla[noPara], localHessian[noParaSQ]; bool isValidPoint = false;
 
 	for (int i = 0; i < noPara; i++) localNabla[i] = 0.0f;
 	for (int i = 0; i < noParaSQ; i++) localHessian[i] = 0.0f;
 
 	if (x >= 0 && x < viewImageSize.x && y >= 0 && y < viewImageSize.y)
 	{
-		isValidPoint = computePerPointGH_Depth(localNabla, localHessian, x, y, depth, viewImageSize, viewIntrinsics, sceneImageSize, sceneIntrinsics,
-			approxInvPose, scenePose, pointsMap, normalsMap, distThresh, rotationOnly, noPara);
+		isValidPoint = computePerPointGH_Depth<rotationOnly>(localNabla, localHessian, x, y, depth, viewImageSize, viewIntrinsics, sceneImageSize, sceneIntrinsics,
+			approxInvPose, scenePose, pointsMap, normalsMap, distThresh);
 	}
 
 	//reduction for noValidPoints
@@ -239,3 +246,4 @@ __global__ void depthTrackerOneLevel_g_rt_device(int *noValidPoints, float *ATA,
 		//atomicAdd(&ATA[paraId], dim_shared[locId_local]);
 	}
 }
+

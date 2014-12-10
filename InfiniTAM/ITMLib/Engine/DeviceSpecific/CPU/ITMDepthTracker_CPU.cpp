@@ -45,8 +45,14 @@ int ITMDepthTracker_CPU::ComputeGandH(ITMSceneHierarchyLevel *sceneHierarchyLeve
 		for (int i = 0; i < noPara; i++) localNabla[i] = 0.0f;
 		for (int i = 0; i < noParaSQ; i++) localHessian[i] = 0.0f;
 
-		bool isValidPoint = computePerPointGH_Depth(localNabla, localHessian, x, y, depth, viewImageSize, viewIntrinsics, sceneImageSize, sceneIntrinsics,
-			approxInvPose, scenePose, pointsMap, normalsMap, distThresh, rotationOnly, noPara);
+		bool isValidPoint;
+		if (rotationOnly) {
+			isValidPoint = computePerPointGH_Depth<true>(localNabla, localHessian, x, y, depth, viewImageSize, viewIntrinsics, sceneImageSize, sceneIntrinsics,
+				approxInvPose, scenePose, pointsMap, normalsMap, distThresh);
+		} else {
+			isValidPoint = computePerPointGH_Depth<false>(localNabla, localHessian, x, y, depth, viewImageSize, viewIntrinsics, sceneImageSize, sceneIntrinsics,
+				approxInvPose, scenePose, pointsMap, normalsMap, distThresh);
+		}
 
 		noValidPoints += (int)isValidPoint;
 		for (int i = 0; i < noPara; i++) ATb_host[i] += localNabla[i];
