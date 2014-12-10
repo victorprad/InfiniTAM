@@ -23,10 +23,11 @@ static const int renderingBlockSizeY = 16;
 
 static const int MAX_RENDERING_BLOCKS = 65536*4;
 //static const int MAX_RENDERING_BLOCKS = 16384;
+static const int minmaximg_subsample = 4;
 
 _CPU_AND_GPU_CODE_ inline bool ProjectSingleBlock(const Vector3s & blockPos, const Matrix4f & pose, const Vector4f & intrinsics, const Vector2i & imgSize, float voxelSize, Vector2i & upperLeft, Vector2i & lowerRight, Vector2f & zRange)
 {
-	upperLeft = imgSize;
+	upperLeft = imgSize / minmaximg_subsample;
 	lowerRight = Vector2i(-1, -1);
 	zRange = Vector2f(FAR_AWAY, VERY_CLOSE);
 	for (int corner = 0; corner < 8; ++corner)
@@ -41,8 +42,8 @@ _CPU_AND_GPU_CODE_ inline bool ProjectSingleBlock(const Vector3s & blockPos, con
 		if (pt3d.z < 1e-6) continue;
 
 		Vector2f pt2d;
-		pt2d.x = intrinsics.x * pt3d.x / pt3d.z + intrinsics.z;
-		pt2d.y = intrinsics.y * pt3d.y / pt3d.z + intrinsics.w;
+		pt2d.x = (intrinsics.x * pt3d.x / pt3d.z + intrinsics.z) / minmaximg_subsample;
+		pt2d.y = (intrinsics.y * pt3d.y / pt3d.z + intrinsics.w) / minmaximg_subsample;
 
 		// remember bounding box, zmin and zmax
 		if (upperLeft.x > floorf(pt2d.x)) upperLeft.x = (int)floorf(pt2d.x);
@@ -294,9 +295,10 @@ _CPU_AND_GPU_CODE_ inline void genericRaycastAndRender(int x, int y, TRaycastRen
 	float angle;
 
 	int locId = x + y * imgSize.x;
+	int locId2 = (int)floorf(x/minmaximg_subsample) + (int)floorf(y/minmaximg_subsample) * imgSize.x;
 
-	float viewFrustum_min = minmaxdata[locId].x;
-	float viewFrustum_max = minmaxdata[locId].y;
+	float viewFrustum_min = minmaxdata[locId2].x;
+	float viewFrustum_max = minmaxdata[locId2].y;
 
 	bool foundPoint = castRay<TVoxel,TIndex>(pt_ray, x, y, voxelData, voxelIndex, invM, projParams, oneOverVoxelSize, mu, viewFrustum_min, viewFrustum_max);
 
