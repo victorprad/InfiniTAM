@@ -10,9 +10,12 @@ namespace ITMLib
 	{
 		class ITMDepthTracker_CUDA : public ITMDepthTracker
 		{
+		public:
+			struct AccuCell;
+
 		private:
-			int *na_device; float *g_device, *h_device;
-			int *na_host; float *g_host, *h_host;
+			AccuCell *accu_host;
+			AccuCell *accu_device;
 
 		protected:
 			void ChangeIgnorePixelToZero(ITMFloatImage *image);
