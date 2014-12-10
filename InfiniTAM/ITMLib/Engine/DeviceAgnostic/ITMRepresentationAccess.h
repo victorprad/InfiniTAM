@@ -154,7 +154,7 @@ _CPU_AND_GPU_CODE_ inline float readFromSDF_float_maybe_interpolate(const TVoxel
 	TVoxel res = readVoxel(voxelData, voxelIndex, pos_round, isFound, cache);
 
 	float ret = TVoxel::SDF_valueToFloat(res.sdf);
-	if (fabsf(ret) > 0.25f) return ret;
+	if ((ret > 0.0f)||(ret < -0.1f)) return ret;
 
 	Vector3f coeff; Vector3i pos = point.toIntFloor(coeff);
 	Vector3u skip(pos_round.x - pos.x, pos_round.y - pos.y, pos_round.z - pos.z);
@@ -199,6 +199,47 @@ _CPU_AND_GPU_CODE_ inline float readFromSDF_float_maybe_interpolate(const TVoxel
 		ret += res.sdf * c;
 	}
 	isFound = true;
+
+	return TVoxel::SDF_valueToFloat(ret);
+}
+
+template<class TVoxel, class TAccess, class TCache>
+_CPU_AND_GPU_CODE_ inline float readFromSDF_float_interpolated(const TVoxel *voxelData, const TAccess *voxelIndex, Vector3f point, bool &isFound, TCache & cache)
+{
+	TVoxel resn; float ret = 0;
+	Vector3f coeff; Vector3i pos = point.toIntFloor(coeff);
+
+	resn = readVoxel(voxelData, voxelIndex, pos + Vector3i(0, 0, 0), isFound, cache);
+	if (!isFound) return TVoxel::SDF_valueToFloat(TVoxel::SDF_initialValue());
+	ret += (1.0f - coeff.x) * (1.0f - coeff.y) * (1.0f - coeff.z) * (float)resn.sdf;
+
+	resn = readVoxel(voxelData, voxelIndex, pos + Vector3i(1, 0, 0), isFound, cache);
+	if (!isFound) return TVoxel::SDF_valueToFloat(TVoxel::SDF_initialValue());
+	ret += (coeff.x) * (1.0f - coeff.y) * (1.0f - coeff.z) * (float)resn.sdf;
+
+	resn = readVoxel(voxelData, voxelIndex, pos + Vector3i(0, 1, 0), isFound, cache);
+	if (!isFound) return TVoxel::SDF_valueToFloat(TVoxel::SDF_initialValue());
+	ret += (1.0f - coeff.x) * (coeff.y) * (1.0f - coeff.z) * (float)resn.sdf;
+
+	resn = readVoxel(voxelData, voxelIndex, pos + Vector3i(1, 1, 0), isFound, cache);
+	if (!isFound) return TVoxel::SDF_valueToFloat(TVoxel::SDF_initialValue());
+	ret += (coeff.x) * (coeff.y) * (1.0f - coeff.z) * (float)resn.sdf;
+
+	resn = readVoxel(voxelData, voxelIndex, pos + Vector3i(0, 0, 1), isFound, cache);
+	if (!isFound) return TVoxel::SDF_valueToFloat(TVoxel::SDF_initialValue());
+	ret += (1.0f - coeff.x) * (1.0f - coeff.y) * coeff.z * (float)resn.sdf;
+
+	resn = readVoxel(voxelData, voxelIndex, pos + Vector3i(1, 0, 1), isFound, cache);
+	if (!isFound) return TVoxel::SDF_valueToFloat(TVoxel::SDF_initialValue());
+	ret += (coeff.x) * (1.0f - coeff.y) * coeff.z * (float)resn.sdf;
+
+	resn = readVoxel(voxelData, voxelIndex, pos + Vector3i(0, 1, 1), isFound, cache);
+	if (!isFound) return TVoxel::SDF_valueToFloat(TVoxel::SDF_initialValue());
+	ret += (1.0f - coeff.x) * (coeff.y) * coeff.z * (float)resn.sdf;
+
+	resn = readVoxel(voxelData, voxelIndex, pos + Vector3i(1, 1, 1), isFound, cache);
+	if (!isFound) return TVoxel::SDF_valueToFloat(TVoxel::SDF_initialValue());
+	ret += (coeff.x) * (coeff.y) * coeff.z * (float)resn.sdf;
 
 	return TVoxel::SDF_valueToFloat(ret);
 }

@@ -163,12 +163,6 @@ _CPU_AND_GPU_CODE_ inline bool castRay(Vector3f &pt_out, int x, int y, const TVo
 
 	if (state == BEHIND_SURFACE)
 	{
-		stepLength = MIN(sdfValue * stepScale, -0.5f);
-
-		pt_result += stepLength * rayDirection;
-
-		sdfValue = readFromSDF_float_interpolated(voxelData, voxelIndex, pt_result, hash_found);
-
 		stepLength = sdfValue * stepScale;
 
 		pt_result += stepLength * rayDirection;
