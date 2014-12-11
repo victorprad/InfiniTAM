@@ -12,7 +12,7 @@ namespace ITMLib
 			int noLevels;
 			T **levels;
 
-			ITMImageHierarchy(Vector2i imgSize, int noHierarchyLevels, int noRotationOnlyLevels, bool useGPU)
+			ITMImageHierarchy(Vector2i imgSize, int noHierarchyLevels, int noRotationOnlyLevels, bool useGPU, bool skipAllocationForLevel0 = false)
 			{
 				this->noLevels = noHierarchyLevels;
 
@@ -22,7 +22,7 @@ namespace ITMLib
 				for (int i = noHierarchyLevels - 1; i >= 0; i--)
 				{
 					bool currentLevelRotationOnly = (currentRotationOnlyLevel < noRotationOnlyLevels) ? true : false;
-					levels[i] = new T(imgSize, i, currentLevelRotationOnly, useGPU);
+					levels[i] = new T(imgSize, i, currentLevelRotationOnly, useGPU, (i == 0)&&skipAllocationForLevel0);
 					currentRotationOnlyLevel++;
 				}
 			}

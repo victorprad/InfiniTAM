@@ -18,13 +18,15 @@ namespace ITMLib
 
 			ImageType *depth;
 			Vector4f intrinsics;
+			bool manageData;
 
-			ITMTemplatedHierarchyLevel(Vector2i imgSize, int levelId, bool rotationOnly, bool useGPU)
+			ITMTemplatedHierarchyLevel(Vector2i imgSize, int levelId, bool rotationOnly, bool useGPU, bool skipAllocation = false)
 			{
+				this->manageData = !skipAllocation;
 				this->levelId = levelId;
 				this->rotationOnly = rotationOnly;
 
-				this->depth = new ImageType(imgSize, useGPU);
+				if (!skipAllocation) this->depth = new ImageType(imgSize, useGPU);
 			}
 
 			void UpdateHostFromDevice()
@@ -39,7 +41,7 @@ namespace ITMLib
 
 			~ITMTemplatedHierarchyLevel(void)
 			{
-				delete depth;
+				if (manageData) delete depth;
 			}
 
 			// Suppress the default copy constructor and assignment operator

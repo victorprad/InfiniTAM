@@ -19,13 +19,18 @@ namespace ITMLib
 			ITMFloat4Image *normalsMap;
 			Vector4f intrinsics;
 
-			ITMSceneHierarchyLevel(Vector2i imgSize, int levelId, bool rotationOnly, bool useGPU)
+			bool manageData;
+
+			ITMSceneHierarchyLevel(Vector2i imgSize, int levelId, bool rotationOnly, bool useGPU, bool skipAllocation = false)
 			{
+				this->manageData = !skipAllocation;
 				this->levelId = levelId;
 				this->rotationOnly = rotationOnly;
 
-				this->pointsMap = new ITMFloat4Image(imgSize, useGPU);
-				this->normalsMap = new ITMFloat4Image(imgSize, useGPU);
+				if (!skipAllocation) {
+					this->pointsMap = new ITMFloat4Image(imgSize, useGPU);
+					this->normalsMap = new ITMFloat4Image(imgSize, useGPU);
+				}
 			}
 
 			void UpdateHostFromDevice()
@@ -42,8 +47,10 @@ namespace ITMLib
 
 			~ITMSceneHierarchyLevel(void)
 			{
-				delete pointsMap;
-				delete normalsMap;
+				if (manageData) {
+					delete pointsMap;
+					delete normalsMap;
+				}
 			}
 
 			// Suppress the default copy constructor and assignment operator

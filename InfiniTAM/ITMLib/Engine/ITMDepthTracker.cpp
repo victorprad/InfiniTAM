@@ -10,8 +10,8 @@ using namespace ITMLib::Utils;
 
 ITMDepthTracker::ITMDepthTracker(Vector2i imgSize, int noHierarchyLevels, int noRotationOnlyLevels, int noICPRunTillLevel, float distThresh, ITMLowLevelEngine *lowLevelEngine, bool useGPU)
 {
-	viewHierarchy = new ITMImageHierarchy<ITMTemplatedHierarchyLevel<ITMFloatImage> >(imgSize, noHierarchyLevels, noRotationOnlyLevels, useGPU);
-	sceneHierarchy = new ITMImageHierarchy<ITMSceneHierarchyLevel>(imgSize, noHierarchyLevels, noRotationOnlyLevels, useGPU);
+	viewHierarchy = new ITMImageHierarchy<ITMTemplatedHierarchyLevel<ITMFloatImage> >(imgSize, noHierarchyLevels, noRotationOnlyLevels, useGPU, true);
+	sceneHierarchy = new ITMImageHierarchy<ITMSceneHierarchyLevel>(imgSize, noHierarchyLevels, noRotationOnlyLevels, useGPU, true);
 
 	this->noIterationsPerLevel = new int[noHierarchyLevels];
 
@@ -44,15 +44,14 @@ void ITMDepthTracker::SetEvaluationData(ITMTrackingState *trackingState, const I
 	sceneHierarchy->levels[0]->intrinsics = view->calib->intrinsics_d.projectionParamsSimple.all;
 	viewHierarchy->levels[0]->intrinsics = view->calib->intrinsics_d.projectionParamsSimple.all;
 
-	lowLevelEngine->CopyImage(viewHierarchy->levels[0]->depth, view->depth);
-	lowLevelEngine->CopyImage(sceneHierarchy->levels[0]->pointsMap, trackingState->pointCloud->locations);
-	lowLevelEngine->CopyImage(sceneHierarchy->levels[0]->normalsMap, trackingState->pointCloud->colours);
+	// the image hierarchy allows pointers to external data at level 0
+	viewHierarchy->levels[0]->depth = view->depth;
+	sceneHierarchy->levels[0]->pointsMap = trackingState->pointCloud->locations;
+	sceneHierarchy->levels[0]->normalsMap = trackingState->pointCloud->colours;
 }
 
 void ITMDepthTracker::PrepareForEvaluation()
 {
-	this->ChangeIgnorePixelToZero(viewHierarchy->levels[0]->depth);
-
 	for (int i = 1; i < viewHierarchy->noLevels; i++)
 	{
 		ITMTemplatedHierarchyLevel<ITMFloatImage> *currentLevelView = viewHierarchy->levels[i], *previousLevelView = viewHierarchy->levels[i - 1];
