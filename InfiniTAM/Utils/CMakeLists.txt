@@ -4,4 +4,8 @@ ELSE()
   add_definitions(-DCOMPILE_WITHOUT_CUDA)
 ENDIF()
 
-add_library(Utils FileUtils)
+add_library(Utils
+FileUtils.cpp
+FileUtils.h
+NVTimer.h
+)

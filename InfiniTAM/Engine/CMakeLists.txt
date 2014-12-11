@@ -19,10 +19,16 @@ ELSE(MSKINECTAPI_FOUND)
   add_definitions(-DCOMPILE_WITHOUT_Kinect2)
 ENDIF(MSKINECTAPI_FOUND)
 
-add_library(Engine OpenNIEngine.cpp
-	Kinect2Engine.cpp
-	ImageSourceEngine.cpp
-	UIEngine.cpp)
+add_library(Engine
+ImageSourceEngine.cpp
+ImageSourceEngine.h
+Kinect2Engine.cpp
+Kinect2Engine.h
+OpenNIEngine.cpp
+OpenNIEngine.h
+UIEngine.cpp
+UIEngine.h
+)
 
 target_link_libraries(Engine ${GLUT_LIBRARIES})
 target_link_libraries(Engine ${OPENGL_LIBRARIES})
