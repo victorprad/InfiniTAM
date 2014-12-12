@@ -32,7 +32,6 @@ namespace ITMLib {
 			struct { T x, y, z, w; }; // standard names for components
 			struct { T r, g, b, a; }; // standard names for components
 			struct { T s, t, p, q; }; // standard names for components
-			struct { T x, y, width, height; };
 			T v[4];
 		};
 	};
