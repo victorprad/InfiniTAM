@@ -13,6 +13,7 @@ namespace ITMLib {
 		union {
 			struct { T x, y; }; // standard names for components
 			struct { T s, t; }; // standard names for components
+			struct { T width, height; };
 			T v[2];     // array access
 		};
 	};
