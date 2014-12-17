@@ -115,12 +115,12 @@ _CPU_AND_GPU_CODE_ inline bool castRay(Vector3f &pt_out, int x, int y, const TVo
 
 	enum { SEARCH_BLOCK_COARSE, SEARCH_BLOCK_FINE, SEARCH_SURFACE, BEHIND_SURFACE, WRONG_SIDE } state;
 
-	sdfValue = readFromSDF_float_uninterpolated(voxelData, voxelIndex, pt_result, hash_found);
+	typename TIndex::IndexCache cache;
+
+	sdfValue = readFromSDF_float_uninterpolated(voxelData, voxelIndex, pt_result, hash_found, cache);
 	if (!hash_found) state = SEARCH_BLOCK_COARSE;
 	else if (sdfValue <= 0.0f) state = WRONG_SIDE;
 	else state = SEARCH_SURFACE;
-
-	typename TIndex::IndexCache cache;
 
 	pt_found = false;
 	while (state != BEHIND_SURFACE)
@@ -156,7 +156,8 @@ _CPU_AND_GPU_CODE_ inline bool castRay(Vector3f &pt_out, int x, int y, const TVo
 		pt_result += stepLength * rayDirection; totalLength += stepLength;
 		if (totalLength > totalLengthMax) break;
 
-		sdfValue = readFromSDF_float_maybe_interpolate(voxelData, voxelIndex, pt_result, hash_found, cache);
+		sdfValue = readFromSDF_float_uninterpolated(voxelData, voxelIndex, pt_result, hash_found, cache);
+		if ((sdfValue <= 0.0f)&&(sdfValue >= -0.1f)) sdfValue = readFromSDF_float_interpolated(voxelData, voxelIndex, pt_result, hash_found, cache);
 
 		if (sdfValue <= 0.0f) if (state == SEARCH_BLOCK_FINE) state = WRONG_SIDE; else state = BEHIND_SURFACE;
 		else if (state == WRONG_SIDE) state = SEARCH_SURFACE;
@@ -209,7 +210,7 @@ _CPU_AND_GPU_CODE_ inline void drawColourRendering(const bool & foundPoint, cons
 		return;
 	}
 
-	Vector4f clr = VoxelColorReader<TVoxel::hasColorInformation,TVoxel,typename TIndex::IndexData>::interpolate(voxelBlockData, indexData, point);
+	Vector4f clr = VoxelColorReader<TVoxel::hasColorInformation,TVoxel,TIndex>::interpolate(voxelBlockData, indexData, point);
 
 	dest.x = (uchar)(clr.r * 255.0f);
 	dest.y = (uchar)(clr.g * 255.0f);

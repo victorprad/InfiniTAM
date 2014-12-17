@@ -2,7 +2,7 @@
 
 #include "ITMVisualisationEngine_CUDA.h"
 #include "ITMCUDAUtils.h"
-#include "../../DeviceAgnostic/ITMSceneReconstructionEngine.h"
+#include "../../DeviceAgnostic/ITMRepresentationAccess.h"
 #include "../../DeviceAgnostic/ITMVisualisationEngine.h"
 
 using namespace ITMLib::Engine;
@@ -250,7 +250,7 @@ class RaycastRenderer_PointCloud {
 			if (offset != -1)
 			{
 				Vector4f tmp;
-				tmp = VoxelColorReader<TVoxel::hasColorInformation,TVoxel,typename TIndex::IndexData>::interpolate(voxelData, voxelIndex, point);
+				tmp = VoxelColorReader<TVoxel::hasColorInformation,TVoxel,TIndex>::interpolate(voxelData, voxelIndex, point);
 				if (tmp.w > 0.0f) { tmp.x /= tmp.w; tmp.y /= tmp.w; tmp.z /= tmp.w; tmp.w = 1.0f; }
 				colours[offset] = tmp;
 

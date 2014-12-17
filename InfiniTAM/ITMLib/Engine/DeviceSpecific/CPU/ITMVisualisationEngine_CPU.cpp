@@ -1,7 +1,7 @@
 // Copyright 2014 Isis Innovation Limited and the authors of InfiniTAM
 
 #include "ITMVisualisationEngine_CPU.h"
-#include "../../DeviceAgnostic/ITMSceneReconstructionEngine.h"
+#include "../../DeviceAgnostic/ITMRepresentationAccess.h"
 #include "../../DeviceAgnostic/ITMVisualisationEngine.h"
 
 #include <vector>
@@ -244,7 +244,7 @@ class RaycastRenderer_PointCloud {
 		if (foundPoint)
 		{
 			Vector4f tmp;
-			tmp = VoxelColorReader<TVoxel::hasColorInformation,TVoxel, typename TIndex::IndexData>::interpolate(voxelData, voxelIndex, point);
+			tmp = VoxelColorReader<TVoxel::hasColorInformation,TVoxel,TIndex>::interpolate(voxelData, voxelIndex, point);
 			if (tmp.w > 0.0f) { tmp.x /= tmp.w; tmp.y /= tmp.w; tmp.z /= tmp.w; tmp.w = 1.0f; }
 			colours[noTotalPoints] = tmp;
 
