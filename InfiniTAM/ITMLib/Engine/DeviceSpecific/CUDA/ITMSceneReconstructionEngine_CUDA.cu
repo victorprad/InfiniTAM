@@ -26,7 +26,8 @@ __global__ void allocateVoxelBlocksList_device(int *voxelAllocationList, int *ex
 __global__ void reAllocateSwappedOutVoxelBlocks_device(int *voxelAllocationList, ITMHashEntry *hashTable, int noTotalEntries,
 	int *noAllocatedVoxelEntries, uchar *entriesVisibleType);
 
-__global__ void buildVisibleList_device(ITMHashEntry *hashTable, ITMHashCacheState *cacheStates, bool useSwapping, int noTotalEntries, 
+template<bool useSwapping>
+__global__ void buildVisibleList_device(ITMHashEntry *hashTable, ITMHashCacheState *cacheStates, int noTotalEntries, 
 	int *liveEntryIDs, int *noLiveEntries, uchar *entriesVisibleType, Matrix4f M_d, Vector4f projParams_d, Vector2i imgSize, float voxelSize);
 
 // host methods
@@ -104,8 +105,13 @@ void ITMSceneReconstructionEngine_CUDA<TVoxel,ITMVoxelBlockHash>::AllocateSceneF
 		noTotalEntries, noAllocatedVoxelEntries_device, noAllocatedExcessEntries_device, entriesAllocType_device, entriesVisibleType, 
 		blockCoords_device);
 
-	buildVisibleList_device << <gridSizeAL, cudaBlockSizeAL >> >(hashTable, cacheStates, scene->useSwapping, noTotalEntries, liveEntryIDs,
+	if (scene->useSwapping) {
+		buildVisibleList_device<true> << <gridSizeAL, cudaBlockSizeAL >> >(hashTable, cacheStates, noTotalEntries, liveEntryIDs,
 		noLiveEntries_device, entriesVisibleType, M_d, projParams_d, depthImgSize, voxelSize);
+	} else {
+		buildVisibleList_device<false> << <gridSizeAL, cudaBlockSizeAL >> >(hashTable, cacheStates, noTotalEntries, liveEntryIDs,
+			noLiveEntries_device, entriesVisibleType, M_d, projParams_d, depthImgSize, voxelSize);
+	}
 
 	if (scene->useSwapping)
 	{
@@ -316,7 +322,12 @@ __global__ void reAllocateSwappedOutVoxelBlocks_device(int *voxelAllocationList,
 	}
 }
 
-__global__ void buildVisibleList_device(ITMHashEntry *hashTable, ITMHashCacheState *cacheStates, bool useSwapping, int noTotalEntries, 
+__constant__ float blockCornerOffsets[][3] = {
+	{0.0f,0.0f,0.0f},{1.0f,0.0f,0.0f},{0.0f,1.0f,0.0f},{1.0f,1.0f,0.0f},
+	{0.0f,0.0f,1.0f},{1.0f,0.0f,1.0f},{0.0f,1.0f,1.0f},{1.0f,1.0f,1.0f}};
+
+template<bool useSwapping>
+__global__ void buildVisibleList_device(ITMHashEntry *hashTable, ITMHashCacheState *cacheStates, int noTotalEntries, 
 	int *liveEntryIDs, int *noLiveEntries, uchar *entriesVisibleType, Matrix4f M_d, Vector4f projParams_d, Vector2i imgSize, float voxelSize)
 {
 	int targetIdx = threadIdx.x + blockIdx.x * blockDim.x;
@@ -331,52 +342,45 @@ __global__ void buildVisibleList_device(ITMHashEntry *hashTable, ITMHashCacheSta
 	__syncthreads();
 
 	if (hashVisibleType > 0) shouldPrefix = true;
-	else
+	else if (hashEntry.ptr >= -1)
 	{
-		if (hashEntry.ptr >= -1)
+		Vector3f pt_image, buff3f;
+
+		bool isVisible = false, isVisibleEnlarged = false;
+
+		#pragma unroll
+		for (char i = 0; i < 8; ++i)
 		{
-			shouldPrefix = true;
+			pt_image.x = hashEntry.pos.x + blockCornerOffsets[i][0];
+			pt_image.y = hashEntry.pos.y + blockCornerOffsets[i][1];
+			pt_image.z = hashEntry.pos.z + blockCornerOffsets[i][2];
+			pt_image *= (float)SDF_BLOCK_SIZE * voxelSize;
 
-			Vector3f pt_image, buff3f;
-
-			int noInvisible = 0, noInvisibleEnlarged = 0;
-
-			pt_image = hashEntry.pos.toFloat() * (float)SDF_BLOCK_SIZE * voxelSize;
 			buff3f = M_d * pt_image;
 
-			if (buff3f.z > 1e-10f)
+			if (buff3f.z < 1e-10f) continue;
+
+			pt_image.x = projParams_d.x * buff3f.x / buff3f.z + projParams_d.z;
+			pt_image.y = projParams_d.y * buff3f.y / buff3f.z + projParams_d.w;
+
+			if (pt_image.x >= 0 && pt_image.x < imgSize.x && pt_image.y >= 0 && pt_image.y < imgSize.y) isVisible = true;
+
+			if (useSwapping)
 			{
-				shouldPrefix = true;
+				Vector4i lims;
+				lims.x = -imgSize.x / 8; lims.y = imgSize.x + imgSize.x / 8;
+				lims.z = -imgSize.y / 8; lims.w = imgSize.y + imgSize.y / 8;
 
-				for (int x = 0; x <= 1; x++) for (int y = 0; y <= 1; y++) for (int z = 0; z <= 1; z++)
-				{
-					Vector3f off((float)x, (float)y, (float)z);
-
-					pt_image = (hashEntry.pos.toFloat() + off) * (float)SDF_BLOCK_SIZE * voxelSize;
-
-					buff3f = M_d * pt_image;
-
-					pt_image.x = projParams_d.x * buff3f.x / buff3f.z + projParams_d.z;
-					pt_image.y = projParams_d.y * buff3f.y / buff3f.z + projParams_d.w;
-
-					if (!(pt_image.x >= 0 && pt_image.x < imgSize.x && pt_image.y >= 0 && pt_image.y < imgSize.y)) noInvisible++;
-
-					if (useSwapping)
-					{
-						Vector4i lims;
-						lims.x = -imgSize.x / 8; lims.y = imgSize.x + imgSize.x / 8;
-						lims.z = -imgSize.y / 8; lims.w = imgSize.y + imgSize.y / 8;
-
-						if (!(pt_image.x >= lims.x && pt_image.x < lims.y && pt_image.y >= lims.z && pt_image.y < lims.w)) noInvisibleEnlarged++;
-					}
-				}
-
-				hashVisibleType = noInvisible < 8;
-
-				if (useSwapping) entriesVisibleType[targetIdx] = noInvisibleEnlarged < 8;
+				if (pt_image.x >= lims.x && pt_image.x < lims.y && pt_image.y >= lims.z && pt_image.y < lims.w) isVisibleEnlarged = true;
 			}
 		}
+
+		hashVisibleType = isVisible;
+
+		if (useSwapping) entriesVisibleType[targetIdx] = isVisibleEnlarged;
 	}
+
+	if (hashVisibleType > 0) shouldPrefix = true;
 
 	if (useSwapping)
 	{
