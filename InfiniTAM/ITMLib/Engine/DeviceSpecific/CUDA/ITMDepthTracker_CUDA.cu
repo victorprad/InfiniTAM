@@ -117,6 +117,9 @@ __global__ void depthTrackerOneLevel_g_rt_device(ITMDepthTracker_CUDA::AccuCell 
 	__shared__ float dim_shared[256];
 	__shared__ float dim_shared2[256];
 	__shared__ float dim_shared3[256];
+	__shared__ bool should_prefix;
+	should_prefix = false;
+	__syncthreads();
 
 	const int noPara = rotationOnly ? 3 : 6;
 	const int noParaSQ = rotationOnly ? 3 + 2 + 1 : 6 + 5 + 4 + 3 + 2 + 1;
@@ -125,12 +128,15 @@ __global__ void depthTrackerOneLevel_g_rt_device(ITMDepthTracker_CUDA::AccuCell 
 	for (int i = 0; i < noPara; i++) localNabla[i] = 0.0f;
 	for (int i = 0; i < noParaSQ; i++) localHessian[i] = 0.0f;
 
-	if (x >= 0 && x < viewImageSize.x && y >= 0 && y < viewImageSize.y)
+	if (x < viewImageSize.x && y < viewImageSize.y)
 	{
 		isValidPoint = computePerPointGH_Depth<rotationOnly>(localNabla, localHessian, x, y, depth, viewImageSize, viewIntrinsics, sceneImageSize, sceneIntrinsics,
 			approxInvPose, scenePose, pointsMap, normalsMap, distThresh);
+		if (isValidPoint) should_prefix = true;
 	}
 
+	__syncthreads();
+	if (should_prefix) {
 	//reduction for noValidPoints
 	{
 		dim_shared[locId_local] = isValidPoint;
@@ -149,7 +155,7 @@ __global__ void depthTrackerOneLevel_g_rt_device(ITMDepthTracker_CUDA::AccuCell 
 	__syncthreads();
 
 	//reduction for nabla
-	for (int paraId = 0; paraId < noPara; paraId+=3)
+	for (unsigned char paraId = 0; paraId < noPara; paraId+=3)
 	{
 		dim_shared[locId_local] = localNabla[paraId+0];
 		dim_shared2[locId_local]= localNabla[paraId+1];
@@ -186,7 +192,7 @@ __global__ void depthTrackerOneLevel_g_rt_device(ITMDepthTracker_CUDA::AccuCell 
 	__syncthreads();
 
 	//reduction for hessian
-	for (int paraId = 0; paraId < noParaSQ; paraId+=3)
+	for (unsigned char paraId = 0; paraId < noParaSQ; paraId+=3)
 	{
 		dim_shared[locId_local] = localHessian[paraId+0];
 		dim_shared2[locId_local]= localHessian[paraId+1];
@@ -231,6 +237,14 @@ __global__ void depthTrackerOneLevel_g_rt_device(ITMDepthTracker_CUDA::AccuCell 
 		//}
 
 		//atomicAdd(&ATA[paraId], dim_shared[locId_local]);
+	}
+
+	}
+	else if (locId_local)
+	{
+		accu[blockId_global].numPoints = 0;
+		for (int i = 0; i < noPara; ++i) accu[blockId_global].g[i] = 0.0f;
+		for (int i = 0; i < noParaSQ; ++i) accu[blockId_global].h[i] = 0.0f;
 	}
 }
 

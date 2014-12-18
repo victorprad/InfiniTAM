@@ -14,12 +14,13 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_Depth(float *localNabla, float 
 
 	if (tmpD <= 1e-8f) return false; //check if valid -- != 0.0f
 
-	Vector4f tmp3Dpoint, tmp3Dpoint_reproj, curr3Dpoint, corr3Dnormal, ptDiff; Vector2f tmp2Dpoint;
+	Vector3f tmp3Dpoint, tmp3Dpoint_reproj, ptDiff;
+	Vector4f curr3Dpoint, corr3Dnormal; Vector2f tmp2Dpoint;
 	float A[noPara];
 
 	tmp3Dpoint.x = tmpD * ((float(x) - viewIntrinsics.z) / viewIntrinsics.x);
 	tmp3Dpoint.y = tmpD * ((float(y) - viewIntrinsics.w) / viewIntrinsics.y);
-	tmp3Dpoint.z = tmpD; tmp3Dpoint.w = 1.0f;
+	tmp3Dpoint.z = tmpD;
 
 	// transform to previous frame coordinates
 	tmp3Dpoint = approxInvPose * tmp3Dpoint;
@@ -36,13 +37,15 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_Depth(float *localNabla, float 
 	curr3Dpoint = interpolateBilinear_withHoles(pointsMap, tmp2Dpoint, sceneImageSize);
 	if (curr3Dpoint.w < 0.0f) return false;
 
-	ptDiff = curr3Dpoint - tmp3Dpoint;
+	ptDiff.x = curr3Dpoint.x - tmp3Dpoint.x;
+	ptDiff.y = curr3Dpoint.y - tmp3Dpoint.y;
+	ptDiff.z = curr3Dpoint.z - tmp3Dpoint.z;
 	float dist = ptDiff.x * ptDiff.x + ptDiff.y * ptDiff.y + ptDiff.z * ptDiff.z;
 
 	if (dist > distThresh) return false;
 
 	corr3Dnormal = interpolateBilinear_withHoles(normalsMap, tmp2Dpoint, sceneImageSize);
-	if (corr3Dnormal.w < 0.0f) return false;
+//	if (corr3Dnormal.w < 0.0f) return false;
 
 	// TODO check whether normal matches normal from image, done in the original paper, but does not seem to be required
 
