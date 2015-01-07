@@ -7,6 +7,7 @@
 #include <GLUT/glut.h>
 #else
 #include <GL/glut.h>
+#pragma comment(lib, "glut64")
 #endif
 
 #ifdef FREEGLUT
