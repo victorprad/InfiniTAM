@@ -7,7 +7,9 @@
 #include <GLUT/glut.h>
 #else
 #include <GL/glut.h>
-#pragma comment(lib, "glut64")
+	#ifndef __FREEGLUT_STD_H__
+	#pragma comment(lib, "glut64")
+	#endif
 #endif
 
 #ifdef FREEGLUT
@@ -87,7 +89,7 @@ void UIEngine::glutDisplayFunction()
 	}
 	else
 	{
-		sprintf(str, "n - next frame \t b - all frames \t e - exit \t f - %s", uiEngine->freeviewActive?"follow camera":"free viewpoint");
+		sprintf(str, "n - next frame \t b - all frames \t e/esc - exit \t f - %s \t t - turn fusion %s", uiEngine->freeviewActive ? "follow camera" : "free viewpoint", uiEngine->intergrationActive ? "off" : "on");
 	}
 	safe_glutBitmapString(GLUT_BITMAP_HELVETICA_12, (const char*)str);
 
@@ -171,6 +173,7 @@ void UIEngine::glutKeyUpFunction(unsigned char key, int x, int y)
 		}
 		break;
 	case 'e':
+	case '27': // esc key
 		printf("exiting ...\n");
 		uiEngine->mainLoopAction = UIEngine::EXIT;
 		break;
@@ -197,6 +200,11 @@ void UIEngine::glutKeyUpFunction(unsigned char key, int x, int y)
 	case 'c':
 		uiEngine->colourActive = !uiEngine->colourActive;
 		uiEngine->needsRefresh = true;
+		break;
+	case 't':
+		uiEngine->intergrationActive = !uiEngine->intergrationActive;
+		if (uiEngine->intergrationActive) uiEngine->mainEngine->turnOnIntegration();
+		else uiEngine->mainEngine->turnOffIntegration();
 		break;
 	default:
 		break;
@@ -321,6 +329,7 @@ void UIEngine::Initialise(int & argc, char** argv, ImageSourceEngine *imageSourc
 {
 	this->freeviewActive = false;
 	this->colourActive = false;
+	this->intergrationActive = true;
 
 	this->imageSource = imageSource;
 	this->mainEngine = mainEngine;
