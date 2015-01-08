@@ -7,13 +7,14 @@
 #include <GLUT/glut.h>
 #else
 #include <GL/glut.h>
-	#ifndef __FREEGLUT_STD_H__
-	#pragma comment(lib, "glut64")
-	#endif
 #endif
 
 #ifdef FREEGLUT
 #include <GL/freeglut.h>
+#else
+#if (!defined USING_CMAKE) && (defined _MSC_VER)
+#pragma comment(lib, "glut64")
+#endif
 #endif
 
 #include "../Utils/FileUtils.h"
