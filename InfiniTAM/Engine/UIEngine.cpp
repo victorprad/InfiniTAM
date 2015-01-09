@@ -174,7 +174,7 @@ void UIEngine::glutKeyUpFunction(unsigned char key, int x, int y)
 		}
 		break;
 	case 'e':
-	case '27': // esc key
+	case 27: // esc key
 		printf("exiting ...\n");
 		uiEngine->mainLoopAction = UIEngine::EXIT;
 		break;
