@@ -5,6 +5,9 @@
 #include <stdlib.h>
 
 #include "../Utils/ITMLibDefines.h"
+#ifndef COMPILE_WITHOUT_CUDA
+#include "../../ORUtils/CUDADefines.h"
+#endif
 
 namespace ITMLib
 {

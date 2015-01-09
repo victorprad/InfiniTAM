@@ -7,8 +7,6 @@
 #include "../Objects/ITMIntrinsics.h"
 #include "../Objects/ITMExtrinsics.h"
 
-#include "../Objects/ITMImage.h"
-
 using namespace ITMLib::Objects;
 
 namespace ITMLib

@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "../Objects/ITMImage.h"
+#include "../Utils/ITMLibDefines.h"
 
 namespace ITMLib
 {

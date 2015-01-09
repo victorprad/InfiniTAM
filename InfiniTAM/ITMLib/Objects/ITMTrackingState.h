@@ -5,7 +5,6 @@
 #include "../Utils/ITMLibDefines.h"
 
 #include "ITMPose.h"
-#include "ITMImage.h"
 #include "ITMPointCloud.h"
 #include "ITMScene.h"
 
@@ -31,7 +30,7 @@ namespace ITMLib
 			    updated by a ITMLib::Engine::ITMVisualisationEngine
 			    before any raycasting operation.
 			*/
-			ITMImage<Vector2f> *renderingRangeImage;
+			ITMFloat2Image *renderingRangeImage;
 			/** @brief
 			    Visual rendering output of the scene.
 
@@ -54,7 +53,7 @@ namespace ITMLib
 			ITMTrackingState(Vector2i imgSize, bool useGPU)
 			{
 				this->rendering = new ITMUChar4Image(imgSize, useGPU);
-				this->renderingRangeImage = new ITMImage<Vector2f>(imgSize, useGPU);
+				this->renderingRangeImage = new ITMFloat2Image(imgSize, useGPU);
 				this->pointCloud = new ITMPointCloud(imgSize, useGPU);
 				this->pose_d = new ITMPose();
 			}

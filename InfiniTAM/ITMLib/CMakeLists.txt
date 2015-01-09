@@ -76,7 +76,6 @@ Engine/DeviceSpecific/CUDA/ITMVisualisationEngine_CUDA.cu
 
 set(ITMLIB_ENGINE_DEVICESPECIFIC_CUDA_HEADERS
 Engine/DeviceSpecific/CUDA/ITMColorTracker_CUDA.h
-Engine/DeviceSpecific/CUDA/ITMCUDADefines.h
 Engine/DeviceSpecific/CUDA/ITMCUDAUtils.h
 Engine/DeviceSpecific/CUDA/ITMDepthTracker_CUDA.h
 Engine/DeviceSpecific/CUDA/ITMLowLevelEngine_CUDA.h
@@ -98,7 +97,6 @@ Objects/ITMDisparityCalib.h
 Objects/ITMExtrinsics.h
 Objects/ITMGlobalCache.h
 Objects/ITMHashTable.h
-Objects/ITMImage.h
 Objects/ITMImageHierarchy.h
 Objects/ITMIntrinsics.h
 Objects/ITMLocalVBA.h

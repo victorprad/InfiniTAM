@@ -101,7 +101,7 @@ void ITMVisualisationEngine_CPU<TVoxel,ITMVoxelBlockHash>::FindVisibleBlocks(con
 }
 
 template<class TVoxel, class TIndex>
-void ITMVisualisationEngine_CPU<TVoxel,TIndex>::CreateExpectedDepths(const ITMScene<TVoxel,TIndex> *scene, const ITMPose *pose, const ITMIntrinsics *intrinsics, ITMImage<Vector2f> *minmaximg, const ITMVisualisationState *state)
+void ITMVisualisationEngine_CPU<TVoxel,TIndex>::CreateExpectedDepths(const ITMScene<TVoxel,TIndex> *scene, const ITMPose *pose, const ITMIntrinsics *intrinsics, ITMFloat2Image *minmaximg, const ITMVisualisationState *state)
 {
 	Vector2i imgSize = minmaximg->noDims;
 	Vector2f *minmaxData = minmaximg->GetData(false);
@@ -117,7 +117,7 @@ void ITMVisualisationEngine_CPU<TVoxel,TIndex>::CreateExpectedDepths(const ITMSc
 }
 
 template<class TVoxel>
-void ITMVisualisationEngine_CPU<TVoxel,ITMVoxelBlockHash>::CreateExpectedDepths(const ITMScene<TVoxel,ITMVoxelBlockHash> *scene, const ITMPose *pose, const ITMIntrinsics *intrinsics, ITMImage<Vector2f> *minmaximg, const ITMVisualisationState *state)
+void ITMVisualisationEngine_CPU<TVoxel,ITMVoxelBlockHash>::CreateExpectedDepths(const ITMScene<TVoxel,ITMVoxelBlockHash> *scene, const ITMPose *pose, const ITMIntrinsics *intrinsics, ITMFloat2Image *minmaximg, const ITMVisualisationState *state)
 {
 	Vector2i imgSize = minmaximg->noDims;
 	Vector2f *minmaxData = minmaximg->GetData(false);

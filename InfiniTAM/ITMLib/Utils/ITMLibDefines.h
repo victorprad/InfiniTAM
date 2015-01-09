@@ -17,6 +17,11 @@
 
 #ifndef COMPILE_WITHOUT_CUDA
 #include <cuda_runtime.h>
+
+#ifndef ITMSafeCall
+#define ITMSafeCall ORcudaSafeCall
+#endif
+
 #endif
 
 #if defined(__CUDACC__) && defined(__CUDA_ARCH__)
@@ -25,7 +30,7 @@
 #define _CPU_AND_GPU_CODE_ 
 #endif
 
-#include "../Utils/ITMMath.h" 
+#include "ITMMath.h"
 
 //////////////////////////////////////////////////////////////////////////
 // Voxel Hashing definition and helper functions
@@ -187,55 +192,57 @@ typedef ITMVoxel_s ITMVoxel;
 typedef ITMLib::Objects::ITMVoxelBlockHash ITMVoxelIndex;
 //typedef ITMLib::Objects::ITMPlainVoxelArray ITMVoxelIndex;
 
+#include "../../ORUtils/Image.h"
+
 //////////////////////////////////////////////////////////////////////////
 // Do not change below this point
 //////////////////////////////////////////////////////////////////////////
 #ifndef ITMFloatImage
-#define ITMFloatImage ITMImage<float>
+#define ITMFloatImage ORUtils::Image<float>
 #endif
 
 #ifndef ITMFloat2Image
-#define ITMFloat2Image ITMImage<Vector2f>
+#define ITMFloat2Image ORUtils::Image<Vector2f>
 #endif
 
 #ifndef ITMFloat4Image
-#define ITMFloat4Image ITMImage<Vector4f>
+#define ITMFloat4Image ORUtils::Image<Vector4f>
 #endif
 
 #ifndef ITMShortImage
-#define ITMShortImage ITMImage<short>
+#define ITMShortImage ORUtils::Image<short>
 #endif
 
 #ifndef ITMShort3Image
-#define ITMShort3Image ITMImage<Vector3s>
+#define ITMShort3Image ORUtils::Image<Vector3s>
 #endif
 
 #ifndef ITMShort4Image
-#define ITMShort4Image ITMImage<Vector4s>
+#define ITMShort4Image ORUtils::Image<Vector4s>
 #endif
 
 #ifndef ITMUShortImage
-#define ITMUShortImage ITMImage<ushort>
+#define ITMUShortImage ORUtils::Image<ushort>
 #endif
 
 #ifndef ITMUIntImage
-#define ITMUIntImage ITMImage<uint>
+#define ITMUIntImage ORUtils::Image<uint>
 #endif
 
 #ifndef ITMIntImage
-#define ITMIntImage ITMImage<int>
+#define ITMIntImage ORUtils::Image<int>
 #endif
 
 #ifndef ITMUCharImage
-#define ITMUCharImage ITMImage<uchar>
+#define ITMUCharImage ORUtils::Image<uchar>
 #endif
 
 #ifndef ITMUChar4Image
-#define ITMUChar4Image ITMImage<Vector4u>
+#define ITMUChar4Image ORUtils::Image<Vector4u>
 #endif
 
 #ifndef ITMBoolImage
-#define ITMBoolImage ITMImage<bool>
+#define ITMBoolImage ORUtils::Image<bool>
 #endif
 
 //debug

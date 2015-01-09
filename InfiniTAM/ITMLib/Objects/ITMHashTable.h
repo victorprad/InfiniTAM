@@ -6,9 +6,6 @@
 
 #include "../Utils/ITMLibDefines.h"
 
-#include "ITMImage.h"
-#include "ITMPose.h"
-
 namespace ITMLib
 {
 	namespace Objects

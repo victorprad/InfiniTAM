@@ -8,6 +8,8 @@ Vector.h
 Matrix.h
 Cholesky.h
 MathUtils.h
+Image.h
+CUDADefines.h
 )
 
 #################################################################
