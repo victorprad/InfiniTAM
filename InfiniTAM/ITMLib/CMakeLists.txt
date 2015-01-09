@@ -125,13 +125,10 @@ Utils/ITMLibSettings.cpp
 
 set(ITMLIB_UTILS_HEADERS
 Utils/ITMCalibIO.h
-Utils/ITMCholesky.h
 Utils/ITMLibDefines.h
 Utils/ITMLibSettings.h
 Utils/ITMMath.h
-Utils/ITMMatrix.h
 Utils/ITMPixelUtils.h
-Utils/ITMVector.h
 )
 
 #################################################################

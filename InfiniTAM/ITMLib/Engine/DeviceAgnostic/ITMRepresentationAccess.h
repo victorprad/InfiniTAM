@@ -5,7 +5,7 @@
 #include "../../Utils/ITMLibDefines.h"
 #include "../../Utils/ITMPixelUtils.h"
 
-template<typename T> _CPU_AND_GPU_CODE_ inline int hashIndex(const ITMLib::Vector3<T> voxelPos, const int hashMask) {
+template<typename T> _CPU_AND_GPU_CODE_ inline int hashIndex(const ORUtils::Vector3<T> voxelPos, const int hashMask) {
 	return ((uint)(((uint)voxelPos.x * 73856093) ^ ((uint)voxelPos.y * 19349669) ^ ((uint)voxelPos.z * 83492791)) & (uint)hashMask);
 }
 

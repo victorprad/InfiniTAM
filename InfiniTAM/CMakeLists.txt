@@ -24,6 +24,7 @@ IF("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
   set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -stdlib=libstdc++")
 ENDIF()
 
+add_subdirectory(ORUtils)
 add_subdirectory(ITMLib)
 add_subdirectory(Utils)
 add_subdirectory(Engine)
