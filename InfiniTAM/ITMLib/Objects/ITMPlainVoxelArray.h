@@ -2,7 +2,13 @@
 
 #pragma once
 
+#ifndef __METALC__
 #include <stdlib.h>
+#endif
+
+#ifdef COMPILE_WITH_METAL
+#include "../Engine/DeviceSpecific/Metal/ITMMetalContext.h"
+#endif
 
 #include "../Utils/ITMLibDefines.h"
 
@@ -11,10 +17,10 @@ namespace ITMLib
 	namespace Objects
 	{
 		/** \brief
-			This is the central class for the original fixed size volume
-			representation. It contains the data needed on the CPU and
-			a pointer to the data structure on the GPU.
-			*/
+		This is the central class for the original fixed size volume
+		representation. It contains the data needed on the CPU and
+		a pointer to the data structure on the GPU.
+		*/
 		class ITMPlainVoxelArray
 		{
 		public:
@@ -37,21 +43,33 @@ namespace ITMLib
 			struct IndexCache {};
 
 		private:
-			IndexData *indexData_device;
-			IndexData indexData_host;
+			DEVICEPTR(IndexData) *indexData_device;
+			DEVICEPTR(IndexData) *indexData_host;
 
 			bool dataIsOnGPU;
 
+#ifdef COMPILE_WITH_METAL
+			void *indexData_mb;
+#endif
+
+#ifndef __METALC__
 		public:
 			ITMPlainVoxelArray(bool allocateGPU)
 			{
 				dataIsOnGPU = allocateGPU;
 
+#ifdef COMPILE_WITH_METAL
+				allocateMetalData((void**)&indexData_host, (void**)&indexData_mb, sizeof(ITMVoxelArrayInfo), true);
+				indexData_host[0] = IndexData();
+#else
+				indexData_host = new IndexData();
+#endif
+
 				if (allocateGPU)
 				{
 #ifndef COMPILE_WITHOUT_CUDA
 					ITMSafeCall(cudaMalloc((void**)&indexData_device, sizeof(IndexData)));
-					ITMSafeCall(cudaMemcpy(indexData_device, &indexData_host, sizeof(IndexData), cudaMemcpyHostToDevice));
+					ITMSafeCall(cudaMemcpy(indexData_device, indexData_host, sizeof(IndexData), cudaMemcpyHostToDevice));
 #endif
 				}
 				else indexData_device = NULL;
@@ -60,6 +78,9 @@ namespace ITMLib
 			~ITMPlainVoxelArray(void)
 			{
 				if (indexData_device != NULL) {
+#ifdef COMPILE_WITH_METAL
+					freeMetalData((void**)&indexData_host, (void**)&indexData_mb, sizeof(IndexData), true);
+#endif
 #ifndef COMPILE_WITHOUT_CUDA
 					ITMSafeCall(cudaFree(indexData_device));
 #endif
@@ -68,15 +89,18 @@ namespace ITMLib
 
 			/** Maximum number of total entries. */
 			int getNumAllocatedVoxelBlocks(void) { return 1; }
-			int getVoxelBlockSize(void) { return indexData_host.size.x * indexData_host.size.y * indexData_host.size.z; }
+			int getVoxelBlockSize(void) { return indexData_host->size.x * indexData_host->size.y * indexData_host->size.z; }
 
-			const Vector3i getVolumeSize(void) { return indexData_host.size; }
+			const Vector3i getVolumeSize(void) { return indexData_host->size; }
 
-			const IndexData* getIndexData(void) const { if (dataIsOnGPU) return indexData_device; else return &indexData_host; }
-
+			const IndexData* getIndexData(void) const { if (dataIsOnGPU) return indexData_device; else return indexData_host; }
+#ifdef COMPILE_WITH_METAL
+			const void *getIndexData_MB() const { return indexData_mb; }
+#endif
 			// Suppress the default copy constructor and assignment operator
 			ITMPlainVoxelArray(const ITMPlainVoxelArray&);
 			ITMPlainVoxelArray& operator=(const ITMPlainVoxelArray&);
+#endif
 		};
 	}
 }

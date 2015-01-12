@@ -25,7 +25,8 @@ static const int MAX_RENDERING_BLOCKS = 65536*4;
 //static const int MAX_RENDERING_BLOCKS = 16384;
 static const int minmaximg_subsample = 4;
 
-_CPU_AND_GPU_CODE_ inline bool ProjectSingleBlock(const Vector3s & blockPos, const Matrix4f & pose, const Vector4f & intrinsics, const Vector2i & imgSize, float voxelSize, Vector2i & upperLeft, Vector2i & lowerRight, Vector2f & zRange)
+_CPU_AND_GPU_CODE_ inline bool ProjectSingleBlock(const THREADPTR(Vector3s) & blockPos, const THREADPTR(Matrix4f) & pose, const THREADPTR(Vector4f) & intrinsics, 
+	const THREADPTR(Vector2i) & imgSize, float voxelSize, THREADPTR(Vector2i) & upperLeft, THREADPTR(Vector2i) & lowerRight, THREADPTR(Vector2f) & zRange)
 {
 	upperLeft = imgSize / minmaximg_subsample;
 	lowerRight = Vector2i(-1, -1);
@@ -37,7 +38,7 @@ _CPU_AND_GPU_CODE_ inline bool ProjectSingleBlock(const Vector3s & blockPos, con
 		tmp.x += (corner & 1) ? 1 : 0;
 		tmp.y += (corner & 2) ? 1 : 0;
 		tmp.z += (corner & 4) ? 1 : 0;
-		Vector4f pt3d(tmp.toFloat() * (float)SDF_BLOCK_SIZE * voxelSize, 1.0f);
+		Vector4f pt3d(TO_FLOAT3(tmp) * (float)SDF_BLOCK_SIZE * voxelSize, 1.0f);
 		pt3d = pose * pt3d;
 		if (pt3d.z < 1e-6) continue;
 
@@ -46,10 +47,10 @@ _CPU_AND_GPU_CODE_ inline bool ProjectSingleBlock(const Vector3s & blockPos, con
 		pt2d.y = (intrinsics.y * pt3d.y / pt3d.z + intrinsics.w) / minmaximg_subsample;
 
 		// remember bounding box, zmin and zmax
-		if (upperLeft.x > floorf(pt2d.x)) upperLeft.x = (int)floorf(pt2d.x);
-		if (lowerRight.x < ceilf(pt2d.x)) lowerRight.x = (int)ceilf(pt2d.x);
-		if (upperLeft.y > floorf(pt2d.y)) upperLeft.y = (int)floorf(pt2d.y);
-		if (lowerRight.y < ceilf(pt2d.y)) lowerRight.y = (int)ceilf(pt2d.y);
+		if (upperLeft.x > floor(pt2d.x)) upperLeft.x = (int)floor(pt2d.x);
+		if (lowerRight.x < ceil(pt2d.x)) lowerRight.x = (int)ceil(pt2d.x);
+		if (upperLeft.y > floor(pt2d.y)) upperLeft.y = (int)floor(pt2d.y);
+		if (lowerRight.y < ceil(pt2d.y)) lowerRight.y = (int)ceil(pt2d.y);
 		if (zRange.x > pt3d.z) zRange.x = pt3d.z;
 		if (zRange.y < pt3d.z) zRange.y = pt3d.z;
 	}
@@ -68,11 +69,12 @@ _CPU_AND_GPU_CODE_ inline bool ProjectSingleBlock(const Vector3s & blockPos, con
 	return true;
 }
 
-_CPU_AND_GPU_CODE_ inline void CreateRenderingBlocks(RenderingBlock *renderingBlockList, int offset, const Vector2i & upperLeft, const Vector2i & lowerRight, const Vector2f & zRange)
+_CPU_AND_GPU_CODE_ inline void CreateRenderingBlocks(DEVICEPTR(RenderingBlock) *renderingBlockList, int offset,
+	const THREADPTR(Vector2i) & upperLeft, const THREADPTR(Vector2i) & lowerRight, const THREADPTR(Vector2f) & zRange)
 {
 	// split bounding box into 16x16 pixel rendering blocks
-	for (int by = 0; by < ceilf((float)(1 + lowerRight.y - upperLeft.y) / renderingBlockSizeY); ++by) {
-		for (int bx = 0; bx < ceilf((float)(1 + lowerRight.x - upperLeft.x) / renderingBlockSizeX); ++bx) {
+	for (int by = 0; by < ceil((float)(1 + lowerRight.y - upperLeft.y) / renderingBlockSizeY); ++by) {
+		for (int bx = 0; bx < ceil((float)(1 + lowerRight.x - upperLeft.x) / renderingBlockSizeX); ++bx) {
 			if (offset >= MAX_RENDERING_BLOCKS) return;
 			//for each rendering block: add it to the list
 			RenderingBlock & b(renderingBlockList[offset++]);
@@ -88,10 +90,11 @@ _CPU_AND_GPU_CODE_ inline void CreateRenderingBlocks(RenderingBlock *renderingBl
 }
 
 template<class TVoxel, class TIndex>
-_CPU_AND_GPU_CODE_ inline bool castRay(Vector3f &pt_out, int x, int y, const TVoxel *voxelData, const typename TIndex::IndexData *voxelIndex, Matrix4f invM,
-	Vector4f projParams, float oneOverVoxelSize, float mu, float viewFrustum_min, float viewFrustum_max)
+_CPU_AND_GPU_CODE_ inline bool castRay(THREADPTR(Vector3f) &pt_out, int x, int y, const DEVICEPTR(TVoxel) *voxelData,
+	const DEVICEPTR(typename TIndex::IndexData) *voxelIndex, Matrix4f invM, Vector4f projParams, float oneOverVoxelSize, 
+	float mu, float viewFrustum_min, float viewFrustum_max)
 {
-	Vector3f pt_camera_f, pt_block_s, pt_block_e, rayDirection, pt_result;
+	Vector4f pt_camera_f; Vector3f pt_block_s, pt_block_e, rayDirection, pt_result;
 	bool pt_found, hash_found;
 	float sdfValue = 1.0f;
 	float totalLength, stepLength, totalLengthMax, stepScale;
@@ -101,16 +104,21 @@ _CPU_AND_GPU_CODE_ inline bool castRay(Vector3f &pt_out, int x, int y, const TVo
 	pt_camera_f.z = viewFrustum_min;
 	pt_camera_f.x = pt_camera_f.z * ((float(x) - projParams.z) * projParams.x);
 	pt_camera_f.y = pt_camera_f.z * ((float(y) - projParams.w) * projParams.y);
-	totalLength = length(pt_camera_f)*oneOverVoxelSize;
-	pt_block_s = (invM * pt_camera_f) * oneOverVoxelSize;
+	pt_camera_f.w = 1.0f;
+	totalLength = length(TO_VECTOR3(pt_camera_f)) * oneOverVoxelSize;
+	pt_block_s = TO_VECTOR3(invM * pt_camera_f) * oneOverVoxelSize;
 
 	pt_camera_f.z = viewFrustum_max;
 	pt_camera_f.x = pt_camera_f.z * ((float(x) - projParams.z) * projParams.x);
 	pt_camera_f.y = pt_camera_f.z * ((float(y) - projParams.w) * projParams.y);
-	totalLengthMax = length(pt_camera_f)*oneOverVoxelSize;
-	pt_block_e = (invM * pt_camera_f) * oneOverVoxelSize;
+	pt_camera_f.w = 1.0f;
+	totalLengthMax = length(TO_VECTOR3(pt_camera_f)) * oneOverVoxelSize;
+	pt_block_e = TO_VECTOR3(invM * pt_camera_f) * oneOverVoxelSize;
 
-	rayDirection = (pt_block_e - pt_block_s).normalised();
+	rayDirection = pt_block_e - pt_block_s;
+	float direction_norm = 1.0f / sqrt(rayDirection.x * rayDirection.x + rayDirection.y * rayDirection.y + rayDirection.z * rayDirection.z);
+	rayDirection *= direction_norm;
+
 	pt_result = pt_block_s;
 
 	enum { SEARCH_BLOCK_COARSE, SEARCH_BLOCK_FINE, SEARCH_SURFACE, BEHIND_SURFACE, WRONG_SIDE } state;
@@ -157,7 +165,7 @@ _CPU_AND_GPU_CODE_ inline bool castRay(Vector3f &pt_out, int x, int y, const TVo
 		if (totalLength > totalLengthMax) break;
 
 		sdfValue = readFromSDF_float_uninterpolated(voxelData, voxelIndex, pt_result, hash_found, cache);
-		if ((sdfValue <= 0.0f)&&(sdfValue >= -0.1f)) sdfValue = readFromSDF_float_interpolated(voxelData, voxelIndex, pt_result, hash_found, cache);
+		if ((sdfValue <= 0.0f) && (sdfValue >= -0.1f)) sdfValue = readFromSDF_float_interpolated(voxelData, voxelIndex, pt_result, hash_found, cache);
 
 		if (sdfValue <= 0.0f) if (state == SEARCH_BLOCK_FINE) state = WRONG_SIDE; else state = BEHIND_SURFACE;
 		else if (state == WRONG_SIDE) state = SEARCH_SURFACE;
@@ -189,7 +197,7 @@ _CPU_AND_GPU_CODE_ inline void computeNormalAndAngle(bool & foundPoint, const Ve
 	if (!(angle > 0.0)) foundPoint = false;
 }
 
-_CPU_AND_GPU_CODE_ inline void drawRendering(const bool & foundPoint, const float & angle, Vector4u & dest)
+_CPU_AND_GPU_CODE_ inline void drawRendering(const CONSTANT(bool) & foundPoint, const CONSTANT(float) & angle, DEVICEPTR(Vector4u) & dest)
 {
 	if (!foundPoint)
 	{
@@ -202,7 +210,8 @@ _CPU_AND_GPU_CODE_ inline void drawRendering(const bool & foundPoint, const floa
 }
 
 template<class TVoxel, class TIndex>
-_CPU_AND_GPU_CODE_ inline void drawColourRendering(const bool & foundPoint, const Vector3f & point, const TVoxel *voxelBlockData, const typename TIndex::IndexData *indexData, Vector4u & dest)
+_CPU_AND_GPU_CODE_ inline void drawColourRendering(const CONSTANT(bool) & foundPoint, const CONSTANT(Vector3f) & point, const DEVICEPTR(TVoxel) *voxelBlockData, 
+	const DEVICEPTR(typename TIndex::IndexData) *indexData, DEVICEPTR(Vector4u) & dest)
 {
 	if (!foundPoint)
 	{
@@ -212,20 +221,23 @@ _CPU_AND_GPU_CODE_ inline void drawColourRendering(const bool & foundPoint, cons
 
 	Vector4f clr = VoxelColorReader<TVoxel::hasColorInformation,TVoxel,TIndex>::interpolate(voxelBlockData, indexData, point);
 
-	dest.x = (uchar)(clr.r * 255.0f);
-	dest.y = (uchar)(clr.g * 255.0f);
-	dest.z = (uchar)(clr.b * 255.0f);
+	dest.x = (uchar)(clr.x * 255.0f);
+	dest.y = (uchar)(clr.y * 255.0f);
+	dest.z = (uchar)(clr.z * 255.0f);
 	dest.w = 255;
 }
 
 class RaycastRenderer_GrayImage {
 	private:
-	Vector4u *outRendering;
+	DEVICEPTR(Vector4u) *outRendering;
 	public:
+
+#ifndef __METALC__
 	RaycastRenderer_GrayImage(Vector4u *out)
 	{ outRendering = out; }
+#endif
 
-	_CPU_AND_GPU_CODE_ inline void processPixel(int x, int y, int locId, bool foundPoint, const Vector3f & point, const Vector3f & outNormal, float angle)
+	_CPU_AND_GPU_CODE_ inline void processPixel(int x, int y, int locId, bool foundPoint, const DEVICEPTR(Vector3f) & point, const DEVICEPTR(Vector3f) & outNormal, float angle)
 	{
 		drawRendering(foundPoint, angle, outRendering[locId]);
 	}
@@ -234,16 +246,18 @@ class RaycastRenderer_GrayImage {
 template<class TVoxel, class TIndex>
 class RaycastRenderer_ColourImage {
 	private:
-	const TVoxel *voxelData;
-	const typename TIndex::IndexData *voxelIndex;
+	const DEVICEPTR(TVoxel) *voxelData;
+	const DEVICEPTR(typename TIndex::IndexData) *voxelIndex;
 
-	Vector4u *outRendering;
+	DEVICEPTR(Vector4u) *outRendering;
 
 	public:
+#ifndef __METALC__
 	RaycastRenderer_ColourImage(Vector4u *out, const TVoxel *_voxelData, const typename TIndex::IndexData *_voxelIndex)
 	{ outRendering = out; voxelData = _voxelData; voxelIndex = _voxelIndex; }
+#endif
 
-	_CPU_AND_GPU_CODE_ inline void processPixel(int x, int y, int locId, bool foundPoint, const Vector3f & point, const Vector3f & outNormal, float angle)
+	_CPU_AND_GPU_CODE_ inline void processPixel(int x, int y, int locId, bool foundPoint, const DEVICEPTR(Vector3f) & point, const DEVICEPTR(Vector3f) & outNormal, float angle)
 	{
 		drawColourRendering<TVoxel,TIndex>(foundPoint, point, voxelData, voxelIndex, outRendering[locId]);
 	}
@@ -251,17 +265,19 @@ class RaycastRenderer_ColourImage {
 
 class RaycastRenderer_ICPMaps {
 	private:
-	Vector4u *outRendering;
-	Vector4f *pointsMap;
-	Vector4f *normalsMap;
+	DEVICEPTR(Vector4u) *outRendering;
+	DEVICEPTR(Vector4f) *pointsMap;
+	DEVICEPTR(Vector4f) *normalsMap;
 	float voxelSize;
 
 	public:
+#ifndef __METALC__
 	RaycastRenderer_ICPMaps(Vector4u *_outRendering, Vector4f *_pointsMap, Vector4f *_normalsMap, float _voxelSize)
 	 : outRendering(_outRendering), pointsMap(_pointsMap), normalsMap(_normalsMap), voxelSize(_voxelSize)
 	{}
+#endif
 
-	_CPU_AND_GPU_CODE_ inline void processPixel(int x, int y, int locId, bool foundPoint, const Vector3f & point, const Vector3f & outNormal, float angle)
+	_CPU_AND_GPU_CODE_ inline void processPixel(int x, int y, int locId, bool foundPoint, const DEVICEPTR(Vector3f) & point, const DEVICEPTR(Vector3f) & outNormal, float angle)
 	{
 		drawRendering(foundPoint, angle, outRendering[locId]);
 		if (foundPoint)
@@ -287,16 +303,16 @@ class RaycastRenderer_ICPMaps {
 };
 
 template<class TVoxel, class TIndex, class TRaycastRenderer>
-_CPU_AND_GPU_CODE_ inline void genericRaycastAndRender(int x, int y, TRaycastRenderer & renderer,
-	const TVoxel *voxelData, const typename TIndex::IndexData *voxelIndex, Vector2i imgSize, Matrix4f invM, Vector4f projParams,
-	float oneOverVoxelSize, const Vector2f *minmaxdata, float mu, Vector3f lightSource)
+_CPU_AND_GPU_CODE_ inline void genericRaycastAndRender(int x, int y, DEVICEPTR(TRaycastRenderer) & renderer,
+	const DEVICEPTR(TVoxel) *voxelData, const DEVICEPTR(typename TIndex::IndexData) *voxelIndex, Vector2i imgSize, Matrix4f invM, Vector4f projParams,
+	float oneOverVoxelSize, const DEVICEPTR(Vector2f) *minmaxdata, float mu, Vector3f lightSource)
 {
 	Vector3f pt_ray;
 	Vector3f outNormal;
 	float angle;
 
 	int locId = x + y * imgSize.x;
-	int locId2 = (int)floorf(x/minmaximg_subsample) + (int)floorf(y/minmaximg_subsample) * imgSize.x;
+	int locId2 = (int)floor((float)x/minmaximg_subsample) + (int)floor((float)y/minmaximg_subsample) * imgSize.x;
 
 	float viewFrustum_min = minmaxdata[locId2].x;
 	float viewFrustum_max = minmaxdata[locId2].y;

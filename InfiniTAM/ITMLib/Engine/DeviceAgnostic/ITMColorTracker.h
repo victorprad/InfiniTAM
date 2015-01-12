@@ -5,8 +5,8 @@
 #include "../../Utils/ITMLibDefines.h"
 #include "../../Utils/ITMPixelUtils.h"
 
-_CPU_AND_GPU_CODE_ inline float getColorDifferenceSq(Vector4f *locations, Vector4f *colours, Vector4u *rgb, Vector2i imgSize, 
-	int locId_global, Vector4f projParams, Matrix4f M)
+_CPU_AND_GPU_CODE_ inline float getColorDifferenceSq(DEVICEPTR(Vector4f) *locations, DEVICEPTR(Vector4f) *colours, DEVICEPTR(Vector4u) *rgb,
+	Vector2i imgSize, int locId_global, Vector4f projParams, Matrix4f M)
 {
 	Vector4f pt_model, pt_camera, colour_known, colour_obs;
 	Vector3f colour_diff;
@@ -34,8 +34,9 @@ _CPU_AND_GPU_CODE_ inline float getColorDifferenceSq(Vector4f *locations, Vector
 	return colour_diff.x * colour_diff.x + colour_diff.y * colour_diff.y + colour_diff.z * colour_diff.z;
 }
 
-_CPU_AND_GPU_CODE_ inline bool computePerPointGH_rt_Color(float *localGradient, float *localHessian, Vector4f *locations, Vector4f *colours, 
-	Vector4u *rgb,  Vector2i imgSize, int locId_global, Vector4f projParams, Matrix4f M, Vector4s *gx, Vector4s *gy, int numPara, int startPara)
+_CPU_AND_GPU_CODE_ inline bool computePerPointGH_rt_Color(THREADPTR(float) *localGradient, THREADPTR(float) *localHessian,
+	DEVICEPTR(Vector4f) *locations, DEVICEPTR(Vector4f) *colours, DEVICEPTR(Vector4u) *rgb, Vector2i imgSize, int locId_global,
+	Vector4f projParams, Matrix4f M, DEVICEPTR(Vector4s) *gx, DEVICEPTR(Vector4s) *gy, int numPara, int startPara)
 {
 	Vector4f pt_model, pt_camera, colour_known, colour_obs, gx_obs, gy_obs;
 	Vector3f colour_diff_d, d_pt_cam_dpi, d[6];
@@ -86,9 +87,7 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_rt_Color(float *localGradient, 
 		localGradient[para] = d[para].x * colour_diff_d.x + d[para].y * colour_diff_d.y + d[para].z * colour_diff_d.z;
 
 		for (int col = 0; col <= para; col++)
-		{
 			localHessian[counter++] = 2.0f * (d[para].x * d[col].x + d[para].y * d[col].y + d[para].z * d[col].z);
-		}
 	}
 
 	return true;

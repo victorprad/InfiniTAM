@@ -211,7 +211,7 @@ void OpenNIEngine::getImages(ITMView *out)
 		for (int i = 0; i < out->rgb->noDims.x * out->rgb->noDims.y; i++)
 		{
 			Vector4u newPix; openni::RGB888Pixel oldPix = colorImagePix[i];
-			newPix.r = oldPix.r; newPix.g = oldPix.g; newPix.b = oldPix.b; newPix.a = 255;
+			newPix.x = oldPix.r; newPix.y = oldPix.g; newPix.z = oldPix.b; newPix.w = 255;
 			rgb[i] = newPix;
 		}
 	}

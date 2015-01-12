@@ -270,7 +270,7 @@ void UIEngine::glutMouseMoveFunction(int x, int y)
 	{
 		// left button: rotation
 		Vector3f axis((float)-movement.y, (float)-movement.x, 0.0f);
-		float angle = scale_rotation * sqrtf((float)(movement.x * movement.x + movement.y*movement.y));
+		float angle = scale_rotation * sqrt((float)(movement.x * movement.x + movement.y*movement.y));
 		Matrix3f rot = createRotation(axis, angle);
 		uiEngine->freeviewPose.R = rot * uiEngine->freeviewPose.R;
 		uiEngine->freeviewPose.T = rot * uiEngine->freeviewPose.T;

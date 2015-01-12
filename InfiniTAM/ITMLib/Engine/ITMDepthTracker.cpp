@@ -131,7 +131,7 @@ void ITMDepthTracker::TrackCamera(ITMTrackingState *trackingState, const ITMView
 				float stepLength = 0.0f;
 				for (int i = 0; i < 6; i++) stepLength += step[i] * step[i];
 
-				if (sqrtf(stepLength) / 6 < 1e-3) break; //converged
+				if (sqrt(stepLength) / 6 < 1e-3) break; //converged
 
 				approxInvPose = ApplySingleStep(approxInvPose, step);
 			}

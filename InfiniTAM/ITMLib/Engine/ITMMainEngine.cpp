@@ -11,28 +11,31 @@ ITMMainEngine::ITMMainEngine(const ITMLibSettings *settings, const ITMRGBDCalib 
 
 	this->settings = new ITMLibSettings(*settings);
 
-	this->scene = new ITMScene<ITMVoxel,ITMVoxelIndex>(&(settings->sceneParams), settings->useSwapping, settings->useGPU);
+	this->scene = new ITMScene<ITMVoxel,ITMVoxelIndex>(&(settings->sceneParams), settings->useSwapping, settings->deviceType == ITMLibSettings::DEVICE_CUDA);
 
 	this->trackingState = ITMTrackerFactory::MakeTrackingState(*settings, imgSize_rgb, imgSize_d);
 	trackingState->pose_d->SetFrom(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f); 
 
-	this->view = new ITMView(*calib, imgSize_rgb, imgSize_d, settings->useGPU);
+	this->view = new ITMView(*calib, imgSize_rgb, imgSize_d, settings->deviceType == ITMLibSettings::DEVICE_CUDA);
 
-	if (settings->useGPU)
+	switch (settings->deviceType)
 	{
+	case ITMLibSettings::DEVICE_CPU:
+		lowLevelEngine = new ITMLowLevelEngine_CPU();
+		sceneRecoEngine = new ITMSceneReconstructionEngine_CPU<ITMVoxel, ITMVoxelIndex>();
+		if (settings->useSwapping) swappingEngine = new ITMSwappingEngine_CPU<ITMVoxel, ITMVoxelIndex>();
+		visualisationEngine = new ITMVisualisationEngine_CPU<ITMVoxel, ITMVoxelIndex>();
+		break;
+	case ITMLibSettings::DEVICE_CUDA:
 #ifndef COMPILE_WITHOUT_CUDA
 		lowLevelEngine = new ITMLowLevelEngine_CUDA();
-		sceneRecoEngine = new ITMSceneReconstructionEngine_CUDA<ITMVoxel,ITMVoxelIndex>();
-		if (settings->useSwapping) swappingEngine = new ITMSwappingEngine_CUDA<ITMVoxel,ITMVoxelIndex>();
-		visualisationEngine = new ITMVisualisationEngine_CUDA<ITMVoxel,ITMVoxelIndex>();
+		sceneRecoEngine = new ITMSceneReconstructionEngine_CUDA<ITMVoxel, ITMVoxelIndex>();
+		if (settings->useSwapping) swappingEngine = new ITMSwappingEngine_CUDA<ITMVoxel, ITMVoxelIndex>();
+		visualisationEngine = new ITMVisualisationEngine_CUDA<ITMVoxel, ITMVoxelIndex>();
 #endif
-	}
-	else
-	{
-		lowLevelEngine = new ITMLowLevelEngine_CPU();
-		sceneRecoEngine = new ITMSceneReconstructionEngine_CPU<ITMVoxel,ITMVoxelIndex>();
-		if (settings->useSwapping) swappingEngine = new ITMSwappingEngine_CPU<ITMVoxel,ITMVoxelIndex>();
-		visualisationEngine = new ITMVisualisationEngine_CPU<ITMVoxel,ITMVoxelIndex>();
+		break;
+	case ITMLibSettings::DEVICE_METAL:
+		break;
 	}
 
 	trackerPrimary = ITMTrackerFactory::MakePrimaryTracker(*settings, imgSize_rgb, imgSize_d, lowLevelEngine);
@@ -62,11 +65,10 @@ ITMMainEngine::~ITMMainEngine()
 
 void ITMMainEngine::ProcessFrame(void)
 {
-	bool useGPU = settings->useGPU;
 	bool useSwapping = settings->useSwapping;
 
 	// prepare image and move it to GPU, if required
-	if (useGPU)
+	if (settings->deviceType == ITMLibSettings::DEVICE_CUDA)
 	{
 		view->rgb->UpdateDeviceFromHost();
 
@@ -80,20 +82,15 @@ void ITMMainEngine::ProcessFrame(void)
 
 	// prepare image and turn it into a depth image
 	if (view->inputImageType == ITMView::InfiniTAM_DISPARITY_IMAGE)
-	{
 		lowLevelEngine->ConvertDisparityToDepth(view->depth, view->rawDepth, &(view->calib->intrinsics_d), &(view->calib->disparityCalib));
-	}
 	else if (view->inputImageType == ITMView::InfiniTAM_SHORT_DEPTH_IMAGE)
-	{
 		lowLevelEngine->ConvertDepthMMToFloat(view->depth, view->rawDepth);
-	}
 
 	// tracking
 	if (hasStartedObjectReconstruction)
 	{
 		if (trackerPrimary != NULL) trackerPrimary->TrackCamera(trackingState, view);
 		if (trackerSecondary != NULL) trackerSecondary->TrackCamera(trackingState, view);
-
 	}
 
 	// allocation
@@ -101,6 +98,8 @@ void ITMMainEngine::ProcessFrame(void)
 
 	// integration
 	sceneRecoEngine->IntegrateIntoScene(scene, view, trackingState->pose_d);
+
+	ITMSafeCall(cudaThreadSynchronize());
 
 	if (useSwapping) {
 		// swapping: CPU -> GPU
@@ -135,17 +134,17 @@ void ITMMainEngine::GetImage(ITMUChar4Image *out, GetImageType getImageType, boo
 	switch (getImageType)
 	{
 	case ITMMainEngine::InfiniTAM_IMAGE_ORIGINAL_RGB:
-		if (settings->useGPU) view->rgb->UpdateHostFromDevice();
+		if (settings->deviceType == ITMLibSettings::DEVICE_CUDA) view->rgb->UpdateHostFromDevice();
 		out->ChangeDims(view->rgb->noDims);
 		out->SetFrom(view->rgb);
 		break;
 	case ITMMainEngine::InfiniTAM_IMAGE_ORIGINAL_DEPTH:
-		if (settings->useGPU) view->depth->UpdateHostFromDevice();
+		if (settings->deviceType == ITMLibSettings::DEVICE_CUDA) view->depth->UpdateHostFromDevice();
 		out->ChangeDims(view->depth->noDims);
 		ITMVisualisationEngine<ITMVoxel,ITMVoxelIndex>::DepthToUchar4(out, view->depth);
 		break;
 	case ITMMainEngine::InfiniTAM_IMAGE_SCENERAYCAST:
-		if (settings->useGPU) trackingState->rendering->UpdateHostFromDevice();
+		if (settings->deviceType == ITMLibSettings::DEVICE_CUDA) trackingState->rendering->UpdateHostFromDevice();
 		out->ChangeDims(trackingState->rendering->noDims);
 		out->SetFrom(trackingState->rendering);
 		break;
@@ -158,7 +157,7 @@ void ITMMainEngine::GetImage(ITMUChar4Image *out, GetImageType getImageType, boo
 			visualisationEngine->CreateExpectedDepths(scene, pose, intrinsics, visualisationState->minmaxImage, visualisationState);
 			visualisationEngine->RenderImage(scene, pose, intrinsics, visualisationState, visualisationState->outputImage, useColour);
 
-			if (settings->useGPU) visualisationState->outputImage->UpdateHostFromDevice();
+			if (settings->deviceType == ITMLibSettings::DEVICE_CUDA) visualisationState->outputImage->UpdateHostFromDevice();
 			out->SetFrom(visualisationState->outputImage);
 		}
 		break;

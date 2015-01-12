@@ -11,8 +11,15 @@ namespace ITMLib
 		class ITMLibSettings
 		{
 		public:
-			/// Use GPU or run the code on the CPU instead.
-			bool useGPU;
+			/// The device used to run the DeviceAgnostic code
+			typedef enum {
+				DEVICE_CPU,
+				DEVICE_CUDA,
+				DEVICE_METAL
+			} DeviceType;
+
+			/// Select the type of device to use
+			DeviceType deviceType;
 
 			/// Enables swapping between host and device.
 			bool useSwapping;
@@ -26,6 +33,7 @@ namespace ITMLib
 				//! Identifies a tracker based on depth image (Ren et al, 2012)
 				TRACKER_REN
 			} TrackerType;
+
 			/// Select the type of tracker to use
 			TrackerType trackerType;
 

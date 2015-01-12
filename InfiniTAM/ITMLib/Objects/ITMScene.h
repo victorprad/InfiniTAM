@@ -13,8 +13,8 @@ namespace ITMLib
 	namespace Objects
 	{
 		/** \brief
-		    Represents the 3D world model as a hash of small voxel
-		    blocks
+		Represents the 3D world model as a hash of small voxel
+		blocks
 		*/
 		template<class TVoxel, class TIndex>
 		class ITMScene
@@ -34,7 +34,7 @@ namespace ITMLib
 			/** Global content of the 8x8x8 voxel blocks -- stored on host only */
 			ITMGlobalCache<TVoxel> *globalCache;
 
-			ITMScene(const ITMSceneParams *sceneParams, bool useSwapping, bool allocateGPU) 
+			ITMScene(const ITMSceneParams *sceneParams, bool useSwapping, bool allocateGPU)
 				: index(allocateGPU), localVBA(allocateGPU, index.getNumAllocatedVoxelBlocks(), index.getVoxelBlockSize())
 			{
 				this->sceneParams = sceneParams;

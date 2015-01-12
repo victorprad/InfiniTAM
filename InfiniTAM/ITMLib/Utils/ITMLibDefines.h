@@ -25,6 +25,18 @@
 #define _CPU_AND_GPU_CODE_ 
 #endif
 
+#if defined(__METALC__) // for METAL device code
+#define THREADPTR(x) thread x
+#define DEVICEPTR(x) device x
+#define THREADGRPPTR(x) threadgroup x
+#define CONSTANT(x) constant x
+#else
+#define THREADPTR(x) x
+#define DEVICEPTR(x) x
+#define THREADGROUPPTR(x) x
+#define CONSTANT(x) x
+#endif
+
 #include "../Utils/ITMMath.h" 
 
 //////////////////////////////////////////////////////////////////////////
@@ -81,7 +93,7 @@ struct ITMVoxel_f_rgb
 	_CPU_AND_GPU_CODE_ static float SDF_valueToFloat(float x) { return x; }
 	_CPU_AND_GPU_CODE_ static float SDF_floatToValue(float x) { return x; }
 
-	static const bool hasColorInformation = true;
+	static const CONSTANT(bool) hasColorInformation = true;
 
 	/** Value of the truncated signed distance transformation. */
 	float sdf;
@@ -110,7 +122,7 @@ struct ITMVoxel_s_rgb
 	_CPU_AND_GPU_CODE_ static float SDF_valueToFloat(float x) { return (float)(x) / 32767.0f; }
 	_CPU_AND_GPU_CODE_ static short SDF_floatToValue(float x) { return (short)((x) * 32767.0f); }
 
-	static const bool hasColorInformation = true;
+	static const CONSTANT(bool) hasColorInformation = true;
 
 	/** Value of the truncated signed distance transformation. */
 	short sdf;
@@ -138,7 +150,7 @@ struct ITMVoxel_s
 	_CPU_AND_GPU_CODE_ static float SDF_valueToFloat(float x) { return (float)(x) / 32767.0f; }
 	_CPU_AND_GPU_CODE_ static short SDF_floatToValue(float x) { return (short)((x) * 32767.0f); }
 
-	static const bool hasColorInformation = false;
+	static const CONSTANT(bool) hasColorInformation = false;
 
 	/** Value of the truncated signed distance transformation. */
 	short sdf;
@@ -160,7 +172,7 @@ struct ITMVoxel_f
 	_CPU_AND_GPU_CODE_ static float SDF_valueToFloat(float x) { return x; }
 	_CPU_AND_GPU_CODE_ static float SDF_floatToValue(float x) { return x; }
 
-	static const bool hasColorInformation = false;
+	static const CONSTANT(bool) hasColorInformation = false;
 
 	/** Value of the truncated signed distance transformation. */
 	float sdf;

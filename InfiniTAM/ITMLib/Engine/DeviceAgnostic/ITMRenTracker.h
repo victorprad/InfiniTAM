@@ -5,12 +5,11 @@
 #include "../../Utils/ITMLibDefines.h"
 #include "../../Utils/ITMPixelUtils.h"
 #include "ITMSceneReconstructionEngine.h"
-#include <iostream>
 
 // sigma that controls the basin of attraction
 #define DTUNE 6.0f
 
-_CPU_AND_GPU_CODE_ inline void unprojectPtWithIntrinsic(const Vector4f &intrinsic, const Vector3f &inpt, Vector4f &outpt)
+_CPU_AND_GPU_CODE_ inline void unprojectPtWithIntrinsic(const THREADPTR(Vector4f) &intrinsic, const THREADPTR(Vector3f) &inpt, THREADPTR(Vector4f) &outpt)
 {
 	outpt.x = intrinsic.x * inpt.x + intrinsic.z * inpt.z;
 	outpt.y = intrinsic.y * inpt.y + intrinsic.w * inpt.z;
@@ -19,26 +18,26 @@ _CPU_AND_GPU_CODE_ inline void unprojectPtWithIntrinsic(const Vector4f &intrinsi
 }
 
 template<class TVoxel, class TIndex>
-_CPU_AND_GPU_CODE_ inline float computePerPixelEnergy(const Vector4f &inpt, const TVoxel *voxelBlocks, const typename TIndex::IndexData *index,
-	float oneOverVoxelSize, Matrix4f invM)
+_CPU_AND_GPU_CODE_ inline float computePerPixelEnergy(const THREADPTR(Vector4f) &inpt, const DEVICEPTR(TVoxel) *voxelBlocks,
+	const DEVICEPTR(typename TIndex::IndexData) *index, float oneOverVoxelSize, Matrix4f invM)
 {
 	Vector3f pt; bool dtIsFound;
-	pt = (invM * inpt * oneOverVoxelSize).toVector3();
+	pt = TO_VECTOR3(invM * inpt) * oneOverVoxelSize;
 	float dt = readFromSDF_float_uninterpolated(voxelBlocks, index, pt, dtIsFound);
 
 	if (dt == 1.0f) return 0.0f;
 
-	float expdt = expf(-dt * DTUNE);
+	float expdt = exp(-dt * DTUNE);
 	return 4.0f * expdt / ((expdt + 1.0f)*(expdt + 1.0f));
 }
 
 template<class TVoxel, class TIndex>
-_CPU_AND_GPU_CODE_ inline Vector3f computeDDT(const Vector3f &pt_f, const TVoxel *voxelBlocks, const typename TIndex::IndexData *index,
-	float oneOverVoxelSize, bool &ddtFound)
+_CPU_AND_GPU_CODE_ inline Vector3f computeDDT(const DEVICEPTR(Vector3f) &pt_f, const THREADPTR(TVoxel) *voxelBlocks,
+	const THREADPTR(typename TIndex::IndexData) *index, float oneOverVoxelSize, DEVICEPTR(bool) &ddtFound)
 {
 	Vector3f ddt;
 	
-	Vector3i pt = pt_f.toIntRound();
+	Vector3i pt = TO_INT_ROUND3(pt_f);
 	
 	bool isFound; float dt1, dt2;	
 
@@ -64,8 +63,8 @@ _CPU_AND_GPU_CODE_ inline Vector3f computeDDT(const Vector3f &pt_f, const TVoxel
 }
 
 template<class TVoxel, class TIndex>
-_CPU_AND_GPU_CODE_ inline bool computePerPixelJacobian(float *jacobian, const Vector4f &inpt, const TVoxel *voxelBlocks, const typename TIndex::IndexData *index,
-	float oneOverVoxelSize, Matrix4f invM)
+_CPU_AND_GPU_CODE_ inline bool computePerPixelJacobian(THREADPTR(float) *jacobian, const THREADPTR(Vector4f) &inpt, 
+	const DEVICEPTR(TVoxel) *voxelBlocks, const DEVICEPTR(typename TIndex::IndexData) *index, float oneOverVoxelSize, Matrix4f invM)
 {
 	float dt;
 
@@ -73,7 +72,7 @@ _CPU_AND_GPU_CODE_ inline bool computePerPixelJacobian(float *jacobian, const Ve
 
 	Vector3f cPt, dDt, pt;
 
-	cPt = (invM * inpt).toVector3();
+	cPt = TO_VECTOR3(invM * inpt);
 
 	pt = cPt * oneOverVoxelSize;
 
@@ -85,10 +84,10 @@ _CPU_AND_GPU_CODE_ inline bool computePerPixelJacobian(float *jacobian, const Ve
 	dDt = computeDDT<TVoxel, TIndex>(pt, voxelBlocks, index, oneOverVoxelSize, isFound);
 	if (!isFound) return false;
 
-	float expdt = expf(-dt * DTUNE);
+	float expdt = exp(-dt * DTUNE);
 	float deto = expdt + 1;
 
-	float prefix = 4.0f * DTUNE * (2.0f * expf(-dt * 2.0f * DTUNE) / (deto * deto * deto) - expdt / (deto * deto));
+	float prefix = 4.0f * DTUNE * (2.0f * exp(-dt * 2.0f * DTUNE) / (deto * deto * deto) - expdt / (deto * deto));
 
 	dDt *= prefix;
 

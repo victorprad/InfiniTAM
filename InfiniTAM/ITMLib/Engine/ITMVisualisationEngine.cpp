@@ -49,10 +49,10 @@ void ITMVisualisationEngine<TVoxel,TIndex>::DepthToUchar4(ITMUChar4Image *dst, I
 		{
 			sourceVal = (sourceVal - lims[0]) * scale;
 
-			destUC4[idx].r = (uchar)(base(sourceVal - 0.5f) * 255.0f);
-			destUC4[idx].g = (uchar)(base(sourceVal) * 255.0f);
-			destUC4[idx].b = (uchar)(base(sourceVal + 0.5f) * 255.0f);
-			destUC4[idx].a = 255;
+			destUC4[idx].x = (uchar)(base(sourceVal - 0.5f) * 255.0f);
+			destUC4[idx].y = (uchar)(base(sourceVal) * 255.0f);
+			destUC4[idx].z = (uchar)(base(sourceVal + 0.5f) * 255.0f);
+			destUC4[idx].w = 255;
 		}
 	}
 }

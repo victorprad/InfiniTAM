@@ -93,7 +93,7 @@ void ITMPose::SetModelViewFromParams()
 
 	//float theta_sq = VectorDotProduct_3(&w, &w);
 	float theta_sq = dot(w, w);
-	float theta = sqrtf(theta_sq);
+	float theta = sqrt(theta_sq);
 
 	float A, B;
 
@@ -163,8 +163,8 @@ void ITMPose::SetParamsFromModelView()
 	resultRot.y = (R.m[0 + 3 * 2] - R.m[2 + 3 * 0]) * 0.5f;
 	resultRot.z = (R.m[1 + 3 * 0] - R.m[0 + 3 * 1]) * 0.5f;
 
-	//float sin_angle_abs = sqrtf(VectorDotProduct_3(&resultRot, &resultRot));
-	float sin_angle_abs = sqrtf(dot(resultRot, resultRot));
+	//float sin_angle_abs = sqrt(VectorDotProduct_3(&resultRot, &resultRot));
+	float sin_angle_abs = sqrt(dot(resultRot, resultRot));
 
 	if (cos_angle > M_SQRT1_2)
 	{
@@ -210,8 +210,8 @@ void ITMPose::SetParamsFromModelView()
 	}
 
 	float shtot = 0.5f;
-	//float theta = sqrtf(VectorDotProduct_3(&resultRot, &resultRot));
-	float theta = sqrtf(dot(resultRot, resultRot));
+	//float theta = sqrt(VectorDotProduct_3(&resultRot, &resultRot));
+	float theta = sqrt(dot(resultRot, resultRot));
 
 	if (theta > 0.00001f) shtot = sinf(theta * 0.5f) / theta;
 

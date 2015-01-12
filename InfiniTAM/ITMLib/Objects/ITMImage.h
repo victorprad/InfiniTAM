@@ -3,8 +3,13 @@
 #pragma once
 
 #include "../Utils/ITMLibDefines.h"
+
 #ifndef COMPILE_WITHOUT_CUDA
 #include "../Engine/DeviceSpecific/CUDA/ITMCUDADefines.h"
+#endif
+
+#ifdef COMPILE_WITH_METAL
+#include "../Engine/DeviceSpecific/Metal/ITMMetalContext.h"
 #endif
 
 #include <stdlib.h>
@@ -15,7 +20,7 @@ namespace ITMLib
 	namespace Objects
 	{
 		/** \brief
-		    Represents images, templated on the pixel type
+		Represents images, templated on the pixel type
 		*/
 		template <typename T>
 		class ITMImage
@@ -28,6 +33,10 @@ namespace ITMLib
 			T* data_host;
 			/** Pointer to memory on GPU, if available. */
 			T* data_device;
+
+#ifdef COMPILE_WITH_METAL
+			void *metalBuffer;
+#endif
 		public:
 			/** Size of the image in pixels. */
 			Vector2i noDims;
@@ -40,8 +49,12 @@ namespace ITMLib
 			/** Get the data pointer on CPU or GPU. */
 			inline const T* GetData(bool useGPU) const { return useGPU ? data_device : data_host; }
 
+#ifdef COMPILE_WITH_METAL
+			inline const void *GetMetalBuffer() const { return metalBuffer; }
+#endif
+
 			/** Initialize an empty 0x0 image, either on CPU only
-			    or on both CPU and GPU.
+			or on both CPU and GPU.
 			*/
 			explicit ITMImage(bool allocateGPU = false)
 			{
@@ -51,7 +64,7 @@ namespace ITMLib
 			}
 
 			/** Initialize an empty image of the given size, either
-			    on CPU only or on both CPU and GPU.
+			on CPU only or on both CPU and GPU.
 			*/
 			ITMImage(Vector2i noDims, bool allocateGPU = false)
 			{
@@ -61,49 +74,25 @@ namespace ITMLib
 				this->Clear();
 			}
 
-			/** Allocate image data of the specified size. If the
-			    image has been allocated before, nothing is done,
-			    irrespective of size.
-			*/
-			void Allocate(Vector2i noDims)
-			{
-				if (!this->isAllocated) {
-					this->noDims = noDims;
-					dataSize = noDims.x * noDims.y;
-
-					if (allocateGPU)
-					{
-#ifndef COMPILE_WITHOUT_CUDA
-						ITMSafeCall(cudaMallocHost((void**)&data_host, dataSize * sizeof(T)));
-						ITMSafeCall(cudaMalloc((void**)&data_device, dataSize * sizeof(T)));
-#endif
-					}
-					else
-					{ data_host = new T[dataSize]; }
-				}
-
-				isAllocated = true;
-			}
-
-			/** Set all image data to the given @p defaultValue. */
-			void Clear(uchar defaultValue = 0) 
-			{ 
-				memset(data_host, defaultValue, dataSize * sizeof(T)); 
-#ifndef COMPILE_WITHOUT_CUDA
-				if (allocateGPU) ITMSafeCall(cudaMemset(data_device, defaultValue, dataSize * sizeof(T)));
-#endif
-			}
-
 			/** Resize an image, loosing all old image data.
-			    Essentially any previously allocated data is
-			    released, new memory is allocated.
+			Essentially any previously allocated data is
+			released, new memory is allocated.
 			*/
 			void ChangeDims(Vector2i newDims)
 			{
-				if ((newDims != noDims)||(!isAllocated)) {
+				if ((newDims != noDims) || (!isAllocated)) {
 					Free();
 					Allocate(newDims);
 				}
+			}
+
+			/** Set all image data to the given @p defaultValue. */
+			void Clear(uchar defaultValue = 0)
+			{
+				memset(data_host, defaultValue, dataSize * sizeof(T));
+#ifndef COMPILE_WITHOUT_CUDA
+				if (allocateGPU) ITMSafeCall(cudaMemset(data_device, defaultValue, dataSize * sizeof(T)));
+#endif
 			}
 
 			/** Transfer data from CPU to GPU, if possible. */
@@ -128,27 +117,60 @@ namespace ITMLib
 #endif
 			}
 
-			/** Release allocated memory for this image */
-			void Free()
-			{
-				if (this->isAllocated) {
-					if (allocateGPU) {
-#ifndef COMPILE_WITHOUT_CUDA
-						ITMSafeCall(cudaFree(data_device)); 
-						ITMSafeCall(cudaFreeHost(data_host)); 
-#endif
-					}
-					else delete[] data_host;
-				}
-
-				this->isAllocated = false;
-			}
-
 			~ITMImage() { this->Free(); }
 
 			// Suppress the default copy constructor and assignment operator
 			ITMImage(const ITMImage&);
 			ITMImage& operator=(const ITMImage&);
+
+			/** Allocate image data of the specified size. If the
+			image has been allocated before, nothing is done,
+			irrespective of size.
+			*/
+			void Allocate(Vector2i noDims)
+			{
+				if (!this->isAllocated) {
+					this->noDims = noDims;
+					dataSize = noDims.x * noDims.y;
+
+#ifdef COMPILE_WITH_METAL
+					allocateMetalData((void**)&data_host, (void**)&metalBuffer, dataSize * sizeof(T), true);
+#else
+					if (allocateGPU)
+					{
+#ifndef COMPILE_WITHOUT_CUDA
+						ITMSafeCall(cudaMallocHost((void**)&data_host, dataSize * sizeof(T)));
+						ITMSafeCall(cudaMalloc((void**)&data_device, dataSize * sizeof(T)));
+#endif
+					}
+					else data_host = new T[dataSize];
+#endif
+				}
+
+				isAllocated = true;
+			}
+
+			/** Release allocated memory for this image */
+			void Free()
+			{
+				if (this->isAllocated)
+				{
+#ifdef COMPILE_WITH_METAL
+					freeMetalData((void**)&data_host, (void**)&metalBuffer, dataSize * sizeof(T), true);
+#else
+					if (allocateGPU)
+					{
+#ifndef COMPILE_WITHOUT_CUDA
+						ITMSafeCall(cudaFree(data_device));
+						ITMSafeCall(cudaFreeHost(data_host));
+#endif
+					}
+					else delete[] data_host;
+#endif
+				}
+
+				this->isAllocated = false;
+			}
 		};
 	}
 }

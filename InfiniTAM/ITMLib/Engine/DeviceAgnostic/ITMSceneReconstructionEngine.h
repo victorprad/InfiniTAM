@@ -7,8 +7,8 @@
 #include "ITMRepresentationAccess.h"
 
 template<class TVoxel>
-_CPU_AND_GPU_CODE_ inline float computeUpdatedVoxelDepthInfo(TVoxel &voxel, const Vector4f & pt_model, const Matrix4f & M_d, const Vector4f & projParams_d,
-	float mu, int maxW, const float *depth, const Vector2i & imgSize)
+_CPU_AND_GPU_CODE_ inline float computeUpdatedVoxelDepthInfo(DEVICEPTR(TVoxel) &voxel, const THREADPTR(Vector4f) & pt_model, const CONSTANT(Matrix4f) & M_d,
+	const CONSTANT(Vector4f) & projParams_d, float mu, int maxW, const DEVICEPTR(float) *depth, const CONSTANT(Vector2i) & imgSize)
 {
 	Vector4f pt_camera; Vector2f pt_image;
 	float depth_measure, eta, oldF, newF;
@@ -49,8 +49,8 @@ _CPU_AND_GPU_CODE_ inline float computeUpdatedVoxelDepthInfo(TVoxel &voxel, cons
 
 
 template<class TVoxel>
-_CPU_AND_GPU_CODE_ inline void computeUpdatedVoxelColorInfo(TVoxel &voxel, const Vector4f & pt_model, const Matrix4f & M_rgb, const Vector4f & projParams_rgb,
-	float mu, uchar maxW, float eta, const Vector4u *rgb, const Vector2i & imgSize)
+_CPU_AND_GPU_CODE_ inline void computeUpdatedVoxelColorInfo(DEVICEPTR(TVoxel) &voxel, const THREADPTR(Vector4f) & pt_model, const CONSTANT(Matrix4f) & M_rgb, 
+	const CONSTANT(Vector4f) & projParams_rgb, float mu, uchar maxW, float eta, const CONSTANT(Vector4u) *rgb, const CONSTANT(Vector2i) & imgSize)
 {
 	Vector4f pt_camera; Vector2f pt_image;
 	Vector3f rgb_measure, oldC, newC; Vector3u buffV3u;
@@ -59,7 +59,7 @@ _CPU_AND_GPU_CODE_ inline void computeUpdatedVoxelColorInfo(TVoxel &voxel, const
 	buffV3u = voxel.clr;
 	oldW = (float)voxel.w_color;
 
-	oldC = buffV3u.toFloat() / 255.0f;
+	oldC = TO_FLOAT3(buffV3u) / 255.0f;
 	newC = oldC;
 
 	pt_camera = M_rgb * pt_model;
@@ -69,7 +69,7 @@ _CPU_AND_GPU_CODE_ inline void computeUpdatedVoxelColorInfo(TVoxel &voxel, const
 
 	if ((pt_image.x < 1) || (pt_image.x > imgSize.x - 2) || (pt_image.y < 1) || (pt_image.y > imgSize.y - 2)) return;
 
-	rgb_measure = interpolateBilinear(rgb, pt_image, imgSize).toVector3() / 255.0f;
+	rgb_measure = TO_VECTOR3(interpolateBilinear(rgb, pt_image, imgSize)) / 255.0f;
 	//rgb_measure = rgb[(int)(pt_image.x + 0.5f) + (int)(pt_image.y + 0.5f) * imgSize.x].toVector3().toFloat() / 255.0f;
 	newW = 1;
 
@@ -78,7 +78,7 @@ _CPU_AND_GPU_CODE_ inline void computeUpdatedVoxelColorInfo(TVoxel &voxel, const
 	newC /= newW;
 	newW = MIN(newW, maxW);
 
-	buffV3u = (newC * 255.0f).toUChar();
+	buffV3u = TO_UCHAR3(newC * 255.0f);
 	
 	voxel.clr = buffV3u;
 	voxel.w_color = (uchar)newW;
@@ -88,12 +88,12 @@ template<bool hasColor,class TVoxel> struct ComputeUpdatedVoxelInfo;
 
 template<class TVoxel>
 struct ComputeUpdatedVoxelInfo<false,TVoxel> {
-	_CPU_AND_GPU_CODE_ static void compute(TVoxel & voxel, const Vector4f & pt_model,
-		const Matrix4f & M_d, const Vector4f & projParams_d,
-		const Matrix4f & M_rgb, const Vector4f & projParams_rgb,
+	_CPU_AND_GPU_CODE_ static void compute(DEVICEPTR(TVoxel) & voxel, const THREADPTR(Vector4f) & pt_model,
+		const CONSTANT(Matrix4f) & M_d, const CONSTANT(Vector4f) & projParams_d,
+		const CONSTANT(Matrix4f) & M_rgb, const CONSTANT(Vector4f) & projParams_rgb,
 		float mu, int maxW,
-		const float *depth, const Vector2i & imgSize_d,
-		const Vector4u *rgb, const Vector2i & imgSize_rgb)
+		const DEVICEPTR(float) *depth, const CONSTANT(Vector2i) & imgSize_d,
+		const DEVICEPTR(Vector4u) *rgb, const CONSTANT(Vector2i) & imgSize_rgb)
 	{
 		computeUpdatedVoxelDepthInfo(voxel, pt_model, M_d, projParams_d, mu, maxW, depth, imgSize_d);
 	}
@@ -101,12 +101,12 @@ struct ComputeUpdatedVoxelInfo<false,TVoxel> {
 
 template<class TVoxel>
 struct ComputeUpdatedVoxelInfo<true,TVoxel> {
-	_CPU_AND_GPU_CODE_ static void compute(TVoxel & voxel, const Vector4f & pt_model,
-		const Matrix4f & M_d, const Vector4f & projParams_d,
-		const Matrix4f & M_rgb, const Vector4f & projParams_rgb,
+	_CPU_AND_GPU_CODE_ static void compute(DEVICEPTR(TVoxel) & voxel, const THREADPTR(Vector4f) & pt_model,
+		const THREADPTR(Matrix4f) & M_d, const THREADPTR(Vector4f) & projParams_d,
+		const THREADPTR(Matrix4f) & M_rgb, const THREADPTR(Vector4f) & projParams_rgb,
 		float mu, int maxW,
-		const float *depth, const Vector2i & imgSize_d,
-		const Vector4u *rgb, const Vector2i & imgSize_rgb)
+		const DEVICEPTR(float) *depth, const DEVICEPTR(Vector2i) & imgSize_d,
+		const DEVICEPTR(Vector4u) *rgb, const THREADPTR(Vector2i) & imgSize_rgb)
 	{
 		float eta = computeUpdatedVoxelDepthInfo(voxel, pt_model, M_d, projParams_d, mu, maxW, depth, imgSize_d);
 		if ((eta > mu) || (fabsf(eta / mu) > 0.25f)) return;
@@ -114,13 +114,13 @@ struct ComputeUpdatedVoxelInfo<true,TVoxel> {
 	}
 };
 
-_CPU_AND_GPU_CODE_ inline void buildHashAllocAndVisibleTypePP(uchar *entriesAllocType, uchar *entriesVisibleType, int x, int y, Vector3s *blockCoords,
-	const float *depth, Matrix4f invM_d, Vector4f projParams_d, float mu, Vector2i imgSize, float oneOverVoxelSize, ITMHashEntry *hashTable,
-	float viewFrustum_min, float viewFrustum_max)
+_CPU_AND_GPU_CODE_ inline void buildHashAllocAndVisibleTypePP(DEVICEPTR(uchar) *entriesAllocType, DEVICEPTR(uchar) *entriesVisibleType, int x, int y,
+	DEVICEPTR(Vector3s) *blockCoords, const DEVICEPTR(float) *depth, Matrix4f invM_d, Vector4f projParams_d, float mu, Vector2i imgSize, 
+	float oneOverVoxelSize, DEVICEPTR(ITMHashEntry) *hashTable, float viewFrustum_min, float viewFrustum_max)
 {
 	ITMHashEntry hashEntry;
 	float depth_measure, direction_norm; unsigned int hashIdx; int noSteps, lastFreeInBucketIdx;
-	Vector3f pt_camera_f, pt_block_s, pt_block_e, pt_block, direction; Vector3s pt_block_a;
+	Vector4f pt_camera_f; Vector3f pt_block_s, pt_block_e, pt_block, direction; Vector3s pt_block_a;
 
 	depth_measure = depth[x + y * imgSize.x];
 	if (depth_measure <= 0 || (depth_measure - mu) < 0 || (depth_measure - mu) < viewFrustum_min || (depth_measure + mu) > viewFrustum_max) return;
@@ -129,26 +129,28 @@ _CPU_AND_GPU_CODE_ inline void buildHashAllocAndVisibleTypePP(uchar *entriesAllo
 	pt_camera_f.z = depth_measure - mu;
 	pt_camera_f.x = pt_camera_f.z * ((float(x) - projParams_d.z) * projParams_d.x);
 	pt_camera_f.y = pt_camera_f.z * ((float(y) - projParams_d.w) * projParams_d.y);
-	pt_block_s = (invM_d * pt_camera_f) * oneOverVoxelSize;
+	pt_camera_f.w = 1.0f;
+	pt_block_s = TO_VECTOR3(invM_d * pt_camera_f) * oneOverVoxelSize;
 
 	//find block coords for end ray
 	pt_camera_f.z = depth_measure + mu;
 	pt_camera_f.x = pt_camera_f.z * ((float(x) - projParams_d.z) * projParams_d.x);
 	pt_camera_f.y = pt_camera_f.z * ((float(y) - projParams_d.w) * projParams_d.y);
-	pt_block_e = (invM_d * pt_camera_f) * oneOverVoxelSize;
+	pt_camera_f.w = 1.0f;
+	pt_block_e = TO_VECTOR3(invM_d * pt_camera_f) * oneOverVoxelSize;
 
 	direction = pt_block_e - pt_block_s;
-	direction_norm = 1.0f / sqrtf(direction.x * direction.x + direction.y * direction.y + direction.z * direction.z);
+	direction_norm = 1.0f / sqrt(direction.x * direction.x + direction.y * direction.y + direction.z * direction.z);
 	direction *= direction_norm;
 
 	pt_block = pt_block_s - direction;
 
-	noSteps = (int)ceilf(1.0f / direction_norm) + 1;
+	noSteps = (int)ceil(1.0f / direction_norm) + 1;
 
 	//add neighbouring blocks
 	for (int i = 0; i < noSteps; i++)
 	{
-		pt_block_a = pt_block.toShortFloor();
+		pt_block_a = TO_SHORT_FLOOR3(pt_block);
 
 		//compute index in hash table
 		hashIdx = hashIndex(pt_block_a, SDF_HASH_MASK) * SDF_ENTRY_NUM_PER_BUCKET;
@@ -157,7 +159,7 @@ _CPU_AND_GPU_CODE_ inline void buildHashAllocAndVisibleTypePP(uchar *entriesAllo
 		lastFreeInBucketIdx = -1; bool foundValue = false; int offsetExcess = 0;
 		for (int inBucketIdx = 0; inBucketIdx < SDF_ENTRY_NUM_PER_BUCKET; inBucketIdx++)
 		{
-			const ITMHashEntry &hashEntry = hashTable[hashIdx + inBucketIdx];
+			const DEVICEPTR(ITMHashEntry) &hashEntry = hashTable[hashIdx + inBucketIdx];
 			offsetExcess = hashEntry.offset - 1;
 
 			if (hashEntry.pos == pt_block_a && hashEntry.ptr >= -1)
@@ -193,7 +195,7 @@ _CPU_AND_GPU_CODE_ inline void buildHashAllocAndVisibleTypePP(uchar *entriesAllo
 
 				while (offsetExcess >= 0)
 				{
-					const ITMHashEntry &hashEntry = hashTable[noOrderedEntries + offsetExcess];
+					const DEVICEPTR(ITMHashEntry) &hashEntry = hashTable[noOrderedEntries + offsetExcess];
 
 					if (hashEntry.pos == pt_block_a && hashEntry.ptr >= -1)
 					{

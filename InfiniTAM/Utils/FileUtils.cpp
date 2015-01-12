@@ -152,17 +152,17 @@ void SaveImageToFile(const ITMUChar4Image* image, const char* fileName, bool fli
 			locId_src = x + y * noDims.x;
 			locId_dst = x + (noDims.y - y - 1) * noDims.x;
 
-			data[locId_dst * 3 + 0] = image->GetData(false)[locId_src].r;
-			data[locId_dst * 3 + 1] = image->GetData(false)[locId_src].g;
-			data[locId_dst * 3 + 2] = image->GetData(false)[locId_src].b;
+			data[locId_dst * 3 + 0] = image->GetData(false)[locId_src].x;
+			data[locId_dst * 3 + 1] = image->GetData(false)[locId_src].y;
+			data[locId_dst * 3 + 2] = image->GetData(false)[locId_src].z;
 		}
 	}
 	else
 	{
 		for (int i = 0; i < noDims.x * noDims.y; ++i) {
-			data[i * 3 + 0] = image->GetData(false)[i].r;
-			data[i * 3 + 1] = image->GetData(false)[i].g;
-			data[i * 3 + 2] = image->GetData(false)[i].b;
+			data[i * 3 + 0] = image->GetData(false)[i].x;
+			data[i * 3 + 1] = image->GetData(false)[i].y;
+			data[i * 3 + 2] = image->GetData(false)[i].z;
 		}
 	}
 
@@ -226,9 +226,9 @@ bool ReadImageFromFile(ITMUChar4Image* image, const char* fileName)
 	image->ChangeDims(newSize);
 	for (int i = 0; i < image->noDims.x*image->noDims.y; ++i) 
 	{
-		image->GetData(false)[i].r = data[i*3+0];
-		image->GetData(false)[i].g = data[i*3+1];
-		image->GetData(false)[i].b = data[i*3+2];
+		image->GetData(false)[i].x = data[i*3+0];
+		image->GetData(false)[i].y = data[i*3+1];
+		image->GetData(false)[i].z = data[i*3+2];
 		image->GetData(false)[i].w = 255; 
 	}
 
