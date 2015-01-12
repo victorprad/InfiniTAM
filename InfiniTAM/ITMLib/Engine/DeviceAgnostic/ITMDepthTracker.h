@@ -8,24 +8,26 @@
 template<bool rotationOnly>
 _CPU_AND_GPU_CODE_ inline bool computePerPointGH_Depth(THREADPTR(float) *localNabla, THREADPTR(float) *localHessian, const CONSTANT(int) & x, const CONSTANT(int) & y, 
 	const CONSTANT(float) *depth, const CONSTANT(Vector2i) & viewImageSize, const CONSTANT(Vector4f) & viewIntrinsics, const CONSTANT(Vector2i) & sceneImageSize, 
-	const CONSTANT(Vector4f) & sceneIntrinsics, const CONSTANT(Matrix4f) & approxInvPose, const CONSTANT(Matrix4f) & scenePose, const CONSTANT(Vector4f) *pointsMap, 
-	const CONSTANT(Vector4f) *normalsMap, const CONSTANT(float) & distThresh)
+	const CONSTANT(Vector4f) & sceneIntrinsics, const CONSTANT(Matrix4f) & approxInvPose, const CONSTANT(Matrix4f) & scenePose, const DEVICEPTR(Vector4f) *pointsMap,
+	const DEVICEPTR(Vector4f) *normalsMap, const CONSTANT(float) & distThresh)
 {
 	const int noPara = rotationOnly?3:6;
 	float tmpD = depth[x + y * viewImageSize.x];
 
 	if (tmpD <= 1e-8f) return false; //check if valid -- != 0.0f
 
-	Vector3f tmp3Dpoint, tmp3Dpoint_reproj, ptDiff;
+    Vector4f tmp3Dpoint, tmp3Dpoint_reproj; Vector3f ptDiff;
 	Vector4f curr3Dpoint, corr3Dnormal; Vector2f tmp2Dpoint;
 	float A[noPara];
 
 	tmp3Dpoint.x = tmpD * ((float(x) - viewIntrinsics.z) / viewIntrinsics.x);
 	tmp3Dpoint.y = tmpD * ((float(y) - viewIntrinsics.w) / viewIntrinsics.y);
 	tmp3Dpoint.z = tmpD;
-
+    tmp3Dpoint.w = 1.0f;
+    
 	// transform to previous frame coordinates
 	tmp3Dpoint = approxInvPose * tmp3Dpoint;
+	tmp3Dpoint.w = 1.0f;
 
 	// project into previous rendered image
 	tmp3Dpoint_reproj = scenePose * tmp3Dpoint;

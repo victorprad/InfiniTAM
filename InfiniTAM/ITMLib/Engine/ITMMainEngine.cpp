@@ -35,6 +35,12 @@ ITMMainEngine::ITMMainEngine(const ITMLibSettings *settings, const ITMRGBDCalib 
 #endif
 		break;
 	case ITMLibSettings::DEVICE_METAL:
+#ifdef COMPILE_WITH_METAL
+        lowLevelEngine = new ITMLowLevelEngine_Metal();
+        sceneRecoEngine = new ITMSceneReconstructionEngine_Metal<ITMVoxel, ITMVoxelIndex>();
+        if (settings->useSwapping) swappingEngine = new ITMSwappingEngine_CPU<ITMVoxel, ITMVoxelIndex>();
+        visualisationEngine = new ITMVisualisationEngine_Metal<ITMVoxel, ITMVoxelIndex>();
+#endif
 		break;
 	}
 
@@ -98,8 +104,6 @@ void ITMMainEngine::ProcessFrame(void)
 
 	// integration
 	sceneRecoEngine->IntegrateIntoScene(scene, view, trackingState->pose_d);
-
-	ITMSafeCall(cudaThreadSynchronize());
 
 	if (useSwapping) {
 		// swapping: CPU -> GPU

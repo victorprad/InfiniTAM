@@ -18,7 +18,7 @@ ITMLibSettings::ITMLibSettings(void)
 	/// skips every other point when using the colour tracker
 	skipPoints = true;
 
-	//deviceType = DEVICE_CPU;
+//	deviceType = DEVICE_CPU;
 	deviceType = DEVICE_CUDA;
 	//deviceType = DEVICE_METAL;
 

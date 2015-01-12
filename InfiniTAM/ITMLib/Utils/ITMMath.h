@@ -2,15 +2,6 @@
 
 #pragma once
 
-#ifndef __METALC__
-
-#include <ostream>
-
-typedef unsigned char uchar;
-typedef unsigned short ushort;
-typedef unsigned int uint;
-typedef unsigned long ulong;
-
 #ifndef MIN
 #define MIN(a,b) (((a) < (b)) ? (a) : (b))
 #endif
@@ -42,6 +33,15 @@ typedef unsigned long ulong;
 #ifndef NULL
 #define NULL 0
 #endif
+
+#ifndef __METALC__
+
+#include <ostream>
+
+typedef unsigned char uchar;
+typedef unsigned short ushort;
+typedef unsigned int uint;
+typedef unsigned long ulong;
 
 #include "ITMVector.h"
 #include "ITMMatrix.h"
@@ -181,5 +181,6 @@ typedef uchar4 Vector4u;
 #ifndef IS_EQUAL3
 #define IS_EQUAL3(a,b) (((a).x == (b).x) && ((a).y == (b).y) && ((a).z == (b).z))
 #endif
+
 
 #endif

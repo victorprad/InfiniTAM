@@ -42,7 +42,16 @@ ITMTracker *ITMTrackerFactory::MakePrimaryTracker(const ITMLibSettings& settings
 #endif
 		break;
 	case ITMLibSettings::DEVICE_METAL:
-		throw std::runtime_error("Error: ITMTrackerFactory::MakePrimaryTracker: DEVICE_METAL not defined");
+        switch (settings.trackerType)
+        {
+            case ITMLibSettings::TRACKER_ICP:
+            case ITMLibSettings::TRACKER_REN:
+            return new ITMDepthTracker_CPU(imgSize_d, settings.noHierarchyLevels, settings.noRotationOnlyLevels, settings.noICPRunTillLevel, settings.depthTrackerICPThreshold, lowLevelEngine);
+            case ITMLibSettings::TRACKER_COLOR:
+            return new ITMColorTracker_CPU(imgSize_rgb, settings.noHierarchyLevels, settings.noRotationOnlyLevels, lowLevelEngine);
+            default:
+            throw std::runtime_error("Error: ITMTrackerFactory::MakePrimaryTracker: Unknown tracker type");
+        }
 		break;
 	}
 

@@ -15,11 +15,17 @@
 #ifndef COMPILE_WITHOUT_CUDA
 #include "Engine/DeviceSpecific/CUDA/ITMLowLevelEngine_CUDA.h"
 #endif
+#ifdef COMPILE_WITH_METAL
+#include "Engine/DeviceSpecific/Metal/ITMLowLevelEngine_Metal.h"
+#endif
 
 #include "Engine/ITMDepthTracker.h"
 #include "Engine/DeviceSpecific/CPU/ITMDepthTracker_CPU.h"
 #ifndef COMPILE_WITHOUT_CUDA
 #include "Engine/DeviceSpecific/CUDA/ITMDepthTracker_CUDA.h"
+#endif
+#ifdef COMPILE_WITH_METAL
+#include "Engine/DeviceSpecific/Metal/ITMDepthTracker_Metal.h"
 #endif
 
 #include "Engine/ITMSceneReconstructionEngine.h"
@@ -27,11 +33,17 @@
 #ifndef COMPILE_WITHOUT_CUDA
 #include "Engine/DeviceSpecific/CUDA/ITMSceneReconstructionEngine_CUDA.h"
 #endif
+#ifdef COMPILE_WITH_METAL
+#include "Engine/DeviceSpecific/Metal/ITMSceneReconstructionEngine_Metal.h"
+#endif
 
 #include "Engine/ITMVisualisationEngine.h"
 #include "Engine/DeviceSpecific/CPU/ITMVisualisationEngine_CPU.h"
 #ifndef COMPILE_WITHOUT_CUDA
 #include "Engine/DeviceSpecific/CUDA/ITMVisualisationEngine_CUDA.h"
+#endif
+#ifdef COMPILE_WITH_METAL
+#include "Engine/DeviceSpecific/Metal/ITMVisualisationEngine_Metal.h"
 #endif
 
 #include "Engine/ITMColorTracker.h"
@@ -39,11 +51,17 @@
 #ifndef COMPILE_WITHOUT_CUDA
 #include "Engine/DeviceSpecific/CUDA/ITMColorTracker_CUDA.h"
 #endif
+#ifdef COMPILE_WITH_METAL
+#include "Engine/DeviceSpecific/Metal/ITMColorTracker_Metal.h"
+#endif
 
 #include "Engine/ITMSwappingEngine.h"
 #include "Engine/DeviceSpecific/CPU/ITMSwappingEngine_CPU.h"
 #ifndef COMPILE_WITHOUT_CUDA
 #include "Engine/DeviceSpecific/CUDA/ITMSwappingEngine_CUDA.h"
+#endif
+#ifdef COMPILE_WITH_METAL
+#include "Engine/DeviceSpecific/Metal/ITMSwappingEngine_Metal.h"
 #endif
 
 #include "Engine/ITMRenTracker.h"
@@ -51,8 +69,10 @@
 #ifndef COMPILE_WITHOUT_CUDA
 #include "Engine/DeviceSpecific/CUDA/ITMRenTracker_CUDA.h"
 #endif
+#ifdef COMPILE_WITH_METAL
+#include "Engine/DeviceSpecific/Metal/ITMRenTracker_Metal.h"
+#endif
 
-#include "Engine/ITMVisualisationEngine.h"
 #include "Engine/ITMMainEngine.h"
 
 using namespace ITMLib::Objects;

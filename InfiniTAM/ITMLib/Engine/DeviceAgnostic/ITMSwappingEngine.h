@@ -38,7 +38,7 @@ _CPU_AND_GPU_CODE_ inline void combineVoxelColorInformation(const DEVICEPTR(TVox
 	newC /= (float)newW;
 	newW = MIN(newW, maxW);
 
-	dst.clr = (newC * 255.0f).toUChar();
+	dst.clr = TO_UCHAR3(newC * 255.0f);
 	dst.w_color = (uchar)newW;
 }
 

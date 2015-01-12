@@ -6,7 +6,7 @@
 #include "../../Utils/ITMPixelUtils.h"
 
 _CPU_AND_GPU_CODE_ inline float getColorDifferenceSq(DEVICEPTR(Vector4f) *locations, DEVICEPTR(Vector4f) *colours, DEVICEPTR(Vector4u) *rgb,
-	Vector2i imgSize, int locId_global, Vector4f projParams, Matrix4f M)
+	const CONSTANT(Vector2i) & imgSize, int locId_global, Vector4f projParams, Matrix4f M)
 {
 	Vector4f pt_model, pt_camera, colour_known, colour_obs;
 	Vector3f colour_diff;
@@ -35,8 +35,8 @@ _CPU_AND_GPU_CODE_ inline float getColorDifferenceSq(DEVICEPTR(Vector4f) *locati
 }
 
 _CPU_AND_GPU_CODE_ inline bool computePerPointGH_rt_Color(THREADPTR(float) *localGradient, THREADPTR(float) *localHessian,
-	DEVICEPTR(Vector4f) *locations, DEVICEPTR(Vector4f) *colours, DEVICEPTR(Vector4u) *rgb, Vector2i imgSize, int locId_global,
-	Vector4f projParams, Matrix4f M, DEVICEPTR(Vector4s) *gx, DEVICEPTR(Vector4s) *gy, int numPara, int startPara)
+	DEVICEPTR(Vector4f) *locations, DEVICEPTR(Vector4f) *colours, DEVICEPTR(Vector4u) *rgb, const CONSTANT(Vector2i) & imgSize,
+    int locId_global, Vector4f projParams, Matrix4f M, DEVICEPTR(Vector4s) *gx, DEVICEPTR(Vector4s) *gy, int numPara, int startPara)
 {
 	Vector4f pt_model, pt_camera, colour_known, colour_obs, gx_obs, gy_obs;
 	Vector3f colour_diff_d, d_pt_cam_dpi, d[6];

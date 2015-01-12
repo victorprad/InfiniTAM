@@ -2,6 +2,7 @@
 
 #pragma once
 
+#ifndef __METALC__
 #ifdef NDEBUG
 #undef NDEBUG
 #include <assert.h>
@@ -9,6 +10,7 @@
 #else
 #include <assert.h>
 #endif // NDEBUG
+#endif
 
 /// Kinect2 support is disabled by default (to not add the Kinect2 SDK dependency)
 #ifndef COMPILE_WITHOUT_Kinect2
@@ -45,7 +47,7 @@
 
 #define SDF_BLOCK_SIZE 8				// SDF block size
 #define SDF_BLOCK_SIZE3 512				// SDF_BLOCK_SIZE3 = SDF_BLOCK_SIZE * SDF_BLOCK_SIZE * SDF_BLOCK_SIZE
-#define SDF_LOCAL_BLOCK_NUM 0x40000		// Number of locally stored blocks, currently 2^18
+#define SDF_LOCAL_BLOCK_NUM 0x20000		// Number of locally stored blocks, currently 2^17
 
 #define SDF_GLOBAL_BLOCK_NUM 0x120000	// Number of globally stored blocks: SDF_BUCKET_NUM * SDF_ENTRY_NUM_PER_BUCKET + SDF_EXCESS_LIST_SIZE
 #define SDF_TRANSFER_BLOCK_NUM 0x1000	// Maximum number of blocks transfered in one swap operation

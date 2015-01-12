@@ -50,7 +50,7 @@ _CPU_AND_GPU_CODE_ inline float computeUpdatedVoxelDepthInfo(DEVICEPTR(TVoxel) &
 
 template<class TVoxel>
 _CPU_AND_GPU_CODE_ inline void computeUpdatedVoxelColorInfo(DEVICEPTR(TVoxel) &voxel, const THREADPTR(Vector4f) & pt_model, const CONSTANT(Matrix4f) & M_rgb, 
-	const CONSTANT(Vector4f) & projParams_rgb, float mu, uchar maxW, float eta, const CONSTANT(Vector4u) *rgb, const CONSTANT(Vector2i) & imgSize)
+	const CONSTANT(Vector4f) & projParams_rgb, float mu, uchar maxW, float eta, const DEVICEPTR(Vector4u) *rgb, const CONSTANT(Vector2i) & imgSize)
 {
 	Vector4f pt_camera; Vector2f pt_image;
 	Vector3f rgb_measure, oldC, newC; Vector3u buffV3u;
@@ -109,7 +109,7 @@ struct ComputeUpdatedVoxelInfo<true,TVoxel> {
 		const DEVICEPTR(Vector4u) *rgb, const THREADPTR(Vector2i) & imgSize_rgb)
 	{
 		float eta = computeUpdatedVoxelDepthInfo(voxel, pt_model, M_d, projParams_d, mu, maxW, depth, imgSize_d);
-		if ((eta > mu) || (fabsf(eta / mu) > 0.25f)) return;
+		if ((eta > mu) || (fabs(eta / mu) > 0.25f)) return;
 		computeUpdatedVoxelColorInfo(voxel, pt_model, M_rgb, projParams_rgb, mu, maxW, eta, rgb, imgSize_rgb);
 	}
 };
@@ -118,7 +118,6 @@ _CPU_AND_GPU_CODE_ inline void buildHashAllocAndVisibleTypePP(DEVICEPTR(uchar) *
 	DEVICEPTR(Vector3s) *blockCoords, const DEVICEPTR(float) *depth, Matrix4f invM_d, Vector4f projParams_d, float mu, Vector2i imgSize, 
 	float oneOverVoxelSize, DEVICEPTR(ITMHashEntry) *hashTable, float viewFrustum_min, float viewFrustum_max)
 {
-	ITMHashEntry hashEntry;
 	float depth_measure, direction_norm; unsigned int hashIdx; int noSteps, lastFreeInBucketIdx;
 	Vector4f pt_camera_f; Vector3f pt_block_s, pt_block_e, pt_block, direction; Vector3s pt_block_a;
 
@@ -162,7 +161,7 @@ _CPU_AND_GPU_CODE_ inline void buildHashAllocAndVisibleTypePP(DEVICEPTR(uchar) *
 			const DEVICEPTR(ITMHashEntry) &hashEntry = hashTable[hashIdx + inBucketIdx];
 			offsetExcess = hashEntry.offset - 1;
 
-			if (hashEntry.pos == pt_block_a && hashEntry.ptr >= -1)
+			if (IS_EQUAL3(hashEntry.pos, pt_block_a) && hashEntry.ptr >= -1)
 			{
 				if (hashEntry.ptr == -1) entriesVisibleType[hashIdx + inBucketIdx] = 2;
 				else entriesVisibleType[hashIdx + inBucketIdx] = 1;
@@ -197,7 +196,7 @@ _CPU_AND_GPU_CODE_ inline void buildHashAllocAndVisibleTypePP(DEVICEPTR(uchar) *
 				{
 					const DEVICEPTR(ITMHashEntry) &hashEntry = hashTable[noOrderedEntries + offsetExcess];
 
-					if (hashEntry.pos == pt_block_a && hashEntry.ptr >= -1)
+					if (IS_EQUAL3(hashEntry.pos, pt_block_a) && hashEntry.ptr >= -1)
 					{
 						if (hashEntry.ptr == -1) entriesVisibleType[noOrderedEntries + offsetExcess] = 2;
 						else entriesVisibleType[noOrderedEntries + offsetExcess] = 1;

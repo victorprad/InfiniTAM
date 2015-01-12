@@ -18,12 +18,12 @@ struct RenderingBlock {
 #define VERY_CLOSE 0.05f
 #endif
 
-static const int renderingBlockSizeX = 16;
-static const int renderingBlockSizeY = 16;
+static const CONSTANT(int) renderingBlockSizeX = 16;
+static const CONSTANT(int) renderingBlockSizeY = 16;
 
-static const int MAX_RENDERING_BLOCKS = 65536*4;
+static const CONSTANT(int) MAX_RENDERING_BLOCKS = 65536*4;
 //static const int MAX_RENDERING_BLOCKS = 16384;
-static const int minmaximg_subsample = 4;
+static const CONSTANT(int) minmaximg_subsample = 4;
 
 _CPU_AND_GPU_CODE_ inline bool ProjectSingleBlock(const THREADPTR(Vector3s) & blockPos, const THREADPTR(Matrix4f) & pose, const THREADPTR(Vector4f) & intrinsics, 
 	const THREADPTR(Vector2i) & imgSize, float voxelSize, THREADPTR(Vector2i) & upperLeft, THREADPTR(Vector2i) & lowerRight, THREADPTR(Vector2f) & zRange)
@@ -77,7 +77,7 @@ _CPU_AND_GPU_CODE_ inline void CreateRenderingBlocks(DEVICEPTR(RenderingBlock) *
 		for (int bx = 0; bx < ceil((float)(1 + lowerRight.x - upperLeft.x) / renderingBlockSizeX); ++bx) {
 			if (offset >= MAX_RENDERING_BLOCKS) return;
 			//for each rendering block: add it to the list
-			RenderingBlock & b(renderingBlockList[offset++]);
+			DEVICEPTR(RenderingBlock) & b(renderingBlockList[offset++]);
 			b.upperLeft.x = upperLeft.x + bx*renderingBlockSizeX;
 			b.upperLeft.y = upperLeft.y + by*renderingBlockSizeY;
 			b.lowerRight.x = upperLeft.x + (bx + 1)*renderingBlockSizeX - 1;
@@ -184,13 +184,15 @@ _CPU_AND_GPU_CODE_ inline bool castRay(THREADPTR(Vector3f) &pt_out, int x, int y
 }
 
 template<class TVoxel, class TIndex>
-_CPU_AND_GPU_CODE_ inline void computeNormalAndAngle(bool & foundPoint, const Vector3f & point, const TVoxel *voxelBlockData, const typename TIndex::IndexData *indexData, const Vector3f & lightSource, Vector3f & outNormal, float & angle)
+_CPU_AND_GPU_CODE_ inline void computeNormalAndAngle(THREADPTR(bool) & foundPoint, const THREADPTR(Vector3f) & point,
+                                                     const DEVICEPTR(TVoxel) *voxelBlockData, const DEVICEPTR(typename TIndex::IndexData) *indexData,
+                                                     const CONSTANT(Vector3f) & lightSource, THREADPTR(Vector3f) & outNormal, THREADPTR(float) & angle)
 {
 	if (!foundPoint) return;
 
 	outNormal = computeSingleNormalFromSDF(voxelBlockData, indexData, point);
 
-	float normScale = 1.0f / sqrtf(outNormal.x * outNormal.x + outNormal.y * outNormal.y + outNormal.z * outNormal.z);
+	float normScale = 1.0f / sqrt(outNormal.x * outNormal.x + outNormal.y * outNormal.y + outNormal.z * outNormal.z);
 	outNormal *= normScale;
 
 	angle = outNormal.x * lightSource.x + outNormal.y * lightSource.y + outNormal.z * lightSource.z;
@@ -201,7 +203,7 @@ _CPU_AND_GPU_CODE_ inline void drawRendering(const CONSTANT(bool) & foundPoint, 
 {
 	if (!foundPoint)
 	{
-		dest = Vector4u((const uchar&)0);
+		dest = Vector4u((uchar)0);
 		return;
 	}
 
@@ -215,7 +217,7 @@ _CPU_AND_GPU_CODE_ inline void drawColourRendering(const CONSTANT(bool) & foundP
 {
 	if (!foundPoint)
 	{
-		dest = Vector4u((const uchar&)0);
+		dest = Vector4u((uchar)0);
 		return;
 	}
 
@@ -237,7 +239,8 @@ class RaycastRenderer_GrayImage {
 	{ outRendering = out; }
 #endif
 
-	_CPU_AND_GPU_CODE_ inline void processPixel(int x, int y, int locId, bool foundPoint, const DEVICEPTR(Vector3f) & point, const DEVICEPTR(Vector3f) & outNormal, float angle)
+	_CPU_AND_GPU_CODE_ inline void processPixel(int x, int y, int locId, const CONSTANT(bool) & foundPoint, const DEVICEPTR(Vector3f) & point,
+                                                const DEVICEPTR(Vector3f) & outNormal, const CONSTANT(float) & angle)
 	{
 		drawRendering(foundPoint, angle, outRendering[locId]);
 	}
@@ -277,7 +280,8 @@ class RaycastRenderer_ICPMaps {
 	{}
 #endif
 
-	_CPU_AND_GPU_CODE_ inline void processPixel(int x, int y, int locId, bool foundPoint, const DEVICEPTR(Vector3f) & point, const DEVICEPTR(Vector3f) & outNormal, float angle)
+	_CPU_AND_GPU_CODE_ inline void processPixel(int x, int y, int locId, const CONSTANT(bool) & foundPoint, const DEVICEPTR(Vector3f) & point,
+                                                const DEVICEPTR(Vector3f) & outNormal, const CONSTANT(float) & angle)
 	{
 		drawRendering(foundPoint, angle, outRendering[locId]);
 		if (foundPoint)

@@ -56,10 +56,10 @@ namespace ITMLib
 				this->usedCudaAlloc = useCudaAlloc;
 
 #ifdef COMPILE_WITH_METAL
+                allocateMetalData((void**)&entriesVisibleType, (void**)&entriesVisibleType_mb, noTotalEntries * sizeof(uchar), true);
                 allocateMetalData((void**)&entries_all, (void**)&entries_all_mb, noTotalEntries * sizeof(ITMHashEntry), true);
                 allocateMetalData((void**)&excessAllocationList, (void**)&excessAllocationList_mb, SDF_EXCESS_LIST_SIZE * sizeof(int), true);
                 allocateMetalData((void**)&liveEntryIDs, (void**)&liveEntryIDs_mb, SDF_LOCAL_BLOCK_NUM * sizeof(int), true);
-                allocateMetalData((void**)&entriesVisibleType, (void**)&entriesVisibleType_mb, noTotalEntries * sizeof(uchar), true);
 #else
 				if (useCudaAlloc)
 				{
@@ -83,10 +83,10 @@ namespace ITMLib
             ~ITMHashTable()
             {
 #ifdef COMPILE_WITH_METAL
+                freeMetalData((void**)&entriesVisibleType, (void**)&entriesVisibleType_mb, noTotalEntries * sizeof(uchar), true);
                 freeMetalData((void**)&entries_all, (void**)&entriesVisibleType_mb, noTotalEntries * sizeof(ITMHashEntry), true);
                 freeMetalData((void**)&excessAllocationList, (void**)&excessAllocationList_mb, SDF_EXCESS_LIST_SIZE * sizeof(int), true);
                 freeMetalData((void**)&liveEntryIDs, (void**)&liveEntryIDs_mb, SDF_LOCAL_BLOCK_NUM * sizeof(int), true);
-                freeMetalData((void**)&entriesVisibleType, (void**)&entriesVisibleType_mb, noTotalEntries * sizeof(uchar), true);
 #else
 				if (usedCudaAlloc)
 				{
