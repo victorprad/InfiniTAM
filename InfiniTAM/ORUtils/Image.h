@@ -82,7 +82,7 @@ namespace ORUtils
 		}
 
 		/** Set all image data to the given @p defaultValue. */
-		void Clear(uchar defaultValue = 0) 
+		void Clear(unsigned char defaultValue = 0) 
 		{ 
 			memset(data_host, defaultValue, dataSize * sizeof(T)); 
 #ifndef COMPILE_WITHOUT_CUDA
