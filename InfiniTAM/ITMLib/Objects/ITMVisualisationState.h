@@ -12,17 +12,20 @@ namespace ITMLib
 			public:
 			ITMFloat2Image *minmaxImage;
 			ITMUChar4Image *outputImage;
+			ITMFloat4Image *ptsRay;
 
 			ITMVisualisationState(const Vector2i & imgSize, bool allocateGPU)
 			{
 				minmaxImage = new ITMFloat2Image(imgSize, allocateGPU);
 				outputImage = new ITMUChar4Image(imgSize, allocateGPU);
+				ptsRay = new ITMFloat4Image(imgSize, allocateGPU);
 			}
 
 			virtual ~ITMVisualisationState(void)
 			{
 				delete minmaxImage;
 				delete outputImage;
+				delete ptsRay;
 			}
 		};
 	}

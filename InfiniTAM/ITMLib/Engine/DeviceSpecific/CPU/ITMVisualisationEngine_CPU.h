@@ -34,6 +34,7 @@ namespace ITMLib
 				uchar *entriesVisibleType;
 				int *visibleEntryIDs;
 				int visibleEntriesNum;
+				ITMFloat4Image *ptsRay;
 			};
 
 			ITMVisualisationState* allocateInternalState(const Vector2i & imgSize)

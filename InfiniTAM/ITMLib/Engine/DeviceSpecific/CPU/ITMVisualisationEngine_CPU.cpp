@@ -200,63 +200,33 @@ static void RenderImage_common(const ITMScene<TVoxel,TIndex> *scene, const ITMPo
 
 	Vector4u *outRendering = outputImage->GetData(false);
 	const Vector2f *minmaximg = state->minmaxImage->GetData(false);
+	Vector4f *pointsRay = state->ptsRay->GetData(false);
 
-	if (useColour&&TVoxel::hasColorInformation) {
-		RaycastRenderer_ColourImage<TVoxel,TIndex> renderer(outRendering, voxelData, voxelIndex);
-		for (int y = 0; y < imgSize.y; y++) for (int x = 0; x < imgSize.x; x++)
+	for (int y = 0; y < imgSize.y; y++) for (int x = 0; x < imgSize.x; x++)
+	{
+		int locId = x + y * imgSize.x;
+		int locId2 = (int)floor((float)x / minmaximg_subsample) + (int)floor((float)y / minmaximg_subsample) * imgSize.x;
+
+		castRay<TVoxel, TIndex>(pointsRay[locId], x, y, voxelData, voxelIndex, invM, projParams, oneOverVoxelSize, mu, minmaximg[locId2]);
+	}
+
+	if (useColour && TVoxel::hasColorInformation)
+	{
+		for (int locId = 0; locId < imgSize.x * imgSize.y; locId++)
 		{
-			genericRaycastAndRender<TVoxel,TIndex>(x,y, renderer, voxelData, voxelIndex, imgSize, invM, projParams, oneOverVoxelSize, minmaximg, mu, lightSource);
+			Vector4f ptRay = pointsRay[locId];
+			processPixelColour<TVoxel, TIndex>(outRendering[locId], ptRay.toVector3(), ptRay.w > 0, voxelData, voxelIndex, lightSource);
 		}
-	} else {
-		RaycastRenderer_GrayImage renderer(outRendering);
-		for (int y = 0; y < imgSize.y; y++) for (int x = 0; x < imgSize.x; x++)
+	}
+	else 
+	{
+		for (int locId = 0; locId < imgSize.x * imgSize.y; locId++)
 		{
-			genericRaycastAndRender<TVoxel,TIndex>(x,y, renderer, voxelData, voxelIndex, imgSize, invM, projParams, oneOverVoxelSize, minmaximg, mu, lightSource);
+			Vector4f ptRay = pointsRay[locId];
+			processPixelGrey<TVoxel, TIndex>(outRendering[locId], ptRay.toVector3(), ptRay.w > 0, voxelData, voxelIndex, lightSource);
 		}
 	}
 }
-
-template<class TVoxel, class TIndex>
-class RaycastRenderer_PointCloud {
-	private:
-	Vector4u *outRendering;
-	Vector4f *locations;
-	Vector4f *colours;
-	uint & noTotalPoints;
-	float voxelSize;
-	bool skipPoints;
-	const TVoxel *voxelData;
-	const typename TIndex::IndexData *voxelIndex;
-
-	public:
-	RaycastRenderer_PointCloud(Vector4u *_outRendering, Vector4f *_locations, Vector4f *_colours, uint & _noTotalPoints, float _voxelSize, bool _skipPoints, const TVoxel *_voxelData, const typename TIndex::IndexData *_voxelIndex)
-	 : outRendering(_outRendering), locations(_locations), colours(_colours),
-	   noTotalPoints(_noTotalPoints), voxelSize(_voxelSize), skipPoints(_skipPoints),
-	   voxelData(_voxelData), voxelIndex(_voxelIndex)
-	{}
-
-	inline void processPixel(int x, int y, int locId, bool foundPoint, const Vector3f & point, const Vector3f & outNormal, float angle)
-	{
-		drawRendering(foundPoint, angle, outRendering[locId]);
-
-		if (skipPoints && ((x % 2 == 0) || (y % 2 == 0))) foundPoint = false;
-
-		if (foundPoint)
-		{
-			Vector4f tmp;
-			tmp = VoxelColorReader<TVoxel::hasColorInformation,TVoxel,TIndex>::interpolate(voxelData, voxelIndex, point);
-			if (tmp.w > 0.0f) { tmp.x /= tmp.w; tmp.y /= tmp.w; tmp.z /= tmp.w; tmp.w = 1.0f; }
-			colours[noTotalPoints] = tmp;
-
-			Vector4f pt_ray_out;
-			pt_ray_out.x = point.x * voxelSize; pt_ray_out.y = point.y * voxelSize;
-			pt_ray_out.z = point.z * voxelSize; pt_ray_out.w = 1.0f;
-			locations[noTotalPoints] = pt_ray_out;
-
-			noTotalPoints++;
-		}
-	}
-};
 
 template<class TVoxel, class TIndex>
 static void CreatePointCloud_common(const ITMScene<TVoxel,TIndex> *scene, const ITMView *view, ITMTrackingState *trackingState, bool skipPoints)
@@ -277,17 +247,21 @@ static void CreatePointCloud_common(const ITMScene<TVoxel,TIndex> *scene, const 
 	Vector4f *colours = trackingState->pointCloud->colours->GetData(false);
 	Vector4u *outRendering = trackingState->rendering->GetData(false);
 	const Vector2f *minmaximg = trackingState->renderingRangeImage->GetData(false);
+	Vector4f *pointsRay = trackingState->ptsRay->GetData(false);
 
 	float mu = scene->sceneParams->mu;
 	Vector3f lightSource = -Vector3f(invM.getColumn(2));
 
-	RaycastRenderer_PointCloud<TVoxel,TIndex> renderer(outRendering, locations, colours, trackingState->pointCloud->noTotalPoints, voxelSize, skipPoints, voxelData, voxelIndex);
-	trackingState->pointCloud->noTotalPoints = 0;
-
 	for (int y = 0; y < imgSize.y; y++) for (int x = 0; x < imgSize.x; x++)
 	{
-		genericRaycastAndRender<TVoxel,TIndex>(x,y, renderer, voxelData, voxelIndex, imgSize, invM, projParams, oneOverVoxelSize, minmaximg, mu, lightSource);
+		int locId = x + y * imgSize.x;
+		int locId2 = (int)floor((float)x / minmaximg_subsample) + (int)floor((float)y / minmaximg_subsample) * imgSize.x;
+
+		castRay<TVoxel, TIndex>(pointsRay[locId], x, y, voxelData, voxelIndex, invM, projParams, oneOverVoxelSize, mu, minmaximg[locId2]);
 	}
+
+	trackingState->pointCloud->noTotalPoints = RenderPointCloud<TVoxel, TIndex>(outRendering, locations, colours, pointsRay, 
+		scene->localVBA.GetVoxelBlocks(), scene->index.getIndexData(), skipPoints, voxelSize, imgSize, lightSource);
 }
 
 template<class TVoxel, class TIndex>
@@ -312,12 +286,21 @@ static void CreateICPMaps_common(const ITMScene<TVoxel,TIndex> *scene, const ITM
 	Vector4f *normalsMap = trackingState->pointCloud->colours->GetData(false);
 	Vector4u *outRendering = trackingState->rendering->GetData(false);
 	const Vector2f *minmaximg = trackingState->renderingRangeImage->GetData(false);
-
-	RaycastRenderer_ICPMaps renderer(outRendering, pointsMap, normalsMap, voxelSize);
+	Vector4f *pointsRay = trackingState->ptsRay->GetData(false);
 
 	for (int y = 0; y < imgSize.y; y++) for (int x = 0; x < imgSize.x; x++)
 	{
-		genericRaycastAndRender<TVoxel,TIndex>(x,y, renderer, voxelData, voxelIndex, imgSize, invM, projParams, oneOverVoxelSize, minmaximg, mu, lightSource);
+		int locId = x + y * imgSize.x;
+		int locId2 = (int)floor((float)x / minmaximg_subsample) + (int)floor((float)y / minmaximg_subsample) * imgSize.x;
+
+		castRay<TVoxel, TIndex>(pointsRay[locId], x, y, voxelData, voxelIndex, invM, projParams, oneOverVoxelSize, mu, minmaximg[locId2]);
+	}
+
+	for (int locId = 0; locId < imgSize.x * imgSize.y; locId++)
+	{
+		Vector4f ptRay = pointsRay[locId];
+		processPixelICP<TVoxel, TIndex>(outRendering[locId], pointsMap[locId], normalsMap[locId], ptRay.toVector3(), ptRay.w > 0, voxelData,
+			voxelIndex, voxelSize, lightSource);
 	}
 }
 
@@ -355,6 +338,46 @@ template<class TVoxel>
 void ITMVisualisationEngine_CPU<TVoxel,ITMVoxelBlockHash>::CreateICPMaps(const ITMScene<TVoxel,ITMVoxelBlockHash> *scene, const ITMView *view, ITMTrackingState *trackingState)
 {
 	CreateICPMaps_common(scene, view, trackingState);
+}
+
+template<class TVoxel, class TIndex>
+static int RenderPointCloud(Vector4u *outRendering, Vector4f *locations, Vector4f *colours, const Vector4f *ptsRay, 
+	const TVoxel *voxelData, const typename TIndex::IndexData *voxelIndex, bool skipPoints, float voxelSize, 
+	Vector2i imgSize, Vector3f lightSource)
+{
+	int noTotalPoints = 0;
+
+	for (int y = 0, locId = 0; y < imgSize.y; y++) for (int x = 0; x < imgSize.x; x++, locId++)
+	{
+		Vector3f outNormal; float angle; 
+		Vector4f pointRay = ptsRay[locId];
+		Vector3f point = pointRay.toVector3();
+		bool foundPoint = pointRay.w > 0;
+
+		computeNormalAndAngle<TVoxel, TIndex>(foundPoint, point, voxelData, voxelIndex, lightSource, outNormal, angle);
+
+		if (foundPoint) drawPixelGrey(outRendering[locId], angle);
+		else outRendering[locId] = Vector4u((uchar)0);
+
+		if (skipPoints && ((x % 2 == 0) || (y % 2 == 0))) foundPoint = false;
+
+		if (foundPoint)
+		{
+			Vector4f tmp;
+			tmp = VoxelColorReader<TVoxel::hasColorInformation, TVoxel, TIndex>::interpolate(voxelData, voxelIndex, point);
+			if (tmp.w > 0.0f) { tmp.x /= tmp.w; tmp.y /= tmp.w; tmp.z /= tmp.w; tmp.w = 1.0f; }
+			colours[noTotalPoints] = tmp;
+
+			Vector4f pt_ray_out;
+			pt_ray_out.x = point.x * voxelSize; pt_ray_out.y = point.y * voxelSize;
+			pt_ray_out.z = point.z * voxelSize; pt_ray_out.w = 1.0f;
+			locations[noTotalPoints] = pt_ray_out;
+
+			noTotalPoints++;
+		}
+	}
+
+	return noTotalPoints;
 }
 
 template class ITMLib::Engine::ITMVisualisationEngine_CPU<ITMVoxel, ITMVoxelIndex>;

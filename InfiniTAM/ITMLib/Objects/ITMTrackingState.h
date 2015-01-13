@@ -32,6 +32,7 @@ namespace ITMLib
 			    before any raycasting operation.
 			*/
 			ITMImage<Vector2f> *renderingRangeImage;
+			
 			/** @brief
 			    Visual rendering output of the scene.
 
@@ -39,6 +40,7 @@ namespace ITMLib
 			    raycasting operations.
 			*/
 			ITMUChar4Image *rendering;
+			
 			/** @brief
 			    Excerpt of the scene used by the tracker to align
 			    a new frame.
@@ -48,6 +50,13 @@ namespace ITMLib
 			*/
 			ITMPointCloud *pointCloud;
 
+			/** @brief
+			Raycast output image.
+
+			TODO add comment
+			*/
+			ITMFloat4Image *ptsRay;
+
 			/// Current pose of the depth camera.
 			ITMPose *pose_d;
 
@@ -55,6 +64,7 @@ namespace ITMLib
 			{
 				this->rendering = new ITMUChar4Image(imgSize, useGPU);
 				this->renderingRangeImage = new ITMImage<Vector2f>(imgSize, useGPU);
+				this->ptsRay = new ITMImage<Vector4f>(imgSize, useGPU);
 				this->pointCloud = new ITMPointCloud(imgSize, useGPU);
 				this->pose_d = new ITMPose();
 			}
@@ -63,6 +73,7 @@ namespace ITMLib
 			{
 				delete pointCloud;
 				delete renderingRangeImage;
+				delete ptsRay;
 				delete rendering;
 				delete pose_d;
 			}

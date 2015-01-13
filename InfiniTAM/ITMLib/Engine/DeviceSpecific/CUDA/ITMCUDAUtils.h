@@ -71,3 +71,25 @@ __device__ int computePrefixSum_device(uint element, T *sum, int localSize, int 
 
 	return offset;
 }
+
+__device__ static inline void atomicMin(float* address, float val)
+{
+	int* address_as_i = (int*)address;
+	int old = *address_as_i, assumed;
+	do {
+		assumed = old;
+		old = ::atomicCAS(address_as_i, assumed,
+			__float_as_int(::fminf(val, __int_as_float(assumed))));
+	} while (assumed != old);
+}
+
+__device__ static inline void atomicMax(float* address, float val)
+{
+	int* address_as_i = (int*)address;
+	int old = *address_as_i, assumed;
+	do {
+		assumed = old;
+		old = ::atomicCAS(address_as_i, assumed,
+			__float_as_int(::fmaxf(val, __int_as_float(assumed))));
+	} while (assumed != old);
+}

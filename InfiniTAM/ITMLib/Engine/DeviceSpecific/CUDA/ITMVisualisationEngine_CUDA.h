@@ -15,6 +15,7 @@ namespace ITMLib
 		{
 		private:
 			uint *noTotalPoints_device;
+			Vector4f *ptsRay;
 
 		public:
 			ITMVisualisationEngine_CUDA(void);
@@ -48,6 +49,7 @@ namespace ITMLib
 				int *visibleEntryIDs;
 				int visibleEntriesNum;
 				int *visibleEntriesNum_ptr;
+				ITMFloat4Image *ptsRay;
 			};
 
 			ITMVisualisationEngine_CUDA(void);

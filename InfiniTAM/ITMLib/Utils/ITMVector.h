@@ -225,7 +225,7 @@ namespace ITMLib {
 			residual = *this - intFloor;
 			return Vector3<int>((int)intFloor.x, (int)intFloor.y, (int)intFloor.z);
 		}
-		
+
 		_CPU_AND_GPU_CODE_ inline Vector3<uchar> toUChar() const {
 			Vector3<int> vi = toIntRound(); return Vector3<uchar>((uchar)CLAMP(vi.x, 0, 255), (uchar)CLAMP(vi.y, 0, 255), (uchar)CLAMP(vi.z, 0, 255));
 		}
