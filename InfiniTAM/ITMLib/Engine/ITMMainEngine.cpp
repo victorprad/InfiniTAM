@@ -11,34 +11,26 @@ ITMMainEngine::ITMMainEngine(const ITMLibSettings *settings, const ITMRGBDCalib 
 
 	this->settings = new ITMLibSettings(*settings);
 
-	this->scene = new ITMScene<ITMVoxel,ITMVoxelIndex>(&(settings->sceneParams), settings->useSwapping, settings->useGPU);
-
 	this->trackingState = ITMTrackerFactory::MakeTrackingState(*settings, imgSize_rgb, imgSize_d);
 	trackingState->pose_d->SetFrom(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f); 
 
 	this->view = new ITMView(*calib, imgSize_rgb, imgSize_d, settings->useGPU);
 
+	denseMapper = new ITMDenseMapper<ITMVoxel, ITMVoxelIndex>(this->settings, imgSize_rgb, imgSize_d);
+
 	if (settings->useGPU)
 	{
 #ifndef COMPILE_WITHOUT_CUDA
 		lowLevelEngine = new ITMLowLevelEngine_CUDA();
-		sceneRecoEngine = new ITMSceneReconstructionEngine_CUDA<ITMVoxel,ITMVoxelIndex>();
-		if (settings->useSwapping) swappingEngine = new ITMSwappingEngine_CUDA<ITMVoxel,ITMVoxelIndex>();
-		visualisationEngine = new ITMVisualisationEngine_CUDA<ITMVoxel,ITMVoxelIndex>();
 #endif
 	}
 	else
 	{
 		lowLevelEngine = new ITMLowLevelEngine_CPU();
-		sceneRecoEngine = new ITMSceneReconstructionEngine_CPU<ITMVoxel,ITMVoxelIndex>();
-		if (settings->useSwapping) swappingEngine = new ITMSwappingEngine_CPU<ITMVoxel,ITMVoxelIndex>();
-		visualisationEngine = new ITMVisualisationEngine_CPU<ITMVoxel,ITMVoxelIndex>();
 	}
 
 	trackerPrimary = ITMTrackerFactory::MakePrimaryTracker(*settings, imgSize_rgb, imgSize_d, lowLevelEngine);
-	trackerSecondary = ITMTrackerFactory::MakeSecondaryTracker<ITMVoxel,ITMVoxelIndex>(*settings, imgSize_rgb, imgSize_d, lowLevelEngine, scene);
-
-	visualisationState = NULL;
+	trackerSecondary = ITMTrackerFactory::MakeSecondaryTracker<ITMVoxel,ITMVoxelIndex>(*settings, imgSize_rgb, imgSize_d, lowLevelEngine, denseMapper->getScene());
 
 	hasStartedObjectReconstruction = false;
 	fusionActive = true;
@@ -46,16 +38,12 @@ ITMMainEngine::ITMMainEngine(const ITMLibSettings *settings, const ITMRGBDCalib 
 
 ITMMainEngine::~ITMMainEngine()
 {
-	delete sceneRecoEngine;
+	delete denseMapper;
 	if (trackerPrimary != NULL) delete trackerPrimary;
 	if (trackerSecondary != NULL) delete trackerSecondary;
-	delete visualisationEngine;
 	delete lowLevelEngine;
 
-	if (settings->useSwapping) delete swappingEngine;
-
 	delete trackingState;
-	delete scene;
 	delete view;
 
 	delete settings;
@@ -64,7 +52,6 @@ ITMMainEngine::~ITMMainEngine()
 void ITMMainEngine::ProcessFrame(void)
 {
 	bool useGPU = settings->useGPU;
-	bool useSwapping = settings->useSwapping;
 
 	// prepare image and move it to GPU, if required
 	if (useGPU)
@@ -97,33 +84,20 @@ void ITMMainEngine::ProcessFrame(void)
 
 	}
 
-	// allocation
-	sceneRecoEngine->AllocateSceneFromDepth(scene, view, trackingState->pose_d);
 
-	// integration
-	if (fusionActive) sceneRecoEngine->IntegrateIntoScene(scene, view, trackingState->pose_d);
-
-
-	if (useSwapping) {
-		// swapping: CPU -> GPU
-		swappingEngine->IntegrateGlobalIntoLocal(scene, view);
-		// swapping: GPU -> CPU
-		swappingEngine->SaveToGlobalMemory(scene, view);
-	}
+	if (fusionActive) denseMapper->ProcessFrame(view, trackingState->pose_d);
 
 	switch (settings->trackerType)
 	{
 	case ITMLibSettings::TRACKER_ICP:
 	case ITMLibSettings::TRACKER_REN:
 		// raycasting
-		visualisationEngine->CreateExpectedDepths(scene, trackingState->pose_d, &(view->calib->intrinsics_d), trackingState->renderingRangeImage);
-		visualisationEngine->CreateICPMaps(scene, view, trackingState);
+		denseMapper->GetICPMaps(trackingState->pose_d, &(view->calib->intrinsics_d), view, trackingState);
 		break;
 	case ITMLibSettings::TRACKER_COLOR:
 		// raycasting
 		ITMPose pose_rgb(view->calib->trafo_rgb_to_depth.calib_inv * trackingState->pose_d->M);
-		visualisationEngine->CreateExpectedDepths(scene, &pose_rgb, &(view->calib->intrinsics_rgb), trackingState->renderingRangeImage);
-		visualisationEngine->CreatePointCloud(scene, view, trackingState, settings->skipPoints);
+		denseMapper->GetPointCloud(&pose_rgb, &(view->calib->intrinsics_rgb), view, trackingState, settings->skipPoints);
 		break;
 	}
 
@@ -152,17 +126,7 @@ void ITMMainEngine::GetImage(ITMUChar4Image *out, GetImageType getImageType, boo
 		out->SetFrom(trackingState->rendering);
 		break;
 	case ITMMainEngine::InfiniTAM_IMAGE_SCENERAYCAST_FREECAMERA:
-		if (pose != NULL && intrinsics != NULL)
-		{
-			if (visualisationState == NULL) visualisationState = visualisationEngine->allocateInternalState(out->noDims);
-
-			visualisationEngine->FindVisibleBlocks(scene, pose, intrinsics, visualisationState);
-			visualisationEngine->CreateExpectedDepths(scene, pose, intrinsics, visualisationState->minmaxImage, visualisationState);
-			visualisationEngine->RenderImage(scene, pose, intrinsics, visualisationState, visualisationState->outputImage, useColour);
-
-			if (settings->useGPU) visualisationState->outputImage->UpdateHostFromDevice();
-			out->SetFrom(visualisationState->outputImage);
-		}
+		return denseMapper->GetRendering(pose, intrinsics, useColour, out);
 		break;
 	};
 }

@@ -22,9 +22,9 @@ namespace ITMLib
 		class ITMSwappingEngine
 		{
 		public:
-			virtual void IntegrateGlobalIntoLocal(ITMScene<TVoxel,TIndex> *scene, ITMView *view) = 0;
+			virtual void IntegrateGlobalIntoLocal(ITMScene<TVoxel,TIndex> *scene) = 0;
 
-			virtual void SaveToGlobalMemory(ITMScene<TVoxel,TIndex> *scene, ITMView *view) = 0;
+			virtual void SaveToGlobalMemory(ITMScene<TVoxel,TIndex> *scene) = 0;
 
 			virtual ~ITMSwappingEngine(void) { }
 		};

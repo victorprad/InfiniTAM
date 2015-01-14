@@ -53,6 +53,7 @@
 #endif
 
 #include "Engine/ITMVisualisationEngine.h"
+#include "Engine/ITMDenseMapper.h"
 #include "Engine/ITMMainEngine.h"
 
 using namespace ITMLib::Objects;

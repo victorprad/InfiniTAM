@@ -12,6 +12,7 @@ SET(ITMLIB_ENGINE_SOURCES
 Engine/ITMColorTracker.cpp
 Engine/ITMDepthTracker.cpp
 Engine/ITMMainEngine.cpp
+Engine/ITMDenseMapper.cpp
 Engine/ITMRenTracker.cpp
 Engine/ITMTrackerFactory.cpp
 Engine/ITMVisualisationEngine.cpp
@@ -22,6 +23,7 @@ Engine/ITMColorTracker.h
 Engine/ITMDepthTracker.h
 Engine/ITMLowLevelEngine.h
 Engine/ITMMainEngine.h
+Engine/ITMDenseMapper.h
 Engine/ITMRenTracker.h
 Engine/ITMSceneReconstructionEngine.h
 Engine/ITMSwappingEngine.h
