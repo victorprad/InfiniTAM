@@ -36,7 +36,7 @@ namespace ITMLib
 			void PrepareForEvaluation(const ITMView *view);
 
 		protected:
-			ITMScene<TVoxel, TIndex> *scene;
+			const ITMScene<TVoxel, TIndex> *scene;
 			ITMImageHierarchy<ITMTemplatedHierarchyLevel<ITMFloat4Image> > *viewHierarchy;
 
 			int levelId;
@@ -90,7 +90,7 @@ namespace ITMLib
 
 			void TrackCamera(ITMTrackingState *trackingState, const ITMView *view);
 
-			ITMRenTracker(Vector2i imgSize, int noHierarchyLevels, ITMLowLevelEngine *lowLevelEngine, ITMScene<TVoxel,TIndex> *scene, bool useGPU);
+			ITMRenTracker(Vector2i imgSize, int noHierarchyLevels, ITMLowLevelEngine *lowLevelEngine, const ITMScene<TVoxel,TIndex> *scene, bool useGPU);
 			virtual ~ITMRenTracker(void);
 		};
 	}
