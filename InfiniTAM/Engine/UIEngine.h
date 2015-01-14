@@ -27,7 +27,8 @@ namespace InfiniTAM
 			ImageSourceEngine *imageSource;
 			ITMMainEngine *mainEngine;
 
-			StopWatchInterface *timer;
+			StopWatchInterface *timer_instant;
+			StopWatchInterface *timer_average;
 
 		private: // For UI layout
 			static const int NUM_WIN = 3;

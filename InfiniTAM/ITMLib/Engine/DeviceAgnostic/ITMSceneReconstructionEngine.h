@@ -220,3 +220,31 @@ _CPU_AND_GPU_CODE_ inline void buildHashAllocAndVisibleTypePP(DEVICEPTR(uchar) *
 		pt_block += direction;
 	}
 }
+
+template<bool useSwapping>
+_CPU_AND_GPU_CODE_ inline void checkPointVisibility(THREADPTR(uchar) &isVisible, THREADPTR(bool) &isVisibleEnlarged, 
+	const THREADPTR(Vector3f) &pt_image, const DEVICEPTR(Matrix4f) & M_d, const DEVICEPTR(Vector4f) &projParams_d, 
+	const DEVICEPTR(Vector2i) &imgSize)
+{
+	Vector4f pt_buff1, pt_buff2;
+
+	pt_buff1.x = pt_image.x; pt_buff1.y = pt_image.y; pt_buff1.z = pt_image.z; pt_buff1.w = 1.0f;
+
+	pt_buff2 = M_d * pt_buff1;
+
+	if (pt_buff2.z < 1e-10f) return;
+
+	pt_buff1.x = projParams_d.x * pt_buff2.x / pt_buff2.z + projParams_d.z;
+	pt_buff1.y = projParams_d.y * pt_buff2.y / pt_buff2.z + projParams_d.w;
+
+	if (pt_buff1.x >= 0 && pt_buff1.x < imgSize.x && pt_buff1.y >= 0 && pt_buff1.y < imgSize.y) isVisible = true;
+
+	if (useSwapping)
+	{
+		Vector4i lims;
+		lims.x = -imgSize.x / 8; lims.y = imgSize.x + imgSize.x / 8;
+		lims.z = -imgSize.y / 8; lims.w = imgSize.y + imgSize.y / 8;
+
+		if (pt_buff1.x >= lims.x && pt_buff1.x < lims.y && pt_buff1.y >= lims.z && pt_buff1.y < lims.w) isVisibleEnlarged = true;
+	}
+}

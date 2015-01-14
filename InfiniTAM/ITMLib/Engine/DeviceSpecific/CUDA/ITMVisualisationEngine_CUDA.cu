@@ -99,12 +99,14 @@ ITMVisualisationEngine_CUDA<TVoxel,ITMVoxelBlockHash>::~ITMVisualisationEngine_C
 }
 
 template<class TVoxel, class TIndex>
-void ITMVisualisationEngine_CUDA<TVoxel,TIndex>::FindVisibleBlocks(const ITMScene<TVoxel,TIndex> *scene, const ITMPose *pose, const ITMIntrinsics *intrinsics, ITMVisualisationState *_state)
+void ITMVisualisationEngine_CUDA<TVoxel,TIndex>::FindVisibleBlocks(const ITMScene<TVoxel,TIndex> *scene, const ITMPose *pose, 
+	const ITMIntrinsics *intrinsics, ITMVisualisationState *_state)
 {
 }
 
 template<class TVoxel>
-void ITMVisualisationEngine_CUDA<TVoxel,ITMVoxelBlockHash>::FindVisibleBlocks(const ITMScene<TVoxel,ITMVoxelBlockHash> *scene, const ITMPose *pose, const ITMIntrinsics *intrinsics, ITMVisualisationState *_state)
+void ITMVisualisationEngine_CUDA<TVoxel,ITMVoxelBlockHash>::FindVisibleBlocks(const ITMScene<TVoxel,ITMVoxelBlockHash> *scene, const ITMPose *pose, 
+	const ITMIntrinsics *intrinsics, ITMVisualisationState *_state)
 {
 	State *state = (State*)_state;
 	const ITMHashEntry *hashTable = scene->index.GetEntries();

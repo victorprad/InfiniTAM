@@ -387,7 +387,10 @@ void UIEngine::Initialise(int & argc, char** argv, ImageSourceEngine *imageSourc
 	processedFrameNo = 0;
 	processedTime = 0.0f;
 
-	sdkCreateTimer(&timer);
+	sdkCreateTimer(&timer_instant);
+	sdkCreateTimer(&timer_average);
+
+	sdkResetTimer(&timer_average);
 
 	printf("initialised.\n");
 }
@@ -409,7 +412,8 @@ void UIEngine::ProcessFrame()
 	if (!imageSource->hasMoreImages()) return;
 	imageSource->getImages(mainEngine->view);
 
-	sdkResetTimer(&timer); sdkStartTimer(&timer);
+	sdkResetTimer(&timer_instant); 
+	sdkStartTimer(&timer_instant); sdkStartTimer(&timer_average);
 
 	if (isRecording)
 	{
@@ -425,7 +429,10 @@ void UIEngine::ProcessFrame()
 	//actual processing on the mailEngine
 	mainEngine->ProcessFrame();
 
-	sdkStopTimer(&timer); processedTime = sdkGetTimerValue(&timer);
+	sdkStopTimer(&timer_instant); sdkStopTimer(&timer_average);
+
+	//processedTime = sdkGetTimerValue(&timer_instant);
+	processedTime = sdkGetAverageTimerValue(&timer_average);
 
 	currentFrameNo++;
 }
@@ -433,7 +440,8 @@ void UIEngine::ProcessFrame()
 void UIEngine::Run() { glutMainLoop(); }
 void UIEngine::Shutdown() 
 { 
-	sdkDeleteTimer(&timer);
+	sdkDeleteTimer(&timer_instant);
+	sdkDeleteTimer(&timer_average);
 
 	for (int w = 0; w < NUM_WIN; w++)
 		delete outImage[w]; 

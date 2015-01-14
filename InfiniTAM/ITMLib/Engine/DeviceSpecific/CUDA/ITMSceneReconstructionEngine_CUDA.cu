@@ -105,13 +105,12 @@ void ITMSceneReconstructionEngine_CUDA<TVoxel,ITMVoxelBlockHash>::AllocateSceneF
 		noTotalEntries, noAllocatedVoxelEntries_device, noAllocatedExcessEntries_device, entriesAllocType_device, entriesVisibleType, 
 		blockCoords_device);
 
-	if (scene->useSwapping) {
+	if (scene->useSwapping)
 		buildVisibleList_device<true> << <gridSizeAL, cudaBlockSizeAL >> >(hashTable, cacheStates, noTotalEntries, liveEntryIDs,
 		noLiveEntries_device, entriesVisibleType, M_d, projParams_d, depthImgSize, voxelSize);
-	} else {
+	else
 		buildVisibleList_device<false> << <gridSizeAL, cudaBlockSizeAL >> >(hashTable, cacheStates, noTotalEntries, liveEntryIDs,
-			noLiveEntries_device, entriesVisibleType, M_d, projParams_d, depthImgSize, voxelSize);
-	}
+		noLiveEntries_device, entriesVisibleType, M_d, projParams_d, depthImgSize, voxelSize);
 
 	if (scene->useSwapping)
 	{
@@ -344,38 +343,72 @@ __global__ void buildVisibleList_device(ITMHashEntry *hashTable, ITMHashCacheSta
 	if (hashVisibleType > 0) shouldPrefix = true;
 	else if (hashEntry.ptr >= -1)
 	{
-		Vector3f pt_image, buff3f;
+		Vector3f pt_image; bool isVisibleEnlarged = false;
+		float factor = (float)SDF_BLOCK_SIZE * voxelSize;
 
-		bool isVisible = false, isVisibleEnlarged = false;
+		// 0 0 0
+		pt_image.x = (float)hashEntry.pos.x * factor;
+		pt_image.y = (float)hashEntry.pos.y * factor;
+		pt_image.z = (float)hashEntry.pos.z * factor;
+		checkPointVisibility<useSwapping>(hashVisibleType, isVisibleEnlarged, pt_image, M_d, projParams_d, imgSize);
 
-		#pragma unroll
-		for (char i = 0; i < 8; ++i)
-		{
-			pt_image.x = hashEntry.pos.x + blockCornerOffsets[i][0];
-			pt_image.y = hashEntry.pos.y + blockCornerOffsets[i][1];
-			pt_image.z = hashEntry.pos.z + blockCornerOffsets[i][2];
-			pt_image *= (float)SDF_BLOCK_SIZE * voxelSize;
+		// 0 0 1
+		pt_image.z += factor;
+		checkPointVisibility<useSwapping>(hashVisibleType, isVisibleEnlarged, pt_image, M_d, projParams_d, imgSize);
 
-			buff3f = M_d * pt_image;
+		// 0 1 1
+		pt_image.y += factor;
+		checkPointVisibility<useSwapping>(hashVisibleType, isVisibleEnlarged, pt_image, M_d, projParams_d, imgSize);
 
-			if (buff3f.z < 1e-10f) continue;
+		// 1 1 1
+		pt_image.x += factor;
+		checkPointVisibility<useSwapping>(hashVisibleType, isVisibleEnlarged, pt_image, M_d, projParams_d, imgSize);
 
-			pt_image.x = projParams_d.x * buff3f.x / buff3f.z + projParams_d.z;
-			pt_image.y = projParams_d.y * buff3f.y / buff3f.z + projParams_d.w;
+		// 1 1 0 
+		pt_image.z -= factor;
+		checkPointVisibility<useSwapping>(hashVisibleType, isVisibleEnlarged, pt_image, M_d, projParams_d, imgSize);
 
-			if (pt_image.x >= 0 && pt_image.x < imgSize.x && pt_image.y >= 0 && pt_image.y < imgSize.y) isVisible = true;
+		// 1 0 0 
+		pt_image.y -= factor;
+		checkPointVisibility<useSwapping>(hashVisibleType, isVisibleEnlarged, pt_image, M_d, projParams_d, imgSize);
 
-			if (useSwapping)
-			{
-				Vector4i lims;
-				lims.x = -imgSize.x / 8; lims.y = imgSize.x + imgSize.x / 8;
-				lims.z = -imgSize.y / 8; lims.w = imgSize.y + imgSize.y / 8;
+		// 0 1 0
+		pt_image.x -= factor; pt_image.y += factor;
+		checkPointVisibility<useSwapping>(hashVisibleType, isVisibleEnlarged, pt_image, M_d, projParams_d, imgSize);
 
-				if (pt_image.x >= lims.x && pt_image.x < lims.y && pt_image.y >= lims.z && pt_image.y < lims.w) isVisibleEnlarged = true;
-			}
-		}
+		// 1 0 1
+		pt_image.x += factor; pt_image.y -= factor; pt_image.z += factor;
+		checkPointVisibility<useSwapping>(hashVisibleType, isVisibleEnlarged, pt_image, M_d, projParams_d, imgSize);
 
-		hashVisibleType = isVisible;
+		//bool isVisible; Vector3f buff3f;
+		//#pragma unroll
+		//for (char i = 0; i < 8; ++i)
+		//{
+		//	pt_image.x = hashEntry.pos.x + blockCornerOffsets[i][0];
+		//	pt_image.y = hashEntry.pos.y + blockCornerOffsets[i][1];
+		//	pt_image.z = hashEntry.pos.z + blockCornerOffsets[i][2];
+		//	pt_image *= (float)SDF_BLOCK_SIZE * voxelSize;
+
+		//	buff3f = M_d * pt_image;
+
+		//	if (buff3f.z < 1e-10f) continue;
+
+		//	pt_image.x = projParams_d.x * buff3f.x / buff3f.z + projParams_d.z;
+		//	pt_image.y = projParams_d.y * buff3f.y / buff3f.z + projParams_d.w;
+
+		//	if (pt_image.x >= 0 && pt_image.x < imgSize.x && pt_image.y >= 0 && pt_image.y < imgSize.y) isVisible = true;
+
+		//	if (useSwapping)
+		//	{
+		//		Vector4i lims;
+		//		lims.x = -imgSize.x / 8; lims.y = imgSize.x + imgSize.x / 8;
+		//		lims.z = -imgSize.y / 8; lims.w = imgSize.y + imgSize.y / 8;
+
+		//		if (pt_image.x >= lims.x && pt_image.x < lims.y && pt_image.y >= lims.z && pt_image.y < lims.w) isVisibleEnlarged = true;
+		//	}
+		//}
+
+		//hashVisibleType = isVisible;
 
 		if (useSwapping) entriesVisibleType[targetIdx] = isVisibleEnlarged;
 	}
