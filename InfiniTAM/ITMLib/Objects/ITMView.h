@@ -45,10 +45,10 @@ namespace ITMLib
 			{
 				this->calib = new ITMRGBDCalib(calib);
 
-				this->rgb = new ITMUChar4Image(imgSize_rgb, useGPU);
-				this->depth = new ITMFloatImage(imgSize_d, useGPU);
+				this->rgb = new ITMUChar4Image(imgSize_rgb, true, useGPU);
+				this->depth = new ITMFloatImage(imgSize_d, true, useGPU);
 
-				this->rawDepth = new ITMShortImage(imgSize_d, useGPU);
+				this->rawDepth = new ITMShortImage(imgSize_d, true, useGPU);
 				this->inputImageType = InfiniTAM_DISPARITY_IMAGE;
 			}
 

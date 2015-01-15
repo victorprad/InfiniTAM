@@ -62,8 +62,8 @@ ITMRenTracker<TVoxel, TIndex>::ITMRenTracker(Vector2i imgSize, int noHierarchyLe
 
 	viewHierarchy = new ITMImageHierarchy<ITMTemplatedHierarchyLevel<ITMFloat4Image> >(imgSize, noHierarchyLevels, 0, useGPU);
 
-	tempImage1 = new ITMFloatImage(imgSize, useGPU);
-	tempImage2 = new ITMFloatImage(imgSize, useGPU);
+	tempImage1 = new ITMFloatImage(imgSize, true, useGPU);
+	tempImage2 = new ITMFloatImage(imgSize, true, useGPU);
 
 	this->lowLevelEngine = lowLevelEngine;
 	this->scene = scene;

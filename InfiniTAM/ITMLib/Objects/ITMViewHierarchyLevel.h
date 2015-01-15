@@ -28,10 +28,10 @@ namespace ITMLib
 				this->rotationOnly = rotationOnly;
 
 				if (!skipAllocation) {
-					this->rgb = new ITMUChar4Image(imgSize, useGPU);
-					this->depth = new ITMFloatImage(imgSize, useGPU);
-					this->gradientX_rgb = new ITMShort4Image(imgSize, useGPU);
-					this->gradientY_rgb = new ITMShort4Image(imgSize, useGPU);
+					this->rgb = new ITMUChar4Image(imgSize, true, useGPU);
+					this->depth = new ITMFloatImage(imgSize, true, useGPU);
+					this->gradientX_rgb = new ITMShort4Image(imgSize, true, useGPU);
+					this->gradientY_rgb = new ITMShort4Image(imgSize, true, useGPU);
 				}
 			}
 

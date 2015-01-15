@@ -371,9 +371,9 @@ void UIEngine::Initialise(int & argc, char** argv, ImageSourceEngine *imageSourc
 #endif
 
 	for (int w = 0; w < NUM_WIN; w++)
-		outImage[w] = new ITMUChar4Image(imageSource->getDepthImageSize(), false);
+		outImage[w] = new ITMUChar4Image(imageSource->getDepthImageSize(), true, false);
 
-	saveImage = new ITMUChar4Image(imageSource->getDepthImageSize(), false);
+	saveImage = new ITMUChar4Image(imageSource->getDepthImageSize(), true, false);
 
 	outImageType[0] = ITMMainEngine::InfiniTAM_IMAGE_SCENERAYCAST;
 	outImageType[1] = ITMMainEngine::InfiniTAM_IMAGE_ORIGINAL_DEPTH;
@@ -397,7 +397,7 @@ void UIEngine::Initialise(int & argc, char** argv, ImageSourceEngine *imageSourc
 
 void UIEngine::SaveScreenshot(const char *filename) const
 {
-	ITMUChar4Image screenshot(getWindowSize());
+	ITMUChar4Image screenshot(getWindowSize(), true, false);
 	GetScreenshot(&screenshot);
 	SaveImageToFile(&screenshot, filename, true);
 }

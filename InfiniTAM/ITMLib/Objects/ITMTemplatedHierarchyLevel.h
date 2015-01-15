@@ -26,7 +26,7 @@ namespace ITMLib
 				this->levelId = levelId;
 				this->rotationOnly = rotationOnly;
 
-				if (!skipAllocation) this->depth = new ImageType(imgSize, useGPU);
+				if (!skipAllocation) this->depth = new ImageType(imgSize, true, useGPU);
 			}
 
 			void UpdateHostFromDevice()

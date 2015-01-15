@@ -342,6 +342,9 @@
     <ClInclude Include="ITMLib\Objects\ITMRenderState_VH.h">
       <Filter>ITMLib\Objects\Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ITMLib\Objects\ITMMemoryBlock.h">
+      <Filter>ITMLib\Objects\Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CudaCompile Include="ITMLib\Engine\DeviceSpecific\CUDA\ITMColorTracker_CUDA.cu">

@@ -161,6 +161,7 @@
     <ClInclude Include="ITMLib\Engine\ITMTracker.h" />
     <ClInclude Include="ITMLib\Engine\ITMTrackerFactory.h" />
     <ClInclude Include="ITMLib\Engine\ITMVisualisationEngine.h" />
+    <ClInclude Include="ITMLib\Objects\ITMMemoryBlock.h" />
     <ClInclude Include="ITMLib\Objects\ITMRenderState.h" />
     <ClInclude Include="ITMLib\Objects\ITMRenderState_VH.h" />
     <ClInclude Include="ITMLib\Objects\ITMTemplatedHierarchyLevel.h" />

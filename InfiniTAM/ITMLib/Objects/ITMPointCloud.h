@@ -21,8 +21,8 @@ namespace ITMLib
 			{
 				this->noTotalPoints = 0;
 
-				locations = new ITMImage<Vector4f>(imgSize, useGPU);
-				colours = new ITMImage<Vector4f>(imgSize, useGPU);
+				locations = new ITMImage<Vector4f>(imgSize, true, useGPU);
+				colours = new ITMImage<Vector4f>(imgSize, true, useGPU);
 			}
 
 			void UpdateHostFromDevice()

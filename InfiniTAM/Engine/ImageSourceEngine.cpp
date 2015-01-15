@@ -37,8 +37,9 @@ void ImageFileReader::loadIntoCache(void)
 	if (currentFrameNo == cachedFrameNo) return;
 	cachedFrameNo = currentFrameNo;
 
-	cached_rgb = new ITMUChar4Image();
-	cached_depth = new ITMShortImage();
+	//TODO> make nicer
+	cached_rgb = new ITMUChar4Image(true, false); 
+	cached_depth = new ITMShortImage(true, false);
 
 	char str[2048];
 

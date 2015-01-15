@@ -28,8 +28,8 @@ namespace ITMLib
 				this->rotationOnly = rotationOnly;
 
 				if (!skipAllocation) {
-					this->pointsMap = new ITMFloat4Image(imgSize, useGPU);
-					this->normalsMap = new ITMFloat4Image(imgSize, useGPU);
+					this->pointsMap = new ITMFloat4Image(imgSize, true, useGPU);
+					this->normalsMap = new ITMFloat4Image(imgSize, true, useGPU);
 				}
 			}
 

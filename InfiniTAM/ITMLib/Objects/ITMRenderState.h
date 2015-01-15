@@ -44,11 +44,11 @@ namespace ITMLib
 
 			ITMRenderState(const Vector2i &imgSize, float vf_min, float vf_max, bool useCudaAlloc)
 			{
-				renderingRangeImage = new ITMImage<Vector2f>(imgSize, useCudaAlloc);
-				raycastResult = new ITMImage<Vector4f>(imgSize, useCudaAlloc);
-				raycastImage = new ITMImage<Vector4u>(imgSize, useCudaAlloc);
+				renderingRangeImage = new ITMImage<Vector2f>(imgSize, true, useCudaAlloc);
+				raycastResult = new ITMImage<Vector4f>(imgSize, true, useCudaAlloc);
+				raycastImage = new ITMImage<Vector4u>(imgSize, true, useCudaAlloc);
 
-				ITMImage<Vector2f> *buffImage = new ITMImage<Vector2f>(imgSize, false);
+				ITMImage<Vector2f> *buffImage = new ITMImage<Vector2f>(imgSize, true, false);
 
 				Vector2f v_lims(vf_min, vf_max);
 				for (int i = 0; i < imgSize.x * imgSize.y; i++) buffImage->GetData(false)[i] = v_lims;
