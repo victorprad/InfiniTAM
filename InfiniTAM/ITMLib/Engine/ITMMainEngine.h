@@ -51,6 +51,7 @@ namespace ITMLib
 			ITMLibSettings *settings;
 
 			bool hasStartedObjectReconstruction;
+			bool fusionActive;
 
 			ITMSceneReconstructionEngine<ITMVoxel,ITMVoxelIndex> *sceneRecoEngine;
 			ITMTracker *trackerPrimary, *trackerSecondary;
@@ -90,6 +91,11 @@ namespace ITMLib
 			void GetImage(ITMUChar4Image *out, GetImageType getImageType, bool useColour, ITMPose *pose = NULL, ITMIntrinsics *intrinsics = NULL);
 
 			void SaveAll();
+
+
+			/// switch for turning intergration on/off
+			void turnOnIntegration();
+			void turnOffIntegration();
 
 			/** \brief Constructor
 			    Ommitting a separate image size for the depth images

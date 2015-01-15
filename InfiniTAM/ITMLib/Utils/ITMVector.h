@@ -328,13 +328,6 @@ namespace ITMLib {
 		//  Comparison operators
 		////////////////////////////////////////////////////////
 
-		// equality
-
-		template<typename T2> _CPU_AND_GPU_CODE_ inline friend bool operator == (const Vector3<T> &lhs, const Vector3<T2> &rhs){
-			return (lhs.x == rhs.x) && (lhs.y == rhs.y) && (lhs.z == rhs.z);
-		}
-
-
 		// inequality
 		_CPU_AND_GPU_CODE_ friend bool operator != (const Vector3<T> &lhs, const Vector3<T> &rhs) {
 			return (lhs.x != rhs.x) || (lhs.y != rhs.y) || (lhs.z != rhs.z);
@@ -358,6 +351,15 @@ namespace ITMLib {
 			return os;
 		}
 	};
+
+	////////////////////////////////////////////////////////
+	//  Non-member comparison operators
+	////////////////////////////////////////////////////////
+
+	// equality
+	template <typename T1, typename T2> _CPU_AND_GPU_CODE_ inline bool operator == (const Vector3<T1> &lhs, const Vector3<T2> &rhs){
+		return (lhs.x == rhs.x) && (lhs.y == rhs.y) && (lhs.z == rhs.z);
+	}
 
 	template <class T> class Vector4 : public Vector4_ < T >
 	{

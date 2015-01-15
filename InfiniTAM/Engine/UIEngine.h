@@ -40,6 +40,7 @@ namespace InfiniTAM
 
 			bool freeviewActive;
 			bool colourActive;
+			bool intergrationActive;
 			ITMPose freeviewPose;
 			ITMIntrinsics freeviewIntrinsics;
 

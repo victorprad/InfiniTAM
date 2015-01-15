@@ -52,6 +52,7 @@ ITMMainEngine::ITMMainEngine(const ITMLibSettings *settings, const ITMRGBDCalib 
 	this->renderState_freeview = NULL;
 
 	hasStartedObjectReconstruction = false;
+	fusionActive = true;
 }
 
 ITMMainEngine::~ITMMainEngine()
@@ -109,7 +110,7 @@ void ITMMainEngine::ProcessFrame(void)
 	sceneRecoEngine->AllocateSceneFromDepth(scene, view, trackingState, renderState_live);
 
 	// integration
-	sceneRecoEngine->IntegrateIntoScene(scene, view, trackingState, renderState_live);
+	if (fusionActive) sceneRecoEngine->IntegrateIntoScene(scene, view, trackingState, renderState_live);
 
 	if (useSwapping) {
 		// swapping: CPU -> GPU
@@ -172,4 +173,14 @@ void ITMMainEngine::GetImage(ITMUChar4Image *out, GetImageType getImageType, boo
 		}
 		break;
 	};
+}
+
+void ITMMainEngine::turnOnIntegration()
+{
+	fusionActive = true;
+}
+
+void ITMMainEngine::turnOffIntegration()
+{
+	fusionActive = false;
 }
