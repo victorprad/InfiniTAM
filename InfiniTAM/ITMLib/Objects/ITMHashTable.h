@@ -79,8 +79,8 @@ namespace ITMLib
 				}
 				else
 				{
-					delete entries_all;
-					delete excessAllocationList;
+					delete[] entries_all;
+					delete[] excessAllocationList;
 				}
 #endif
             }
