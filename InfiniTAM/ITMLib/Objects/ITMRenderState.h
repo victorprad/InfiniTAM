@@ -5,7 +5,7 @@
 #include <stdlib.h>
 
 #include "../Utils/ITMLibDefines.h"
-#include "../Objects/ITMImage.h"
+#include "../../ORUtils/Image.h"
 
 namespace ITMLib
 {
@@ -29,7 +29,7 @@ namespace ITMLib
 			updated by a ITMLib::Engine::ITMVisualisationEngine
 			before any raycasting operation.
 			*/
-			ITMImage<Vector2f> *renderingRangeImage;
+			ORUtils::Image<Vector2f> *renderingRangeImage;
 
 			/** @brief
 			Float rendering output of the scene, containing the 3D
@@ -38,17 +38,17 @@ namespace ITMLib
 			This is typically created as a by-product of
 			raycasting operations.
 			*/
-			ITMImage<Vector4f> *raycastResult;
+			ORUtils::Image<Vector4f> *raycastResult;
 
-			ITMImage<Vector4u> *raycastImage;
+			ORUtils::Image<Vector4u> *raycastImage;
 
 			ITMRenderState(const Vector2i &imgSize, float vf_min, float vf_max, bool useCudaAlloc)
 			{
-				renderingRangeImage = new ITMImage<Vector2f>(imgSize, useCudaAlloc);
-				raycastResult = new ITMImage<Vector4f>(imgSize, useCudaAlloc);
-				raycastImage = new ITMImage<Vector4u>(imgSize, useCudaAlloc);
+				renderingRangeImage = new ORUtils::Image<Vector2f>(imgSize, useCudaAlloc);
+				raycastResult = new ORUtils::Image<Vector4f>(imgSize, useCudaAlloc);
+				raycastImage = new ORUtils::Image<Vector4u>(imgSize, useCudaAlloc);
 
-				ITMImage<Vector2f> *buffImage = new ITMImage<Vector2f>(imgSize, false);
+				ORUtils::Image<Vector2f> *buffImage = new ORUtils::Image<Vector2f>(imgSize, false);
 
 				Vector2f v_lims(vf_min, vf_max);
 				for (int i = 0; i < imgSize.x * imgSize.y; i++) buffImage->GetData(false)[i] = v_lims;

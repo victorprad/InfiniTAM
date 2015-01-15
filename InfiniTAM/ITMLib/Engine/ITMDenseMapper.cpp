@@ -1,6 +1,7 @@
 // Copyright 2014 Isis Innovation Limited and the authors of InfiniTAM
 
 #include "ITMDenseMapper.h"
+#include "ITMTrackerFactory.h"
 
 #include "../ITMLib.h"
 
@@ -13,24 +14,33 @@ ITMDenseMapper<TVoxel,TIndex>::ITMDenseMapper(const ITMLibSettings *settings, Ve
 
 	this->settings = settings;
 
-	this->scene = new ITMScene<ITMVoxel,ITMVoxelIndex>(&(settings->sceneParams), settings->useSwapping, settings->useGPU);
+	this->scene = new ITMScene<ITMVoxel,ITMVoxelIndex>(&(settings->sceneParams), settings->useSwapping, settings->deviceType == ITMLibSettings::DEVICE_CUDA);
 
-	if (settings->useGPU)
+	switch (settings->deviceType)
 	{
+	case ITMLibSettings::DEVICE_CPU:
+		sceneRecoEngine = new ITMSceneReconstructionEngine_CPU<TVoxel,TIndex>();
+		if (settings->useSwapping) swappingEngine = new ITMSwappingEngine_CPU<TVoxel,TIndex>();
+		visualisationEngine = new ITMVisualisationEngine_CPU<TVoxel,TIndex>();
+		break;
+	case ITMLibSettings::DEVICE_CUDA:
 #ifndef COMPILE_WITHOUT_CUDA
-		sceneRecoEngine = new ITMSceneReconstructionEngine_CUDA<ITMVoxel,ITMVoxelIndex>();
-		if (settings->useSwapping) swappingEngine = new ITMSwappingEngine_CUDA<ITMVoxel,ITMVoxelIndex>();
-		visualisationEngine = new ITMVisualisationEngine_CUDA<ITMVoxel,ITMVoxelIndex>();
+		sceneRecoEngine = new ITMSceneReconstructionEngine_CUDA<TVoxel,TIndex>();
+		if (settings->useSwapping) swappingEngine = new ITMSwappingEngine_CUDA<TVoxel,TIndex>();
+		visualisationEngine = new ITMVisualisationEngine_CUDA<TVoxel,TIndex>();
 #endif
-	}
-	else
-	{
-		sceneRecoEngine = new ITMSceneReconstructionEngine_CPU<ITMVoxel,ITMVoxelIndex>();
-		if (settings->useSwapping) swappingEngine = new ITMSwappingEngine_CPU<ITMVoxel,ITMVoxelIndex>();
-		visualisationEngine = new ITMVisualisationEngine_CPU<ITMVoxel,ITMVoxelIndex>();
+		break;
+	case ITMLibSettings::DEVICE_METAL:
+#ifdef COMPILE_WITH_METAL
+		sceneRecoEngine = new ITMSceneReconstructionEngine_Metal<TVoxel, TIndex>();
+		if (settings->useSwapping) swappingEngine = new ITMSwappingEngine_CPU<TVoxel, TIndex>();
+		visualisationEngine = new ITMVisualisationEngine_Metal<TVoxel, TIndex>();
+#endif
+		break;
 	}
 
-	visualisationState = NULL;
+	this->renderState_live = visualisationEngine->CreateRenderState(scene, ITMTrackerFactory::GetTrackedImageSize(*settings, imgSize_rgb, imgSize_d));
+	this->renderState_freeview = NULL;
 }
 
 template<class TVoxel, class TIndex>
@@ -42,52 +52,55 @@ ITMDenseMapper<TVoxel,TIndex>::~ITMDenseMapper()
 	if (settings->useSwapping) delete swappingEngine;
 
 	delete scene;
+
+	delete renderState_live;
+	if (renderState_freeview != NULL) delete renderState_freeview;
 }
 
 template<class TVoxel, class TIndex>
-void ITMDenseMapper<TVoxel,TIndex>::ProcessFrame(const ITMView *view, const ITMPose *pose_d)
+void ITMDenseMapper<TVoxel,TIndex>::ProcessFrame(const ITMView *view, const ITMTrackingState *trackingState)
 {
 	bool useSwapping = settings->useSwapping;
 
 	// allocation
-	sceneRecoEngine->AllocateSceneFromDepth(scene, view, pose_d);
+	sceneRecoEngine->AllocateSceneFromDepth(scene, view, trackingState, renderState_live);
 
 	// integration
-	sceneRecoEngine->IntegrateIntoScene(scene, view, pose_d);
+	sceneRecoEngine->IntegrateIntoScene(scene, view, trackingState, renderState_live);
 
 	if (useSwapping) {
 		// swapping: CPU -> GPU
-		swappingEngine->IntegrateGlobalIntoLocal(scene);
+		swappingEngine->IntegrateGlobalIntoLocal(scene, renderState_live);
 		// swapping: GPU -> CPU
-		swappingEngine->SaveToGlobalMemory(scene);
+		swappingEngine->SaveToGlobalMemory(scene, renderState_live);
 	}
 }
 
 template<class TVoxel, class TIndex>
 void ITMDenseMapper<TVoxel,TIndex>::GetICPMaps(const ITMPose *pose_d, const ITMIntrinsics *intrinsics_d, const ITMView *view, ITMTrackingState *trackingState)
 {
-	visualisationEngine->CreateExpectedDepths(scene, pose_d, intrinsics_d, trackingState->renderingRangeImage);
-	visualisationEngine->CreateICPMaps(scene, view, trackingState);
+	visualisationEngine->CreateExpectedDepths(scene, pose_d, intrinsics_d, renderState_live);
+	visualisationEngine->CreateICPMaps(scene, view, trackingState, renderState_live);
 }
 
 template<class TVoxel, class TIndex>
 void ITMDenseMapper<TVoxel,TIndex>::GetPointCloud(const ITMPose *pose, const ITMIntrinsics *intrinsics, const ITMView *view, ITMTrackingState *trackingState, bool skipPoints)
 {
-	visualisationEngine->CreateExpectedDepths(scene, pose, intrinsics, trackingState->renderingRangeImage);
-	visualisationEngine->CreatePointCloud(scene, view, trackingState, skipPoints);
+	visualisationEngine->CreateExpectedDepths(scene, pose, intrinsics, renderState_live);
+	visualisationEngine->CreatePointCloud(scene, view, trackingState, renderState_live, skipPoints);
 }
 
 template<class TVoxel, class TIndex>
 void ITMDenseMapper<TVoxel,TIndex>::GetRendering(const ITMPose *pose, const ITMIntrinsics *intrinsics, bool useColour, ITMUChar4Image *out)
 {
-	if (visualisationState == NULL) visualisationState = visualisationEngine->allocateInternalState(out->noDims);
+	if (renderState_freeview == NULL) renderState_freeview = visualisationEngine->CreateRenderState(scene, out->noDims);
 
-	visualisationEngine->FindVisibleBlocks(scene, pose, intrinsics, visualisationState);
-	visualisationEngine->CreateExpectedDepths(scene, pose, intrinsics, visualisationState->minmaxImage, visualisationState);
-	visualisationEngine->RenderImage(scene, pose, intrinsics, visualisationState, visualisationState->outputImage, useColour);
+	visualisationEngine->FindVisibleBlocks(scene, pose, intrinsics, renderState_freeview);
+	visualisationEngine->CreateExpectedDepths(scene, pose, intrinsics, renderState_freeview);
+	visualisationEngine->RenderImage(scene, pose, intrinsics, renderState_freeview, renderState_freeview->raycastImage, useColour);
 
-	if (settings->useGPU) visualisationState->outputImage->UpdateHostFromDevice();
-	out->SetFrom(visualisationState->outputImage);
+	if (settings->deviceType == ITMLibSettings::DEVICE_CUDA) renderState_freeview->raycastImage->UpdateHostFromDevice();
+	out->SetFrom(renderState_freeview->raycastImage);
 }
 
 template class ITMLib::Engine::ITMDenseMapper<ITMVoxel, ITMVoxelIndex>;

@@ -5,6 +5,10 @@
 #include "Vector.h"
 #include "CUDADefines.h"
 
+#ifdef COMPILE_WITH_METAL
+#include "../Engine/DeviceSpecific/Metal/ITMMetalContext.h"
+#endif
+
 #include <stdlib.h>
 #include <string.h>
 
@@ -24,6 +28,10 @@ namespace ORUtils
 		T* data_host;
 		/** Pointer to memory on GPU, if available. */
 		T* data_device;
+
+#ifdef COMPILE_WITH_METAL
+		void *metalBuffer;
+#endif
 	public:
 		/** Size of the image in pixels. */
 		Vector2i noDims;
@@ -57,39 +65,6 @@ namespace ORUtils
 			this->Clear();
 		}
 
-		/** Allocate image data of the specified size. If the
-		    image has been allocated before, nothing is done,
-		    irrespective of size.
-		*/
-		void Allocate(Vector2i noDims)
-		{
-			if (!this->isAllocated) {
-				this->noDims = noDims;
-				dataSize = noDims.x * noDims.y;
-
-				if (allocateGPU)
-				{
-#ifndef COMPILE_WITHOUT_CUDA
-					ORcudaSafeCall(cudaMallocHost((void**)&data_host, dataSize * sizeof(T)));
-					ORcudaSafeCall(cudaMalloc((void**)&data_device, dataSize * sizeof(T)));
-#endif
-				}
-				else
-				{ data_host = new T[dataSize]; }
-			}
-
-			isAllocated = true;
-		}
-
-		/** Set all image data to the given @p defaultValue. */
-		void Clear(unsigned char defaultValue = 0) 
-		{ 
-			memset(data_host, defaultValue, dataSize * sizeof(T)); 
-#ifndef COMPILE_WITHOUT_CUDA
-			if (allocateGPU) ORcudaSafeCall(cudaMemset(data_device, defaultValue, dataSize * sizeof(T)));
-#endif
-		}
-
 		/** Resize an image, loosing all old image data.
 		    Essentially any previously allocated data is
 		    released, new memory is allocated.
@@ -100,6 +75,15 @@ namespace ORUtils
 				Free();
 				Allocate(newDims);
 			}
+		}
+
+		/** Set all image data to the given @p defaultValue. */
+		void Clear(unsigned char defaultValue = 0) 
+		{ 
+			memset(data_host, defaultValue, dataSize * sizeof(T)); 
+#ifndef COMPILE_WITHOUT_CUDA
+			if (allocateGPU) ORcudaSafeCall(cudaMemset(data_device, defaultValue, dataSize * sizeof(T)));
+#endif
 		}
 
 		/** Transfer data from CPU to GPU, if possible. */
@@ -124,6 +108,42 @@ namespace ORUtils
 #endif
 		}
 
+		~Image() { this->Free(); }
+
+		// Suppress the default copy constructor and assignment operator
+		Image(const Image&);
+		Image& operator=(const Image&);
+
+		/** Allocate image data of the specified size. If the
+		    image has been allocated before, nothing is done,
+		    irrespective of size.
+		*/
+		void Allocate(Vector2i noDims)
+		{
+			if (!this->isAllocated) {
+				this->noDims = noDims;
+				dataSize = noDims.x * noDims.y;
+
+				if (allocateGPU)
+				{
+#ifndef COMPILE_WITHOUT_CUDA
+					ORcudaSafeCall(cudaMallocHost((void**)&data_host, dataSize * sizeof(T)));
+					ORcudaSafeCall(cudaMalloc((void**)&data_device, dataSize * sizeof(T)));
+#endif
+				}
+				else
+				{
+#ifdef COMPILE_WITH_METAL
+					allocateMetalData((void**)&data_host, (void**)&metalBuffer, dataSize * sizeof(T), true);
+#else
+					data_host = new T[dataSize];
+#endif
+				}
+			}
+
+			isAllocated = true;
+		}
+
 		/** Release allocated memory for this image */
 		void Free()
 		{
@@ -134,16 +154,17 @@ namespace ORUtils
 					ORcudaSafeCall(cudaFreeHost(data_host)); 
 #endif
 				}
-				else delete[] data_host;
+				else
+				{
+#ifdef COMPILE_WITH_METAL
+					freeMetalData((void**)&data_host, (void**)&metalBuffer, dataSize * sizeof(T), true);
+#else
+					delete[] data_host;
+#endif
+				}
 			}
 
 			this->isAllocated = false;
 		}
-
-		~Image() { this->Free(); }
-
-		// Suppress the default copy constructor and assignment operator
-		Image(const Image&);
-		Image& operator=(const Image&);
 	};
 }

@@ -15,14 +15,14 @@ namespace ITMLib
 		public:
 			uint noTotalPoints;
 
-			ITMImage<Vector4f> *locations, *colours;
+			ORUtils::Image<Vector4f> *locations, *colours;
 
 			explicit ITMPointCloud(Vector2i imgSize, bool useGPU)
 			{
 				this->noTotalPoints = 0;
 
-				locations = new ITMImage<Vector4f>(imgSize, useGPU);
-				colours = new ITMImage<Vector4f>(imgSize, useGPU);
+				locations = new ORUtils::Image<Vector4f>(imgSize, useGPU);
+				colours = new ORUtils::Image<Vector4f>(imgSize, useGPU);
 			}
 
 			void UpdateHostFromDevice()

@@ -7,7 +7,7 @@
 
 #include "../Objects/ITMScene.h"
 #include "../Objects/ITMTrackingState.h"
-#include "../Objects/ITMVisualisationState.h"
+#include "../Objects/ITMRenderState.h"
 
 #include "../Engine/ITMSceneReconstructionEngine.h"
 #include "../Engine/ITMVisualisationEngine.h"
@@ -28,12 +28,16 @@ namespace ITMLib
 			ITMSceneReconstructionEngine<TVoxel,TIndex> *sceneRecoEngine;
 			ITMSwappingEngine<TVoxel,TIndex> *swappingEngine;
 			ITMVisualisationEngine<TVoxel,TIndex> *visualisationEngine;
-			ITMVisualisationState *visualisationState;
 			ITMScene<TVoxel,TIndex> *scene;
-		public:
 
-			/// Process the frame accessed with @ref GetView()
-			void ProcessFrame(const ITMView *view, const ITMPose *pose);
+			ITMRenderState *renderState_freeview;
+
+		public:
+			/// Pointer to information used by the raycaster
+			ITMRenderState *renderState_live;
+
+			/// Process a single frame
+			void ProcessFrame(const ITMView *view, const ITMTrackingState *trackingState);
 
 			/// Get pointer to the current model of the 3D scene
 			const ITMScene<TVoxel,TIndex> *getScene() const
