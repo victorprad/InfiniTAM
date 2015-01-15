@@ -113,7 +113,8 @@ Objects/ITMTemplatedHierarchyLevel.h
 Objects/ITMTrackingState.h
 Objects/ITMView.h
 Objects/ITMViewHierarchyLevel.h
-Objects/ITMVisualisationState.h
+Objects/ITMRenderState.h
+Objects/ITMRenderState_VH.h
 Objects/ITMVoxelBlockHash.h
 )
 

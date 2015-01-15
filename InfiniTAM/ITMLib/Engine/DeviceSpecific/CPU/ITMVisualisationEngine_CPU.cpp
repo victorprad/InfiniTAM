@@ -11,6 +11,11 @@
 using namespace ITMLib::Engine;
 
 template<class TVoxel, class TIndex>
+static int RenderPointCloud(Vector4u *outRendering, Vector4f *locations, Vector4f *colours, const Vector4f *ptsRay, 
+	const TVoxel *voxelData, const typename TIndex::IndexData *voxelIndex, bool skipPoints, float voxelSize, 
+	Vector2i imgSize, Vector3f lightSource);
+
+template<class TVoxel, class TIndex>
 ITMRenderState* ITMVisualisationEngine_CPU<TVoxel, TIndex>::CreateRenderState(const ITMScene<TVoxel, TIndex> *scene, const Vector2i & imgSize)
 {
 	return new ITMRenderState(imgSize, scene->sceneParams->viewFrustum_min, scene->sceneParams->viewFrustum_max, false);
