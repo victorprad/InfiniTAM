@@ -1,7 +1,7 @@
 // Copyright 2014 Isis Innovation Limited and the authors of InfiniTAM
 
 #include "ITMColorTracker.h"
-#include "../Utils/ITMCholesky.h"
+#include "../../ORUtils/Cholesky.h"
 
 #include <math.h>
 
@@ -165,7 +165,7 @@ static inline bool minimizeLM(const ITMColorTracker & tracker, ITMPose & initial
 				if (!(fabs(ele) < 1e-15f)) ele *= (1.0f + lambda); else ele = lambda*1e-10f;
 			}
 
-			ITMLib::Utils::ITMCholesky cholA(A, numPara);
+			ORUtils::Cholesky cholA(A, numPara);
 
 			cholA.Backsub(&(d[0]), grad);
 			// TODO: if Cholesky failed, set success to false!

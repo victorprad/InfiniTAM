@@ -71,6 +71,7 @@
 #include "Engine/DeviceSpecific/Metal/ITMRenTracker_Metal.h"
 #endif
 
+#include "Engine/ITMDenseMapper.h"
 #include "Engine/ITMMainEngine.h"
 
 using namespace ITMLib::Objects;

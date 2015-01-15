@@ -155,7 +155,7 @@ __global__ void colorTrackerOneLevel_f_device(Vector2f *out, Vector4f *locations
 {
 	int locId_global = threadIdx.x + blockIdx.x * blockDim.x, locId_local = threadIdx.x;
 
-	__shared__ ITMLib::Vector2_<float> out_shared[128];
+	__shared__ ORUtils::Vector2_<float> out_shared[128];
 
 	out_shared[locId_local].x = 0; out_shared[locId_local].y = 0;
 	__syncthreads();

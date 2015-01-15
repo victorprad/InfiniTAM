@@ -2,8 +2,6 @@
 
 #pragma once
 
-#include "../Objects/ITMImage.h"
-
 namespace ITMLib
 {
 	namespace Objects

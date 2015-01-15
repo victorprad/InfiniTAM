@@ -3,7 +3,6 @@
 #pragma once
 
 #include "../Objects/ITMIntrinsics.h"
-#include "../Objects/ITMImage.h"
 
 namespace ITMLib
 {

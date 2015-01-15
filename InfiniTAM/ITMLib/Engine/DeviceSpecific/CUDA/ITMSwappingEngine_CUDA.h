@@ -12,8 +12,8 @@ namespace ITMLib
 		class ITMSwappingEngine_CUDA : public ITMSwappingEngine < TVoxel, TIndex >
 		{
 		public:
-			void IntegrateGlobalIntoLocal(ITMScene<TVoxel, TIndex> *scene, ITMView *view, ITMRenderState *renderState) {}
-			void SaveToGlobalMemory(ITMScene<TVoxel, TIndex> *scene, ITMView *view, ITMRenderState *renderState) {}
+			void IntegrateGlobalIntoLocal(ITMScene<TVoxel, TIndex> *scene, ITMRenderState *renderState) {}
+			void SaveToGlobalMemory(ITMScene<TVoxel, TIndex> *scene, ITMRenderState *renderState) {}
 		};
 
 		template<class TVoxel>
@@ -22,11 +22,11 @@ namespace ITMLib
 		private:
 			int *noNeededEntries_device, *noAllocatedVoxelEntries_device;
 		protected:
-			int DownloadFromGlobalMemory(ITMScene<TVoxel, ITMVoxelBlockHash> *scene, ITMView *view);
+			int DownloadFromGlobalMemory(ITMScene<TVoxel, ITMVoxelBlockHash> *scene);
 
 		public:
-			void IntegrateGlobalIntoLocal(ITMScene<TVoxel, ITMVoxelBlockHash> *scene, ITMView *view, ITMRenderState *renderState);
-			void SaveToGlobalMemory(ITMScene<TVoxel, ITMVoxelBlockHash> *scene, ITMView *view, ITMRenderState *renderState);
+			void IntegrateGlobalIntoLocal(ITMScene<TVoxel, ITMVoxelBlockHash> *scene, ITMRenderState *renderState);
+			void SaveToGlobalMemory(ITMScene<TVoxel, ITMVoxelBlockHash> *scene, ITMRenderState *renderState);
 
 			ITMSwappingEngine_CUDA(void);
 			~ITMSwappingEngine_CUDA(void);

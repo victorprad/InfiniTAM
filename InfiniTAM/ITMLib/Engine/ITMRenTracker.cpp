@@ -1,11 +1,9 @@
 #include "ITMRenTracker.h"
-#include "../Utils/ITMCholesky.h"
+#include "../../ORUtils/Cholesky.h"
 
 #include <math.h>
-#include <stdio.h>
 
 using namespace ITMLib::Engine;
-using namespace ITMLib::Utils;
 
 template<class TVoxel, class TIndex>
 static inline bool minimizeLM(const ITMRenTracker<TVoxel,TIndex> & tracker, ITMPose & initialization);
@@ -48,7 +46,7 @@ void ComputeSingleStep(float *step, float *ATA, float *ATb, float lambda)
 	for (int i = 0; i < 6 * 6; i += 7) tmpATA[i] += lambda * ATA[i];
 	for (int i = 0; i < 6; i++) step[i] = 0;
 
-	ITMCholesky cholA(tmpATA, 6);
+	ORUtils::Cholesky cholA(tmpATA, 6);
 	cholA.Backsub(step, ATb);
 
 	for (int i = 0; i < 6; i++) step[i] = -step[i];
@@ -56,7 +54,7 @@ void ComputeSingleStep(float *step, float *ATA, float *ATb, float lambda)
 
 
 template<class TVoxel, class TIndex>
-ITMRenTracker<TVoxel, TIndex>::ITMRenTracker(Vector2i imgSize, int noHierarchyLevels, ITMLowLevelEngine *lowLevelEngine, ITMScene<TVoxel,TIndex> *scene, bool useGPU)
+ITMRenTracker<TVoxel, TIndex>::ITMRenTracker(Vector2i imgSize, int noHierarchyLevels, ITMLowLevelEngine *lowLevelEngine, const ITMScene<TVoxel,TIndex> *scene, bool useGPU)
 { 
 	//TODO from parameters, rotationOnly not implemented
 
@@ -296,7 +294,7 @@ static inline bool minimizeLM(const ITMRenTracker<TVoxel,TIndex> & tracker, ITMP
 				if (!(fabs(ele) < 1e-15f)) ele *= (1.0f + lambda); else ele = lambda*1e-10f;
 			}
 
-			ITMLib::Utils::ITMCholesky cholA(A, numPara);
+			ORUtils::Cholesky cholA(A, numPara);
 
 			cholA.Backsub(&(d[0]), grad);
 			// TODO: if Cholesky failed, set success to false!

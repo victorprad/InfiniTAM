@@ -12,6 +12,7 @@ SET(ITMLIB_ENGINE_SOURCES
 Engine/ITMColorTracker.cpp
 Engine/ITMDepthTracker.cpp
 Engine/ITMMainEngine.cpp
+Engine/ITMDenseMapper.cpp
 Engine/ITMRenTracker.cpp
 Engine/ITMTrackerFactory.cpp
 Engine/ITMVisualisationEngine.cpp
@@ -22,6 +23,7 @@ Engine/ITMColorTracker.h
 Engine/ITMDepthTracker.h
 Engine/ITMLowLevelEngine.h
 Engine/ITMMainEngine.h
+Engine/ITMDenseMapper.h
 Engine/ITMRenTracker.h
 Engine/ITMSceneReconstructionEngine.h
 Engine/ITMSwappingEngine.h
@@ -76,7 +78,6 @@ Engine/DeviceSpecific/CUDA/ITMVisualisationEngine_CUDA.cu
 
 set(ITMLIB_ENGINE_DEVICESPECIFIC_CUDA_HEADERS
 Engine/DeviceSpecific/CUDA/ITMColorTracker_CUDA.h
-Engine/DeviceSpecific/CUDA/ITMCUDADefines.h
 Engine/DeviceSpecific/CUDA/ITMCUDAUtils.h
 Engine/DeviceSpecific/CUDA/ITMDepthTracker_CUDA.h
 Engine/DeviceSpecific/CUDA/ITMLowLevelEngine_CUDA.h
@@ -98,7 +99,6 @@ Objects/ITMDisparityCalib.h
 Objects/ITMExtrinsics.h
 Objects/ITMGlobalCache.h
 Objects/ITMHashTable.h
-Objects/ITMImage.h
 Objects/ITMImageHierarchy.h
 Objects/ITMIntrinsics.h
 Objects/ITMLocalVBA.h
@@ -126,13 +126,10 @@ Utils/ITMLibSettings.cpp
 
 set(ITMLIB_UTILS_HEADERS
 Utils/ITMCalibIO.h
-Utils/ITMCholesky.h
 Utils/ITMLibDefines.h
 Utils/ITMLibSettings.h
 Utils/ITMMath.h
-Utils/ITMMatrix.h
 Utils/ITMPixelUtils.h
-Utils/ITMVector.h
 )
 
 #################################################################

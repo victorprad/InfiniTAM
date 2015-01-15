@@ -3,7 +3,6 @@
 #pragma once
 
 #include "../Objects/ITMRGBDCalib.h"
-#include "../Objects/ITMImage.h"
 #include "../Utils/ITMCalibIO.h"
 
 namespace ITMLib

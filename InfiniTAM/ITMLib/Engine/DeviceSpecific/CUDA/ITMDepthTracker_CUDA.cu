@@ -1,9 +1,9 @@
 // Copyright 2014 Isis Innovation Limited and the authors of InfiniTAM
 
 #include "ITMDepthTracker_CUDA.h"
-#include "ITMCUDADefines.h"
 #include "ITMCUDAUtils.h"
 #include "../../DeviceAgnostic/ITMDepthTracker.h"
+#include "../../../../ORUtils/CUDADefines.h"
 
 using namespace ITMLib::Engine;
 

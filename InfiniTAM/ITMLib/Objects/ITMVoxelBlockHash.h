@@ -8,7 +8,7 @@
 
 #include "../Utils/ITMLibDefines.h"
 #ifndef COMPILE_WITHOUT_CUDA
-#include "../Engine/DeviceSpecific/CUDA/ITMCUDADefines.h"
+#include "../../ORUtils/CUDADefines.h"
 #endif
 
 #ifdef COMPILE_WITH_METAL

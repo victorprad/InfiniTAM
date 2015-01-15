@@ -4,7 +4,6 @@
 
 #include "../Utils/ITMLibDefines.h"
 
-#include "../Objects/ITMImage.h"
 #include "../Objects/ITMScene.h"
 #include "../Objects/ITMView.h"
 #include "../Objects/ITMTrackingState.h"

@@ -17,7 +17,7 @@ ITMSwappingEngine_CPU<TVoxel,ITMVoxelBlockHash>::~ITMSwappingEngine_CPU(void)
 }
 
 template<class TVoxel>
-int ITMSwappingEngine_CPU<TVoxel, ITMVoxelBlockHash>::DownloadFromGlobalMemory(ITMScene<TVoxel, ITMVoxelBlockHash> *scene, ITMView *view)
+int ITMSwappingEngine_CPU<TVoxel, ITMVoxelBlockHash>::DownloadFromGlobalMemory(ITMScene<TVoxel, ITMVoxelBlockHash> *scene)
 {
 	ITMGlobalCache<TVoxel> *globalCache = scene->globalCache;
 
@@ -66,7 +66,7 @@ int ITMSwappingEngine_CPU<TVoxel, ITMVoxelBlockHash>::DownloadFromGlobalMemory(I
 }
 
 template<class TVoxel>
-void ITMSwappingEngine_CPU<TVoxel, ITMVoxelBlockHash>::IntegrateGlobalIntoLocal(ITMScene<TVoxel, ITMVoxelBlockHash> *scene, ITMView *view, ITMRenderState *renderState)
+void ITMSwappingEngine_CPU<TVoxel, ITMVoxelBlockHash>::IntegrateGlobalIntoLocal(ITMScene<TVoxel, ITMVoxelBlockHash> *scene, ITMRenderState *renderState)
 {
 	ITMGlobalCache<TVoxel> *globalCache = scene->globalCache;
 
@@ -80,7 +80,7 @@ void ITMSwappingEngine_CPU<TVoxel, ITMVoxelBlockHash>::IntegrateGlobalIntoLocal(
 
 	TVoxel *localVBA = scene->localVBA.GetVoxelBlocks();
 
-	int noNeededEntries = this->DownloadFromGlobalMemory(scene, view);
+	int noNeededEntries = this->DownloadFromGlobalMemory(scene);
 
 	int maxW = scene->sceneParams->maxW;
 
@@ -104,7 +104,7 @@ void ITMSwappingEngine_CPU<TVoxel, ITMVoxelBlockHash>::IntegrateGlobalIntoLocal(
 }
 
 template<class TVoxel>
-void ITMSwappingEngine_CPU<TVoxel, ITMVoxelBlockHash>::SaveToGlobalMemory(ITMScene<TVoxel, ITMVoxelBlockHash> *scene, ITMView *view, ITMRenderState *renderState)
+void ITMSwappingEngine_CPU<TVoxel, ITMVoxelBlockHash>::SaveToGlobalMemory(ITMScene<TVoxel, ITMVoxelBlockHash> *scene, ITMRenderState *renderState)
 {
 	ITMGlobalCache<TVoxel> *globalCache = scene->globalCache;
 

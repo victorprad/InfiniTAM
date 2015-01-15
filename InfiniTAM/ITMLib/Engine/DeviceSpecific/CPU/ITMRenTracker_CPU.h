@@ -18,7 +18,7 @@ namespace ITMLib
 			void UnprojectDepthToCam(ITMFloatImage *depth, ITMFloat4Image *upPtCloud, const Vector4f &intrinsic);
 
 		public:
-			ITMRenTracker_CPU(Vector2i imgSize, int noHierarchyLevels, ITMLowLevelEngine *lowLevelEngine, ITMScene<TVoxel,TIndex> *scene);
+			ITMRenTracker_CPU(Vector2i imgSize, int noHierarchyLevels, ITMLowLevelEngine *lowLevelEngine, const ITMScene<TVoxel,TIndex> *scene);
 			~ITMRenTracker_CPU(void);
 		};
 	}

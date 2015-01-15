@@ -3,6 +3,7 @@
 #pragma once
 
 #include <string.h>
+#include <ostream>
 
 /************************************************************************/
 /* WARNING: the following 3x3 and 4x4 matrix are using column major, to	*/
@@ -10,7 +11,7 @@
 /* In all other parts of the code, we still use row major order.		*/	
 /************************************************************************/
 
-namespace ITMLib {
+namespace ORUtils {
 	template <class T> class Vector2;
 	template <class T> class Vector3;
 	template <class T> class Vector4;

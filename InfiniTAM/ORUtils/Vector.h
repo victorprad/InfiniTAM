@@ -3,8 +3,9 @@
 #pragma once
 
 #include <math.h>
+#include <ostream>
 
-namespace ITMLib {
+namespace ORUtils {
 	//////////////////////////////////////////////////////////////////////////
 	//						Basic Vector Structure
 	//////////////////////////////////////////////////////////////////////////
@@ -65,8 +66,8 @@ namespace ITMLib {
 			return Vector2<int>((int)floor(this->x), (int)floor(this->y));
 		}
 
-		_CPU_AND_GPU_CODE_ inline Vector2<uchar> toUChar() const {
-			Vector2<int> vi = toInt(); return Vector2<uchar>((uchar)CLAMP(vi.x, 0, 255), (uchar)CLAMP(vi.y, 0, 255));
+		_CPU_AND_GPU_CODE_ inline Vector2<unsigned char> toUChar() const {
+			Vector2<int> vi = toInt(); return Vector2<unsigned char>((unsigned char)CLAMP(vi.x, 0, 255), (unsigned char)CLAMP(vi.y, 0, 255));
 		}
 
 		_CPU_AND_GPU_CODE_ inline Vector2<float> toFloat() const {
@@ -226,8 +227,8 @@ namespace ITMLib {
 			return Vector3<int>((int)intFloor.x, (int)intFloor.y, (int)intFloor.z);
 		}
 
-		_CPU_AND_GPU_CODE_ inline Vector3<uchar> toUChar() const {
-			Vector3<int> vi = toIntRound(); return Vector3<uchar>((uchar)CLAMP(vi.x, 0, 255), (uchar)CLAMP(vi.y, 0, 255), (uchar)CLAMP(vi.z, 0, 255));
+		_CPU_AND_GPU_CODE_ inline Vector3<unsigned char> toUChar() const {
+			Vector3<int> vi = toIntRound(); return Vector3<unsigned char>((unsigned char)CLAMP(vi.x, 0, 255), (unsigned char)CLAMP(vi.y, 0, 255), (unsigned char)CLAMP(vi.z, 0, 255));
 		}
 
 		_CPU_AND_GPU_CODE_ inline Vector3<float> toFloat() const {
@@ -382,8 +383,8 @@ namespace ITMLib {
 			return Vector4<int>((int)ROUND(this->x), (int)ROUND(this->y), (int)ROUND(this->z), (int)ROUND(this->w));
 		}
 
-		_CPU_AND_GPU_CODE_ inline Vector4<uchar> toUChar() const {
-			Vector4<int> vi = toIntRound(); return Vector4<uchar>((uchar)CLAMP(vi.x, 0, 255), (uchar)CLAMP(vi.y, 0, 255), (uchar)CLAMP(vi.z, 0, 255), (uchar)CLAMP(vi.w, 0, 255));
+		_CPU_AND_GPU_CODE_ inline Vector4<unsigned char> toUChar() const {
+			Vector4<int> vi = toIntRound(); return Vector4<unsigned char>((unsigned char)CLAMP(vi.x, 0, 255), (unsigned char)CLAMP(vi.y, 0, 255), (unsigned char)CLAMP(vi.z, 0, 255), (unsigned char)CLAMP(vi.w, 0, 255));
 		}
 
 		_CPU_AND_GPU_CODE_ inline Vector4<float> toFloat() const {

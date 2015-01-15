@@ -5,6 +5,8 @@
 #include <stdio.h>
 #include <fstream>
 
+using namespace std;
+
 static const char *pgm_ascii_id = "P2";
 static const char *ppm_ascii_id = "P3";
 static const char *pgm_id = "P5";

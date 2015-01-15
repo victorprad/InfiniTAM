@@ -1,12 +1,11 @@
 // Copyright 2014 Isis Innovation Limited and the authors of InfiniTAM
 
 #include "ITMDepthTracker.h"
-#include "../Utils/ITMCholesky.h"
+#include "../../ORUtils/Cholesky.h"
 
 #include <math.h>
 
 using namespace ITMLib::Engine;
-using namespace ITMLib::Utils;
 
 ITMDepthTracker::ITMDepthTracker(Vector2i imgSize, int noHierarchyLevels, int noRotationOnlyLevels, int noICPRunTillLevel, float distThresh, ITMLowLevelEngine *lowLevelEngine, bool useGPU)
 {
@@ -80,12 +79,12 @@ void ITMDepthTracker::ComputeSingleStep(float *step, float *ATA, float *ATb, boo
 		float smallATA[3 * 3];
 		for (int r = 0; r < 3; r++) for (int c = 0; c < 3; c++) smallATA[r + c * 3] = ATA[r + c * 6];
 
-		ITMCholesky cholA(smallATA, 3);
+		ORUtils::Cholesky cholA(smallATA, 3);
 		cholA.Backsub(step, ATb);
 	}
 	else
 	{
-		ITMCholesky cholA(ATA, 6);
+		ORUtils::Cholesky cholA(ATA, 6);
 		cholA.Backsub(step, ATb);
 	}
 }

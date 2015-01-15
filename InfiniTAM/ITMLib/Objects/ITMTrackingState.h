@@ -5,7 +5,6 @@
 #include "../Utils/ITMLibDefines.h"
 
 #include "ITMPose.h"
-#include "ITMImage.h"
 #include "ITMPointCloud.h"
 #include "ITMScene.h"
 

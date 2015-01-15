@@ -6,7 +6,7 @@
 #include "../../Utils/ITMPixelUtils.h"
 
 #ifndef __METALC__
-template<typename T> _CPU_AND_GPU_CODE_ inline int hashIndex(const ITMLib::Vector3<T> voxelPos, const int hashMask) {
+template<typename T> _CPU_AND_GPU_CODE_ inline int hashIndex(const ORUtils::Vector3<T> voxelPos, const int hashMask) {
 #else
 template<typename T> _CPU_AND_GPU_CODE_ inline int hashIndex(const T voxelPos, const int hashMask) {
 #endif

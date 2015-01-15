@@ -56,7 +56,7 @@ namespace ITMLib
          * \return                A pointer to the new tracker, if any, or NULL otherwise.
          */
         template <typename TVoxel, typename TIndex>
-        static ITMTracker *MakeSecondaryTracker(const ITMLibSettings& settings, const Vector2i& imgSize_rgb, const Vector2i& imgSize_d, ITMLowLevelEngine *lowLevelEngine, ITMScene<TVoxel,TIndex> *scene)
+        static ITMTracker *MakeSecondaryTracker(const ITMLibSettings& settings, const Vector2i& imgSize_rgb, const Vector2i& imgSize_d, ITMLowLevelEngine *lowLevelEngine, const ITMScene<TVoxel,TIndex> *scene)
         {
 			switch (settings.deviceType)
 			{

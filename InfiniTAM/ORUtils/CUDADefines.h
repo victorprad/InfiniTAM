@@ -2,6 +2,8 @@
 
 #pragma once
 
+#ifndef COMPILE_WITHOUT_CUDA
+
 #if (!defined USING_CMAKE) && (defined _MSC_VER)
 #pragma comment( lib, "cuda.lib" )
 #pragma comment( lib, "cudart.lib" )
@@ -21,10 +23,12 @@
 #  include <windows.h>
 #endif
 
-#ifndef ITMSafeCall
-#define ITMSafeCall(err) __ITMSafeCall(err, __FILE__, __LINE__)
+#ifndef ORcudaSafeCall
+#define ORcudaSafeCall(err) ORUtils::__cudaSafeCall(err, __FILE__, __LINE__)
 
-inline void __ITMSafeCall( cudaError err, const char *file, const int line )
+namespace ORUtils {
+
+inline void __cudaSafeCall( cudaError err, const char *file, const int line )
 {
     if( cudaSuccess != err) {
 		printf("%s(%i) : cudaSafeCall() Runtime API error : %s.\n",
@@ -32,6 +36,10 @@ inline void __ITMSafeCall( cudaError err, const char *file, const int line )
         exit(-1);
     }
 }
+
+}
+
+#endif
 
 #endif
 

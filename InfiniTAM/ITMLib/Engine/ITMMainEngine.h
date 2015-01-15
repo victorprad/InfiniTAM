@@ -53,13 +53,10 @@ namespace ITMLib
 			bool hasStartedObjectReconstruction;
 			bool fusionActive;
 
-			ITMSceneReconstructionEngine<ITMVoxel,ITMVoxelIndex> *sceneRecoEngine;
 			ITMTracker *trackerPrimary, *trackerSecondary;
 			ITMLowLevelEngine *lowLevelEngine;
-			ITMSwappingEngine<ITMVoxel,ITMVoxelIndex> *swappingEngine;
-			ITMVisualisationEngine<ITMVoxel,ITMVoxelIndex> *visualisationEngine;
-			ITMRenderState *renderState_freeview;
-
+		
+			ITMDenseMapper<ITMVoxel,ITMVoxelIndex> *denseMapper;
 		public:
 			enum GetImageType
 			{
@@ -69,17 +66,11 @@ namespace ITMLib
 				InfiniTAM_IMAGE_SCENERAYCAST_FREECAMERA
 			};
 
-			/// Pointer to the current model of the 3D scene
-			ITMScene<ITMVoxel,ITMVoxelIndex> *scene;
-
 			/// Pointer for storing the current input frame
 			ITMView *view;
 			
 			/// Pointer to the current camera pose and additional tracking information
 			ITMTrackingState *trackingState;
-
-			/// Pointer to information used by the raycaster
-			ITMRenderState *renderState_live;
 
 			/// Gives access to the current input frame
 			ITMView* GetView() { return view; }
@@ -89,9 +80,6 @@ namespace ITMLib
 
 			/// Get a result image as output
 			void GetImage(ITMUChar4Image *out, GetImageType getImageType, bool useColour, ITMPose *pose = NULL, ITMIntrinsics *intrinsics = NULL);
-
-			void SaveAll();
-
 
 			/// switch for turning intergration on/off
 			void turnOnIntegration();
