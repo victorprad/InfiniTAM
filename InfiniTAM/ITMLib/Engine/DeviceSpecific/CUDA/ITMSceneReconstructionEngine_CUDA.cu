@@ -3,6 +3,7 @@
 #include "ITMSceneReconstructionEngine_CUDA.h"
 #include "ITMCUDAUtils.h"
 #include "../../DeviceAgnostic/ITMSceneReconstructionEngine.h"
+#include "../../../Objects/ITMRenderState_VH.h"
 
 using namespace ITMLib::Engine;
 
@@ -56,7 +57,8 @@ ITMSceneReconstructionEngine_CUDA<TVoxel,ITMVoxelBlockHash>::~ITMSceneReconstruc
 }
 
 template<class TVoxel>
-void ITMSceneReconstructionEngine_CUDA<TVoxel,ITMVoxelBlockHash>::AllocateSceneFromDepth(ITMScene<TVoxel,ITMVoxelBlockHash> *scene, const ITMView *view, const ITMPose *pose_d)
+void ITMSceneReconstructionEngine_CUDA<TVoxel, ITMVoxelBlockHash>::AllocateSceneFromDepth(ITMScene<TVoxel, ITMVoxelBlockHash> *scene, const ITMView *view, 
+	const ITMTrackingState *trackingState, const ITMRenderState *renderState)
 {
 	Vector2i depthImgSize = view->depth->noDims;
 	float voxelSize = scene->sceneParams->voxelSize;
@@ -64,7 +66,9 @@ void ITMSceneReconstructionEngine_CUDA<TVoxel,ITMVoxelBlockHash>::AllocateSceneF
 	Matrix4f M_d, invM_d;
 	Vector4f projParams_d, invProjParams_d;
 
-	M_d = pose_d->M; M_d.inv(invM_d);
+	ITMRenderState_VH *renderState_vh = (ITMRenderState_VH*)renderState;
+
+	M_d = trackingState->pose_d->M; M_d.inv(invM_d);
 
 	projParams_d = view->calib->intrinsics_d.projectionParamsSimple.all;
 	invProjParams_d = projParams_d;
@@ -76,11 +80,13 @@ void ITMSceneReconstructionEngine_CUDA<TVoxel,ITMVoxelBlockHash>::AllocateSceneF
 	float *depth = view->depth->GetData(true);
 	int *voxelAllocationList = scene->localVBA.GetAllocationList();
 	int *excessAllocationList = scene->index.GetExcessAllocationList();
-	uchar *entriesVisibleType = scene->index.GetEntriesVisibleType();
 	ITMHashEntry *hashTable = scene->index.GetEntries();
 	ITMHashCacheState *cacheStates = scene->useSwapping ? scene->globalCache->GetCacheStates(true) : 0;
-	int *liveEntryIDs = scene->index.GetLiveEntryIDs();
+
 	int noTotalEntries = scene->index.noVoxelBlocks;
+
+	int *liveEntryIDs = renderState_vh->GetLiveEntryIDs();
+	uchar *entriesVisibleType = renderState_vh->GetEntriesVisibleType();
 
 	float oneOverVoxelSize = 1.0f / (voxelSize * SDF_BLOCK_SIZE);
 
@@ -118,13 +124,14 @@ void ITMSceneReconstructionEngine_CUDA<TVoxel,ITMVoxelBlockHash>::AllocateSceneF
 			noAllocatedVoxelEntries_device, entriesVisibleType);
 	}
 
-	ITMSafeCall(cudaMemcpy(&scene->index.noLiveEntries, noLiveEntries_device, sizeof(int), cudaMemcpyDeviceToHost));
+	ITMSafeCall(cudaMemcpy(&renderState_vh->noLiveEntries, noLiveEntries_device, sizeof(int), cudaMemcpyDeviceToHost));
 	ITMSafeCall(cudaMemcpy(&scene->localVBA.lastFreeBlockId, noAllocatedVoxelEntries_device, sizeof(int), cudaMemcpyDeviceToHost));
 	ITMSafeCall(cudaMemcpy(&scene->index.lastFreeExcessListId, noAllocatedExcessEntries_device, sizeof(int), cudaMemcpyDeviceToHost));
 }
 
 template<class TVoxel>
-void ITMSceneReconstructionEngine_CUDA<TVoxel,ITMVoxelBlockHash>::IntegrateIntoScene(ITMScene<TVoxel,ITMVoxelBlockHash> *scene, const ITMView *view, const ITMPose *pose_d)
+void ITMSceneReconstructionEngine_CUDA<TVoxel, ITMVoxelBlockHash>::IntegrateIntoScene(ITMScene<TVoxel, ITMVoxelBlockHash> *scene, const ITMView *view,
+	const ITMTrackingState *trackingState, const ITMRenderState *renderState)
 {
 	Vector2i rgbImgSize = view->rgb->noDims;
 	Vector2i depthImgSize = view->depth->noDims;
@@ -133,8 +140,10 @@ void ITMSceneReconstructionEngine_CUDA<TVoxel,ITMVoxelBlockHash>::IntegrateIntoS
 	Matrix4f M_d, M_rgb;
 	Vector4f projParams_d, projParams_rgb;
 
-	M_d = pose_d->M;
-	if (TVoxel::hasColorInformation) M_rgb = view->calib->trafo_rgb_to_depth.calib_inv * pose_d->M;
+	ITMRenderState_VH *renderState_vh = (ITMRenderState_VH*)renderState;
+
+	M_d = trackingState->pose_d->M;
+	if (TVoxel::hasColorInformation) M_rgb = view->calib->trafo_rgb_to_depth.calib_inv * trackingState->pose_d->M;
 
 	projParams_d = view->calib->intrinsics_d.projectionParamsSimple.all;
 	projParams_rgb = view->calib->intrinsics_rgb.projectionParamsSimple.all;
@@ -145,10 +154,11 @@ void ITMSceneReconstructionEngine_CUDA<TVoxel,ITMVoxelBlockHash>::IntegrateIntoS
 	Vector4u *rgb = view->rgb->GetData(true);
 	TVoxel *localVBA = scene->localVBA.GetVoxelBlocks();
 	ITMHashEntry *hashTable = scene->index.GetEntries();
-	int *liveEntryIDs = scene->index.GetLiveEntryIDs();
+
+	int *liveEntryIDs = renderState_vh->GetLiveEntryIDs();
 
 	dim3 cudaBlockSize(SDF_BLOCK_SIZE, SDF_BLOCK_SIZE, SDF_BLOCK_SIZE);
-	dim3 gridSize(scene->index.noLiveEntries);
+	dim3 gridSize(renderState_vh->noLiveEntries);
 
 	integrateIntoScene_device << <gridSize, cudaBlockSize >> >(localVBA, hashTable, liveEntryIDs,
 		rgb, rgbImgSize, depth, depthImgSize, M_d, M_rgb, projParams_d, projParams_rgb, voxelSize, mu, maxW);
@@ -157,12 +167,14 @@ void ITMSceneReconstructionEngine_CUDA<TVoxel,ITMVoxelBlockHash>::IntegrateIntoS
 // plain voxel array
 
 template<class TVoxel>
-void ITMSceneReconstructionEngine_CUDA<TVoxel,ITMPlainVoxelArray>::AllocateSceneFromDepth(ITMScene<TVoxel,ITMPlainVoxelArray> *scene, const ITMView *view, const ITMPose *pose_d)
+void ITMSceneReconstructionEngine_CUDA<TVoxel, ITMPlainVoxelArray>::AllocateSceneFromDepth(ITMScene<TVoxel, ITMPlainVoxelArray> *scene, const ITMView *view,
+	const ITMTrackingState *trackingState, const ITMRenderState *renderState)
 {
 }
 
 template<class TVoxel>
-void ITMSceneReconstructionEngine_CUDA<TVoxel,ITMPlainVoxelArray>::IntegrateIntoScene(ITMScene<TVoxel,ITMPlainVoxelArray> *scene, const ITMView *view, const ITMPose *pose_d)
+void ITMSceneReconstructionEngine_CUDA<TVoxel, ITMPlainVoxelArray>::IntegrateIntoScene(ITMScene<TVoxel, ITMPlainVoxelArray> *scene, const ITMView *view,
+	const ITMTrackingState *trackingState, const ITMRenderState *renderState)
 {
 	Vector2i rgbImgSize = view->rgb->noDims;
 	Vector2i depthImgSize = view->depth->noDims;
@@ -171,8 +183,8 @@ void ITMSceneReconstructionEngine_CUDA<TVoxel,ITMPlainVoxelArray>::IntegrateInto
 	Matrix4f M_d, M_rgb;
 	Vector4f projParams_d, projParams_rgb;
 
-	M_d = pose_d->M;
-	if (TVoxel::hasColorInformation) M_rgb = view->calib->trafo_rgb_to_depth.calib_inv * pose_d->M;
+	M_d = trackingState->pose_d->M;
+	if (TVoxel::hasColorInformation) M_rgb = view->calib->trafo_rgb_to_depth.calib_inv * trackingState->pose_d->M;
 
 	projParams_d = view->calib->intrinsics_d.projectionParamsSimple.all;
 	projParams_rgb = view->calib->intrinsics_rgb.projectionParamsSimple.all;
@@ -321,10 +333,6 @@ __global__ void reAllocateSwappedOutVoxelBlocks_device(int *voxelAllocationList,
 	}
 }
 
-__constant__ float blockCornerOffsets[][3] = {
-	{0.0f,0.0f,0.0f},{1.0f,0.0f,0.0f},{0.0f,1.0f,0.0f},{1.0f,1.0f,0.0f},
-	{0.0f,0.0f,1.0f},{1.0f,0.0f,1.0f},{0.0f,1.0f,1.0f},{1.0f,1.0f,1.0f}};
-
 template<bool useSwapping>
 __global__ void buildVisibleList_device(ITMHashEntry *hashTable, ITMHashCacheState *cacheStates, int noTotalEntries, 
 	int *liveEntryIDs, int *noLiveEntries, uchar *entriesVisibleType, Matrix4f M_d, Vector4f projParams_d, Vector2i imgSize, float voxelSize)
@@ -343,73 +351,8 @@ __global__ void buildVisibleList_device(ITMHashEntry *hashTable, ITMHashCacheSta
 	if (hashVisibleType > 0) shouldPrefix = true;
 	else if (hashEntry.ptr >= -1)
 	{
-		Vector3f pt_image; bool isVisibleEnlarged = false;
-		float factor = (float)SDF_BLOCK_SIZE * voxelSize;
-
-		// 0 0 0
-		pt_image.x = (float)hashEntry.pos.x * factor;
-		pt_image.y = (float)hashEntry.pos.y * factor;
-		pt_image.z = (float)hashEntry.pos.z * factor;
-		checkPointVisibility<useSwapping>(hashVisibleType, isVisibleEnlarged, pt_image, M_d, projParams_d, imgSize);
-
-		// 0 0 1
-		pt_image.z += factor;
-		checkPointVisibility<useSwapping>(hashVisibleType, isVisibleEnlarged, pt_image, M_d, projParams_d, imgSize);
-
-		// 0 1 1
-		pt_image.y += factor;
-		checkPointVisibility<useSwapping>(hashVisibleType, isVisibleEnlarged, pt_image, M_d, projParams_d, imgSize);
-
-		// 1 1 1
-		pt_image.x += factor;
-		checkPointVisibility<useSwapping>(hashVisibleType, isVisibleEnlarged, pt_image, M_d, projParams_d, imgSize);
-
-		// 1 1 0 
-		pt_image.z -= factor;
-		checkPointVisibility<useSwapping>(hashVisibleType, isVisibleEnlarged, pt_image, M_d, projParams_d, imgSize);
-
-		// 1 0 0 
-		pt_image.y -= factor;
-		checkPointVisibility<useSwapping>(hashVisibleType, isVisibleEnlarged, pt_image, M_d, projParams_d, imgSize);
-
-		// 0 1 0
-		pt_image.x -= factor; pt_image.y += factor;
-		checkPointVisibility<useSwapping>(hashVisibleType, isVisibleEnlarged, pt_image, M_d, projParams_d, imgSize);
-
-		// 1 0 1
-		pt_image.x += factor; pt_image.y -= factor; pt_image.z += factor;
-		checkPointVisibility<useSwapping>(hashVisibleType, isVisibleEnlarged, pt_image, M_d, projParams_d, imgSize);
-
-		//bool isVisible; Vector3f buff3f;
-		//#pragma unroll
-		//for (char i = 0; i < 8; ++i)
-		//{
-		//	pt_image.x = hashEntry.pos.x + blockCornerOffsets[i][0];
-		//	pt_image.y = hashEntry.pos.y + blockCornerOffsets[i][1];
-		//	pt_image.z = hashEntry.pos.z + blockCornerOffsets[i][2];
-		//	pt_image *= (float)SDF_BLOCK_SIZE * voxelSize;
-
-		//	buff3f = M_d * pt_image;
-
-		//	if (buff3f.z < 1e-10f) continue;
-
-		//	pt_image.x = projParams_d.x * buff3f.x / buff3f.z + projParams_d.z;
-		//	pt_image.y = projParams_d.y * buff3f.y / buff3f.z + projParams_d.w;
-
-		//	if (pt_image.x >= 0 && pt_image.x < imgSize.x && pt_image.y >= 0 && pt_image.y < imgSize.y) isVisible = true;
-
-		//	if (useSwapping)
-		//	{
-		//		Vector4i lims;
-		//		lims.x = -imgSize.x / 8; lims.y = imgSize.x + imgSize.x / 8;
-		//		lims.z = -imgSize.y / 8; lims.w = imgSize.y + imgSize.y / 8;
-
-		//		if (pt_image.x >= lims.x && pt_image.x < lims.y && pt_image.y >= lims.z && pt_image.y < lims.w) isVisibleEnlarged = true;
-		//	}
-		//}
-
-		//hashVisibleType = isVisible;
-
+		bool isVisibleEnlarged = false;
+		checkBlockVisibility<useSwapping>(hashVisibleType, isVisibleEnlarged, hashEntry.pos, M_d, projParams_d, voxelSize, imgSize);
 		if (useSwapping) entriesVisibleType[targetIdx] = isVisibleEnlarged;
 	}
 

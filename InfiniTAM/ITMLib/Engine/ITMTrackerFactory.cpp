@@ -42,16 +42,16 @@ ITMTracker *ITMTrackerFactory::MakePrimaryTracker(const ITMLibSettings& settings
 #endif
 		break;
 	case ITMLibSettings::DEVICE_METAL:
-        switch (settings.trackerType)
-        {
-            case ITMLibSettings::TRACKER_ICP:
-            case ITMLibSettings::TRACKER_REN:
-            return new ITMDepthTracker_CPU(imgSize_d, settings.noHierarchyLevels, settings.noRotationOnlyLevels, settings.noICPRunTillLevel, settings.depthTrackerICPThreshold, lowLevelEngine);
-            case ITMLibSettings::TRACKER_COLOR:
-            return new ITMColorTracker_CPU(imgSize_rgb, settings.noHierarchyLevels, settings.noRotationOnlyLevels, lowLevelEngine);
-            default:
-            throw std::runtime_error("Error: ITMTrackerFactory::MakePrimaryTracker: Unknown tracker type");
-        }
+		switch (settings.trackerType)
+		{
+		case ITMLibSettings::TRACKER_ICP:
+		case ITMLibSettings::TRACKER_REN:
+			return new ITMDepthTracker_CPU(imgSize_d, settings.noHierarchyLevels, settings.noRotationOnlyLevels, settings.noICPRunTillLevel, settings.depthTrackerICPThreshold, lowLevelEngine);
+		case ITMLibSettings::TRACKER_COLOR:
+			return new ITMColorTracker_CPU(imgSize_rgb, settings.noHierarchyLevels, settings.noRotationOnlyLevels, lowLevelEngine);
+		default:
+			throw std::runtime_error("Error: ITMTrackerFactory::MakePrimaryTracker: Unknown tracker type");
+		}
 		break;
 	}
 
@@ -60,5 +60,10 @@ ITMTracker *ITMTrackerFactory::MakePrimaryTracker(const ITMLibSettings& settings
 
 ITMTrackingState *ITMTrackerFactory::MakeTrackingState(const ITMLibSettings& settings, const Vector2i& imgSize_rgb, const Vector2i& imgSize_d)
 {
-  return new ITMTrackingState(settings.trackerType == ITMLibSettings::TRACKER_COLOR ? imgSize_rgb : imgSize_d, settings.deviceType == ITMLibSettings::DEVICE_CUDA);
+	return new ITMTrackingState(settings.trackerType == ITMLibSettings::TRACKER_COLOR ? imgSize_rgb : imgSize_d, settings.deviceType == ITMLibSettings::DEVICE_CUDA);
+}
+
+Vector2i ITMTrackerFactory::GetTrackedImageSize(const ITMLibSettings &settings, const Vector2i& imgSize_rgb, const Vector2i& imgSize_d)
+{
+	return settings.trackerType == ITMLibSettings::TRACKER_COLOR ? imgSize_rgb : imgSize_d;
 }

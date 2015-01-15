@@ -15,14 +15,14 @@ namespace ITMLib
 		public:
 			uint noTotalPoints;
 
-			ITMFloat4Image *locations, *colours;
+			ITMImage<Vector4f> *locations, *colours;
 
 			explicit ITMPointCloud(Vector2i imgSize, bool useGPU)
 			{
 				this->noTotalPoints = 0;
 
-				locations = new ITMFloat4Image(imgSize, useGPU);
-				colours = new ITMFloat4Image(imgSize, useGPU);
+				locations = new ITMImage<Vector4f>(imgSize, useGPU);
+				colours = new ITMImage<Vector4f>(imgSize, useGPU);
 			}
 
 			void UpdateHostFromDevice()

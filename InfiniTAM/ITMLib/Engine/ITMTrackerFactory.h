@@ -88,6 +88,8 @@ namespace ITMLib
          * \return                A pointer to the new tracking state.
          */
         static ITMTrackingState *MakeTrackingState(const ITMLibSettings& settings, const Vector2i& imgSize_rgb, const Vector2i& imgSize_d);
+
+		static Vector2i GetTrackedImageSize(const ITMLibSettings &settings, const Vector2i& imgSize_rgb, const Vector2i& imgSize_d);
       };
     }
 

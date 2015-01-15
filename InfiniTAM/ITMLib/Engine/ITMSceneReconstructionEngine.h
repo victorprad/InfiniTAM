@@ -9,6 +9,7 @@
 #include "../Objects/ITMScene.h"
 #include "../Objects/ITMView.h"
 #include "../Objects/ITMTrackingState.h"
+#include "../Objects/ITMRenderState.h"
 
 using namespace ITMLib::Objects;
 
@@ -32,12 +33,14 @@ namespace ITMLib
 			    visible blocks, allocate them and update the hash
 			    table so that the new image data can be integrated.
 			*/
-			virtual void AllocateSceneFromDepth(ITMScene<TVoxel,TIndex> *scene, const ITMView *view, const ITMPose *pose) = 0;
+			virtual void AllocateSceneFromDepth(ITMScene<TVoxel,TIndex> *scene, const ITMView *view, const ITMTrackingState *trackingState,
+				const ITMRenderState *renderState) = 0;
 
 			/** Update the voxel blocks by integrating depth and
 			    possibly colour information from the given view.
 			*/
-			virtual void IntegrateIntoScene(ITMScene<TVoxel,TIndex> *scene, const ITMView *view, const ITMPose *pose) = 0;
+			virtual void IntegrateIntoScene(ITMScene<TVoxel,TIndex> *scene, const ITMView *view, const ITMTrackingState *trackingState,
+				const ITMRenderState *renderState) = 0;
 
 			ITMSceneReconstructionEngine(void) { }
 			virtual ~ITMSceneReconstructionEngine(void) { }

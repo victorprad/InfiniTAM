@@ -97,6 +97,7 @@ namespace ITMLib
 #ifdef COMPILE_WITH_METAL
 			const void *getIndexData_MB() const { return indexData_mb; }
 #endif
+
 			// Suppress the default copy constructor and assignment operator
 			ITMPlainVoxelArray(const ITMPlainVoxelArray&);
 			ITMPlainVoxelArray& operator=(const ITMPlainVoxelArray&);

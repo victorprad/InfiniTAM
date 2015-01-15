@@ -6,6 +6,7 @@
 
 #include "../Objects/ITMScene.h"
 #include "../Objects/ITMView.h"
+#include "../Objects/ITMRenderState.h"
 
 using namespace ITMLib::Objects;
 
@@ -14,17 +15,17 @@ namespace ITMLib
 	namespace Engine
 	{
 		/** \brief
-		    Interface to engines that swap data in and out of the
-		    fairly limited GPU memory to some large scale storage
-		    space.
-		*/
-		template<class TVoxel,class TIndex>
+			Interface to engines that swap data in and out of the
+			fairly limited GPU memory to some large scale storage
+			space.
+			*/
+		template<class TVoxel, class TIndex>
 		class ITMSwappingEngine
 		{
 		public:
-			virtual void IntegrateGlobalIntoLocal(ITMScene<TVoxel,TIndex> *scene, ITMView *view) = 0;
+			virtual void IntegrateGlobalIntoLocal(ITMScene<TVoxel, TIndex> *scene, ITMView *view, ITMRenderState *renderState) = 0;
 
-			virtual void SaveToGlobalMemory(ITMScene<TVoxel,TIndex> *scene, ITMView *view) = 0;
+			virtual void SaveToGlobalMemory(ITMScene<TVoxel, TIndex> *scene, ITMView *view, ITMRenderState *renderState) = 0;
 
 			virtual ~ITMSwappingEngine(void) { }
 		};

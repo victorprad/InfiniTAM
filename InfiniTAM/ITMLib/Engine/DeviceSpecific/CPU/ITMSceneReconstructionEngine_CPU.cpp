@@ -2,6 +2,7 @@
 
 #include "ITMSceneReconstructionEngine_CPU.h"
 #include "../../DeviceAgnostic/ITMSceneReconstructionEngine.h"
+#include "../../../Objects/ITMRenderState_VH.h"
 
 using namespace ITMLib::Engine;
 
@@ -21,7 +22,8 @@ ITMSceneReconstructionEngine_CPU<TVoxel,ITMVoxelBlockHash>::~ITMSceneReconstruct
 }
 
 template<class TVoxel>
-void ITMSceneReconstructionEngine_CPU<TVoxel,ITMVoxelBlockHash>::IntegrateIntoScene(ITMScene<TVoxel,ITMVoxelBlockHash> *scene, const ITMView *view, const ITMPose *pose_d)
+void ITMSceneReconstructionEngine_CPU<TVoxel, ITMVoxelBlockHash>::IntegrateIntoScene(ITMScene<TVoxel, ITMVoxelBlockHash> *scene, const ITMView *view,
+	const ITMTrackingState *trackingState, const ITMRenderState *renderState)
 {
 	Vector2i rgbImgSize = view->rgb->noDims;
 	Vector2i depthImgSize = view->depth->noDims;
@@ -30,8 +32,10 @@ void ITMSceneReconstructionEngine_CPU<TVoxel,ITMVoxelBlockHash>::IntegrateIntoSc
 	Matrix4f M_d, M_rgb;
 	Vector4f projParams_d, projParams_rgb;
 
-	M_d = pose_d->M;
-	if (TVoxel::hasColorInformation) M_rgb = view->calib->trafo_rgb_to_depth.calib_inv * pose_d->M;
+	ITMRenderState_VH *renderState_vh = (ITMRenderState_VH*)renderState;
+
+	M_d = trackingState->pose_d->M;
+	if (TVoxel::hasColorInformation) M_rgb = view->calib->trafo_rgb_to_depth.calib_inv * trackingState->pose_d->M;
 
 	projParams_d = view->calib->intrinsics_d.projectionParamsSimple.all;
 	projParams_rgb = view->calib->intrinsics_rgb.projectionParamsSimple.all;
@@ -42,9 +46,11 @@ void ITMSceneReconstructionEngine_CPU<TVoxel,ITMVoxelBlockHash>::IntegrateIntoSc
 	Vector4u *rgb = view->rgb->GetData(false);
 	TVoxel *localVBA = scene->localVBA.GetVoxelBlocks();
 	ITMHashEntry *hashTable = scene->index.GetEntries();
-	int *liveEntryIDs = scene->index.GetLiveEntryIDs();
 
-	for (int entryId = 0; entryId < scene->index.noLiveEntries; entryId++)
+	int *liveEntryIDs = renderState_vh->GetLiveEntryIDs();
+	int noLiveEntries = renderState_vh->noLiveEntries;
+
+	for (int entryId = 0; entryId < noLiveEntries; entryId++)
 	{
 		Vector3i globalPos;
 		const ITMHashEntry &currentHashEntry = hashTable[liveEntryIDs[entryId]];
@@ -69,13 +75,15 @@ void ITMSceneReconstructionEngine_CPU<TVoxel,ITMVoxelBlockHash>::IntegrateIntoSc
 			pt_model.z = (float)(globalPos.z + z) * voxelSize;
 			pt_model.w = 1.0f;
 
-			ComputeUpdatedVoxelInfo<TVoxel::hasColorInformation,TVoxel>::compute(localVoxelBlock[locId], pt_model, M_d, projParams_d, M_rgb, projParams_rgb, mu, maxW, depth, depthImgSize, rgb, rgbImgSize);
+			ComputeUpdatedVoxelInfo<TVoxel::hasColorInformation,TVoxel>::compute(localVoxelBlock[locId], pt_model, M_d, 
+				projParams_d, M_rgb, projParams_rgb, mu, maxW, depth, depthImgSize, rgb, rgbImgSize);
 		}
 	}
 }
 
 template<class TVoxel>
-void ITMSceneReconstructionEngine_CPU<TVoxel,ITMVoxelBlockHash>::AllocateSceneFromDepth(ITMScene<TVoxel,ITMVoxelBlockHash> *scene, const ITMView *view, const ITMPose *pose_d)
+void ITMSceneReconstructionEngine_CPU<TVoxel, ITMVoxelBlockHash>::AllocateSceneFromDepth(ITMScene<TVoxel, ITMVoxelBlockHash> *scene, const ITMView *view,
+	const ITMTrackingState *trackingState, const ITMRenderState *renderState)
 {
 	Vector2i depthImgSize = view->depth->noDims;
 	float voxelSize = scene->sceneParams->voxelSize;
@@ -83,7 +91,9 @@ void ITMSceneReconstructionEngine_CPU<TVoxel,ITMVoxelBlockHash>::AllocateSceneFr
 	Matrix4f M_d, invM_d;
 	Vector4f projParams_d, invProjParams_d;
 
-	M_d = pose_d->M; M_d.inv(invM_d);
+	ITMRenderState_VH *renderState_vh = (ITMRenderState_VH*)renderState;
+
+	M_d = trackingState->pose_d->M; M_d.inv(invM_d);
 
 	projParams_d = view->calib->intrinsics_d.projectionParamsSimple.all;
 	invProjParams_d = projParams_d;
@@ -95,10 +105,10 @@ void ITMSceneReconstructionEngine_CPU<TVoxel,ITMVoxelBlockHash>::AllocateSceneFr
 	float *depth = view->depth->GetData(false);
 	int *voxelAllocationList = scene->localVBA.GetAllocationList();
 	int *excessAllocationList = scene->index.GetExcessAllocationList();
-	uchar *entriesVisibleType = scene->index.GetEntriesVisibleType();
 	ITMHashEntry *hashTable = scene->index.GetEntries();
 	ITMHashCacheState *cacheStates = scene->useSwapping ? scene->globalCache->GetCacheStates(false) : 0;
-	int *liveEntryIDs = scene->index.GetLiveEntryIDs();
+	int *liveEntryIDs = renderState_vh->GetLiveEntryIDs();
+	uchar *entriesVisibleType = renderState_vh->GetEntriesVisibleType();
 	int noTotalEntries = scene->index.noVoxelBlocks;
 
 	bool useSwapping = scene->useSwapping;
@@ -180,42 +190,14 @@ void ITMSceneReconstructionEngine_CPU<TVoxel,ITMVoxelBlockHash>::AllocateSceneFr
 
 		if ((hashVisibleType == 0 && hashEntry.ptr >= 0) || hashVisibleType == 2)
 		{
-			Vector3f pt_image, buff3f;
+			bool isVisibleEnlarged = false;
 
-			int noInvisible = 0, noInvisibleEnlarged = 0;
-
-			pt_image = hashEntry.pos.toFloat() * (float)SDF_BLOCK_SIZE * voxelSize;
-			buff3f = M_d * pt_image;
-
-			if (buff3f.z > 1e-10f)
+			if (useSwapping)
 			{
-				for (int x = 0; x <= 1; x++) for (int y = 0; y <= 1; y++) for (int z = 0; z <= 1; z++)
-				{
-					Vector3f off((float)x, (float)y, (float)z);
-
-					pt_image = (hashEntry.pos.toFloat() + off) * (float)SDF_BLOCK_SIZE * voxelSize;
-
-					buff3f = M_d * pt_image;
-
-					pt_image.x = projParams_d.x * buff3f.x / buff3f.z + projParams_d.z;
-					pt_image.y = projParams_d.y * buff3f.y / buff3f.z + projParams_d.w;
-
-					if (!(pt_image.x >= 0 && pt_image.x < depthImgSize.x && pt_image.y >= 0 && pt_image.y < depthImgSize.y)) noInvisible++;
-
-					if (useSwapping)
-					{
-						Vector4i lims;
-						lims.x = -depthImgSize.x / 8; lims.y = depthImgSize.x + depthImgSize.x / 8;
-						lims.z = -depthImgSize.y / 8; lims.w = depthImgSize.y + depthImgSize.y / 8;
-
-						if (!(pt_image.x >= lims.x && pt_image.x < lims.y && pt_image.y >= lims.z && pt_image.y < lims.w)) noInvisibleEnlarged++;
-					}
-				}
-
-				hashVisibleType = noInvisible < 8;
-
-				if (useSwapping) entriesVisibleType[targetIdx] = noInvisibleEnlarged < 8;
+				checkBlockVisibility<true>(hashVisibleType, isVisibleEnlarged, hashEntry.pos, M_d, projParams_d, voxelSize, depthImgSize);
+				entriesVisibleType[targetIdx] = isVisibleEnlarged;
 			}
+			else checkBlockVisibility<false>(hashVisibleType, isVisibleEnlarged, hashEntry.pos, M_d, projParams_d, voxelSize, depthImgSize);
 		}
 
 		if (useSwapping)
@@ -224,7 +206,7 @@ void ITMSceneReconstructionEngine_CPU<TVoxel,ITMVoxelBlockHash>::AllocateSceneFr
 		}
 
 		if (hashVisibleType > 0)
-		{
+		{	
 			liveEntryIDs[hashIdxLive] = targetIdx;
 			hashIdxLive++;
 		}
@@ -246,7 +228,7 @@ void ITMSceneReconstructionEngine_CPU<TVoxel,ITMVoxelBlockHash>::AllocateSceneFr
 		}
 	}
 
-	scene->index.noLiveEntries = hashIdxLive;
+	renderState_vh->noLiveEntries = hashIdxLive;
 	scene->localVBA.lastFreeBlockId = lastFreeVoxelBlockId;
 	scene->index.lastFreeExcessListId = lastFreeExcessListId;
 }
@@ -260,11 +242,13 @@ ITMSceneReconstructionEngine_CPU<TVoxel,ITMPlainVoxelArray>::~ITMSceneReconstruc
 {}
 
 template<class TVoxel>
-void ITMSceneReconstructionEngine_CPU<TVoxel,ITMPlainVoxelArray>::AllocateSceneFromDepth(ITMScene<TVoxel,ITMPlainVoxelArray> *scene, const ITMView *view, const ITMPose *pose_d)
+void ITMSceneReconstructionEngine_CPU<TVoxel, ITMPlainVoxelArray>::AllocateSceneFromDepth(ITMScene<TVoxel, ITMPlainVoxelArray> *scene, const ITMView *view,
+	const ITMTrackingState *trackingState, const ITMRenderState *renderState)
 {}
 
 template<class TVoxel>
-void ITMSceneReconstructionEngine_CPU<TVoxel,ITMPlainVoxelArray>::IntegrateIntoScene(ITMScene<TVoxel,ITMPlainVoxelArray> *scene, const ITMView *view, const ITMPose *pose_d)
+void ITMSceneReconstructionEngine_CPU<TVoxel, ITMPlainVoxelArray>::IntegrateIntoScene(ITMScene<TVoxel, ITMPlainVoxelArray> *scene, const ITMView *view,
+	const ITMTrackingState *trackingState, const ITMRenderState *renderState)
 {
 	Vector2i rgbImgSize = view->rgb->noDims;
 	Vector2i depthImgSize = view->depth->noDims;
@@ -273,8 +257,8 @@ void ITMSceneReconstructionEngine_CPU<TVoxel,ITMPlainVoxelArray>::IntegrateIntoS
 	Matrix4f M_d, M_rgb;
 	Vector4f projParams_d, projParams_rgb;
 
-	M_d = pose_d->M;
-	if (TVoxel::hasColorInformation) M_rgb = view->calib->trafo_rgb_to_depth.calib_inv * pose_d->M;
+	M_d = trackingState->pose_d->M;
+	if (TVoxel::hasColorInformation) M_rgb = view->calib->trafo_rgb_to_depth.calib_inv * trackingState->pose_d->M;
 
 	projParams_d = view->calib->intrinsics_d.projectionParamsSimple.all;
 	projParams_rgb = view->calib->intrinsics_rgb.projectionParamsSimple.all;

@@ -3,6 +3,7 @@
 #include "ITMSwappingEngine_CUDA.h"
 #include "ITMCUDAUtils.h"
 #include "../../DeviceAgnostic/ITMSwappingEngine.h"
+#include "../../../Objects/ITMRenderState_VH.h"
 
 using namespace ITMLib::Engine;
 
@@ -92,7 +93,7 @@ int ITMSwappingEngine_CUDA<TVoxel,ITMVoxelBlockHash>::DownloadFromGlobalMemory(I
 }
 
 template<class TVoxel>
-void ITMSwappingEngine_CUDA<TVoxel,ITMVoxelBlockHash>::IntegrateGlobalIntoLocal(ITMScene<TVoxel,ITMVoxelBlockHash> *scene, ITMView *view)
+void ITMSwappingEngine_CUDA<TVoxel, ITMVoxelBlockHash>::IntegrateGlobalIntoLocal(ITMScene<TVoxel, ITMVoxelBlockHash> *scene, ITMView *view, ITMRenderState *renderState)
 {
 	ITMGlobalCache<TVoxel> *globalCache = scene->globalCache;
 
@@ -117,14 +118,14 @@ void ITMSwappingEngine_CUDA<TVoxel,ITMVoxelBlockHash>::IntegrateGlobalIntoLocal(
 }
 
 template<class TVoxel>
-void ITMSwappingEngine_CUDA<TVoxel,ITMVoxelBlockHash>::SaveToGlobalMemory(ITMScene<TVoxel,ITMVoxelBlockHash> *scene, ITMView *view)
+void ITMSwappingEngine_CUDA<TVoxel, ITMVoxelBlockHash>::SaveToGlobalMemory(ITMScene<TVoxel, ITMVoxelBlockHash> *scene, ITMView *view, ITMRenderState *renderState)
 {
 	ITMGlobalCache<TVoxel> *globalCache = scene->globalCache;
 
 	ITMHashCacheState *cacheStates = globalCache->GetCacheStates(true);
 
 	ITMHashEntry *hashTable = scene->index.GetEntries();
-	uchar *entriesVisibleType = scene->index.GetEntriesVisibleType();
+	uchar *entriesVisibleType = ((ITMRenderState_VH*)renderState)->GetEntriesVisibleType();
 	
 	TVoxel *syncedVoxelBlocks_local = globalCache->GetSyncedVoxelBlocks(true);
 	bool *hasSyncedData_local = globalCache->GetHasSyncedData(true);

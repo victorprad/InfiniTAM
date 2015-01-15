@@ -7,8 +7,6 @@
 
 #include "Objects/ITMScene.h"
 #include "Objects/ITMView.h"
-#include "Objects/ITMTrackingState.h"
-#include "Objects/ITMVisualisationState.h"
 
 #include "Engine/ITMLowLevelEngine.h"
 #include "Engine/DeviceSpecific/CPU/ITMLowLevelEngine_CPU.h"

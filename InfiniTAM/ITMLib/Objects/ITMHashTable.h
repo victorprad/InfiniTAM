@@ -26,29 +26,19 @@ namespace ITMLib
             
 			/** The actual data in the hash table. */
 			DEVICEPTR(ITMHashEntry) *entries_all;
+
 			/** Identifies which entries of the overflow
 			    list are allocated. This is used if too
 			    many hash collisions caused the buckets to
 			    overflow.
 			*/
 			DEVICEPTR(int) *excessAllocationList;
-			/** A list of "live entries", that are currently
-			    being processed by integration and tracker.
-			*/
-			DEVICEPTR(int) *liveEntryIDs;
-			/** A list of "visible entries", that are
-			    currently being processed by integration
-			    and tracker.
-			*/
-			DEVICEPTR(uchar) *entriesVisibleType;
           
 #ifndef __METALC__
 
 #ifdef COMPILE_WITH_METAL
             void *entries_all_mb;
             void *excessAllocationList_mb;
-            void *liveEntryIDs_mb;
-            void *entriesVisibleType_mb;
 #endif
             
             ITMHashTable(bool useCudaAlloc = false)
@@ -56,26 +46,20 @@ namespace ITMLib
 				this->usedCudaAlloc = useCudaAlloc;
 
 #ifdef COMPILE_WITH_METAL
-                allocateMetalData((void**)&entriesVisibleType, (void**)&entriesVisibleType_mb, noTotalEntries * sizeof(uchar), true);
                 allocateMetalData((void**)&entries_all, (void**)&entries_all_mb, noTotalEntries * sizeof(ITMHashEntry), true);
                 allocateMetalData((void**)&excessAllocationList, (void**)&excessAllocationList_mb, SDF_EXCESS_LIST_SIZE * sizeof(int), true);
-                allocateMetalData((void**)&liveEntryIDs, (void**)&liveEntryIDs_mb, SDF_LOCAL_BLOCK_NUM * sizeof(int), true);
 #else
 				if (useCudaAlloc)
 				{
 #ifndef COMPILE_WITHOUT_CUDA
 					ITMSafeCall(cudaMalloc((void**)&entries_all, noTotalEntries * sizeof(ITMHashEntry)));
 					ITMSafeCall(cudaMalloc((void**)&excessAllocationList, SDF_EXCESS_LIST_SIZE * sizeof(int)));
-					ITMSafeCall(cudaMalloc((void**)&liveEntryIDs, SDF_LOCAL_BLOCK_NUM * sizeof(int)));
-					ITMSafeCall(cudaMalloc((void**)&entriesVisibleType, noTotalEntries * sizeof(uchar)));
 #endif
 				}
 				else
 				{
 					entries_all = new ITMHashEntry[noTotalEntries];
 					excessAllocationList = new int[SDF_EXCESS_LIST_SIZE];
-					liveEntryIDs = new int[SDF_LOCAL_BLOCK_NUM];
-					entriesVisibleType = new uchar[noTotalEntries];
 				}
 #endif
             }
@@ -83,26 +67,20 @@ namespace ITMLib
             ~ITMHashTable()
             {
 #ifdef COMPILE_WITH_METAL
-                freeMetalData((void**)&entriesVisibleType, (void**)&entriesVisibleType_mb, noTotalEntries * sizeof(uchar), true);
                 freeMetalData((void**)&entries_all, (void**)&entriesVisibleType_mb, noTotalEntries * sizeof(ITMHashEntry), true);
                 freeMetalData((void**)&excessAllocationList, (void**)&excessAllocationList_mb, SDF_EXCESS_LIST_SIZE * sizeof(int), true);
-                freeMetalData((void**)&liveEntryIDs, (void**)&liveEntryIDs_mb, SDF_LOCAL_BLOCK_NUM * sizeof(int), true);
 #else
 				if (usedCudaAlloc)
 				{
 #ifndef COMPILE_WITHOUT_CUDA
 					ITMSafeCall(cudaFree(entries_all));
 					ITMSafeCall(cudaFree(excessAllocationList));
-					ITMSafeCall(cudaFree(liveEntryIDs));
-					ITMSafeCall(cudaFree(entriesVisibleType));
 #endif
 				}
 				else
 				{
 					delete entries_all;
 					delete excessAllocationList;
-					delete liveEntryIDs;
-					delete entriesVisibleType;
 				}
 #endif
             }

@@ -9,11 +9,11 @@ namespace ITMLib
 	namespace Engine
 	{
 		template<class TVoxel, class TIndex>
-		class ITMSceneReconstructionEngine_CUDA : public ITMSceneReconstructionEngine<TVoxel,TIndex>
+		class ITMSceneReconstructionEngine_CUDA : public ITMSceneReconstructionEngine < TVoxel, TIndex >
 		{};
 
 		template<class TVoxel>
-		class ITMSceneReconstructionEngine_CUDA<TVoxel,ITMVoxelBlockHash> : public ITMSceneReconstructionEngine<TVoxel,ITMVoxelBlockHash>
+		class ITMSceneReconstructionEngine_CUDA<TVoxel, ITMVoxelBlockHash> : public ITMSceneReconstructionEngine < TVoxel, ITMVoxelBlockHash >
 		{
 		private:
 			int *noAllocatedVoxelEntries_device, *noAllocatedExcessEntries_device, *noLiveEntries_device;
@@ -21,21 +21,25 @@ namespace ITMLib
 			Vector3s *blockCoords_device;
 
 		public:
-			void AllocateSceneFromDepth(ITMScene<TVoxel,ITMVoxelBlockHash> *scene, const ITMView *view, const ITMPose *pose);
-			
-			void IntegrateIntoScene(ITMScene<TVoxel,ITMVoxelBlockHash> *scene, const ITMView *view, const ITMPose *pose);
+			void AllocateSceneFromDepth(ITMScene<TVoxel, ITMVoxelBlockHash> *scene, const ITMView *view, const ITMTrackingState *trackingState,
+				const ITMRenderState *renderState);
+
+			void IntegrateIntoScene(ITMScene<TVoxel, ITMVoxelBlockHash> *scene, const ITMView *view, const ITMTrackingState *trackingState,
+				const ITMRenderState *renderState);
 
 			ITMSceneReconstructionEngine_CUDA(void);
 			~ITMSceneReconstructionEngine_CUDA(void);
 		};
 
 		template<class TVoxel>
-		class ITMSceneReconstructionEngine_CUDA<TVoxel,ITMPlainVoxelArray> : public ITMSceneReconstructionEngine<TVoxel,ITMPlainVoxelArray>
+		class ITMSceneReconstructionEngine_CUDA<TVoxel, ITMPlainVoxelArray> : public ITMSceneReconstructionEngine < TVoxel, ITMPlainVoxelArray >
 		{
 		public:
-			void AllocateSceneFromDepth(ITMScene<TVoxel,ITMPlainVoxelArray> *scene, const ITMView *view, const ITMPose *pose);
-			
-			void IntegrateIntoScene(ITMScene<TVoxel,ITMPlainVoxelArray> *scene, const ITMView *view, const ITMPose *pose);
+			void AllocateSceneFromDepth(ITMScene<TVoxel, ITMPlainVoxelArray> *scene, const ITMView *view, const ITMTrackingState *trackingState,
+				const ITMRenderState *renderState);
+
+			void IntegrateIntoScene(ITMScene<TVoxel, ITMPlainVoxelArray> *scene, const ITMView *view, const ITMTrackingState *trackingState,
+				const ITMRenderState *renderState);
 		};
 	}
 }

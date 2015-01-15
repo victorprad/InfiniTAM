@@ -57,7 +57,8 @@ namespace ITMLib
 			ITMLowLevelEngine *lowLevelEngine;
 			ITMSwappingEngine<ITMVoxel,ITMVoxelIndex> *swappingEngine;
 			ITMVisualisationEngine<ITMVoxel,ITMVoxelIndex> *visualisationEngine;
-			ITMVisualisationState *visualisationState;
+			ITMRenderState *renderState_freeview;
+
 		public:
 			enum GetImageType
 			{
@@ -69,10 +70,15 @@ namespace ITMLib
 
 			/// Pointer to the current model of the 3D scene
 			ITMScene<ITMVoxel,ITMVoxelIndex> *scene;
+
 			/// Pointer for storing the current input frame
 			ITMView *view;
+			
 			/// Pointer to the current camera pose and additional tracking information
 			ITMTrackingState *trackingState;
+
+			/// Pointer to information used by the raycaster
+			ITMRenderState *renderState_live;
 
 			/// Gives access to the current input frame
 			ITMView* GetView() { return view; }

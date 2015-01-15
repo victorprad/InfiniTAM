@@ -16,6 +16,7 @@
 #endif
 
 #include "ITMHashTable.h"
+#include "ITMRenderState.h"
 
 namespace ITMLib
 {
@@ -46,9 +47,6 @@ namespace ITMLib
 			bool dataIsOnGPU;
 
 		public:
-			/** Number of entries in the live list. */
-			int noLiveEntries;
-
 			int lastFreeExcessListId;
 
 #ifndef __METALC__
@@ -67,10 +65,6 @@ namespace ITMLib
 						hashData->noTotalEntries * sizeof(ITMHashEntry), cudaMemcpyHostToDevice));
 					ITMSafeCall(cudaMemcpy(hashData->excessAllocationList, hashData_host->excessAllocationList, 
 						SDF_EXCESS_LIST_SIZE * sizeof(int), cudaMemcpyHostToDevice));
-					ITMSafeCall(cudaMemcpy(hashData->liveEntryIDs, hashData_host->liveEntryIDs, 
-						SDF_LOCAL_BLOCK_NUM * sizeof(int), cudaMemcpyHostToDevice));
-					ITMSafeCall(cudaMemcpy(hashData->entriesVisibleType, hashData_host->entriesVisibleType, 
-						hashData->noTotalEntries * sizeof(uchar), cudaMemcpyHostToDevice));
 #endif
 					delete hashData_host;
 				}
@@ -86,22 +80,14 @@ namespace ITMLib
 			/** Get the list of actual entries in the hash table. */
 			_CPU_AND_GPU_CODE_ const ITMHashEntry *GetEntries(void) const { return hashData->entries_all; }
 			_CPU_AND_GPU_CODE_ ITMHashEntry *GetEntries(void) { return hashData->entries_all; }
+			
 			/** Get the list that identifies which entries of the
 			overflow list are allocated. This is used if too
 			many hash collisions caused the buckets to overflow.
 			*/
 			const int *GetExcessAllocationList(void) const { return hashData->excessAllocationList; }
 			int *GetExcessAllocationList(void) { return hashData->excessAllocationList; }
-			/** Get the list of "live entries", that are currently
-			processed by integration and tracker.
-			*/
-			const int *GetLiveEntryIDs(void) const { return hashData->liveEntryIDs; }
-			int *GetLiveEntryIDs(void) { return hashData->liveEntryIDs; }
-			/** Get the list of "visible entries", that are
-			currently processed by integration and tracker.
-			*/
-			uchar *GetEntriesVisibleType(void) { return hashData->entriesVisibleType; }
-
+			
 #ifdef COMPILE_WITH_METAL
 			void* GetEntries_MB(void) { return hashData->entries_all_mb; }
 			void* GetExcessAllocationList_MB(void) { return hashData->excessAllocationList_mb; }

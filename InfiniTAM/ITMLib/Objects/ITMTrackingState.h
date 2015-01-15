@@ -21,27 +21,6 @@ namespace ITMLib
 		{
 		public:
 			/** @brief
-			    Gives the raycasting operations an idea of the
-			    depth range to cover
-
-			    Each pixel contains an expected minimum and maximum
-			    depth. The raycasting step would use this
-			    information to reduce the range for searching an
-			    intersection with the actual surface. Should be
-			    updated by a ITMLib::Engine::ITMVisualisationEngine
-			    before any raycasting operation.
-			*/
-			ITMImage<Vector2f> *renderingRangeImage;
-			
-			/** @brief
-			    Visual rendering output of the scene.
-
-			    This is typically created as a by-product of
-			    raycasting operations.
-			*/
-			ITMUChar4Image *rendering;
-			
-			/** @brief
 			    Excerpt of the scene used by the tracker to align
 			    a new frame.
 
@@ -50,21 +29,11 @@ namespace ITMLib
 			*/
 			ITMPointCloud *pointCloud;
 
-			/** @brief
-			Raycast output image.
-
-			TODO add comment
-			*/
-			ITMFloat4Image *ptsRay;
-
 			/// Current pose of the depth camera.
 			ITMPose *pose_d;
 
 			ITMTrackingState(Vector2i imgSize, bool useGPU)
 			{
-				this->rendering = new ITMUChar4Image(imgSize, useGPU);
-				this->renderingRangeImage = new ITMImage<Vector2f>(imgSize, useGPU);
-				this->ptsRay = new ITMImage<Vector4f>(imgSize, useGPU);
 				this->pointCloud = new ITMPointCloud(imgSize, useGPU);
 				this->pose_d = new ITMPose();
 			}
@@ -72,9 +41,6 @@ namespace ITMLib
 			~ITMTrackingState(void)
 			{
 				delete pointCloud;
-				delete renderingRangeImage;
-				delete ptsRay;
-				delete rendering;
 				delete pose_d;
 			}
 

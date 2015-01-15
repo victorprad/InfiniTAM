@@ -2,6 +2,7 @@
 
 #include "ITMSwappingEngine_CPU.h"
 #include "../../DeviceAgnostic/ITMSwappingEngine.h"
+#include "../../../Objects/ITMRenderState_VH.h"
 
 using namespace ITMLib::Engine;
 
@@ -16,7 +17,7 @@ ITMSwappingEngine_CPU<TVoxel,ITMVoxelBlockHash>::~ITMSwappingEngine_CPU(void)
 }
 
 template<class TVoxel>
-int ITMSwappingEngine_CPU<TVoxel,ITMVoxelBlockHash>::DownloadFromGlobalMemory(ITMScene<TVoxel,ITMVoxelBlockHash> *scene, ITMView *view)
+int ITMSwappingEngine_CPU<TVoxel, ITMVoxelBlockHash>::DownloadFromGlobalMemory(ITMScene<TVoxel, ITMVoxelBlockHash> *scene, ITMView *view)
 {
 	ITMGlobalCache<TVoxel> *globalCache = scene->globalCache;
 
@@ -65,7 +66,7 @@ int ITMSwappingEngine_CPU<TVoxel,ITMVoxelBlockHash>::DownloadFromGlobalMemory(IT
 }
 
 template<class TVoxel>
-void ITMSwappingEngine_CPU<TVoxel,ITMVoxelBlockHash>::IntegrateGlobalIntoLocal(ITMScene<TVoxel,ITMVoxelBlockHash> *scene, ITMView *view)
+void ITMSwappingEngine_CPU<TVoxel, ITMVoxelBlockHash>::IntegrateGlobalIntoLocal(ITMScene<TVoxel, ITMVoxelBlockHash> *scene, ITMView *view, ITMRenderState *renderState)
 {
 	ITMGlobalCache<TVoxel> *globalCache = scene->globalCache;
 
@@ -103,14 +104,14 @@ void ITMSwappingEngine_CPU<TVoxel,ITMVoxelBlockHash>::IntegrateGlobalIntoLocal(I
 }
 
 template<class TVoxel>
-void ITMSwappingEngine_CPU<TVoxel,ITMVoxelBlockHash>::SaveToGlobalMemory(ITMScene<TVoxel,ITMVoxelBlockHash> *scene, ITMView *view)
+void ITMSwappingEngine_CPU<TVoxel, ITMVoxelBlockHash>::SaveToGlobalMemory(ITMScene<TVoxel, ITMVoxelBlockHash> *scene, ITMView *view, ITMRenderState *renderState)
 {
 	ITMGlobalCache<TVoxel> *globalCache = scene->globalCache;
 
 	ITMHashCacheState *cacheStates = globalCache->GetCacheStates(false);
 
 	ITMHashEntry *hashTable = scene->index.GetEntries();
-	uchar *entriesVisibleType = scene->index.GetEntriesVisibleType();
+	uchar *entriesVisibleType = ((ITMRenderState_VH*)renderState)->GetEntriesVisibleType();
 
 	TVoxel *syncedVoxelBlocks_local = globalCache->GetSyncedVoxelBlocks(false);
 	bool *hasSyncedData_local = globalCache->GetHasSyncedData(false);
