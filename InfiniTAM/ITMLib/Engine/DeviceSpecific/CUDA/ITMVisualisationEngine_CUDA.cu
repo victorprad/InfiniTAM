@@ -285,14 +285,21 @@ void CreateICPMaps_common(const ITMScene<TVoxel, TIndex> *scene, const ITMView *
 	Vector2f *minmaxdata = renderState->renderingRangeImage->GetData(true);
 	Vector4f *pointsRay = renderState->raycastResult->GetData(true);
 
-	dim3 cudaBlockSize(8, 8);
-	dim3 gridSize((int)ceil((float)imgSize.x / (float)cudaBlockSize.x), (int)ceil((float)imgSize.y / (float)cudaBlockSize.y));
+	{
+		dim3 cudaBlockSize(16, 16);
+		dim3 gridSize((int)ceil((float)imgSize.x / (float)cudaBlockSize.x), (int)ceil((float)imgSize.y / (float)cudaBlockSize.y));
 
-	genericRaycast_device<TVoxel, TIndex> << <gridSize, cudaBlockSize >> >(pointsRay, scene->localVBA.GetVoxelBlocks(),
-		scene->index.getIndexData(), imgSize, invM, projParams, oneOverVoxelSize, minmaxdata, mu);
+		genericRaycast_device<TVoxel, TIndex> << <gridSize, cudaBlockSize >> >(pointsRay, scene->localVBA.GetVoxelBlocks(),
+			scene->index.getIndexData(), imgSize, invM, projParams, oneOverVoxelSize, minmaxdata, mu);
+	}
 
-	renderICP_device<TVoxel, TIndex> << <gridSize, cudaBlockSize >> >(outRendering, pointsMap, normalsMap, pointsRay,
-		scene->localVBA.GetVoxelBlocks(), scene->index.getIndexData(), voxelSize, imgSize, lightSource);
+	{
+		dim3 cudaBlockSize(16, 12);
+		dim3 gridSize((int)ceil((float)imgSize.x / (float)cudaBlockSize.x), (int)ceil((float)imgSize.y / (float)cudaBlockSize.y));
+
+		renderICP_device<TVoxel, TIndex> << <gridSize, cudaBlockSize >> >(outRendering, pointsMap, normalsMap, pointsRay,
+			scene->localVBA.GetVoxelBlocks(), scene->index.getIndexData(), voxelSize, imgSize, lightSource);
+	}
 
 	ITMSafeCall(cudaThreadSynchronize());
 }
