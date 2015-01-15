@@ -18,9 +18,15 @@ ITMLibSettings::ITMLibSettings(void)
 	/// skips every other point when using the colour tracker
 	skipPoints = true;
 
-	//deviceType = DEVICE_CPU;
+#ifndef COMPILE_WITHOUT_CUDA
 	deviceType = DEVICE_CUDA;
-	//deviceType = DEVICE_METAL;
+#else
+#ifdef COMPILE_WITH_METAL
+	deviceType = DEVICE_METAL;
+#else
+	deviceType = DEVICE_CPU;
+#endif
+#endif
 
 	/// enables or disables swapping. HERE BE DRAGONS: It should work, but requires more testing
 	useSwapping = false;
