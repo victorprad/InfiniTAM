@@ -21,17 +21,17 @@ namespace ITMLib
 
 			bool manageData;
 
-			ITMViewHierarchyLevel(Vector2i imgSize, int levelId, bool rotationOnly, bool useGPU, bool skipAllocation)
+			ITMViewHierarchyLevel(Vector2i imgSize, int levelId, bool rotationOnly, MemoryDeviceType memoryType, bool skipAllocation)
 			{
 				this->manageData = !skipAllocation;
 				this->levelId = levelId;
 				this->rotationOnly = rotationOnly;
 
 				if (!skipAllocation) {
-					this->rgb = new ITMUChar4Image(imgSize, true, useGPU);
-					this->depth = new ITMFloatImage(imgSize, true, useGPU);
-					this->gradientX_rgb = new ITMShort4Image(imgSize, true, useGPU);
-					this->gradientY_rgb = new ITMShort4Image(imgSize, true, useGPU);
+					this->rgb = new ITMUChar4Image(imgSize, memoryType);
+					this->depth = new ITMFloatImage(imgSize, memoryType);
+					this->gradientX_rgb = new ITMShort4Image(imgSize, memoryType);
+					this->gradientY_rgb = new ITMShort4Image(imgSize, memoryType);
 				}
 			}
 

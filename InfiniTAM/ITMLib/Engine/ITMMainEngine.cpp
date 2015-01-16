@@ -11,7 +11,9 @@ ITMMainEngine::ITMMainEngine(const ITMLibSettings *settings, const ITMRGBDCalib 
 
 	this->settings = new ITMLibSettings(*settings);
 
-	this->scene = new ITMScene<ITMVoxel,ITMVoxelIndex>(&(settings->sceneParams), settings->useSwapping, settings->deviceType == ITMLibSettings::DEVICE_CUDA);
+	MemoryDeviceType memoryType = settings->deviceType == ITMLibSettings::DEVICE_CUDA ? MEMORYDEVICE_CUDA : MEMORYDEVICE_CPU;
+
+	this->scene = new ITMScene<ITMVoxel, ITMVoxelIndex>(&(settings->sceneParams), settings->useSwapping, memoryType);
 
 	this->trackingState = ITMTrackerFactory::MakeTrackingState(*settings, imgSize_rgb, imgSize_d);
 	trackingState->pose_d->SetFrom(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f); 
@@ -146,7 +148,7 @@ void ITMMainEngine::GetImage(ITMUChar4Image *out, GetImageType getImageType, boo
 	case ITMMainEngine::InfiniTAM_IMAGE_ORIGINAL_RGB:
 		if (settings->deviceType == ITMLibSettings::DEVICE_CUDA) view->rgb->UpdateHostFromDevice();
 		out->ChangeDims(view->rgb->noDims);
-		out->SetFrom(view->rgb);
+		out->SetFrom(view->rgb, ITMMemoryBlock<Vector4u>::CPU_TO_CPU);
 		break;
 	case ITMMainEngine::InfiniTAM_IMAGE_ORIGINAL_DEPTH:
 		if (settings->deviceType == ITMLibSettings::DEVICE_CUDA) view->depth->UpdateHostFromDevice();
@@ -156,7 +158,7 @@ void ITMMainEngine::GetImage(ITMUChar4Image *out, GetImageType getImageType, boo
 	case ITMMainEngine::InfiniTAM_IMAGE_SCENERAYCAST:
 		if (settings->deviceType == ITMLibSettings::DEVICE_CUDA) renderState_live->raycastImage->UpdateHostFromDevice();
 		out->ChangeDims(renderState_live->raycastImage->noDims);
-		out->SetFrom(renderState_live->raycastImage);
+		out->SetFrom(renderState_live->raycastImage, ITMMemoryBlock<Vector4u>::CPU_TO_CPU);
 		break;
 	case ITMMainEngine::InfiniTAM_IMAGE_SCENERAYCAST_FREECAMERA:
 		if (pose != NULL && intrinsics != NULL)
@@ -168,7 +170,7 @@ void ITMMainEngine::GetImage(ITMUChar4Image *out, GetImageType getImageType, boo
 			visualisationEngine->RenderImage(scene, pose, intrinsics, renderState_freeview, renderState_freeview->raycastImage, useColour);
 
 			if (settings->deviceType == ITMLibSettings::DEVICE_CUDA) renderState_freeview->raycastImage->UpdateHostFromDevice();
-			out->SetFrom(renderState_freeview->raycastImage);
+			out->SetFrom(renderState_freeview->raycastImage, ITMMemoryBlock<Vector4u>::CPU_TO_CPU);
 		}
 		break;
 	};

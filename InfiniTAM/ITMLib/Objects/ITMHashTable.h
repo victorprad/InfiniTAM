@@ -2,11 +2,9 @@
 
 #pragma once
 
-#ifndef __METALC__
 #include <stdlib.h>
-#endif
-
 #include "../Utils/ITMLibDefines.h"
+#include "ITMMemoryBlock.h"
 
 namespace ITMLib
 {
@@ -19,80 +17,41 @@ namespace ITMLib
 		class ITMHashTable
 		{
 		private:
-			bool usedCudaAlloc;
-
 			public:
 			static const CONSTANT(int) noTotalEntries = SDF_BUCKET_NUM * SDF_ENTRY_NUM_PER_BUCKET + SDF_EXCESS_LIST_SIZE;
             
 			/** The actual data in the hash table. */
-			DEVICEPTR(ITMHashEntry) *entries_all;
+			ITMMemoryBlock<ITMHashEntry> *entries;
 
 			/** Identifies which entries of the overflow
-			    list are allocated. This is used if too
-			    many hash collisions caused the buckets to
-			    overflow.
+			list are allocated. This is used if too
+			many hash collisions caused the buckets to
+			overflow.
 			*/
-			DEVICEPTR(int) *excessAllocationList;
+			ITMMemoryBlock<int> *excessAllocationList;
           
-#ifndef __METALC__
-
-#ifdef COMPILE_WITH_METAL
-            void *entries_all_mb;
-            void *excessAllocationList_mb;
-#endif
-            
-            ITMHashTable(bool useCudaAlloc = false)
+            ITMHashTable(MemoryDeviceType memoryType)
             {
-				this->usedCudaAlloc = useCudaAlloc;
-
-#ifdef COMPILE_WITH_METAL
-                allocateMetalData((void**)&entries_all, (void**)&entries_all_mb, noTotalEntries * sizeof(ITMHashEntry), true);
-                allocateMetalData((void**)&excessAllocationList, (void**)&excessAllocationList_mb, SDF_EXCESS_LIST_SIZE * sizeof(int), true);
-#else
-				if (useCudaAlloc)
-				{
-#ifndef COMPILE_WITHOUT_CUDA
-					ITMSafeCall(cudaMalloc((void**)&entries_all, noTotalEntries * sizeof(ITMHashEntry)));
-					ITMSafeCall(cudaMalloc((void**)&excessAllocationList, SDF_EXCESS_LIST_SIZE * sizeof(int)));
-#endif
-				}
-				else
-				{
-					entries_all = new ITMHashEntry[noTotalEntries];
-					excessAllocationList = new int[SDF_EXCESS_LIST_SIZE];
-				}
-#endif
+				entries = new ITMMemoryBlock<ITMHashEntry>(noTotalEntries, memoryType);
+				excessAllocationList = new ITMMemoryBlock<int>(SDF_EXCESS_LIST_SIZE, memoryType);
             }
             
             ~ITMHashTable()
             {
-#ifdef COMPILE_WITH_METAL
-                freeMetalData((void**)&entries_all, (void**)&entriesVisibleType_mb, noTotalEntries * sizeof(ITMHashEntry), true);
-                freeMetalData((void**)&excessAllocationList, (void**)&excessAllocationList_mb, SDF_EXCESS_LIST_SIZE * sizeof(int), true);
-#else
-				if (usedCudaAlloc)
-				{
-#ifndef COMPILE_WITHOUT_CUDA
-					ITMSafeCall(cudaFree(entries_all));
-					ITMSafeCall(cudaFree(excessAllocationList));
-#endif
-				}
-				else
-				{
-					delete entries_all;
-					delete excessAllocationList;
-				}
-#endif
+				delete entries;
+				delete excessAllocationList;
             }
             
 			void ResetData(void)
 			{
-				memset(entries_all, 0, noTotalEntries * sizeof(ITMHashEntry));
-				for (int i = 0; i < noTotalEntries; i++) { entries_all[i].ptr = -2; }
+				ITMHashEntry *entries = this->entries->GetData(MEMORYDEVICE_CPU);
+				int *excessAllocationList = this->excessAllocationList->GetData(MEMORYDEVICE_CPU);
+
+				memset(entries, 0, noTotalEntries * sizeof(ITMHashEntry));
+				for (int i = 0; i < noTotalEntries; i++) { entries[i].ptr = -2; }
 
 				for (int i = 0; i < SDF_EXCESS_LIST_SIZE; i++) excessAllocationList[i] = i;
 			}
-#endif
 		};
 	}
 } 

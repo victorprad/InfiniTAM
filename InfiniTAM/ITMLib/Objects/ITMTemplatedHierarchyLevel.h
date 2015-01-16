@@ -20,13 +20,13 @@ namespace ITMLib
 			Vector4f intrinsics;
 			bool manageData;
 
-			ITMTemplatedHierarchyLevel(Vector2i imgSize, int levelId, bool rotationOnly, bool useGPU, bool skipAllocation = false)
+			ITMTemplatedHierarchyLevel(Vector2i imgSize, int levelId, bool rotationOnly, MemoryDeviceType memoryType, bool skipAllocation = false)
 			{
 				this->manageData = !skipAllocation;
 				this->levelId = levelId;
 				this->rotationOnly = rotationOnly;
 
-				if (!skipAllocation) this->depth = new ImageType(imgSize, true, useGPU);
+				if (!skipAllocation) this->depth = new ImageType(imgSize, memoryType);
 			}
 
 			void UpdateHostFromDevice()

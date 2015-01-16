@@ -6,11 +6,8 @@
 #include <stdlib.h>
 #endif
 
-#ifdef COMPILE_WITH_METAL
-#include "../Engine/DeviceSpecific/Metal/ITMMetalContext.h"
-#endif
-
 #include "../Utils/ITMLibDefines.h"
+#include "ITMMemoryBlock.h"
 
 namespace ITMLib
 {
@@ -43,57 +40,41 @@ namespace ITMLib
 			struct IndexCache {};
 
 		private:
-			DEVICEPTR(IndexData) *indexData_device;
-			DEVICEPTR(IndexData) *indexData_host;
+			ITMMemoryBlock<IndexData> *indexData;
 
-			bool dataIsOnGPU;
-
-#ifdef COMPILE_WITH_METAL
-			void *indexData_mb;
-#endif
+			MemoryDeviceType memoryType;
 
 #ifndef __METALC__
 		public:
-			ITMPlainVoxelArray(bool allocateGPU)
+			ITMPlainVoxelArray(MemoryDeviceType memoryType)
 			{
-				dataIsOnGPU = allocateGPU;
+				this->memoryType = memoryType;
 
-#ifdef COMPILE_WITH_METAL
-				allocateMetalData((void**)&indexData_host, (void**)&indexData_mb, sizeof(ITMVoxelArrayInfo), true);
-				indexData_host[0] = IndexData();
-#else
-				indexData_host = new IndexData();
-#endif
+				if (memoryType == MEMORYDEVICE_CUDA) indexData = new ITMMemoryBlock<IndexData>(1, true, true);
+				else indexData = new ITMMemoryBlock<IndexData>(1, true, false);
 
-				if (allocateGPU)
-				{
-#ifndef COMPILE_WITHOUT_CUDA
-					ITMSafeCall(cudaMalloc((void**)&indexData_device, sizeof(IndexData)));
-					ITMSafeCall(cudaMemcpy(indexData_device, indexData_host, sizeof(IndexData), cudaMemcpyHostToDevice));
-#endif
-				}
-				else indexData_device = NULL;
+				indexData->GetData(MEMORYDEVICE_CPU)[0] = IndexData();
+				indexData->UpdateDeviceFromHost();
 			}
 
 			~ITMPlainVoxelArray(void)
 			{
-				if (indexData_device != NULL) {
-#ifdef COMPILE_WITH_METAL
-					freeMetalData((void**)&indexData_host, (void**)&indexData_mb, sizeof(IndexData), true);
-#endif
-#ifndef COMPILE_WITHOUT_CUDA
-					ITMSafeCall(cudaFree(indexData_device));
-#endif
-				}
+				delete indexData;
 			}
 
 			/** Maximum number of total entries. */
 			int getNumAllocatedVoxelBlocks(void) { return 1; }
-			int getVoxelBlockSize(void) { return indexData_host->size.x * indexData_host->size.y * indexData_host->size.z; }
+			int getVoxelBlockSize(void) 
+			{ 
+				return indexData->GetData(MEMORYDEVICE_CPU)->size.x * 
+					indexData->GetData(MEMORYDEVICE_CPU)->size.y * 
+					indexData->GetData(MEMORYDEVICE_CPU)->size.z;
+			}
 
-			const Vector3i getVolumeSize(void) { return indexData_host->size; }
+			const Vector3i getVolumeSize(void) { return indexData->GetData(MEMORYDEVICE_CPU)->size; }
 
-			const IndexData* getIndexData(void) const { if (dataIsOnGPU) return indexData_device; else return indexData_host; }
+			const IndexData* getIndexData(void) const { return indexData->GetData(memoryType); }
+
 #ifdef COMPILE_WITH_METAL
 			const void *getIndexData_MB() const { return indexData_mb; }
 #endif

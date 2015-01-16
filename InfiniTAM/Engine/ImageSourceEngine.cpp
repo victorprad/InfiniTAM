@@ -68,13 +68,13 @@ void ImageFileReader::getImages(ITMView *out)
 {
 	bool bUsedCache = false;
 	if (cached_rgb != NULL) {
-		out->rgb->SetFrom(cached_rgb);
+		out->rgb->SetFrom(cached_rgb, ITMMemoryBlock<Vector4u>::CPU_TO_CPU);
 		delete cached_rgb;
 		cached_rgb = NULL;
 		bUsedCache = true;
 	}
 	if (cached_depth != NULL) {
-		out->rawDepth->SetFrom(cached_depth);
+		out->rawDepth->SetFrom(cached_depth, ITMMemoryBlock<short>::CPU_TO_CPU);
 		delete cached_depth;
 		cached_depth = NULL;
 		bUsedCache = true;

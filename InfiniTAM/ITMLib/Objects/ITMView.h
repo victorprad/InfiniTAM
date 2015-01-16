@@ -41,14 +41,14 @@ namespace ITMLib
 			/// Raw disparity image, if available according to @ref inputImageType.
 			ITMShortImage *rawDepth; 
 
-			ITMView(const ITMRGBDCalib & calib, Vector2i imgSize_rgb, Vector2i imgSize_d, bool useGPU)
+			ITMView(const ITMRGBDCalib & calib, Vector2i imgSize_rgb, Vector2i imgSize_d, bool allocateGPU)
 			{
 				this->calib = new ITMRGBDCalib(calib);
 
-				this->rgb = new ITMUChar4Image(imgSize_rgb, true, useGPU);
-				this->depth = new ITMFloatImage(imgSize_d, true, useGPU);
+				this->rgb = new ITMUChar4Image(imgSize_rgb, true, allocateGPU);
+				this->depth = new ITMFloatImage(imgSize_d, true, allocateGPU);
 
-				this->rawDepth = new ITMShortImage(imgSize_d, true, useGPU);
+				this->rawDepth = new ITMShortImage(imgSize_d, true, allocateGPU);
 				this->inputImageType = InfiniTAM_DISPARITY_IMAGE;
 			}
 

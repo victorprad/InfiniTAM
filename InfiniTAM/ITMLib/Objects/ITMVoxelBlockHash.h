@@ -7,13 +7,6 @@
 #endif
 
 #include "../Utils/ITMLibDefines.h"
-#ifndef COMPILE_WITHOUT_CUDA
-#include "../Engine/DeviceSpecific/CUDA/ITMCUDADefines.h"
-#endif
-
-#ifdef COMPILE_WITH_METAL
-#include "../Engine/DeviceSpecific/Metal/ITMMetalContext.h"
-#endif
 
 #include "ITMHashTable.h"
 #include "ITMRenderState.h"
@@ -44,27 +37,25 @@ namespace ITMLib
 
 		private:
 			DEVICEPTR(ITMHashTable) *hashData;
-			bool dataIsOnGPU;
+			MemoryDeviceType memoryType;
 
 		public:
 			int lastFreeExcessListId;
 
 #ifndef __METALC__
-			ITMVoxelBlockHash(bool allocateGPU)
+			ITMVoxelBlockHash(MemoryDeviceType memoryType)
 			{
-				this->dataIsOnGPU = allocateGPU;
+				this->memoryType = memoryType;
 
-				ITMHashTable *hashData_host = new ITMHashTable(false);
+				ITMHashTable *hashData_host = new ITMHashTable(MEMORYDEVICE_CPU);
 				hashData_host->ResetData();
 
-				if (allocateGPU)
+				if (memoryType == MEMORYDEVICE_CUDA)
 				{
 #ifndef COMPILE_WITHOUT_CUDA
-					hashData = new ITMHashTable(true);
-					ITMSafeCall(cudaMemcpy(hashData->entries_all, hashData_host->entries_all, 
-						hashData->noTotalEntries * sizeof(ITMHashEntry), cudaMemcpyHostToDevice));
-					ITMSafeCall(cudaMemcpy(hashData->excessAllocationList, hashData_host->excessAllocationList, 
-						SDF_EXCESS_LIST_SIZE * sizeof(int), cudaMemcpyHostToDevice));
+					hashData = new ITMHashTable(MEMORYDEVICE_CUDA);
+					hashData->entries->SetFrom(hashData_host->entries, ITMMemoryBlock<ITMHashEntry>::CPU_TO_CUDA);
+					hashData->excessAllocationList->SetFrom(hashData_host->excessAllocationList, ITMMemoryBlock<int>::CPU_TO_CUDA);
 #endif
 					delete hashData_host;
 				}
@@ -78,15 +69,15 @@ namespace ITMLib
 			}
 
 			/** Get the list of actual entries in the hash table. */
-			_CPU_AND_GPU_CODE_ const ITMHashEntry *GetEntries(void) const { return hashData->entries_all; }
-			_CPU_AND_GPU_CODE_ ITMHashEntry *GetEntries(void) { return hashData->entries_all; }
+			const ITMHashEntry *GetEntries(void) const { return hashData->entries->GetData(memoryType); }
+			ITMHashEntry *GetEntries(void) { return hashData->entries->GetData(memoryType); }
 			
 			/** Get the list that identifies which entries of the
 			overflow list are allocated. This is used if too
 			many hash collisions caused the buckets to overflow.
 			*/
-			const int *GetExcessAllocationList(void) const { return hashData->excessAllocationList; }
-			int *GetExcessAllocationList(void) { return hashData->excessAllocationList; }
+			const int *GetExcessAllocationList(void) const { return hashData->excessAllocationList->GetData(memoryType); }
+			int *GetExcessAllocationList(void) { return hashData->excessAllocationList->GetData(memoryType); }
 			
 #ifdef COMPILE_WITH_METAL
 			void* GetEntries_MB(void) { return hashData->entries_all_mb; }
@@ -96,7 +87,7 @@ namespace ITMLib
 			void* getIndexData_MB(void) const { return hashData->entries_all_mb; }
 #endif
 
-			_CPU_AND_GPU_CODE_ inline const IndexData* getIndexData(void) const { return hashData->entries_all; }
+			inline const IndexData* getIndexData(void) const { return hashData->entries->GetData(memoryType); }
 
 			/** Maximum number of total entries. */
 			int getNumAllocatedVoxelBlocks(void) { return SDF_LOCAL_BLOCK_NUM; }

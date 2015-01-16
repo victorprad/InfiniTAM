@@ -19,11 +19,11 @@ inline float base(float val) {
 template<class TVoxel, class TIndex>
 void ITMVisualisationEngine<TVoxel,TIndex>::DepthToUchar4(ITMUChar4Image *dst, ITMFloatImage *src)
 {
-	Vector4u *dest = dst->GetData(false);
-	float *source = src->GetData(false);
+	Vector4u *dest = dst->GetData(MEMORYDEVICE_CPU);
+	float *source = src->GetData(MEMORYDEVICE_CPU);
 	int dataSize = dst->dataSize;
 
-	memset(dst->GetData(false), 0, dataSize * 4);
+	memset(dst->GetData(MEMORYDEVICE_CPU), 0, dataSize * 4);
 
 	Vector4u *destUC4;
 	float lims[2], scale;
@@ -49,10 +49,10 @@ void ITMVisualisationEngine<TVoxel,TIndex>::DepthToUchar4(ITMUChar4Image *dst, I
 		{
 			sourceVal = (sourceVal - lims[0]) * scale;
 
-			destUC4[idx].x = (uchar)(base(sourceVal - 0.5f) * 255.0f);
-			destUC4[idx].y = (uchar)(base(sourceVal) * 255.0f);
-			destUC4[idx].z = (uchar)(base(sourceVal + 0.5f) * 255.0f);
-			destUC4[idx].w = 255;
+			destUC4[idx].r = (uchar)(base(sourceVal - 0.5f) * 255.0f);
+			destUC4[idx].g = (uchar)(base(sourceVal) * 255.0f);
+			destUC4[idx].b = (uchar)(base(sourceVal + 0.5f) * 255.0f);
+			destUC4[idx].a = 255;
 		}
 	}
 }

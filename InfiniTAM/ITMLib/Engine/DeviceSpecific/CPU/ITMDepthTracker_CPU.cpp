@@ -6,14 +6,14 @@
 using namespace ITMLib::Engine;
 
 ITMDepthTracker_CPU::ITMDepthTracker_CPU(Vector2i imgSize, int noHierarchyLevels, int noRotationOnlyLevels, int noICPRunTillLevel, float distThresh, ITMLowLevelEngine *lowLevelEngine)
-	:ITMDepthTracker(imgSize, noHierarchyLevels, noRotationOnlyLevels, noICPRunTillLevel, distThresh, lowLevelEngine, false) { }
+	:ITMDepthTracker(imgSize, noHierarchyLevels, noRotationOnlyLevels, noICPRunTillLevel, distThresh, lowLevelEngine, MEMORYDEVICE_CPU) { }
 
 ITMDepthTracker_CPU::~ITMDepthTracker_CPU(void) { }
 
 void ITMDepthTracker_CPU::ChangeIgnorePixelToZero(ITMFloatImage *image)
 {
 	Vector2i dims = image->noDims;
-	float *imageData = image->GetData(false);
+	float *imageData = image->GetData(MEMORYDEVICE_CPU);
 
 	for (int i = 0; i < dims.x * dims.y; i++) if (imageData[i] < 0.0f) imageData[i] = 0.0f;
 }
@@ -23,12 +23,12 @@ int ITMDepthTracker_CPU::ComputeGandH(ITMSceneHierarchyLevel *sceneHierarchyLeve
 {
 	int noValidPoints;
 
-	Vector4f *pointsMap = sceneHierarchyLevel->pointsMap->GetData(false);
-	Vector4f *normalsMap = sceneHierarchyLevel->normalsMap->GetData(false);
+	Vector4f *pointsMap = sceneHierarchyLevel->pointsMap->GetData(MEMORYDEVICE_CPU);
+	Vector4f *normalsMap = sceneHierarchyLevel->normalsMap->GetData(MEMORYDEVICE_CPU);
 	Vector4f sceneIntrinsics = sceneHierarchyLevel->intrinsics;
 	Vector2i sceneImageSize = sceneHierarchyLevel->pointsMap->noDims;
 
-	float *depth = viewHierarchyLevel->depth->GetData(false);
+	float *depth = viewHierarchyLevel->depth->GetData(MEMORYDEVICE_CPU);
 	Vector4f viewIntrinsics = viewHierarchyLevel->intrinsics;
 	Vector2i viewImageSize = viewHierarchyLevel->depth->noDims;
 

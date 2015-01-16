@@ -56,7 +56,7 @@ void UIEngine::glutDisplayFunction()
 			glEnable(GL_TEXTURE_2D);
 			for (int w = 0; w < NUM_WIN; w++)	{// Draw each sub window
 				glBindTexture(GL_TEXTURE_2D, uiEngine->textureId[w]);
-				glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, showImgs[w]->noDims.x, showImgs[w]->noDims.y, 0, GL_RGBA, GL_UNSIGNED_BYTE, showImgs[w]->GetData(false));
+				glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, showImgs[w]->noDims.x, showImgs[w]->noDims.y, 0, GL_RGBA, GL_UNSIGNED_BYTE, showImgs[w]->GetData(MEMORYDEVICE_CPU));
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 				glBegin(GL_QUADS); {
@@ -404,7 +404,7 @@ void UIEngine::SaveScreenshot(const char *filename) const
 
 void UIEngine::GetScreenshot(ITMUChar4Image *dest) const
 {
-	glReadPixels(0, 0, dest->noDims.x, dest->noDims.y, GL_RGBA, GL_UNSIGNED_BYTE, dest->GetData(false));
+	glReadPixels(0, 0, dest->noDims.x, dest->noDims.y, GL_RGBA, GL_UNSIGNED_BYTE, dest->GetData(MEMORYDEVICE_CPU));
 }
 
 void UIEngine::ProcessFrame()

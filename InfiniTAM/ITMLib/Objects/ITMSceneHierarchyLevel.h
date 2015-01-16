@@ -21,15 +21,15 @@ namespace ITMLib
 
 			bool manageData;
 
-			ITMSceneHierarchyLevel(Vector2i imgSize, int levelId, bool rotationOnly, bool useGPU, bool skipAllocation = false)
+			ITMSceneHierarchyLevel(Vector2i imgSize, int levelId, bool rotationOnly, MemoryDeviceType memoryType, bool skipAllocation = false)
 			{
 				this->manageData = !skipAllocation;
 				this->levelId = levelId;
 				this->rotationOnly = rotationOnly;
 
 				if (!skipAllocation) {
-					this->pointsMap = new ITMFloat4Image(imgSize, true, useGPU);
-					this->normalsMap = new ITMFloat4Image(imgSize, true, useGPU);
+					this->pointsMap = new ITMFloat4Image(imgSize, memoryType);
+					this->normalsMap = new ITMFloat4Image(imgSize, memoryType);
 				}
 			}
 

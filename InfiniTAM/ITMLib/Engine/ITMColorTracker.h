@@ -79,7 +79,7 @@ namespace ITMLib
 			void TrackCamera(ITMTrackingState *trackingState, const ITMView *view);
 
 			ITMColorTracker(Vector2i imgSize, int noHierarchyLevels, int noRotationOnlyLevels,
-				ITMLowLevelEngine *lowLevelEngine, bool useGPU);
+				ITMLowLevelEngine *lowLevelEngine, MemoryDeviceType memoryType);
 			virtual ~ITMColorTracker(void);
 		};
 	}

@@ -8,12 +8,21 @@
 #include "../Engine/DeviceSpecific/CUDA/ITMCUDADefines.h"
 #endif
 
+#ifndef __METALC__
+
 #ifdef COMPILE_WITH_METAL
 #include "../Engine/DeviceSpecific/Metal/ITMMetalContext.h"
 #endif
 
 #include <stdlib.h>
 #include <string.h>
+
+#endif
+
+#ifndef MEMORY_DEVICE_TYPE
+#define MEMORY_DEVICE_TYPE
+enum MemoryDeviceType { MEMORYDEVICE_CPU, MEMORYDEVICE_CUDA };
+#endif 
 
 namespace ITMLib
 {
@@ -26,54 +35,88 @@ namespace ITMLib
 		class ITMMemoryBlock
 		{
 		protected:
+#ifndef __METALC__
 			bool isAllocated_CPU, isAllocated_CUDA, isMetalCompatible;
-
+#endif
 			/** Pointer to memory on CPU host. */
-			T* data_cpu;
+			DEVICEPTR(T)* data_cpu;
 
 			/** Pointer to memory on GPU, if available. */
-			T* data_cuda;
+			DEVICEPTR(T)* data_cuda;
+
+#ifndef __METALC__
 
 #ifdef COMPILE_WITH_METAL
 			void *data_metalBuffer;
 #endif
+
+#endif
 		public:
+			enum MemoryCopyDirection { CPU_TO_CPU, CPU_TO_CUDA, CUDA_TO_CPU, CUDA_TO_CUDA };
+
 			/** Total number of allocated entries in the data array. */
 			int dataSize;
 
 			/** Get the data pointer on CPU or GPU. */
-			inline T* GetData(bool useGPU) { return useGPU ? data_cuda : data_cpu; }
+			inline DEVICEPTR(T)* GetData(MemoryDeviceType memoryType) 
+			{ 
+				switch (memoryType)
+				{
+				case MEMORYDEVICE_CPU: return data_cpu;
+				case MEMORYDEVICE_CUDA: return data_cuda;
+				}
+
+				return 0;
+			}
 
 			/** Get the data pointer on CPU or GPU. */
-			inline const T* GetData(bool useGPU) const { return useGPU ? data_cuda : data_cpu; }
+			inline const DEVICEPTR(T)* GetData(MemoryDeviceType memoryType) const
+			{ 
+				switch (memoryType)
+				{
+				case MEMORYDEVICE_CPU: return data_cpu;
+				case MEMORYDEVICE_CUDA: return data_cuda;
+				}
+
+				return 0;
+			}
+
+#ifndef __METALC__
 
 #ifdef COMPILE_WITH_METAL
 			inline const void *GetMetalBuffer() const { return data_metalBuffer; }
 #endif
 
-			///** Initialize an empty 0x0 array of data, either on CPU only
-			//or on both CPU and GPU.
-			//*/
-			//explicit ITMMemoryBlock(bool allocate_CPU, bool allocate_CUDA, bool metalCompatible = false)
-			//{
-			//	this->isAllocated_CPU = allocate_CPU;
-			//	this->isAllocated_CUDA = allocate_CUDA;
-			//	this->isMetalCompatible = metalCompatible;
-
-			//	this->dataSize = 0;
-			//}
-
-			/** Initialize an empty memory block of the given size, either
-			on CPU only or on both CPU and GPU. CPU might also use the
+			/** Initialize an empty memory block of the given size, 
+			on CPU only or GPU only or on both. CPU might also use the
 			Metal compatible allocator (i.e. with 16384 alignment).
 			*/
-			ITMMemoryBlock(int dataSize, bool allocate_CPU, bool allocate_CUDA, bool metalCompatible = false)
+			ITMMemoryBlock(int dataSize, bool allocate_CPU, bool allocate_CUDA, bool metalCompatible = true)
 			{
 				this->isAllocated_CPU = false;
 				this->isAllocated_CUDA = false;
 				this->isMetalCompatible = false;
 
 				Allocate(dataSize, allocate_CPU, allocate_CUDA, metalCompatible);
+				Clear();
+			}
+
+			/** Initialize an empty memory block of the given size, either
+			on CPU only or on GPU only. CPU will be Metal compatible if Metal 
+			is enabled.
+			*/
+			ITMMemoryBlock(int dataSize, MemoryDeviceType memoryType)
+			{
+				this->isAllocated_CPU = false;
+				this->isAllocated_CUDA = false;
+				this->isMetalCompatible = false;
+
+				switch (memoryType)
+				{
+				case MEMORYDEVICE_CPU: Allocate(dataSize, true, false, true); break;
+				case MEMORYDEVICE_CUDA: Allocate(dataSize, false, true, true); break;
+				}
+
 				Clear();
 			}
 
@@ -101,15 +144,36 @@ namespace ITMLib
 #endif
 			}
 
-			/** Copy image content, does not resize image! */
-			void SetFrom(const ITMMemoryBlock<T> *source, bool copyHost = true, bool copyDevice = false)
+//			void SetFrom(const ITMMemoryBlock<T> *source, bool copyHost = true, bool copyDevice = false)
+//			{
+//				if (copyHost && isAllocated_CPU)
+//					memcpy(this->data_cpu, source->data_cpu, source->dataSize * sizeof(T));
+//#ifndef COMPILE_WITHOUT_CUDA
+//				if (copyDevice && isAllocated_CUDA)
+//					ITMSafeCall(cudaMemcpy(this->data_cuda, source->data_cuda, source->dataSize * sizeof(T), cudaMemcpyDeviceToDevice));
+//#endif
+//			}
+
+			/** Copy data */
+			void SetFrom(const ITMMemoryBlock<T> *source, MemoryCopyDirection memoryCopyDirection)
 			{
-				if (copyHost && isAllocated_CPU)
+				switch (memoryCopyDirection)
+				{
+				case CPU_TO_CPU:
 					memcpy(this->data_cpu, source->data_cpu, source->dataSize * sizeof(T));
+					break;
 #ifndef COMPILE_WITHOUT_CUDA
-				if (copyDevice && isAllocated_CUDA)
+				case CPU_TO_CUDA:
+					ITMSafeCall(cudaMemcpy(this->data_cuda, source->data_cpu, source->dataSize * sizeof(T), cudaMemcpyHostToDevice));
+					break;
+				case CUDA_TO_CPU:
+					ITMSafeCall(cudaMemcpy(this->data_cpu, source->data_cuda, source->dataSize * sizeof(T), cudaMemcpyDeviceToHost));
+					break;
+				case CUDA_TO_CUDA:
 					ITMSafeCall(cudaMemcpy(this->data_cuda, source->data_cuda, source->dataSize * sizeof(T), cudaMemcpyDeviceToDevice));
+					break;
 #endif
+				}
 			}
 
 			virtual ~ITMMemoryBlock() { this->Free(); }
@@ -209,6 +273,7 @@ namespace ITMLib
 			// Suppress the default copy constructor and assignment operator
 			ITMMemoryBlock(const ITMMemoryBlock&);
 			ITMMemoryBlock& operator=(const ITMMemoryBlock&);
+#endif
 		};
 	}
 }

@@ -30,8 +30,6 @@ namespace ITMLib
 			const ITMView *view;
 
 			int *noIterationsPerLevel;
-
-			
 			
 			void PrepareForEvaluation(const ITMView *view);
 
@@ -90,7 +88,7 @@ namespace ITMLib
 
 			void TrackCamera(ITMTrackingState *trackingState, const ITMView *view);
 
-			ITMRenTracker(Vector2i imgSize, int noHierarchyLevels, ITMLowLevelEngine *lowLevelEngine, ITMScene<TVoxel,TIndex> *scene, bool useGPU);
+			ITMRenTracker(Vector2i imgSize, int noHierarchyLevels, ITMLowLevelEngine *lowLevelEngine, ITMScene<TVoxel, TIndex> *scene, MemoryDeviceType memoryType);
 			virtual ~ITMRenTracker(void);
 		};
 	}

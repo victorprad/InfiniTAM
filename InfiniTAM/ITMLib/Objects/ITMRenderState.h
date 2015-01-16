@@ -42,25 +42,27 @@ namespace ITMLib
 
 			ITMImage<Vector4u> *raycastImage;
 
-			ITMRenderState(const Vector2i &imgSize, float vf_min, float vf_max, bool useCudaAlloc)
+			ITMRenderState(const Vector2i &imgSize, float vf_min, float vf_max, MemoryDeviceType memoryType)
 			{
-				renderingRangeImage = new ITMImage<Vector2f>(imgSize, true, useCudaAlloc);
-				raycastResult = new ITMImage<Vector4f>(imgSize, true, useCudaAlloc);
-				raycastImage = new ITMImage<Vector4u>(imgSize, true, useCudaAlloc);
+				bool allocateGPU = false;
+				if (memoryType == MEMORYDEVICE_CUDA) allocateGPU = true;
 
-				ITMImage<Vector2f> *buffImage = new ITMImage<Vector2f>(imgSize, true, false);
+				renderingRangeImage = new ITMImage<Vector2f>(imgSize, true, allocateGPU);
+				raycastResult = new ITMImage<Vector4f>(imgSize, true, allocateGPU);
+				raycastImage = new ITMImage<Vector4u>(imgSize, true, allocateGPU);
+
+				ITMImage<Vector2f> *buffImage = new ITMImage<Vector2f>(imgSize, true, allocateGPU);
 
 				Vector2f v_lims(vf_min, vf_max);
-				for (int i = 0; i < imgSize.x * imgSize.y; i++) buffImage->GetData(false)[i] = v_lims;
+				for (int i = 0; i < imgSize.x * imgSize.y; i++) buffImage->GetData(MEMORYDEVICE_CPU)[i] = v_lims;
 
-				if (useCudaAlloc)
+				if (allocateGPU)
 				{
 #ifndef COMPILE_WITHOUT_CUDA
-					ITMSafeCall(cudaMemcpy(renderingRangeImage->GetData(true), buffImage->GetData(false),
-						sizeof(Vector2f) * imgSize.x * imgSize.y, cudaMemcpyHostToDevice));
+					renderingRangeImage->SetFrom(buffImage, ITMMemoryBlock<Vector2f>::CPU_TO_CUDA);
 #endif
 				}
-				else memcpy(renderingRangeImage->GetData(false), buffImage->GetData(false), sizeof(Vector2f) * imgSize.x * imgSize.y);
+				else renderingRangeImage->SetFrom(buffImage, ITMMemoryBlock<Vector2f>::CPU_TO_CPU);
 
 				delete buffImage;
 			}

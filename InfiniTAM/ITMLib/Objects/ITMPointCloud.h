@@ -17,12 +17,12 @@ namespace ITMLib
 
 			ITMImage<Vector4f> *locations, *colours;
 
-			explicit ITMPointCloud(Vector2i imgSize, bool useGPU)
+			explicit ITMPointCloud(Vector2i imgSize, MemoryDeviceType memoryType)
 			{
 				this->noTotalPoints = 0;
 
-				locations = new ITMImage<Vector4f>(imgSize, true, useGPU);
-				colours = new ITMImage<Vector4f>(imgSize, true, useGPU);
+				locations = new ITMImage<Vector4f>(imgSize, memoryType);
+				colours = new ITMImage<Vector4f>(imgSize, memoryType);
 			}
 
 			void UpdateHostFromDevice()
