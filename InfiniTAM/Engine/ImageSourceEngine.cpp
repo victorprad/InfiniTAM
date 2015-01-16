@@ -37,8 +37,9 @@ void ImageFileReader::loadIntoCache(void)
 	if (currentFrameNo == cachedFrameNo) return;
 	cachedFrameNo = currentFrameNo;
 
-	cached_rgb = new ITMUChar4Image();
-	cached_depth = new ITMShortImage();
+	//TODO> make nicer
+	cached_rgb = new ITMUChar4Image(true, false); 
+	cached_depth = new ITMShortImage(true, false);
 
 	char str[2048];
 
@@ -67,13 +68,13 @@ void ImageFileReader::getImages(ITMView *out)
 {
 	bool bUsedCache = false;
 	if (cached_rgb != NULL) {
-		out->rgb->SetFrom(cached_rgb);
+		out->rgb->SetFrom(cached_rgb, ORUtils::MemoryBlock<Vector4u>::CPU_TO_CPU);
 		delete cached_rgb;
 		cached_rgb = NULL;
 		bUsedCache = true;
 	}
 	if (cached_depth != NULL) {
-		out->rawDepth->SetFrom(cached_depth);
+		out->rawDepth->SetFrom(cached_depth, ORUtils::MemoryBlock<short>::CPU_TO_CPU);
 		delete cached_depth;
 		cached_depth = NULL;
 		bUsedCache = true;

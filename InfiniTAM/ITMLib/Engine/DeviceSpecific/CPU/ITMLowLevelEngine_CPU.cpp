@@ -11,24 +11,24 @@ ITMLowLevelEngine_CPU::~ITMLowLevelEngine_CPU(void) { }
 
 void ITMLowLevelEngine_CPU::CopyImage(ITMUChar4Image *image_out, const ITMUChar4Image *image_in)
 {
-	Vector4u *dest = image_out->GetData(false);
-	const Vector4u *src = image_in->GetData(false);
+	Vector4u *dest = image_out->GetData(MEMORYDEVICE_CPU);
+	const Vector4u *src = image_in->GetData(MEMORYDEVICE_CPU);
 
 	memcpy(dest, src, image_in->dataSize * sizeof(Vector4u));
 }
 
 void ITMLowLevelEngine_CPU::CopyImage(ITMFloatImage *image_out, const ITMFloatImage *image_in)
 {
-	float *dest = image_out->GetData(false);
-	const float *src = image_in->GetData(false);
+	float *dest = image_out->GetData(MEMORYDEVICE_CPU);
+	const float *src = image_in->GetData(MEMORYDEVICE_CPU);
 
 	memcpy(dest, src, image_in->dataSize * sizeof(float));
 }
 
 void ITMLowLevelEngine_CPU::CopyImage(ITMFloat4Image *image_out, const ITMFloat4Image *image_in)
 {
-	Vector4f *dest = image_out->GetData(false);
-	const Vector4f *src = image_in->GetData(false);
+	Vector4f *dest = image_out->GetData(MEMORYDEVICE_CPU);
+	const Vector4f *src = image_in->GetData(MEMORYDEVICE_CPU);
 
 	memcpy(dest, src, image_in->dataSize * sizeof(Vector4f));
 }
@@ -40,8 +40,8 @@ void ITMLowLevelEngine_CPU::FilterSubsample(ITMUChar4Image *image_out, const ITM
 
 	image_out->ChangeDims(newDims);
 
-	const Vector4u *imageData_in = image_in->GetData(false);
-	Vector4u *imageData_out = image_out->GetData(false);
+	const Vector4u *imageData_in = image_in->GetData(MEMORYDEVICE_CPU);
+	Vector4u *imageData_out = image_out->GetData(MEMORYDEVICE_CPU);
 
 	for (int y = 0; y < newDims.y; y++) for (int x = 0; x < newDims.x; x++)
 		filterSubsample(imageData_out, x, y, newDims, imageData_in, oldDims);
@@ -54,8 +54,8 @@ void ITMLowLevelEngine_CPU::FilterSubsampleWithHoles(ITMFloatImage *image_out, c
 
 	image_out->ChangeDims(newDims);
 
-	const float *imageData_in = image_in->GetData(false);
-	float *imageData_out = image_out->GetData(false);
+	const float *imageData_in = image_in->GetData(MEMORYDEVICE_CPU);
+	float *imageData_out = image_out->GetData(MEMORYDEVICE_CPU);
 
 	for (int y = 0; y < newDims.y; y++) for (int x = 0; x < newDims.x; x++)
 		filterSubsampleWithHoles(imageData_out, x, y, newDims, imageData_in, oldDims);
@@ -68,8 +68,8 @@ void ITMLowLevelEngine_CPU::FilterSubsampleWithHoles(ITMFloat4Image *image_out, 
 
 	image_out->ChangeDims(newDims);
 
-	const Vector4f *imageData_in = image_in->GetData(false);
-	Vector4f *imageData_out = image_out->GetData(false);
+	const Vector4f *imageData_in = image_in->GetData(MEMORYDEVICE_CPU);
+	Vector4f *imageData_out = image_out->GetData(MEMORYDEVICE_CPU);
 
 	for (int y = 0; y < newDims.y; y++) for (int x = 0; x < newDims.x; x++)
 		filterSubsampleWithHoles(imageData_out, x, y, newDims, imageData_in, oldDims);
@@ -80,8 +80,8 @@ void ITMLowLevelEngine_CPU::GradientX(ITMShort4Image *grad_out, const ITMUChar4I
 	grad_out->ChangeDims(image_in->noDims);
 	Vector2i imgSize = image_in->noDims;
 
-	Vector4s *grad = grad_out->GetData(false); 
-	const Vector4u *image = image_in->GetData(false);
+	Vector4s *grad = grad_out->GetData(MEMORYDEVICE_CPU);
+	const Vector4u *image = image_in->GetData(MEMORYDEVICE_CPU);
 
 	memset(grad, 0, imgSize.x * imgSize.y * sizeof(Vector3s));
 
@@ -94,8 +94,8 @@ void ITMLowLevelEngine_CPU::GradientY(ITMShort4Image *grad_out, const ITMUChar4I
 	grad_out->ChangeDims(image_in->noDims);
 	Vector2i imgSize = image_in->noDims;
 
-	Vector4s *grad = grad_out->GetData(false);
-	const Vector4u *image = image_in->GetData(false);
+	Vector4s *grad = grad_out->GetData(MEMORYDEVICE_CPU);
+	const Vector4u *image = image_in->GetData(MEMORYDEVICE_CPU);
 
 	memset(grad, 0, imgSize.x * imgSize.y * sizeof(Vector3s));
 
@@ -108,8 +108,8 @@ void ITMLowLevelEngine_CPU::ConvertDisparityToDepth(ITMFloatImage *depth_out, co
 {
 	Vector2i imgSize = depth_in->noDims;
 
-	const short *d_in = depth_in->GetData(false);
-	float *d_out = depth_out->GetData(false);
+	const short *d_in = depth_in->GetData(MEMORYDEVICE_CPU);
+	float *d_out = depth_out->GetData(MEMORYDEVICE_CPU);
 
 	Vector2f disparityCalibParams; float fx_depth;
 	disparityCalibParams.x = disparityCalib->params.x;
@@ -124,8 +124,8 @@ void ITMLowLevelEngine_CPU::ConvertDepthMMToFloat(ITMFloatImage *depth_out, cons
 {
 	Vector2i imgSize = depth_in->noDims;
 
-	const short *d_in = depth_in->GetData(false);
-	float *d_out = depth_out->GetData(false);
+	const short *d_in = depth_in->GetData(MEMORYDEVICE_CPU);
+	float *d_out = depth_out->GetData(MEMORYDEVICE_CPU);
 
 	for (int y = 0; y < imgSize.y; y++) for (int x = 0; x < imgSize.x; x++)
 		convertDepthMMToFloat(d_out, x, y, d_in, imgSize);

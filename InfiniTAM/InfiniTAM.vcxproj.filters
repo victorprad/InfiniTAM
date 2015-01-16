@@ -58,6 +58,9 @@
     <Filter Include="ITMLib\Engine\Trackers">
       <UniqueIdentifier>{b7c1abfb-1faa-4437-b421-e0847200dd2f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ORUtils">
+      <UniqueIdentifier>{6f3899ea-e71c-4ae8-a73c-79035b001e5c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Utils\FileUtils.cpp">
@@ -130,6 +133,9 @@
     <ClCompile Include="ITMLib\Engine\ITMTrackerFactory.cpp">
       <Filter>ITMLib\Engine</Filter>
     </ClCompile>
+    <ClCompile Include="ITMLib\Engine\ITMDenseMapper.cpp">
+      <Filter>ITMLib\Engine</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Utils\FileUtils.h">
@@ -148,9 +154,6 @@
       <Filter>ITMLib\Objects\Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ITMLib\Objects\ITMHashTable.h">
-      <Filter>ITMLib\Objects\Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ITMLib\Objects\ITMImage.h">
       <Filter>ITMLib\Objects\Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ITMLib\Objects\ITMIntrinsics.h">
@@ -186,17 +189,8 @@
     <ClInclude Include="ITMLib\Utils\ITMMath.h">
       <Filter>ITMLib\Utils\Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ITMLib\Utils\ITMMatrix.h">
-      <Filter>ITMLib\Utils\Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ITMLib\Utils\ITMVector.h">
-      <Filter>ITMLib\Utils\Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Engine\ImageSourceEngine.h">
       <Filter>Engine\Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ITMLib\Utils\ITMCholesky.h">
-      <Filter>ITMLib\Utils\Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ITMLib\Utils\ITMLibSettings.h">
       <Filter>ITMLib\Utils\Header Files</Filter>
@@ -341,6 +335,30 @@
     </ClInclude>
     <ClInclude Include="ITMLib\Objects\ITMRenderState_VH.h">
       <Filter>ITMLib\Objects\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ORUtils\Cholesky.h">
+      <Filter>ORUtils</Filter>
+    </ClInclude>
+    <ClInclude Include="ORUtils\CUDADefines.h">
+      <Filter>ORUtils</Filter>
+    </ClInclude>
+    <ClInclude Include="ORUtils\Image.h">
+      <Filter>ORUtils</Filter>
+    </ClInclude>
+    <ClInclude Include="ORUtils\MathUtils.h">
+      <Filter>ORUtils</Filter>
+    </ClInclude>
+    <ClInclude Include="ORUtils\Matrix.h">
+      <Filter>ORUtils</Filter>
+    </ClInclude>
+    <ClInclude Include="ORUtils\Vector.h">
+      <Filter>ORUtils</Filter>
+    </ClInclude>
+    <ClInclude Include="ORUtils\MemoryBlock.h">
+      <Filter>ORUtils</Filter>
+    </ClInclude>
+    <ClInclude Include="ITMLib\Engine\ITMDenseMapper.h">
+      <Filter>ITMLib\Engine</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

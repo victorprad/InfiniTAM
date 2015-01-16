@@ -111,6 +111,7 @@
     <ClCompile Include="ITMLib\Engine\DeviceSpecific\CPU\ITMSwappingEngine_CPU.cpp" />
     <ClCompile Include="ITMLib\Engine\DeviceSpecific\CPU\ITMVisualisationEngine_CPU.cpp" />
     <ClCompile Include="ITMLib\Engine\ITMColorTracker.cpp" />
+    <ClCompile Include="ITMLib\Engine\ITMDenseMapper.cpp" />
     <ClCompile Include="ITMLib\Engine\ITMDepthTracker.cpp" />
     <ClCompile Include="ITMLib\Engine\ITMMainEngine.cpp" />
     <ClCompile Include="ITMLib\Engine\ITMRenTracker.cpp" />
@@ -154,6 +155,7 @@
     <ClInclude Include="ITMLib\Engine\DeviceSpecific\CUDA\ITMSwappingEngine_CUDA.h" />
     <ClInclude Include="ITMLib\Engine\DeviceSpecific\CUDA\ITMVisualisationEngine_CUDA.h" />
     <ClInclude Include="ITMLib\Engine\ITMColorTracker.h" />
+    <ClInclude Include="ITMLib\Engine\ITMDenseMapper.h" />
     <ClInclude Include="ITMLib\Engine\ITMDepthTracker.h" />
     <ClInclude Include="ITMLib\Engine\ITMLowLevelEngine.h" />
     <ClInclude Include="ITMLib\Engine\ITMMainEngine.h" />
@@ -174,15 +176,11 @@
     <ClInclude Include="ITMLib\Utils\ITMLibDefines.h" />
     <ClInclude Include="ITMLib\Utils\ITMLibSettings.h" />
     <ClInclude Include="ITMLib\Utils\ITMCalibIO.h" />
-    <ClInclude Include="ITMLib\Utils\ITMCholesky.h" />
     <ClInclude Include="ITMLib\Utils\ITMMath.h" />
-    <ClInclude Include="ITMLib\Utils\ITMMatrix.h" />
     <ClInclude Include="ITMLib\Utils\ITMPixelUtils.h" />
-    <ClInclude Include="ITMLib\Utils\ITMVector.h" />
     <ClInclude Include="ITMLib\Objects\ITMHashTable.h" />
     <ClInclude Include="ITMLib\Objects\ITMDisparityCalib.h" />
     <ClInclude Include="ITMLib\Objects\ITMExtrinsics.h" />
-    <ClInclude Include="ITMLib\Objects\ITMImage.h" />
     <ClInclude Include="ITMLib\Objects\ITMIntrinsics.h" />
     <ClInclude Include="ITMLib\Objects\ITMPointCloud.h" />
     <ClInclude Include="ITMLib\Objects\ITMPose.h" />
@@ -193,6 +191,13 @@
     <ClInclude Include="ITMLib\Objects\ITMViewHierarchyLevel.h" />
     <ClInclude Include="ITMLib\Objects\ITMLocalVBA.h" />
     <ClInclude Include="ITMLib\ITMLib.h" />
+    <ClInclude Include="ORUtils\Cholesky.h" />
+    <ClInclude Include="ORUtils\CUDADefines.h" />
+    <ClInclude Include="ORUtils\Image.h" />
+    <ClInclude Include="ORUtils\MathUtils.h" />
+    <ClInclude Include="ORUtils\Matrix.h" />
+    <ClInclude Include="ORUtils\MemoryBlock.h" />
+    <ClInclude Include="ORUtils\Vector.h" />
     <ClInclude Include="Utils\FileUtils.h" />
     <ClInclude Include="Utils\NVTimer.h" />
   </ItemGroup>

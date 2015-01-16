@@ -88,13 +88,13 @@ ITMVisualisationEngine_CUDA<TVoxel, ITMVoxelBlockHash>::~ITMVisualisationEngine_
 template<class TVoxel, class TIndex>
 ITMRenderState* ITMVisualisationEngine_CUDA<TVoxel, TIndex>::CreateRenderState(const ITMScene<TVoxel, TIndex> *scene, const Vector2i & imgSize)
 {
-	return new ITMRenderState(imgSize, scene->sceneParams->viewFrustum_min, scene->sceneParams->viewFrustum_max, true);
+	return new ITMRenderState(imgSize, scene->sceneParams->viewFrustum_min, scene->sceneParams->viewFrustum_max, MEMORYDEVICE_CUDA);
 }
 
 template<class TVoxel>
 ITMRenderState* ITMVisualisationEngine_CUDA<TVoxel, ITMVoxelBlockHash>::CreateRenderState(const ITMScene<TVoxel, ITMVoxelBlockHash> *scene, const Vector2i & imgSize)
 {
-	return new ITMRenderState_VH(ITMHashTable::noTotalEntries, imgSize, scene->sceneParams->viewFrustum_min, scene->sceneParams->viewFrustum_max, true);
+	return new ITMRenderState_VH(ITMHashTable::noTotalEntries, imgSize, scene->sceneParams->viewFrustum_min, scene->sceneParams->viewFrustum_max, MEMORYDEVICE_CUDA);
 }
 
 template<class TVoxel, class TIndex>
@@ -138,7 +138,7 @@ template<class TVoxel, class TIndex>
 void ITMVisualisationEngine_CUDA<TVoxel, TIndex>::CreateExpectedDepths(const ITMScene<TVoxel, TIndex> *scene, const ITMPose *pose,
 	const ITMIntrinsics *intrinsics, ITMRenderState *renderState)
 {
-	Vector2f *minmaxData = renderState->renderingRangeImage->GetData(true);
+	Vector2f *minmaxData = renderState->renderingRangeImage->GetData(MEMORYDEVICE_CUDA);
 
 	{
 		dim3 blockSize(256);
@@ -157,7 +157,7 @@ void ITMVisualisationEngine_CUDA<TVoxel, ITMVoxelBlockHash>::CreateExpectedDepth
 	float voxelSize = scene->sceneParams->voxelSize;
 
 	Vector2i imgSize = renderState->renderingRangeImage->noDims;
-	Vector2f *minmaxData = renderState->renderingRangeImage->GetData(true);
+	Vector2f *minmaxData = renderState->renderingRangeImage->GetData(MEMORYDEVICE_CUDA);
 
 	{
 		dim3 blockSize(256);
@@ -210,9 +210,9 @@ static void RenderImage_common(const ITMScene<TVoxel, TIndex> *scene, const ITMP
 	float mu = scene->sceneParams->mu;
 	Vector3f lightSource = -Vector3f(invM.getColumn(2));
 
-	Vector4u *outRendering = outputImage->GetData(true);
-	const Vector2f *minmaximg = renderState->renderingRangeImage->GetData(true);
-	Vector4f *pointsRay = renderState->raycastResult->GetData(true);
+	Vector4u *outRendering = outputImage->GetData(MEMORYDEVICE_CUDA);
+	const Vector2f *minmaximg = renderState->renderingRangeImage->GetData(MEMORYDEVICE_CUDA);
+	Vector4f *pointsRay = renderState->raycastResult->GetData(MEMORYDEVICE_CUDA);
 
 	dim3 cudaBlockSize(8, 8);
 	dim3 gridSize((int)ceil((float)imgSize.x / (float)cudaBlockSize.x), (int)ceil((float)imgSize.y / (float)cudaBlockSize.y));
@@ -241,11 +241,11 @@ static void CreatePointCloud_common(const ITMScene<TVoxel, TIndex> *scene, const
 	projParams.x = 1.0f / projParams.x;
 	projParams.y = 1.0f / projParams.y;
 
-	Vector4f *locations = trackingState->pointCloud->locations->GetData(true);
-	Vector4f *colours = trackingState->pointCloud->colours->GetData(true);
-	Vector4u *outRendering = renderState->raycastImage->GetData(true);
-	Vector2f *minmaxdata = renderState->renderingRangeImage->GetData(true);
-	Vector4f *pointsRay = renderState->raycastResult->GetData(true);
+	Vector4f *locations = trackingState->pointCloud->locations->GetData(MEMORYDEVICE_CUDA);
+	Vector4f *colours = trackingState->pointCloud->colours->GetData(MEMORYDEVICE_CUDA);
+	Vector4u *outRendering = renderState->raycastImage->GetData(MEMORYDEVICE_CUDA);
+	Vector2f *minmaxdata = renderState->renderingRangeImage->GetData(MEMORYDEVICE_CUDA);
+	Vector4f *pointsRay = renderState->raycastResult->GetData(MEMORYDEVICE_CUDA);
 
 	float mu = scene->sceneParams->mu;
 	Vector3f lightSource = -Vector3f(invM.getColumn(2));
@@ -279,11 +279,11 @@ void CreateICPMaps_common(const ITMScene<TVoxel, TIndex> *scene, const ITMView *
 	float mu = scene->sceneParams->mu;
 	Vector3f lightSource = -Vector3f(invM.getColumn(2));
 
-	Vector4f *pointsMap = trackingState->pointCloud->locations->GetData(true);
-	Vector4f *normalsMap = trackingState->pointCloud->colours->GetData(true);
-	Vector4u *outRendering = renderState->raycastImage->GetData(true);
-	Vector2f *minmaxdata = renderState->renderingRangeImage->GetData(true);
-	Vector4f *pointsRay = renderState->raycastResult->GetData(true);
+	Vector4f *pointsMap = trackingState->pointCloud->locations->GetData(MEMORYDEVICE_CUDA);
+	Vector4f *normalsMap = trackingState->pointCloud->colours->GetData(MEMORYDEVICE_CUDA);
+	Vector4u *outRendering = renderState->raycastImage->GetData(MEMORYDEVICE_CUDA);
+	Vector2f *minmaxdata = renderState->renderingRangeImage->GetData(MEMORYDEVICE_CUDA);
+	Vector4f *pointsRay = renderState->raycastResult->GetData(MEMORYDEVICE_CUDA);
 
 	{
 		dim3 cudaBlockSize(16, 16);

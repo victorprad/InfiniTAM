@@ -31,9 +31,9 @@ namespace ITMLib
 			/// Current pose of the depth camera.
 			ITMPose *pose_d;
 
-			ITMTrackingState(Vector2i imgSize, bool useGPU)
+			ITMTrackingState(Vector2i imgSize, MemoryDeviceType memoryType)
 			{
-				this->pointCloud = new ITMPointCloud(imgSize, useGPU);
+				this->pointCloud = new ITMPointCloud(imgSize, memoryType);
 				this->pose_d = new ITMPose();
 			}
 

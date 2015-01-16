@@ -77,7 +77,7 @@ void ITMSceneReconstructionEngine_CUDA<TVoxel, ITMVoxelBlockHash>::AllocateScene
 
 	float mu = scene->sceneParams->mu;
 
-	float *depth = view->depth->GetData(true);
+	float *depth = view->depth->GetData(MEMORYDEVICE_CUDA);
 	int *voxelAllocationList = scene->localVBA.GetAllocationList();
 	int *excessAllocationList = scene->index.GetExcessAllocationList();
 	ITMHashEntry *hashTable = scene->index.GetEntries();
@@ -150,8 +150,8 @@ void ITMSceneReconstructionEngine_CUDA<TVoxel, ITMVoxelBlockHash>::IntegrateInto
 
 	float mu = scene->sceneParams->mu; int maxW = scene->sceneParams->maxW;
 
-	float *depth = view->depth->GetData(true);
-	Vector4u *rgb = view->rgb->GetData(true);
+	float *depth = view->depth->GetData(MEMORYDEVICE_CUDA);
+	Vector4u *rgb = view->rgb->GetData(MEMORYDEVICE_CUDA);
 	TVoxel *localVBA = scene->localVBA.GetVoxelBlocks();
 	ITMHashEntry *hashTable = scene->index.GetEntries();
 
@@ -191,8 +191,8 @@ void ITMSceneReconstructionEngine_CUDA<TVoxel, ITMPlainVoxelArray>::IntegrateInt
 
 	float mu = scene->sceneParams->mu; int maxW = scene->sceneParams->maxW;
 
-	float *depth = view->depth->GetData(true);
-	Vector4u *rgb = view->rgb->GetData(true);
+	float *depth = view->depth->GetData(MEMORYDEVICE_CUDA);
+	Vector4u *rgb = view->rgb->GetData(MEMORYDEVICE_CUDA);
 	TVoxel *localVBA = scene->localVBA.GetVoxelBlocks();
 	const ITMPlainVoxelArray::ITMVoxelArrayInfo *arrayInfo = scene->index.getIndexData();
 

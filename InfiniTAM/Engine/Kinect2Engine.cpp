@@ -87,13 +87,13 @@ Kinect2Engine::~Kinect2Engine()
 
 void Kinect2Engine::getImages(ITMView *out)
 {
-	Vector4u *rgb = out->rgb->GetData(false);
+	Vector4u *rgb = out->rgb->GetData(MEMORYDEVICE_CPU);
 	if (colorAvailable)
 	{
 	}
 	else memset(rgb, 0, out->rgb->dataSize * sizeof(Vector4u));
 
-	float *depth = out->depth->GetData(false);
+	float *depth = out->depth->GetData(MEMORYDEVICE_CPU);
 	if (depthAvailable)
 	{
 		IDepthFrame* pDepthFrame = NULL;

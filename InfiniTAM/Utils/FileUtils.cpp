@@ -154,17 +154,17 @@ void SaveImageToFile(const ITMUChar4Image* image, const char* fileName, bool fli
 			locId_src = x + y * noDims.x;
 			locId_dst = x + (noDims.y - y - 1) * noDims.x;
 
-			data[locId_dst * 3 + 0] = image->GetData(false)[locId_src].x;
-			data[locId_dst * 3 + 1] = image->GetData(false)[locId_src].y;
-			data[locId_dst * 3 + 2] = image->GetData(false)[locId_src].z;
+			data[locId_dst * 3 + 0] = image->GetData(MEMORYDEVICE_CPU)[locId_src].x;
+			data[locId_dst * 3 + 1] = image->GetData(MEMORYDEVICE_CPU)[locId_src].y;
+			data[locId_dst * 3 + 2] = image->GetData(MEMORYDEVICE_CPU)[locId_src].z;
 		}
 	}
 	else
 	{
 		for (int i = 0; i < noDims.x * noDims.y; ++i) {
-			data[i * 3 + 0] = image->GetData(false)[i].x;
-			data[i * 3 + 1] = image->GetData(false)[i].y;
-			data[i * 3 + 2] = image->GetData(false)[i].z;
+			data[i * 3 + 0] = image->GetData(MEMORYDEVICE_CPU)[i].x;
+			data[i * 3 + 1] = image->GetData(MEMORYDEVICE_CPU)[i].y;
+			data[i * 3 + 2] = image->GetData(MEMORYDEVICE_CPU)[i].z;
 		}
 	}
 
@@ -176,7 +176,7 @@ void SaveImageToFile(const ITMUChar4Image* image, const char* fileName, bool fli
 void SaveImageToFile(const ITMShortImage* image, const char* fileName)
 {
 	short *data = (short*)malloc(sizeof(short) * image->dataSize);
-	const short *dataSource = image->GetData(false);
+	const short *dataSource = image->GetData(MEMORYDEVICE_CPU);
 	for (int i = 0; i < image->dataSize; i++) data[i] = (dataSource[i] << 8) | ((dataSource[i] >> 8) & 255);
 
 	FILE *f = fopen(fileName, "wb");
@@ -194,7 +194,7 @@ void SaveImageToFile(const ITMFloatImage* image, const char* fileName)
 	unsigned short *data = new unsigned short[image->dataSize];
 	for (int i = 0; i < image->dataSize; i++)
 	{
-		float localData = image->GetData(false)[i];
+		float localData = image->GetData(MEMORYDEVICE_CPU)[i];
 		data[i] = localData >= 0 ? (unsigned short)(localData * 1000.0f) : 0;
 	}
 
@@ -228,10 +228,10 @@ bool ReadImageFromFile(ITMUChar4Image* image, const char* fileName)
 	image->ChangeDims(newSize);
 	for (int i = 0; i < image->noDims.x*image->noDims.y; ++i) 
 	{
-		image->GetData(false)[i].x = data[i*3+0];
-		image->GetData(false)[i].y = data[i*3+1];
-		image->GetData(false)[i].z = data[i*3+2];
-		image->GetData(false)[i].w = 255; 
+		image->GetData(MEMORYDEVICE_CPU)[i].x = data[i * 3 + 0];
+		image->GetData(MEMORYDEVICE_CPU)[i].y = data[i * 3 + 1];
+		image->GetData(MEMORYDEVICE_CPU)[i].z = data[i * 3 + 2];
+		image->GetData(MEMORYDEVICE_CPU)[i].w = 255;
 	}
 
 	delete[] data;
@@ -260,11 +260,11 @@ bool ReadImageFromFile(ITMShortImage *image, const char *fileName)
 	image->ChangeDims(newSize);
 	if (binary) {
 		for (int i = 0; i < image->noDims.x*image->noDims.y; ++i) {
-			image->GetData(false)[i] = (data[i]<<8) | ((data[i]>>8)&255);
+			image->GetData(MEMORYDEVICE_CPU)[i] = (data[i] << 8) | ((data[i] >> 8) & 255);
 		}
 	} else {
 		for (int i = 0; i < image->noDims.x*image->noDims.y; ++i) {
-			image->GetData(false)[i] = data[i];
+			image->GetData(MEMORYDEVICE_CPU)[i] = data[i];
 		}
 	}
 	delete[] data;

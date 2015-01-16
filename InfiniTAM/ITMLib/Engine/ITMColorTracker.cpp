@@ -10,9 +10,9 @@ using namespace ITMLib::Engine;
 static inline bool minimizeLM(const ITMColorTracker & tracker, ITMPose & initialization);
 
 ITMColorTracker::ITMColorTracker(Vector2i imgSize, int noHierarchyLevels, int noRotationOnlyLevels,
-	ITMLowLevelEngine *lowLevelEngine, bool useGPU)
+	ITMLowLevelEngine *lowLevelEngine, MemoryDeviceType memoryType)
 {
-	viewHierarchy = new ITMImageHierarchy<ITMViewHierarchyLevel>(imgSize, noHierarchyLevels, noRotationOnlyLevels, useGPU);
+	viewHierarchy = new ITMImageHierarchy<ITMViewHierarchyLevel>(imgSize, noHierarchyLevels, noRotationOnlyLevels, memoryType);
 
 	this->lowLevelEngine = lowLevelEngine;
 }

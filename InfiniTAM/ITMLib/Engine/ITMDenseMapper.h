@@ -43,8 +43,6 @@ namespace ITMLib
 			const ITMScene<TVoxel,TIndex> *getScene() const
 			{ return scene; } 
 
-			void SaveAll();
-
 //			const ITMVisualisationEngine<TVoxel,TIndex> *getVisualisationEngine(void) const { return visualisationEngine; }
 
 			void GetICPMaps(const ITMPose *pose, const ITMIntrinsics *intrinsics, const ITMView *view, ITMTrackingState *trackingState);

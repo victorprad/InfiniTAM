@@ -5,14 +5,7 @@
 #include <stdlib.h>
 
 #include "../Utils/ITMLibDefines.h"
-
-#ifndef COMPILE_WITHOUT_CUDA
-#include "../../ORUtils/CUDADefines.h"
-#endif
-
-#ifdef COMPILE_WITH_METAL
-#include "../Engine/DeviceSpecific/Metal/ITMMetalContext.h"
-#endif
+#include "../../ORUtils/MemoryBlock.h"
 
 namespace ITMLib
 {
@@ -26,20 +19,15 @@ namespace ITMLib
 		class ITMLocalVBA
 		{
 		private:
-			TVoxel *voxelBlocks;
-			int *allocationList;
+			ORUtils::MemoryBlock<TVoxel> *voxelBlocks;
+			ORUtils::MemoryBlock<int> *allocationList;
 
-			bool dataIsOnGPU;
-
-#ifdef COMPILE_WITH_METAL
-			void *voxelBlocks_mb;
-			void *allocationList_mb;
-#endif
+			MemoryDeviceType memoryType;
 
 		public:
-			_CPU_AND_GPU_CODE_ inline TVoxel *GetVoxelBlocks(void) { return voxelBlocks; }
-			_CPU_AND_GPU_CODE_ inline const TVoxel *GetVoxelBlocks(void) const { return voxelBlocks; }
-			int *GetAllocationList(void) { return allocationList; }
+			inline TVoxel *GetVoxelBlocks(void) { return voxelBlocks->GetData(memoryType); }
+			inline const TVoxel *GetVoxelBlocks(void) const { return voxelBlocks->GetData(memoryType); }
+			int *GetAllocationList(void) { return allocationList->GetData(memoryType); }
 
 #ifdef COMPILE_WITH_METAL
 			inline void* GetVoxelBlocks_MB() { return voxelBlocks_mb; }
@@ -50,33 +38,34 @@ namespace ITMLib
 
 			int allocatedSize;
 
-			ITMLocalVBA(bool allocateGPU, int noBlocks, int blockSize)
+			ITMLocalVBA(MemoryDeviceType memoryType, int noBlocks, int blockSize)
 			{
-				this->dataIsOnGPU = allocateGPU;
+				this->memoryType = memoryType;
 
 				allocatedSize = noBlocks * blockSize;
 
-				TVoxel *voxelBlocks_host; int *allocationList_host;
+				ORUtils::MemoryBlock<TVoxel> *voxelBlocks_host;
+				ORUtils::MemoryBlock<int> *allocationList_host;
 
-#ifdef COMPILE_WITH_METAL
-				allocateMetalData((void**)&voxelBlocks_host, (void**)&voxelBlocks_mb, allocatedSize * sizeof(TVoxel), true);
-				allocateMetalData((void**)&allocationList_host, (void**)&allocationList_mb, allocatedSize * sizeof(int), true);
-#else
-				voxelBlocks_host = (TVoxel*)malloc(allocatedSize * sizeof(TVoxel));
-				allocationList_host = (int*)malloc(allocatedSize * sizeof(int));
-#endif
-				for (int i = 0; i < noBlocks; i++) allocationList_host[i] = i;
-				for (int i = 0; i < allocatedSize; i++) voxelBlocks_host[i] = TVoxel();
+				voxelBlocks_host = new ORUtils::MemoryBlock<TVoxel>(allocatedSize, MEMORYDEVICE_CPU);
+				allocationList_host = new ORUtils::MemoryBlock<int>(allocatedSize, MEMORYDEVICE_CPU);
+
+				TVoxel* voxelBlocks_host_ptr = voxelBlocks_host->GetData(MEMORYDEVICE_CPU);
+				int* allocationList_host_ptr = allocationList_host->GetData(MEMORYDEVICE_CPU);
+
+				for (int i = 0; i < noBlocks; i++) allocationList_host_ptr[i] = i;
+				for (int i = 0; i < allocatedSize; i++) voxelBlocks_host_ptr[i] = TVoxel();
 
 				lastFreeBlockId = noBlocks - 1;
 
-				if (allocateGPU)
+				if (memoryType == MEMORYDEVICE_CUDA)
 				{
 #ifndef COMPILE_WITHOUT_CUDA
-					ITMSafeCall(cudaMalloc((void**)&voxelBlocks, allocatedSize * sizeof(TVoxel)));
-					ITMSafeCall(cudaMalloc((void**)&allocationList, allocatedSize * sizeof(int)));
-					ITMSafeCall(cudaMemcpy(allocationList, allocationList_host, allocatedSize * sizeof(int), cudaMemcpyHostToDevice));
-					ITMSafeCall(cudaMemcpy(voxelBlocks, voxelBlocks_host, allocatedSize * sizeof(TVoxel), cudaMemcpyHostToDevice));
+					voxelBlocks = new ORUtils::MemoryBlock<TVoxel>(allocatedSize, MEMORYDEVICE_CUDA);
+					allocationList = new ORUtils::MemoryBlock<int>(allocatedSize, MEMORYDEVICE_CUDA);
+
+					voxelBlocks->SetFrom(voxelBlocks_host, ORUtils::MemoryBlock<TVoxel>::CPU_TO_CUDA);
+					allocationList->SetFrom(allocationList_host, ORUtils::MemoryBlock<int>::CPU_TO_CUDA);
 #endif
 					free(voxelBlocks_host);
 					free(allocationList_host);
@@ -90,23 +79,8 @@ namespace ITMLib
 
 			~ITMLocalVBA(void)
 			{
-				if (!dataIsOnGPU)
-				{
-#ifdef COMPILE_WITH_METAL
-					freeMetalData((void**)&voxelBlocks, (void**)&voxelBlocks_mb, allocatedSize * sizeof(TVoxel), true);
-					freeMetalData((void**)&allocationList, (void**)&allocationList_mb, allocatedSize * sizeof(int), true);
-#else
-					free(voxelBlocks);
-					free(allocationList);
-#endif
-				}
-				else
-				{
-#ifndef COMPILE_WITHOUT_CUDA
-					ITMSafeCall(cudaFree(voxelBlocks));
-					ITMSafeCall(cudaFree(allocationList));
-#endif
-				}
+				delete voxelBlocks;
+				delete allocationList;
 			}
 
 			// Suppress the default copy constructor and assignment operator
