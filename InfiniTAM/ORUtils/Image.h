@@ -20,19 +20,19 @@ namespace ORUtils
 		on CPU only or on both CPU and GPU.
 		*/
 		Image(Vector2i noDims, bool allocate_CPU, bool allocate_CUDA, bool metalCompatible = true)
-			: MemoryBlock(noDims.x * noDims.y, allocate_CPU, allocate_CUDA, metalCompatible)
+			: MemoryBlock<T>(noDims.x * noDims.y, allocate_CPU, allocate_CUDA, metalCompatible)
 		{
 			this->noDims = noDims;
 		}
 
 		Image(bool allocate_CPU, bool allocate_CUDA, bool metalCompatible = true)
-			: MemoryBlock(1, allocate_CPU, allocate_CUDA, metalCompatible)
+			: MemoryBlock<T>(1, allocate_CPU, allocate_CUDA, metalCompatible)
 		{
 			this->noDims = Vector2i(1, 1);  //TODO - make nicer
 		}
 
 		Image(Vector2i noDims, MemoryDeviceType memoryType)
-			: MemoryBlock(noDims.x * noDims.y, memoryType)
+			: MemoryBlock<T>(noDims.x * noDims.y, memoryType)
 		{
 			this->noDims = noDims;
 		}
@@ -47,12 +47,12 @@ namespace ORUtils
 			{
 				this->noDims = newDims;
 
-				bool allocate_CPU = isAllocated_CPU;
-				bool allocate_CUDA = isAllocated_CUDA;
-				bool metalCompatible = isMetalCompatible;
+				bool allocate_CPU = this->isAllocated_CPU;
+				bool allocate_CUDA = this->isAllocated_CUDA;
+				bool metalCompatible = this->isMetalCompatible;
 
-				Free();
-				Allocate(newDims.x * newDims.y, allocate_CPU, allocate_CUDA, metalCompatible);
+				this->Free();
+				this->Allocate(newDims.x * newDims.y, allocate_CPU, allocate_CUDA, metalCompatible);
 			}
 		}
 
