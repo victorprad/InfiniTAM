@@ -3,6 +3,7 @@
 #pragma once
 
 #include "../../Utils/ITMLibDefines.h"
+#include "ITMRepresentationAccess.h"
 
 struct RenderingBlock {
 	Vector2s upperLeft;
@@ -138,7 +139,8 @@ _CPU_AND_GPU_CODE_ inline bool castRay(Vector3f &pt_out, int x, int y, const TVo
 				break;
 			}
 		}
-		else {
+		else
+		{
 			switch (state)
 			{
 			case SEARCH_BLOCK_COARSE:
@@ -155,7 +157,10 @@ _CPU_AND_GPU_CODE_ inline bool castRay(Vector3f &pt_out, int x, int y, const TVo
 		pt_result += stepLength * rayDirection; totalLength += stepLength;
 		if (totalLength > totalLengthMax) break;
 
-		sdfValue = readFromSDF_float_maybe_interpolate(voxelData, voxelIndex, pt_result, hash_found, cache);
+		sdfValue = readFromSDF_float_uninterpolated(voxelData, voxelIndex, pt_result, hash_found, cache);
+		if (fabsf(sdfValue) <= 0.25f) {
+			sdfValue = readFromSDF_float_interpolated(voxelData, voxelIndex, pt_result, hash_found, cache);
+		}
 
 		if (sdfValue <= 0.0f) if (state == SEARCH_BLOCK_FINE) state = WRONG_SIDE; else state = BEHIND_SURFACE;
 		else if (state == WRONG_SIDE) state = SEARCH_SURFACE;
@@ -167,7 +172,7 @@ _CPU_AND_GPU_CODE_ inline bool castRay(Vector3f &pt_out, int x, int y, const TVo
 
 		pt_result += stepLength * rayDirection;
 
-		sdfValue = readFromSDF_float_interpolated(voxelData, voxelIndex, pt_result, hash_found);
+		sdfValue = readFromSDF_float_interpolated(voxelData, voxelIndex, pt_result, hash_found, cache);
 
 		stepLength = sdfValue * stepScale;
 
@@ -214,7 +219,7 @@ _CPU_AND_GPU_CODE_ inline void drawColourRendering(const bool & foundPoint, cons
 		return;
 	}
 
-	Vector4f clr = VoxelColorReader<TVoxel::hasColorInformation,TVoxel,typename TIndex::IndexData>::interpolate(voxelBlockData, indexData, point);
+	Vector4f clr = VoxelColorReader<TVoxel::hasColorInformation,TVoxel,TIndex>::interpolate(voxelBlockData, indexData, point);
 
 	dest.x = (uchar)(clr.r * 255.0f);
 	dest.y = (uchar)(clr.g * 255.0f);

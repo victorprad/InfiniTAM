@@ -63,5 +63,38 @@ namespace ITMLib
 			void CreatePointCloud(const ITMScene<TVoxel,ITMVoxelBlockHash> *scene, const ITMView *view, ITMTrackingState *trackingState, bool skipPoints);
 			void CreateICPMaps(const ITMScene<TVoxel,ITMVoxelBlockHash> *scene, const ITMView *view, ITMTrackingState *trackingState);
 		};
+
+		template<class TVoxel>
+		class ITMVisualisationEngine_CUDA<TVoxel,ITMVoxelBlockHHash> : public ITMVisualisationEngine<TVoxel,ITMVoxelBlockHHash>
+		{
+		private:
+			uint *noTotalPoints_device;
+			RenderingBlock *renderingBlockList_device;
+			uint *noTotalBlocks_device;
+		public:
+			class State : public ITMVisualisationState {
+				public:
+				State(const Vector2i & imgSize);
+				~State(void);
+
+				uchar *entriesVisibleType;
+				int *visibleEntryIDs;
+				int visibleEntriesNum;
+				int *visibleEntriesNum_ptr;
+			};
+
+			ITMVisualisationEngine_CUDA(void);
+			~ITMVisualisationEngine_CUDA(void);
+
+			ITMVisualisationState* allocateInternalState(const Vector2i & imgSize)
+			{ return new State(imgSize); }
+
+			void FindVisibleBlocks(const ITMScene<TVoxel,ITMVoxelBlockHHash> *scene, const ITMPose *pose, const ITMIntrinsics *intrinsics, ITMVisualisationState *state);
+			void CreateExpectedDepths(const ITMScene<TVoxel,ITMVoxelBlockHHash> *scene, const ITMPose *pose, const ITMIntrinsics *intrinsics, ITMFloat2Image *minmaxImg, const ITMVisualisationState *state = NULL);
+
+			void RenderImage(const ITMScene<TVoxel,ITMVoxelBlockHHash> *scene, const ITMPose *pose, const ITMIntrinsics *intrinsics, const ITMVisualisationState *state, ITMUChar4Image *outputImage, bool useColour);
+			void CreatePointCloud(const ITMScene<TVoxel,ITMVoxelBlockHHash> *scene, const ITMView *view, ITMTrackingState *trackingState, bool skipPoints);
+			void CreateICPMaps(const ITMScene<TVoxel,ITMVoxelBlockHHash> *scene, const ITMView *view, ITMTrackingState *trackingState);
+		};
 	}
 }

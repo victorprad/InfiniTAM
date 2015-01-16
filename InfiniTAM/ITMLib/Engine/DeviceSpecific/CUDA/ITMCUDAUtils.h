@@ -11,6 +11,27 @@ inline __device__ void warpReduce(volatile float* sdata, int tid) {
 	sdata[tid] += sdata[tid + 1];
 }
 
+inline __device__ void warpReduce3(volatile float* sdata, int tid) {
+	sdata[3*tid+0] += sdata[3*(tid + 32)+0];
+	sdata[3*tid+1] += sdata[3*(tid + 32)+1];
+	sdata[3*tid+2] += sdata[3*(tid + 32)+2];
+	sdata[3*tid+0] += sdata[3*(tid + 16)+0];
+	sdata[3*tid+1] += sdata[3*(tid + 16)+1];
+	sdata[3*tid+2] += sdata[3*(tid + 16)+2];
+	sdata[3*tid+0] += sdata[3*(tid + 8)+0];
+	sdata[3*tid+1] += sdata[3*(tid + 8)+1];
+	sdata[3*tid+2] += sdata[3*(tid + 8)+2];
+	sdata[3*tid+0] += sdata[3*(tid + 4)+0];
+	sdata[3*tid+1] += sdata[3*(tid + 4)+1];
+	sdata[3*tid+2] += sdata[3*(tid + 4)+2];
+	sdata[3*tid+0] += sdata[3*(tid + 2)+0];
+	sdata[3*tid+1] += sdata[3*(tid + 2)+1];
+	sdata[3*tid+2] += sdata[3*(tid + 2)+2];
+	sdata[3*tid+0] += sdata[3*(tid + 1)+0];
+	sdata[3*tid+1] += sdata[3*(tid + 1)+1];
+	sdata[3*tid+2] += sdata[3*(tid + 1)+2];
+}
+
 template <typename T> 
 __device__ int computePrefixSum_device(uint element, T *sum, int localSize, int localId)
 {
@@ -40,13 +61,25 @@ __device__ int computePrefixSum_device(uint element, T *sum, int localSize, int 
 	__syncthreads();
 
 	int offset;// = groupOffset + prefixBuffer[localId] - 1;
-	if (localId == 0) {
+	if (localId == 0) 
+	{
 		if (prefixBuffer[localId] == 0) offset = -1;
 		else offset = groupOffset;
-	} else {
+	}
+	else 
+	{
 		if (prefixBuffer[localId] == prefixBuffer[localId - 1]) offset = -1;
 		else offset = groupOffset + prefixBuffer[localId-1];
 	}
 
 	return offset;
 }
+
+template<typename T>
+__global__ void memsetKernel_device(T *devPtr, const T val, size_t nwords)
+{
+	size_t offset = threadIdx.x + blockDim.x * blockIdx.x;
+	if (offset >= nwords) return;
+	devPtr[offset] = val;
+}
+

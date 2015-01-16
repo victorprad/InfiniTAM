@@ -84,3 +84,42 @@ inline void matmul(const float *A, const float *b, float *x, int numRows, int nu
 		x[r] = res;
 	}
 }
+
+/** Solve linear equation system using (non-pivoting!) Gaussian Elimination.
+    This implementation does not do pivoting, but assumes that the matrix A
+    has a strictly non-zero anti-diagonal. It's going to fail otherwise, and
+    on top it's of course numerically unstable.
+*/
+template<typename T_RHS>
+_CPU_AND_GPU_CODE_ inline void solveGaussianEliminationLower(float *A, T_RHS *b, T_RHS *x, int dim)
+{
+	// transform to lower triangular matrix
+	for (int r = 0; r < dim; r++)
+	{
+		int r_ = dim-r-1;
+		for (int r2 = 0; r2 < r_; r2++)
+		{
+			if (fabs(A[r2*dim+r])<1e-6) continue;
+			float v = A[r2*dim+r]/A[r_*dim+r];
+			for (int c = 0; c < dim; c++)
+			{
+				A[r2*dim+c] -= v*A[r_*dim+c];
+			}
+			b[r2] -= v*b[r_];
+		}
+	}
+
+	x[dim-1] = b[0] / A[dim-1];
+
+	// perform forward substitution
+	for (int r = 1; r < dim; r++)
+	{
+		T_RHS v = 0.0f;
+		for (int c = dim-r; c < dim; c++)
+		{
+			v += A[r*dim+c]*x[c];
+		}
+		x[dim-r-1] = (b[r]-v)/A[r*dim+dim-r-1];
+	}
+}
+

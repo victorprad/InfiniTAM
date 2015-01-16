@@ -43,6 +43,8 @@
 #define SDF_HASH_MASK 0xfffff			// Used for get hashing value of the bucket index,  SDF_HASH_MASK = SDF_BUCKET_NUM - 1
 #define SDF_EXCESS_LIST_SIZE 0x20000	// 0x20000 Size of excess list, used to handle collisions. Also max offset (unsigned short) value.
 
+#define SDF_HASH_NO_H_LEVELS 3			// Number of levels in the hash hierarchy - used by all HHash classes
+
 //////////////////////////////////////////////////////////////////////////
 // Voxel Hashing data structures
 //////////////////////////////////////////////////////////////////////////
@@ -58,8 +60,9 @@ struct ITMHashEntry
 	int offset;
 	/** Pointer to the voxel block array.
 	    - >= 0 identifies an actual allocated entry in the voxel block array
-	    - -1 identifies an entry that has been removed (swapped out)
-	    - <-1 identifies an unallocated block
+	    - -1 identifies an entry that has been temporarily swapped out
+	    - -2 (representation dependent) e.g. entry that has been split at a finer resolution level
+	    - -3 identifies an unallocated block
 	*/
 	int ptr;
 };
@@ -70,6 +73,7 @@ struct ITMHashCacheState
 };
 
 #include "../Objects/ITMVoxelBlockHash.h"
+#include "../Objects/ITMVoxelBlockHHash.h"
 #include "../Objects/ITMPlainVoxelArray.h"
 
 /** \brief
@@ -184,6 +188,7 @@ typedef ITMVoxel_s ITMVoxel;
 /** This chooses the way the voxels are addressed and indexed. At the moment,
     valid options are ITMVoxelBlockHash and ITMPlainVoxelArray.
 */
+//typedef ITMLib::Objects::ITMVoxelBlockHHash ITMVoxelIndex;
 typedef ITMLib::Objects::ITMVoxelBlockHash ITMVoxelIndex;
 //typedef ITMLib::Objects::ITMPlainVoxelArray ITMVoxelIndex;
 

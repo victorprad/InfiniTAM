@@ -59,6 +59,8 @@ namespace ITMLib
 			ITMSwappingEngine<ITMVoxel,ITMVoxelIndex> *swappingEngine;
 			ITMVisualisationEngine<ITMVoxel,ITMVoxelIndex> *visualisationEngine;
 			ITMVisualisationState *visualisationState;
+			ITMVoxelBlockOpEngine<ITMVoxel, ITMVoxelIndex> *voxelBlockOpEngine;
+
 		public:
 			enum GetImageType
 			{

@@ -1,15 +1,10 @@
-// Copyright 2014 Isis Innovation Limited and the authors of InfiniTAM
-
 #pragma once
 
 #include <stdlib.h>
 
 #include "../Utils/ITMLibDefines.h"
-#ifndef COMPILE_WITHOUT_CUDA
-#include "../Engine/DeviceSpecific/CUDA/ITMCUDADefines.h"
-#endif
 
-#include "ITMHashTable.h"
+#include "ITMHHashTable.h"
 
 namespace ITMLib
 {
@@ -20,34 +15,36 @@ namespace ITMLib
 		    implementation. It contains all the data needed on the CPU
 		    and a pointer to the data structure on the GPU.
 		*/
-		class ITMVoxelBlockHash
+		class ITMVoxelBlockHHash
 		{
 			public:
-			typedef ITMHashTable IndexData;
+			typedef ITMHHashTable IndexData;
 
 			struct IndexCache {
 				Vector3i blockPos;
-				int blockPtr;
-				_CPU_AND_GPU_CODE_ IndexCache(void) : blockPos(0x7fffffff), blockPtr(-1) {}
+				int blockPtr; int blockSize;
+				_CPU_AND_GPU_CODE_ IndexCache(void) : blockPos(0x7fffffff), blockPtr(-1), blockSize(1) {}
 			};
 
 			/** Maximum number of total entries. */
 			static const int noVoxelBlocks = IndexData::noTotalEntries;
 			static const int voxelBlockSize = SDF_BLOCK_SIZE * SDF_BLOCK_SIZE * SDF_BLOCK_SIZE;
-            
+
 			private:
 			IndexData *hashData;
 			bool dataIsOnGPU;
-			int lastFreeExcessListId;
+			int lastFreeExcessListId[SDF_HASH_NO_H_LEVELS];
 
 			public:
 			/** Number of entries in the live list. */
 			int noLiveEntries;
 
-			int GetLastFreeExcessListId(void) { return lastFreeExcessListId; }
-			void SetLastFreeExcessListId(int lastFreeExcessListId) { this->lastFreeExcessListId = lastFreeExcessListId; }
+			int* GetLastFreeExcessListIds(void) { return lastFreeExcessListId; }
+			int GetLastFreeExcessListId(int htIndex) { return lastFreeExcessListId[htIndex]; }
+			void SetLastFreeExcessListIds(const int *_lastFreeExcessListIds) { for (int l = 0; l < IndexData::noLevels; ++l) this->lastFreeExcessListId[l] = _lastFreeExcessListIds[l]; }
+			void SetLastFreeExcessListId(int lastFreeExcessListId, int htIndex) { this->lastFreeExcessListId[htIndex] = lastFreeExcessListId; }
 
-			ITMVoxelBlockHash(bool allocateGPU)
+			ITMVoxelBlockHHash(bool allocateGPU)
 			{
 				this->dataIsOnGPU = allocateGPU;
 				this->noLiveEntries = 0;
@@ -63,16 +60,26 @@ namespace ITMLib
 #endif
 					delete hashData_host;
 				}
-				else hashData = hashData_host;
-				lastFreeExcessListId = SDF_EXCESS_LIST_SIZE - 1;
+				else
+				{
+					hashData = hashData_host;
+				}
+
+				for (int i = 0; i < SDF_HASH_NO_H_LEVELS; i++) lastFreeExcessListId[i] = SDF_EXCESS_LIST_SIZE - 1;
 			}
 
-			~ITMVoxelBlockHash(void)	
+			~ITMVoxelBlockHHash(void)	
 			{
-				if (!dataIsOnGPU) delete hashData;
+				if (!dataIsOnGPU)
+				{
+					delete hashData;
+				}
+				else
+				{
 #ifndef COMPILE_WITHOUT_CUDA
-				else ITMSafeCall(cudaFree(hashData));
+					ITMSafeCall(cudaFree(hashData));
 #endif
+				}
 			}
 
 			/** Get the list of actual entries in the hash table. */
@@ -98,11 +105,11 @@ namespace ITMLib
 			int getNumAllocatedVoxelBlocks(void) { return SDF_LOCAL_BLOCK_NUM; }
 			int getVoxelBlockSize(void) { return voxelBlockSize; }
 
-			_CPU_AND_GPU_CODE_ inline const IndexData* getIndexData(void) const { return hashData; }
+			_CPU_AND_GPU_CODE_ const IndexData* getIndexData(void) const { return hashData; }
 
 			// Suppress the default copy constructor and assignment operator
-			ITMVoxelBlockHash(const ITMVoxelBlockHash&);
-			ITMVoxelBlockHash& operator=(const ITMVoxelBlockHash&);           
+			ITMVoxelBlockHHash(const ITMVoxelBlockHHash&);
+			ITMVoxelBlockHHash& operator=(const ITMVoxelBlockHHash&);
 		};
 	}
 }

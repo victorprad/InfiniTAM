@@ -25,6 +25,8 @@ ITMMainEngine::ITMMainEngine(const ITMLibSettings *settings, const ITMRGBDCalib 
 		sceneRecoEngine = new ITMSceneReconstructionEngine_CUDA<ITMVoxel,ITMVoxelIndex>();
 		if (settings->useSwapping) swappingEngine = new ITMSwappingEngine_CUDA<ITMVoxel,ITMVoxelIndex>();
 		visualisationEngine = new ITMVisualisationEngine_CUDA<ITMVoxel,ITMVoxelIndex>();
+
+		voxelBlockOpEngine = new ITMVoxelBlockOpEngine_CUDA<ITMVoxel, ITMVoxelIndex>();
 #endif
 	}
 	else
@@ -33,6 +35,8 @@ ITMMainEngine::ITMMainEngine(const ITMLibSettings *settings, const ITMRGBDCalib 
 		sceneRecoEngine = new ITMSceneReconstructionEngine_CPU<ITMVoxel,ITMVoxelIndex>();
 		if (settings->useSwapping) swappingEngine = new ITMSwappingEngine_CPU<ITMVoxel,ITMVoxelIndex>();
 		visualisationEngine = new ITMVisualisationEngine_CPU<ITMVoxel,ITMVoxelIndex>();
+
+		voxelBlockOpEngine = new ITMVoxelBlockOpEngine_CPU<ITMVoxel, ITMVoxelIndex>();
 	}
 
 	trackerPrimary = ITMTrackerFactory::MakePrimaryTracker(*settings, imgSize_rgb, imgSize_d, lowLevelEngine);
@@ -54,9 +58,14 @@ ITMMainEngine::~ITMMainEngine()
 
 	if (settings->useSwapping) delete swappingEngine;
 
+	delete voxelBlockOpEngine;
+
 	delete trackingState;
 	delete scene;
 	delete view;
+
+	if (visualisationState != NULL)
+		delete visualisationState;
 
 	delete settings;
 }
@@ -96,6 +105,9 @@ void ITMMainEngine::ProcessFrame(void)
 		if (trackerSecondary != NULL) trackerSecondary->TrackCamera(trackingState, view);
 
 	}
+
+	// split and merge voxel blocks according to their complexity
+	voxelBlockOpEngine->SplitAndMerge(scene);
 
 	// allocation
 	sceneRecoEngine->AllocateSceneFromDepth(scene, view, trackingState->pose_d);
