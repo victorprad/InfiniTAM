@@ -214,13 +214,13 @@ static void RenderImage_common(const ITMScene<TVoxel, TIndex> *scene, const ITMP
 	const Vector2f *minmaxdata = renderState->renderingRangeImage->GetData(MEMORYDEVICE_CUDA);
 	Vector4f *pointsRay = renderState->raycastResult->GetData(MEMORYDEVICE_CUDA);
 
-	Vector4u *outRendering = outputImage->GetData(MEMORYDEVICE_CUDA);
-
 	dim3 cudaBlockSize(8, 8);
 	dim3 gridSize((int)ceil((float)imgSize.x / (float)cudaBlockSize.x), (int)ceil((float)imgSize.y / (float)cudaBlockSize.y));
 
 	genericRaycast_device<TVoxel, TIndex> << <gridSize, cudaBlockSize >> >(pointsRay, scene->localVBA.GetVoxelBlocks(),
 		scene->index.getIndexData(), imgSize, invM, projParams, oneOverVoxelSize, minmaxdata, mu);
+
+	Vector4u *outRendering = outputImage->GetData(MEMORYDEVICE_CUDA);
 
 	if (useColour && TVoxel::hasColorInformation)
 		renderColour_device<TVoxel, TIndex> << <gridSize, cudaBlockSize >> >(outRendering, pointsRay, scene->localVBA.GetVoxelBlocks(),
@@ -249,17 +249,17 @@ static void CreatePointCloud_common(const ITMScene<TVoxel, TIndex> *scene, const
 	const Vector2f *minmaxdata = renderState->renderingRangeImage->GetData(MEMORYDEVICE_CUDA);
 	Vector4f *pointsRay = renderState->raycastResult->GetData(MEMORYDEVICE_CUDA);
 
+	dim3 cudaBlockSize(16, 16);
+	dim3 gridSize = getGridSize(imgSize, cudaBlockSize);
+
+	genericRaycast_device<TVoxel, TIndex> << <gridSize, cudaBlockSize >> >(pointsRay, scene->localVBA.GetVoxelBlocks(),
+		scene->index.getIndexData(), imgSize, invM, projParams, oneOverVoxelSize, minmaxdata, mu);
+
 	Vector4f *locations = trackingState->pointCloud->locations->GetData(MEMORYDEVICE_CUDA);
 	Vector4f *colours = trackingState->pointCloud->colours->GetData(MEMORYDEVICE_CUDA);
 	Vector4u *outRendering = renderState->raycastImage->GetData(MEMORYDEVICE_CUDA);
 
-	dim3 cudaBlockSize(16, 16);
-	dim3 gridSize = getGridSize(imgSize, cudaBlockSize);
-
 	ITMSafeCall(cudaMemset(noTotalPoints_device, 0, sizeof(uint)));
-
-	genericRaycast_device<TVoxel, TIndex> << <gridSize, cudaBlockSize >> >(pointsRay, scene->localVBA.GetVoxelBlocks(),
-		scene->index.getIndexData(), imgSize, invM, projParams, oneOverVoxelSize, minmaxdata, mu);
 
 	renderPointCloud_device<TVoxel, TIndex> << <gridSize, cudaBlockSize >> >(outRendering, locations, colours, noTotalPoints_device,
 		pointsRay, scene->localVBA.GetVoxelBlocks(), scene->index.getIndexData(), skipPoints, voxelSize, imgSize, lightSource);
@@ -285,10 +285,6 @@ void CreateICPMaps_common(const ITMScene<TVoxel, TIndex> *scene, const ITMView *
 	const Vector2f *minmaxdata = renderState->renderingRangeImage->GetData(MEMORYDEVICE_CUDA);
 	Vector4f *pointsRay = renderState->raycastResult->GetData(MEMORYDEVICE_CUDA);
 
-	Vector4f *pointsMap = trackingState->pointCloud->locations->GetData(MEMORYDEVICE_CUDA);
-	Vector4f *normalsMap = trackingState->pointCloud->colours->GetData(MEMORYDEVICE_CUDA);
-	Vector4u *outRendering = renderState->raycastImage->GetData(MEMORYDEVICE_CUDA);
-
 	{
 		dim3 cudaBlockSize(16, 16);
 		dim3 gridSize((int)ceil((float)imgSize.x / (float)cudaBlockSize.x), (int)ceil((float)imgSize.y / (float)cudaBlockSize.y));
@@ -300,6 +296,10 @@ void CreateICPMaps_common(const ITMScene<TVoxel, TIndex> *scene, const ITMView *
 	{
 		dim3 cudaBlockSize(16, 12);
 		dim3 gridSize((int)ceil((float)imgSize.x / (float)cudaBlockSize.x), (int)ceil((float)imgSize.y / (float)cudaBlockSize.y));
+
+		Vector4f *pointsMap = trackingState->pointCloud->locations->GetData(MEMORYDEVICE_CUDA);
+		Vector4f *normalsMap = trackingState->pointCloud->colours->GetData(MEMORYDEVICE_CUDA);
+		Vector4u *outRendering = renderState->raycastImage->GetData(MEMORYDEVICE_CUDA);
 
 		renderICP_device<TVoxel, TIndex> << <gridSize, cudaBlockSize >> >(outRendering, pointsMap, normalsMap, pointsRay,
 			scene->localVBA.GetVoxelBlocks(), scene->index.getIndexData(), voxelSize, imgSize, lightSource);
