@@ -11,7 +11,7 @@ ITMSceneReconstructionEngine_CPU<TVoxel,ITMVoxelBlockHash>::ITMSceneReconstructi
 {
 	int noTotalEntries = ITMVoxelBlockHash::noVoxelBlocks;
 	entriesAllocType = new ORUtils::MemoryBlock<unsigned char>(noTotalEntries, MEMORYDEVICE_CPU);
-	blockCoords = new ORUtils::MemoryBlock<Vector3s>(noTotalEntries, MEMORYDEVICE_CPU);
+	blockCoords = new ORUtils::MemoryBlock<Vector4s>(noTotalEntries, MEMORYDEVICE_CPU);
 }
 
 template<class TVoxel>
@@ -110,7 +110,7 @@ void ITMSceneReconstructionEngine_CPU<TVoxel, ITMVoxelBlockHash>::AllocateSceneF
 	int *liveEntryIDs = renderState_vh->GetLiveEntryIDs();
 	uchar *entriesVisibleType = renderState_vh->GetEntriesVisibleType();
 	uchar *entriesAllocType = this->entriesAllocType->GetData(MEMORYDEVICE_CPU);
-	Vector3s *blockCoords = this->blockCoords->GetData(MEMORYDEVICE_CPU);
+	Vector4s *blockCoords = this->blockCoords->GetData(MEMORYDEVICE_CPU);
 	int noTotalEntries = scene->index.noVoxelBlocks;
 
 	bool useSwapping = scene->useSwapping;
@@ -120,14 +120,11 @@ void ITMSceneReconstructionEngine_CPU<TVoxel, ITMVoxelBlockHash>::AllocateSceneF
 	int lastFreeVoxelBlockId = scene->localVBA.lastFreeBlockId;
 	int lastFreeExcessListId = scene->index.lastFreeExcessListId;
 
-	Vector3s pt_block_prev;
-	pt_block_prev.x = 0; pt_block_prev.y = 0; pt_block_prev.z = 0;
-
 	int hashIdxLive = 0;
 
 	memset(entriesAllocType, 0, noTotalEntries);
 	memset(entriesVisibleType, 0, noTotalEntries);
-	memset(blockCoords, 0, noTotalEntries * sizeof(Vector3s));
+	memset(blockCoords, 0, noTotalEntries * sizeof(Vector4s));
 
 	//build hashVisibility
 	for (int y = 0; y < depthImgSize.y; y++) for (int x = 0; x < depthImgSize.x; x++)
@@ -151,7 +148,7 @@ void ITMSceneReconstructionEngine_CPU<TVoxel, ITMVoxelBlockHash>::AllocateSceneF
 
 			if (vbaIdx >= 0) //there is room in the voxel block array
 			{
-				Vector3s pt_block_all = blockCoords[targetIdx];
+				Vector4s pt_block_all = blockCoords[targetIdx];
 
 				hashEntry.pos.x = pt_block_all.x; hashEntry.pos.y = pt_block_all.y; hashEntry.pos.z = pt_block_all.z;
 				hashEntry.ptr = voxelAllocationList[vbaIdx];
@@ -166,7 +163,7 @@ void ITMSceneReconstructionEngine_CPU<TVoxel, ITMVoxelBlockHash>::AllocateSceneF
 
 			if (vbaIdx >= 0 && exlIdx >= 0) //there is room in the voxel block array and excess list
 			{
-				Vector3s pt_block_all = blockCoords[targetIdx];
+				Vector4s pt_block_all = blockCoords[targetIdx];
 
 				hashEntry.pos.x = pt_block_all.x; hashEntry.pos.y = pt_block_all.y; hashEntry.pos.z = pt_block_all.z;
 				hashEntry.ptr = voxelAllocationList[vbaIdx];

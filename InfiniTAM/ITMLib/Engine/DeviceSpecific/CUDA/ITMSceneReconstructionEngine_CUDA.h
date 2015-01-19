@@ -18,7 +18,7 @@ namespace ITMLib
 		private:
 			int *noAllocatedVoxelEntries_device, *noAllocatedExcessEntries_device, *noLiveEntries_device;
 			unsigned char *entriesAllocType_device;
-			Vector3s *blockCoords_device;
+			Vector4s *blockCoords_device;
 
 		public:
 			void AllocateSceneFromDepth(ITMScene<TVoxel, ITMVoxelBlockHash> *scene, const ITMView *view, const ITMTrackingState *trackingState,

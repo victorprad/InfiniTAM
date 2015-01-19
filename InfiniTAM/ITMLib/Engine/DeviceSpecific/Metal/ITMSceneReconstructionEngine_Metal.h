@@ -16,9 +16,14 @@ namespace ITMLib
         template<class TVoxel>
         class ITMSceneReconstructionEngine_Metal<TVoxel,ITMVoxelBlockHash> : public ITMSceneReconstructionEngine_CPU<TVoxel,ITMVoxelBlockHash>
         {
+        private:
+            void BuildAllocAndVisibleType(ITMScene<TVoxel, ITMVoxelBlockHash> *scene, const ITMView *view,
+                                          const ITMTrackingState *trackingState, const ITMRenderState *renderState);
         public:
             void IntegrateIntoScene(ITMScene<TVoxel, ITMVoxelBlockHash> *scene, const ITMView *view, const ITMTrackingState *trackingState,
                                     const ITMRenderState *renderState);
+            void AllocateSceneFromDepth(ITMScene<TVoxel, ITMVoxelBlockHash> *scene, const ITMView *view,
+                                        const ITMTrackingState *trackingState, const ITMRenderState *renderState);
             
             ITMSceneReconstructionEngine_Metal(void);
         };
@@ -37,4 +42,12 @@ struct IntegrateIntoScene_VH_Params
     Matrix4f M_d, M_rgb;
     Vector4f projParams_d, projParams_rgb;
     float _voxelSize, mu, maxW;
+};
+
+struct BuildAllocVisibleType_VH_Params
+{
+    Matrix4f invM_d;
+    Vector4f invProjParams_d;
+    Vector4f others;
+    Vector2i depthImgSize;
 };

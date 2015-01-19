@@ -44,3 +44,22 @@ kernel void integrateIntoScene_vh_device(DEVICEPTR(ITMVoxel) *localVBA          
                                                                          params->projParams_rgb, params->mu, params->maxW, depth,
                                                                          params->depthImgSize, rgb, params->rgbImgSize);
 }
+
+kernel void buildAllocAndVisibleType_vh_device(DEVICEPTR(unsigned char) *entriesAllocType                   [[ buffer(0) ]],
+                                               DEVICEPTR(unsigned char) *entriesVisibleType                 [[ buffer(1) ]],
+                                               DEVICEPTR(Vector4s) *blockCoords                             [[ buffer(2) ]],
+                                               const DEVICEPTR(ITMHashEntry) *hashTable                     [[ buffer(3) ]],
+                                               const DEVICEPTR(float) *depth                                [[ buffer(4) ]],
+                                               const CONSTANT(BuildAllocVisibleType_VH_Params) *params      [[ buffer(5) ]],
+                                               uint3 threadIdx                                              [[ thread_position_in_threadgroup ]],
+                                               uint3 blockIdx                                               [[ threadgroup_position_in_grid ]],
+                                               uint3 blockDim                                               [[ threads_per_threadgroup ]])
+{
+    int x = threadIdx.x + blockIdx.x * blockDim.x, y = threadIdx.y + blockIdx.y * blockDim.y;
+    
+    if (x >= params->depthImgSize.x || y >= params->depthImgSize.y) return;
+    
+    buildHashAllocAndVisibleTypePP(entriesAllocType, entriesVisibleType, x, y, blockCoords, depth, params->invM_d,
+                                   params->invProjParams_d, params->others.x, params->depthImgSize, params->others.y,
+                                   hashTable, params->others.z, params->others.w);
+}

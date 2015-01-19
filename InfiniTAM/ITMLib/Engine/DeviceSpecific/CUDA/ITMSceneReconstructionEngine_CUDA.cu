@@ -17,12 +17,12 @@ __global__ void integrateIntoScene_device(TVoxel *voxelArray, const ITMPlainVoxe
 	const Vector4u *rgb, Vector2i rgbImgSize, const float *depth, Vector2i depthImgSize, Matrix4f M_d, Matrix4f M_rgb, Vector4f projParams_d, 
 	Vector4f projParams_rgb, float _voxelSize, float mu, int maxW);
 
-__global__ void buildHashAllocAndVisibleType_device(uchar *entriesAllocType, uchar *entriesVisibleType, Vector3s *blockCoords, const float *depth,
+__global__ void buildHashAllocAndVisibleType_device(uchar *entriesAllocType, uchar *entriesVisibleType, Vector4s *blockCoords, const float *depth,
 	Matrix4f invM_d, Vector4f projParams_d, float mu, Vector2i _imgSize, float _voxelSize, ITMHashEntry *hashTable, float viewFrustum_min,
 	float viewFrustrum_max);
 
 __global__ void allocateVoxelBlocksList_device(int *voxelAllocationList, int *excessAllocationList, ITMHashEntry *hashTable, int noTotalEntries,
-	int *noAllocatedVoxelEntries, int *noAllocatedExcessEntries, uchar *entriesAllocType, uchar *entriesVisibleType, Vector3s *blockCoords);
+	int *noAllocatedVoxelEntries, int *noAllocatedExcessEntries, uchar *entriesAllocType, uchar *entriesVisibleType, Vector4s *blockCoords);
 
 __global__ void reAllocateSwappedOutVoxelBlocks_device(int *voxelAllocationList, ITMHashEntry *hashTable, int noTotalEntries,
 	int *noAllocatedVoxelEntries, uchar *entriesVisibleType);
@@ -42,7 +42,7 @@ ITMSceneReconstructionEngine_CUDA<TVoxel,ITMVoxelBlockHash>::ITMSceneReconstruct
 
 	int noTotalEntries = ITMVoxelBlockHash::noVoxelBlocks;
 	ITMSafeCall(cudaMalloc((void**)&entriesAllocType_device, noTotalEntries));
-	ITMSafeCall(cudaMalloc((void**)&blockCoords_device, noTotalEntries * sizeof(Vector3s)));
+	ITMSafeCall(cudaMalloc((void**)&blockCoords_device, noTotalEntries * sizeof(Vector4s)));
 }
 
 template<class TVoxel>
@@ -256,7 +256,7 @@ __global__ void integrateIntoScene_device(TVoxel *localVBA, const ITMHashEntry *
 	ComputeUpdatedVoxelInfo<TVoxel::hasColorInformation,TVoxel>::compute(localVoxelBlock[locId], pt_model, M_d, projParams_d, M_rgb, projParams_rgb, mu, maxW, depth, depthImgSize, rgb, rgbImgSize);
 }
 
-__global__ void buildHashAllocAndVisibleType_device(uchar *entriesAllocType, uchar *entriesVisibleType, Vector3s *blockCoords, const float *depth,
+__global__ void buildHashAllocAndVisibleType_device(uchar *entriesAllocType, uchar *entriesVisibleType, Vector4s *blockCoords, const float *depth,
 	Matrix4f invM_d, Vector4f projParams_d, float mu, Vector2i _imgSize, float _voxelSize, ITMHashEntry *hashTable, float viewFrustum_min,
 	float viewFrustum_max)
 {
@@ -269,7 +269,7 @@ __global__ void buildHashAllocAndVisibleType_device(uchar *entriesAllocType, uch
 }
 
 __global__ void allocateVoxelBlocksList_device(int *voxelAllocationList, int *excessAllocationList, ITMHashEntry *hashTable, int noTotalEntries,
-	int *noAllocatedVoxelEntries, int *noAllocatedExcessEntries, uchar *entriesAllocType, uchar *entriesVisibleType, Vector3s *blockCoords)
+	int *noAllocatedVoxelEntries, int *noAllocatedExcessEntries, uchar *entriesAllocType, uchar *entriesVisibleType, Vector4s *blockCoords)
 {
 	int targetIdx = threadIdx.x + blockIdx.x * blockDim.x;
 	if (targetIdx > noTotalEntries - 1) return;
@@ -284,7 +284,7 @@ __global__ void allocateVoxelBlocksList_device(int *voxelAllocationList, int *ex
 
 		if (vbaIdx >= 0) //there is room in the voxel block array
 		{
-			Vector3s pt_block_all = blockCoords[targetIdx];
+			Vector4s pt_block_all = blockCoords[targetIdx];
 
 			hashEntry.pos.x = pt_block_all.x; hashEntry.pos.y = pt_block_all.y; hashEntry.pos.z = pt_block_all.z;
 			hashEntry.ptr = voxelAllocationList[vbaIdx];
@@ -299,7 +299,7 @@ __global__ void allocateVoxelBlocksList_device(int *voxelAllocationList, int *ex
 
 		if (vbaIdx >= 0 && exlIdx >= 0) //there is room in the voxel block array and excess list
 		{
-			Vector3s pt_block_all = blockCoords[targetIdx];
+			Vector4s pt_block_all = blockCoords[targetIdx];
 
 			hashEntry.pos.x = pt_block_all.x; hashEntry.pos.y = pt_block_all.y; hashEntry.pos.z = pt_block_all.z;
 			hashEntry.ptr = voxelAllocationList[vbaIdx];

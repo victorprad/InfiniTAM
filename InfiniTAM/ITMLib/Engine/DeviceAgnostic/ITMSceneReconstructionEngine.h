@@ -115,8 +115,8 @@ struct ComputeUpdatedVoxelInfo<true,TVoxel> {
 };
 
 _CPU_AND_GPU_CODE_ inline void buildHashAllocAndVisibleTypePP(DEVICEPTR(uchar) *entriesAllocType, DEVICEPTR(uchar) *entriesVisibleType, int x, int y,
-	DEVICEPTR(Vector3s) *blockCoords, const DEVICEPTR(float) *depth, Matrix4f invM_d, Vector4f projParams_d, float mu, Vector2i imgSize,
-        float oneOverVoxelSize, DEVICEPTR(ITMHashEntry) *hashTable, float viewFrustum_min, float viewFrustum_max)
+	DEVICEPTR(Vector4s) *blockCoords, const DEVICEPTR(float) *depth, Matrix4f invM_d, Vector4f projParams_d, float mu, Vector2i imgSize,
+	float oneOverVoxelSize, const DEVICEPTR(ITMHashEntry) *hashTable, float viewFrustum_min, float viewFrustum_max)
 {
     float depth_measure; unsigned int hashIdx; int noSteps, lastFreeInBucketIdx;
     Vector4f pt_camera_f; Vector3f pt_block_e, pt_block, direction; Vector3s pt_block_a;
@@ -178,7 +178,7 @@ _CPU_AND_GPU_CODE_ inline void buildHashAllocAndVisibleTypePP(DEVICEPTR(uchar) *
                 entriesAllocType[hashIdx_toModify] = 1; //needs allocation and has room in ordered list
                 entriesVisibleType[hashIdx_toModify] = 1; //new entry is visible
                 
-                blockCoords[hashIdx_toModify] = pt_block_a; //per-image hash collisions are ignored (will be picked up next frame)
+				blockCoords[hashIdx_toModify] = Vector4s(pt_block_a.x, pt_block_a.y, pt_block_a.z, 0); //per-image hash collisions are ignored (will be picked up next frame)
             }
             else //might be in the excess list
             {
@@ -206,7 +206,7 @@ _CPU_AND_GPU_CODE_ inline void buildHashAllocAndVisibleTypePP(DEVICEPTR(uchar) *
                 if (!foundValue) //still not found -> must add into excess list
                 {
                     entriesAllocType[hashIdx_toModify] = 2; //needs allocation in the excess list
-                    blockCoords[hashIdx_toModify] = pt_block_a; //per-image hash collisions are ignored 
+					blockCoords[hashIdx_toModify] = Vector4s(pt_block_a.x, pt_block_a.y, pt_block_a.z, 0); //per-image hash collisions are ignored 
                 }
             }
         }

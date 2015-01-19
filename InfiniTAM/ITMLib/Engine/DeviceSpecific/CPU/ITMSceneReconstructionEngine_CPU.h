@@ -17,7 +17,7 @@ namespace ITMLib
 		{
 		protected:
 			ORUtils::MemoryBlock<unsigned char> *entriesAllocType;
-			ORUtils::MemoryBlock<Vector3s> *blockCoords;
+			ORUtils::MemoryBlock<Vector4s> *blockCoords;
 
 		public:
 			void AllocateSceneFromDepth(ITMScene<TVoxel, ITMVoxelBlockHash> *scene, const ITMView *view, const ITMTrackingState *trackingState,
@@ -35,7 +35,7 @@ namespace ITMLib
 		{
 		private:
 			unsigned char *entriesAllocType;
-			Vector3s *blockCoords;
+			Vector4s *blockCoords;
 
 		public:
 			void AllocateSceneFromDepth(ITMScene<TVoxel, ITMPlainVoxelArray> *scene, const ITMView *view, const ITMTrackingState *trackingState,
