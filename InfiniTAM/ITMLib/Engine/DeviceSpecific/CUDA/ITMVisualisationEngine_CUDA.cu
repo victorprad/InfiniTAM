@@ -195,16 +195,12 @@ void ITMVisualisationEngine_CUDA<TVoxel, ITMVoxelBlockHash>::CreateExpectedDepth
 	}
 }
 
-template<class TVoxel, class TIndex>
-static void RenderImage_common(const ITMScene<TVoxel, TIndex> *scene, const ITMPose *pose, const ITMIntrinsics *intrinsics, const ITMRenderState *renderState,
-	ITMUChar4Image *outputImage, bool useColour)
+template <class TVoxel, class TIndex>
+static Vector3f Raycast_common(const ITMScene<TVoxel, TIndex> *scene, const Vector2i& imgSize, const Matrix4f& invM, Vector4f projParams, const ITMRenderState *renderState, dim3 cudaBlockSize, dim3 gridSize)
 {
-	Vector2i imgSize = outputImage->noDims;
 	float voxelSize = scene->sceneParams->voxelSize;
 	float oneOverVoxelSize = 1.0f / voxelSize;
 
-	Matrix4f invM = pose->invM;
-	Vector4f projParams = intrinsics->projectionParamsSimple.all;
 	projParams.x = 1.0f / projParams.x;
 	projParams.y = 1.0f / projParams.y;
 
@@ -214,13 +210,32 @@ static void RenderImage_common(const ITMScene<TVoxel, TIndex> *scene, const ITMP
 	const Vector2f *minmaxdata = renderState->renderingRangeImage->GetData(MEMORYDEVICE_CUDA);
 	Vector4f *pointsRay = renderState->raycastResult->GetData(MEMORYDEVICE_CUDA);
 
+	genericRaycast_device<TVoxel, TIndex> <<<gridSize, cudaBlockSize>>>(pointsRay, scene->localVBA.GetVoxelBlocks(),
+		scene->index.getIndexData(), imgSize, invM, projParams, oneOverVoxelSize, minmaxdata, mu);
+
+	return lightSource;
+}
+
+template<class TVoxel, class TIndex>
+static void RenderImage_common(const ITMScene<TVoxel, TIndex> *scene, const ITMPose *pose, const ITMIntrinsics *intrinsics, const ITMRenderState *renderState,
+	ITMUChar4Image *outputImage, bool useColour)
+{
+	Vector2i imgSize = outputImage->noDims;
 	dim3 cudaBlockSize(8, 8);
 	dim3 gridSize((int)ceil((float)imgSize.x / (float)cudaBlockSize.x), (int)ceil((float)imgSize.y / (float)cudaBlockSize.y));
 
-	genericRaycast_device<TVoxel, TIndex> << <gridSize, cudaBlockSize >> >(pointsRay, scene->localVBA.GetVoxelBlocks(),
-		scene->index.getIndexData(), imgSize, invM, projParams, oneOverVoxelSize, minmaxdata, mu);
+	Vector3f lightSource = Raycast_common(
+		scene,
+		imgSize,
+		pose->invM,
+		intrinsics->projectionParamsSimple.all,
+		renderState,
+		cudaBlockSize,
+		gridSize
+	);
 
 	Vector4u *outRendering = outputImage->GetData(MEMORYDEVICE_CUDA);
+	Vector4f *pointsRay = renderState->raycastResult->GetData(MEMORYDEVICE_CUDA);
 
 	if (useColour && TVoxel::hasColorInformation)
 		renderColour_device<TVoxel, TIndex> << <gridSize, cudaBlockSize >> >(outRendering, pointsRay, scene->localVBA.GetVoxelBlocks(),
@@ -235,34 +250,28 @@ static void CreatePointCloud_common(const ITMScene<TVoxel, TIndex> *scene, const
 	bool skipPoints, uint *noTotalPoints_device)
 {
 	Vector2i imgSize = view->rgb->noDims;
-	float voxelSize = scene->sceneParams->voxelSize;
-	float oneOverVoxelSize = 1.0f / voxelSize;
-
-	Matrix4f invM = trackingState->pose_d->invM * view->calib->trafo_rgb_to_depth.calib;
-	Vector4f projParams = view->calib->intrinsics_rgb.projectionParamsSimple.all;
-	projParams.x = 1.0f / projParams.x;
-	projParams.y = 1.0f / projParams.y;
-
-	float mu = scene->sceneParams->mu;
-	Vector3f lightSource = -Vector3f(invM.getColumn(2));
-
-	const Vector2f *minmaxdata = renderState->renderingRangeImage->GetData(MEMORYDEVICE_CUDA);
-	Vector4f *pointsRay = renderState->raycastResult->GetData(MEMORYDEVICE_CUDA);
-
 	dim3 cudaBlockSize(16, 16);
 	dim3 gridSize = getGridSize(imgSize, cudaBlockSize);
 
-	genericRaycast_device<TVoxel, TIndex> << <gridSize, cudaBlockSize >> >(pointsRay, scene->localVBA.GetVoxelBlocks(),
-		scene->index.getIndexData(), imgSize, invM, projParams, oneOverVoxelSize, minmaxdata, mu);
+	Vector3f lightSource = Raycast_common(
+		scene,
+		imgSize,
+		trackingState->pose_d->invM * view->calib->trafo_rgb_to_depth.calib,
+		view->calib->intrinsics_rgb.projectionParamsSimple.all,
+		renderState,
+		cudaBlockSize,
+		gridSize
+	);
+
+	ITMSafeCall(cudaMemset(noTotalPoints_device, 0, sizeof(uint)));
 
 	Vector4f *locations = trackingState->pointCloud->locations->GetData(MEMORYDEVICE_CUDA);
 	Vector4f *colours = trackingState->pointCloud->colours->GetData(MEMORYDEVICE_CUDA);
 	Vector4u *outRendering = renderState->raycastImage->GetData(MEMORYDEVICE_CUDA);
-
-	ITMSafeCall(cudaMemset(noTotalPoints_device, 0, sizeof(uint)));
+	Vector4f *pointsRay = renderState->raycastResult->GetData(MEMORYDEVICE_CUDA);
 
 	renderPointCloud_device<TVoxel, TIndex> << <gridSize, cudaBlockSize >> >(outRendering, locations, colours, noTotalPoints_device,
-		pointsRay, scene->localVBA.GetVoxelBlocks(), scene->index.getIndexData(), skipPoints, voxelSize, imgSize, lightSource);
+		pointsRay, scene->localVBA.GetVoxelBlocks(), scene->index.getIndexData(), skipPoints, scene->sceneParams->voxelSize, imgSize, lightSource);
 
 	ITMSafeCall(cudaMemcpy(&trackingState->pointCloud->noTotalPoints, noTotalPoints_device, sizeof(uint), cudaMemcpyDeviceToHost));
 }
@@ -271,26 +280,21 @@ template<class TVoxel, class TIndex>
 void CreateICPMaps_common(const ITMScene<TVoxel, TIndex> *scene, const ITMView *view, ITMTrackingState *trackingState, ITMRenderState *renderState)
 {
 	Vector2i imgSize = view->depth->noDims;
-	float voxelSize = scene->sceneParams->voxelSize;
-	float oneOverVoxelSize = 1.0f / voxelSize;
-
-	Matrix4f invM = trackingState->pose_d->invM;
-	Vector4f projParams = view->calib->intrinsics_d.projectionParamsSimple.all;
-	projParams.x = 1.0f / projParams.x;
-	projParams.y = 1.0f / projParams.y;
-
-	float mu = scene->sceneParams->mu;
-	Vector3f lightSource = -Vector3f(invM.getColumn(2));
-
-	const Vector2f *minmaxdata = renderState->renderingRangeImage->GetData(MEMORYDEVICE_CUDA);
-	Vector4f *pointsRay = renderState->raycastResult->GetData(MEMORYDEVICE_CUDA);
+	Vector3f lightSource;
 
 	{
 		dim3 cudaBlockSize(16, 16);
 		dim3 gridSize((int)ceil((float)imgSize.x / (float)cudaBlockSize.x), (int)ceil((float)imgSize.y / (float)cudaBlockSize.y));
 
-		genericRaycast_device<TVoxel, TIndex> << <gridSize, cudaBlockSize >> >(pointsRay, scene->localVBA.GetVoxelBlocks(),
-			scene->index.getIndexData(), imgSize, invM, projParams, oneOverVoxelSize, minmaxdata, mu);
+		lightSource = Raycast_common(
+			scene,
+			imgSize,
+			trackingState->pose_d->invM,
+			view->calib->intrinsics_d.projectionParamsSimple.all,
+			renderState,
+			cudaBlockSize,
+			gridSize
+		);
 	}
 
 	{
@@ -300,9 +304,10 @@ void CreateICPMaps_common(const ITMScene<TVoxel, TIndex> *scene, const ITMView *
 		Vector4f *pointsMap = trackingState->pointCloud->locations->GetData(MEMORYDEVICE_CUDA);
 		Vector4f *normalsMap = trackingState->pointCloud->colours->GetData(MEMORYDEVICE_CUDA);
 		Vector4u *outRendering = renderState->raycastImage->GetData(MEMORYDEVICE_CUDA);
+		Vector4f *pointsRay = renderState->raycastResult->GetData(MEMORYDEVICE_CUDA);
 
 		renderICP_device<TVoxel, TIndex> << <gridSize, cudaBlockSize >> >(outRendering, pointsMap, normalsMap, pointsRay,
-			scene->localVBA.GetVoxelBlocks(), scene->index.getIndexData(), voxelSize, imgSize, lightSource);
+			scene->localVBA.GetVoxelBlocks(), scene->index.getIndexData(), scene->sceneParams->voxelSize, imgSize, lightSource);
 	}
 
 	ITMSafeCall(cudaThreadSynchronize());
