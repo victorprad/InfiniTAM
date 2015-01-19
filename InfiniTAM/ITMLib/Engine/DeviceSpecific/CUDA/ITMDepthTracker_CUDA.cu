@@ -22,8 +22,9 @@ __global__ void depthTrackerOneLevel_g_rt_device(ITMDepthTracker_CUDA::AccuCell 
 
 // host methods
 
-ITMDepthTracker_CUDA::ITMDepthTracker_CUDA(Vector2i imgSize, int noHierarchyLevels, int noRotationOnlyLevels, int noICPRunTillLevel,  float distThresh, ITMLowLevelEngine *lowLevelEngine)
-	:ITMDepthTracker(imgSize, noHierarchyLevels, noRotationOnlyLevels, noICPRunTillLevel, distThresh, lowLevelEngine, true)
+ITMDepthTracker_CUDA::ITMDepthTracker_CUDA(Vector2i imgSize, int noHierarchyLevels, int noRotationOnlyLevels, int noICPRunTillLevel,  
+	float distThresh, ITMLowLevelEngine *lowLevelEngine)
+	:ITMDepthTracker(imgSize, noHierarchyLevels, noRotationOnlyLevels, noICPRunTillLevel, distThresh, lowLevelEngine, MEMORYDEVICE_CUDA)
 {
 	Vector2i gridSize((imgSize.x+15)/16, (imgSize.y+15)/16);
 
@@ -40,7 +41,7 @@ ITMDepthTracker_CUDA::~ITMDepthTracker_CUDA(void)
 void ITMDepthTracker_CUDA::ChangeIgnorePixelToZero(ITMFloatImage *image)
 {
 	Vector2i dims = image->noDims;
-	float *imageData = image->GetData(true);
+	float *imageData = image->GetData(MEMORYDEVICE_CUDA);
 
 	dim3 blockSize(16, 16);
 	dim3 gridSize((int)ceil((float)dims.x / (float)blockSize.x), (int)ceil((float)dims.y / (float)blockSize.y));
@@ -53,12 +54,12 @@ int ITMDepthTracker_CUDA::ComputeGandH(ITMSceneHierarchyLevel *sceneHierarchyLev
 {
 	int noValidPoints;
 
-	Vector4f *pointsMap = sceneHierarchyLevel->pointsMap->GetData(true);
-	Vector4f *normalsMap = sceneHierarchyLevel->normalsMap->GetData(true);
+	Vector4f *pointsMap = sceneHierarchyLevel->pointsMap->GetData(MEMORYDEVICE_CUDA);
+	Vector4f *normalsMap = sceneHierarchyLevel->normalsMap->GetData(MEMORYDEVICE_CUDA);
 	Vector4f sceneIntrinsics = sceneHierarchyLevel->intrinsics;
 	Vector2i sceneImageSize = sceneHierarchyLevel->pointsMap->noDims;
 
-	float *depth = viewHierarchyLevel->depth->GetData(true);
+	float *depth = viewHierarchyLevel->depth->GetData(MEMORYDEVICE_CUDA);
 	Vector4f viewIntrinsics = viewHierarchyLevel->intrinsics;
 	Vector2i viewImageSize = viewHierarchyLevel->depth->noDims;
 

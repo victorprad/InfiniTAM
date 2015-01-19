@@ -20,7 +20,7 @@ __global__ void renTrackerOneLevel_g_device(float *g_device, float *h_device, Ve
 
 template<class TVoxel, class TIndex>
 ITMRenTracker_CUDA<TVoxel, TIndex>::ITMRenTracker_CUDA(Vector2i imgSize, int noHierarchyLevels, ITMLowLevelEngine *lowLevelEngine, const ITMScene<TVoxel,TIndex> *scene) 
-	: ITMRenTracker<TVoxel, TIndex>(imgSize, noHierarchyLevels, lowLevelEngine, scene, true)
+	: ITMRenTracker<TVoxel, TIndex>(imgSize, noHierarchyLevels, lowLevelEngine, scene, MEMORYDEVICE_CUDA)
 { 
 	int dim_f = 1, dim_g = 6, dim_h = 6 + 5 + 4 + 3 + 2 + 1;
 
@@ -61,7 +61,7 @@ void ITMRenTracker_CUDA<TVoxel,TIndex>::F_oneLevel(float *f, Matrix4f invM)
 
 	ITMSafeCall(cudaMemset(f_device, 0, sizeof(float) * gridSize.x));
 
-	renTrackerOneLevel_f_device<TVoxel,TIndex> << <gridSize, blockSize >> >(f_device, this->viewHierarchy->levels[this->levelId]->depth->GetData(true), 
+	renTrackerOneLevel_f_device<TVoxel,TIndex> << <gridSize, blockSize >> >(f_device, this->viewHierarchy->levels[this->levelId]->depth->GetData(MEMORYDEVICE_CUDA), 
 		this->viewHierarchy->levels[this->levelId]->depth->dataSize, voxelBlocks, index, oneOverVoxelSize, invM);
 
 	ITMSafeCall(cudaMemcpy(f_host, f_device, sizeof(float)* gridSize.x, cudaMemcpyDeviceToHost));
@@ -76,7 +76,7 @@ template<class TVoxel, class TIndex>
 void ITMRenTracker_CUDA<TVoxel,TIndex>::G_oneLevel(float *gradient, float *hessian, Matrix4f invM) const
 {
 	int count = this->viewHierarchy->levels[this->levelId]->depth->dataSize;
-	Vector4f *ptList = this->viewHierarchy->levels[this->levelId]->depth->GetData(true);
+	Vector4f *ptList = this->viewHierarchy->levels[this->levelId]->depth->GetData(MEMORYDEVICE_CUDA);
 
 	const TVoxel *voxelBlocks = this->scene->localVBA.GetVoxelBlocks();
 	const typename TIndex::IndexData *index = this->scene->index.getIndexData();
@@ -121,8 +121,8 @@ void ITMRenTracker_CUDA<TVoxel,TIndex>::G_oneLevel(float *gradient, float *hessi
 template<class TVoxel, class TIndex>
 void ITMRenTracker_CUDA<TVoxel,TIndex>::UnprojectDepthToCam(ITMFloatImage *depth, ITMFloat4Image *upPtCloud, const Vector4f &intrinsic)
 {
-	float *depthMap = depth->GetData(true);
-	Vector4f *camPoints = upPtCloud->GetData(true);
+	float *depthMap = depth->GetData(MEMORYDEVICE_CUDA);
+	Vector4f *camPoints = upPtCloud->GetData(MEMORYDEVICE_CUDA);
 
 	Vector4f ooIntrinsics;
 	ooIntrinsics.x = 1.0f / intrinsic.x; ooIntrinsics.y = 1.0f / intrinsic.y;

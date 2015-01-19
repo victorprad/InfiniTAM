@@ -267,4 +267,3 @@ typedef ITMLib::Objects::ITMVoxelBlockHash ITMVoxelIndex;
 	ryifrklaeybfcklarybckyar++; \
 }
 #endif
-

@@ -26,24 +26,24 @@ __global__ void gradientY_device(Vector4s *grad, const Vector4u *image, Vector2i
 
 void ITMLowLevelEngine_CUDA::CopyImage(ITMUChar4Image *image_out, const ITMUChar4Image *image_in)
 {
-	Vector4u *dest = image_out->GetData(true);
-	const Vector4u *src = image_in->GetData(true);
+	Vector4u *dest = image_out->GetData(MEMORYDEVICE_CUDA);
+	const Vector4u *src = image_in->GetData(MEMORYDEVICE_CUDA);
 
 	ITMSafeCall(cudaMemcpy(dest, src, image_in->dataSize * sizeof(Vector4u), cudaMemcpyDeviceToDevice));
 }
 
 void ITMLowLevelEngine_CUDA::CopyImage(ITMFloatImage *image_out, const ITMFloatImage *image_in)
 {
-	float *dest = image_out->GetData(true);
-	const float *src = image_in->GetData(true);
+	float *dest = image_out->GetData(MEMORYDEVICE_CUDA);
+	const float *src = image_in->GetData(MEMORYDEVICE_CUDA);
 
 	ITMSafeCall(cudaMemcpy(dest, src, image_in->dataSize * sizeof(float), cudaMemcpyDeviceToDevice));
 }
 
 void ITMLowLevelEngine_CUDA::CopyImage(ITMFloat4Image *image_out, const ITMFloat4Image *image_in)
 {
-	Vector4f *dest = image_out->GetData(true);
-	const Vector4f *src = image_in->GetData(true);
+	Vector4f *dest = image_out->GetData(MEMORYDEVICE_CUDA);
+	const Vector4f *src = image_in->GetData(MEMORYDEVICE_CUDA);
 
 	ITMSafeCall(cudaMemcpy(dest, src, image_in->dataSize * sizeof(Vector4f), cudaMemcpyDeviceToDevice));
 }
@@ -55,8 +55,8 @@ void ITMLowLevelEngine_CUDA::FilterSubsample(ITMUChar4Image *image_out, const IT
 
 	image_out->ChangeDims(newDims);
 
-	const Vector4u *imageData_in = image_in->GetData(true);
-	Vector4u *imageData_out = image_out->GetData(true);
+	const Vector4u *imageData_in = image_in->GetData(MEMORYDEVICE_CUDA);
+	Vector4u *imageData_out = image_out->GetData(MEMORYDEVICE_CUDA);
 
 	dim3 blockSize(16, 16);
 	dim3 gridSize((int)ceil((float)newDims.x / (float)blockSize.x), (int)ceil((float)newDims.y / (float)blockSize.y));
@@ -71,8 +71,8 @@ void ITMLowLevelEngine_CUDA::FilterSubsampleWithHoles(ITMFloatImage *image_out, 
 
 	image_out->ChangeDims(newDims);
 
-	const float *imageData_in = image_in->GetData(true);
-	float *imageData_out = image_out->GetData(true);
+	const float *imageData_in = image_in->GetData(MEMORYDEVICE_CUDA);
+	float *imageData_out = image_out->GetData(MEMORYDEVICE_CUDA);
 
 	dim3 blockSize(16, 16);
 	dim3 gridSize((int)ceil((float)newDims.x / (float)blockSize.x), (int)ceil((float)newDims.y / (float)blockSize.y));
@@ -87,8 +87,8 @@ void ITMLowLevelEngine_CUDA::FilterSubsampleWithHoles(ITMFloat4Image *image_out,
 
 	image_out->ChangeDims(newDims);
 
-	const Vector4f *imageData_in = image_in->GetData(true);
-	Vector4f *imageData_out = image_out->GetData(true);
+	const Vector4f *imageData_in = image_in->GetData(MEMORYDEVICE_CUDA);
+	Vector4f *imageData_out = image_out->GetData(MEMORYDEVICE_CUDA);
 
 	dim3 blockSize(16, 16);
 	dim3 gridSize((int)ceil((float)newDims.x / (float)blockSize.x), (int)ceil((float)newDims.y / (float)blockSize.y));
@@ -101,8 +101,8 @@ void ITMLowLevelEngine_CUDA::GradientX(ITMShort4Image *grad_out, const ITMUChar4
 	grad_out->ChangeDims(image_in->noDims);
 	Vector2i imgSize = image_in->noDims;
 
-	Vector4s *grad = grad_out->GetData(true); 
-	const Vector4u *image = image_in->GetData(true);
+	Vector4s *grad = grad_out->GetData(MEMORYDEVICE_CUDA);
+	const Vector4u *image = image_in->GetData(MEMORYDEVICE_CUDA);
 
 	dim3 blockSize(16, 16);
 	dim3 gridSize((int)ceil((float)imgSize.x / (float)blockSize.x), (int)ceil((float)imgSize.y / (float)blockSize.y));
@@ -117,8 +117,8 @@ void ITMLowLevelEngine_CUDA::GradientY(ITMShort4Image *grad_out, const ITMUChar4
 	grad_out->ChangeDims(image_in->noDims);
 	Vector2i imgSize = image_in->noDims;
 
-	Vector4s *grad = grad_out->GetData(true);
-	const Vector4u *image = image_in->GetData(true);
+	Vector4s *grad = grad_out->GetData(MEMORYDEVICE_CUDA);
+	const Vector4u *image = image_in->GetData(MEMORYDEVICE_CUDA);
 
 	dim3 blockSize(16, 16);
 	dim3 gridSize((int)ceil((float)imgSize.x / (float)blockSize.x), (int)ceil((float)imgSize.y / (float)blockSize.y));
@@ -133,8 +133,8 @@ void ITMLowLevelEngine_CUDA::ConvertDisparityToDepth(ITMFloatImage *depth_out, c
 {
 	Vector2i imgSize = depth_in->noDims;
 
-	const short *d_in = depth_in->GetData(true);
-	float *d_out = depth_out->GetData(true);
+	const short *d_in = depth_in->GetData(MEMORYDEVICE_CUDA);
+	float *d_out = depth_out->GetData(MEMORYDEVICE_CUDA);
 
 	Vector2f disparityCalibParams; float fx_depth;
 	disparityCalibParams.x = disparityCalib->params.x;
@@ -151,8 +151,8 @@ void ITMLowLevelEngine_CUDA::ConvertDepthMMToFloat(ITMFloatImage *depth_out, con
 {
 	Vector2i imgSize = depth_in->noDims;
 
-	const short *d_in = depth_in->GetData(true);
-	float *d_out = depth_out->GetData(true);
+	const short *d_in = depth_in->GetData(MEMORYDEVICE_CUDA);
+	float *d_out = depth_out->GetData(MEMORYDEVICE_CUDA);
 
 	dim3 blockSize(16, 16);
 	dim3 gridSize((int)ceil((float)imgSize.x / (float)blockSize.x), (int)ceil((float)imgSize.y / (float)blockSize.y));

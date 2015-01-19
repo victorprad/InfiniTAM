@@ -204,7 +204,7 @@ void OpenNIEngine::getImages(ITMView *out)
 	if (depthAvailable && !data->depthFrame.isValid()) return;
 	if (colorAvailable && !data->colorFrame.isValid()) return;
 
-	Vector4u *rgb = out->rgb->GetData(false);
+	Vector4u *rgb = out->rgb->GetData(MEMORYDEVICE_CPU);
 	if (colorAvailable)
 	{
 		const openni::RGB888Pixel* colorImagePix = (const openni::RGB888Pixel*)data->colorFrame.getData();
@@ -217,7 +217,7 @@ void OpenNIEngine::getImages(ITMView *out)
 	}
 	else memset(rgb, 0, out->rgb->dataSize * sizeof(Vector4u));
 
-	short *depth = out->rawDepth->GetData(false);
+	short *depth = out->rawDepth->GetData(MEMORYDEVICE_CPU);
 	if (depthAvailable)
 	{
 		const openni::DepthPixel* depthImagePix = (const openni::DepthPixel*)data->depthFrame.getData();

@@ -34,8 +34,8 @@ namespace ITMLib
 			/** Global content of the 8x8x8 voxel blocks -- stored on host only */
 			ITMGlobalCache<TVoxel> *globalCache;
 
-			ITMScene(const ITMSceneParams *sceneParams, bool useSwapping, bool allocateGPU)
-				: index(allocateGPU), localVBA(allocateGPU, index.getNumAllocatedVoxelBlocks(), index.getVoxelBlockSize())
+			ITMScene(const ITMSceneParams *sceneParams, bool useSwapping, MemoryDeviceType memoryType)
+				: index(memoryType), localVBA(memoryType, index.getNumAllocatedVoxelBlocks(), index.getVoxelBlockSize())
 			{
 				this->sceneParams = sceneParams;
 				this->useSwapping = useSwapping;

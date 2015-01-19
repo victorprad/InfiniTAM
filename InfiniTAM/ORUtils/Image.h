@@ -2,169 +2,62 @@
 
 #pragma once
 
-#include "Vector.h"
-#include "CUDADefines.h"
-
-#ifdef COMPILE_WITH_METAL
-#include "../Engine/DeviceSpecific/Metal/ITMMetalContext.h"
-#endif
-
-#include <stdlib.h>
-#include <string.h>
+#include "MemoryBlock.h"
 
 namespace ORUtils
 {
 	/** \brief
-	    Represents images, templated on the pixel type
+	Represents images, templated on the pixel type
 	*/
 	template <typename T>
-	class Image
+	class Image : public MemoryBlock < T >
 	{
-	private:
-		bool allocateGPU;
-		int isAllocated;
-
-		/** Pointer to memory on CPU host. */
-		T* data_host;
-		/** Pointer to memory on GPU, if available. */
-		T* data_device;
-
-#ifdef COMPILE_WITH_METAL
-		void *metalBuffer;
-#endif
 	public:
 		/** Size of the image in pixels. */
 		Vector2i noDims;
-		/** Total number of pixels allocated. */
-		int dataSize;
-
-		/** Get the data pointer on CPU or GPU. */
-		inline T* GetData(bool useGPU) { return useGPU ? data_device : data_host; }
-
-		/** Get the data pointer on CPU or GPU. */
-		inline const T* GetData(bool useGPU) const { return useGPU ? data_device : data_host; }
-
-		/** Initialize an empty 0x0 image, either on CPU only
-		    or on both CPU and GPU.
-		*/
-		explicit Image(bool allocateGPU = false)
-		{
-			this->isAllocated = false;
-			this->noDims.x = this->noDims.y = 0;
-			this->allocateGPU = allocateGPU;
-		}
 
 		/** Initialize an empty image of the given size, either
-		    on CPU only or on both CPU and GPU.
+		on CPU only or on both CPU and GPU.
 		*/
-		Image(Vector2i noDims, bool allocateGPU = false)
+		Image(Vector2i noDims, bool allocate_CPU, bool allocate_CUDA, bool metalCompatible = true)
+			: MemoryBlock<T>(noDims.x * noDims.y, allocate_CPU, allocate_CUDA, metalCompatible)
 		{
-			this->isAllocated = false;
-			this->allocateGPU = allocateGPU;
-			Allocate(noDims);
-			this->Clear();
+			this->noDims = noDims;
+		}
+
+		Image(bool allocate_CPU, bool allocate_CUDA, bool metalCompatible = true)
+			: MemoryBlock<T>(1, allocate_CPU, allocate_CUDA, metalCompatible)
+		{
+			this->noDims = Vector2i(1, 1);  //TODO - make nicer
+		}
+
+		Image(Vector2i noDims, MemoryDeviceType memoryType)
+			: MemoryBlock<T>(noDims.x * noDims.y, memoryType)
+		{
+			this->noDims = noDims;
 		}
 
 		/** Resize an image, loosing all old image data.
-		    Essentially any previously allocated data is
-		    released, new memory is allocated.
+		Essentially any previously allocated data is
+		released, new memory is allocated.
 		*/
 		void ChangeDims(Vector2i newDims)
 		{
-			if ((newDims != noDims)||(!isAllocated)) {
-				Free();
-				Allocate(newDims);
+			if (newDims != noDims)
+			{
+				this->noDims = newDims;
+
+				bool allocate_CPU = this->isAllocated_CPU;
+				bool allocate_CUDA = this->isAllocated_CUDA;
+				bool metalCompatible = this->isMetalCompatible;
+
+				this->Free();
+				this->Allocate(newDims.x * newDims.y, allocate_CPU, allocate_CUDA, metalCompatible);
 			}
 		}
-
-		/** Set all image data to the given @p defaultValue. */
-		void Clear(unsigned char defaultValue = 0) 
-		{ 
-			memset(data_host, defaultValue, dataSize * sizeof(T)); 
-#ifndef COMPILE_WITHOUT_CUDA
-			if (allocateGPU) ORcudaSafeCall(cudaMemset(data_device, defaultValue, dataSize * sizeof(T)));
-#endif
-		}
-
-		/** Transfer data from CPU to GPU, if possible. */
-		void UpdateDeviceFromHost() {
-#ifndef COMPILE_WITHOUT_CUDA
-			if (allocateGPU) ORcudaSafeCall(cudaMemcpy(data_device, data_host, dataSize * sizeof(T), cudaMemcpyHostToDevice));
-#endif
-		}
-		/** Transfer data from GPU to CPU, if possible. */
-		void UpdateHostFromDevice() {
-#ifndef COMPILE_WITHOUT_CUDA
-			if (allocateGPU) ORcudaSafeCall(cudaMemcpy(data_host, data_device, dataSize * sizeof(T), cudaMemcpyDeviceToHost));
-#endif
-		}
-
-		/** Copy image content, does not resize image! */
-		void SetFrom(const Image<T> *source, bool copyHost = true, bool copyDevice = false)
-		{
-			if (copyHost) memcpy(this->data_host, source->data_host, source->dataSize * sizeof(T));
-#ifndef COMPILE_WITHOUT_CUDA
-			if (copyDevice) ORcudaSafeCall(cudaMemcpy(this->data_device, source->data_device, source->dataSize * sizeof(T), cudaMemcpyDeviceToDevice));
-#endif
-		}
-
-		~Image() { this->Free(); }
 
 		// Suppress the default copy constructor and assignment operator
 		Image(const Image&);
 		Image& operator=(const Image&);
-
-		/** Allocate image data of the specified size. If the
-		    image has been allocated before, nothing is done,
-		    irrespective of size.
-		*/
-		void Allocate(Vector2i noDims)
-		{
-			if (!this->isAllocated) {
-				this->noDims = noDims;
-				dataSize = noDims.x * noDims.y;
-
-				if (allocateGPU)
-				{
-#ifndef COMPILE_WITHOUT_CUDA
-					ORcudaSafeCall(cudaMallocHost((void**)&data_host, dataSize * sizeof(T)));
-					ORcudaSafeCall(cudaMalloc((void**)&data_device, dataSize * sizeof(T)));
-#endif
-				}
-				else
-				{
-#ifdef COMPILE_WITH_METAL
-					allocateMetalData((void**)&data_host, (void**)&metalBuffer, dataSize * sizeof(T), true);
-#else
-					data_host = new T[dataSize];
-#endif
-				}
-			}
-
-			isAllocated = true;
-		}
-
-		/** Release allocated memory for this image */
-		void Free()
-		{
-			if (this->isAllocated) {
-				if (allocateGPU) {
-#ifndef COMPILE_WITHOUT_CUDA
-					ORcudaSafeCall(cudaFree(data_device)); 
-					ORcudaSafeCall(cudaFreeHost(data_host)); 
-#endif
-				}
-				else
-				{
-#ifdef COMPILE_WITH_METAL
-					freeMetalData((void**)&data_host, (void**)&metalBuffer, dataSize * sizeof(T), true);
-#else
-					delete[] data_host;
-#endif
-				}
-			}
-
-			this->isAllocated = false;
-		}
 	};
 }

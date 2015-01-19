@@ -6,7 +6,7 @@ using namespace ITMLib::Engine;
 
 template<class TVoxel, class TIndex>
 ITMRenTracker_CPU<TVoxel, TIndex>::ITMRenTracker_CPU(Vector2i imgSize, int noHierarchyLevels, ITMLowLevelEngine *lowLevelEngine, const ITMScene<TVoxel,TIndex> *scene)
-	: ITMRenTracker<TVoxel, TIndex>(imgSize, noHierarchyLevels, lowLevelEngine, scene, false) { }
+	: ITMRenTracker<TVoxel, TIndex>(imgSize, noHierarchyLevels, lowLevelEngine, scene, MEMORYDEVICE_CPU) { }
 
 template<class TVoxel, class TIndex>
 ITMRenTracker_CPU<TVoxel,TIndex>::~ITMRenTracker_CPU(void) { }
@@ -15,7 +15,7 @@ template<class TVoxel, class TIndex>
 void ITMRenTracker_CPU<TVoxel,TIndex>::F_oneLevel(float *f, Matrix4f invM)
 {
 	int count = this->viewHierarchy->levels[this->levelId]->depth->dataSize;
-	Vector4f *ptList = this->viewHierarchy->levels[this->levelId]->depth->GetData(false);
+	Vector4f *ptList = this->viewHierarchy->levels[this->levelId]->depth->GetData(MEMORYDEVICE_CPU);
 
 	const TVoxel *voxelBlocks = this->scene->localVBA.GetVoxelBlocks();
 	const typename TIndex::IndexData *index = this->scene->index.getIndexData();
@@ -36,7 +36,7 @@ template<class TVoxel, class TIndex>
 void ITMRenTracker_CPU<TVoxel,TIndex>::G_oneLevel(float *gradient, float *hessian, Matrix4f invM) const
 {
 	int count = this->viewHierarchy->levels[this->levelId]->depth->dataSize;
-	Vector4f *ptList = this->viewHierarchy->levels[this->levelId]->depth->GetData(false);
+	Vector4f *ptList = this->viewHierarchy->levels[this->levelId]->depth->GetData(MEMORYDEVICE_CPU);
 
 	const TVoxel *voxelBlocks = this->scene->localVBA.GetVoxelBlocks();
 	const typename TIndex::IndexData *index = this->scene->index.getIndexData();
@@ -73,8 +73,8 @@ void ITMRenTracker_CPU<TVoxel,TIndex>::G_oneLevel(float *gradient, float *hessia
 template<class TVoxel, class TIndex>
 void ITMRenTracker_CPU<TVoxel,TIndex>::UnprojectDepthToCam(ITMFloatImage *depth, ITMFloat4Image *upPtCloud, const Vector4f &intrinsic)
 {
-	float *depthMap = depth->GetData(false);
-	Vector4f *camPoints = upPtCloud->GetData(false);
+	float *depthMap = depth->GetData(MEMORYDEVICE_CPU);
+	Vector4f *camPoints = upPtCloud->GetData(MEMORYDEVICE_CPU);
 
 	Vector4f ooIntrinsics;
 	ooIntrinsics.x = 1.0f / intrinsic.x; ooIntrinsics.y = 1.0f / intrinsic.y;

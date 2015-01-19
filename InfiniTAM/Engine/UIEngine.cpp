@@ -60,7 +60,7 @@ void UIEngine::glutDisplayFunction()
 			glEnable(GL_TEXTURE_2D);
 			for (int w = 0; w < NUM_WIN; w++)	{// Draw each sub window
 				glBindTexture(GL_TEXTURE_2D, uiEngine->textureId[w]);
-				glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, showImgs[w]->noDims.x, showImgs[w]->noDims.y, 0, GL_RGBA, GL_UNSIGNED_BYTE, showImgs[w]->GetData(false));
+				glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, showImgs[w]->noDims.x, showImgs[w]->noDims.y, 0, GL_RGBA, GL_UNSIGNED_BYTE, showImgs[w]->GetData(MEMORYDEVICE_CPU));
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 				glBegin(GL_QUADS); {
@@ -382,9 +382,9 @@ void UIEngine::Initialise(int & argc, char** argv, ImageSourceEngine *imageSourc
 #endif
 
 	for (int w = 0; w < NUM_WIN; w++)
-		outImage[w] = new ITMUChar4Image(imageSource->getDepthImageSize(), false);
+		outImage[w] = new ITMUChar4Image(imageSource->getDepthImageSize(), true, false);
 
-	saveImage = new ITMUChar4Image(imageSource->getDepthImageSize(), false);
+	saveImage = new ITMUChar4Image(imageSource->getDepthImageSize(), true, false);
 
 	outImageType[0] = ITMMainEngine::InfiniTAM_IMAGE_SCENERAYCAST;
 	outImageType[1] = ITMMainEngine::InfiniTAM_IMAGE_ORIGINAL_DEPTH;
@@ -408,14 +408,14 @@ void UIEngine::Initialise(int & argc, char** argv, ImageSourceEngine *imageSourc
 
 void UIEngine::SaveScreenshot(const char *filename) const
 {
-	ITMUChar4Image screenshot(getWindowSize());
+	ITMUChar4Image screenshot(getWindowSize(), true, false);
 	GetScreenshot(&screenshot);
 	SaveImageToFile(&screenshot, filename, true);
 }
 
 void UIEngine::GetScreenshot(ITMUChar4Image *dest) const
 {
-	glReadPixels(0, 0, dest->noDims.x, dest->noDims.y, GL_RGBA, GL_UNSIGNED_BYTE, dest->GetData(false));
+	glReadPixels(0, 0, dest->noDims.x, dest->noDims.y, GL_RGBA, GL_UNSIGNED_BYTE, dest->GetData(MEMORYDEVICE_CPU));
 }
 
 void UIEngine::ProcessFrame()

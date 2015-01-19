@@ -18,7 +18,7 @@ __global__ void colorTrackerOneLevel_g_ro_device(float *g_out, float *h_out, Vec
 // host methods
 
 ITMColorTracker_CUDA::ITMColorTracker_CUDA(Vector2i imgSize, int noHierarchyLevels, int noRotationOnlyLevels, ITMLowLevelEngine *lowLevelEngine) 
-	:ITMColorTracker(imgSize, noHierarchyLevels, noRotationOnlyLevels, lowLevelEngine, true)
+	:ITMColorTracker(imgSize, noHierarchyLevels, noRotationOnlyLevels, lowLevelEngine, MEMORYDEVICE_CUDA)
 { 
 	int dim_g = 6;
 	int dim_h = 6 + 5 + 4 + 3 + 2 + 1;
@@ -57,9 +57,9 @@ void ITMColorTracker_CUDA::F_oneLevel(float *f, ITMPose *pose)
 
 	float scaleForOcclusions, final_f;
 
-	Vector4f *locations = trackingState->pointCloud->locations->GetData(true);
-	Vector4f *colours = trackingState->pointCloud->colours->GetData(true);
-	Vector4u *rgb = viewHierarchy->levels[levelId]->rgb->GetData(true);
+	Vector4f *locations = trackingState->pointCloud->locations->GetData(MEMORYDEVICE_CUDA);
+	Vector4f *colours = trackingState->pointCloud->colours->GetData(MEMORYDEVICE_CUDA);
+	Vector4u *rgb = viewHierarchy->levels[levelId]->rgb->GetData(MEMORYDEVICE_CUDA);
 
 	dim3 blockSize(128, 1);
 	dim3 gridSize((int)ceil((float)noTotalPoints / (float)blockSize.x), 1);
@@ -99,11 +99,11 @@ void ITMColorTracker_CUDA::G_oneLevel(float *gradient, float *hessian, ITMPose *
 	for (int i = 0; i < numPara; i++) globalGradient[i] = 0.0f;
 	for (int i = 0; i < numParaSQ; i++) globalHessian[i] = 0.0f;
 
-	Vector4f *locations = trackingState->pointCloud->locations->GetData(true);
-	Vector4f *colours = trackingState->pointCloud->colours->GetData(true);
-	Vector4u *rgb = viewHierarchy->levels[levelId]->rgb->GetData(true);
-	Vector4s *gx = viewHierarchy->levels[levelId]->gradientX_rgb->GetData(true);
-	Vector4s *gy = viewHierarchy->levels[levelId]->gradientY_rgb->GetData(true);
+	Vector4f *locations = trackingState->pointCloud->locations->GetData(MEMORYDEVICE_CUDA);
+	Vector4f *colours = trackingState->pointCloud->colours->GetData(MEMORYDEVICE_CUDA);
+	Vector4u *rgb = viewHierarchy->levels[levelId]->rgb->GetData(MEMORYDEVICE_CUDA);
+	Vector4s *gx = viewHierarchy->levels[levelId]->gradientX_rgb->GetData(MEMORYDEVICE_CUDA);
+	Vector4s *gy = viewHierarchy->levels[levelId]->gradientY_rgb->GetData(MEMORYDEVICE_CUDA);
 
 	dim3 blockSize(128, 1);
 	dim3 gridSize((int)ceil((float)noTotalPoints / (float)blockSize.x), 1);
