@@ -118,33 +118,27 @@ _CPU_AND_GPU_CODE_ inline void buildHashAllocAndVisibleTypePP(DEVICEPTR(uchar) *
 	DEVICEPTR(Vector3s) *blockCoords, const DEVICEPTR(float) *depth, Matrix4f invM_d, Vector4f projParams_d, float mu, Vector2i imgSize, 
 	float oneOverVoxelSize, DEVICEPTR(ITMHashEntry) *hashTable, float viewFrustum_min, float viewFrustum_max)
 {
-	float depth_measure, direction_norm; unsigned int hashIdx; int noSteps, lastFreeInBucketIdx;
+	float depth_measure; unsigned int hashIdx; int noSteps, lastFreeInBucketIdx;
 	Vector4f pt_camera_f; Vector3f pt_block_s, pt_block_e, pt_block, direction; Vector3s pt_block_a;
 
 	depth_measure = depth[x + y * imgSize.x];
 	if (depth_measure <= 0 || (depth_measure - mu) < 0 || (depth_measure - mu) < viewFrustum_min || (depth_measure + mu) > viewFrustum_max) return;
 
-	//find block coords for start ray
-	pt_camera_f.z = depth_measure - mu;
+	pt_camera_f.z = depth_measure;
 	pt_camera_f.x = pt_camera_f.z * ((float(x) - projParams_d.z) * projParams_d.x);
 	pt_camera_f.y = pt_camera_f.z * ((float(y) - projParams_d.w) * projParams_d.y);
 	pt_camera_f.w = 1.0f;
-	pt_block_s = TO_VECTOR3(invM_d * pt_camera_f) * oneOverVoxelSize;
 
-	//find block coords for end ray
-	pt_camera_f.z = depth_measure + mu;
-	pt_camera_f.x = pt_camera_f.z * ((float(x) - projParams_d.z) * projParams_d.x);
-	pt_camera_f.y = pt_camera_f.z * ((float(y) - projParams_d.w) * projParams_d.y);
-	pt_camera_f.w = 1.0f;
-	pt_block_e = TO_VECTOR3(invM_d * pt_camera_f) * oneOverVoxelSize;
+	float norm = sqrtf(pt_camera_f.x * pt_camera_f.x + pt_camera_f.y * pt_camera_f.y + pt_camera_f.z * pt_camera_f.z);
 
-	direction = pt_block_e - pt_block_s;
-	direction_norm = 1.0f / sqrt(direction.x * direction.x + direction.y * direction.y + direction.z * direction.z);
-	direction *= direction_norm;
+	pt_block   = TO_VECTOR3(invM_d * (pt_camera_f * (1.0f - mu/norm))) * oneOverVoxelSize;
+	pt_block_e = TO_VECTOR3(invM_d * (pt_camera_f * (1.0f + mu/norm))) * oneOverVoxelSize;
 
-	pt_block = pt_block_s - direction;
+	direction = pt_block_e - pt_block;
+	norm = sqrtf(direction.x * direction.x + direction.y * direction.y + direction.z * direction.z);
+	noSteps = (int)ceilf(2.0f*norm);
 
-	noSteps = (int)ceil(1.0f / direction_norm) + 1;
+	direction /= (noSteps-1);
 
 	//add neighbouring blocks
 	for (int i = 0; i < noSteps; i++)
