@@ -18,7 +18,6 @@ namespace ITMLib
 			AccuCell *accu_device;
 
 		protected:
-			void ChangeIgnorePixelToZero(ITMFloatImage *image);
 			int ComputeGandH(ITMSceneHierarchyLevel *sceneHierarchyLevel, ITMTemplatedHierarchyLevel<ITMFloatImage> *viewHierarchyLevel,
 				Matrix4f approxInvPose, Matrix4f imagePose, bool rotationOnly);
 

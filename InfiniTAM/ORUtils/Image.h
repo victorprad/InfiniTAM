@@ -4,6 +4,8 @@
 
 #include "MemoryBlock.h"
 
+#ifndef __METALC__
+
 namespace ORUtils
 {
 	/** \brief
@@ -61,3 +63,5 @@ namespace ORUtils
 		Image& operator=(const Image&);
 	};
 }
+
+#endif

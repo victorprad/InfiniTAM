@@ -2,6 +2,8 @@
 
 #pragma once
 
+#ifndef __METALC__
+
 #include <stdlib.h>
 
 #include "../Utils/ITMLibDefines.h"
@@ -76,3 +78,5 @@ namespace ITMLib
 		};
 	}
 }
+
+#endif

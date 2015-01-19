@@ -146,7 +146,6 @@
     <ClInclude Include="ITMLib\Engine\DeviceSpecific\CPU\ITMSwappingEngine_CPU.h" />
     <ClInclude Include="ITMLib\Engine\DeviceSpecific\CPU\ITMVisualisationEngine_CPU.h" />
     <ClInclude Include="ITMLib\Engine\DeviceSpecific\CUDA\ITMColorTracker_CUDA.h" />
-    <ClInclude Include="ITMLib\Engine\DeviceSpecific\CUDA\ITMCUDADefines.h" />
     <ClInclude Include="ITMLib\Engine\DeviceSpecific\CUDA\ITMCUDAUtils.h" />
     <ClInclude Include="ITMLib\Engine\DeviceSpecific\CUDA\ITMDepthTracker_CUDA.h" />
     <ClInclude Include="ITMLib\Engine\DeviceSpecific\CUDA\ITMLowLevelEngine_CUDA.h" />

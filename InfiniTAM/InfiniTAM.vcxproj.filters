@@ -261,9 +261,6 @@
     <ClInclude Include="ITMLib\Objects\ITMLocalVBA.h">
       <Filter>ITMLib\Objects\Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ITMLib\Engine\DeviceSpecific\CUDA\ITMCUDADefines.h">
-      <Filter>ITMLib\Engine\DeviceSpecific\CUDA</Filter>
-    </ClInclude>
     <ClInclude Include="ITMLib\Engine\DeviceSpecific\CUDA\ITMCUDAUtils.h">
       <Filter>ITMLib\Engine\DeviceSpecific\CUDA</Filter>
     </ClInclude>

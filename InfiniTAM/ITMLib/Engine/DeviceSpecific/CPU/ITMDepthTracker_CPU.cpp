@@ -10,14 +10,6 @@ ITMDepthTracker_CPU::ITMDepthTracker_CPU(Vector2i imgSize, int noHierarchyLevels
 
 ITMDepthTracker_CPU::~ITMDepthTracker_CPU(void) { }
 
-void ITMDepthTracker_CPU::ChangeIgnorePixelToZero(ITMFloatImage *image)
-{
-	Vector2i dims = image->noDims;
-	float *imageData = image->GetData(MEMORYDEVICE_CPU);
-
-	for (int i = 0; i < dims.x * dims.y; i++) if (imageData[i] < 0.0f) imageData[i] = 0.0f;
-}
-
 int ITMDepthTracker_CPU::ComputeGandH(ITMSceneHierarchyLevel *sceneHierarchyLevel, ITMTemplatedHierarchyLevel<ITMFloatImage> *viewHierarchyLevel,
 	Matrix4f approxInvPose, Matrix4f scenePose, bool rotationOnly)
 {
@@ -46,13 +38,13 @@ int ITMDepthTracker_CPU::ComputeGandH(ITMSceneHierarchyLevel *sceneHierarchyLeve
 		for (int i = 0; i < noParaSQ; i++) localHessian[i] = 0.0f;
 
 		bool isValidPoint;
-		if (rotationOnly) {
-			isValidPoint = computePerPointGH_Depth<true>(localNabla, localHessian, x, y, depth, viewImageSize, viewIntrinsics, sceneImageSize, sceneIntrinsics,
-				approxInvPose, scenePose, pointsMap, normalsMap, distThresh);
-		} else {
-			isValidPoint = computePerPointGH_Depth<false>(localNabla, localHessian, x, y, depth, viewImageSize, viewIntrinsics, sceneImageSize, sceneIntrinsics,
-				approxInvPose, scenePose, pointsMap, normalsMap, distThresh);
-		}
+        
+		if (rotationOnly)
+            isValidPoint = computePerPointGH_Depth<true>(localNabla, localHessian, x, y, depth[x + y * viewImageSize.x], viewImageSize,
+                                                         viewIntrinsics, sceneImageSize, sceneIntrinsics, approxInvPose, scenePose, pointsMap, normalsMap, distThresh);
+		else
+            isValidPoint = computePerPointGH_Depth<false>(localNabla, localHessian, x, y, depth[x + y * viewImageSize.x], viewImageSize,
+                                                          viewIntrinsics, sceneImageSize, sceneIntrinsics,approxInvPose, scenePose, pointsMap, normalsMap, distThresh);
 
 		noValidPoints += (int)isValidPoint;
 		for (int i = 0; i < noPara; i++) ATb_host[i] += localNabla[i];

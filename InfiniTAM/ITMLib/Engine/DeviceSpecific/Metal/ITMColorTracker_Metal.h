@@ -6,17 +6,17 @@
 
 namespace ITMLib
 {
-	namespace Engine
-	{
-		class ITMColorTracker_Metal : public ITMColorTracker
-		{
-		public:
-			void F_oneLevel(float *f, ITMPose *pose);
-			void G_oneLevel(float *gradient, float *hessian, ITMPose *pose) const;
-
-			ITMColorTracker_Metal(Vector2i imgSize, int noHierarchyLevels, int noRotationOnlyLevels,
-				ITMLowLevelEngine *lowLevelEngine);
-			~ITMColorTracker_Metal(void);
-		};
-	}
+    namespace Engine
+    {
+        class ITMColorTracker_Metal : public ITMColorTracker
+        {
+        public:
+            void F_oneLevel(float *f, ITMPose *pose);
+            void G_oneLevel(float *gradient, float *hessian, ITMPose *pose) const;
+            
+            ITMColorTracker_Metal(Vector2i imgSize, int noHierarchyLevels, int noRotationOnlyLevels,
+                                ITMLowLevelEngine *lowLevelEngine);
+            ~ITMColorTracker_Metal(void);
+        };
+    }
 }

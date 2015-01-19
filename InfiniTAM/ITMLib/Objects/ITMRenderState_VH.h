@@ -30,11 +30,7 @@ namespace ITMLib
 			and tracker.
 			*/
 			ORUtils::MemoryBlock<uchar> *entriesVisibleType;
-
-#ifdef COMPILE_WITH_METAL
-			void *liveEntryIDs_mb;
-			void *entriesVisibleType_mb;
-#endif
+            
 		public:
 			/** Number of entries in the live list. */
 			int noLiveEntries;
@@ -68,8 +64,8 @@ namespace ITMLib
 			uchar *GetEntriesVisibleType(void) { return entriesVisibleType->GetData(memoryType); }
 
 #ifdef COMPILE_WITH_METAL
-			void* GetLiveEntryIDs_MB(void) { return liveEntryIDs_mb; }
-			void* GetEntriesVisibleType_MB(void) { return entriesVisibleType_mb; }
+			const void* GetLiveEntryIDs_MB(void) { return liveEntryIDs->GetMetalBuffer(); }
+			const void* GetEntriesVisibleType_MB(void) { return entriesVisibleType->GetMetalBuffer(); }
 #endif
 		};
 	}

@@ -2,9 +2,13 @@
 
 #pragma once
 
+#ifndef __METALC__
+
 #include <stdlib.h>
 #include "../Utils/ITMLibDefines.h"
 #include "../../ORUtils/MemoryBlock.h"
+
+#endif
 
 namespace ITMLib
 {
@@ -19,7 +23,8 @@ namespace ITMLib
 		private:
 			public:
 			static const CONSTANT(int) noTotalEntries = SDF_BUCKET_NUM * SDF_ENTRY_NUM_PER_BUCKET + SDF_EXCESS_LIST_SIZE;
-            
+
+#ifndef __METALC__
 			/** The actual data in the hash table. */
 			ORUtils::MemoryBlock<ITMHashEntry> *entries;
 
@@ -52,6 +57,7 @@ namespace ITMLib
 
 				for (int i = 0; i < SDF_EXCESS_LIST_SIZE; i++) excessAllocationList[i] = i;
 			}
+#endif
 		};
 	}
-} 
+}

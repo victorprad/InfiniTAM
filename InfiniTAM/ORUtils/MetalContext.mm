@@ -1,13 +1,13 @@
 // Copyright 2014 Isis Innovation Limited and the authors of InfiniTAM
 
-#import "ITMMetalContext.h"
+#import "MetalContext.h"
 #import <Metal/Metal.h>
 
-@implementation ITMMetalContext
+@implementation MetalContext
 
-+(ITMMetalContext*) instance
++(MetalContext*) instance
 {
-    static ITMMetalContext *gInstance = NULL;
+    static MetalContext *gInstance = NULL;
     @synchronized(self)
     {
         if (gInstance == NULL) gInstance = [[self alloc]initWithDevice:nil];
@@ -40,7 +40,7 @@
 void allocateMetalData(void **data, void **metalBuffer, int size, bool roundUp)
 {
     int allocSize;
-    if (roundUp) allocSize = [ITMMetalContext roundUpTo16384:size];
+    if (roundUp) allocSize = [MetalContext roundUpTo16384:size];
     else allocSize = size;
     
     data[0] = mmap(0, allocSize, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANON, -1, 0);
@@ -50,7 +50,7 @@ void allocateMetalData(void **data, void **metalBuffer, int size, bool roundUp)
 void freeMetalData(void **data, void **metalBuffer, int size, bool roundUp)
 {
     int allocSize;
-    if (roundUp) allocSize = [ITMMetalContext roundUpTo16384:size];
+    if (roundUp) allocSize = [MetalContext roundUpTo16384:size];
     else allocSize = size;
     
     munmap(data[0], allocSize);

@@ -9,27 +9,27 @@
 #include <sys/mman.h>
 
 #ifndef BUFFERNOCOPY
-#define BUFFERNOCOPY(x, marime) [[[ITMMetalContext instance]device] newBufferWithBytesNoCopy:(x) length:marime options:MTLResourceOptionCPUCacheModeDefault deallocator:nil]
+#define BUFFERNOCOPY(x, marime) [[[MetalContext instance]device] newBufferWithBytesNoCopy:(x) length:marime options:MTLResourceOptionCPUCacheModeDefault deallocator:nil]
 #endif
 
 #ifndef BUFFERCOPY
-#define BUFFERCOPY(x, marime) [[[ITMMetalContext instance]device] newBufferWithBytes:(x) length:marime options:MTLResourceOptionCPUCacheModeDefault]
+#define BUFFERCOPY(x, marime) [[[MetalContext instance]device] newBufferWithBytes:(x) length:marime options:MTLResourceOptionCPUCacheModeDefault]
 #endif
 
 #ifndef BUFFEREMPTY
-#define BUFFEREMPTY(marime) [[[ITMMetalContext instance]device] newBufferWithLength:marime options:MTLResourceOptionCPUCacheModeDefault]
+#define BUFFEREMPTY(marime) [[[MetalContext instance]device] newBufferWithLength:marime options:MTLResourceOptionCPUCacheModeDefault]
 #endif
 
 @protocol MTLDevice, MTLLibrary, MTLCommandQueue;
 
-@interface ITMMetalContext : NSObject
+@interface MetalContext : NSObject
 
 @property (strong) id<MTLDevice> device;
 @property (strong) id<MTLLibrary> library;
 @property (strong) id<MTLCommandQueue> commandQueue;
 @property (strong) id<MTLCommandBuffer> commandBuffer;
 
-+(ITMMetalContext *) instance;
++(MetalContext *) instance;
 +(int)roundUpTo16384 : (int) size;
 
 @end

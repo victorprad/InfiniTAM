@@ -193,7 +193,7 @@ _CPU_AND_GPU_CODE_ inline Vector4f readFromSDF_color4u_interpolated(const DEVICE
 }
 
 template<class TVoxel, class TIndex>
-_CPU_AND_GPU_CODE_ inline Vector3f computeSingleNormalFromSDF(const DEVICEPTR(TVoxel) *voxelData, const DEVICEPTR(TIndex) *voxelIndex, Vector3f point)
+_CPU_AND_GPU_CODE_ inline Vector3f computeSingleNormalFromSDF(const DEVICEPTR(TVoxel) *voxelData, const DEVICEPTR(TIndex) *voxelIndex, const THREADPTR(Vector3f) &point)
 {
 	bool isFound;
 

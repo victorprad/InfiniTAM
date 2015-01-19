@@ -10,15 +10,15 @@ template<class TVoxel>
 ITMSceneReconstructionEngine_CPU<TVoxel,ITMVoxelBlockHash>::ITMSceneReconstructionEngine_CPU(void) 
 {
 	int noTotalEntries = ITMVoxelBlockHash::noVoxelBlocks;
-	entriesAllocType = (uchar*)malloc(noTotalEntries);
-	blockCoords = (Vector3s*)malloc(noTotalEntries * sizeof(Vector3s));
+	entriesAllocType = new ORUtils::MemoryBlock<unsigned char>(noTotalEntries, MEMORYDEVICE_CPU);
+	blockCoords = new ORUtils::MemoryBlock<Vector3s>(noTotalEntries, MEMORYDEVICE_CPU);
 }
 
 template<class TVoxel>
 ITMSceneReconstructionEngine_CPU<TVoxel,ITMVoxelBlockHash>::~ITMSceneReconstructionEngine_CPU(void) 
 {
-	free(entriesAllocType);
-	free(blockCoords);
+	delete entriesAllocType;
+	delete blockCoords;
 }
 
 template<class TVoxel>
@@ -109,6 +109,8 @@ void ITMSceneReconstructionEngine_CPU<TVoxel, ITMVoxelBlockHash>::AllocateSceneF
 	ITMHashCacheState *cacheStates = scene->useSwapping ? scene->globalCache->GetCacheStates(false) : 0;
 	int *liveEntryIDs = renderState_vh->GetLiveEntryIDs();
 	uchar *entriesVisibleType = renderState_vh->GetEntriesVisibleType();
+	uchar *entriesAllocType = this->entriesAllocType->GetData(MEMORYDEVICE_CPU);
+	Vector3s *blockCoords = this->blockCoords->GetData(MEMORYDEVICE_CPU);
 	int noTotalEntries = scene->index.noVoxelBlocks;
 
 	bool useSwapping = scene->useSwapping;

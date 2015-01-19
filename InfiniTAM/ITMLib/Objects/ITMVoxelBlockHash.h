@@ -35,6 +35,8 @@ namespace ITMLib
 			static const CONSTANT(int) noVoxelBlocks = ITMHashTable::noTotalEntries;
 			static const CONSTANT(int) voxelBlockSize = SDF_BLOCK_SIZE * SDF_BLOCK_SIZE * SDF_BLOCK_SIZE;
 
+#ifndef __METALC__
+            
 		private:
 			DEVICEPTR(ITMHashTable) *hashData;
 			MemoryDeviceType memoryType;
@@ -42,7 +44,6 @@ namespace ITMLib
 		public:
 			int lastFreeExcessListId;
 
-#ifndef __METALC__
 			ITMVoxelBlockHash(MemoryDeviceType memoryType)
 			{
 				this->memoryType = memoryType;
@@ -80,11 +81,9 @@ namespace ITMLib
 			int *GetExcessAllocationList(void) { return hashData->excessAllocationList->GetData(memoryType); }
 			
 #ifdef COMPILE_WITH_METAL
-			void* GetEntries_MB(void) { return hashData->entries_all_mb; }
-			void* GetExcessAllocationList_MB(void) { return hashData->excessAllocationList_mb; }
-			void* GetLiveEntryIDs_MB(void) { return hashData->liveEntryIDs_mb; }
-			void* GetEntriesVisibleType_MB(void) { return hashData->entriesVisibleType_mb; }
-			void* getIndexData_MB(void) const { return hashData->entries_all_mb; }
+			const void* GetEntries_MB(void) { return hashData->entries->GetMetalBuffer(); }
+			const void* GetExcessAllocationList_MB(void) { return hashData->excessAllocationList->GetMetalBuffer(); }
+			const void* getIndexData_MB(void) const { return hashData->entries->GetMetalBuffer(); }
 #endif
 
 			inline const IndexData* getIndexData(void) const { return hashData->entries->GetData(memoryType); }

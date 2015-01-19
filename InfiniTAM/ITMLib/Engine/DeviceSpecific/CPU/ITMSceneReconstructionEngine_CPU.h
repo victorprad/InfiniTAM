@@ -15,9 +15,9 @@ namespace ITMLib
 		template<class TVoxel>
 		class ITMSceneReconstructionEngine_CPU<TVoxel, ITMVoxelBlockHash> : public ITMSceneReconstructionEngine < TVoxel, ITMVoxelBlockHash >
 		{
-		private:
-			unsigned char *entriesAllocType;
-			Vector3s *blockCoords;
+		protected:
+			ORUtils::MemoryBlock<unsigned char> *entriesAllocType;
+			ORUtils::MemoryBlock<Vector3s> *blockCoords;
 
 		public:
 			void AllocateSceneFromDepth(ITMScene<TVoxel, ITMVoxelBlockHash> *scene, const ITMView *view, const ITMTrackingState *trackingState,

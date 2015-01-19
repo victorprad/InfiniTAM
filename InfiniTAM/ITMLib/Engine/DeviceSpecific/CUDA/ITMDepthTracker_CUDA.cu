@@ -13,8 +13,6 @@ struct ITMDepthTracker_CUDA::AccuCell {
 	float h[6+5+4+3+2+1];
 };
 
-__global__ void changeIgnorePixelToZero_device(float *imageData_out, Vector2i imgSize);
-
 template<bool rotationOnly>
 __global__ void depthTrackerOneLevel_g_rt_device(ITMDepthTracker_CUDA::AccuCell *accu, float *depth, Matrix4f approxInvPose, Vector4f *pointsMap,
 	Vector4f *normalsMap, Vector4f sceneIntrinsics, Vector2i sceneImageSize, Matrix4f scenePose, Vector4f viewIntrinsics, Vector2i viewImageSize,
@@ -36,17 +34,6 @@ ITMDepthTracker_CUDA::~ITMDepthTracker_CUDA(void)
 {
 	delete[] accu_host;
 	ITMSafeCall(cudaFree(accu_device));
-}
-
-void ITMDepthTracker_CUDA::ChangeIgnorePixelToZero(ITMFloatImage *image)
-{
-	Vector2i dims = image->noDims;
-	float *imageData = image->GetData(MEMORYDEVICE_CUDA);
-
-	dim3 blockSize(16, 16);
-	dim3 gridSize((int)ceil((float)dims.x / (float)blockSize.x), (int)ceil((float)dims.y / (float)blockSize.y));
-
-	changeIgnorePixelToZero_device << <gridSize, blockSize >> >(imageData, dims);
 }
 
 int ITMDepthTracker_CUDA::ComputeGandH(ITMSceneHierarchyLevel *sceneHierarchyLevel, ITMTemplatedHierarchyLevel<ITMFloatImage> *viewHierarchyLevel,
@@ -99,13 +86,6 @@ int ITMDepthTracker_CUDA::ComputeGandH(ITMSceneHierarchyLevel *sceneHierarchyLev
 
 // device functions
 
-__global__ void changeIgnorePixelToZero_device(float *imageData, Vector2i imgSize)
-{
-	int x = threadIdx.x + blockIdx.x * blockDim.x, y = threadIdx.y + blockIdx.y * blockDim.y;
-	if (x > imgSize.x - 1 || y > imgSize.y - 1) return;
-	if (imageData[x + y * imgSize.x] < 0.0f) imageData[x + y * imgSize.x] = 0.0f;
-}
-
 template<bool rotationOnly>
 __global__ void depthTrackerOneLevel_g_rt_device(ITMDepthTracker_CUDA::AccuCell *accu, float *depth, Matrix4f approxInvPose, Vector4f *pointsMap,
 	Vector4f *normalsMap, Vector4f sceneIntrinsics, Vector2i sceneImageSize, Matrix4f scenePose, Vector4f viewIntrinsics, Vector2i viewImageSize,
@@ -131,8 +111,9 @@ __global__ void depthTrackerOneLevel_g_rt_device(ITMDepthTracker_CUDA::AccuCell 
 
 	if (x < viewImageSize.x && y < viewImageSize.y)
 	{
-		isValidPoint = computePerPointGH_Depth<rotationOnly>(localNabla, localHessian, x, y, depth, viewImageSize, viewIntrinsics, sceneImageSize, sceneIntrinsics,
-			approxInvPose, scenePose, pointsMap, normalsMap, distThresh);
+		isValidPoint = computePerPointGH_Depth<rotationOnly>(localNabla, localHessian, x, y, depth[x + y * viewImageSize.x], viewImageSize, viewIntrinsics, 
+			sceneImageSize, sceneIntrinsics, approxInvPose, scenePose, pointsMap, normalsMap, distThresh);
+
 		if (isValidPoint) should_prefix = true;
 	}
 
