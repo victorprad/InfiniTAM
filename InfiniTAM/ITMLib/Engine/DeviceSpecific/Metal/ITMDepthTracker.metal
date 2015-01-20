@@ -26,24 +26,34 @@ kernel void depthTrackerOneLevel_g_rt_device(DEVICEPTR(float) *noValidPoints    
     
     int noPara = rotationOnly ? 3 : 6, noParaSQ = rotationOnly ? 6 : 21;
     
-    if (x < params->viewImageSize.x && y < params->viewImageSize.y)
+    for (int i = 0; i < noPara; i++) localNabla[i] = 0.0f;
+    for (int i = 0; i < noParaSQ; i++) localHessian[i] = 0.0f;
+    
+    float noValidPointsTotal = 0;
+    int ratio = (int)params->others.z;
+    
+    for (int offY = 0; offY < ratio; offY++) for (int offX = 0; offX < ratio; offX++)
     {
-        int locId = x + y * params->viewImageSize.x;
+        int locX = x * ratio + offX, locY = y * ratio + offY;
         
         if (rotationOnly)
-            isValidPoint = computePerPointGH_Depth<true>(localNabla, localHessian, x, y, depth[locId], params->viewImageSize,
+            isValidPoint = computePerPointGH_Depth<true>(localNabla, localHessian, locX, locY, depth[locX + locY * params->viewImageSize.x], params->viewImageSize,
                                                          params->viewIntrinsics, params->sceneImageSize, params->sceneIntrinsics, params->approxInvPose,
                                                          params->scenePose, pointsMap, normalsMap, params->others[0]);
         else
-            isValidPoint = computePerPointGH_Depth<false>(localNabla, localHessian, x, y, depth[locId], params->viewImageSize,
+            isValidPoint = computePerPointGH_Depth<false>(localNabla, localHessian, locX, locY, depth[locX + locY * params->viewImageSize.x], params->viewImageSize,
                                                           params->viewIntrinsics, params->sceneImageSize, params->sceneIntrinsics, params->approxInvPose,
                                                           params->scenePose, pointsMap, normalsMap, params->others[0]);
-
-        if (isValidPoint)
-        {
-            noValidPoints[locId] = isValidPoint;
-            for (int i = 0; i < noPara; i++) ATb[i + noPara * locId] = localNabla[i];
-            for (int i = 0; i < noParaSQ; i++) ATA[i + noParaSQ * locId] = localHessian[i];
-        }
+        
+        noValidPointsTotal += (float)isValidPoint;
+    }
+    
+    if (noValidPointsTotal > 0)
+    {
+        int locId = x + y * (params->viewImageSize.x / ratio);
+        
+        noValidPoints[locId] = noValidPointsTotal;
+        for (int i = 0; i < noPara; i++) ATb[i + noPara * locId] = localNabla[i];
+        for (int i = 0; i < noParaSQ; i++) ATA[i + noParaSQ * locId] = localHessian[i];
     }
 }

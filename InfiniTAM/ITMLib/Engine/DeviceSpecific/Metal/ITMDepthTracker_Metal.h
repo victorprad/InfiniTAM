@@ -41,7 +41,7 @@ struct DepthTrackerOneLevel_g_rg_Params
     Matrix4f scenePose;
     Vector4f sceneIntrinsics;
     Vector4f viewIntrinsics;
+    Vector4f others;
     Vector2i sceneImageSize;
     Vector2i viewImageSize;
-    Vector2f others;
 };

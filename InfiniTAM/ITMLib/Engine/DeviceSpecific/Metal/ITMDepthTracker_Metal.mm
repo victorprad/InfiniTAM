@@ -48,22 +48,19 @@ int ITMDepthTracker_Metal::ComputeGandH(ITMSceneHierarchyLevel *sceneHierarchyLe
     int noPara = rotationOnly ? 3 : 6, noParaSQ = rotationOnly ? 3 + 2 + 1 : 6 + 5 + 4 + 3 + 2 + 1;
     
     int viewImageTotalSize = viewImageSize.x * viewImageSize.y;
+    int ratio = 2;
     
     noValidPoints = 0; memset(ATA_host, 0, sizeof(float) * 6 * 6); memset(ATb_host, 0, sizeof(float) * 6);
     memset(packedATA, 0, sizeof(float) * noParaSQ);
     
     id<MTLCommandBuffer> commandBuffer = [[[MetalContext instance]commandQueue]commandBuffer];
     id<MTLComputeCommandEncoder> commandEncoder = [commandBuffer computeCommandEncoder];
-
-//    memset(noValidPoints_metal, 0, allocImgSize.x * allocImgSize.y * sizeof(float));
-//    memset(ATb_metal, 0, allocImgSize.x * allocImgSize.y * 6 * sizeof(float));
-//    memset(ATA_metal, 0, allocImgSize.x * allocImgSize.y * 21 * sizeof(float));
     
     DepthTrackerOneLevel_g_rg_Params *params = (DepthTrackerOneLevel_g_rg_Params*)[paramsBuffer_depthTracker contents];
     params->approxInvPose = approxInvPose; params->sceneIntrinsics = sceneIntrinsics;
     params->sceneImageSize = sceneImageSize; params->scenePose = scenePose;
     params->viewIntrinsics = viewIntrinsics; params->viewImageSize = viewImageSize;
-    params->others.x = distThresh; params->others.y = (float)rotationOnly;
+    params->others.x = distThresh; params->others.y = (float)rotationOnly; params->others.z = (float)ratio; params->others.w = 0;
     
     [commandEncoder setComputePipelineState:p_depthTrackerOneLevel_g_rg_device];
     [commandEncoder setBuffer:(__bridge id<MTLBuffer>) noValidPoints_metal_mb                               offset:0 atIndex:0];
@@ -73,10 +70,10 @@ int ITMDepthTracker_Metal::ComputeGandH(ITMSceneHierarchyLevel *sceneHierarchyLe
     [commandEncoder setBuffer:(__bridge id<MTLBuffer>) sceneHierarchyLevel->pointsMap->GetMetalBuffer()     offset:0 atIndex:4];
     [commandEncoder setBuffer:(__bridge id<MTLBuffer>) sceneHierarchyLevel->normalsMap->GetMetalBuffer()    offset:0 atIndex:5];
     [commandEncoder setBuffer:paramsBuffer_depthTracker                                                     offset:0 atIndex:6];
-
+    
     MTLSize blockSize = {16, 16, 1};
-    MTLSize gridSize = {(NSUInteger)ceil((float)viewImageSize.x / (float)blockSize.width),
-        (NSUInteger)ceil((float)viewImageSize.y / (float)blockSize.height), 1};
+    MTLSize gridSize = {(NSUInteger)ceil(((float)viewImageSize.x / ratio) / (float)blockSize.width),
+        (NSUInteger)ceil(((float)viewImageSize.y / ratio) / (float)blockSize.height), 1};
     
     memset(noValidPoints_metal, 0, sizeof(float) * viewImageTotalSize);
     
@@ -87,11 +84,11 @@ int ITMDepthTracker_Metal::ComputeGandH(ITMSceneHierarchyLevel *sceneHierarchyLe
 
     [commandBuffer waitUntilCompleted];
    
-    for (int locId = 0; locId < viewImageTotalSize; locId++)
+    for (int locId = 0; locId < (viewImageTotalSize / (ratio * ratio)); locId++)
     {
-        if (noValidPoints_metal[locId])
+        if (noValidPoints_metal[locId] > 0)
         {
-            noValidPoints++;
+            noValidPoints += noValidPoints_metal[locId];
             for (int i = 0; i < noPara; i++) ATb_host[i] += ATb_metal[i + noPara * locId];
             for (int i = 0; i < noParaSQ; i++) packedATA[i] += ATA_metal[i + noParaSQ * locId];
         }
