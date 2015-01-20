@@ -156,9 +156,6 @@ void ITMSceneReconstructionEngine_Metal<TVoxel, ITMVoxelBlockHash>::AllocateScen
     int lastFreeVoxelBlockId = scene->localVBA.lastFreeBlockId;
     int lastFreeExcessListId = scene->index.lastFreeExcessListId;
     
-    Vector3s pt_block_prev;
-    pt_block_prev.x = 0; pt_block_prev.y = 0; pt_block_prev.z = 0;
-    
     int hashIdxLive = 0;
     
     this->BuildAllocAndVisibleType(scene, view, trackingState, renderState);
@@ -167,10 +164,8 @@ void ITMSceneReconstructionEngine_Metal<TVoxel, ITMVoxelBlockHash>::AllocateScen
     for (int targetIdx = 0; targetIdx < noTotalEntries; targetIdx++)
     {
         int vbaIdx, exlIdx;
-        unsigned char hashChangeType = entriesAllocType[targetIdx];
-        ITMHashEntry hashEntry = hashTable[targetIdx];
         
-        switch (hashChangeType)
+        switch (entriesAllocType[targetIdx])
         {
             case 1: //needs allocation, fits in the ordered list
                 vbaIdx = lastFreeVoxelBlockId; lastFreeVoxelBlockId--;
@@ -179,8 +174,11 @@ void ITMSceneReconstructionEngine_Metal<TVoxel, ITMVoxelBlockHash>::AllocateScen
                 {
                     Vector4s pt_block_all = blockCoords[targetIdx];
                     
+                    ITMHashEntry hashEntry;
+                    
                     hashEntry.pos.x = pt_block_all.x; hashEntry.pos.y = pt_block_all.y; hashEntry.pos.z = pt_block_all.z;
                     hashEntry.ptr = voxelAllocationList[vbaIdx];
+                    hashEntry.offset = 0;
                     
                     hashTable[targetIdx] = hashEntry;
                 }
@@ -194,8 +192,11 @@ void ITMSceneReconstructionEngine_Metal<TVoxel, ITMVoxelBlockHash>::AllocateScen
                 {
                     Vector4s pt_block_all = blockCoords[targetIdx];
                     
+                    ITMHashEntry hashEntry;
+                    
                     hashEntry.pos.x = pt_block_all.x; hashEntry.pos.y = pt_block_all.y; hashEntry.pos.z = pt_block_all.z;
                     hashEntry.ptr = voxelAllocationList[vbaIdx];
+                    hashEntry.offset = 0;
                     
                     int exlOffset = excessAllocationList[exlIdx];
                     

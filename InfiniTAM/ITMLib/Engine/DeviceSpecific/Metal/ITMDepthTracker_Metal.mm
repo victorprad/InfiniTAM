@@ -2,6 +2,7 @@
 
 #include "ITMDepthTracker_Metal.h"
 #include "../../DeviceAgnostic/ITMDepthTracker.h"
+#import <Accelerate/Accelerate.h>
 
 using namespace ITMLib::Engine;
 
@@ -54,6 +55,10 @@ int ITMDepthTracker_Metal::ComputeGandH(ITMSceneHierarchyLevel *sceneHierarchyLe
     id<MTLCommandBuffer> commandBuffer = [[[MetalContext instance]commandQueue]commandBuffer];
     id<MTLComputeCommandEncoder> commandEncoder = [commandBuffer computeCommandEncoder];
 
+//    memset(noValidPoints_metal, 0, allocImgSize.x * allocImgSize.y * sizeof(float));
+//    memset(ATb_metal, 0, allocImgSize.x * allocImgSize.y * 6 * sizeof(float));
+//    memset(ATA_metal, 0, allocImgSize.x * allocImgSize.y * 21 * sizeof(float));
+    
     DepthTrackerOneLevel_g_rg_Params *params = (DepthTrackerOneLevel_g_rg_Params*)[paramsBuffer_depthTracker contents];
     params->approxInvPose = approxInvPose; params->sceneIntrinsics = sceneIntrinsics;
     params->sceneImageSize = sceneImageSize; params->scenePose = scenePose;
@@ -81,7 +86,7 @@ int ITMDepthTracker_Metal::ComputeGandH(ITMSceneHierarchyLevel *sceneHierarchyLe
     [commandBuffer commit];
 
     [commandBuffer waitUntilCompleted];
-
+   
     for (int locId = 0; locId < viewImageTotalSize; locId++)
     {
         if (noValidPoints_metal[locId])

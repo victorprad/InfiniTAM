@@ -178,7 +178,8 @@ _CPU_AND_GPU_CODE_ inline void buildHashAllocAndVisibleTypePP(DEVICEPTR(uchar) *
                 entriesAllocType[hashIdx_toModify] = 1; //needs allocation and has room in ordered list
                 entriesVisibleType[hashIdx_toModify] = 1; //new entry is visible
                 
-				blockCoords[hashIdx_toModify] = Vector4s(pt_block_a.x, pt_block_a.y, pt_block_a.z, 0); //per-image hash collisions are ignored (will be picked up next frame)
+				Vector4s tempVector(pt_block_a.x, pt_block_a.y, pt_block_a.z, 1);
+				blockCoords[hashIdx_toModify] = tempVector; //per-image hash collisions are ignored (will be picked up next frame)
             }
             else //might be in the excess list
             {
@@ -206,7 +207,8 @@ _CPU_AND_GPU_CODE_ inline void buildHashAllocAndVisibleTypePP(DEVICEPTR(uchar) *
                 if (!foundValue) //still not found -> must add into excess list
                 {
                     entriesAllocType[hashIdx_toModify] = 2; //needs allocation in the excess list
-					blockCoords[hashIdx_toModify] = Vector4s(pt_block_a.x, pt_block_a.y, pt_block_a.z, 0); //per-image hash collisions are ignored 
+					Vector4s tempVector(pt_block_a.x, pt_block_a.y, pt_block_a.z, 1);
+					blockCoords[hashIdx_toModify] = tempVector; //per-image hash collisions are ignored 
                 }
             }
         }

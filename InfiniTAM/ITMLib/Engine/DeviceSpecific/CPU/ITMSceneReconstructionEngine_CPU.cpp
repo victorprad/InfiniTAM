@@ -120,6 +120,9 @@ void ITMSceneReconstructionEngine_CPU<TVoxel, ITMVoxelBlockHash>::AllocateSceneF
 	int lastFreeVoxelBlockId = scene->localVBA.lastFreeBlockId;
 	int lastFreeExcessListId = scene->index.lastFreeExcessListId;
 
+	Vector3s pt_block_prev;
+	pt_block_prev.x = 0; pt_block_prev.y = 0; pt_block_prev.z = 0;
+
 	int hashIdxLive = 0;
 
 	memset(entriesAllocType, 0, noTotalEntries);
@@ -139,7 +142,6 @@ void ITMSceneReconstructionEngine_CPU<TVoxel, ITMVoxelBlockHash>::AllocateSceneF
 	{
 		int vbaIdx, exlIdx;
 		unsigned char hashChangeType = entriesAllocType[targetIdx];
-		ITMHashEntry hashEntry = hashTable[targetIdx];
 
 		switch (hashChangeType)
 		{
@@ -150,8 +152,10 @@ void ITMSceneReconstructionEngine_CPU<TVoxel, ITMVoxelBlockHash>::AllocateSceneF
 			{
 				Vector4s pt_block_all = blockCoords[targetIdx];
 
-				hashEntry.pos.x = pt_block_all.x; hashEntry.pos.y = pt_block_all.y; hashEntry.pos.z = pt_block_all.z;
-				hashEntry.ptr = voxelAllocationList[vbaIdx];
+                ITMHashEntry hashEntry;
+                hashEntry.pos.x = pt_block_all.x; hashEntry.pos.y = pt_block_all.y; hashEntry.pos.z = pt_block_all.z;
+                hashEntry.ptr = voxelAllocationList[vbaIdx];
+                hashEntry.offset = 0;
 
 				hashTable[targetIdx] = hashEntry;
 			}
@@ -165,8 +169,10 @@ void ITMSceneReconstructionEngine_CPU<TVoxel, ITMVoxelBlockHash>::AllocateSceneF
 			{
 				Vector4s pt_block_all = blockCoords[targetIdx];
 
-				hashEntry.pos.x = pt_block_all.x; hashEntry.pos.y = pt_block_all.y; hashEntry.pos.z = pt_block_all.z;
-				hashEntry.ptr = voxelAllocationList[vbaIdx];
+                ITMHashEntry hashEntry;
+                hashEntry.pos.x = pt_block_all.x; hashEntry.pos.y = pt_block_all.y; hashEntry.pos.z = pt_block_all.z;
+                hashEntry.ptr = voxelAllocationList[vbaIdx];
+                hashEntry.offset = 0;
 
 				int exlOffset = excessAllocationList[exlIdx];
 

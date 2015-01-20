@@ -42,7 +42,7 @@ ITMSceneReconstructionEngine_CUDA<TVoxel,ITMVoxelBlockHash>::ITMSceneReconstruct
 
 	int noTotalEntries = ITMVoxelBlockHash::noVoxelBlocks;
 	ITMSafeCall(cudaMalloc((void**)&entriesAllocType_device, noTotalEntries));
-	ITMSafeCall(cudaMalloc((void**)&blockCoords_device, noTotalEntries * sizeof(Vector4s)));
+	ITMSafeCall(cudaMalloc((void**)&blockCoords_device, noTotalEntries * sizeof(Vector3s)));
 }
 
 template<class TVoxel>
@@ -275,7 +275,6 @@ __global__ void allocateVoxelBlocksList_device(int *voxelAllocationList, int *ex
 	if (targetIdx > noTotalEntries - 1) return;
 
 	int vbaIdx, exlIdx;
-	ITMHashEntry hashEntry = hashTable[targetIdx];
 
 	switch (entriesAllocType[targetIdx])
 	{
@@ -286,8 +285,10 @@ __global__ void allocateVoxelBlocksList_device(int *voxelAllocationList, int *ex
 		{
 			Vector4s pt_block_all = blockCoords[targetIdx];
 
+            ITMHashEntry hashEntry;
 			hashEntry.pos.x = pt_block_all.x; hashEntry.pos.y = pt_block_all.y; hashEntry.pos.z = pt_block_all.z;
 			hashEntry.ptr = voxelAllocationList[vbaIdx];
+            hashEntry.offset = 0;
 
 			hashTable[targetIdx] = hashEntry;
 		}
@@ -301,8 +302,10 @@ __global__ void allocateVoxelBlocksList_device(int *voxelAllocationList, int *ex
 		{
 			Vector4s pt_block_all = blockCoords[targetIdx];
 
+            ITMHashEntry hashEntry;
 			hashEntry.pos.x = pt_block_all.x; hashEntry.pos.y = pt_block_all.y; hashEntry.pos.z = pt_block_all.z;
 			hashEntry.ptr = voxelAllocationList[vbaIdx];
+            hashEntry.offset = 0;
 
 			int exlOffset = excessAllocationList[exlIdx];
 
