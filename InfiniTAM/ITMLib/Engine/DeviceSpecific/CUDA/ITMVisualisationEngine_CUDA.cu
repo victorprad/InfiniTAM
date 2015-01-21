@@ -217,11 +217,6 @@ static void GenericRaycast(const ITMScene<TVoxel, TIndex> *scene, const Vector2i
 	);
 }
 
-static Vector3f ComputeLightSource(const Matrix4f& invM)
-{
-	return -Vector3f(invM.getColumn(2));
-}
-
 template<class TVoxel, class TIndex>
 static void FindSurface_common(const ITMScene<TVoxel, TIndex> *scene, const ITMPose *pose, const ITMIntrinsics *intrinsics, const ITMRenderState *renderState)
 {
