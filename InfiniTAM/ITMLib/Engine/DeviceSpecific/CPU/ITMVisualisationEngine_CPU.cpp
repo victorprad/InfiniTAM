@@ -47,8 +47,8 @@ void ITMVisualisationEngine_CPU<TVoxel,ITMVoxelBlockHash>::FindVisibleBlocks(con
 
 	ITMRenderState_VH *renderState_vh = (ITMRenderState_VH*)renderState;
 
-	int noLiveEntries = 0;
-	int *liveEntryIDs = renderState_vh->GetLiveEntryIDs();
+	int noVisibleEntries = 0;
+	int *visibleEntryIDs = renderState_vh->GetVisibleEntryIDs();
 
 	//build visible list
 	for (int targetIdx = 0; targetIdx < noTotalEntries; targetIdx++)
@@ -58,18 +58,19 @@ void ITMVisualisationEngine_CPU<TVoxel,ITMVoxelBlockHash>::FindVisibleBlocks(con
 
 		if (hashEntry.ptr >= 0)
 		{
-			bool isVisibleEnlarged;
-			checkBlockVisibility<false>(hashVisibleType, isVisibleEnlarged, hashEntry.pos, M, projParams, voxelSize, imgSize);
+			bool isVisible, isVisibleEnlarged;
+			checkBlockVisibility<false>(isVisible, isVisibleEnlarged, hashEntry.pos, M, projParams, voxelSize, imgSize);
+			hashVisibleType = isVisible;
 		}
 
 		if (hashVisibleType > 0)
 		{
-			liveEntryIDs[noLiveEntries] = targetIdx;
-			noLiveEntries++;
+			visibleEntryIDs[noVisibleEntries] = targetIdx;
+			noVisibleEntries++;
 		}
 	}
 
-	renderState_vh->noLiveEntries = noLiveEntries;
+	renderState_vh->noVisibleEntries = noVisibleEntries;
 }
 
 template<class TVoxel, class TIndex>
@@ -111,12 +112,12 @@ void ITMVisualisationEngine_CPU<TVoxel,ITMVoxelBlockHash>::CreateExpectedDepths(
 
 	ITMRenderState_VH* renderState_vh = (ITMRenderState_VH*)renderState;
 
-	const int *liveEntryIDs = renderState_vh->GetLiveEntryIDs();
-	int noLiveEntries = renderState_vh->noLiveEntries;
+	const int *visibleEntryIDs = renderState_vh->GetVisibleEntryIDs();
+	int noVisibleEntries = renderState_vh->noVisibleEntries;
 
 	//go through list of visible 8x8x8 blocks
-	for (int blockNo = 0; blockNo < noLiveEntries; ++blockNo) {
-		const ITMHashEntry & blockData(scene->index.GetEntries()[liveEntryIDs[blockNo]]);
+	for (int blockNo = 0; blockNo < noVisibleEntries; ++blockNo) {
+		const ITMHashEntry & blockData(scene->index.GetEntries()[visibleEntryIDs[blockNo]]);
 
 		Vector2i upperLeft, lowerRight;
 		Vector2f zRange;

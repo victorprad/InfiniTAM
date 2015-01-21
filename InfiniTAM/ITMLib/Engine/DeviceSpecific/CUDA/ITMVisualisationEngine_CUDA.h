@@ -41,7 +41,7 @@ namespace ITMLib
 			uint *noTotalPoints_device;
 			RenderingBlock *renderingBlockList_device;
 			uint *noTotalBlocks_device;
-			int *noLiveEntries_device;
+			int *noVisibleEntries_device;
 		public:
 			ITMVisualisationEngine_CUDA(void);
 			~ITMVisualisationEngine_CUDA(void);

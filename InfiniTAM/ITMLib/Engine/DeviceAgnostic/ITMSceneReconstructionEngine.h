@@ -157,8 +157,8 @@ _CPU_AND_GPU_CODE_ inline void buildHashAllocAndVisibleTypePP(DEVICEPTR(uchar) *
             
             if (IS_EQUAL3(hashEntry.pos, pt_block_a) && hashEntry.ptr >= -1)
             {
-                if (hashEntry.ptr == -1) entriesVisibleType[hashIdx + inBucketIdx] = 2;
-                else entriesVisibleType[hashIdx + inBucketIdx] = 1;
+                if (hashEntry.ptr == -1) entriesVisibleType[hashIdx + inBucketIdx] = 2; //entry has been streamed out but is visible
+                else entriesVisibleType[hashIdx + inBucketIdx] = 1; // entry is in memory and visible
                 
                 foundValue = true;
                 break;
@@ -193,8 +193,8 @@ _CPU_AND_GPU_CODE_ inline void buildHashAllocAndVisibleTypePP(DEVICEPTR(uchar) *
                     
                     if (IS_EQUAL3(hashEntry.pos, pt_block_a) && hashEntry.ptr >= -1)
                     {
-                        if (hashEntry.ptr == -1) entriesVisibleType[noOrderedEntries + offsetExcess] = 2;
-                        else entriesVisibleType[noOrderedEntries + offsetExcess] = 1;
+                        if (hashEntry.ptr == -1) entriesVisibleType[noOrderedEntries + offsetExcess] = 2; //entry streamed out but visible
+                        else entriesVisibleType[noOrderedEntries + offsetExcess] = 1; // entry is in memory and visible
                         
                         foundValue = true;
                         break;
@@ -218,7 +218,7 @@ _CPU_AND_GPU_CODE_ inline void buildHashAllocAndVisibleTypePP(DEVICEPTR(uchar) *
 }
 
 template<bool useSwapping>
-_CPU_AND_GPU_CODE_ inline void checkPointVisibility(THREADPTR(uchar) &isVisible, THREADPTR(bool) &isVisibleEnlarged, 
+_CPU_AND_GPU_CODE_ inline void checkPointVisibility(THREADPTR(bool) &isVisible, THREADPTR(bool) &isVisibleEnlarged, 
 	const THREADPTR(Vector4f) &pt_image, const DEVICEPTR(Matrix4f) & M_d, const DEVICEPTR(Vector4f) &projParams_d, 
 	const DEVICEPTR(Vector2i) &imgSize)
 {
@@ -231,7 +231,7 @@ _CPU_AND_GPU_CODE_ inline void checkPointVisibility(THREADPTR(uchar) &isVisible,
 	pt_buff.x = projParams_d.x * pt_buff.x / pt_buff.z + projParams_d.z;
 	pt_buff.y = projParams_d.y * pt_buff.y / pt_buff.z + projParams_d.w;
 
-	if (pt_buff.x >= 0 && pt_buff.x < imgSize.x && pt_buff.y >= 0 && pt_buff.y < imgSize.y) isVisible = 1;
+	if (pt_buff.x >= 0 && pt_buff.x < imgSize.x && pt_buff.y >= 0 && pt_buff.y < imgSize.y) isVisible = true;
 
 	if (useSwapping)
 	{
@@ -245,12 +245,14 @@ _CPU_AND_GPU_CODE_ inline void checkPointVisibility(THREADPTR(uchar) &isVisible,
 }
 
 template<bool useSwapping>
-_CPU_AND_GPU_CODE_ inline void checkBlockVisibility(THREADPTR(uchar) &isVisible, THREADPTR(bool) &isVisibleEnlarged,
+_CPU_AND_GPU_CODE_ inline void checkBlockVisibility(THREADPTR(bool) &isVisible, THREADPTR(bool) &isVisibleEnlarged,
 	const THREADPTR(Vector3s) &hashPos, const DEVICEPTR(Matrix4f) & M_d, const DEVICEPTR(Vector4f) &projParams_d,
 	const DEVICEPTR(float) &voxelSize, const DEVICEPTR(Vector2i) &imgSize)
 {
 	Vector4f pt_image;
 	float factor = (float)SDF_BLOCK_SIZE * voxelSize;
+
+	isVisible = false; isVisibleEnlarged = false;
 
 	// 0 0 0
 	pt_image.x = (float)hashPos.x * factor; pt_image.y = (float)hashPos.y * factor;

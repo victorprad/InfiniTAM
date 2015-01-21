@@ -3,6 +3,8 @@
 #include "ITMDenseMapper.h"
 #include "ITMTrackerFactory.h"
 
+#include "../Objects/ITMRenderState_VH.h"
+
 #include "../ITMLib.h"
 
 using namespace ITMLib::Engine;
@@ -76,6 +78,8 @@ void ITMDenseMapper<TVoxel,TIndex>::ProcessFrame(const ITMView *view, const ITMT
 		// swapping: GPU -> CPU
 		swappingEngine->SaveToGlobalMemory(scene, renderState_live);
 	}
+
+	//printf("%d %d\n", ((ITMRenderState_VH*)renderState_live)->noVisibleEntries, ((ITMRenderState_VH*)renderState_live)->noActiveEntries);
 }
 
 template<class TVoxel, class TIndex>

@@ -20,12 +20,12 @@ inline dim3 getGridSize(Vector2i taskSize, dim3 blockSize) { return getGridSize(
 // declaration of device functions
 
 __global__ void buildVisibleList_device(const ITMHashEntry *hashTable, /*ITMHashCacheState *cacheStates, bool useSwapping,*/ int noTotalEntries,
-	int *liveEntryIDs, int *noLiveEntries, uchar *entriesVisibleType, Matrix4f M, Vector4f projParams, Vector2i imgSize, float voxelSize);
+	int *visibleEntryIDs, int *noVisibleEntries, uchar *entriesVisibleType, Matrix4f M, Vector4f projParams, Vector2i imgSize, float voxelSize);
 
 template<typename T>
 __global__ void memsetKernel_device(T *devPtr, const T val, size_t nwords);
 
-__global__ void projectAndSplitBlocks_device(const ITMHashEntry *hashEntries, const int *liveEntryIDs, int noLiveEntries,
+__global__ void projectAndSplitBlocks_device(const ITMHashEntry *hashEntries, const int *visibleEntryIDs, int noVisibleEntries,
 	const Matrix4f pose_M, const Vector4f intrinsics, const Vector2i imgSize, float voxelSize, RenderingBlock *renderingBlocks,
 	uint *noTotalBlocks);
 
@@ -73,7 +73,7 @@ ITMVisualisationEngine_CUDA<TVoxel, ITMVoxelBlockHash>::ITMVisualisationEngine_C
 	ITMSafeCall(cudaMalloc((void**)&renderingBlockList_device, sizeof(RenderingBlock) * MAX_RENDERING_BLOCKS));
 	ITMSafeCall(cudaMalloc((void**)&noTotalBlocks_device, sizeof(uint)));
 	ITMSafeCall(cudaMalloc((void**)&noTotalPoints_device, sizeof(uint)));
-	ITMSafeCall(cudaMalloc((void**)&noLiveEntries_device, sizeof(uint)));
+	ITMSafeCall(cudaMalloc((void**)&noVisibleEntries_device, sizeof(uint)));
 }
 
 template<class TVoxel>
@@ -82,7 +82,7 @@ ITMVisualisationEngine_CUDA<TVoxel, ITMVoxelBlockHash>::~ITMVisualisationEngine_
 	ITMSafeCall(cudaFree(noTotalPoints_device));
 	ITMSafeCall(cudaFree(noTotalBlocks_device));
 	ITMSafeCall(cudaFree(renderingBlockList_device));
-	ITMSafeCall(cudaFree(noLiveEntries_device));
+	ITMSafeCall(cudaFree(noVisibleEntries_device));
 }
 
 template<class TVoxel, class TIndex>
@@ -117,12 +117,12 @@ void ITMVisualisationEngine_CUDA<TVoxel, ITMVoxelBlockHash>::FindVisibleBlocks(c
 
 	ITMRenderState_VH *renderState_vh = (ITMRenderState_VH*)renderState;
 
-	ITMSafeCall(cudaMemset(noLiveEntries_device, 0, sizeof(int)));
+	ITMSafeCall(cudaMemset(noVisibleEntries_device, 0, sizeof(int)));
 
 	dim3 cudaBlockSizeAL(256, 1);
 	dim3 gridSizeAL((int)ceil((float)noTotalEntries / (float)cudaBlockSizeAL.x));
 	buildVisibleList_device << <gridSizeAL, cudaBlockSizeAL >> >(hashTable, /*cacheStates, scene->useSwapping,*/ noTotalEntries, 
-		renderState_vh->GetLiveEntryIDs(), noLiveEntries_device, renderState_vh->GetEntriesVisibleType(), M, projParams, 
+		renderState_vh->GetVisibleEntryIDs(), noVisibleEntries_device, renderState_vh->GetEntriesVisibleType(), M, projParams, 
 		imgSize, voxelSize);
 
 	/*	if (scene->useSwapping)
@@ -131,7 +131,7 @@ void ITMVisualisationEngine_CUDA<TVoxel, ITMVoxelBlockHash>::FindVisibleBlocks(c
 			noAllocatedVoxelEntries_device, entriesVisibleType);
 			}*/
 
-	ITMSafeCall(cudaMemcpy(&renderState_vh->noLiveEntries, noLiveEntries_device, sizeof(int), cudaMemcpyDeviceToHost));
+	ITMSafeCall(cudaMemcpy(&renderState_vh->noVisibleEntries, noVisibleEntries_device, sizeof(int), cudaMemcpyDeviceToHost));
 }
 
 template<class TVoxel, class TIndex>
@@ -172,13 +172,13 @@ void ITMVisualisationEngine_CUDA<TVoxel, ITMVoxelBlockHash>::CreateExpectedDepth
 	//go through list of visible 8x8x8 blocks
 	{
 		const ITMHashEntry *hash_entries = scene->index.GetEntries();
-		const int *liveEntryIDs = renderState_vh->GetLiveEntryIDs();
-		int noLiveEntries = renderState_vh->noLiveEntries;
+		const int *visibleEntryIDs = renderState_vh->GetVisibleEntryIDs();
+		int noVisibleEntries = renderState_vh->noVisibleEntries;
 
 		dim3 blockSize(256);
-		dim3 gridSize((int)ceil((float)noLiveEntries / (float)blockSize.x));
+		dim3 gridSize((int)ceil((float)noVisibleEntries / (float)blockSize.x));
 		ITMSafeCall(cudaMemset(noTotalBlocks_device, 0, sizeof(uint)));
-		projectAndSplitBlocks_device << <gridSize, blockSize >> >(hash_entries, liveEntryIDs, noLiveEntries, pose->M,
+		projectAndSplitBlocks_device << <gridSize, blockSize >> >(hash_entries, visibleEntryIDs, noVisibleEntries, pose->M,
 			intrinsics->projectionParamsSimple.all, imgSize, voxelSize, renderingBlockList_device, noTotalBlocks_device);
 	}
 
@@ -349,7 +349,7 @@ void ITMVisualisationEngine_CUDA<TVoxel, ITMVoxelBlockHash>::CreateICPMaps(const
 //device implementations
 
 __global__ void buildVisibleList_device(const ITMHashEntry *hashTable, /*ITMHashCacheState *cacheStates, bool useSwapping,*/ int noTotalEntries,
-	int *liveEntryIDs, int *noLiveEntries, uchar *entriesVisibleType, Matrix4f M, Vector4f projParams, Vector2i imgSize, float voxelSize)
+	int *visibleEntryIDs, int *noVisibleEntries, uchar *entriesVisibleType, Matrix4f M, Vector4f projParams, Vector2i imgSize, float voxelSize)
 {
 	int targetIdx = threadIdx.x + blockIdx.x * blockDim.x;
 	if (targetIdx > noTotalEntries - 1) return;
@@ -365,8 +365,11 @@ __global__ void buildVisibleList_device(const ITMHashEntry *hashTable, /*ITMHash
 	if (hashEntry.ptr >= 0)
 	{
 		shouldPrefix = true;
-		bool isVisibleEnlarged;
-		checkBlockVisibility<false>(hashVisibleType, isVisibleEnlarged, hashEntry.pos, M, projParams, voxelSize, imgSize);
+
+		bool isVisible, isVisibleEnlarged;
+		checkBlockVisibility<false>(isVisible, isVisibleEnlarged, hashEntry.pos, M, projParams, voxelSize, imgSize);
+
+		hashVisibleType = isVisible;
 	}
 
 	if (hashVisibleType > 0) shouldPrefix = true;
@@ -375,8 +378,8 @@ __global__ void buildVisibleList_device(const ITMHashEntry *hashTable, /*ITMHash
 
 	if (shouldPrefix)
 	{
-		int offset = computePrefixSum_device<int>(hashVisibleType > 0, noLiveEntries, blockDim.x * blockDim.y, threadIdx.x);
-		if (offset != -1) liveEntryIDs[offset] = targetIdx;
+		int offset = computePrefixSum_device<int>(hashVisibleType > 0, noVisibleEntries, blockDim.x * blockDim.y, threadIdx.x);
+		if (offset != -1) visibleEntryIDs[offset] = targetIdx;
 	}
 }
 
@@ -387,18 +390,18 @@ template<typename T> __global__ void memsetKernel_device(T *devPtr, const T val,
 	devPtr[offset] = val;
 }
 
-__global__ void projectAndSplitBlocks_device(const ITMHashEntry *hashEntries, const int *liveEntryIDs, int noLiveEntries,
+__global__ void projectAndSplitBlocks_device(const ITMHashEntry *hashEntries, const int *visibleEntryIDs, int noVisibleEntries,
 	const Matrix4f pose_M, const Vector4f intrinsics, const Vector2i imgSize, float voxelSize, RenderingBlock *renderingBlocks,
 	uint *noTotalBlocks)
 {
 	int in_offset = threadIdx.x + blockDim.x * blockIdx.x;
 
-	const ITMHashEntry & blockData(hashEntries[liveEntryIDs[in_offset]]);
+	const ITMHashEntry & blockData(hashEntries[visibleEntryIDs[in_offset]]);
 
 	Vector2i upperLeft, lowerRight;
 	Vector2f zRange;
 	bool validProjection = false;
-	if (in_offset < noLiveEntries) if (blockData.ptr >= 0)
+	if (in_offset < noVisibleEntries) if (blockData.ptr >= 0)
 		validProjection = ProjectSingleBlock(blockData.pos, pose_M, intrinsics, imgSize, voxelSize, upperLeft, lowerRight, zRange);
 
 	Vector2i requiredRenderingBlocks(ceilf((float)(lowerRight.x - upperLeft.x + 1) / renderingBlockSizeX),
