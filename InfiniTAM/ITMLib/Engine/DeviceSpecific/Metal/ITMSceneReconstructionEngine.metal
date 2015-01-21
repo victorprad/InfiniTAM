@@ -9,7 +9,7 @@ using namespace metal;
 
 kernel void integrateIntoScene_vh_device(DEVICEPTR(ITMVoxel) *localVBA                          [[ buffer(0) ]],
                                          const DEVICEPTR(ITMHashEntry) *hashTable               [[ buffer(1) ]],
-                                         DEVICEPTR(int) *liveEntryIDs                           [[ buffer(2) ]],
+                                         DEVICEPTR(int) *visibleEntryIDs                           [[ buffer(2) ]],
                                          const DEVICEPTR(Vector4u) *rgb                         [[ buffer(3) ]],
                                          const DEVICEPTR(float) *depth                          [[ buffer(4) ]],
                                          const CONSTANT(IntegrateIntoScene_VH_Params) *params   [[ buffer(5) ]],
@@ -18,7 +18,7 @@ kernel void integrateIntoScene_vh_device(DEVICEPTR(ITMVoxel) *localVBA          
                                          uint3 blockDim                                         [[ threads_per_threadgroup ]])
 {
     Vector3i globalPos;
-    int entryId = liveEntryIDs[blockIdx.x];
+    int entryId = visibleEntryIDs[blockIdx.x];
 
     const DEVICEPTR(ITMHashEntry) &currentHashEntry = hashTable[entryId];
 

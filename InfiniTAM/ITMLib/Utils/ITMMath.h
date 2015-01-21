@@ -67,7 +67,7 @@ typedef class ORUtils::Vector4<uchar> Vector4u;
 #endif
 
 #ifndef IS_EQUAL3
-#define IS_EQUAL3(a,b) ((a) == (b))
+#define IS_EQUAL3(a,b) (((a).x == (b).x) && ((a).y == (b).y) && ((a).z == (b).z))
 #endif
 
 #else

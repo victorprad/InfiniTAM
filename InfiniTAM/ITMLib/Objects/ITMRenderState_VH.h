@@ -78,6 +78,7 @@ namespace ITMLib
 
 #ifdef COMPILE_WITH_METAL
 			const void* GetVisibleEntryIDs_MB(void) { return visibleEntryIDs->GetMetalBuffer(); }
+            const void* GetActiveEntryIDs_MB(void) { return activeEntryIDs->GetMetalBuffer(); }
 			const void* GetEntriesVisibleType_MB(void) { return entriesVisibleType->GetMetalBuffer(); }
 #endif
 		};

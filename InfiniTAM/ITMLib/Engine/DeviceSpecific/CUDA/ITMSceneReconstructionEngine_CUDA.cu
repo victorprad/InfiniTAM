@@ -27,7 +27,7 @@ __global__ void allocateVoxelBlocksList_device(int *voxelAllocationList, int *ex
 __global__ void reAllocateSwappedOutVoxelBlocks_device(int *voxelAllocationList, ITMHashEntry *hashTable, int noTotalEntries,
 	int *noAllocatedVoxelEntries, uchar *entriesVisibleType);
 
-__global__ void setToType3(uchar *entriesVisibleType, int noTotalEntries);
+__global__ void setToType3(uchar *entriesVisibleType, int *visibleEntryIDs, int noVisibleEntries);
 
 template<bool useSwapping>
 __global__ void buildVisibleList_device(ITMHashEntry *hashTable, ITMHashCacheState *cacheStates, int noTotalEntries,
@@ -100,6 +100,9 @@ void ITMSceneReconstructionEngine_CUDA<TVoxel, ITMVoxelBlockHash>::AllocateScene
 	dim3 cudaBlockSizeAL(256, 1);
 	dim3 gridSizeAL((int)ceil((float)noTotalEntries / (float)cudaBlockSizeAL.x));
 
+	dim3 cudaBlockSizeVS(256, 1);
+	dim3 gridSizeVS((int)ceil((float)renderState_vh->noVisibleEntries / (float)cudaBlockSizeVS.x));
+
 	float oneOverVoxelSize = 1.0f / (voxelSize * SDF_BLOCK_SIZE);
 
 	ITMSafeCall(cudaMemcpy(noAllocatedVoxelEntries_device, &scene->localVBA.lastFreeBlockId, sizeof(int), cudaMemcpyHostToDevice));
@@ -111,7 +114,7 @@ void ITMSceneReconstructionEngine_CUDA<TVoxel, ITMVoxelBlockHash>::AllocateScene
 	ITMSafeCall(cudaMemset(entriesAllocType_device, 0, sizeof(unsigned char)* noTotalEntries));
 	//ITMSafeCall(cudaMemset(entriesVisibleType, 0, sizeof(unsigned char)* noTotalEntries));
 
-	setToType3 << <gridSizeAL, cudaBlockSizeAL >> > (entriesVisibleType, noTotalEntries);
+	if (gridSizeVS.x > 0) setToType3 << <gridSizeAL, cudaBlockSizeAL >> > (entriesVisibleType, visibleEntryIDs, renderState_vh->noVisibleEntries);
 
 	buildHashAllocAndVisibleType_device << <gridSizeHV, cudaBlockSizeHV >> >(entriesAllocType_device, entriesVisibleType, 
 		blockCoords_device, depth, invM_d, invProjParams_d, mu, depthImgSize, oneOverVoxelSize, hashTable,
@@ -280,11 +283,11 @@ __global__ void buildHashAllocAndVisibleType_device(uchar *entriesAllocType, uch
 		projParams_d, mu, _imgSize, _voxelSize, hashTable, viewFrustum_min, viewFrustum_max);
 }
 
-__global__ void setToType3(uchar *entriesVisibleType, int noTotalEntries)
+__global__ void setToType3(uchar *entriesVisibleType, int *visibleEntryIDs, int noVisibleEntries)
 {
 	int entryId = threadIdx.x + blockIdx.x * blockDim.x;
-	if (entryId > noTotalEntries - 1) return;
-	if (entriesVisibleType[entryId] == 1) entriesVisibleType[entryId] = 3;
+	if (entryId > noVisibleEntries - 1) return;
+	entriesVisibleType[visibleEntryIDs[entryId]] = 3;
 }
 
 __global__ void allocateVoxelBlocksList_device(int *voxelAllocationList, int *excessAllocationList, ITMHashEntry *hashTable, int noTotalEntries,
