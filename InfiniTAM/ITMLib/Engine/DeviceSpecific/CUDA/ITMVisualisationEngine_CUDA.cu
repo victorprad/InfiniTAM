@@ -223,10 +223,9 @@ static Vector3f ComputeLightSource(const Matrix4f& invM)
 }
 
 template<class TVoxel, class TIndex>
-static void RenderImage_common(const ITMScene<TVoxel, TIndex> *scene, const ITMPose *pose, const ITMIntrinsics *intrinsics, const ITMRenderState *renderState,
-	ITMUChar4Image *outputImage, bool useColour)
+static void FindSurface_common(const ITMScene<TVoxel, TIndex> *scene, const ITMPose *pose, const ITMIntrinsics *intrinsics, const ITMRenderState *renderState)
 {
-	Vector2i imgSize = outputImage->noDims;
+	Vector2i imgSize = renderState->raycastResult->noDims;
 	Matrix4f invM = pose->invM;
 
 	dim3 cudaBlockSize(8, 8);
@@ -241,16 +240,27 @@ static void RenderImage_common(const ITMScene<TVoxel, TIndex> *scene, const ITMP
 		cudaBlockSize,
 		gridSize
 	);
+}
 
+template<class TVoxel, class TIndex>
+static void RenderImage_common(const ITMScene<TVoxel, TIndex> *scene, const ITMPose *pose, const ITMIntrinsics *intrinsics, const ITMRenderState *renderState,
+	ITMUChar4Image *outputImage, bool useColour)
+{
+	FindSurface_common(scene, pose, intrinsics, renderState);
+
+	Vector2i imgSize = outputImage->noDims;
+	Vector3f lightSource = ComputeLightSource(pose->invM);
 	Vector4u *outRendering = outputImage->GetData(MEMORYDEVICE_CUDA);
 	Vector4f *pointsRay = renderState->raycastResult->GetData(MEMORYDEVICE_CUDA);
-	Vector3f lightSource = ComputeLightSource(invM);
+
+	dim3 cudaBlockSize(8, 8);
+	dim3 gridSize((int)ceil((float)imgSize.x / (float)cudaBlockSize.x), (int)ceil((float)imgSize.y / (float)cudaBlockSize.y));
 
 	if (useColour && TVoxel::hasColorInformation)
-		renderColour_device<TVoxel, TIndex> << <gridSize, cudaBlockSize >> >(outRendering, pointsRay, scene->localVBA.GetVoxelBlocks(),
+		renderColour_device<TVoxel, TIndex> <<<gridSize, cudaBlockSize>>>(outRendering, pointsRay, scene->localVBA.GetVoxelBlocks(),
 		scene->index.getIndexData(), imgSize, lightSource);
 	else
-		renderGrey_device<TVoxel, TIndex> << <gridSize, cudaBlockSize >> >(outRendering, pointsRay, scene->localVBA.GetVoxelBlocks(),
+		renderGrey_device<TVoxel, TIndex> <<<gridSize, cudaBlockSize>>>(outRendering, pointsRay, scene->localVBA.GetVoxelBlocks(),
 		scene->index.getIndexData(), imgSize, lightSource);
 }
 
@@ -338,6 +348,20 @@ void ITMVisualisationEngine_CUDA<TVoxel, ITMVoxelBlockHash>::RenderImage(const I
 	const ITMIntrinsics *intrinsics, const ITMRenderState *renderState, ITMUChar4Image *outputImage, bool useColour)
 {
 	RenderImage_common(scene, pose, intrinsics, renderState, outputImage, useColour);
+}
+
+template<class TVoxel, class TIndex>
+void ITMVisualisationEngine_CUDA<TVoxel, TIndex>::FindSurface(const ITMScene<TVoxel, TIndex> *scene, const ITMPose *pose, const ITMIntrinsics *intrinsics,
+	const ITMRenderState *renderState)
+{
+	FindSurface_common(scene, pose, intrinsics, renderState);
+}
+
+template<class TVoxel>
+void ITMVisualisationEngine_CUDA<TVoxel, ITMVoxelBlockHash>::FindSurface(const ITMScene<TVoxel, ITMVoxelBlockHash> *scene, const ITMPose *pose,
+	const ITMIntrinsics *intrinsics, const ITMRenderState *renderState)
+{
+	FindSurface_common(scene, pose, intrinsics, renderState);
 }
 
 template<class TVoxel, class TIndex>
