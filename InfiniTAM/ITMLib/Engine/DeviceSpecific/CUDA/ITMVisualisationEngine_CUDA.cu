@@ -226,35 +226,23 @@ template<class TVoxel, class TIndex>
 static void FindSurface_common(const ITMScene<TVoxel, TIndex> *scene, const ITMPose *pose, const ITMIntrinsics *intrinsics, const ITMRenderState *renderState)
 {
 	Vector2i imgSize = renderState->raycastResult->noDims;
-	Matrix4f invM = pose->invM;
-
 	dim3 cudaBlockSize(8, 8);
 	dim3 gridSize((int)ceil((float)imgSize.x / (float)cudaBlockSize.x), (int)ceil((float)imgSize.y / (float)cudaBlockSize.y));
-
-	UnifiedRaycast(
-		scene,
-		imgSize,
-		invM,
-		intrinsics->projectionParamsSimple.all,
-		renderState,
-		cudaBlockSize,
-		gridSize
-	);
+	UnifiedRaycast(scene, imgSize, pose->invM, intrinsics->projectionParamsSimple.all, renderState, cudaBlockSize, gridSize);
 }
 
 template<class TVoxel, class TIndex>
 static void RenderImage_common(const ITMScene<TVoxel, TIndex> *scene, const ITMPose *pose, const ITMIntrinsics *intrinsics, const ITMRenderState *renderState,
 	ITMUChar4Image *outputImage, bool useColour)
 {
-	FindSurface_common(scene, pose, intrinsics, renderState);
-
 	Vector2i imgSize = outputImage->noDims;
-	Vector3f lightSource = ComputeLightSource(pose->invM);
-	Vector4u *outRendering = outputImage->GetData(MEMORYDEVICE_CUDA);
-	Vector4f *pointsRay = renderState->raycastResult->GetData(MEMORYDEVICE_CUDA);
-
 	dim3 cudaBlockSize(8, 8);
 	dim3 gridSize((int)ceil((float)imgSize.x / (float)cudaBlockSize.x), (int)ceil((float)imgSize.y / (float)cudaBlockSize.y));
+	UnifiedRaycast(scene, imgSize, pose->invM, intrinsics->projectionParamsSimple.all, renderState, cudaBlockSize, gridSize);
+
+	Vector4u *outRendering = outputImage->GetData(MEMORYDEVICE_CUDA);
+	Vector4f *pointsRay = renderState->raycastResult->GetData(MEMORYDEVICE_CUDA);
+	Vector3f lightSource = ComputeLightSource(pose->invM);
 
 	if (useColour && TVoxel::hasColorInformation)
 		renderColour_device<TVoxel, TIndex> <<<gridSize, cudaBlockSize>>>(outRendering, pointsRay, scene->localVBA.GetVoxelBlocks(),
