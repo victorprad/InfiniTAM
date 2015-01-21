@@ -196,7 +196,7 @@ void ITMVisualisationEngine_CUDA<TVoxel, ITMVoxelBlockHash>::CreateExpectedDepth
 }
 
 template <class TVoxel, class TIndex>
-static void UnifiedRaycast(const ITMScene<TVoxel, TIndex> *scene, const Vector2i& imgSize, const Matrix4f& invM, Vector4f projParams, const ITMRenderState *renderState, dim3 cudaBlockSize, dim3 gridSize)
+static void GenericRaycast(const ITMScene<TVoxel, TIndex> *scene, const Vector2i& imgSize, const Matrix4f& invM, Vector4f projParams, const ITMRenderState *renderState, dim3 cudaBlockSize, dim3 gridSize)
 {
 	float voxelSize = scene->sceneParams->voxelSize;
 	float oneOverVoxelSize = 1.0f / voxelSize;
@@ -228,7 +228,7 @@ static void FindSurface_common(const ITMScene<TVoxel, TIndex> *scene, const ITMP
 	Vector2i imgSize = renderState->raycastResult->noDims;
 	dim3 cudaBlockSize(8, 8);
 	dim3 gridSize((int)ceil((float)imgSize.x / (float)cudaBlockSize.x), (int)ceil((float)imgSize.y / (float)cudaBlockSize.y));
-	UnifiedRaycast(scene, imgSize, pose->invM, intrinsics->projectionParamsSimple.all, renderState, cudaBlockSize, gridSize);
+	GenericRaycast(scene, imgSize, pose->invM, intrinsics->projectionParamsSimple.all, renderState, cudaBlockSize, gridSize);
 }
 
 template<class TVoxel, class TIndex>
@@ -238,7 +238,7 @@ static void RenderImage_common(const ITMScene<TVoxel, TIndex> *scene, const ITMP
 	Vector2i imgSize = outputImage->noDims;
 	dim3 cudaBlockSize(8, 8);
 	dim3 gridSize((int)ceil((float)imgSize.x / (float)cudaBlockSize.x), (int)ceil((float)imgSize.y / (float)cudaBlockSize.y));
-	UnifiedRaycast(scene, imgSize, pose->invM, intrinsics->projectionParamsSimple.all, renderState, cudaBlockSize, gridSize);
+	GenericRaycast(scene, imgSize, pose->invM, intrinsics->projectionParamsSimple.all, renderState, cudaBlockSize, gridSize);
 
 	Vector4u *outRendering = outputImage->GetData(MEMORYDEVICE_CUDA);
 	Vector4f *pointsRay = renderState->raycastResult->GetData(MEMORYDEVICE_CUDA);
@@ -258,19 +258,9 @@ static void CreatePointCloud_common(const ITMScene<TVoxel, TIndex> *scene, const
 {
 	Vector2i imgSize = view->rgb->noDims;
 	Matrix4f invM = trackingState->pose_d->invM * view->calib->trafo_rgb_to_depth.calib;
-
 	dim3 cudaBlockSize(16, 16);
 	dim3 gridSize = getGridSize(imgSize, cudaBlockSize);
-
-	UnifiedRaycast(
-		scene,
-		imgSize,
-		invM,
-		view->calib->intrinsics_rgb.projectionParamsSimple.all,
-		renderState,
-		cudaBlockSize,
-		gridSize
-	);
+	GenericRaycast(scene, imgSize, invM, view->calib->intrinsics_rgb.projectionParamsSimple.all, renderState, cudaBlockSize, gridSize);
 
 	ITMSafeCall(cudaMemset(noTotalPoints_device, 0, sizeof(uint)));
 
@@ -295,28 +285,18 @@ void CreateICPMaps_common(const ITMScene<TVoxel, TIndex> *scene, const ITMView *
 	{
 		dim3 cudaBlockSize(16, 16);
 		dim3 gridSize((int)ceil((float)imgSize.x / (float)cudaBlockSize.x), (int)ceil((float)imgSize.y / (float)cudaBlockSize.y));
-
-		UnifiedRaycast(
-			scene,
-			imgSize,
-			invM,
-			view->calib->intrinsics_d.projectionParamsSimple.all,
-			renderState,
-			cudaBlockSize,
-			gridSize
-		);
+		GenericRaycast(scene, imgSize, invM, view->calib->intrinsics_d.projectionParamsSimple.all, renderState, cudaBlockSize, gridSize);
 	}
 
 	{
-		dim3 cudaBlockSize(16, 12);
-		dim3 gridSize((int)ceil((float)imgSize.x / (float)cudaBlockSize.x), (int)ceil((float)imgSize.y / (float)cudaBlockSize.y));
-
 		Vector4f *pointsMap = trackingState->pointCloud->locations->GetData(MEMORYDEVICE_CUDA);
 		Vector4f *normalsMap = trackingState->pointCloud->colours->GetData(MEMORYDEVICE_CUDA);
 		Vector4u *outRendering = renderState->raycastImage->GetData(MEMORYDEVICE_CUDA);
 		Vector4f *pointsRay = renderState->raycastResult->GetData(MEMORYDEVICE_CUDA);
 		Vector3f lightSource = ComputeLightSource(invM);
 
+		dim3 cudaBlockSize(16, 12);
+		dim3 gridSize((int)ceil((float)imgSize.x / (float)cudaBlockSize.x), (int)ceil((float)imgSize.y / (float)cudaBlockSize.y));
 		renderICP_device<TVoxel, TIndex> <<<gridSize, cudaBlockSize>>>(outRendering, pointsMap, normalsMap, pointsRay,
 			scene->localVBA.GetVoxelBlocks(), scene->index.getIndexData(), scene->sceneParams->voxelSize, imgSize, lightSource);
 	}
