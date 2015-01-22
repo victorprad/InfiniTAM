@@ -9,7 +9,7 @@ using namespace metal;
 
 kernel void integrateIntoScene_vh_device(DEVICEPTR(ITMVoxel) *localVBA                          [[ buffer(0) ]],
                                          const DEVICEPTR(ITMHashEntry) *hashTable               [[ buffer(1) ]],
-                                         DEVICEPTR(int) *visibleEntryIDs                           [[ buffer(2) ]],
+                                         DEVICEPTR(int) *visibleEntryIDs                        [[ buffer(2) ]],
                                          const DEVICEPTR(Vector4u) *rgb                         [[ buffer(3) ]],
                                          const DEVICEPTR(float) *depth                          [[ buffer(4) ]],
                                          const CONSTANT(IntegrateIntoScene_VH_Params) *params   [[ buffer(5) ]],
@@ -34,14 +34,16 @@ kernel void integrateIntoScene_vh_device(DEVICEPTR(ITMVoxel) *localVBA          
 
     locId = x + y * SDF_BLOCK_SIZE + z * SDF_BLOCK_SIZE * SDF_BLOCK_SIZE;
 
-    pt_model.x = (float)(globalPos.x + x) * params->_voxelSize;
-    pt_model.y = (float)(globalPos.y + y) * params->_voxelSize;
-    pt_model.z = (float)(globalPos.z + z) * params->_voxelSize;
+    if (params->others.w > 0.5f) if (localVoxelBlock[locId].w_depth == params->others.z) return;
+    
+    pt_model.x = (float)(globalPos.x + x) * params->others.x;
+    pt_model.y = (float)(globalPos.y + y) * params->others.x;
+    pt_model.z = (float)(globalPos.z + z) * params->others.x;
     pt_model.w = 1.0f;
     
     ComputeUpdatedVoxelInfo<ITMVoxel::hasColorInformation,ITMVoxel>::compute(localVoxelBlock[locId], pt_model,
                                                                          params->M_d, params->projParams_d, params->M_rgb,
-                                                                         params->projParams_rgb, params->mu, params->maxW, depth,
+                                                                         params->projParams_rgb, params->others.y, params->others.z, depth,
                                                                          params->depthImgSize, rgb, params->rgbImgSize);
 }
 

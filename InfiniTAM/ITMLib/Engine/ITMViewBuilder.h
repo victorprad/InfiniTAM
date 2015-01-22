@@ -45,7 +45,7 @@ namespace ITMLib
 			void UpdateView(ITMView *view, ITMUChar4Image *rgbImage, ITMFloatImage *depthImage);
 
 			ITMViewBuilder(const ITMRGBDCalib *calib, ITMLibSettings::DeviceType deviceType);
-			~ITMViewBuilder();
+			virtual ~ITMViewBuilder();
 		};
 	}
 }

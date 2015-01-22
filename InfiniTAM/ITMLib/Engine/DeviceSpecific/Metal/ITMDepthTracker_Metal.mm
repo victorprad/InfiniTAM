@@ -48,7 +48,7 @@ int ITMDepthTracker_Metal::ComputeGandH(ITMSceneHierarchyLevel *sceneHierarchyLe
     int noPara = rotationOnly ? 3 : 6, noParaSQ = rotationOnly ? 3 + 2 + 1 : 6 + 5 + 4 + 3 + 2 + 1;
     
     int viewImageTotalSize = viewImageSize.x * viewImageSize.y;
-    int ratio = 2;
+    int ratio = 4;
     
     noValidPoints = 0; memset(ATA_host, 0, sizeof(float) * 6 * 6); memset(ATb_host, 0, sizeof(float) * 6);
     memset(packedATA, 0, sizeof(float) * noParaSQ);
@@ -71,7 +71,7 @@ int ITMDepthTracker_Metal::ComputeGandH(ITMSceneHierarchyLevel *sceneHierarchyLe
     [commandEncoder setBuffer:(__bridge id<MTLBuffer>) sceneHierarchyLevel->normalsMap->GetMetalBuffer()    offset:0 atIndex:5];
     [commandEncoder setBuffer:paramsBuffer_depthTracker                                                     offset:0 atIndex:6];
     
-    MTLSize blockSize = {16, 16, 1};
+    MTLSize blockSize = {4, 4, 1};
     MTLSize gridSize = {(NSUInteger)ceil(((float)viewImageSize.x / ratio) / (float)blockSize.width),
         (NSUInteger)ceil(((float)viewImageSize.y / ratio) / (float)blockSize.height), 1};
     

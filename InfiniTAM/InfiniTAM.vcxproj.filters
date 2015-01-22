@@ -70,12 +70,6 @@
       <Filter>Engine\Source Files</Filter>
     </ClCompile>
     <ClCompile Include="InfiniTAM.cpp" />
-    <ClCompile Include="ITMLib\Objects\ITMDisparityCalib.cpp">
-      <Filter>ITMLib\Objects\Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ITMLib\Objects\ITMIntrinsics.cpp">
-      <Filter>ITMLib\Objects\Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="ITMLib\Objects\ITMPose.cpp">
       <Filter>ITMLib\Objects\Source Files</Filter>
     </ClCompile>

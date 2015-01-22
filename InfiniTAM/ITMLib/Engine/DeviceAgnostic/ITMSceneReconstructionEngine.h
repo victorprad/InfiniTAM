@@ -32,6 +32,7 @@ _CPU_AND_GPU_CODE_ inline float computeUpdatedVoxelDepthInfo(DEVICEPTR(TVoxel) &
 
 	// compute updated SDF value and reliability
 	oldF = TVoxel::SDF_valueToFloat(voxel.sdf); oldW = voxel.w_depth;
+
 	newF = MIN(1.0f, eta / mu);
 	newW = 1;
 

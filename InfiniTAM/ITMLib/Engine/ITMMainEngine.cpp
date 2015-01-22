@@ -67,7 +67,7 @@ void ITMMainEngine::ProcessFrame(ITMUChar4Image *rgbImage, ITMShortImage *rawDep
 	// prepare image and turn it into a depth image
 	viewBuilder->UpdateView(view, rgbImage, rawDepthImage);
 
-	if (!mainProcessingActive) return;
+//	if (!mainProcessingActive) return;
 
 	// tracking
 	if (hasStartedObjectReconstruction)

@@ -47,13 +47,15 @@ void ITMSceneReconstructionEngine_CPU<TVoxel, ITMVoxelBlockHash>::IntegrateIntoS
 	TVoxel *localVBA = scene->localVBA.GetVoxelBlocks();
 	ITMHashEntry *hashTable = scene->index.GetEntries();
 
-	int *activeEntryIDs = renderState_vh->GetActiveEntryIDs();
-	int noActiveEntries = renderState_vh->noActiveEntries;
+	int *visibleEntryIds = renderState_vh->GetVisibleEntryIDs();
+	int noVisibleEntries = renderState_vh->noVisibleEntries;
 
-	for (int entryId = 0; entryId < noActiveEntries; entryId++)
+	bool stopIntegratingAtMaxW = scene->sceneParams->stopIntegratingAtMaxW;
+
+	for (int entryId = 0; entryId < noVisibleEntries; entryId++)
 	{
 		Vector3i globalPos;
-		const ITMHashEntry &currentHashEntry = hashTable[activeEntryIDs[entryId]];
+		const ITMHashEntry &currentHashEntry = hashTable[visibleEntryIds[entryId]];
 
 		if (currentHashEntry.ptr < 0) continue;
 
@@ -63,6 +65,8 @@ void ITMSceneReconstructionEngine_CPU<TVoxel, ITMVoxelBlockHash>::IntegrateIntoS
 		globalPos *= SDF_BLOCK_SIZE;
 
 		TVoxel *localVoxelBlock = &(localVBA[currentHashEntry.ptr * (SDF_BLOCK_SIZE3)]);
+
+		if (stopIntegratingAtMaxW) if (localVoxelBlock->w_depth == maxW) continue;
 
 		for (int z = 0; z < SDF_BLOCK_SIZE; z++) for (int y = 0; y < SDF_BLOCK_SIZE; y++) for (int x = 0; x < SDF_BLOCK_SIZE; x++)
 		{
@@ -287,11 +291,15 @@ void ITMSceneReconstructionEngine_CPU<TVoxel, ITMPlainVoxelArray>::IntegrateInto
 
 	const ITMPlainVoxelArray::IndexData *arrayInfo = scene->index.getIndexData();
 
+	bool stopIntegratingAtMaxW = scene->sceneParams->stopIntegratingAtMaxW;
+
 	for (int z = 0; z < scene->index.getVolumeSize().z; z++) for (int y = 0; y < scene->index.getVolumeSize().y; y++) for (int x = 0; x < scene->index.getVolumeSize().x; x++)
 	{
 		Vector4f pt_model; int locId;
 
 		locId = x + y * scene->index.getVolumeSize().x + z * scene->index.getVolumeSize().x * scene->index.getVolumeSize().y;
+
+		if (stopIntegratingAtMaxW) if (voxelArray[locId].w_depth == maxW) continue;
 
 		pt_model.x = (float)(x + arrayInfo->offset.x) * voxelSize;
 		pt_model.y = (float)(y + arrayInfo->offset.y) * voxelSize;

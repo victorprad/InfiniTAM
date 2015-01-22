@@ -2,7 +2,4 @@
 
 #include <metal_stdlib>
 
-#include "../../DeviceAgnostic/ITMRenTracker.h"
-#include "../../DeviceAgnostic/ITMRepresentationAccess.h"
-
 using namespace metal;

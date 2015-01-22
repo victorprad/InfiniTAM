@@ -16,6 +16,7 @@ namespace ITMLib
 		public:
 			/// Size of a voxel, usually given in meters.
 			float voxelSize;
+
 			/** @{ */
 			/** \brief
 			    Fallback parameters: consider only parts of the
@@ -25,6 +26,7 @@ namespace ITMLib
 			    automatically by a ITMLib::Engine::ITMVisualisationEngine.
 			*/
 			float viewFrustum_min, viewFrustum_max;
+
 			/** @} */
 			/** \brief
 			    Encodes the width of the band of the truncated
@@ -34,19 +36,24 @@ namespace ITMLib
 			    divided by @ref voxelSize.
 			*/
 			float mu;
+
 			/** \brief
 			    Up to @ref maxW observations per voxel are averaged.
 			    Beyond that a sliding average is computed.
 			*/
 			int maxW;
 
-			ITMSceneParams(float mu, int maxW, float voxelSize,
-				float viewFrustum_min, float viewFrustum_max)
+			/** Stop integration once maxW has been reached. */
+			bool stopIntegratingAtMaxW;
+
+			ITMSceneParams(float mu, int maxW, float voxelSize, 
+				float viewFrustum_min, float viewFrustum_max, bool stopIntegratingAtMaxW)
 			{
 				this->mu = mu;
 				this->maxW = maxW;
 				this->voxelSize = voxelSize;
 				this->viewFrustum_min = viewFrustum_min; this->viewFrustum_max = viewFrustum_max;
+				this->stopIntegratingAtMaxW = stopIntegratingAtMaxW;
 			}
 
 			explicit ITMSceneParams(const ITMSceneParams *sceneParams) { this->SetFrom(sceneParams); }
@@ -58,6 +65,7 @@ namespace ITMLib
 				this->viewFrustum_max = sceneParams->viewFrustum_max;
 				this->mu = sceneParams->mu;
 				this->maxW = sceneParams->maxW;
+				this->stopIntegratingAtMaxW = sceneParams->stopIntegratingAtMaxW;
 			}
 		};
 	}

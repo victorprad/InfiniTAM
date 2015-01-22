@@ -46,25 +46,26 @@ void ITMSceneReconstructionEngine_Metal<TVoxel,ITMVoxelBlockHash>::IntegrateInto
     IntegrateIntoScene_VH_Params *params = (IntegrateIntoScene_VH_Params*)[paramsBuffer_sceneReconstruction contents];
     params->rgbImgSize = view->rgb->noDims;
     params->depthImgSize = view->depth->noDims;
-    params->_voxelSize = scene->sceneParams->voxelSize;
+    params->others.x = scene->sceneParams->voxelSize;
+    params->others.y = scene->sceneParams->mu;
+    params->others.z = scene->sceneParams->maxW;
+    params->others.w = (float)scene->sceneParams->stopIntegratingAtMaxW;
     params->M_d = trackingState->pose_d->M;
     if (TVoxel::hasColorInformation) params->M_rgb = view->calib->trafo_rgb_to_depth.calib_inv * trackingState->pose_d->M;
     
     params->projParams_d = view->calib->intrinsics_d.projectionParamsSimple.all;
     params->projParams_rgb = view->calib->intrinsics_rgb.projectionParamsSimple.all;
     
-    params->mu = scene->sceneParams->mu; params->maxW = scene->sceneParams->maxW;
-    
     [commandEncoder setComputePipelineState:p_integrateIntoScene_vh_device];
     [commandEncoder setBuffer:(__bridge id<MTLBuffer>) scene->localVBA.GetVoxelBlocks_MB()      offset:0 atIndex:0];
     [commandEncoder setBuffer:(__bridge id<MTLBuffer>) scene->index.GetEntries_MB()             offset:0 atIndex:1];
-    [commandEncoder setBuffer:(__bridge id<MTLBuffer>) renderState_vh->GetActiveEntryIDs_MB()   offset:0 atIndex:2];
+    [commandEncoder setBuffer:(__bridge id<MTLBuffer>) renderState_vh->GetVisibleEntryIDs_MB()  offset:0 atIndex:2];
     [commandEncoder setBuffer:(__bridge id<MTLBuffer>) view->rgb->GetMetalBuffer()              offset:0 atIndex:3];
     [commandEncoder setBuffer:(__bridge id<MTLBuffer>) view->depth->GetMetalBuffer()            offset:0 atIndex:4];
     [commandEncoder setBuffer:paramsBuffer_sceneReconstruction                                  offset:0 atIndex:5];
     
     MTLSize blockSize = {SDF_BLOCK_SIZE, SDF_BLOCK_SIZE, SDF_BLOCK_SIZE};
-    MTLSize gridSize = {(NSUInteger)renderState_vh->noActiveEntries, 1, 1};
+    MTLSize gridSize = {(NSUInteger)renderState_vh->noVisibleEntries, 1, 1};
     
     [commandEncoder dispatchThreadgroups:gridSize threadsPerThreadgroup:blockSize];
     [commandEncoder endEncoding];

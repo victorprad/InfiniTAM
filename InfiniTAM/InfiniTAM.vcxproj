@@ -122,8 +122,6 @@
     <ClCompile Include="ITMLib\Utils\ITMLibSettings.cpp" />
     <ClCompile Include="ITMLib\Utils\ITMCalibIO.cpp" />
     <ClCompile Include="InfiniTAM.cpp" />
-    <ClCompile Include="ITMLib\Objects\ITMDisparityCalib.cpp" />
-    <ClCompile Include="ITMLib\Objects\ITMIntrinsics.cpp" />
     <ClCompile Include="ITMLib\Objects\ITMPose.cpp" />
     <ClCompile Include="Utils\FileUtils.cpp" />
   </ItemGroup>
