@@ -85,43 +85,43 @@ Kinect2Engine::~Kinect2Engine()
 	SafeRelease(data->kinectSensor);
 }
 
-void Kinect2Engine::getImages(ITMView *out)
+void Kinect2Engine::getImages(ITMUChar4Image *rgbImage, ITMShortImage *rawDepthImage)
 {
-	Vector4u *rgb = out->rgb->GetData(MEMORYDEVICE_CPU);
-	if (colorAvailable)
-	{
-	}
-	else memset(rgb, 0, out->rgb->dataSize * sizeof(Vector4u));
+	//Vector4u *rgb = rgbImage->GetData(MEMORYDEVICE_CPU);
+	//if (colorAvailable)
+	//{
+	//}
+	//else memset(rgb, 0, rgbImage->dataSize * sizeof(Vector4u));
 
-	float *depth = out->depth->GetData(MEMORYDEVICE_CPU);
-	if (depthAvailable)
-	{
-		IDepthFrame* pDepthFrame = NULL;
-		UINT16 *pBuffer = NULL;
-		UINT nBufferSize = 0;
+	//float *depth = out->depth->GetData(MEMORYDEVICE_CPU);
+	//if (depthAvailable)
+	//{
+	//	IDepthFrame* pDepthFrame = NULL;
+	//	UINT16 *pBuffer = NULL;
+	//	UINT nBufferSize = 0;
 
-		HRESULT hr = data->depthFrameReader->AcquireLatestFrame(&pDepthFrame);
+	//	HRESULT hr = data->depthFrameReader->AcquireLatestFrame(&pDepthFrame);
 
-		if (SUCCEEDED(hr))
-		{
-			if (SUCCEEDED(hr))
-				hr = pDepthFrame->AccessUnderlyingBuffer(&nBufferSize, &pBuffer);
+	//	if (SUCCEEDED(hr))
+	//	{
+	//		if (SUCCEEDED(hr))
+	//			hr = pDepthFrame->AccessUnderlyingBuffer(&nBufferSize, &pBuffer);
 
-			if (SUCCEEDED(hr))
-			{
-				for (int i = 0; i < imageSize_d.x * imageSize_d.y; i++)
-				{
-					ushort depthPix = pBuffer[i];
-					depth[i] = depthPix == 0 ? -1.0f : (float)depthPix / 1000.0f;
-				}
-			}
-		}
+	//		if (SUCCEEDED(hr))
+	//		{
+	//			for (int i = 0; i < imageSize_d.x * imageSize_d.y; i++)
+	//			{
+	//				ushort depthPix = pBuffer[i];
+	//				depth[i] = depthPix == 0 ? -1.0f : (float)depthPix / 1000.0f;
+	//			}
+	//		}
+	//	}
 
-		SafeRelease(pDepthFrame);
-	}
-	else memset(depth, 0, out->depth->dataSize * sizeof(short));
+	//	SafeRelease(pDepthFrame);
+	//}
+	//else memset(depth, 0, out->depth->dataSize * sizeof(short));
 
-	out->inputImageType = ITMView::InfiniTAM_FLOAT_DEPTH_IMAGE;
+	//out->inputImageType = ITMView::InfiniTAM_FLOAT_DEPTH_IMAGE;
 
 	return /*true*/;
 }
@@ -140,7 +140,7 @@ Kinect2Engine::Kinect2Engine(const char *calibFilename) : ImageSourceEngine(cali
 }
 Kinect2Engine::~Kinect2Engine()
 {}
-void Kinect2Engine::getImages(ITMView *out)
+void Kinect2Engine::getImages(ITMUChar4Image *rgbImage, ITMShortImage *rawDepthImage)
 { return; }
 bool Kinect2Engine::hasMoreImages(void)
 { return false; }

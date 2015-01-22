@@ -16,49 +16,28 @@ namespace ITMLib
 		class ITMView
 		{
 		public:
-			enum InputImageType
-			{
-				//! Raw disparity images as received from the
-				//! Kinect
-				InfiniTAM_DISPARITY_IMAGE,
-				//! Short valued depth image in millimetres
-				InfiniTAM_SHORT_DEPTH_IMAGE,
-				//! Floating point valued depth images in meters
-				InfiniTAM_FLOAT_DEPTH_IMAGE
-			};
+			bool isAllocated;
 
 			/// Intrinsic calibration information for the view.
 			ITMRGBDCalib *calib;
 
-			/// Identifies which sort of depth images are given.
-			InputImageType inputImageType;
-
 			/// RGB colour image.
 			ITMUChar4Image *rgb; 
+
 			/// Float valued depth image, if available according to @ref inputImageType.
 			ITMFloatImage *depth;
-			/// Raw disparity image, if available according to @ref inputImageType.
-			ITMShortImage *rawDepth; 
 
-			ITMView(const ITMRGBDCalib & calib, Vector2i imgSize_rgb, Vector2i imgSize_d, bool allocateGPU)
-			{
-				this->calib = new ITMRGBDCalib(calib);
-
-				this->rgb = new ITMUChar4Image(imgSize_rgb, true, allocateGPU);
-				this->depth = new ITMFloatImage(imgSize_d, true, allocateGPU);
-
-				this->rawDepth = new ITMShortImage(imgSize_d, true, allocateGPU);
-				this->inputImageType = InfiniTAM_DISPARITY_IMAGE;
-			}
+			ITMView() { isAllocated = false; }
 
 			~ITMView(void)
 			{
-				delete calib;
+				if (isAllocated)
+				{
+					delete calib;
 
-				delete rgb;
-				delete depth;
-
-				delete rawDepth;
+					delete rgb;
+					delete depth;
+				}
 			}
 
 			// Suppress the default copy constructor and assignment operator

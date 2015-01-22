@@ -18,8 +18,10 @@ namespace ITMLib
 		public:
 			/// Intrinsic parameters of the RGB camera.
 			ITMIntrinsics intrinsics_rgb;
+
 			/// Intrinsic parameters of the depth camera.
 			ITMIntrinsics intrinsics_d;
+			
 			/** @brief
 			    Extrinsic calibration between RGB and depth
 			    cameras.
@@ -29,6 +31,7 @@ namespace ITMLib
 			    coordinate system.
 			*/
 			ITMExtrinsics trafo_rgb_to_depth;
+			
 			/// Calibration information to compute depth from disparity images.
 			ITMDisparityCalib disparityCalib;
 		};

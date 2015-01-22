@@ -22,10 +22,6 @@ namespace ITMLib
 			void GradientX(ITMShort4Image *grad_out, const ITMUChar4Image *image_in);
 			void GradientY(ITMShort4Image *grad_out, const ITMUChar4Image *image_in);
 
-			void ConvertDisparityToDepth(ITMFloatImage *depth_out, const ITMShortImage *disp_in, const ITMIntrinsics *depthIntrinsics, 
-				const ITMDisparityCalib *disparityCalib);
-			void ConvertDepthMMToFloat(ITMFloatImage *depth_out, const ITMShortImage *depth_in);
-
 			ITMLowLevelEngine_CPU(void);
 			~ITMLowLevelEngine_CPU(void);
 		};

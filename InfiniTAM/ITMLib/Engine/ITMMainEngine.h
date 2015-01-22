@@ -51,10 +51,11 @@ namespace ITMLib
 			ITMLibSettings *settings;
 
 			bool hasStartedObjectReconstruction;
-			bool fusionActive;
+			bool fusionActive, mainProcessingActive;
 
 			ITMTracker *trackerPrimary, *trackerSecondary;
 			ITMLowLevelEngine *lowLevelEngine;
+			ITMViewBuilder *viewBuilder;
 		
 			ITMDenseMapper<ITMVoxel,ITMVoxelIndex> *denseMapper;
 		public:
@@ -76,7 +77,7 @@ namespace ITMLib
 			ITMView* GetView() { return view; }
 
 			/// Process the frame accessed with @ref GetView()
-			void ProcessFrame(void);
+			void ProcessFrame(ITMUChar4Image *rgbImage, ITMShortImage *rawDepthImage);
 
 			/// Get a result image as output
 			void GetImage(ITMUChar4Image *out, GetImageType getImageType, bool useColour, ITMPose *pose = NULL, ITMIntrinsics *intrinsics = NULL);
@@ -84,6 +85,10 @@ namespace ITMLib
 			/// switch for turning intergration on/off
 			void turnOnIntegration();
 			void turnOffIntegration();
+
+			/// switch for turning main processing on/off
+			void turnOnMainProcessing();
+			void turnOffMainProcessing();
 
 			/** \brief Constructor
 			    Ommitting a separate image size for the depth images

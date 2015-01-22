@@ -28,10 +28,6 @@ namespace ITMLib
 			virtual void GradientX(ITMShort4Image *grad_out, const ITMUChar4Image *image_in) = 0;
 			virtual void GradientY(ITMShort4Image *grad_out, const ITMUChar4Image *image_in) = 0;
 
-			virtual void ConvertDisparityToDepth(ITMFloatImage *depth_out, const ITMShortImage *disp_in, const ITMIntrinsics *depthIntrinsics,
-				const ITMDisparityCalib *disparityCalib) = 0;
-			virtual void ConvertDepthMMToFloat(ITMFloatImage *depth_out, const ITMShortImage *depth_in) = 0;
-
 			ITMLowLevelEngine(void) { }
 			virtual ~ITMLowLevelEngine(void) { }
 		};

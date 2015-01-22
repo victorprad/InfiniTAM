@@ -38,6 +38,8 @@ namespace InfiniTAM
 			ITMUChar4Image *outImage[NUM_WIN];
 			ITMMainEngine::GetImageType outImageType[NUM_WIN];
 
+			ITMUChar4Image *inputRGBImage; ITMShortImage *inputRawDepthImage;
+
 			bool freeviewActive;
 			bool colourActive;
 			bool intergrationActive;

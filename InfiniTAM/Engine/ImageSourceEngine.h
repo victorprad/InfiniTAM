@@ -17,7 +17,7 @@ namespace InfiniTAM
 			virtual ~ImageSourceEngine() {}
 
 			virtual bool hasMoreImages(void) = 0;
-			virtual void getImages(ITMView *out) = 0;
+			virtual void getImages(ITMUChar4Image *rgb, ITMShortImage *rawDepth) = 0;
 			virtual Vector2i getDepthImageSize(void) = 0;
 			virtual Vector2i getRGBImageSize(void) = 0;
 		};
@@ -41,7 +41,7 @@ namespace InfiniTAM
 			~ImageFileReader();
 
 			bool hasMoreImages(void);
-			void getImages(ITMView *out);
+			void getImages(ITMUChar4Image *rgb, ITMShortImage *rawDepth);
 			Vector2i getDepthImageSize(void);
 			Vector2i getRGBImageSize(void);
 		};

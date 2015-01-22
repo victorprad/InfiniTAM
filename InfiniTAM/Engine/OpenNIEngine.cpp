@@ -189,7 +189,7 @@ OpenNIEngine::~OpenNIEngine()
 	openni::OpenNI::shutdown();
 }
 
-void OpenNIEngine::getImages(ITMView *out)
+void OpenNIEngine::getImages(ITMUChar4Image *rgbImage, ITMShortImage *rawDepthImage)
 {
 	int changedIndex, waitStreamCount;
 	if (depthAvailable && colorAvailable) waitStreamCount = 2;
@@ -204,30 +204,26 @@ void OpenNIEngine::getImages(ITMView *out)
 	if (depthAvailable && !data->depthFrame.isValid()) return;
 	if (colorAvailable && !data->colorFrame.isValid()) return;
 
-	Vector4u *rgb = out->rgb->GetData(MEMORYDEVICE_CPU);
+	Vector4u *rgb = rgbImage->GetData(MEMORYDEVICE_CPU);
 	if (colorAvailable)
 	{
 		const openni::RGB888Pixel* colorImagePix = (const openni::RGB888Pixel*)data->colorFrame.getData();
-		for (int i = 0; i < out->rgb->noDims.x * out->rgb->noDims.y; i++)
+		for (int i = 0; i < rgbImage->noDims.x * rgbImage->noDims.y; i++)
 		{
 			Vector4u newPix; openni::RGB888Pixel oldPix = colorImagePix[i];
 			newPix.x = oldPix.r; newPix.y = oldPix.g; newPix.z = oldPix.b; newPix.w = 255;
 			rgb[i] = newPix;
 		}
 	}
-	else memset(rgb, 0, out->rgb->dataSize * sizeof(Vector4u));
+	else memset(rgb, 0, rgbImage->dataSize * sizeof(Vector4u));
 
-	short *depth = out->rawDepth->GetData(MEMORYDEVICE_CPU);
+	short *depth = rawDepthImage->GetData(MEMORYDEVICE_CPU);
 	if (depthAvailable)
 	{
 		const openni::DepthPixel* depthImagePix = (const openni::DepthPixel*)data->depthFrame.getData();
-		memcpy(depth, depthImagePix, out->rawDepth->dataSize * sizeof(short));
+		memcpy(depth, depthImagePix, rawDepthImage->dataSize * sizeof(short));
 	}
-	else memset(depth, 0, out->rawDepth->dataSize * sizeof(short));
-	//WriteToTXT((short*)depthImagePix, 307200, "d:/temp/dd.txt");
-	//exit(1);
-
-	out->inputImageType = ITMView::InfiniTAM_SHORT_DEPTH_IMAGE;
+	else memset(depth, 0, rawDepthImage->dataSize * sizeof(short));
 
 	return /*true*/;
 }
@@ -247,7 +243,7 @@ OpenNIEngine::OpenNIEngine(const char *calibFilename, const char *deviceURI, con
 }
 OpenNIEngine::~OpenNIEngine()
 {}
-void OpenNIEngine::getImages(ITMView *out)
+void OpenNIEngine::getImages(ITMUChar4Image *rgbImage, ITMShortImage *rawDepthImage)
 { return; }
 bool OpenNIEngine::hasMoreImages(void)
 { return false; }

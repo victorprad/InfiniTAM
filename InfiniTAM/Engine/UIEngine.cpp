@@ -384,6 +384,9 @@ void UIEngine::Initialise(int & argc, char** argv, ImageSourceEngine *imageSourc
 	for (int w = 0; w < NUM_WIN; w++)
 		outImage[w] = new ITMUChar4Image(imageSource->getDepthImageSize(), true, false);
 
+	inputRGBImage = new ITMUChar4Image(imageSource->getRGBImageSize(), true, false);
+	inputRawDepthImage = new ITMShortImage(imageSource->getDepthImageSize(), true, false);
+
 	saveImage = new ITMUChar4Image(imageSource->getDepthImageSize(), true, false);
 
 	outImageType[0] = ITMMainEngine::InfiniTAM_IMAGE_SCENERAYCAST;
@@ -421,7 +424,7 @@ void UIEngine::GetScreenshot(ITMUChar4Image *dest) const
 void UIEngine::ProcessFrame()
 {
 	if (!imageSource->hasMoreImages()) return;
-	imageSource->getImages(mainEngine->view);
+	imageSource->getImages(inputRGBImage, inputRawDepthImage);
 
 	sdkResetTimer(&timer_instant); 
 	sdkStartTimer(&timer_instant); sdkStartTimer(&timer_average);
@@ -431,14 +434,14 @@ void UIEngine::ProcessFrame()
 		char str[250];
 
 		sprintf(str, "%s/%04d.pgm", outFolder, currentFrameNo);
-		SaveImageToFile(mainEngine->view->rawDepth, str);
+		SaveImageToFile(inputRawDepthImage, str);
 
 		sprintf(str, "%s/%04d.ppm", outFolder, currentFrameNo);
-		SaveImageToFile(mainEngine->view->rgb, str);
+		SaveImageToFile(inputRGBImage , str);
 	}
 
 	//actual processing on the mailEngine
-	mainEngine->ProcessFrame();
+	mainEngine->ProcessFrame(inputRGBImage, inputRawDepthImage);
 
 	sdkStopTimer(&timer_instant); sdkStopTimer(&timer_average);
 
@@ -456,6 +459,10 @@ void UIEngine::Shutdown()
 
 	for (int w = 0; w < NUM_WIN; w++)
 		delete outImage[w]; 
+
+	delete inputRGBImage;
+	delete inputRawDepthImage;
+
 	delete[] outFolder;
 	delete saveImage; 
 	delete instance; 

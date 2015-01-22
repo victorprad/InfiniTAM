@@ -14,7 +14,7 @@ ITMMainEngine::ITMMainEngine(const ITMLibSettings *settings, const ITMRGBDCalib 
 	this->trackingState = ITMTrackerFactory::MakeTrackingState(*settings, imgSize_rgb, imgSize_d);
 	trackingState->pose_d->SetFrom(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f); 
 
-	this->view = new ITMView(*calib, imgSize_rgb, imgSize_d, settings->deviceType == ITMLibSettings::DEVICE_CUDA);
+	this->view = new ITMView();
 
 	denseMapper = new ITMDenseMapper<ITMVoxel, ITMVoxelIndex>(this->settings, imgSize_rgb, imgSize_d);
 
@@ -22,15 +22,18 @@ ITMMainEngine::ITMMainEngine(const ITMLibSettings *settings, const ITMRGBDCalib 
 	{
 	case ITMLibSettings::DEVICE_CPU:
 		lowLevelEngine = new ITMLowLevelEngine_CPU();
+		viewBuilder = new ITMViewBuilder_CPU(calib, settings->deviceType);
 		break;
 	case ITMLibSettings::DEVICE_CUDA:
 #ifndef COMPILE_WITHOUT_CUDA
 		lowLevelEngine = new ITMLowLevelEngine_CUDA();
+		viewBuilder = new ITMViewBuilder_CUDA(calib, settings->deviceType);
 #endif
 		break;
 	case ITMLibSettings::DEVICE_METAL:
 #ifdef COMPILE_WITH_METAL
 		lowLevelEngine = new ITMLowLevelEngine_Metal();
+		viewBuilder = new ITMViewBuilder_Metal(calib, settings->deviceType);
 #endif
 		break;
 	}
@@ -40,14 +43,18 @@ ITMMainEngine::ITMMainEngine(const ITMLibSettings *settings, const ITMRGBDCalib 
 
 	hasStartedObjectReconstruction = false;
 	fusionActive = true;
+	mainProcessingActive = true;
 }
 
 ITMMainEngine::~ITMMainEngine()
 {
 	delete denseMapper;
+
 	if (trackerPrimary != NULL) delete trackerPrimary;
 	if (trackerSecondary != NULL) delete trackerSecondary;
+
 	delete lowLevelEngine;
+	delete viewBuilder;
 
 	delete trackingState;
 	delete view;
@@ -55,26 +62,12 @@ ITMMainEngine::~ITMMainEngine()
 	delete settings;
 }
 
-void ITMMainEngine::ProcessFrame(void)
+void ITMMainEngine::ProcessFrame(ITMUChar4Image *rgbImage, ITMShortImage *rawDepthImage)
 {
-	// prepare image and move it to GPU, if required
-	if (settings->deviceType == ITMLibSettings::DEVICE_CUDA)
-	{
-		view->rgb->UpdateDeviceFromHost();
-
-		switch (view->inputImageType)
-		{
-		case ITMView::InfiniTAM_FLOAT_DEPTH_IMAGE: view->depth->UpdateDeviceFromHost(); break;
-		case ITMView::InfiniTAM_SHORT_DEPTH_IMAGE:
-		case ITMView::InfiniTAM_DISPARITY_IMAGE: view->rawDepth->UpdateDeviceFromHost(); break;
-		}
-	}
-
 	// prepare image and turn it into a depth image
-	if (view->inputImageType == ITMView::InfiniTAM_DISPARITY_IMAGE)
-		lowLevelEngine->ConvertDisparityToDepth(view->depth, view->rawDepth, &(view->calib->intrinsics_d), &(view->calib->disparityCalib));
-	else if (view->inputImageType == ITMView::InfiniTAM_SHORT_DEPTH_IMAGE)
-		lowLevelEngine->ConvertDepthMMToFloat(view->depth, view->rawDepth);
+	viewBuilder->UpdateView(view, rgbImage, rawDepthImage);
+
+	if (!mainProcessingActive) return;
 
 	// tracking
 	if (hasStartedObjectReconstruction)
@@ -104,6 +97,8 @@ void ITMMainEngine::ProcessFrame(void)
 
 void ITMMainEngine::GetImage(ITMUChar4Image *out, GetImageType getImageType, bool useColour, ITMPose *pose, ITMIntrinsics *intrinsics)
 {
+	if (!view->isAllocated) return;
+
 	out->Clear();
 
 	switch (getImageType)
@@ -132,12 +127,7 @@ void ITMMainEngine::GetImage(ITMUChar4Image *out, GetImageType getImageType, boo
 	};
 }
 
-void ITMMainEngine::turnOnIntegration()
-{
-	fusionActive = true;
-}
-
-void ITMMainEngine::turnOffIntegration()
-{
-	fusionActive = false;
-}
+void ITMMainEngine::turnOnIntegration() { fusionActive = true; }
+void ITMMainEngine::turnOffIntegration() { fusionActive = false; }
+void ITMMainEngine::turnOnMainProcessing() { mainProcessingActive = true; }
+void ITMMainEngine::turnOffMainProcessing() { mainProcessingActive = false; }
