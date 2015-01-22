@@ -166,6 +166,9 @@ static void GenericRaycast(const ITMScene<TVoxel,TIndex> *scene, const Vector2i&
 	const TVoxel *voxelData = scene->localVBA.GetVoxelBlocks();
 	const typename TIndex::IndexData *voxelIndex = scene->index.getIndexData();
 
+#ifdef WITH_OPENMP
+	#pragma omp parallel for
+#endif
 	for (int y = 0; y < imgSize.y; y++) for (int x = 0; x < imgSize.x; x++)
 	{
 		int locId = x + y * imgSize.x;
@@ -201,6 +204,9 @@ static void RenderImage_common(const ITMScene<TVoxel,TIndex> *scene, const ITMPo
 
 	if (useColour && TVoxel::hasColorInformation)
 	{
+#ifdef WITH_OPENMP
+		#pragma omp parallel for
+#endif
 		for (int locId = 0; locId < imgSize.x * imgSize.y; locId++)
 		{
 			Vector4f ptRay = pointsRay[locId];
@@ -209,6 +215,9 @@ static void RenderImage_common(const ITMScene<TVoxel,TIndex> *scene, const ITMPo
 	}
 	else 
 	{
+#ifdef WITH_OPENMP
+		#pragma omp parallel for
+#endif
 		for (int locId = 0; locId < imgSize.x * imgSize.y; locId++)
 		{
 			Vector4f ptRay = pointsRay[locId];
@@ -255,6 +264,9 @@ static void CreateICPMaps_common(const ITMScene<TVoxel,TIndex> *scene, const ITM
 	const typename TIndex::IndexData *voxelIndex = scene->index.getIndexData();
 	float voxelSize = scene->sceneParams->voxelSize;
 
+#ifdef WITH_OPENMP
+	#pragma omp parallel for
+#endif
 	for (int locId = 0; locId < imgSize.x * imgSize.y; locId++)
 	{
 		Vector4f ptRay = pointsRay[locId];

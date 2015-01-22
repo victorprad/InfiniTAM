@@ -9,6 +9,7 @@ find_package(CUDA)
 find_package(OpenNI)
 
 OPTION(WITH_CUDA "Build with CUDA support?" ${CUDA_FOUND})
+INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseOpenMP.cmake)
 
 IF(MSVC_IDE)
   add_definitions(-D_CRT_SECURE_NO_WARNINGS)
