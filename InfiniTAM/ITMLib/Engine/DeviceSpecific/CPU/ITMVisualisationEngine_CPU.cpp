@@ -281,14 +281,14 @@ template<class TVoxel, class TIndex>
 void ITMVisualisationEngine_CPU<TVoxel,TIndex>::FindSurface(const ITMScene<TVoxel,TIndex> *scene, const ITMPose *pose, const ITMIntrinsics *intrinsics,
 	const ITMRenderState *renderState)
 {
-	// TODO
+	GenericRaycast(scene, renderState->raycastResult->noDims, pose->invM, intrinsics->projectionParamsSimple.all, renderState);
 }
 
 template<class TVoxel>
 void ITMVisualisationEngine_CPU<TVoxel,ITMVoxelBlockHash>::FindSurface(const ITMScene<TVoxel,ITMVoxelBlockHash> *scene, const ITMPose *pose,
 	const ITMIntrinsics *intrinsics, const ITMRenderState *renderState)
 {
-	// TODO
+	GenericRaycast(scene, renderState->raycastResult->noDims, pose->invM, intrinsics->projectionParamsSimple.all, renderState);
 }
 
 template<class TVoxel, class TIndex>
