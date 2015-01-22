@@ -154,34 +154,50 @@ void ITMVisualisationEngine_CPU<TVoxel,ITMVoxelBlockHash>::CreateExpectedDepths(
 }
 
 template<class TVoxel, class TIndex>
-static void RenderImage_common(const ITMScene<TVoxel,TIndex> *scene, const ITMPose *pose, const ITMIntrinsics *intrinsics, 
-	const ITMRenderState *renderState, ITMUChar4Image *outputImage, bool useColour)
+static void GenericRaycast(const ITMScene<TVoxel,TIndex> *scene, const Vector2i& imgSize, const Matrix4f& invM, Vector4f projParams, const ITMRenderState *renderState)
 {
-	const TVoxel *voxelData = scene->localVBA.GetVoxelBlocks();
-	const typename TIndex::IndexData *voxelIndex = scene->index.getIndexData();
-
-	Vector2i imgSize = outputImage->noDims;
-	float voxelSize = scene->sceneParams->voxelSize;
-	float oneOverVoxelSize = 1.0f / voxelSize;
-
-	Matrix4f invM = pose->invM;
-	Vector4f projParams = intrinsics->projectionParamsSimple.all;
 	projParams.x = 1.0f / projParams.x;
 	projParams.y = 1.0f / projParams.y;
 
 	const Vector2f *minmaximg = renderState->renderingRangeImage->GetData(MEMORYDEVICE_CPU);
+	float mu = scene->sceneParams->mu;
+	float oneOverVoxelSize = 1.0f / scene->sceneParams->voxelSize;
 	Vector4f *pointsRay = renderState->raycastResult->GetData(MEMORYDEVICE_CPU);
+	const TVoxel *voxelData = scene->localVBA.GetVoxelBlocks();
+	const typename TIndex::IndexData *voxelIndex = scene->index.getIndexData();
 
 	for (int y = 0; y < imgSize.y; y++) for (int x = 0; x < imgSize.x; x++)
 	{
 		int locId = x + y * imgSize.x;
 		int locId2 = (int)floor((float)x / minmaximg_subsample) + (int)floor((float)y / minmaximg_subsample) * imgSize.x;
 
-		castRay<TVoxel, TIndex>(pointsRay[locId], x, y, voxelData, voxelIndex, invM, projParams, oneOverVoxelSize, scene->sceneParams->mu, minmaximg[locId2]);
+		castRay<TVoxel, TIndex>(
+			pointsRay[locId],
+			x, y,
+			voxelData,
+			voxelIndex,
+			invM,
+			projParams,
+			oneOverVoxelSize,
+			mu,
+			minmaximg[locId2]
+		);
 	}
+}
+
+template<class TVoxel, class TIndex>
+static void RenderImage_common(const ITMScene<TVoxel,TIndex> *scene, const ITMPose *pose, const ITMIntrinsics *intrinsics, 
+	const ITMRenderState *renderState, ITMUChar4Image *outputImage, bool useColour)
+{
+	Vector2i imgSize = outputImage->noDims;
+	Matrix4f invM = pose->invM;
+	GenericRaycast(scene, imgSize, invM, intrinsics->projectionParamsSimple.all, renderState);
 
 	Vector3f lightSource = ComputeLightSource(invM);
 	Vector4u *outRendering = outputImage->GetData(MEMORYDEVICE_CPU);
+	Vector4f *pointsRay = renderState->raycastResult->GetData(MEMORYDEVICE_CPU);
+	const TVoxel *voxelData = scene->localVBA.GetVoxelBlocks();
+	const typename TIndex::IndexData *voxelIndex = scene->index.getIndexData();
 
 	if (useColour && TVoxel::hasColorInformation)
 	{
@@ -205,68 +221,39 @@ template<class TVoxel, class TIndex>
 static void CreatePointCloud_common(const ITMScene<TVoxel,TIndex> *scene, const ITMView *view, ITMTrackingState *trackingState, 
 	ITMRenderState *renderState, bool skipPoints)
 {
-	const TVoxel *voxelData = scene->localVBA.GetVoxelBlocks();
-	const typename TIndex::IndexData *voxelIndex = scene->index.getIndexData();
-
 	Vector2i imgSize = view->depth->noDims;
-	float voxelSize = scene->sceneParams->voxelSize;
-	float oneOverVoxelSize = 1.0f / voxelSize;
-
 	Matrix4f invM = trackingState->pose_d->invM * view->calib->trafo_rgb_to_depth.calib;
-	Vector4f projParams = view->calib->intrinsics_rgb.projectionParamsSimple.all;
-	projParams.x = 1.0f / projParams.x;
-	projParams.y = 1.0f / projParams.y;
+	GenericRaycast(scene, imgSize, invM, view->calib->intrinsics_rgb.projectionParamsSimple.all, renderState);
 
-	const Vector2f *minmaximg = renderState->renderingRangeImage->GetData(MEMORYDEVICE_CPU);
-	Vector4f *pointsRay = renderState->raycastResult->GetData(MEMORYDEVICE_CPU);
-
-	for (int y = 0; y < imgSize.y; y++) for (int x = 0; x < imgSize.x; x++)
-	{
-		int locId = x + y * imgSize.x;
-		int locId2 = (int)floor((float)x / minmaximg_subsample) + (int)floor((float)y / minmaximg_subsample) * imgSize.x;
-
-		castRay<TVoxel, TIndex>(pointsRay[locId], x, y, voxelData, voxelIndex, invM, projParams, oneOverVoxelSize, scene->sceneParams->mu, minmaximg[locId2]);
-	}
-
-	Vector4f *colours = trackingState->pointCloud->colours->GetData(MEMORYDEVICE_CPU);
-	Vector3f lightSource = ComputeLightSource(invM);
-	Vector4f *locations = trackingState->pointCloud->locations->GetData(MEMORYDEVICE_CPU);
-	Vector4u *outRendering = renderState->raycastImage->GetData(MEMORYDEVICE_CPU);
-
-	trackingState->pointCloud->noTotalPoints = RenderPointCloud<TVoxel, TIndex>(outRendering, locations, colours, pointsRay, 
-		scene->localVBA.GetVoxelBlocks(), scene->index.getIndexData(), skipPoints, voxelSize, imgSize, lightSource);
+	trackingState->pointCloud->noTotalPoints = RenderPointCloud<TVoxel, TIndex>(
+		renderState->raycastImage->GetData(MEMORYDEVICE_CPU),
+		trackingState->pointCloud->locations->GetData(MEMORYDEVICE_CPU),
+		trackingState->pointCloud->colours->GetData(MEMORYDEVICE_CPU),
+		renderState->raycastResult->GetData(MEMORYDEVICE_CPU),
+		scene->localVBA.GetVoxelBlocks(),
+		scene->index.getIndexData(),
+		skipPoints,
+		scene->sceneParams->voxelSize,
+		imgSize,
+		ComputeLightSource(invM)
+	);
 }
 
 template<class TVoxel, class TIndex>
 static void CreateICPMaps_common(const ITMScene<TVoxel,TIndex> *scene, const ITMView *view, ITMTrackingState *trackingState, ITMRenderState *renderState)
 {
-	const TVoxel *voxelData = scene->localVBA.GetVoxelBlocks();
-	const typename TIndex::IndexData *voxelIndex = scene->index.getIndexData();
-
 	Vector2i imgSize = view->depth->noDims;
-	float voxelSize = scene->sceneParams->voxelSize;
-	float oneOverVoxelSize = 1.0f / voxelSize;
-
 	Matrix4f invM = trackingState->pose_d->invM;
-	Vector4f projParams = view->calib->intrinsics_d.projectionParamsSimple.all;
-	projParams.x = 1.0f / projParams.x;
-	projParams.y = 1.0f / projParams.y;
-
-	const Vector2f *minmaximg = renderState->renderingRangeImage->GetData(MEMORYDEVICE_CPU);
-	Vector4f *pointsRay = renderState->raycastResult->GetData(MEMORYDEVICE_CPU);
-
-	for (int y = 0; y < imgSize.y; y++) for (int x = 0; x < imgSize.x; x++)
-	{
-		int locId = x + y * imgSize.x;
-		int locId2 = (int)floor((float)x / minmaximg_subsample) + (int)floor((float)y / minmaximg_subsample) * imgSize.x;
-
-		castRay<TVoxel, TIndex>(pointsRay[locId], x, y, voxelData, voxelIndex, invM, projParams, oneOverVoxelSize, scene->sceneParams->mu, minmaximg[locId2]);
-	}
+	GenericRaycast(scene, imgSize, invM, view->calib->intrinsics_d.projectionParamsSimple.all, renderState);
 
 	Vector3f lightSource = ComputeLightSource(invM);
 	Vector4f *normalsMap = trackingState->pointCloud->colours->GetData(MEMORYDEVICE_CPU);
 	Vector4u *outRendering = renderState->raycastImage->GetData(MEMORYDEVICE_CPU);
 	Vector4f *pointsMap = trackingState->pointCloud->locations->GetData(MEMORYDEVICE_CPU);
+	Vector4f *pointsRay = renderState->raycastResult->GetData(MEMORYDEVICE_CPU);
+	const TVoxel *voxelData = scene->localVBA.GetVoxelBlocks();
+	const typename TIndex::IndexData *voxelIndex = scene->index.getIndexData();
+	float voxelSize = scene->sceneParams->voxelSize;
 
 	for (int locId = 0; locId < imgSize.x * imgSize.y; locId++)
 	{
