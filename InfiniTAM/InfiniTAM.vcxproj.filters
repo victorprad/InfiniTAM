@@ -115,6 +115,9 @@
     <ClCompile Include="ITMLib\Engine\DeviceSpecific\CPU\ITMVisualisationEngine_CPU.cpp">
       <Filter>ITMLib\Engine\DeviceSpecific\CPU</Filter>
     </ClCompile>
+    <ClCompile Include="ITMLib\Engine\DeviceSpecific\CPU\ITMVoxelBlockOpEngine_CPU.cpp">
+      <Filter>ITMLib\Engine\DeviceSpecific\CPU</Filter>
+    </ClCompile>
     <ClCompile Include="Engine\Kinect2Engine.cpp">
       <Filter>Engine\Source Files</Filter>
     </ClCompile>
@@ -297,6 +300,20 @@
     <ClInclude Include="ITMLib\Engine\DeviceSpecific\CUDA\ITMVisualisationEngine_CUDA.h">
       <Filter>ITMLib\Engine\DeviceSpecific\CUDA</Filter>
     </ClInclude>
+    <ClInclude Include="ITMLib\Engine\ITMVoxelBlockOpEngine.h">
+      <Filter>ITMLib\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="ITMLib\Engine\DeviceAgnostic\ITMVoxelBlockOpEngine.h">
+      <Filter>ITMLib\Engine\DeviceAgnostic</Filter>
+    </ClInclude>
+    <ClInclude Include="ITMLib\Engine\DeviceSpecific\CPU\ITMVoxelBlockOpEngine_CPU.h">
+      <Filter>ITMLib\Engine\DeviceSpecific\CPU</Filter>
+    </ClInclude>
+    <ClInclude Include="ITMLib\Engine\DeviceSpecific\CUDA\ITMVoxelBlockOpEngine_CUDA.h">
+      <Filter>ITMLib\Engine\DeviceSpecific\CUDA</Filter>
+    </ClInclude>
+    <ClInclude Include="ITMLib\Engine\DeviceAgnostic\ITMRepresentationAccess.h">
+      <Filter>ITMLib\Engine\DeviceAgnostic</Filter>
     <ClInclude Include="ITMLib\Engine\DeviceAgnostic\ITMRepresentationAccess.h">
       <Filter>ITMLib\Engine\DeviceAgnostic</Filter>
     </ClInclude>
@@ -325,6 +342,12 @@
       <Filter>ITMLib\Engine\Trackers</Filter>
     </ClInclude>
     <ClInclude Include="ITMLib\Objects\ITMTemplatedHierarchyLevel.h">
+      <Filter>ITMLib\Objects\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ITMLib\Objects\ITMVoxelBlockHHash.h">
+      <Filter>ITMLib\Objects\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ITMLib\Objects\ITMHHashTable.h">
       <Filter>ITMLib\Objects\Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ITMLib\Engine\ITMTrackerFactory.h">
@@ -380,6 +403,7 @@
     <CudaCompile Include="ITMLib\Engine\DeviceSpecific\CUDA\ITMVisualisationEngine_CUDA.cu">
       <Filter>ITMLib\Engine\DeviceSpecific\CUDA</Filter>
     </CudaCompile>
+    <CudaCompile Include="ITMLib\Engine\DeviceSpecific\CUDA\ITMVoxelBlockOpEngine_CUDA.cu">
     <CudaCompile Include="ITMLib\Engine\DeviceSpecific\CUDA\ITMRenTracker_CUDA.cu">
       <Filter>ITMLib\Engine\DeviceSpecific\CUDA</Filter>
     </CudaCompile>

@@ -34,13 +34,16 @@ namespace ITMLib
 			/** Maximum number of total entries. */
 			static const CONSTANT(int) noVoxelBlocks = ITMHashTable::noTotalEntries;
 			static const CONSTANT(int) voxelBlockSize = SDF_BLOCK_SIZE * SDF_BLOCK_SIZE * SDF_BLOCK_SIZE;
-
+            
 		private:
+			int lastFreeExcessListId;
+
 			DEVICEPTR(ITMHashTable) *hashData;
 			MemoryDeviceType memoryType;
 
 		public:
-			int lastFreeExcessListId;
+			int GetLastFreeExcessListId(void) { return lastFreeExcessListId; }
+			void SetLastFreeExcessListId(int lastFreeExcessListId) { this->lastFreeExcessListId = lastFreeExcessListId; }
 
 #ifndef __METALC__
 			ITMVoxelBlockHash(MemoryDeviceType memoryType)
@@ -91,7 +94,7 @@ namespace ITMLib
 
 			/** Maximum number of total entries. */
 			int getNumAllocatedVoxelBlocks(void) { return SDF_LOCAL_BLOCK_NUM; }
-			int getVoxelBlockSize(void) { return SDF_BLOCK_SIZE3; }
+			int getVoxelBlockSize(void) { return voxelBlockSize; }
 
 			// Suppress the default copy constructor and assignment operator
 			ITMVoxelBlockHash(const ITMVoxelBlockHash&);

@@ -9,9 +9,10 @@
 #include "../Objects/ITMTrackingState.h"
 #include "../Objects/ITMRenderState.h"
 
-#include "../Engine/ITMSceneReconstructionEngine.h"
-#include "../Engine/ITMVisualisationEngine.h"
-#include "../Engine/ITMSwappingEngine.h"
+#include "ITMSceneReconstructionEngine.h"
+#include "ITMVisualisationEngine.h"
+#include "ITMSwappingEngine.h"
+#include "ITMVoxelBlockOpEngine.h"
 
 namespace ITMLib
 {
@@ -28,6 +29,7 @@ namespace ITMLib
 			ITMSceneReconstructionEngine<TVoxel,TIndex> *sceneRecoEngine;
 			ITMSwappingEngine<TVoxel,TIndex> *swappingEngine;
 			ITMVisualisationEngine<TVoxel,TIndex> *visualisationEngine;
+			ITMVoxelBlockOpEngine<TVoxel,TIndex> *voxelBlockOpEngine;
 			ITMScene<TVoxel,TIndex> *scene;
 
 			ITMRenderState *renderState_freeview;

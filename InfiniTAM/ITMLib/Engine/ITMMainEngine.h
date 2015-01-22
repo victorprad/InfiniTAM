@@ -55,7 +55,7 @@ namespace ITMLib
 
 			ITMTracker *trackerPrimary, *trackerSecondary;
 			ITMLowLevelEngine *lowLevelEngine;
-		
+
 			ITMDenseMapper<ITMVoxel,ITMVoxelIndex> *denseMapper;
 		public:
 			enum GetImageType

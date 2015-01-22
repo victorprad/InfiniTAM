@@ -3,6 +3,7 @@
 #pragma once
 
 #include "../../Utils/ITMLibDefines.h"
+#include "ITMRepresentationAccess.h"
 
 struct RenderingBlock {
 	Vector2s upperLeft;
@@ -147,7 +148,8 @@ _CPU_AND_GPU_CODE_ inline bool castRay(THREADPTR(Vector4f) &pt_out, int x, int y
 				break;
 			}
 		}
-		else {
+		else
+		{
 			switch (state)
 			{
 			case SEARCH_BLOCK_COARSE:

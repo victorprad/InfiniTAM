@@ -24,12 +24,14 @@ ITMDenseMapper<TVoxel,TIndex>::ITMDenseMapper(const ITMLibSettings *settings, Ve
 		sceneRecoEngine = new ITMSceneReconstructionEngine_CPU<TVoxel,TIndex>();
 		if (settings->useSwapping) swappingEngine = new ITMSwappingEngine_CPU<TVoxel,TIndex>();
 		visualisationEngine = new ITMVisualisationEngine_CPU<TVoxel,TIndex>();
+		voxelBlockOpEngine = new ITMVoxelBlockOpEngine_CPU<TVoxel,TIndex>();
 		break;
 	case ITMLibSettings::DEVICE_CUDA:
 #ifndef COMPILE_WITHOUT_CUDA
 		sceneRecoEngine = new ITMSceneReconstructionEngine_CUDA<TVoxel,TIndex>();
 		if (settings->useSwapping) swappingEngine = new ITMSwappingEngine_CUDA<TVoxel,TIndex>();
 		visualisationEngine = new ITMVisualisationEngine_CUDA<TVoxel,TIndex>();
+		voxelBlockOpEngine = new ITMVoxelBlockOpEngine_CUDA<TVoxel,TIndex>();
 #endif
 		break;
 	case ITMLibSettings::DEVICE_METAL:
@@ -37,6 +39,7 @@ ITMDenseMapper<TVoxel,TIndex>::ITMDenseMapper(const ITMLibSettings *settings, Ve
 		sceneRecoEngine = new ITMSceneReconstructionEngine_Metal<TVoxel, TIndex>();
 		if (settings->useSwapping) swappingEngine = new ITMSwappingEngine_CPU<TVoxel, TIndex>();
 		visualisationEngine = new ITMVisualisationEngine_Metal<TVoxel, TIndex>();
+		voxelBlockOpEngine = new ITMVoxelBlockOpEngine_CPU<TVoxel,TIndex>();
 #endif
 		break;
 	}
@@ -50,6 +53,7 @@ ITMDenseMapper<TVoxel,TIndex>::~ITMDenseMapper()
 {
 	delete sceneRecoEngine;
 	delete visualisationEngine;
+	delete voxelBlockOpEngine;
 
 	if (settings->useSwapping) delete swappingEngine;
 
@@ -63,6 +67,9 @@ template<class TVoxel, class TIndex>
 void ITMDenseMapper<TVoxel,TIndex>::ProcessFrame(const ITMView *view, const ITMTrackingState *trackingState)
 {
 	bool useSwapping = settings->useSwapping;
+
+	// split and merge voxel blocks according to their complexity
+	voxelBlockOpEngine->SplitAndMerge(scene, renderState_live);
 
 	// allocation
 	sceneRecoEngine->AllocateSceneFromDepth(scene, view, trackingState, renderState_live);

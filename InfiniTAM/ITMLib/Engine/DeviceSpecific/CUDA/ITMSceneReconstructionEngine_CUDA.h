@@ -32,6 +32,24 @@ namespace ITMLib
 		};
 
 		template<class TVoxel>
+		class ITMSceneReconstructionEngine_CUDA<TVoxel, ITMVoxelBlockHHash> : public ITMSceneReconstructionEngine<TVoxel, ITMVoxelBlockHHash>
+		{
+		private:
+			uint *noTotalPoints_device;
+			int *noAllocatedVoxelEntries_device, *noAllocatedExcessEntries_device, *noLiveEntries_device;
+			unsigned char *entriesAllocType_device;
+			Vector3s *blockCoords_device;
+
+		public:
+			void AllocateSceneFromDepth(ITMScene<TVoxel, ITMVoxelBlockHHash> *scene, const ITMView *view, const ITMTrackingState *trackingState, const ITMRenderState *renderState);
+
+			void IntegrateIntoScene(ITMScene<TVoxel, ITMVoxelBlockHHash> *scene, const ITMView *view, const ITMTrackingState *trackingState, const ITMRenderState *renderState);
+
+			ITMSceneReconstructionEngine_CUDA(void);
+			~ITMSceneReconstructionEngine_CUDA(void);
+		};
+
+		template<class TVoxel>
 		class ITMSceneReconstructionEngine_CUDA<TVoxel, ITMPlainVoxelArray> : public ITMSceneReconstructionEngine < TVoxel, ITMPlainVoxelArray >
 		{
 		public:

@@ -4,7 +4,7 @@
 
 #include "../../Utils/ITMLibDefines.h"
 #include "../../Utils/ITMPixelUtils.h"
-#include "ITMSceneReconstructionEngine.h"
+#include "ITMRepresentationAccess.h"
 
 // sigma that controls the basin of attraction
 #define DTUNE 6.0f
@@ -36,26 +36,25 @@ _CPU_AND_GPU_CODE_ inline Vector3f computeDDT(const DEVICEPTR(Vector3f) &pt_f, c
 	const THREADPTR(typename TIndex::IndexData) *index, float oneOverVoxelSize, DEVICEPTR(bool) &ddtFound)
 {
 	Vector3f ddt;
-	
-	Vector3i pt = TO_INT_ROUND3(pt_f);
-	
-	bool isFound; float dt1, dt2;	
 
-	dt1 = TVoxel::SDF_valueToFloat(readVoxel(voxelBlocks, index, pt + Vector3i(1, 0, 0), isFound).sdf);
+//	Vector3i pt = TO_INT_ROUND3(pt_f);
+	bool isFound; float dt1, dt2;
+
+	dt1 = readFromSDF_float_uninterpolated(voxelBlocks, index, pt_f + Vector3f(1.0f, 0.0f, 0.0f), isFound);
 	if (!isFound || dt1 == 1.0f) { ddtFound = false; return Vector3f(0.0f); }
-	dt2 = TVoxel::SDF_valueToFloat(readVoxel(voxelBlocks, index, pt + Vector3i(-1, 0, 0), isFound).sdf);
+	dt2 = readFromSDF_float_uninterpolated(voxelBlocks, index, pt_f + Vector3f(-1.0f, 0.0f, 0.0f), isFound);
 	if (!isFound || dt2 == 1.0f) { ddtFound = false; return Vector3f(0.0f); }
 	ddt.x = (dt1 - dt2) * 0.5f;
 
-	dt1 = TVoxel::SDF_valueToFloat(readVoxel(voxelBlocks, index, pt + Vector3i(0, 1, 0), isFound).sdf);
+	dt1 = readFromSDF_float_uninterpolated(voxelBlocks, index, pt_f + Vector3f(0.0f, 1.0f, 0.0f), isFound);
 	if (!isFound || dt1 == 1.0f) { ddtFound = false; return Vector3f(0.0f); }
-	dt2 = TVoxel::SDF_valueToFloat(readVoxel(voxelBlocks, index, pt + Vector3i(0, -1, 0), isFound).sdf);
+	dt2 = readFromSDF_float_uninterpolated(voxelBlocks, index, pt_f + Vector3f(0.0f, -1.0f, 0.0f), isFound);
 	if (!isFound || dt2 == 1.0f) { ddtFound = false; return Vector3f(0.0f); }
 	ddt.y = (dt1 - dt2) * 0.5f;
 
-	dt1 = TVoxel::SDF_valueToFloat(readVoxel(voxelBlocks, index, pt + Vector3i(0, 0, 1), isFound).sdf);
+	dt1 = readFromSDF_float_uninterpolated(voxelBlocks, index, pt_f + Vector3f(0.0f, 0.0f, 1.0f), isFound);
 	if (!isFound || dt1 == 1.0f) { ddtFound = false; return Vector3f(0.0f); }
-	dt2 = TVoxel::SDF_valueToFloat(readVoxel(voxelBlocks, index, pt + Vector3i(0, 0, -1), isFound).sdf);
+	dt2 = readFromSDF_float_uninterpolated(voxelBlocks, index, pt_f + Vector3f(0.0f, 0.0f, -1.0f), isFound);
 	if (!isFound || dt2 == 1.0f) { ddtFound = false; return Vector3f(0.0f); }
 	ddt.z = (dt1 - dt2) * 0.5f;
 

@@ -70,4 +70,23 @@ namespace ORUtils
 		{
 		}
 	};
+
+	inline void solveUsingPseudoinverse(float *A, float *b, float *x, int dim)
+	{
+		float ATA[dim*dim];
+		float ATb[dim];
+		for (int r = 0; r < dim; ++r) {
+			for (int c = 0; c < dim; ++c) {
+				float tmp = 0.0f;
+				for (int i = 0; i < dim; ++i) tmp += A[i*dim+r] * A[i*dim+c];
+				ATA[r*dim+c] = tmp;
+			}
+			float tmp = 0.0f;
+			for (int i = 0; i < dim; ++i) tmp += A[i*dim+r] * b[i];
+			ATb[r] = tmp;
+		}
+
+		Cholesky cholA(ATA, dim);
+		cholA.Backsub(x, ATb);
+	}
 }

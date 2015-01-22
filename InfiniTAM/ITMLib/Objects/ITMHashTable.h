@@ -30,25 +30,25 @@ namespace ITMLib
 			*/
 			ORUtils::MemoryBlock<int> *excessAllocationList;
           
-            ITMHashTable(MemoryDeviceType memoryType)
-            {
+			ITMHashTable(MemoryDeviceType memoryType)
+			{
 				entries = new ORUtils::MemoryBlock<ITMHashEntry>(noTotalEntries, memoryType);
 				excessAllocationList = new ORUtils::MemoryBlock<int>(SDF_EXCESS_LIST_SIZE, memoryType);
-            }
-            
-            ~ITMHashTable()
-            {
+			}
+
+			~ITMHashTable()
+			{
 				delete entries;
 				delete excessAllocationList;
-            }
-            
+			}
+
 			void ResetData(void)
 			{
 				ITMHashEntry *entries = this->entries->GetData(MEMORYDEVICE_CPU);
 				int *excessAllocationList = this->excessAllocationList->GetData(MEMORYDEVICE_CPU);
 
 				memset(entries, 0, noTotalEntries * sizeof(ITMHashEntry));
-				for (int i = 0; i < noTotalEntries; i++) { entries[i].ptr = -2; }
+				for (int i = 0; i < noTotalEntries; i++) { entries[i].ptr = -3; }
 
 				for (int i = 0; i < SDF_EXCESS_LIST_SIZE; i++) excessAllocationList[i] = i;
 			}

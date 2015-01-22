@@ -51,6 +51,7 @@ Engine/DeviceSpecific/CPU/ITMDepthTracker_CPU.cpp
 Engine/DeviceSpecific/CPU/ITMLowLevelEngine_CPU.cpp
 Engine/DeviceSpecific/CPU/ITMRenTracker_CPU.cpp
 Engine/DeviceSpecific/CPU/ITMSceneReconstructionEngine_CPU.cpp
+Engine/DeviceSpecific/CPU/ITMVoxelBlockOpEngine_CPU.cpp
 Engine/DeviceSpecific/CPU/ITMSwappingEngine_CPU.cpp
 Engine/DeviceSpecific/CPU/ITMVisualisationEngine_CPU.cpp
 )
@@ -61,6 +62,7 @@ Engine/DeviceSpecific/CPU/ITMDepthTracker_CPU.h
 Engine/DeviceSpecific/CPU/ITMLowLevelEngine_CPU.h
 Engine/DeviceSpecific/CPU/ITMRenTracker_CPU.h
 Engine/DeviceSpecific/CPU/ITMSceneReconstructionEngine_CPU.h
+Engine/DeviceSpecific/CPU/ITMVoxelBlockOpEngine_CPU.h
 Engine/DeviceSpecific/CPU/ITMSwappingEngine_CPU.h
 Engine/DeviceSpecific/CPU/ITMVisualisationEngine_CPU.h
 )
@@ -72,6 +74,7 @@ Engine/DeviceSpecific/CUDA/ITMDepthTracker_CUDA.cu
 Engine/DeviceSpecific/CUDA/ITMLowLevelEngine_CUDA.cu
 Engine/DeviceSpecific/CUDA/ITMRenTracker_CUDA.cu
 Engine/DeviceSpecific/CUDA/ITMSceneReconstructionEngine_CUDA.cu
+Engine/DeviceSpecific/CUDA/ITMVoxelBlockOpEngine_CUDA.cu
 Engine/DeviceSpecific/CUDA/ITMSwappingEngine_CUDA.cu
 Engine/DeviceSpecific/CUDA/ITMVisualisationEngine_CUDA.cu
 )
@@ -83,6 +86,7 @@ Engine/DeviceSpecific/CUDA/ITMDepthTracker_CUDA.h
 Engine/DeviceSpecific/CUDA/ITMLowLevelEngine_CUDA.h
 Engine/DeviceSpecific/CUDA/ITMRenTracker_CUDA.h
 Engine/DeviceSpecific/CUDA/ITMSceneReconstructionEngine_CUDA.h
+Engine/DeviceSpecific/CUDA/ITMVoxelBlockOpEngine_CUDA.h
 Engine/DeviceSpecific/CUDA/ITMSwappingEngine_CUDA.h
 Engine/DeviceSpecific/CUDA/ITMVisualisationEngine_CUDA.h
 )
@@ -116,6 +120,7 @@ Objects/ITMViewHierarchyLevel.h
 Objects/ITMRenderState.h
 Objects/ITMRenderState_VH.h
 Objects/ITMVoxelBlockHash.h
+Objects/ITMVoxelBlockHHash.h
 )
 
 ##

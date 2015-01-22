@@ -43,5 +43,18 @@ namespace ITMLib
 
 			ITMRenderState* CreateRenderState(const ITMScene<TVoxel, ITMVoxelBlockHash> *scene, const Vector2i & imgSize);
 		};
+
+		template<class TVoxel>
+		class ITMVisualisationEngine_CPU<TVoxel,ITMVoxelBlockHHash> : public ITMVisualisationEngine<TVoxel,ITMVoxelBlockHHash>
+		{
+		public:
+			void FindVisibleBlocks(const ITMScene<TVoxel,ITMVoxelBlockHHash> *scene, const ITMPose *pose, const ITMIntrinsics *intrinsics, ITMRenderState *renderState);
+			void CreateExpectedDepths(const ITMScene<TVoxel,ITMVoxelBlockHHash> *scene, const ITMPose *pose, const ITMIntrinsics *intrinsics, ITMRenderState *renderState);
+			void RenderImage(const ITMScene<TVoxel,ITMVoxelBlockHHash> *scene, const ITMPose *pose, const ITMIntrinsics *intrinsics, const ITMRenderState *renderState, ITMUChar4Image *outputImage, bool useColour);
+			void CreatePointCloud(const ITMScene<TVoxel,ITMVoxelBlockHHash> *scene, const ITMView *view, ITMTrackingState *trackingState, ITMRenderState *renderState, bool skipPoints);
+			void CreateICPMaps(const ITMScene<TVoxel,ITMVoxelBlockHHash> *scene, const ITMView *view, ITMTrackingState *trackingState, ITMRenderState *renderState);
+
+			ITMRenderState* CreateRenderState(const ITMScene<TVoxel, ITMVoxelBlockHHash> *scene, const Vector2i & imgSize);
+		};
 	}
 }

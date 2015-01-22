@@ -24,6 +24,7 @@ enum MemoryDeviceType { MEMORYDEVICE_CPU, MEMORYDEVICE_CUDA };
 
 namespace ORUtils
 {
+
 	/** \brief
 	Represents memory blocks, templated on the data type
 	*/
@@ -54,7 +55,7 @@ namespace ORUtils
 		int dataSize;
 
 		/** Get the data pointer on CPU or GPU. */
-		inline DEVICEPTR(T)* GetData(MemoryDeviceType memoryType)
+		/*_CPU_AND_GPU_CODE_*/ inline DEVICEPTR(T)* GetData(MemoryDeviceType memoryType)
 		{
 			switch (memoryType)
 			{
@@ -66,7 +67,7 @@ namespace ORUtils
 		}
 
 		/** Get the data pointer on CPU or GPU. */
-		inline const DEVICEPTR(T)* GetData(MemoryDeviceType memoryType) const
+		/*_CPU_AND_GPU_CODE_*/ inline const DEVICEPTR(T)* GetData(MemoryDeviceType memoryType) const
 		{
 			switch (memoryType)
 			{

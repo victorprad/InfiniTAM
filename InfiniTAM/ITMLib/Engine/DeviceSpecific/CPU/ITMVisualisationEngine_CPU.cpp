@@ -152,6 +152,117 @@ void ITMVisualisationEngine_CPU<TVoxel,ITMVoxelBlockHash>::CreateExpectedDepths(
 	}
 }
 
+template<class TVoxel>
+ITMRenderState* ITMVisualisationEngine_CPU<TVoxel,ITMVoxelBlockHHash>::CreateRenderState(const ITMScene<TVoxel, ITMVoxelBlockHHash> *scene, const Vector2i & imgSize)
+{
+	return new ITMRenderState_VH(ITMHHashTable::noTotalEntries, imgSize, scene->sceneParams->viewFrustum_min, scene->sceneParams->viewFrustum_max, MEMORYDEVICE_CPU);
+}
+
+template<class TVoxel>
+void ITMVisualisationEngine_CPU<TVoxel,ITMVoxelBlockHHash>::FindVisibleBlocks(const ITMScene<TVoxel,ITMVoxelBlockHHash> *scene, const ITMPose *pose, const ITMIntrinsics *intrinsics, ITMRenderState *renderState)
+{
+	const ITMHHashEntry *hashTable = scene->index.GetEntries();
+	int noTotalEntries = scene->index.noVoxelBlocks;
+	float smallestVoxelSize = scene->sceneParams->voxelSize;
+	Vector2i imgSize = renderState->renderingRangeImage->noDims;
+
+	Matrix4f M = pose->M;
+	Vector4f projParams = intrinsics->projectionParamsSimple.all;
+
+	ITMRenderState_VH *renderState_vh = (ITMRenderState_VH*)renderState;
+
+	int noLiveEntries = 0;
+	int *liveEntryIDs = renderState_vh->GetLiveEntryIDs();
+
+	//build visible list
+	for (int targetIdx = 0; targetIdx < noTotalEntries; targetIdx++)
+	{
+		int level = ITMHHashTable::GetLevelForEntry(targetIdx);
+		float voxelSize = smallestVoxelSize * (1 << level);
+		unsigned char hashVisibleType = 0;// = entriesVisibleType[targetIdx];
+		const ITMHHashEntry &hashEntry = hashTable[targetIdx];
+
+		if (hashEntry.ptr >= 0)
+		{
+			bool isVisibleEnlarged;
+			checkBlockVisibility<false>(hashVisibleType, isVisibleEnlarged, hashEntry.pos, M, projParams, voxelSize, imgSize);
+		}
+
+		if (hashVisibleType > 0)
+		{
+			liveEntryIDs[noLiveEntries] = targetIdx;
+			noLiveEntries++;
+		}
+	}
+
+	renderState_vh->noLiveEntries = noLiveEntries;
+}
+
+template<class TVoxel>
+void ITMVisualisationEngine_CPU<TVoxel,ITMVoxelBlockHHash>::CreateExpectedDepths(const ITMScene<TVoxel,ITMVoxelBlockHHash> *scene, const ITMPose *pose, const ITMIntrinsics *intrinsics, ITMRenderState *renderState)
+{
+	Vector2i imgSize = renderState->renderingRangeImage->noDims;
+	Vector2f *minmaxData = renderState->renderingRangeImage->GetData(MEMORYDEVICE_CPU);
+
+	for (int y = 0; y < imgSize.y; ++y) {
+		for (int x = 0; x < imgSize.x; ++x) {
+			Vector2f & pixel = minmaxData[x + y*imgSize.x];
+			pixel.x = FAR_AWAY;
+			pixel.y = VERY_CLOSE;
+		}
+	}
+
+	float smallestVoxelSize = scene->sceneParams->voxelSize;
+
+	std::vector<RenderingBlock> renderingBlocks(MAX_RENDERING_BLOCKS);
+	int numRenderingBlocks = 0;
+
+	ITMRenderState_VH* renderState_vh = (ITMRenderState_VH*)renderState;
+
+	const int *liveEntryIDs = renderState_vh->GetLiveEntryIDs();
+	int noLiveEntries = renderState_vh->noLiveEntries;
+
+	//go through list of visible 8x8x8 blocks
+	for (int blockNo = 0; blockNo < noLiveEntries; ++blockNo) {
+		int blockId = liveEntryIDs[blockNo];
+		int level = ITMHHashTable::GetLevelForEntry(blockId);
+		float voxelSize = smallestVoxelSize * (1 << level);
+		const ITMHashEntry & blockData(scene->index.GetEntries()[blockId]);
+
+		Vector2i upperLeft, lowerRight;
+		Vector2f zRange;
+		bool validProjection = false;
+		if (blockData.ptr>=0) {
+			validProjection = ProjectSingleBlock(blockData.pos, pose->M, intrinsics->projectionParamsSimple.all, imgSize, voxelSize, upperLeft, lowerRight, zRange);
+		}
+		if (!validProjection) continue;
+
+		Vector2i requiredRenderingBlocks((int)ceilf((float)(lowerRight.x - upperLeft.x + 1) / (float)renderingBlockSizeX), 
+			(int)ceilf((float)(lowerRight.y - upperLeft.y + 1) / (float)renderingBlockSizeY));
+		int requiredNumBlocks = requiredRenderingBlocks.x * requiredRenderingBlocks.y;
+
+		if (numRenderingBlocks + requiredNumBlocks >= MAX_RENDERING_BLOCKS) continue;
+		int offset = numRenderingBlocks;
+		numRenderingBlocks += requiredNumBlocks;
+
+		CreateRenderingBlocks(&(renderingBlocks[0]), offset, upperLeft, lowerRight, zRange);
+	}
+
+	// go through rendering blocks
+	for (int blockNo = 0; blockNo < numRenderingBlocks; ++blockNo) {
+		// fill minmaxData
+		const RenderingBlock & b(renderingBlocks[blockNo]);
+
+		for (int y = b.upperLeft.y; y <= b.lowerRight.y; ++y) {
+			for (int x = b.upperLeft.x; x <= b.lowerRight.x; ++x) {
+				Vector2f & pixel(minmaxData[x + y*imgSize.x]);
+				if (pixel.x > b.zRange.x) pixel.x = b.zRange.x;
+				if (pixel.y < b.zRange.y) pixel.y = b.zRange.y;
+			}
+		}
+	}
+}
+
 template<class TVoxel, class TIndex>
 static void RenderImage_common(const ITMScene<TVoxel,TIndex> *scene, const ITMPose *pose, const ITMIntrinsics *intrinsics, 
 	const ITMRenderState *renderState, ITMUChar4Image *outputImage, bool useColour)
@@ -357,6 +468,24 @@ static int RenderPointCloud(Vector4u *outRendering, Vector4f *locations, Vector4
 	}
 
 	return noTotalPoints;
+}
+
+template<class TVoxel>
+void ITMVisualisationEngine_CPU<TVoxel,ITMVoxelBlockHHash>::RenderImage(const ITMScene<TVoxel,ITMVoxelBlockHHash> *scene, const ITMPose *pose, const ITMIntrinsics *intrinsics, const ITMRenderState *state, ITMUChar4Image *outputImage, bool useColour)
+{
+	RenderImage_common(scene, pose, intrinsics, state, outputImage, useColour);
+}
+
+template<class TVoxel>
+void ITMVisualisationEngine_CPU<TVoxel,ITMVoxelBlockHHash>::CreatePointCloud(const ITMScene<TVoxel,ITMVoxelBlockHHash> *scene, const ITMView *view, ITMTrackingState *trackingState, ITMRenderState *renderState, bool skipPoints)
+{
+	CreatePointCloud_common(scene, view, trackingState, renderState, skipPoints);
+}
+
+template<class TVoxel>
+void ITMVisualisationEngine_CPU<TVoxel,ITMVoxelBlockHHash>::CreateICPMaps(const ITMScene<TVoxel,ITMVoxelBlockHHash> *scene, const ITMView *view, ITMTrackingState *trackingState, ITMRenderState *renderState)
+{
+	CreateICPMaps_common(scene, view, trackingState, renderState);
 }
 
 template class ITMLib::Engine::ITMVisualisationEngine_CPU<ITMVoxel, ITMVoxelIndex>;

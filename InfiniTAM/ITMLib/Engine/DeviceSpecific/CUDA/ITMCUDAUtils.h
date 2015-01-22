@@ -61,10 +61,13 @@ __device__ int computePrefixSum_device(uint element, T *sum, int localSize, int 
 	__syncthreads();
 
 	int offset;// = groupOffset + prefixBuffer[localId] - 1;
-	if (localId == 0) {
+	if (localId == 0) 
+	{
 		if (prefixBuffer[localId] == 0) offset = -1;
 		else offset = groupOffset;
-	} else {
+	}
+	else 
+	{
 		if (prefixBuffer[localId] == prefixBuffer[localId - 1]) offset = -1;
 		else offset = groupOffset + prefixBuffer[localId-1];
 	}
@@ -93,3 +96,12 @@ __device__ static inline void atomicMax(float* address, float val)
 			__float_as_int(::fmaxf(val, __int_as_float(assumed))));
 	} while (assumed != old);
 }
+
+template<typename T>
+__global__ void memsetKernel_device(T *devPtr, const T val, size_t nwords)
+{
+	size_t offset = threadIdx.x + blockDim.x * blockIdx.x;
+	if (offset >= nwords) return;
+	devPtr[offset] = val;
+}
+
