@@ -6,6 +6,6 @@ using namespace ITMLib::Objects;
 
 ITMDisparityCalib::ITMDisparityCalib(void)
 {
-	// standard calibration parameters, not very accurate...
-	params.x = 1090.f; params.y = 0.075f;
+	// standard calibration parameters - converts mm to metres by dividing by 1000
+	params.x = 0.0f; params.y = 0.0f;
 }
