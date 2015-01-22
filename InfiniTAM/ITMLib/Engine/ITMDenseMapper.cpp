@@ -61,7 +61,6 @@ ITMDenseMapper<TVoxel,TIndex>::~ITMDenseMapper()
 	if (renderState_freeview != NULL) delete renderState_freeview;
 }
 
-int currentFrameNo = 0;
 template<class TVoxel, class TIndex>
 void ITMDenseMapper<TVoxel,TIndex>::ProcessFrame(const ITMView *view, const ITMTrackingState *trackingState)
 {

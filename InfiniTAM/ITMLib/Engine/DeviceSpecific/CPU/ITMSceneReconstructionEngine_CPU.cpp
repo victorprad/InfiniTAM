@@ -47,7 +47,7 @@ void ITMSceneReconstructionEngine_CPU<TVoxel, ITMVoxelBlockHash>::IntegrateIntoS
 	TVoxel *localVBA = scene->localVBA.GetVoxelBlocks();
 	ITMHashEntry *hashTable = scene->index.GetEntries();
 
-	int *activeEntryIDs = renderState_vh->GetVisibleEntryIDs();
+	int *activeEntryIDs = renderState_vh->GetActiveEntryIDs();
 	int noActiveEntries = renderState_vh->noActiveEntries;
 
 	for (int entryId = 0; entryId < noActiveEntries; entryId++)
