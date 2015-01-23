@@ -7,12 +7,12 @@
 
 using namespace ITMLib::Engine;
 
-template<class TVoxel>
+template<class TVoxel, bool stopMaxW>
 __global__ void integrateIntoScene_device(TVoxel *localVBA, const ITMHashEntry *hashTable, int *noVisibleEntryIDs,
 	const Vector4u *rgb, Vector2i rgbImgSize, const float *depth, Vector2i imgSize, Matrix4f M_d, Matrix4f M_rgb, Vector4f projParams_d, 
 	Vector4f projParams_rgb, float _voxelSize, float mu, int maxW);
 
-template<class TVoxel>
+template<class TVoxel, bool stopMaxW>
 __global__ void integrateIntoScene_device(TVoxel *voxelArray, const ITMPlainVoxelArray::ITMVoxelArrayInfo *arrayInfo,
 	const Vector4u *rgb, Vector2i rgbImgSize, const float *depth, Vector2i depthImgSize, Matrix4f M_d, Matrix4f M_rgb, Vector4f projParams_d, 
 	Vector4f projParams_rgb, float _voxelSize, float mu, int maxW);
