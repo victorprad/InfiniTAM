@@ -56,7 +56,7 @@ try
 
 	ITMMainEngine *mainEngine = new ITMMainEngine(internalSettings, &imageSource->calib, imageSource->getRGBImageSize(), imageSource->getDepthImageSize());
 
-	UIEngine::Instance()->Initialise(argc, argv, imageSource, mainEngine, "./Files/Out");
+	UIEngine::Instance()->Initialise(argc, argv, imageSource, mainEngine, "./Files/Out", internalSettings->deviceType);
 	UIEngine::Instance()->Run();
 	UIEngine::Instance()->Shutdown();
 

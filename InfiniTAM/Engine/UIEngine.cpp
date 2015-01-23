@@ -326,7 +326,7 @@ void UIEngine::glutMouseWheelFunction(int button, int dir, int x, int y)
 	uiEngine->needsRefresh = true;
 }
 
-void UIEngine::Initialise(int & argc, char** argv, ImageSourceEngine *imageSource, ITMMainEngine *mainEngine, const char *outFolder)
+void UIEngine::Initialise(int & argc, char** argv, ImageSourceEngine *imageSource, ITMMainEngine *mainEngine, const char *outFolder, ITMLibSettings::DeviceType deviceType)
 {
 	this->freeviewActive = false;
 	this->colourActive = false;
@@ -381,11 +381,14 @@ void UIEngine::Initialise(int & argc, char** argv, ImageSourceEngine *imageSourc
 	glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE, 1);
 #endif
 
-	for (int w = 0; w < NUM_WIN; w++)
-		outImage[w] = new ITMUChar4Image(imageSource->getDepthImageSize(), true, false);
+	bool allocateGPU = false;
+	if (deviceType == ITMLibSettings::DEVICE_CUDA) allocateGPU = true;
 
-	inputRGBImage = new ITMUChar4Image(imageSource->getRGBImageSize(), true, false);
-	inputRawDepthImage = new ITMShortImage(imageSource->getDepthImageSize(), true, false);
+	for (int w = 0; w < NUM_WIN; w++)
+		outImage[w] = new ITMUChar4Image(imageSource->getDepthImageSize(), true, allocateGPU);
+
+	inputRGBImage = new ITMUChar4Image(imageSource->getRGBImageSize(), true, allocateGPU);
+	inputRawDepthImage = new ITMShortImage(imageSource->getDepthImageSize(), true, allocateGPU);
 
 	saveImage = new ITMUChar4Image(imageSource->getDepthImageSize(), true, false);
 
