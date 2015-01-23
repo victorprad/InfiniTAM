@@ -12,7 +12,7 @@ using namespace InfiniTAM::Engine;
 int main(int argc, char** argv)
 try
 {
-	const char *calibFile = "./Files/Teddy/calib.txt";
+	const char *calibFile = "";
 	const char *imagesource_part1 = NULL;
 	const char *imagesource_part2 = NULL;
 
