@@ -54,6 +54,10 @@ namespace ITMLib
 			virtual void RenderImage(const ITMScene<TVoxel, TIndex> *scene, const ITMPose *pose, const ITMIntrinsics *intrinsics,
 				const ITMRenderState *renderState, ITMUChar4Image *outputImage, bool useColour) = 0;
 
+			/** Finds the scene surface using raycasting. */
+			virtual void FindSurface(const ITMScene<TVoxel, TIndex> *scene, const ITMPose *pose, const ITMIntrinsics *intrinsics,
+				const ITMRenderState *renderState) = 0;
+
 			/** Create a point cloud as required by the
 				ITMLib::Engine::ITMColorTracker classes.
 				*/
