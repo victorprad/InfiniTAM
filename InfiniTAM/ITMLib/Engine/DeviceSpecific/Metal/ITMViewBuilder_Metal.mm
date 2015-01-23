@@ -14,8 +14,8 @@ id<MTLBuffer> paramsBuffer_viewBuilder;
 
 using namespace ITMLib::Engine;
 
-ITMViewBuilder_Metal::ITMViewBuilder_Metal(const ITMRGBDCalib *calib, ITMLibSettings::DeviceType deviceType)
-: ITMViewBuilder_CPU(calib, deviceType)
+ITMViewBuilder_Metal::ITMViewBuilder_Metal(const ITMRGBDCalib *calib)
+: ITMViewBuilder_CPU(calib)
 {
     NSError *errors;
     f_convertDisparityToDepth = [[[MetalContext instance]library]newFunctionWithName:@"convertDisparityToDepth_device"];
