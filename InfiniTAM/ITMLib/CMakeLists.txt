@@ -96,8 +96,6 @@ Engine/DeviceSpecific/CUDA/ITMVisualisationEngine_CUDA.h
 
 ##
 set(ITMLIB_OBJECTS_SOURCES
-Objects/ITMDisparityCalib.cpp
-Objects/ITMIntrinsics.cpp
 Objects/ITMPose.cpp
 )
 
