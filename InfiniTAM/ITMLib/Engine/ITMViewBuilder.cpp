@@ -40,13 +40,13 @@ void ITMViewBuilder::UpdateView(ITMView *view, ITMUChar4Image *rgbImage, ITMShor
 
 	if (useGPU)
 	{
-		view->rgb->SetFrom(rgbImage, MemoryBlock<Vector4u>::MemoryCopyDirection::CPU_TO_CUDA);
-		this->shortImage->SetFrom(rawDepthImage, MemoryBlock<short>::MemoryCopyDirection::CPU_TO_CUDA);
+		view->rgb->SetFrom(rgbImage, MemoryBlock<Vector4u>::CPU_TO_CUDA);
+		this->shortImage->SetFrom(rawDepthImage, MemoryBlock<short>::CPU_TO_CUDA);
 	}
 	else
 	{
-		view->rgb->SetFrom(rgbImage, MemoryBlock<Vector4u>::MemoryCopyDirection::CPU_TO_CPU);
-		this->shortImage->SetFrom(rawDepthImage, MemoryBlock<short>::MemoryCopyDirection::CPU_TO_CPU);
+		view->rgb->SetFrom(rgbImage, MemoryBlock<Vector4u>::CPU_TO_CPU);
+		this->shortImage->SetFrom(rawDepthImage, MemoryBlock<short>::CPU_TO_CPU);
 	}
 
 	if (inputImageType == InfiniTAM_DISPARITY_IMAGE)
