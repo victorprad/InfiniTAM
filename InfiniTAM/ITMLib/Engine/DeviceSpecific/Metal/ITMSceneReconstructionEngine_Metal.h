@@ -36,12 +36,14 @@ namespace ITMLib
 
 #endif
 
+#if (defined __OBJC__) || (defined __METALC__)
+
 struct IntegrateIntoScene_VH_Params
 {
     Vector2i rgbImgSize, depthImgSize;
     Matrix4f M_d, M_rgb;
     Vector4f projParams_d, projParams_rgb;
-    Vector4f others;// float _voxelSize, mu, maxW;
+    Vector4f others;
 };
 
 struct BuildAllocVisibleType_VH_Params
@@ -51,3 +53,5 @@ struct BuildAllocVisibleType_VH_Params
     Vector4f others;
     Vector2i depthImgSize;
 };
+
+#endif

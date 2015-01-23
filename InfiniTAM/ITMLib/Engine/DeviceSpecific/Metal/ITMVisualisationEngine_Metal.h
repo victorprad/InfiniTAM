@@ -28,6 +28,8 @@ namespace ITMLib
 
 #endif
 
+#if (defined __OBJC__) || (defined __METALC__)
+
 struct CreateICPMaps_Params
 {
     Matrix4f invM;
@@ -36,3 +38,5 @@ struct CreateICPMaps_Params
     Vector2i imgSize;
     Vector4f lightSource;
 };
+
+#endif

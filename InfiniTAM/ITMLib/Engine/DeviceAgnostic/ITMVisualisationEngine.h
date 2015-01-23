@@ -25,11 +25,6 @@ static const CONSTANT(int) MAX_RENDERING_BLOCKS = 65536*4;
 //static const int MAX_RENDERING_BLOCKS = 16384;
 static const CONSTANT(int) minmaximg_subsample = 4;
 
-inline Vector3f ComputeLightSource(const Matrix4f& invM)
-{
-	return -Vector3f(invM.getColumn(2));
-}
-
 _CPU_AND_GPU_CODE_ inline bool ProjectSingleBlock(const THREADPTR(Vector3s) & blockPos, const THREADPTR(Matrix4f) & pose, const THREADPTR(Vector4f) & intrinsics, 
 	const THREADPTR(Vector2i) & imgSize, float voxelSize, THREADPTR(Vector2i) & upperLeft, THREADPTR(Vector2i) & lowerRight, THREADPTR(Vector2f) & zRange)
 {
