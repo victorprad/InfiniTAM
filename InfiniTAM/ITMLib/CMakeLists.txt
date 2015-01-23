@@ -15,7 +15,6 @@ Engine/ITMMainEngine.cpp
 Engine/ITMDenseMapper.cpp
 Engine/ITMRenTracker.cpp
 Engine/ITMTrackerFactory.cpp
-Engine/ITMViewBuilder.cpp
 Engine/ITMVisualisationEngine.cpp
 )
 
