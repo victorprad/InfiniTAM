@@ -19,8 +19,8 @@ __global__ void convertDepthMMToFloat_device(float *d_out, const short *d_in, Ve
 
 void ITMViewBuilder_CUDA::UpdateView(ITMView *view, ITMUChar4Image *rgbImage, ITMShortImage *rawDepthImage)
 {
-	view->rgb->SetFrom(rgbImage, MemoryBlock<Vector4u>::MemoryCopyDirection::CPU_TO_CUDA);
-	this->shortImage->SetFrom(rawDepthImage, MemoryBlock<short>::MemoryCopyDirection::CPU_TO_CUDA);
+	view->rgb->SetFrom(rgbImage, MemoryBlock<Vector4u>::CPU_TO_CUDA);
+	this->shortImage->SetFrom(rawDepthImage, MemoryBlock<short>::CPU_TO_CUDA);
 
 	switch (inputImageType)
 	{

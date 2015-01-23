@@ -384,8 +384,8 @@ void UIEngine::Initialise(int & argc, char** argv, ImageSourceEngine *imageSourc
 	for (int w = 0; w < NUM_WIN; w++)
 		outImage[w] = new ITMUChar4Image(imageSource->getDepthImageSize(), true, false);
 
-	inputRGBImage = new ITMUChar4Image(imageSource->getRGBImageSize(), true, false);
-	inputRawDepthImage = new ITMShortImage(imageSource->getDepthImageSize(), true, false);
+	inputRGBImage = new ITMUChar4Image(imageSource->getRGBImageSize(), true, true);
+	inputRawDepthImage = new ITMShortImage(imageSource->getDepthImageSize(), true, true);
 
 	saveImage = new ITMUChar4Image(imageSource->getDepthImageSize(), true, false);
 
