@@ -14,32 +14,33 @@ ITMMainEngine::ITMMainEngine(const ITMLibSettings *settings, const ITMRGBDCalib 
 	this->trackingState = ITMTrackerFactory::MakeTrackingState(*settings, imgSize_rgb, imgSize_d);
 	trackingState->pose_d->SetFrom(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f); 
 
-	this->view = new ITMView();
-
 	denseMapper = new ITMDenseMapper<ITMVoxel, ITMVoxelIndex>(this->settings, imgSize_rgb, imgSize_d);
 
 	switch (settings->deviceType)
 	{
 	case ITMLibSettings::DEVICE_CPU:
 		lowLevelEngine = new ITMLowLevelEngine_CPU();
-		viewBuilder = new ITMViewBuilder_CPU(calib, settings->deviceType);
+		viewBuilder = new ITMViewBuilder_CPU(calib);
 		break;
 	case ITMLibSettings::DEVICE_CUDA:
 #ifndef COMPILE_WITHOUT_CUDA
 		lowLevelEngine = new ITMLowLevelEngine_CUDA();
-		viewBuilder = new ITMViewBuilder_CUDA(calib, settings->deviceType);
+		viewBuilder = new ITMViewBuilder_CUDA(calib);
 #endif
 		break;
 	case ITMLibSettings::DEVICE_METAL:
 #ifdef COMPILE_WITH_METAL
 		lowLevelEngine = new ITMLowLevelEngine_Metal();
-		viewBuilder = new ITMViewBuilder_Metal(calib, settings->deviceType);
+		viewBuilder = new ITMViewBuilder_Metal(calib);
 #endif
 		break;
 	}
 
 	this->trackerPrimary = ITMTrackerFactory::MakePrimaryTracker(*settings, imgSize_rgb, imgSize_d, lowLevelEngine);
 	this->trackerSecondary = ITMTrackerFactory::MakeSecondaryTracker<ITMVoxel, ITMVoxelIndex>(*settings, imgSize_rgb, imgSize_d, lowLevelEngine, denseMapper->getScene());
+
+	this->view = new ITMView();
+	this->viewBuilder->AllocateView(this->view, imgSize_rgb, imgSize_d);
 
 	hasStartedObjectReconstruction = false;
 	fusionActive = true;

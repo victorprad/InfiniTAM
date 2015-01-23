@@ -18,12 +18,9 @@ namespace ITMLib
 		*/
 		class ITMViewBuilder
 		{
-		private:
-			const ITMLib::Objects::ITMRGBDCalib *calib;
-			ITMLib::Objects::ITMLibSettings::DeviceType deviceType;
+		protected:
+			const ITMRGBDCalib *calib;
 			ITMShortImage *shortImage;
-
-			void allocateView(ITMView *view, Vector2i imgSize_rgb, Vector2i imgSize_d, bool useGPU, bool allocateShort);
 
 		public:
 			enum InputImageType
@@ -37,14 +34,16 @@ namespace ITMLib
 				InfiniTAM_FLOAT_DEPTH_IMAGE
 			}inputImageType;
 
+			virtual void AllocateView(ITMView *view, Vector2i imgSize_rgb, Vector2i imgSize_d) = 0;
+
 			virtual void ConvertDisparityToDepth(ITMFloatImage *depth_out, const ITMShortImage *disp_in, const ITMIntrinsics *depthIntrinsics,
 				const ITMDisparityCalib *disparityCalib) = 0;
 			virtual void ConvertDepthMMToFloat(ITMFloatImage *depth_out, const ITMShortImage *depth_in) = 0;
 
-			void UpdateView(ITMView* view, ITMUChar4Image *rgbImage, ITMShortImage *rawDepthImage);
-			void UpdateView(ITMView *view, ITMUChar4Image *rgbImage, ITMFloatImage *depthImage);
+			virtual void UpdateView(ITMView* view, ITMUChar4Image *rgbImage, ITMShortImage *rawDepthImage) = 0;
+			virtual void UpdateView(ITMView *view, ITMUChar4Image *rgbImage, ITMFloatImage *depthImage) = 0;
 
-			ITMViewBuilder(const ITMRGBDCalib *calib, ITMLibSettings::DeviceType deviceType);
+			ITMViewBuilder(const ITMRGBDCalib *calib);
 			virtual ~ITMViewBuilder();
 		};
 	}
