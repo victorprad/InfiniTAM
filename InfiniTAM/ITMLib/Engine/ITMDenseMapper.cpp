@@ -105,8 +105,9 @@ void ITMDenseMapper<TVoxel,TIndex>::GetRendering(const ITMPose *pose, const ITMI
 	visualisationEngine->CreateExpectedDepths(scene, pose, intrinsics, renderState_freeview);
 	visualisationEngine->RenderImage(scene, pose, intrinsics, renderState_freeview, renderState_freeview->raycastImage, useColour);
 
-	if (settings->deviceType == ITMLibSettings::DEVICE_CUDA) renderState_freeview->raycastImage->UpdateHostFromDevice();
-	out->SetFrom(renderState_freeview->raycastImage, ORUtils::MemoryBlock<Vector4u>::CPU_TO_CPU);
+	if (settings->deviceType == ITMLibSettings::DEVICE_CUDA) 
+		out->SetFrom(renderState_freeview->raycastImage, ORUtils::MemoryBlock<Vector4u>::CUDA_TO_CPU);
+	else out->SetFrom(renderState_freeview->raycastImage, ORUtils::MemoryBlock<Vector4u>::CPU_TO_CPU);
 }
 
 template class ITMLib::Engine::ITMDenseMapper<ITMVoxel, ITMVoxelIndex>;

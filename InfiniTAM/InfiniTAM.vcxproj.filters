@@ -366,6 +366,9 @@
     <ClInclude Include="ITMLib\Engine\DeviceSpecific\CUDA\ITMViewBuilder_CUDA.h">
       <Filter>ITMLib\Engine\DeviceSpecific\CUDA</Filter>
     </ClInclude>
+    <ClInclude Include="ITMLib\Objects\ITMRGBDCalib.h">
+      <Filter>ITMLib\Objects\Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CudaCompile Include="ITMLib\Engine\DeviceSpecific\CUDA\ITMColorTracker_CUDA.cu">

@@ -22,10 +22,17 @@ void ITMViewBuilder_CUDA::UpdateView(ITMView *view, ITMUChar4Image *rgbImage, IT
 	view->rgb->SetFrom(rgbImage, MemoryBlock<Vector4u>::MemoryCopyDirection::CPU_TO_CUDA);
 	this->shortImage->SetFrom(rawDepthImage, MemoryBlock<short>::MemoryCopyDirection::CPU_TO_CUDA);
 
-	if (inputImageType == InfiniTAM_DISPARITY_IMAGE)
+	switch (inputImageType)
+	{
+	case InfiniTAM_DISPARITY_IMAGE:
 		this->ConvertDisparityToDepth(view->depth, this->shortImage, &(view->calib->intrinsics_d), &(view->calib->disparityCalib));
-	else if (inputImageType == InfiniTAM_SHORT_DEPTH_IMAGE)
+		break;
+	case InfiniTAM_SHORT_DEPTH_IMAGE:
 		this->ConvertDepthMMToFloat(view->depth, this->shortImage);
+		break;
+	default:
+		break;
+	}
 }
 
 void ITMViewBuilder_CUDA::UpdateView(ITMView *view, ITMUChar4Image *rgbImage, ITMFloatImage *depthImage)

@@ -105,21 +105,23 @@ void ITMMainEngine::GetImage(ITMUChar4Image *out, GetImageType getImageType, boo
 	switch (getImageType)
 	{
 	case ITMMainEngine::InfiniTAM_IMAGE_ORIGINAL_RGB:
-		if (settings->deviceType == ITMLibSettings::DEVICE_CUDA) view->rgb->UpdateHostFromDevice();
 		out->ChangeDims(view->rgb->noDims);
-		out->SetFrom(view->rgb, ORUtils::MemoryBlock<Vector4u>::CPU_TO_CPU);
+		if (settings->deviceType == ITMLibSettings::DEVICE_CUDA) 
+			out->SetFrom(view->rgb, ORUtils::MemoryBlock<Vector4u>::CUDA_TO_CPU);
+		else out->SetFrom(view->rgb, ORUtils::MemoryBlock<Vector4u>::CPU_TO_CPU);
 		break;
 	case ITMMainEngine::InfiniTAM_IMAGE_ORIGINAL_DEPTH:
-		if (settings->deviceType == ITMLibSettings::DEVICE_CUDA) view->depth->UpdateHostFromDevice();
 		out->ChangeDims(view->depth->noDims);
+		if (settings->deviceType == ITMLibSettings::DEVICE_CUDA) view->depth->UpdateHostFromDevice();
 		ITMVisualisationEngine<ITMVoxel,ITMVoxelIndex>::DepthToUchar4(out, view->depth);
 		break;
 	case ITMMainEngine::InfiniTAM_IMAGE_SCENERAYCAST:
 	{
 		ORUtils::Image<Vector4u> *srcImage = denseMapper->renderState_live->raycastImage;
-		if (settings->deviceType == ITMLibSettings::DEVICE_CUDA) srcImage->UpdateHostFromDevice();
 		out->ChangeDims(srcImage->noDims);
-		out->SetFrom(srcImage, ORUtils::MemoryBlock<Vector4u>::CPU_TO_CPU);
+		if (settings->deviceType == ITMLibSettings::DEVICE_CUDA)
+			out->SetFrom(srcImage, ORUtils::MemoryBlock<Vector4u>::CUDA_TO_CPU);
+		else out->SetFrom(srcImage, ORUtils::MemoryBlock<Vector4u>::CPU_TO_CPU);	
 		break;
 	}
 	case ITMMainEngine::InfiniTAM_IMAGE_SCENERAYCAST_FREECAMERA:
