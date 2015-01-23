@@ -117,7 +117,6 @@
     <ClCompile Include="ITMLib\Engine\ITMMainEngine.cpp" />
     <ClCompile Include="ITMLib\Engine\ITMRenTracker.cpp" />
     <ClCompile Include="ITMLib\Engine\ITMTrackerFactory.cpp" />
-    <ClCompile Include="ITMLib\Engine\ITMViewBuilder.cpp" />
     <ClCompile Include="ITMLib\Engine\ITMVisualisationEngine.cpp" />
     <ClCompile Include="ITMLib\Utils\ITMLibSettings.cpp" />
     <ClCompile Include="ITMLib\Utils\ITMCalibIO.cpp" />

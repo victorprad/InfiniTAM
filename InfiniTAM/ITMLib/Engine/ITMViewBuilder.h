@@ -43,8 +43,19 @@ namespace ITMLib
 			virtual void UpdateView(ITMView* view, ITMUChar4Image *rgbImage, ITMShortImage *rawDepthImage) = 0;
 			virtual void UpdateView(ITMView *view, ITMUChar4Image *rgbImage, ITMFloatImage *depthImage) = 0;
 
-			ITMViewBuilder(const ITMRGBDCalib *calib);
-			virtual ~ITMViewBuilder();
+			ITMViewBuilder(const ITMRGBDCalib *calib)
+			{
+				this->calib = calib;
+				this->shortImage = NULL;
+
+				if (calib->disparityCalib.params == Vector2f(0.0f, 0.0f)) inputImageType = InfiniTAM_SHORT_DEPTH_IMAGE;
+				else inputImageType = InfiniTAM_DISPARITY_IMAGE;
+			}
+
+			virtual ~ITMViewBuilder()
+			{
+				if (this->shortImage != NULL) delete this->shortImage;
+			}
 		};
 	}
 }

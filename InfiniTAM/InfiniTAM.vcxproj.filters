@@ -130,9 +130,6 @@
     <ClCompile Include="ITMLib\Engine\ITMDenseMapper.cpp">
       <Filter>ITMLib\Engine</Filter>
     </ClCompile>
-    <ClCompile Include="ITMLib\Engine\ITMViewBuilder.cpp">
-      <Filter>ITMLib\Engine</Filter>
-    </ClCompile>
     <ClCompile Include="ITMLib\Engine\DeviceSpecific\CPU\ITMViewBuilder_CPU.cpp">
       <Filter>ITMLib\Engine\DeviceSpecific\CPU</Filter>
     </ClCompile>
