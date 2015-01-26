@@ -24,9 +24,13 @@ namespace ITMLib
 
 #endif
 
+#if (defined __OBJC__) || (defined __METALC__)
+
 struct ConvertDisparityToDepth_Params
 {
     Vector2f disparityCalibParams;
     Vector2i imgSize;
     float fx_depth;
 };
+
+#endif

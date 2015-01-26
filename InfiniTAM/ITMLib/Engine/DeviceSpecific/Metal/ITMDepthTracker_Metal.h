@@ -35,6 +35,8 @@ namespace ITMLib
 
 #endif
 
+#if (defined __OBJC__) || (defined __METALC__)
+
 struct DepthTrackerOneLevel_g_rg_Params
 {
     Matrix4f approxInvPose;
@@ -45,3 +47,5 @@ struct DepthTrackerOneLevel_g_rg_Params
     Vector2i sceneImageSize;
     Vector2i viewImageSize;
 };
+
+#endif
