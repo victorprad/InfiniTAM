@@ -36,6 +36,8 @@
 #define MY_INF 0x7f800000
 #endif
 
+#ifndef __METALC__
+
 inline bool portable_finite(float a)
 {
 	volatile float temp = a;
@@ -53,6 +55,8 @@ inline void matmul(const float *A, const float *b, float *x, int numRows, int nu
 		x[r] = res;
 	}
 }
+
+#endif
 
 /** Solve linear equation system using (non-pivoting!) Gaussian Elimination.
     This implementation does not do pivoting, but assumes that the matrix A

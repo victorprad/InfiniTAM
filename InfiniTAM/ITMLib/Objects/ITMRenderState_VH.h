@@ -20,47 +20,56 @@ namespace ITMLib
 		private:
 			MemoryDeviceType memoryType;
 
-			/** A list of "live entries", that are currently
-			being processed by integration and tracker.
+			/** A list of "visible entries", that are currently
+			being processed by the tracker.
 			*/
-			ORUtils::MemoryBlock<int> *liveEntryIDs;
+			ORUtils::MemoryBlock<int> *visibleEntryIDs;
+
+			/** A list of "active entries", that are currently
+			being processed by the integration.
+			*/
+			ORUtils::MemoryBlock<int> *activeEntryIDs;
 
 			/** A list of "visible entries", that are
 			currently being processed by integration
 			and tracker.
 			*/
 			ORUtils::MemoryBlock<uchar> *entriesVisibleType;
-
-#ifdef COMPILE_WITH_METAL
-			void *liveEntryIDs_mb;
-			void *entriesVisibleType_mb;
-#endif
+            
 		public:
 			/** Number of entries in the live list. */
-			int noLiveEntries;
+			int noVisibleEntries, noActiveEntries;
             
 			ITMRenderState_VH(int noTotalEntries, const Vector2i & imgSize, float vf_min, float vf_max, MemoryDeviceType memoryType = MEMORYDEVICE_CPU)
 				: ITMRenderState(imgSize, vf_min, vf_max, memoryType)
             {
 				this->memoryType = memoryType;
 
-				liveEntryIDs = new ORUtils::MemoryBlock<int>(SDF_LOCAL_BLOCK_NUM, memoryType);
+				visibleEntryIDs = new ORUtils::MemoryBlock<int>(SDF_LOCAL_BLOCK_NUM, memoryType);
+				activeEntryIDs = new ORUtils::MemoryBlock<int>(SDF_LOCAL_BLOCK_NUM, memoryType);
 				entriesVisibleType = new ORUtils::MemoryBlock<uchar>(noTotalEntries, memoryType);
-
-				noLiveEntries = 0;
+				
+				noVisibleEntries = 0; noActiveEntries = 0;
             }
             
 			~ITMRenderState_VH()
             {
-				delete liveEntryIDs;
+				delete activeEntryIDs;
+				delete visibleEntryIDs;
 				delete entriesVisibleType;
             }
 
-			/** Get the list of "live entries", that are currently
-			processed by integration and tracker.
+			/** Get the list of "visible entries", that are currently
+			processed by the tracker.
 			*/
-			const int *GetLiveEntryIDs(void) const { return liveEntryIDs->GetData(memoryType); }
-			int *GetLiveEntryIDs(void) { return liveEntryIDs->GetData(memoryType); }
+			const int *GetVisibleEntryIDs(void) const { return visibleEntryIDs->GetData(memoryType); }
+			int *GetVisibleEntryIDs(void) { return visibleEntryIDs->GetData(memoryType); }
+
+			/** Get the list of "active entries", that are currently
+			processed by the integration.
+			*/
+			const int *GetActiveEntryIDs(void) const { return activeEntryIDs->GetData(memoryType); }
+			int *GetActiveEntryIDs(void) { return activeEntryIDs->GetData(memoryType); }
 
 			/** Get the list of "visible entries", that are
 			currently processed by integration and tracker.
@@ -68,8 +77,9 @@ namespace ITMLib
 			uchar *GetEntriesVisibleType(void) { return entriesVisibleType->GetData(memoryType); }
 
 #ifdef COMPILE_WITH_METAL
-			void* GetLiveEntryIDs_MB(void) { return liveEntryIDs_mb; }
-			void* GetEntriesVisibleType_MB(void) { return entriesVisibleType_mb; }
+			const void* GetVisibleEntryIDs_MB(void) { return visibleEntryIDs->GetMetalBuffer(); }
+            const void* GetActiveEntryIDs_MB(void) { return activeEntryIDs->GetMetalBuffer(); }
+			const void* GetEntriesVisibleType_MB(void) { return entriesVisibleType->GetMetalBuffer(); }
 #endif
 		};
 	}

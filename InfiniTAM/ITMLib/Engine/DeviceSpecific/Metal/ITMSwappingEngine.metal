@@ -2,6 +2,4 @@
 
 #include <metal_stdlib>
 
-#include "../../DeviceAgnostic/ITMSwappingEngine.h"
-
 using namespace metal;

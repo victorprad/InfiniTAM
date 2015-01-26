@@ -26,6 +26,11 @@ static const CONSTANT(int) MAX_RENDERING_BLOCKS = 65536*4;
 //static const int MAX_RENDERING_BLOCKS = 16384;
 static const CONSTANT(int) minmaximg_subsample = 4;
 
+inline Vector3f ComputeLightSource(const Matrix4f& invM)
+{
+	return -Vector3f(invM.getColumn(2));
+}
+
 _CPU_AND_GPU_CODE_ inline bool ProjectSingleBlock(const THREADPTR(Vector3s) & blockPos, const THREADPTR(Matrix4f) & pose, const THREADPTR(Vector4f) & intrinsics, 
 	const THREADPTR(Vector2i) & imgSize, float voxelSize, THREADPTR(Vector2i) & upperLeft, THREADPTR(Vector2i) & lowerRight, THREADPTR(Vector2f) & zRange)
 {
@@ -91,7 +96,7 @@ _CPU_AND_GPU_CODE_ inline void CreateRenderingBlocks(DEVICEPTR(RenderingBlock) *
 }
 
 template<class TVoxel, class TIndex>
-_CPU_AND_GPU_CODE_ inline bool castRay(THREADPTR(Vector4f) &pt_out, int x, int y, const DEVICEPTR(TVoxel) *voxelData,
+_CPU_AND_GPU_CODE_ inline bool castRay(DEVICEPTR(Vector4f) &pt_out, int x, int y, const DEVICEPTR(TVoxel) *voxelData,
 	const DEVICEPTR(typename TIndex::IndexData) *voxelIndex, Matrix4f invM, Vector4f projParams, float oneOverVoxelSize, 
 	float mu, const DEVICEPTR(Vector2f) & viewFrustum_minmax)
 {
@@ -190,7 +195,7 @@ _CPU_AND_GPU_CODE_ inline bool castRay(THREADPTR(Vector4f) &pt_out, int x, int y
 template<class TVoxel, class TIndex>
 _CPU_AND_GPU_CODE_ inline void computeNormalAndAngle(THREADPTR(bool) & foundPoint, const THREADPTR(Vector3f) & point,
                                                      const DEVICEPTR(TVoxel) *voxelBlockData, const DEVICEPTR(typename TIndex::IndexData) *indexData,
-                                                     const CONSTANT(Vector3f) & lightSource, THREADPTR(Vector3f) & outNormal, THREADPTR(float) & angle)
+                                                     const THREADPTR(Vector3f) & lightSource, THREADPTR(Vector3f) & outNormal, THREADPTR(float) & angle)
 {
 	if (!foundPoint) return;
 
@@ -203,7 +208,7 @@ _CPU_AND_GPU_CODE_ inline void computeNormalAndAngle(THREADPTR(bool) & foundPoin
 	if (!(angle > 0.0)) foundPoint = false;
 }
 
-_CPU_AND_GPU_CODE_ inline void drawPixelGrey(DEVICEPTR(Vector4u) & dest, const CONSTANT(float) & angle)
+_CPU_AND_GPU_CODE_ inline void drawPixelGrey(DEVICEPTR(Vector4u) & dest, const THREADPTR(float) & angle)
 {
 	float outRes = (0.8f * angle + 0.2f) * 255.0f;
 	dest = Vector4u((uchar)outRes);
@@ -223,8 +228,8 @@ _CPU_AND_GPU_CODE_ inline void drawPixelColour(DEVICEPTR(Vector4u) & dest, const
 
 template<class TVoxel, class TIndex>
 _CPU_AND_GPU_CODE_ inline void processPixelICP(DEVICEPTR(Vector4u) &outRendering, DEVICEPTR(Vector4f) &pointsMap, DEVICEPTR(Vector4f) &normalsMap,
-	const DEVICEPTR(Vector3f) & point, bool foundPoint, const DEVICEPTR(TVoxel) *voxelData, const DEVICEPTR(typename TIndex::IndexData) *voxelIndex, 
-	float voxelSize, Vector3f lightSource)
+	const THREADPTR(Vector3f) & point, bool foundPoint, const DEVICEPTR(TVoxel) *voxelData, const DEVICEPTR(typename TIndex::IndexData) *voxelIndex,
+	float voxelSize, const THREADPTR(Vector3f) &lightSource)
 {
 	Vector3f outNormal;
 	float angle;

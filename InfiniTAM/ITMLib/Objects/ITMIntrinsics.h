@@ -34,9 +34,20 @@ namespace ITMLib
 				@param sizeX Image size in x direction
 				@param sizeY Image size in y direction
 			*/
-			void SetFrom(float fx, float fy, float cx, float cy, float sizeX, float sizeY);
+			void SetFrom(float fx, float fy, float cx, float cy, float sizeX, float sizeY)
+			{
+				projectionParamsSimple.fx = fx; projectionParamsSimple.fy = fy;
+				projectionParamsSimple.px = cx; projectionParamsSimple.py = cy;
+				projectionParamsSimple.all.x = fx; projectionParamsSimple.all.y = fy;
+				projectionParamsSimple.all.z = cx; projectionParamsSimple.all.w = cy;
+			}
 
-			ITMIntrinsics(void);
+			ITMIntrinsics(void)
+			{
+				// standard calibration parameters for Kinect RGB camera. Not at all
+				// accurate, though...
+				SetFrom(580, 580, 320, 240, 640, 480);
+			}
 		};
 	}
 }

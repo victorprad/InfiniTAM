@@ -32,9 +32,8 @@ namespace ITMLib
 			uchar *GetVoxelOpStates(void) { return voxelOpStates->GetData(memoryType); }
 
 #ifdef COMPILE_WITH_METAL
-			inline void* GetVoxelBlocks_MB() { return voxelBlocks_mb; }
-			inline const void *GetVoxelBlocks_MB(void) const { return voxelBlocks_mb; }
-			inline void* GetAllocationList_MB(void) { return allocationList_mb; }
+			const void* GetVoxelBlocks_MB() const { return voxelBlocks->GetMetalBuffer(); }
+			const void* GetAllocationList_MB(void) const { return allocationList->GetMetalBuffer(); }
 #endif
 			int lastFreeBlockId;
 

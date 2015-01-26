@@ -35,7 +35,7 @@ static PNMtype pnm_readheader(FILE *f, int *xsize, int *ysize, bool *binary)
 
 	if (!fscanf(f, "%i", &max_i)) return PNM_UNKNOWN;
 	if (max_i < 0) return PNM_UNKNOWN;
-	else if (max_i <= (1 << 8)) { }
+	else if (max_i <= (1 << 8)) {}
 	else if ((max_i <= (1 << 15)) && (type == PNM_PGM)) type = PNM_PGM_16s;
 	else if ((max_i <= (1 << 16)) && (type == PNM_PGM)) type = PNM_PGM_16u;
 	else return PNM_UNKNOWN;
@@ -62,7 +62,7 @@ static bool pnm_readdata_ascii_helper(FILE *f, int xsize, int ysize, int channel
 static bool pnm_readdata_ascii(FILE *f, int xsize, int ysize, PNMtype type, void *data)
 {
 	int channels = 0;
-	switch (type) 
+	switch (type)
 	{
 	case PNM_PGM:
 		channels = 1;
@@ -85,7 +85,7 @@ static bool pnm_readdata_binary(FILE *f, int xsize, int ysize, PNMtype type, voi
 {
 	int channels = 0;
 	int bytesPerSample = 0;
-	switch (type) 
+	switch (type)
 	{
 	case PNM_PGM: bytesPerSample = sizeof(unsigned char); channels = 1; break;
 	case PNM_PPM: bytesPerSample = sizeof(unsigned char); channels = 3; break;
@@ -214,24 +214,24 @@ bool ReadImageFromFile(ITMUChar4Image* image, const char* fileName)
 	bool binary;
 	FILE *f = fopen(fileName, "rb");
 	if (f == NULL) return false;
-	if (pnm_readheader(f, &xsize, &ysize, &binary)!=PNM_PPM) { fclose(f); return false; }
+	if (pnm_readheader(f, &xsize, &ysize, &binary) != PNM_PPM) { fclose(f); return false; }
 
-	unsigned char *data = new unsigned char[xsize*ysize*3];
+	unsigned char *data = new unsigned char[xsize*ysize * 3];
 	if (binary) {
 		if (!pnm_readdata_binary(f, xsize, ysize, PNM_PPM, data)) { fclose(f); delete[] data; return false; }
-	} else {
+	}
+	else {
 		if (!pnm_readdata_ascii(f, xsize, ysize, PNM_PPM, data)) { fclose(f); delete[] data; return false; }
 	}
 	fclose(f);
 
 	Vector2i newSize(xsize, ysize);
 	image->ChangeDims(newSize);
-	for (int i = 0; i < image->noDims.x*image->noDims.y; ++i) 
+	Vector4u *dataPtr = image->GetData(MEMORYDEVICE_CPU);
+	for (int i = 0; i < image->noDims.x*image->noDims.y; ++i)
 	{
-		image->GetData(MEMORYDEVICE_CPU)[i].x = data[i * 3 + 0];
-		image->GetData(MEMORYDEVICE_CPU)[i].y = data[i * 3 + 1];
-		image->GetData(MEMORYDEVICE_CPU)[i].z = data[i * 3 + 2];
-		image->GetData(MEMORYDEVICE_CPU)[i].w = 255;
+		dataPtr[i].x = data[i * 3 + 0]; dataPtr[i].y = data[i * 3 + 1];
+		dataPtr[i].z = data[i * 3 + 2]; dataPtr[i].w = 255;
 	}
 
 	delete[] data;
@@ -246,12 +246,13 @@ bool ReadImageFromFile(ITMShortImage *image, const char *fileName)
 	FILE *f = fopen(fileName, "rb");
 	if (f == NULL) return false;
 	PNMtype type = pnm_readheader(f, &xsize, &ysize, &binary);
-	if ((type != PNM_PGM_16s)&&(type != PNM_PGM_16u)) { fclose(f); return false; }
+	if ((type != PNM_PGM_16s) && (type != PNM_PGM_16u)) { fclose(f); return false; }
 
 	short *data = new short[xsize*ysize];
 	if (binary) {
 		if (!pnm_readdata_binary(f, xsize, ysize, type, data)) { fclose(f); delete[] data; return false; }
-	} else {
+	}
+	else {
 		if (!pnm_readdata_ascii(f, xsize, ysize, type, data)) { fclose(f); delete[] data; return false; }
 	}
 	fclose(f);
@@ -262,7 +263,8 @@ bool ReadImageFromFile(ITMShortImage *image, const char *fileName)
 		for (int i = 0; i < image->noDims.x*image->noDims.y; ++i) {
 			image->GetData(MEMORYDEVICE_CPU)[i] = (data[i] << 8) | ((data[i] >> 8) & 255);
 		}
-	} else {
+	}
+	else {
 		for (int i = 0; i < image->noDims.x*image->noDims.y; ++i) {
 			image->GetData(MEMORYDEVICE_CPU)[i] = data[i];
 		}

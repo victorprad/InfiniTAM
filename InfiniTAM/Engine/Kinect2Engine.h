@@ -27,7 +27,7 @@ namespace InfiniTAM
 			~Kinect2Engine();
 
 			bool hasMoreImages(void);
-			void getImages(ITMView *out);
+			void getImages(ITMUChar4Image *rgbImage, ITMShortImage *rawDepthImage);
 			Vector2i getDepthImageSize(void);
 			Vector2i getRGBImageSize(void);
 		};

@@ -20,12 +20,12 @@ inline dim3 getGridSize(Vector2i taskSize, dim3 blockSize) { return getGridSize(
 // declaration of device functions
 
 __global__ void buildVisibleList_device(const ITMHashEntry *hashTable, /*ITMHashCacheState *cacheStates, bool useSwapping,*/ int noTotalEntries,
-	int *liveEntryIDs, int *noLiveEntries, uchar *entriesVisibleType, Matrix4f M, Vector4f projParams, Vector2i imgSize, float voxelSize, int offsetToAdd);
+	int *visibleEntryIDs, int *noVisibleEntries, uchar *entriesVisibleType, Matrix4f M, Vector4f projParams, Vector2i imgSize, float voxelSize, int offsetToAdd);
 
-__global__ void projectAndSplitBlocks_device(const ITMHashEntry *hashEntries, const int *liveEntryIDs, int noLiveEntries,
+__global__ void projectAndSplitBlocks_device(const ITMHashEntry *hashEntries, const int *visibleEntryIDs, int noVisibleEntries,
 	const Matrix4f pose_M, const Vector4f intrinsics, const Vector2i imgSize, float voxelSize, RenderingBlock *renderingBlocks,
 	uint *noTotalBlocks);
-__global__ void projectAndSplitBlocksHHash_device(const ITMHHashEntry *hashEntries, const int *liveEntryIDs, int noLiveEntries,
+__global__ void projectAndSplitBlocksHHash_device(const ITMHHashEntry *hashEntries, const int *visibleEntryIDs, int noVisibleEntries,
 	const Matrix4f pose_M, const Vector4f intrinsics, const Vector2i imgSize, float smallestVoxelSize, RenderingBlock *renderingBlocks,
 	uint *noTotalBlocks);
 
@@ -73,7 +73,7 @@ ITMVisualisationEngine_CUDA<TVoxel, ITMVoxelBlockHash>::ITMVisualisationEngine_C
 	ITMSafeCall(cudaMalloc((void**)&renderingBlockList_device, sizeof(RenderingBlock) * MAX_RENDERING_BLOCKS));
 	ITMSafeCall(cudaMalloc((void**)&noTotalBlocks_device, sizeof(uint)));
 	ITMSafeCall(cudaMalloc((void**)&noTotalPoints_device, sizeof(uint)));
-	ITMSafeCall(cudaMalloc((void**)&noLiveEntries_device, sizeof(uint)));
+	ITMSafeCall(cudaMalloc((void**)&noVisibleEntries_device, sizeof(uint)));
 }
 
 template<class TVoxel>
@@ -82,7 +82,7 @@ ITMVisualisationEngine_CUDA<TVoxel, ITMVoxelBlockHash>::~ITMVisualisationEngine_
 	ITMSafeCall(cudaFree(noTotalPoints_device));
 	ITMSafeCall(cudaFree(noTotalBlocks_device));
 	ITMSafeCall(cudaFree(renderingBlockList_device));
-	ITMSafeCall(cudaFree(noLiveEntries_device));
+	ITMSafeCall(cudaFree(noVisibleEntries_device));
 }
 
 template<class TVoxel, class TIndex>
@@ -117,12 +117,12 @@ void ITMVisualisationEngine_CUDA<TVoxel, ITMVoxelBlockHash>::FindVisibleBlocks(c
 
 	ITMRenderState_VH *renderState_vh = (ITMRenderState_VH*)renderState;
 
-	ITMSafeCall(cudaMemset(noLiveEntries_device, 0, sizeof(int)));
+	ITMSafeCall(cudaMemset(noVisibleEntries_device, 0, sizeof(int)));
 
 	dim3 cudaBlockSizeAL(256, 1);
 	dim3 gridSizeAL((int)ceil((float)noTotalEntries / (float)cudaBlockSizeAL.x));
 	buildVisibleList_device << <gridSizeAL, cudaBlockSizeAL >> >(hashTable, /*cacheStates, scene->useSwapping,*/ noTotalEntries, 
-		renderState_vh->GetLiveEntryIDs(), noLiveEntries_device, renderState_vh->GetEntriesVisibleType(), M, projParams, 
+		renderState_vh->GetVisibleEntryIDs(), noVisibleEntries_device, renderState_vh->GetEntriesVisibleType(), M, projParams, 
 		imgSize, voxelSize, 0);
 
 	/*	if (scene->useSwapping)
@@ -131,7 +131,7 @@ void ITMVisualisationEngine_CUDA<TVoxel, ITMVoxelBlockHash>::FindVisibleBlocks(c
 			noAllocatedVoxelEntries_device, entriesVisibleType);
 			}*/
 
-	ITMSafeCall(cudaMemcpy(&renderState_vh->noLiveEntries, noLiveEntries_device, sizeof(int), cudaMemcpyDeviceToHost));
+	ITMSafeCall(cudaMemcpy(&renderState_vh->noVisibleEntries, noVisibleEntries_device, sizeof(int), cudaMemcpyDeviceToHost));
 }
 
 template<class TVoxel, class TIndex>
@@ -172,13 +172,13 @@ void ITMVisualisationEngine_CUDA<TVoxel, ITMVoxelBlockHash>::CreateExpectedDepth
 	//go through list of visible 8x8x8 blocks
 	{
 		const ITMHashEntry *hash_entries = scene->index.GetEntries();
-		const int *liveEntryIDs = renderState_vh->GetLiveEntryIDs();
-		int noLiveEntries = renderState_vh->noLiveEntries;
+		const int *visibleEntryIDs = renderState_vh->GetVisibleEntryIDs();
+		int noVisibleEntries = renderState_vh->noVisibleEntries;
 
 		dim3 blockSize(256);
-		dim3 gridSize((int)ceil((float)noLiveEntries / (float)blockSize.x));
+		dim3 gridSize((int)ceil((float)noVisibleEntries / (float)blockSize.x));
 		ITMSafeCall(cudaMemset(noTotalBlocks_device, 0, sizeof(uint)));
-		projectAndSplitBlocks_device << <gridSize, blockSize >> >(hash_entries, liveEntryIDs, noLiveEntries, pose->M,
+		projectAndSplitBlocks_device << <gridSize, blockSize >> >(hash_entries, visibleEntryIDs, noVisibleEntries, pose->M,
 			intrinsics->projectionParamsSimple.all, imgSize, voxelSize, renderingBlockList_device, noTotalBlocks_device);
 	}
 
@@ -201,7 +201,7 @@ ITMVisualisationEngine_CUDA<TVoxel,ITMVoxelBlockHHash>::ITMVisualisationEngine_C
 	ITMSafeCall(cudaMalloc((void**)&renderingBlockList_device, sizeof(RenderingBlock) * MAX_RENDERING_BLOCKS));
 	ITMSafeCall(cudaMalloc((void**)&noTotalBlocks_device, sizeof(uint)));
 	ITMSafeCall(cudaMalloc((void**)&noTotalPoints_device, sizeof(uint)));
-	ITMSafeCall(cudaMalloc((void**)&noLiveEntries_device, sizeof(uint)));
+	ITMSafeCall(cudaMalloc((void**)&noVisibleEntries_device, sizeof(uint)));
 }
 
 template<class TVoxel>
@@ -210,7 +210,7 @@ ITMVisualisationEngine_CUDA<TVoxel,ITMVoxelBlockHHash>::~ITMVisualisationEngine_
 	ITMSafeCall(cudaFree(noTotalPoints_device));
 	ITMSafeCall(cudaFree(noTotalBlocks_device));
 	ITMSafeCall(cudaFree(renderingBlockList_device));
-	ITMSafeCall(cudaFree(noLiveEntries_device));
+	ITMSafeCall(cudaFree(noVisibleEntries_device));
 }
 
 template<class TVoxel>
@@ -233,7 +233,7 @@ void ITMVisualisationEngine_CUDA<TVoxel,ITMVoxelBlockHHash>::FindVisibleBlocks(c
 
 	ITMRenderState_VH *renderState_vh = (ITMRenderState_VH*)renderState;
 
-	ITMSafeCall(cudaMemset(noLiveEntries_device, 0, sizeof(int)));
+	ITMSafeCall(cudaMemset(noVisibleEntries_device, 0, sizeof(int)));
 
 	dim3 cudaBlockSizeAL(256, 1);
 	dim3 gridSizeAL((int)ceil((float)noTotalEntriesPerLevel / (float)cudaBlockSizeAL.x));
@@ -242,11 +242,11 @@ void ITMVisualisationEngine_CUDA<TVoxel,ITMVoxelBlockHHash>::FindVisibleBlocks(c
 		int levelOffset = level * noTotalEntriesPerLevel;
 
 		buildVisibleList_device << <gridSizeAL, cudaBlockSizeAL >> >(hashTable + levelOffset, noTotalEntriesPerLevel,
-			renderState_vh->GetLiveEntryIDs(), noLiveEntries_device, renderState_vh->GetEntriesVisibleType() + levelOffset, M, projParams,
+			renderState_vh->GetVisibleEntryIDs(), noVisibleEntries_device, renderState_vh->GetEntriesVisibleType() + levelOffset, M, projParams,
 			imgSize, localVoxelSize, levelOffset);
 	}
 
-        ITMSafeCall(cudaMemcpy(&renderState_vh->noLiveEntries, noLiveEntries_device, sizeof(int), cudaMemcpyDeviceToHost));
+        ITMSafeCall(cudaMemcpy(&renderState_vh->noVisibleEntries, noVisibleEntries_device, sizeof(int), cudaMemcpyDeviceToHost));
 }
 
 template<class TVoxel>
@@ -269,13 +269,13 @@ void ITMVisualisationEngine_CUDA<TVoxel,ITMVoxelBlockHHash>::CreateExpectedDepth
 	//go through list of visible 8x8x8 blocks
 	{
 		const ITMHHashEntry *hash_entries = scene->index.GetEntries();
-		const int *liveEntryIDs = renderState_vh->GetLiveEntryIDs();
-		int noLiveEntries = renderState_vh->noLiveEntries;
+		const int *visibleEntryIDs = renderState_vh->GetVisibleEntryIDs();
+		int noVisibleEntries = renderState_vh->noVisibleEntries;
 
 		dim3 blockSize(256);
-		dim3 gridSize((int)ceil((float)noLiveEntries / (float)blockSize.x));
+		dim3 gridSize((int)ceil((float)noVisibleEntries / (float)blockSize.x));
 		ITMSafeCall(cudaMemset(noTotalBlocks_device, 0, sizeof(uint)));
-		projectAndSplitBlocksHHash_device << <gridSize, blockSize >> >(hash_entries, liveEntryIDs, noLiveEntries, pose->M,
+		projectAndSplitBlocksHHash_device << <gridSize, blockSize >> >(hash_entries, visibleEntryIDs, noVisibleEntries, pose->M,
 			intrinsics->projectionParamsSimple.all, imgSize, smallestVoxelSize, renderingBlockList_device, noTotalBlocks_device);
 	}
 
@@ -292,36 +292,49 @@ void ITMVisualisationEngine_CUDA<TVoxel,ITMVoxelBlockHHash>::CreateExpectedDepth
 	}
 }
 
+template <class TVoxel, class TIndex>
+static void GenericRaycast(const ITMScene<TVoxel, TIndex> *scene, const Vector2i& imgSize, const Matrix4f& invM, Vector4f projParams, const ITMRenderState *renderState)
+{
+	float voxelSize = scene->sceneParams->voxelSize;
+	float oneOverVoxelSize = 1.0f / voxelSize;
+
+	projParams.x = 1.0f / projParams.x;
+	projParams.y = 1.0f / projParams.y;
+
+	dim3 cudaBlockSize(16, 12);
+	dim3 gridSize((int)ceil((float)imgSize.x / (float)cudaBlockSize.x), (int)ceil((float)imgSize.y / (float)cudaBlockSize.y));
+	genericRaycast_device<TVoxel, TIndex> <<<gridSize, cudaBlockSize>>>(
+		renderState->raycastResult->GetData(MEMORYDEVICE_CUDA),
+		scene->localVBA.GetVoxelBlocks(),
+		scene->index.getIndexData(),
+		imgSize,
+		invM,
+		projParams,
+		oneOverVoxelSize,
+		renderState->renderingRangeImage->GetData(MEMORYDEVICE_CUDA),
+		scene->sceneParams->mu
+	);
+}
+
 template<class TVoxel, class TIndex>
 static void RenderImage_common(const ITMScene<TVoxel, TIndex> *scene, const ITMPose *pose, const ITMIntrinsics *intrinsics, const ITMRenderState *renderState,
 	ITMUChar4Image *outputImage, bool useColour)
 {
 	Vector2i imgSize = outputImage->noDims;
-	float oneOverVoxelSize = 1.0f / scene->sceneParams->voxelSize;
+	GenericRaycast(scene, imgSize, pose->invM, intrinsics->projectionParamsSimple.all, renderState);
 
-	Matrix4f invM = pose->invM;
-	Vector4f projParams = intrinsics->projectionParamsSimple.all;
-	projParams.x = 1.0f / projParams.x;
-	projParams.y = 1.0f / projParams.y;
-
-	float mu = scene->sceneParams->mu;
-	Vector3f lightSource = -Vector3f(invM.getColumn(2));
-
+	Vector3f lightSource = ComputeLightSource(pose->invM);
 	Vector4u *outRendering = outputImage->GetData(MEMORYDEVICE_CUDA);
-	const Vector2f *minmaximg = renderState->renderingRangeImage->GetData(MEMORYDEVICE_CUDA);
 	Vector4f *pointsRay = renderState->raycastResult->GetData(MEMORYDEVICE_CUDA);
 
 	dim3 cudaBlockSize(8, 8);
 	dim3 gridSize((int)ceil((float)imgSize.x / (float)cudaBlockSize.x), (int)ceil((float)imgSize.y / (float)cudaBlockSize.y));
 
-	genericRaycast_device<TVoxel, TIndex> << <gridSize, cudaBlockSize >> >(pointsRay, scene->localVBA.GetVoxelBlocks(),
-		scene->index.getIndexData(), imgSize, invM, projParams, oneOverVoxelSize, minmaximg, mu);
-
 	if (useColour && TVoxel::hasColorInformation)
-		renderColour_device<TVoxel, TIndex> << <gridSize, cudaBlockSize >> >(outRendering, pointsRay, scene->localVBA.GetVoxelBlocks(),
+		renderColour_device<TVoxel, TIndex> <<<gridSize, cudaBlockSize>>>(outRendering, pointsRay, scene->localVBA.GetVoxelBlocks(),
 		scene->index.getIndexData(), imgSize, lightSource);
 	else
-		renderGrey_device<TVoxel, TIndex> << <gridSize, cudaBlockSize >> >(outRendering, pointsRay, scene->localVBA.GetVoxelBlocks(),
+		renderGrey_device<TVoxel, TIndex> <<<gridSize, cudaBlockSize>>>(outRendering, pointsRay, scene->localVBA.GetVoxelBlocks(),
 		scene->index.getIndexData(), imgSize, lightSource);
 }
 
@@ -330,33 +343,21 @@ static void CreatePointCloud_common(const ITMScene<TVoxel, TIndex> *scene, const
 	bool skipPoints, uint *noTotalPoints_device)
 {
 	Vector2i imgSize = view->rgb->noDims;
-	float voxelSize = scene->sceneParams->voxelSize;
-	float oneOverVoxelSize = 1.0f / scene->sceneParams->voxelSize;
-
 	Matrix4f invM = trackingState->pose_d->invM * view->calib->trafo_rgb_to_depth.calib;
-	Vector4f projParams = view->calib->intrinsics_rgb.projectionParamsSimple.all;
-	projParams.x = 1.0f / projParams.x;
-	projParams.y = 1.0f / projParams.y;
-
-	Vector4f *locations = trackingState->pointCloud->locations->GetData(MEMORYDEVICE_CUDA);
-	Vector4f *colours = trackingState->pointCloud->colours->GetData(MEMORYDEVICE_CUDA);
-	Vector4u *outRendering = renderState->raycastImage->GetData(MEMORYDEVICE_CUDA);
-	Vector2f *minmaxdata = renderState->renderingRangeImage->GetData(MEMORYDEVICE_CUDA);
-	Vector4f *pointsRay = renderState->raycastResult->GetData(MEMORYDEVICE_CUDA);
-
-	float mu = scene->sceneParams->mu;
-	Vector3f lightSource = -Vector3f(invM.getColumn(2));
-
-	dim3 cudaBlockSize(16, 16);
-	dim3 gridSize = getGridSize(imgSize, cudaBlockSize);
+	GenericRaycast(scene, imgSize, invM, view->calib->intrinsics_rgb.projectionParamsSimple.all, renderState);
 
 	ITMSafeCall(cudaMemset(noTotalPoints_device, 0, sizeof(uint)));
 
-	genericRaycast_device<TVoxel, TIndex> << <gridSize, cudaBlockSize >> >(pointsRay, scene->localVBA.GetVoxelBlocks(),
-		scene->index.getIndexData(), imgSize, invM, projParams, oneOverVoxelSize, minmaxdata, mu);
+	Vector3f lightSource = ComputeLightSource(invM);
+	Vector4f *locations = trackingState->pointCloud->locations->GetData(MEMORYDEVICE_CUDA);
+	Vector4f *colours = trackingState->pointCloud->colours->GetData(MEMORYDEVICE_CUDA);
+	Vector4u *outRendering = renderState->raycastImage->GetData(MEMORYDEVICE_CUDA);
+	Vector4f *pointsRay = renderState->raycastResult->GetData(MEMORYDEVICE_CUDA);
 
+	dim3 cudaBlockSize(16, 16);
+	dim3 gridSize = getGridSize(imgSize, cudaBlockSize);
 	renderPointCloud_device<TVoxel, TIndex> << <gridSize, cudaBlockSize >> >(outRendering, locations, colours, noTotalPoints_device,
-		pointsRay, scene->localVBA.GetVoxelBlocks(), scene->index.getIndexData(), skipPoints, voxelSize, imgSize, lightSource);
+		pointsRay, scene->localVBA.GetVoxelBlocks(), scene->index.getIndexData(), skipPoints, scene->sceneParams->voxelSize, imgSize, lightSource);
 
 	ITMSafeCall(cudaMemcpy(&trackingState->pointCloud->noTotalPoints, noTotalPoints_device, sizeof(uint), cudaMemcpyDeviceToHost));
 }
@@ -365,38 +366,19 @@ template<class TVoxel, class TIndex>
 void CreateICPMaps_common(const ITMScene<TVoxel, TIndex> *scene, const ITMView *view, ITMTrackingState *trackingState, ITMRenderState *renderState)
 {
 	Vector2i imgSize = view->depth->noDims;
-	float voxelSize = scene->sceneParams->voxelSize;
-	float oneOverVoxelSize = 1.0f / scene->sceneParams->voxelSize;
-
 	Matrix4f invM = trackingState->pose_d->invM;
-	Vector4f projParams = view->calib->intrinsics_d.projectionParamsSimple.all;
-	projParams.x = 1.0f / projParams.x;
-	projParams.y = 1.0f / projParams.y;
-
-	float mu = scene->sceneParams->mu;
-	Vector3f lightSource = -Vector3f(invM.getColumn(2));
+	GenericRaycast(scene, imgSize, invM, view->calib->intrinsics_d.projectionParamsSimple.all, renderState);
 
 	Vector4f *pointsMap = trackingState->pointCloud->locations->GetData(MEMORYDEVICE_CUDA);
 	Vector4f *normalsMap = trackingState->pointCloud->colours->GetData(MEMORYDEVICE_CUDA);
 	Vector4u *outRendering = renderState->raycastImage->GetData(MEMORYDEVICE_CUDA);
-	Vector2f *minmaxdata = renderState->renderingRangeImage->GetData(MEMORYDEVICE_CUDA);
 	Vector4f *pointsRay = renderState->raycastResult->GetData(MEMORYDEVICE_CUDA);
+	Vector3f lightSource = ComputeLightSource(invM);
 
-	{
-		dim3 cudaBlockSize(16, 16);
-		dim3 gridSize((int)ceil((float)imgSize.x / (float)cudaBlockSize.x), (int)ceil((float)imgSize.y / (float)cudaBlockSize.y));
-
-		genericRaycast_device<TVoxel, TIndex> << <gridSize, cudaBlockSize >> >(pointsRay, scene->localVBA.GetVoxelBlocks(),
-			scene->index.getIndexData(), imgSize, invM, projParams, oneOverVoxelSize, minmaxdata, mu);
-	}
-
-	{
-		dim3 cudaBlockSize(16, 12);
-		dim3 gridSize((int)ceil((float)imgSize.x / (float)cudaBlockSize.x), (int)ceil((float)imgSize.y / (float)cudaBlockSize.y));
-
-		renderICP_device<TVoxel, TIndex> << <gridSize, cudaBlockSize >> >(outRendering, pointsMap, normalsMap, pointsRay,
-			scene->localVBA.GetVoxelBlocks(), scene->index.getIndexData(), voxelSize, imgSize, lightSource);
-	}
+	dim3 cudaBlockSize(16, 12);
+	dim3 gridSize((int)ceil((float)imgSize.x / (float)cudaBlockSize.x), (int)ceil((float)imgSize.y / (float)cudaBlockSize.y));
+	renderICP_device<TVoxel, TIndex> <<<gridSize, cudaBlockSize>>>(outRendering, pointsMap, normalsMap, pointsRay,
+		scene->localVBA.GetVoxelBlocks(), scene->index.getIndexData(), scene->sceneParams->voxelSize, imgSize, lightSource);
 
 	ITMSafeCall(cudaThreadSynchronize());
 }
@@ -420,6 +402,27 @@ void ITMVisualisationEngine_CUDA<TVoxel,ITMVoxelBlockHHash>::RenderImage(const I
 	const ITMIntrinsics *intrinsics, const ITMRenderState *renderState, ITMUChar4Image *outputImage, bool useColour)
 {
 	RenderImage_common(scene, pose, intrinsics, renderState, outputImage, useColour);
+}
+
+template<class TVoxel, class TIndex>
+void ITMVisualisationEngine_CUDA<TVoxel, TIndex>::FindSurface(const ITMScene<TVoxel, TIndex> *scene, const ITMPose *pose, const ITMIntrinsics *intrinsics,
+	const ITMRenderState *renderState)
+{
+	GenericRaycast(scene, renderState->raycastResult->noDims, pose->invM, intrinsics->projectionParamsSimple.all, renderState);
+}
+
+template<class TVoxel>
+void ITMVisualisationEngine_CUDA<TVoxel, ITMVoxelBlockHash>::FindSurface(const ITMScene<TVoxel, ITMVoxelBlockHash> *scene, const ITMPose *pose,
+	const ITMIntrinsics *intrinsics, const ITMRenderState *renderState)
+{
+	GenericRaycast(scene, renderState->raycastResult->noDims, pose->invM, intrinsics->projectionParamsSimple.all, renderState);
+}
+
+template<class TVoxel>
+void ITMVisualisationEngine_CUDA<TVoxel, ITMVoxelBlockHHash>::FindSurface(const ITMScene<TVoxel, ITMVoxelBlockHHash> *scene, const ITMPose *pose,
+	const ITMIntrinsics *intrinsics, const ITMRenderState *renderState)
+{
+	GenericRaycast(scene, renderState->raycastResult->noDims, pose->invM, intrinsics->projectionParamsSimple.all, renderState);
 }
 
 template<class TVoxel, class TIndex>
@@ -467,7 +470,7 @@ void ITMVisualisationEngine_CUDA<TVoxel,ITMVoxelBlockHHash>::CreateICPMaps(const
 //device implementations
 
 __global__ void buildVisibleList_device(const ITMHashEntry *hashTable, /*ITMHashCacheState *cacheStates, bool useSwapping,*/ int noTotalEntries,
-	int *liveEntryIDs, int *noLiveEntries, uchar *entriesVisibleType, Matrix4f M, Vector4f projParams, Vector2i imgSize, float voxelSize, int offsetToAdd)
+	int *visibleEntryIDs, int *noVisibleEntries, uchar *entriesVisibleType, Matrix4f M, Vector4f projParams, Vector2i imgSize, float voxelSize, int offsetToAdd)
 {
 	int targetIdx = threadIdx.x + blockIdx.x * blockDim.x;
 	if (targetIdx > noTotalEntries - 1) return;
@@ -481,8 +484,10 @@ __global__ void buildVisibleList_device(const ITMHashEntry *hashTable, /*ITMHash
 
 	if (hashEntry.ptr >= 0)
 	{
-		bool isVisibleEnlarged;
-		checkBlockVisibility<false>(hashVisibleType, isVisibleEnlarged, hashEntry.pos, M, projParams, voxelSize, imgSize);
+		bool isVisible, isVisibleEnlarged;
+		checkBlockVisibility<false>(isVisible, isVisibleEnlarged, hashEntry.pos, M, projParams, voxelSize, imgSize);
+
+		hashVisibleType = isVisible;
 	}
 
 	if (hashVisibleType > 0) shouldPrefix = true;
@@ -491,23 +496,23 @@ __global__ void buildVisibleList_device(const ITMHashEntry *hashTable, /*ITMHash
 
 	if (shouldPrefix)
 	{
-		int offset = computePrefixSum_device<int>(hashVisibleType > 0, noLiveEntries, blockDim.x * blockDim.y, threadIdx.x);
-		if (offset != -1) liveEntryIDs[offset] = targetIdx + offsetToAdd;
+		int offset = computePrefixSum_device<int>(hashVisibleType > 0, noVisibleEntries, blockDim.x * blockDim.y, threadIdx.x);
+		if (offset != -1) visibleEntryIDs[offset] = targetIdx + offsetToAdd;
 	}
 }
 
-__global__ void projectAndSplitBlocks_device(const ITMHashEntry *hashEntries, const int *liveEntryIDs, int noLiveEntries,
+__global__ void projectAndSplitBlocks_device(const ITMHashEntry *hashEntries, const int *visibleEntryIDs, int noVisibleEntries,
 	const Matrix4f pose_M, const Vector4f intrinsics, const Vector2i imgSize, float voxelSize, RenderingBlock *renderingBlocks,
 	uint *noTotalBlocks)
 {
 	int in_offset = threadIdx.x + blockDim.x * blockIdx.x;
 
-	const ITMHashEntry & blockData(hashEntries[liveEntryIDs[in_offset]]);
+	const ITMHashEntry & blockData(hashEntries[visibleEntryIDs[in_offset]]);
 
 	Vector2i upperLeft, lowerRight;
 	Vector2f zRange;
 	bool validProjection = false;
-	if (in_offset < noLiveEntries) if (blockData.ptr >= 0)
+	if (in_offset < noVisibleEntries) if (blockData.ptr >= 0)
 		validProjection = ProjectSingleBlock(blockData.pos, pose_M, intrinsics, imgSize, voxelSize, upperLeft, lowerRight, zRange);
 
 	Vector2i requiredRenderingBlocks(ceilf((float)(lowerRight.x - upperLeft.x + 1) / renderingBlockSizeX),
@@ -523,13 +528,13 @@ __global__ void projectAndSplitBlocks_device(const ITMHashEntry *hashEntries, co
 	CreateRenderingBlocks(renderingBlocks, out_offset, upperLeft, lowerRight, zRange);
 }
 
-__global__ void projectAndSplitBlocksHHash_device(const ITMHHashEntry *hashEntries, const int *liveEntryIDs, int noLiveEntries,
+__global__ void projectAndSplitBlocksHHash_device(const ITMHHashEntry *hashEntries, const int *visibleEntryIDs, int noVisibleEntries,
 	const Matrix4f pose_M, const Vector4f intrinsics, const Vector2i imgSize, float smallestVoxelSize, RenderingBlock *renderingBlocks,
 	uint *noTotalBlocks)
 {
 	int in_offset = threadIdx.x + blockDim.x * blockIdx.x;
 
-	int entryId = liveEntryIDs[in_offset];
+	int entryId = visibleEntryIDs[in_offset];
 	int level = ITMHHashTable::GetLevelForEntry(entryId);
 	float localVoxelSize = smallestVoxelSize * (1 << level);
 	const ITMHHashEntry & blockData(hashEntries[entryId]);
@@ -537,7 +542,7 @@ __global__ void projectAndSplitBlocksHHash_device(const ITMHHashEntry *hashEntri
 	Vector2i upperLeft, lowerRight;
 	Vector2f zRange;
 	bool validProjection = false;
-	if (in_offset < noLiveEntries) if (blockData.ptr>=0) {
+	if (in_offset < noVisibleEntries) if (blockData.ptr>=0) {
 		validProjection = ProjectSingleBlock(blockData.pos, pose_M, intrinsics, imgSize, localVoxelSize, upperLeft, lowerRight, zRange);
 	}
 

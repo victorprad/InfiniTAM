@@ -118,8 +118,8 @@ void ITMVoxelBlockOpEngine_CUDA<TVoxel,ITMVoxelBlockHHash>::ComputeComplexities(
 	TVoxel *voxelBlocks = scene->localVBA.GetVoxelBlocks();
 	ITMHHashEntry *hashEntries = scene->index.GetEntries();
 
-	const int *liveList = renderState_vh->GetLiveEntryIDs();
-	int liveListSize = renderState_vh->noLiveEntries;
+	const int *liveList = renderState_vh->GetVisibleEntryIDs();
+	int liveListSize = renderState_vh->noVisibleEntries;
 
 	dim3 blockSize(SDF_BLOCK_SIZE-1, SDF_BLOCK_SIZE-1, SDF_BLOCK_SIZE-1);
 	dim3 gridSize(liveListSize);
@@ -214,8 +214,8 @@ void ITMVoxelBlockOpEngine_CUDA<TVoxel,ITMVoxelBlockHHash>::SplitVoxelBlocks(ITM
 	int &lastFreeVoxelBlockId = scene->localVBA.lastFreeBlockId;
 	int *lastFreeExcessListIds = scene->index.GetLastFreeExcessListIds();
 
-	const int *liveList = renderState_vh->GetLiveEntryIDs();
-	int liveListSize = renderState_vh->noLiveEntries;
+	const int *liveList = renderState_vh->GetVisibleEntryIDs();
+	int liveListSize = renderState_vh->noVisibleEntries;
 
 	ITMSafeCall(cudaMemset(blocklist_size_device, 0, sizeof(int)));
 

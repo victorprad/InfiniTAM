@@ -3,47 +3,34 @@
 
 #ifndef __METALC__
 
-#include "../../ITMSceneReconstructionEngine.h"
+#include "../CPU/ITMSceneReconstructionEngine_CPU.h"
 
 namespace ITMLib
 {
     namespace Engine
     {
         template<class TVoxel, class TIndex>
-        class ITMSceneReconstructionEngine_Metal : public ITMSceneReconstructionEngine<TVoxel,TIndex>
+        class ITMSceneReconstructionEngine_Metal : public ITMSceneReconstructionEngine_CPU<TVoxel,TIndex>
         {};
         
         template<class TVoxel>
-        class ITMSceneReconstructionEngine_Metal<TVoxel,ITMVoxelBlockHash> : public ITMSceneReconstructionEngine<TVoxel,ITMVoxelBlockHash>
+        class ITMSceneReconstructionEngine_Metal<TVoxel,ITMVoxelBlockHash> : public ITMSceneReconstructionEngine_CPU<TVoxel,ITMVoxelBlockHash>
         {
         private:
-            unsigned char *entriesAllocType;
-            Vector3s *blockCoords;
-            
+            void BuildAllocAndVisibleType(ITMScene<TVoxel, ITMVoxelBlockHash> *scene, const ITMView *view,
+                                          const ITMTrackingState *trackingState, const ITMRenderState *renderState);
         public:
-            void AllocateSceneFromDepth(ITMScene<TVoxel,ITMVoxelBlockHash> *scene, const ITMView *view, const ITMPose *pose);
-            
-            void IntegrateIntoScene(ITMScene<TVoxel,ITMVoxelBlockHash> *scene, const ITMView *view, const ITMPose *pose);
+            void IntegrateIntoScene(ITMScene<TVoxel, ITMVoxelBlockHash> *scene, const ITMView *view, const ITMTrackingState *trackingState,
+                                    const ITMRenderState *renderState);
+            void AllocateSceneFromDepth(ITMScene<TVoxel, ITMVoxelBlockHash> *scene, const ITMView *view,
+                                        const ITMTrackingState *trackingState, const ITMRenderState *renderState);
             
             ITMSceneReconstructionEngine_Metal(void);
-            ~ITMSceneReconstructionEngine_Metal(void);
         };
         
         template<class TVoxel>
-        class ITMSceneReconstructionEngine_Metal<TVoxel,ITMPlainVoxelArray> : public ITMSceneReconstructionEngine<TVoxel,ITMPlainVoxelArray>
-        {
-        private:
-            unsigned char *entriesAllocType;
-            Vector3s *blockCoords;
-            
-        public:
-            void AllocateSceneFromDepth(ITMScene<TVoxel,ITMPlainVoxelArray> *scene, const ITMView *view, const ITMPose *pose);
-            
-            void IntegrateIntoScene(ITMScene<TVoxel,ITMPlainVoxelArray> *scene, const ITMView *view, const ITMPose *pose);
-            
-            ITMSceneReconstructionEngine_Metal(void);
-            ~ITMSceneReconstructionEngine_Metal(void);
-        };
+        class ITMSceneReconstructionEngine_Metal<TVoxel,ITMPlainVoxelArray> : public ITMSceneReconstructionEngine_CPU<TVoxel,ITMPlainVoxelArray>
+        { };
     }
 }
 
@@ -54,5 +41,13 @@ struct IntegrateIntoScene_VH_Params
     Vector2i rgbImgSize, depthImgSize;
     Matrix4f M_d, M_rgb;
     Vector4f projParams_d, projParams_rgb;
-    float _voxelSize, mu, maxW;
+    Vector4f others;// float _voxelSize, mu, maxW;
+};
+
+struct BuildAllocVisibleType_VH_Params
+{
+    Matrix4f invM_d;
+    Vector4f invProjParams_d;
+    Vector4f others;
+    Vector2i depthImgSize;
 };

@@ -70,12 +70,6 @@
       <Filter>Engine\Source Files</Filter>
     </ClCompile>
     <ClCompile Include="InfiniTAM.cpp" />
-    <ClCompile Include="ITMLib\Objects\ITMDisparityCalib.cpp">
-      <Filter>ITMLib\Objects\Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ITMLib\Objects\ITMIntrinsics.cpp">
-      <Filter>ITMLib\Objects\Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="ITMLib\Objects\ITMPose.cpp">
       <Filter>ITMLib\Objects\Source Files</Filter>
     </ClCompile>
@@ -138,6 +132,9 @@
     </ClCompile>
     <ClCompile Include="ITMLib\Engine\ITMDenseMapper.cpp">
       <Filter>ITMLib\Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="ITMLib\Engine\DeviceSpecific\CPU\ITMViewBuilder_CPU.cpp">
+      <Filter>ITMLib\Engine\DeviceSpecific\CPU</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -264,9 +261,6 @@
     <ClInclude Include="ITMLib\Objects\ITMLocalVBA.h">
       <Filter>ITMLib\Objects\Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ITMLib\Engine\DeviceSpecific\CUDA\ITMCUDADefines.h">
-      <Filter>ITMLib\Engine\DeviceSpecific\CUDA</Filter>
-    </ClInclude>
     <ClInclude Include="ITMLib\Engine\DeviceSpecific\CUDA\ITMCUDAUtils.h">
       <Filter>ITMLib\Engine\DeviceSpecific\CUDA</Filter>
     </ClInclude>
@@ -383,6 +377,21 @@
     <ClInclude Include="ITMLib\Engine\ITMDenseMapper.h">
       <Filter>ITMLib\Engine</Filter>
     </ClInclude>
+    <ClInclude Include="ITMLib\Engine\ITMViewBuilder.h">
+      <Filter>ITMLib\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="ITMLib\Engine\DeviceAgnostic\ITMViewBuilder.h">
+      <Filter>ITMLib\Engine\DeviceAgnostic</Filter>
+    </ClInclude>
+    <ClInclude Include="ITMLib\Engine\DeviceSpecific\CPU\ITMViewBuilder_CPU.h">
+      <Filter>ITMLib\Engine\DeviceSpecific\CPU</Filter>
+    </ClInclude>
+    <ClInclude Include="ITMLib\Engine\DeviceSpecific\CUDA\ITMViewBuilder_CUDA.h">
+      <Filter>ITMLib\Engine\DeviceSpecific\CUDA</Filter>
+    </ClInclude>
+    <ClInclude Include="ITMLib\Objects\ITMRGBDCalib.h">
+      <Filter>ITMLib\Objects\Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CudaCompile Include="ITMLib\Engine\DeviceSpecific\CUDA\ITMColorTracker_CUDA.cu">
@@ -405,6 +414,9 @@
     </CudaCompile>
     <CudaCompile Include="ITMLib\Engine\DeviceSpecific\CUDA\ITMVoxelBlockOpEngine_CUDA.cu">
     <CudaCompile Include="ITMLib\Engine\DeviceSpecific\CUDA\ITMRenTracker_CUDA.cu">
+      <Filter>ITMLib\Engine\DeviceSpecific\CUDA</Filter>
+    </CudaCompile>
+    <CudaCompile Include="ITMLib\Engine\DeviceSpecific\CUDA\ITMViewBuilder_CUDA.cu">
       <Filter>ITMLib\Engine\DeviceSpecific\CUDA</Filter>
     </CudaCompile>
   </ItemGroup>

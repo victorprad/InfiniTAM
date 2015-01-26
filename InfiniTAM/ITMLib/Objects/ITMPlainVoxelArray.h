@@ -40,7 +40,7 @@ namespace ITMLib
 			struct IndexCache {};
 
 		private:
-			ORUtils::MemoryBlock<IndexData> *indexData;
+			DEVICEPTR(ORUtils::MemoryBlock<IndexData>) *indexData;
 
 			MemoryDeviceType memoryType;
 
@@ -76,7 +76,7 @@ namespace ITMLib
 			const IndexData* getIndexData(void) const { return indexData->GetData(memoryType); }
 
 #ifdef COMPILE_WITH_METAL
-			const void *getIndexData_MB() const { return indexData_mb; }
+			const void *getIndexData_MB() const { return indexData->GetMetalBuffer(); }
 #endif
 
 			// Suppress the default copy constructor and assignment operator

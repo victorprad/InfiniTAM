@@ -64,17 +64,17 @@ bool ImageFileReader::hasMoreImages(void)
 	return ((cached_rgb!=NULL)&&(cached_depth!=NULL));
 }
 
-void ImageFileReader::getImages(ITMView *out)
+void ImageFileReader::getImages(ITMUChar4Image *rgb, ITMShortImage *rawDepth)
 {
 	bool bUsedCache = false;
 	if (cached_rgb != NULL) {
-		out->rgb->SetFrom(cached_rgb, ORUtils::MemoryBlock<Vector4u>::CPU_TO_CPU);
+		rgb->SetFrom(cached_rgb, ORUtils::MemoryBlock<Vector4u>::CPU_TO_CPU);
 		delete cached_rgb;
 		cached_rgb = NULL;
 		bUsedCache = true;
 	}
 	if (cached_depth != NULL) {
-		out->rawDepth->SetFrom(cached_depth, ORUtils::MemoryBlock<short>::CPU_TO_CPU);
+		rawDepth->SetFrom(cached_depth, ORUtils::MemoryBlock<short>::CPU_TO_CPU);
 		delete cached_depth;
 		cached_depth = NULL;
 		bUsedCache = true;
@@ -82,19 +82,13 @@ void ImageFileReader::getImages(ITMView *out)
 
 	if (!bUsedCache) {
 		char str[2048];
+
 		sprintf(str, rgbImageMask, currentFrameNo);
-		if (!ReadImageFromFile(out->rgb, str)) {
-			printf("error reading file '%s'\n", str);
-		}
+		if (!ReadImageFromFile(rgb, str)) printf("error reading file '%s'\n", str);
 
 		sprintf(str, depthImageMask, currentFrameNo);
-		if (!ReadImageFromFile(out->rawDepth, str)) {
-			printf("error reading file '%s'\n", str);
-		}
+		if (!ReadImageFromFile(rawDepth, str)) printf("error reading file '%s'\n", str);
 	}
-
-	if (calib.disparityCalib.params.y == 0) out->inputImageType = ITMView::InfiniTAM_SHORT_DEPTH_IMAGE;
-	else out->inputImageType = ITMView::InfiniTAM_DISPARITY_IMAGE;
 
 	++currentFrameNo;
 }

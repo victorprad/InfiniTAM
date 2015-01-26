@@ -11,7 +11,6 @@ namespace ITMLib
 		class ITMDepthTracker_CPU : public ITMDepthTracker
 		{
 		protected:
-			void ChangeIgnorePixelToZero(ITMFloatImage *image);
 			int ComputeGandH(ITMSceneHierarchyLevel *sceneHierarchyLevel, ITMTemplatedHierarchyLevel<ITMFloatImage> *viewHierarchyLevel,
 				Matrix4f approxInvPose, Matrix4f imagePose, bool rotationOnly);
 

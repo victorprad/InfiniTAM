@@ -49,7 +49,6 @@ namespace ITMLib
 			float step[6];
 			float distThresh;
 
-			virtual void ChangeIgnorePixelToZero(ITMFloatImage *image) = 0;
 			virtual int ComputeGandH(ITMSceneHierarchyLevel *sceneHierarchyLevel, ITMTemplatedHierarchyLevel<ITMFloatImage> *viewHierarchyLevel,
 				Matrix4f approxInvPose, Matrix4f imagePose, bool rotationOnly) = 0;
 

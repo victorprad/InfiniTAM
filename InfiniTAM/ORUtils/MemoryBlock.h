@@ -158,8 +158,9 @@ namespace ORUtils
 				break;
 			case CUDA_TO_CUDA:
 				ITMSafeCall(cudaMemcpy(this->data_cuda, source->data_cuda, source->dataSize * sizeof(T), cudaMemcpyDeviceToDevice));
-				break;
+                break;
 #endif
+            default: break;
 			}
 		}
 
@@ -224,7 +225,7 @@ namespace ORUtils
 				if (isAllocated_CUDA) allocType = 1;
 #endif
 #ifdef COMPILE_WITH_METAL
-				if (metalCompatible) allocType = 2;
+				if (isMetalCompatible) allocType = 2;
 #endif
 				switch (allocType)
 				{

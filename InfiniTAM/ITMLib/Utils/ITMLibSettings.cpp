@@ -7,7 +7,7 @@
 using namespace ITMLib::Objects;
 
 ITMLibSettings::ITMLibSettings(void)
- : sceneParams(0.02f, 100, 0.005f, 0.2f, 3.0f)
+	: sceneParams(0.02f, 100, 0.005f, 0.2f, 3.0f, true)
 {
 	noHierarchyLevels = 5;
 	noRotationOnlyLevels = 3;

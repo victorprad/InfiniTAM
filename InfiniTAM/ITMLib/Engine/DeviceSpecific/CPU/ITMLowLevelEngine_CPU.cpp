@@ -102,31 +102,3 @@ void ITMLowLevelEngine_CPU::GradientY(ITMShort4Image *grad_out, const ITMUChar4I
 	for (int y = 1; y < imgSize.y - 1; y++) for (int x = 1; x < imgSize.x - 1; x++)
 		gradientY(grad, x, y, image, imgSize);
 }
-
-void ITMLowLevelEngine_CPU::ConvertDisparityToDepth(ITMFloatImage *depth_out, const ITMShortImage *depth_in, const ITMIntrinsics *depthIntrinsics,
-	const ITMDisparityCalib *disparityCalib)
-{
-	Vector2i imgSize = depth_in->noDims;
-
-	const short *d_in = depth_in->GetData(MEMORYDEVICE_CPU);
-	float *d_out = depth_out->GetData(MEMORYDEVICE_CPU);
-
-	Vector2f disparityCalibParams; float fx_depth;
-	disparityCalibParams.x = disparityCalib->params.x;
-	disparityCalibParams.y = disparityCalib->params.y;
-	fx_depth = depthIntrinsics->projectionParamsSimple.fx;
-
-	for (int y = 0; y < imgSize.y; y++) for (int x = 0; x < imgSize.x; x++)
-		convertDisparityToDepth(d_out, x, y, d_in, disparityCalibParams, fx_depth, imgSize);
-}
-
-void ITMLowLevelEngine_CPU::ConvertDepthMMToFloat(ITMFloatImage *depth_out, const ITMShortImage *depth_in)
-{
-	Vector2i imgSize = depth_in->noDims;
-
-	const short *d_in = depth_in->GetData(MEMORYDEVICE_CPU);
-	float *d_out = depth_out->GetData(MEMORYDEVICE_CPU);
-
-	for (int y = 0; y < imgSize.y; y++) for (int x = 0; x < imgSize.x; x++)
-		convertDepthMMToFloat(d_out, x, y, d_in, imgSize);
-}

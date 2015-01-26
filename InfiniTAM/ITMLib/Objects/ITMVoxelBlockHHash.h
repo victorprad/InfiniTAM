@@ -72,8 +72,8 @@ namespace ITMLib
 			}
 
 			/** Get the list of actual entries in the hash table. */
-			_CPU_AND_GPU_CODE_ const ITMHHashEntry *GetEntries(void) const { return hashData->entries->GetData(memoryType); }
-			_CPU_AND_GPU_CODE_ ITMHHashEntry *GetEntries(void) { return hashData->entries->GetData(memoryType); }
+			const ITMHHashEntry *GetEntries(void) const { return hashData->entries->GetData(memoryType); }
+			ITMHHashEntry *GetEntries(void) { return hashData->entries->GetData(memoryType); }
 			/** Get the list that identifies which entries of the
 			    overflow list are allocated. This is used if too
 			    many hash collisions caused the buckets to overflow.
@@ -85,7 +85,7 @@ namespace ITMLib
 			int getNumAllocatedVoxelBlocks(void) { return SDF_LOCAL_BLOCK_NUM; }
 			int getVoxelBlockSize(void) { return voxelBlockSize; }
 
-			_CPU_AND_GPU_CODE_ const IndexData* getIndexData(void) const { return hashData->entries->GetData(memoryType); }
+			const IndexData* getIndexData(void) const { return hashData->entries->GetData(memoryType); }
 
 			// Suppress the default copy constructor and assignment operator
 			ITMVoxelBlockHHash(const ITMVoxelBlockHHash&);

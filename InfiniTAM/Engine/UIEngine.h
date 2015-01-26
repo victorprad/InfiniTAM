@@ -38,6 +38,8 @@ namespace InfiniTAM
 			ITMUChar4Image *outImage[NUM_WIN];
 			ITMMainEngine::GetImageType outImageType[NUM_WIN];
 
+			ITMUChar4Image *inputRGBImage; ITMShortImage *inputRawDepthImage;
+
 			bool freeviewActive;
 			bool colourActive;
 			bool intergrationActive;
@@ -70,7 +72,8 @@ namespace InfiniTAM
 			bool needsRefresh;
 			ITMUChar4Image *saveImage;
 
-			void Initialise(int & argc, char** argv, ImageSourceEngine *imageSource, ITMMainEngine *mainEngine, const char *outFolder);
+			void Initialise(int & argc, char** argv, ImageSourceEngine *imageSource, ITMMainEngine *mainEngine, const char *outFolder,
+				ITMLibSettings::DeviceType deviceType);
 			void Shutdown();
 
 			void Run();

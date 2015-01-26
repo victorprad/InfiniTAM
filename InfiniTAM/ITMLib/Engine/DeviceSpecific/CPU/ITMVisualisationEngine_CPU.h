@@ -18,6 +18,8 @@ namespace ITMLib
 				ITMRenderState *renderState);
 			void RenderImage(const ITMScene<TVoxel, TIndex> *scene, const ITMPose *pose, const ITMIntrinsics *intrinsics, 
 				const ITMRenderState *renderState, ITMUChar4Image *outputImage, bool useColour);
+			void FindSurface(const ITMScene<TVoxel, TIndex> *scene, const ITMPose *pose, const ITMIntrinsics *intrinsics,
+				const ITMRenderState *renderState);
 			void CreatePointCloud(const ITMScene<TVoxel, TIndex> *scene, const ITMView *view, ITMTrackingState *trackingState, 
 				ITMRenderState *renderState, bool skipPoints);
 			void CreateICPMaps(const ITMScene<TVoxel, TIndex> *scene, const ITMView *view, ITMTrackingState *trackingState,
@@ -36,6 +38,8 @@ namespace ITMLib
 				ITMRenderState *renderState);
 			void RenderImage(const ITMScene<TVoxel, ITMVoxelBlockHash> *scene, const ITMPose *pose, const ITMIntrinsics *intrinsics, 
 				const ITMRenderState *renderState, ITMUChar4Image *outputImage, bool useColour);
+			void FindSurface(const ITMScene<TVoxel, ITMVoxelBlockHash> *scene, const ITMPose *pose, const ITMIntrinsics *intrinsics,
+				const ITMRenderState *renderState);
 			void CreatePointCloud(const ITMScene<TVoxel, ITMVoxelBlockHash> *scene, const ITMView *view, ITMTrackingState *trackingState, 
 				ITMRenderState *renderState, bool skipPoints);
 			void CreateICPMaps(const ITMScene<TVoxel, ITMVoxelBlockHash> *scene, const ITMView *view, ITMTrackingState *trackingState,
@@ -49,6 +53,8 @@ namespace ITMLib
 		{
 		public:
 			void FindVisibleBlocks(const ITMScene<TVoxel,ITMVoxelBlockHHash> *scene, const ITMPose *pose, const ITMIntrinsics *intrinsics, ITMRenderState *renderState);
+			void FindSurface(const ITMScene<TVoxel, ITMVoxelBlockHHash> *scene, const ITMPose *pose, const ITMIntrinsics *intrinsics,
+				const ITMRenderState *renderState);
 			void CreateExpectedDepths(const ITMScene<TVoxel,ITMVoxelBlockHHash> *scene, const ITMPose *pose, const ITMIntrinsics *intrinsics, ITMRenderState *renderState);
 			void RenderImage(const ITMScene<TVoxel,ITMVoxelBlockHHash> *scene, const ITMPose *pose, const ITMIntrinsics *intrinsics, const ITMRenderState *renderState, ITMUChar4Image *outputImage, bool useColour);
 			void CreatePointCloud(const ITMScene<TVoxel,ITMVoxelBlockHHash> *scene, const ITMView *view, ITMTrackingState *trackingState, ITMRenderState *renderState, bool skipPoints);

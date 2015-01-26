@@ -12,18 +12,18 @@ id<MTLComputePipelineState> p_depthTrackerOneLevel_g_rg_device;
 id<MTLBuffer> paramsBuffer_depthTracker;
 
 ITMDepthTracker_Metal::ITMDepthTracker_Metal(Vector2i imgSize, int noHierarchyLevels, int noRotationOnlyLevels, int noICPRunTillLevel, float distThresh, ITMLowLevelEngine *lowLevelEngine)
-:ITMDepthTracker(imgSize, noHierarchyLevels, noRotationOnlyLevels, noICPRunTillLevel, distThresh, lowLevelEngine, false)
+:ITMDepthTracker(imgSize, noHierarchyLevels, noRotationOnlyLevels, noICPRunTillLevel, distThresh, lowLevelEngine, MEMORYDEVICE_CPU)
 {
     allocImgSize = imgSize;
-    
+
     allocateMetalData((void**)&ATb_metal, (void**)&ATb_metal_mb, allocImgSize.x * allocImgSize.y * 6 * sizeof(float), true);
     allocateMetalData((void**)&ATA_metal, (void**)&ATA_metal_mb, allocImgSize.x * allocImgSize.y * 21 * sizeof(float), true);
     allocateMetalData((void**)&noValidPoints_metal, (void**)&noValidPoints_metal_mb, allocImgSize.x * allocImgSize.y * sizeof(float), true);
-    
+
     NSError *errors;
-    f_depthTrackerOneLevel_g_rg_device = [[[ITMMetalContext instance]library]newFunctionWithName:@"depthTrackerOneLevel_g_rt_device"];
-    p_depthTrackerOneLevel_g_rg_device = [[[ITMMetalContext instance]device]newComputePipelineStateWithFunction:f_depthTrackerOneLevel_g_rg_device error:&errors];
-    
+    f_depthTrackerOneLevel_g_rg_device = [[[MetalContext instance]library]newFunctionWithName:@"depthTrackerOneLevel_g_rt_device"];
+    p_depthTrackerOneLevel_g_rg_device = [[[MetalContext instance]device]newComputePipelineStateWithFunction:f_depthTrackerOneLevel_g_rg_device error:&errors];
+
     paramsBuffer_depthTracker = BUFFEREMPTY(16384);
 }
 
@@ -32,14 +32,6 @@ ITMDepthTracker_Metal::~ITMDepthTracker_Metal(void)
     freeMetalData((void**)&ATb_metal, (void**)&ATb_metal_mb, allocImgSize.x * allocImgSize.y * 6 * sizeof(float), true);
     freeMetalData((void**)&ATA_metal, (void**)&ATA_metal_mb, allocImgSize.x * allocImgSize.y * 21 * sizeof(float), true);
     freeMetalData((void**)&noValidPoints_metal, (void**)&noValidPoints_metal_mb, allocImgSize.x * allocImgSize.y * sizeof(float), true);
-}
-
-void ITMDepthTracker_Metal::ChangeIgnorePixelToZero(ITMFloatImage *image)
-{
-    Vector2i dims = image->noDims;
-    float *imageData = image->GetData(false);
-    
-    for (int i = 0; i < dims.x * dims.y; i++) if (imageData[i] < 0.0f) imageData[i] = 0.0f;
 }
 
 int ITMDepthTracker_Metal::ComputeGandH(ITMSceneHierarchyLevel *sceneHierarchyLevel, ITMTemplatedHierarchyLevel<ITMFloatImage> *viewHierarchyLevel,
@@ -55,17 +47,20 @@ int ITMDepthTracker_Metal::ComputeGandH(ITMSceneHierarchyLevel *sceneHierarchyLe
     float packedATA[6 * 6];
     int noPara = rotationOnly ? 3 : 6, noParaSQ = rotationOnly ? 3 + 2 + 1 : 6 + 5 + 4 + 3 + 2 + 1;
     
+    int viewImageTotalSize = viewImageSize.x * viewImageSize.y;
+    int ratio = 4;
+    
     noValidPoints = 0; memset(ATA_host, 0, sizeof(float) * 6 * 6); memset(ATb_host, 0, sizeof(float) * 6);
     memset(packedATA, 0, sizeof(float) * noParaSQ);
     
-    id<MTLCommandBuffer> commandBuffer = [[[ITMMetalContext instance]commandQueue]commandBuffer];
+    id<MTLCommandBuffer> commandBuffer = [[[MetalContext instance]commandQueue]commandBuffer];
     id<MTLComputeCommandEncoder> commandEncoder = [commandBuffer computeCommandEncoder];
-
+    
     DepthTrackerOneLevel_g_rg_Params *params = (DepthTrackerOneLevel_g_rg_Params*)[paramsBuffer_depthTracker contents];
     params->approxInvPose = approxInvPose; params->sceneIntrinsics = sceneIntrinsics;
     params->sceneImageSize = sceneImageSize; params->scenePose = scenePose;
     params->viewIntrinsics = viewIntrinsics; params->viewImageSize = viewImageSize;
-    params->others.x = distThresh; params->others.y = (float)rotationOnly;
+    params->others.x = distThresh; params->others.y = (float)rotationOnly; params->others.z = (float)ratio; params->others.w = 0;
     
     [commandEncoder setComputePipelineState:p_depthTrackerOneLevel_g_rg_device];
     [commandEncoder setBuffer:(__bridge id<MTLBuffer>) noValidPoints_metal_mb                               offset:0 atIndex:0];
@@ -75,12 +70,12 @@ int ITMDepthTracker_Metal::ComputeGandH(ITMSceneHierarchyLevel *sceneHierarchyLe
     [commandEncoder setBuffer:(__bridge id<MTLBuffer>) sceneHierarchyLevel->pointsMap->GetMetalBuffer()     offset:0 atIndex:4];
     [commandEncoder setBuffer:(__bridge id<MTLBuffer>) sceneHierarchyLevel->normalsMap->GetMetalBuffer()    offset:0 atIndex:5];
     [commandEncoder setBuffer:paramsBuffer_depthTracker                                                     offset:0 atIndex:6];
-
-    MTLSize blockSize = {8, 8, 1};
-    MTLSize gridSize = {(NSUInteger)ceil((float)viewImageSize.x / (float)blockSize.width),
-        (NSUInteger)ceil((float)viewImageSize.y / (float)blockSize.height), 1};
     
-    memset(noValidPoints_metal, 0, sizeof(float) * viewImageSize.x * viewImageSize.y);
+    MTLSize blockSize = {4, 4, 1};
+    MTLSize gridSize = {(NSUInteger)ceil(((float)viewImageSize.x / ratio) / (float)blockSize.width),
+        (NSUInteger)ceil(((float)viewImageSize.y / ratio) / (float)blockSize.height), 1};
+    
+    memset(noValidPoints_metal, 0, sizeof(float) * viewImageTotalSize);
     
     [commandEncoder dispatchThreadgroups:gridSize threadsPerThreadgroup:blockSize];
     [commandEncoder endEncoding];
@@ -88,16 +83,12 @@ int ITMDepthTracker_Metal::ComputeGandH(ITMSceneHierarchyLevel *sceneHierarchyLe
     [commandBuffer commit];
 
     [commandBuffer waitUntilCompleted];
-    
-    for (int y = 0; y < viewImageSize.y; y++) for (int x = 0; x < viewImageSize.x; x++)
+   
+    for (int locId = 0; locId < (viewImageTotalSize / (ratio * ratio)); locId++)
     {
-        int locId = x + y * viewImageSize.x;
-        
-        int isValidPoint = noValidPoints_metal[locId];
-        
-        if (isValidPoint)
+        if (noValidPoints_metal[locId] > 0)
         {
-            noValidPoints++;
+            noValidPoints += noValidPoints_metal[locId];
             for (int i = 0; i < noPara; i++) ATb_host[i] += ATb_metal[i + noPara * locId];
             for (int i = 0; i < noParaSQ; i++) packedATA[i] += ATA_metal[i + noParaSQ * locId];
         }

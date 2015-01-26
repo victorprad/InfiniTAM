@@ -23,12 +23,11 @@ namespace ITMLib
             void *ATA_metal_mb;
             void *noValidPoints_metal_mb;
 		protected:
-			void ChangeIgnorePixelToZero(ITMFloatImage *image);
 			int ComputeGandH(ITMSceneHierarchyLevel *sceneHierarchyLevel, ITMTemplatedHierarchyLevel<ITMFloatImage> *viewHierarchyLevel,
 				Matrix4f approxInvPose, Matrix4f imagePose, bool rotationOnly);
 
 		public:
-			ITMDepthTracker_Metal(Vector2i imgSize, int noHierarchyLevels, int noRotationOnlyLevels, int noICPRunTillLevel, float distThresh, ITMLowLevelEngine *lowLevelEngine);
+			 ITMDepthTracker_Metal(Vector2i imgSize, int noHierarchyLevels, int noRotationOnlyLevels, int noICPRunTillLevel, float distThresh, ITMLowLevelEngine *lowLevelEngine);
 			~ITMDepthTracker_Metal(void);
 		};
 	}
@@ -42,7 +41,7 @@ struct DepthTrackerOneLevel_g_rg_Params
     Matrix4f scenePose;
     Vector4f sceneIntrinsics;
     Vector4f viewIntrinsics;
+    Vector4f others;
     Vector2i sceneImageSize;
     Vector2i viewImageSize;
-    Vector2f others;
 };

@@ -12,7 +12,7 @@ using namespace InfiniTAM::Engine;
 int main(int argc, char** argv)
 try
 {
-	const char *calibFile = "./Files/Teddy/calib.txt";
+	const char *calibFile = "";
 	const char *imagesource_part1 = NULL;
 	const char *imagesource_part2 = NULL;
 
@@ -56,7 +56,7 @@ try
 
 	ITMMainEngine *mainEngine = new ITMMainEngine(internalSettings, &imageSource->calib, imageSource->getRGBImageSize(), imageSource->getDepthImageSize());
 
-	UIEngine::Instance()->Initialise(argc, argv, imageSource, mainEngine, "./Files/Out");
+	UIEngine::Instance()->Initialise(argc, argv, imageSource, mainEngine, "./Files/Out", internalSettings->deviceType);
 	UIEngine::Instance()->Run();
 	UIEngine::Instance()->Shutdown();
 

@@ -4,8 +4,12 @@
 
 #include "DeviceSpecific/CPU/ITMColorTracker_CPU.h"
 #include "DeviceSpecific/CUDA/ITMColorTracker_CUDA.h"
+#include "DeviceSpecific/Metal/ITMColorTracker_Metal.h"
+
 #include "DeviceSpecific/CPU/ITMDepthTracker_CPU.h"
 #include "DeviceSpecific/CUDA/ITMDepthTracker_CUDA.h"
+#include "DeviceSpecific/Metal/ITMDepthTracker_Metal.h"
+
 using namespace ITMLib::Engine;
 
 ITMTracker *ITMTrackerFactory::MakePrimaryTracker(const ITMLibSettings& settings, const Vector2i& imgSize_rgb, const Vector2i& imgSize_d, ITMLowLevelEngine *lowLevelEngine)
@@ -44,17 +48,19 @@ ITMTracker *ITMTrackerFactory::MakePrimaryTracker(const ITMLibSettings& settings
 #endif
 		break;
 	case ITMLibSettings::DEVICE_METAL:
+#ifdef COMPILE_WITH_METAL
 		switch (settings.trackerType)
 		{
 		case ITMLibSettings::TRACKER_ICP:
 		case ITMLibSettings::TRACKER_REN:
-			return new ITMDepthTracker_CPU(imgSize_d, settings.noHierarchyLevels, settings.noRotationOnlyLevels, settings.noICPRunTillLevel, 
+			return new ITMDepthTracker_Metal(imgSize_d, settings.noHierarchyLevels, settings.noRotationOnlyLevels, settings.noICPRunTillLevel,
 				settings.depthTrackerICPThreshold, lowLevelEngine);
 		case ITMLibSettings::TRACKER_COLOR:
 			return new ITMColorTracker_CPU(imgSize_rgb, settings.noHierarchyLevels, settings.noRotationOnlyLevels, lowLevelEngine);
 		default:
 			throw std::runtime_error("Error: ITMTrackerFactory::MakePrimaryTracker: Unknown tracker type");
 		}
+#endif
 		break;
 	}
 

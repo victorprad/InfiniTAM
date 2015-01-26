@@ -1,7 +1,10 @@
 // Copyright 2014 Isis Innovation Limited and the authors of InfiniTAM
+
 #ifdef COMPILE_WITH_METAL
 
-#import "ITMMetalContext.h"
+#import "MetalContext.h"
+
+#include "../../../Objects/ITMRenderState_VH.h"
 
 #include "ITMSceneReconstructionEngine_Metal.h"
 #include "../../DeviceAgnostic/ITMSceneReconstructionEngine.h"
@@ -9,59 +12,60 @@
 id<MTLFunction> f_integrateIntoScene_vh_device;
 id<MTLComputePipelineState> p_integrateIntoScene_vh_device;
 
+id<MTLFunction> f_buildAllocAndVisibleType_vh_device;
+id<MTLComputePipelineState> p_buildAllocAndVisibleType_vh_device;
+
 id<MTLBuffer> paramsBuffer_sceneReconstruction;
 
 using namespace ITMLib::Engine;
 
 template<class TVoxel>
 ITMSceneReconstructionEngine_Metal<TVoxel,ITMVoxelBlockHash>::ITMSceneReconstructionEngine_Metal(void)
+ : ITMSceneReconstructionEngine_CPU<TVoxel,ITMVoxelBlockHash>()
 {
-    int noTotalEntries = ITMVoxelBlockHash::noVoxelBlocks;
-    entriesAllocType = (uchar*)malloc(noTotalEntries);
-    blockCoords = (Vector3s*)malloc(noTotalEntries * sizeof(Vector3s));
-
     NSError *errors;
-    f_integrateIntoScene_vh_device = [[[ITMMetalContext instance]library]newFunctionWithName:@"integrateIntoScene_vh_device"];
-    p_integrateIntoScene_vh_device = [[[ITMMetalContext instance]device]newComputePipelineStateWithFunction:f_integrateIntoScene_vh_device error:&errors];
+    
+    f_integrateIntoScene_vh_device = [[[MetalContext instance]library]newFunctionWithName:@"integrateIntoScene_vh_device"];
+    p_integrateIntoScene_vh_device = [[[MetalContext instance]device]newComputePipelineStateWithFunction:f_integrateIntoScene_vh_device error:&errors];
+    
+    f_buildAllocAndVisibleType_vh_device = [[[MetalContext instance]library]newFunctionWithName:@"buildAllocAndVisibleType_vh_device"];
+    p_buildAllocAndVisibleType_vh_device = [[[MetalContext instance]device]newComputePipelineStateWithFunction:f_buildAllocAndVisibleType_vh_device error:&errors];
     
     paramsBuffer_sceneReconstruction = BUFFEREMPTY(16384);
 }
 
 template<class TVoxel>
-ITMSceneReconstructionEngine_Metal<TVoxel,ITMVoxelBlockHash>::~ITMSceneReconstructionEngine_Metal(void)
+void ITMSceneReconstructionEngine_Metal<TVoxel,ITMVoxelBlockHash>::IntegrateIntoScene(ITMScene<TVoxel, ITMVoxelBlockHash> *scene, const ITMView *view,
+                                                                                      const ITMTrackingState *trackingState, const ITMRenderState *renderState)
 {
-    free(entriesAllocType);
-    free(blockCoords);
-}
-
-template<class TVoxel>
-void ITMSceneReconstructionEngine_Metal<TVoxel,ITMVoxelBlockHash>::IntegrateIntoScene(ITMScene<TVoxel,ITMVoxelBlockHash> *scene, const ITMView *view, const ITMPose *pose_d)
-{
-    id<MTLCommandBuffer> commandBuffer = [[[ITMMetalContext instance]commandQueue]commandBuffer];
+    id<MTLCommandBuffer> commandBuffer = [[[MetalContext instance]commandQueue]commandBuffer];
     id<MTLComputeCommandEncoder> commandEncoder = [commandBuffer computeCommandEncoder];
+    
+    ITMRenderState_VH *renderState_vh = (ITMRenderState_VH*)renderState;
     
     IntegrateIntoScene_VH_Params *params = (IntegrateIntoScene_VH_Params*)[paramsBuffer_sceneReconstruction contents];
     params->rgbImgSize = view->rgb->noDims;
     params->depthImgSize = view->depth->noDims;
-    params->_voxelSize = scene->sceneParams->voxelSize;
-    params->M_d = pose_d->M;
-    if (TVoxel::hasColorInformation) params->M_rgb = view->calib->trafo_rgb_to_depth.calib_inv * pose_d->M;
+    params->others.x = scene->sceneParams->voxelSize;
+    params->others.y = scene->sceneParams->mu;
+    params->others.z = scene->sceneParams->maxW;
+    params->others.w = (float)scene->sceneParams->stopIntegratingAtMaxW;
+    params->M_d = trackingState->pose_d->M;
+    if (TVoxel::hasColorInformation) params->M_rgb = view->calib->trafo_rgb_to_depth.calib_inv * trackingState->pose_d->M;
     
     params->projParams_d = view->calib->intrinsics_d.projectionParamsSimple.all;
     params->projParams_rgb = view->calib->intrinsics_rgb.projectionParamsSimple.all;
     
-    params->mu = scene->sceneParams->mu; params->maxW = scene->sceneParams->maxW;
-    
     [commandEncoder setComputePipelineState:p_integrateIntoScene_vh_device];
-    [commandEncoder setBuffer:(__bridge id<MTLBuffer>) scene->localVBA.GetVoxelBlocks_MB()  offset:0 atIndex:0];
-    [commandEncoder setBuffer:(__bridge id<MTLBuffer>) scene->index.GetEntries_MB()         offset:0 atIndex:1];
-    [commandEncoder setBuffer:(__bridge id<MTLBuffer>) scene->index.GetLiveEntryIDs_MB()    offset:0 atIndex:2];
-    [commandEncoder setBuffer:(__bridge id<MTLBuffer>) view->rgb->GetMetalBuffer()          offset:0 atIndex:3];
-    [commandEncoder setBuffer:(__bridge id<MTLBuffer>) view->depth->GetMetalBuffer()        offset:0 atIndex:4];
-    [commandEncoder setBuffer:paramsBuffer_sceneReconstruction                              offset:0 atIndex:5];
+    [commandEncoder setBuffer:(__bridge id<MTLBuffer>) scene->localVBA.GetVoxelBlocks_MB()      offset:0 atIndex:0];
+    [commandEncoder setBuffer:(__bridge id<MTLBuffer>) scene->index.GetEntries_MB()             offset:0 atIndex:1];
+    [commandEncoder setBuffer:(__bridge id<MTLBuffer>) renderState_vh->GetVisibleEntryIDs_MB()  offset:0 atIndex:2];
+    [commandEncoder setBuffer:(__bridge id<MTLBuffer>) view->rgb->GetMetalBuffer()              offset:0 atIndex:3];
+    [commandEncoder setBuffer:(__bridge id<MTLBuffer>) view->depth->GetMetalBuffer()            offset:0 atIndex:4];
+    [commandEncoder setBuffer:paramsBuffer_sceneReconstruction                                  offset:0 atIndex:5];
     
     MTLSize blockSize = {SDF_BLOCK_SIZE, SDF_BLOCK_SIZE, SDF_BLOCK_SIZE};
-    MTLSize gridSize = {(NSUInteger)scene->index.noLiveEntries, 1, 1};
+    MTLSize gridSize = {(NSUInteger)renderState_vh->noVisibleEntries, 1, 1};
     
     [commandEncoder dispatchThreadgroups:gridSize threadsPerThreadgroup:blockSize];
     [commandEncoder endEncoding];
@@ -72,30 +76,83 @@ void ITMSceneReconstructionEngine_Metal<TVoxel,ITMVoxelBlockHash>::IntegrateInto
 }
 
 template<class TVoxel>
-void ITMSceneReconstructionEngine_Metal<TVoxel,ITMVoxelBlockHash>::AllocateSceneFromDepth(ITMScene<TVoxel,ITMVoxelBlockHash> *scene, const ITMView *view, const ITMPose *pose_d)
+void ITMSceneReconstructionEngine_Metal<TVoxel,ITMVoxelBlockHash>::BuildAllocAndVisibleType(ITMScene<TVoxel, ITMVoxelBlockHash> *scene, const ITMView *view,
+                                                                                            const ITMTrackingState *trackingState, const ITMRenderState *renderState)
+{
+    id<MTLCommandBuffer> commandBuffer = [[[MetalContext instance]commandQueue]commandBuffer];
+    id<MTLComputeCommandEncoder> commandEncoder = [commandBuffer computeCommandEncoder];
+    
+    ITMRenderState_VH *renderState_vh = (ITMRenderState_VH*)renderState;
+
+    Vector2i depthImgSize = view->depth->noDims;
+    float voxelSize = scene->sceneParams->voxelSize;
+    
+    Matrix4f invM_d; trackingState->pose_d->M.inv(invM_d);
+    Vector4f invProjParams_d = view->calib->intrinsics_d.projectionParamsSimple.all;
+    invProjParams_d.x = 1.0f / invProjParams_d.x;
+    invProjParams_d.y = 1.0f / invProjParams_d.y;
+    
+    BuildAllocVisibleType_VH_Params *params = (BuildAllocVisibleType_VH_Params*)[paramsBuffer_sceneReconstruction contents];
+    params->invM_d = invM_d;
+    params->invProjParams_d = invProjParams_d;
+    params->depthImgSize = depthImgSize;
+    params->others.x = scene->sceneParams->mu;
+    params->others.y = 1.0f / (voxelSize * SDF_BLOCK_SIZE);
+    params->others.z = scene->sceneParams->viewFrustum_min;
+    params->others.w = scene->sceneParams->viewFrustum_max;
+    
+    memset(this->entriesAllocType->GetData(MEMORYDEVICE_CPU), 0, scene->index.noVoxelBlocks);
+    memset(this->blockCoords->GetData(MEMORYDEVICE_CPU), 0, scene->index.noVoxelBlocks * sizeof(Vector4s));
+    
+    uchar *entriesVisibleType = renderState_vh->GetEntriesVisibleType();
+    int *visibleEntryIDs = renderState_vh->GetVisibleEntryIDs();
+    for (int i = 0; i < renderState_vh->noVisibleEntries; i++)
+        entriesVisibleType[visibleEntryIDs[i]] = 3; // visible at previous frame and unstreamed
+    
+    [commandEncoder setComputePipelineState:p_buildAllocAndVisibleType_vh_device];
+    [commandEncoder setBuffer:(__bridge id<MTLBuffer>) this->entriesAllocType->GetMetalBuffer()     offset:0 atIndex:0];
+    [commandEncoder setBuffer:(__bridge id<MTLBuffer>) renderState_vh->GetEntriesVisibleType_MB()   offset:0 atIndex:1];
+    [commandEncoder setBuffer:(__bridge id<MTLBuffer>) this->blockCoords->GetMetalBuffer()          offset:0 atIndex:2];
+    [commandEncoder setBuffer:(__bridge id<MTLBuffer>) scene->index.GetEntries_MB()                 offset:0 atIndex:3];
+    [commandEncoder setBuffer:(__bridge id<MTLBuffer>) view->depth->GetMetalBuffer()                offset:0 atIndex:4];
+    [commandEncoder setBuffer:paramsBuffer_sceneReconstruction                                      offset:0 atIndex:5];
+    
+    MTLSize blockSize = {8, 8, 1};
+    MTLSize gridSize = {(NSUInteger)ceil((float)view->depth->noDims.x / (float)blockSize.width),
+        (NSUInteger)ceil((float)view->depth->noDims.y / (float)blockSize.height), 1};
+    
+    [commandEncoder dispatchThreadgroups:gridSize threadsPerThreadgroup:blockSize];
+    [commandEncoder endEncoding];
+    
+    [commandBuffer commit];
+    
+    [commandBuffer waitUntilCompleted];
+}
+
+template<class TVoxel>
+void ITMSceneReconstructionEngine_Metal<TVoxel, ITMVoxelBlockHash>::AllocateSceneFromDepth(ITMScene<TVoxel, ITMVoxelBlockHash> *scene, const ITMView *view,
+                                                                                           const ITMTrackingState *trackingState, const ITMRenderState *renderState)
 {
     Vector2i depthImgSize = view->depth->noDims;
     float voxelSize = scene->sceneParams->voxelSize;
     
-    Matrix4f M_d, invM_d;
-    Vector4f projParams_d, invProjParams_d;
+    Matrix4f M_d = trackingState->pose_d->M;
+    Vector4f projParams_d = view->calib->intrinsics_d.projectionParamsSimple.all;
     
-    M_d = pose_d->M; M_d.inv(invM_d);
-    
-    projParams_d = view->calib->intrinsics_d.projectionParamsSimple.all;
-    invProjParams_d = projParams_d;
-    invProjParams_d.x = 1.0f / invProjParams_d.x;
-    invProjParams_d.y = 1.0f / invProjParams_d.y;
+    ITMRenderState_VH *renderState_vh = (ITMRenderState_VH*)renderState;
     
     float mu = scene->sceneParams->mu;
     
-    float *depth = view->depth->GetData(false);
+    float *depth = view->depth->GetData(MEMORYDEVICE_CPU);
     int *voxelAllocationList = scene->localVBA.GetAllocationList();
     int *excessAllocationList = scene->index.GetExcessAllocationList();
-    uchar *entriesVisibleType = scene->index.GetEntriesVisibleType();
     ITMHashEntry *hashTable = scene->index.GetEntries();
     ITMHashCacheState *cacheStates = scene->useSwapping ? scene->globalCache->GetCacheStates(false) : 0;
-    int *liveEntryIDs = scene->index.GetLiveEntryIDs();
+    int *visibleEntryIDs = renderState_vh->GetVisibleEntryIDs();
+    int *activeEntryIDs = renderState_vh->GetActiveEntryIDs();
+    uchar *entriesVisibleType = renderState_vh->GetEntriesVisibleType();
+    uchar *entriesAllocType = this->entriesAllocType->GetData(MEMORYDEVICE_CPU);
+    Vector4s *blockCoords = this->blockCoords->GetData(MEMORYDEVICE_CPU);
     int noTotalEntries = scene->index.noVoxelBlocks;
     
     bool useSwapping = scene->useSwapping;
@@ -105,41 +162,29 @@ void ITMSceneReconstructionEngine_Metal<TVoxel,ITMVoxelBlockHash>::AllocateScene
     int lastFreeVoxelBlockId = scene->localVBA.lastFreeBlockId;
     int lastFreeExcessListId = scene->index.lastFreeExcessListId;
     
-    Vector3s pt_block_prev;
-    pt_block_prev.x = 0; pt_block_prev.y = 0; pt_block_prev.z = 0;
+    int noVisibleEntries = 0, noActiveEntries = 0;
     
-    int hashIdxLive = 0;
-    
-    memset(entriesAllocType, 0, noTotalEntries);
-    memset(entriesVisibleType, 0, noTotalEntries);
-    memset(blockCoords, 0, noTotalEntries * sizeof(Vector3s));
-    
-    //build hashVisibility
-    for (int y = 0; y < depthImgSize.y; y++) for (int x = 0; x < depthImgSize.x; x++)
-    {
-        buildHashAllocAndVisibleTypePP(entriesAllocType, entriesVisibleType, x, y, blockCoords, depth, invM_d,
-                                       invProjParams_d, mu, depthImgSize, oneOverVoxelSize, hashTable, scene->sceneParams->viewFrustum_min,
-                                       scene->sceneParams->viewFrustum_max);
-    }
+    this->BuildAllocAndVisibleType(scene, view, trackingState, renderState);
     
     //allocate
     for (int targetIdx = 0; targetIdx < noTotalEntries; targetIdx++)
     {
         int vbaIdx, exlIdx;
-        unsigned char hashChangeType = entriesAllocType[targetIdx];
-        ITMHashEntry hashEntry = hashTable[targetIdx];
         
-        switch (hashChangeType)
+        switch (entriesAllocType[targetIdx])
         {
             case 1: //needs allocation, fits in the ordered list
                 vbaIdx = lastFreeVoxelBlockId; lastFreeVoxelBlockId--;
                 
                 if (vbaIdx >= 0) //there is room in the voxel block array
                 {
-                    Vector3s pt_block_all = blockCoords[targetIdx];
+                    Vector4s pt_block_all = blockCoords[targetIdx];
+                    
+                    ITMHashEntry hashEntry;
                     
                     hashEntry.pos.x = pt_block_all.x; hashEntry.pos.y = pt_block_all.y; hashEntry.pos.z = pt_block_all.z;
                     hashEntry.ptr = voxelAllocationList[vbaIdx];
+                    hashEntry.offset = 0;
                     
                     hashTable[targetIdx] = hashEntry;
                 }
@@ -151,10 +196,13 @@ void ITMSceneReconstructionEngine_Metal<TVoxel,ITMVoxelBlockHash>::AllocateScene
                 
                 if (vbaIdx >= 0 && exlIdx >= 0) //there is room in the voxel block array and excess list
                 {
-                    Vector3s pt_block_all = blockCoords[targetIdx];
+                    Vector4s pt_block_all = blockCoords[targetIdx];
+                    
+                    ITMHashEntry hashEntry;
                     
                     hashEntry.pos.x = pt_block_all.x; hashEntry.pos.y = pt_block_all.y; hashEntry.pos.z = pt_block_all.z;
                     hashEntry.ptr = voxelAllocationList[vbaIdx];
+                    hashEntry.offset = 0;
                     
                     int exlOffset = excessAllocationList[exlIdx];
                     
@@ -175,55 +223,36 @@ void ITMSceneReconstructionEngine_Metal<TVoxel,ITMVoxelBlockHash>::AllocateScene
         unsigned char hashVisibleType = entriesVisibleType[targetIdx];
         const ITMHashEntry &hashEntry = hashTable[targetIdx];
         
-        if ((hashVisibleType == 0 && hashEntry.ptr >= 0) || hashVisibleType == 2)
+        if (hashVisibleType >= 2)
         {
-            Vector3f pt_image, buff3f;
+            bool isVisibleEnlarged, isVisible;
             
-            int noInvisible = 0, noInvisibleEnlarged = 0;
-            
-            pt_image = hashEntry.pos.toFloat() * (float)SDF_BLOCK_SIZE * voxelSize;
-            buff3f = M_d * pt_image;
-            
-            if (buff3f.z > 1e-10f)
+            if (hashVisibleType == 3)
             {
-                for (int x = 0; x <= 1; x++) for (int y = 0; y <= 1; y++) for (int z = 0; z <= 1; z++)
-                {
-                    Vector3f off((float)x, (float)y, (float)z);
-                    
-                    pt_image = (hashEntry.pos.toFloat() + off) * (float)SDF_BLOCK_SIZE * voxelSize;
-                    
-                    buff3f = M_d * pt_image;
-                    
-                    pt_image.x = projParams_d.x * buff3f.x / buff3f.z + projParams_d.z;
-                    pt_image.y = projParams_d.y * buff3f.y / buff3f.z + projParams_d.w;
-                    
-                    if (!(pt_image.x >= 0 && pt_image.x < depthImgSize.x && pt_image.y >= 0 && pt_image.y < depthImgSize.y)) noInvisible++;
-                    
-                    if (useSwapping)
-                    {
-                        Vector4i lims;
-                        lims.x = -depthImgSize.x / 8; lims.y = depthImgSize.x + depthImgSize.x / 8;
-                        lims.z = -depthImgSize.y / 8; lims.w = depthImgSize.y + depthImgSize.y / 8;
-                        
-                        if (!(pt_image.x >= lims.x && pt_image.x < lims.y && pt_image.y >= lims.z && pt_image.y < lims.w)) noInvisibleEnlarged++;
-                    }
-                }
-                
-                hashVisibleType = noInvisible < 8;
-                
-                if (useSwapping) entriesVisibleType[targetIdx] = noInvisibleEnlarged < 8;
+                checkBlockVisibility<false>(isVisible, isVisibleEnlarged, hashEntry.pos, M_d, projParams_d, voxelSize, depthImgSize);
+                if (!isVisible) { entriesVisibleType[targetIdx] = 0; hashVisibleType = 0; }
+            }
+            
+            if (useSwapping && hashVisibleType == 2)
+            {
+                checkBlockVisibility<true>(isVisible, isVisibleEnlarged, hashEntry.pos, M_d, projParams_d, voxelSize, depthImgSize);
+                entriesVisibleType[targetIdx] = isVisibleEnlarged; hashVisibleType = isVisibleEnlarged;
             }
         }
         
         if (useSwapping)
-        {
             if (entriesVisibleType[targetIdx] > 0 && cacheStates[targetIdx].cacheFromHost != 2) cacheStates[targetIdx].cacheFromHost = 1;
-        }
         
         if (hashVisibleType > 0)
-        {
-            liveEntryIDs[hashIdxLive] = targetIdx;
-            hashIdxLive++;
+        {	
+            visibleEntryIDs[noVisibleEntries] = targetIdx;
+            noVisibleEntries++;
+            
+            if (hashVisibleType == 1)
+            {
+                activeEntryIDs[noActiveEntries] = targetIdx;
+                noActiveEntries++;
+            }
         }
     }
     
@@ -235,7 +264,7 @@ void ITMSceneReconstructionEngine_Metal<TVoxel,ITMVoxelBlockHash>::AllocateScene
             int vbaIdx;
             ITMHashEntry hashEntry = hashTable[targetIdx];
             
-            if (entriesVisibleType[targetIdx] > 0 && hashEntry.ptr == -1)
+            if (entriesVisibleType[targetIdx] > 0 && hashEntry.ptr == -1) 
             {
                 vbaIdx = lastFreeVoxelBlockId; lastFreeVoxelBlockId--;
                 if (vbaIdx >= 0) hashTable[targetIdx].ptr = voxelAllocationList[vbaIdx];
@@ -243,63 +272,13 @@ void ITMSceneReconstructionEngine_Metal<TVoxel,ITMVoxelBlockHash>::AllocateScene
         }
     }
     
-    scene->index.noLiveEntries = hashIdxLive;
+    renderState_vh->noVisibleEntries = noVisibleEntries;
+    renderState_vh->noActiveEntries = noActiveEntries;
+    
     scene->localVBA.lastFreeBlockId = lastFreeVoxelBlockId;
     scene->index.lastFreeExcessListId = lastFreeExcessListId;
 }
 
-template<class TVoxel>
-ITMSceneReconstructionEngine_Metal<TVoxel,ITMPlainVoxelArray>::ITMSceneReconstructionEngine_Metal(void)
-{}
-
-template<class TVoxel>
-ITMSceneReconstructionEngine_Metal<TVoxel,ITMPlainVoxelArray>::~ITMSceneReconstructionEngine_Metal(void)
-{}
-
-template<class TVoxel>
-void ITMSceneReconstructionEngine_Metal<TVoxel,ITMPlainVoxelArray>::AllocateSceneFromDepth(ITMScene<TVoxel,ITMPlainVoxelArray> *scene, const ITMView *view, const ITMPose *pose_d)
-{}
-
-template<class TVoxel>
-void ITMSceneReconstructionEngine_Metal<TVoxel,ITMPlainVoxelArray>::IntegrateIntoScene(ITMScene<TVoxel,ITMPlainVoxelArray> *scene, const ITMView *view, const ITMPose *pose_d)
-{
-    Vector2i rgbImgSize = view->rgb->noDims;
-    Vector2i depthImgSize = view->depth->noDims;
-    float voxelSize = scene->sceneParams->voxelSize;
-    
-    Matrix4f M_d, M_rgb;
-    Vector4f projParams_d, projParams_rgb;
-    
-    M_d = pose_d->M;
-    if (TVoxel::hasColorInformation) M_rgb = view->calib->trafo_rgb_to_depth.calib_inv * pose_d->M;
-    
-    projParams_d = view->calib->intrinsics_d.projectionParamsSimple.all;
-    projParams_rgb = view->calib->intrinsics_rgb.projectionParamsSimple.all;
-    
-    float mu = scene->sceneParams->mu; int maxW = scene->sceneParams->maxW;
-    
-    float *depth = view->depth->GetData(false);
-    Vector4u *rgb = view->rgb->GetData(false);
-    TVoxel *voxelArray = scene->localVBA.GetVoxelBlocks();
-    
-    const ITMPlainVoxelArray::IndexData *arrayInfo = scene->index.getIndexData();
-    
-    for (int z = 0; z < scene->index.getVolumeSize().z; z++) for (int y = 0; y < scene->index.getVolumeSize().y; y++) for (int x = 0; x < scene->index.getVolumeSize().x; x++)
-    {
-        Vector4f pt_model; int locId;
-        
-        locId = x + y * scene->index.getVolumeSize().x + z * scene->index.getVolumeSize().x * scene->index.getVolumeSize().y;
-        
-        pt_model.x = (float)(x + arrayInfo->offset.x) * voxelSize;
-        pt_model.y = (float)(y + arrayInfo->offset.y) * voxelSize;
-        pt_model.z = (float)(z + arrayInfo->offset.z) * voxelSize;
-        pt_model.w = 1.0f;
-        
-        ComputeUpdatedVoxelInfo<TVoxel::hasColorInformation,TVoxel>::compute(voxelArray[locId], pt_model, M_d, projParams_d, M_rgb, projParams_rgb, mu, maxW, depth, depthImgSize, rgb, rgbImgSize);
-    }
-}
-
 template class ITMLib::Engine::ITMSceneReconstructionEngine_Metal<ITMVoxel, ITMVoxelIndex>;
-
 
 #endif

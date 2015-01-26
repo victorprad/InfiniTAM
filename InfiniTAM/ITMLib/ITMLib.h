@@ -77,6 +77,15 @@
 #include "Engine/DeviceSpecific/Metal/ITMRenTracker_Metal.h"
 #endif
 
+#include "Engine/ITMViewBuilder.h"
+#include "Engine/DeviceSpecific/CPU/ITMViewBuilder_CPU.h"
+#ifndef COMPILE_WITHOUT_CUDA
+#include "Engine/DeviceSpecific/CUDA/ITMViewBuilder_CUDA.h"
+#endif
+#ifdef COMPILE_WITH_METAL
+#include "Engine/DeviceSpecific/Metal/ITMViewBuilder_Metal.h"
+#endif
+
 #include "Engine/ITMDenseMapper.h"
 #include "Engine/ITMMainEngine.h"
 

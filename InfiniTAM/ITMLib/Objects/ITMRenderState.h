@@ -2,6 +2,8 @@
 
 #pragma once
 
+#ifndef __METALC__
+
 #include <stdlib.h>
 
 #include "../Utils/ITMLibDefines.h"
@@ -44,19 +46,16 @@ namespace ITMLib
 
 			ITMRenderState(const Vector2i &imgSize, float vf_min, float vf_max, MemoryDeviceType memoryType)
 			{
-				bool allocateGPU = false;
-				if (memoryType == MEMORYDEVICE_CUDA) allocateGPU = true;
+				renderingRangeImage = new ORUtils::Image<Vector2f>(imgSize, memoryType);
+				raycastResult = new ORUtils::Image<Vector4f>(imgSize, memoryType);
+				raycastImage = new ORUtils::Image<Vector4u>(imgSize, memoryType);
 
-				renderingRangeImage = new ORUtils::Image<Vector2f>(imgSize, true, allocateGPU);
-				raycastResult = new ORUtils::Image<Vector4f>(imgSize, true, allocateGPU);
-				raycastImage = new ORUtils::Image<Vector4u>(imgSize, true, allocateGPU);
-
-				ORUtils::Image<Vector2f> *buffImage = new ORUtils::Image<Vector2f>(imgSize, true, allocateGPU);
+				ORUtils::Image<Vector2f> *buffImage = new ORUtils::Image<Vector2f>(imgSize, MEMORYDEVICE_CPU);
 
 				Vector2f v_lims(vf_min, vf_max);
 				for (int i = 0; i < imgSize.x * imgSize.y; i++) buffImage->GetData(MEMORYDEVICE_CPU)[i] = v_lims;
 
-				if (allocateGPU)
+				if (memoryType == MEMORYDEVICE_CUDA)
 				{
 #ifndef COMPILE_WITHOUT_CUDA
 					renderingRangeImage->SetFrom(buffImage, ORUtils::MemoryBlock<Vector2f>::CPU_TO_CUDA);
@@ -76,3 +75,5 @@ namespace ITMLib
 		};
 	}
 }
+
+#endif

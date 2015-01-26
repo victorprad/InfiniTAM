@@ -25,7 +25,11 @@ namespace ITMLib
 			void SetFrom(float a, float b)
 			{ params.x = a; params.y = b; }
 
-			ITMDisparityCalib(void);
+			ITMDisparityCalib(void)
+			{
+				// standard calibration parameters - converts mm to metres by dividing by 1000
+				params.x = 0.0f; params.y = 0.0f;
+			}
 		};
 	}
 }

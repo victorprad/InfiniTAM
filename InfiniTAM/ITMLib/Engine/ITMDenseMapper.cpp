@@ -3,6 +3,8 @@
 #include "ITMDenseMapper.h"
 #include "ITMTrackerFactory.h"
 
+#include "../Objects/ITMRenderState_VH.h"
+
 #include "../ITMLib.h"
 
 using namespace ITMLib::Engine;
@@ -83,6 +85,8 @@ void ITMDenseMapper<TVoxel,TIndex>::ProcessFrame(const ITMView *view, const ITMT
 		// swapping: GPU -> CPU
 		swappingEngine->SaveToGlobalMemory(scene, renderState_live);
 	}
+
+	//printf("%d %d\n", ((ITMRenderState_VH*)renderState_live)->noVisibleEntries, ((ITMRenderState_VH*)renderState_live)->noActiveEntries);
 }
 
 template<class TVoxel, class TIndex>
@@ -108,8 +112,9 @@ void ITMDenseMapper<TVoxel,TIndex>::GetRendering(const ITMPose *pose, const ITMI
 	visualisationEngine->CreateExpectedDepths(scene, pose, intrinsics, renderState_freeview);
 	visualisationEngine->RenderImage(scene, pose, intrinsics, renderState_freeview, renderState_freeview->raycastImage, useColour);
 
-	if (settings->deviceType == ITMLibSettings::DEVICE_CUDA) renderState_freeview->raycastImage->UpdateHostFromDevice();
-	out->SetFrom(renderState_freeview->raycastImage, ORUtils::MemoryBlock<Vector4u>::CPU_TO_CPU);
+	if (settings->deviceType == ITMLibSettings::DEVICE_CUDA) 
+		out->SetFrom(renderState_freeview->raycastImage, ORUtils::MemoryBlock<Vector4u>::CUDA_TO_CPU);
+	else out->SetFrom(renderState_freeview->raycastImage, ORUtils::MemoryBlock<Vector4u>::CPU_TO_CPU);
 }
 
 template class ITMLib::Engine::ITMDenseMapper<ITMVoxel, ITMVoxelIndex>;

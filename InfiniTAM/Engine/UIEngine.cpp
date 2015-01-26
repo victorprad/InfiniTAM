@@ -326,7 +326,7 @@ void UIEngine::glutMouseWheelFunction(int button, int dir, int x, int y)
 	uiEngine->needsRefresh = true;
 }
 
-void UIEngine::Initialise(int & argc, char** argv, ImageSourceEngine *imageSource, ITMMainEngine *mainEngine, const char *outFolder)
+void UIEngine::Initialise(int & argc, char** argv, ImageSourceEngine *imageSource, ITMMainEngine *mainEngine, const char *outFolder, ITMLibSettings::DeviceType deviceType)
 {
 	this->freeviewActive = false;
 	this->colourActive = false;
@@ -381,8 +381,14 @@ void UIEngine::Initialise(int & argc, char** argv, ImageSourceEngine *imageSourc
 	glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE, 1);
 #endif
 
+	bool allocateGPU = false;
+	if (deviceType == ITMLibSettings::DEVICE_CUDA) allocateGPU = true;
+
 	for (int w = 0; w < NUM_WIN; w++)
-		outImage[w] = new ITMUChar4Image(imageSource->getDepthImageSize(), true, false);
+		outImage[w] = new ITMUChar4Image(imageSource->getDepthImageSize(), true, allocateGPU);
+
+	inputRGBImage = new ITMUChar4Image(imageSource->getRGBImageSize(), true, allocateGPU);
+	inputRawDepthImage = new ITMShortImage(imageSource->getDepthImageSize(), true, allocateGPU);
 
 	saveImage = new ITMUChar4Image(imageSource->getDepthImageSize(), true, false);
 
@@ -421,7 +427,7 @@ void UIEngine::GetScreenshot(ITMUChar4Image *dest) const
 void UIEngine::ProcessFrame()
 {
 	if (!imageSource->hasMoreImages()) return;
-	imageSource->getImages(mainEngine->view);
+	imageSource->getImages(inputRGBImage, inputRawDepthImage);
 
 	sdkResetTimer(&timer_instant); 
 	sdkStartTimer(&timer_instant); sdkStartTimer(&timer_average);
@@ -431,14 +437,14 @@ void UIEngine::ProcessFrame()
 		char str[250];
 
 		sprintf(str, "%s/%04d.pgm", outFolder, currentFrameNo);
-		SaveImageToFile(mainEngine->view->rawDepth, str);
+		SaveImageToFile(inputRawDepthImage, str);
 
 		sprintf(str, "%s/%04d.ppm", outFolder, currentFrameNo);
-		SaveImageToFile(mainEngine->view->rgb, str);
+		SaveImageToFile(inputRGBImage , str);
 	}
 
 	//actual processing on the mailEngine
-	mainEngine->ProcessFrame();
+	mainEngine->ProcessFrame(inputRGBImage, inputRawDepthImage);
 
 	sdkStopTimer(&timer_instant); sdkStopTimer(&timer_average);
 
@@ -456,6 +462,10 @@ void UIEngine::Shutdown()
 
 	for (int w = 0; w < NUM_WIN; w++)
 		delete outImage[w]; 
+
+	delete inputRGBImage;
+	delete inputRawDepthImage;
+
 	delete[] outFolder;
 	delete saveImage; 
 	delete instance; 

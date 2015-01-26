@@ -9,6 +9,9 @@ using namespace ITMLib::Engine;
 template<class TVoxel>
 ITMVoxelBlockOpEngine_CPU<TVoxel,ITMVoxelBlockHHash>::ITMVoxelBlockOpEngine_CPU(void) 
 {
+//TODO: both CPU and CUDA
+// complexities for live list or for hash table entries/blocks?
+// allocate the right length of array, please!
 	complexities = (float*)malloc(sizeof(float) * SDF_LOCAL_BLOCK_NUM);
 	blocklist = (int*)malloc(sizeof(int) * 8 * SDF_LOCAL_BLOCK_NUM);
 }
@@ -30,8 +33,8 @@ void ITMVoxelBlockOpEngine_CPU<TVoxel,ITMVoxelBlockHHash>::ComputeComplexities(I
 	TVoxel *voxelBlocks = scene->localVBA.GetVoxelBlocks();
 	ITMHashEntry *hashEntries = scene->index.GetEntries();
 
-	const int *liveList = renderState_vh->GetLiveEntryIDs();
-	int liveListSize = renderState_vh->noLiveEntries;
+	const int *liveList = renderState_vh->GetVisibleEntryIDs();
+	int liveListSize = renderState_vh->noVisibleEntries;
 
 	for (int listIdx = 0; listIdx < liveListSize; listIdx++)
 	{
@@ -111,8 +114,8 @@ void ITMVoxelBlockOpEngine_CPU<TVoxel,ITMVoxelBlockHHash>::SplitVoxelBlocks(ITMS
 	int *lastFreeVoxelBlockId = &(scene->localVBA.lastFreeBlockId);
 	int *lastFreeExcessListIds = scene->index.GetLastFreeExcessListIds();
 
-	const int *liveList = renderState_vh->GetLiveEntryIDs();
-	int liveListSize = renderState_vh->noLiveEntries;
+	const int *liveList = renderState_vh->GetVisibleEntryIDs();
+	int liveListSize = renderState_vh->noVisibleEntries;
 
 	int lastEntryBlockList = 0;
 

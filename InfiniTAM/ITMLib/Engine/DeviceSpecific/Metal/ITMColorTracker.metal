@@ -2,7 +2,4 @@
 
 #include <metal_stdlib>
 
-#include "../../DeviceAgnostic/ITMColorTracker.h"
-#include "../../../Utils/ITMPixelUtils.h"
-
 using namespace metal;
