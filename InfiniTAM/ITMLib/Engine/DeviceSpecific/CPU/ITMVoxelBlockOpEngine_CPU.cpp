@@ -9,11 +9,10 @@ using namespace ITMLib::Engine;
 template<class TVoxel>
 ITMVoxelBlockOpEngine_CPU<TVoxel,ITMVoxelBlockHHash>::ITMVoxelBlockOpEngine_CPU(void) 
 {
-//TODO: both CPU and CUDA
-// complexities for live list or for hash table entries/blocks?
-// allocate the right length of array, please!
-	complexities = (float*)malloc(sizeof(float) * SDF_LOCAL_BLOCK_NUM);
+	complexities = (float*)malloc(sizeof(float) * ITMHHashTable::noTotalEntries);
 	blocklist = (int*)malloc(sizeof(int) * 8 * SDF_LOCAL_BLOCK_NUM);
+
+	for (int i = 0; i < ITMHHashTable::noTotalEntries; i++) complexities[i] = -1;
 }
 
 template<class TVoxel>
@@ -27,8 +26,6 @@ template<class TVoxel>
 void ITMVoxelBlockOpEngine_CPU<TVoxel,ITMVoxelBlockHHash>::ComputeComplexities(ITMScene<TVoxel,ITMVoxelBlockHHash> *scene, const ITMRenderState *renderState)
 {
 	const ITMRenderState_VH *renderState_vh = (const ITMRenderState_VH*) renderState;
-
-	for (int i = 0; i < SDF_LOCAL_BLOCK_NUM; i++) complexities[i] = -1;
 
 	TVoxel *voxelBlocks = scene->localVBA.GetVoxelBlocks();
 	ITMHashEntry *hashEntries = scene->index.GetEntries();

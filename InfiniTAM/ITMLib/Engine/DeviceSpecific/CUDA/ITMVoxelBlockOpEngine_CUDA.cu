@@ -10,11 +10,18 @@ using namespace ITMLib::Engine;
 template<class TVoxel>
 ITMVoxelBlockOpEngine_CUDA<TVoxel,ITMVoxelBlockHHash>::ITMVoxelBlockOpEngine_CUDA(void)
 {
-	ITMSafeCall(cudaMalloc((void**)&complexities, sizeof(float) * SDF_LOCAL_BLOCK_NUM));
+	ITMSafeCall(cudaMalloc((void**)&complexities, sizeof(float) * ITMHHashTable::noTotalEntries));
 	ITMSafeCall(cudaMalloc((void**)&blocklist, sizeof(int) * 8 * SDF_LOCAL_BLOCK_NUM));
 	ITMSafeCall(cudaMalloc((void**)&blocklist_size_device, sizeof(int)));
 	ITMSafeCall(cudaMalloc((void**)&noAllocatedVoxelEntries_device, sizeof(int)));
 	ITMSafeCall(cudaMalloc((void**)&noAllocatedExcessEntries_device, sizeof(int)*ITMHHashTable::noLevels));
+
+	{
+		dim3 blockSize(256);
+		dim3 gridSize((int)ceil((float)SDF_LOCAL_BLOCK_NUM / (float)blockSize.x));
+		float init = -1.0f;
+		memsetKernel_device<float> << <gridSize, blockSize >> >(complexities, init, ITMHHashTable::noTotalEntries);
+	}
 }
 
 template<class TVoxel>
@@ -108,12 +115,6 @@ template<class TVoxel>
 void ITMVoxelBlockOpEngine_CUDA<TVoxel,ITMVoxelBlockHHash>::ComputeComplexities(ITMScene<TVoxel,ITMVoxelBlockHHash> *scene, const ITMRenderState *renderState)
 {
 	const ITMRenderState_VH *renderState_vh = (const ITMRenderState_VH*)renderState;
-	{
-		dim3 blockSize(256);
-		dim3 gridSize((int)ceil((float)SDF_LOCAL_BLOCK_NUM / (float)blockSize.x));
-		float init = -1.0f;
-		memsetKernel_device<float> << <gridSize, blockSize >> >(complexities, init, SDF_LOCAL_BLOCK_NUM);
-	}
 
 	TVoxel *voxelBlocks = scene->localVBA.GetVoxelBlocks();
 	ITMHHashEntry *hashEntries = scene->index.GetEntries();
