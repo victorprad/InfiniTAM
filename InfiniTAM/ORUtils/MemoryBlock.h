@@ -249,9 +249,8 @@ namespace ORUtils
 
 			if (isAllocated_CUDA)
 			{
-				if (!isAllocated_CUDA) return;
 #ifndef COMPILE_WITHOUT_CUDA
-				ITMSafeCall(cudaMalloc((void**)&data_cuda, dataSize * sizeof(T)));
+				ITMSafeCall(cudaFree(data_cuda));
 #endif
 				isAllocated_CUDA = false;
 			}
