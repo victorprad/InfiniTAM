@@ -14,7 +14,7 @@ Engine/ITMDepthTracker.cpp
 Engine/ITMMainEngine.cpp
 Engine/ITMDenseMapper.cpp
 Engine/ITMRenTracker.cpp
-Engine/ITMTrackerFactory.cpp
+Engine/ITMIMUTracker.cpp
 Engine/ITMVisualisationEngine.cpp
 )
 
@@ -25,10 +25,11 @@ Engine/ITMLowLevelEngine.h
 Engine/ITMMainEngine.h
 Engine/ITMDenseMapper.h
 Engine/ITMRenTracker.h
+Engine/ITMIMUTracker.h
 Engine/ITMSceneReconstructionEngine.h
 Engine/ITMSwappingEngine.h
 Engine/ITMTracker.h
-Engine/ITMTrackerFactory.h
+Engine/ITMTrackerCollection.h
 Engine/ITMViewBuilder.h
 Engine/ITMVisualisationEngine.h
 )
@@ -116,10 +117,12 @@ Objects/ITMSceneParams.h
 Objects/ITMTemplatedHierarchyLevel.h
 Objects/ITMTrackingState.h
 Objects/ITMView.h
+Objects/ITMViewIMU.h
 Objects/ITMViewHierarchyLevel.h
 Objects/ITMRenderState.h
 Objects/ITMRenderState_VH.h
 Objects/ITMVoxelBlockHash.h
+Objects/ITMIMUMeasurement.h
 )
 
 ##

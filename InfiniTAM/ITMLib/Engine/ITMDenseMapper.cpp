@@ -40,7 +40,6 @@ ITMDenseMapper<TVoxel,TIndex>::ITMDenseMapper(const ITMLibSettings *settings, Ve
 		break;
 	}
 
-	//TODO FIX ME
 	this->renderState_live = visualisationEngine->CreateRenderState(scene, imgSize);
 	this->renderState_freeview = NULL;
 }

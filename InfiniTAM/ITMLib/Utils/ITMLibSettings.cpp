@@ -27,14 +27,12 @@ ITMLibSettings::ITMLibSettings(void)
 	deviceType = DEVICE_CPU;
 #endif
 #endif
-	
-	//deviceType = DEVICE_CPU;
 
 	/// enables or disables swapping. HERE BE DRAGONS: It should work, but requires more testing
 	useSwapping = false;
 
 	//trackerType = TRACKER_COLOR;
-	//trackerType = TRACKER_ICP;
+	trackerType = TRACKER_ICP;
 
 	/** Use ITMRenTracker to reduce the wiggling when the depth sensor has missing data
 	Using this option, the tracking will frist start ICP from higher hierarchy for
@@ -42,8 +40,7 @@ ITMLibSettings::ITMLibSettings(void)
 	The processing time on each frame is increased by around 50% (~5ms on a GTX Titan Black)**/
 
 	//trackerType = TRACKER_REN;
-
-	trackerType = TRACKER_IMU;
+	//trackerType = TRACKER_IMU;
 
 	if (trackerType == TRACKER_REN) noICPRunTillLevel = 1;
 	else noICPRunTillLevel = 0;
