@@ -282,29 +282,22 @@ void UIEngine::glutMouseMoveFunction(int x, int y)
 		Vector3f axis((float)-movement.y, (float)-movement.x, 0.0f);
 		float angle = scale_rotation * sqrt((float)(movement.x * movement.x + movement.y*movement.y));
 		Matrix3f rot = createRotation(axis, angle);
-		uiEngine->freeviewPose.R = rot * uiEngine->freeviewPose.R;
-		uiEngine->freeviewPose.T = rot * uiEngine->freeviewPose.T;
-		uiEngine->freeviewPose.SetParamsFromModelView();
-		uiEngine->freeviewPose.SetModelViewFromParams();
+		uiEngine->freeviewPose.SetRT(rot * uiEngine->freeviewPose.GetR(), rot * uiEngine->freeviewPose.GetT());
+		uiEngine->freeviewPose.Coerce();
 		uiEngine->needsRefresh = true;
 		break;
 	}
 	case 2:
 	{
 		// right button: translation in x and y direction
-		uiEngine->freeviewPose.T.x += scale_translation * movement.x;
-		uiEngine->freeviewPose.T.y += scale_translation * movement.y;
-		uiEngine->freeviewPose.SetParamsFromModelView();
-		uiEngine->freeviewPose.SetModelViewFromParams();
+		uiEngine->freeviewPose.SetT(uiEngine->freeviewPose.GetT() + scale_translation * Vector3f(movement.x, movement.y, 0.0f));
 		uiEngine->needsRefresh = true;
 		break;
 	}
 	case 3:
 	{
 		// middle button: translation along z axis
-		uiEngine->freeviewPose.T.z += scale_translation * movement.y;
-		uiEngine->freeviewPose.SetParamsFromModelView();
-		uiEngine->freeviewPose.SetModelViewFromParams();
+		uiEngine->freeviewPose.SetT(uiEngine->freeviewPose.GetT() + scale_translation * Vector3f(0.0f, 0.0f, movement.y));
 		uiEngine->needsRefresh = true;
 		break;
 	}
@@ -318,11 +311,7 @@ void UIEngine::glutMouseWheelFunction(int button, int dir, int x, int y)
 
 	static const float scale_translation = 0.05f;
 
-	if (dir > 0) uiEngine->freeviewPose.T.z -= scale_translation;
-	else uiEngine->freeviewPose.T.z += scale_translation;
-
-	uiEngine->freeviewPose.SetParamsFromModelView();
-	uiEngine->freeviewPose.SetModelViewFromParams();
+	uiEngine->freeviewPose.SetT(uiEngine->freeviewPose.GetT() + scale_translation * Vector3f(0.0f, 0.0f, (dir > 0)?-1.0f:1.0f));
 	uiEngine->needsRefresh = true;
 }
 

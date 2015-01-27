@@ -28,7 +28,7 @@ void ITMColorTracker::TrackCamera(ITMTrackingState *trackingState, const ITMView
 
 	this->PrepareForEvaluation(view);
 
-	ITMPose currentPara(view->calib->trafo_rgb_to_depth.calib_inv * trackingState->pose_d->M);
+	ITMPose currentPara(view->calib->trafo_rgb_to_depth.calib_inv * trackingState->pose_d->GetM());
 	for (int levelId = viewHierarchy->noLevels - 1; levelId >= 0; levelId--)
 	{
 		this->levelId = levelId;
@@ -39,7 +39,9 @@ void ITMColorTracker::TrackCamera(ITMTrackingState *trackingState, const ITMView
 
 	// these following will coerce the result back into the chosen
 	// parameterization for rotations
-	trackingState->pose_d->SetFrom(view->calib->trafo_rgb_to_depth.calib * currentPara.M);
+	trackingState->pose_d->SetM(view->calib->trafo_rgb_to_depth.calib * currentPara.GetM());
+
+	trackingState->pose_d->Coerce();
 
 	//printf(">> %f %f %f %f %f %f\n", scene->pose->params.each.rx, scene->pose->params.each.ry, scene->pose->params.each.rz,
 	//	scene->pose->params.each.tx, scene->pose->params.each.ty, scene->pose->params.each.tz);
@@ -80,7 +82,7 @@ void ITMColorTracker::applyDelta(const ITMPose & para_old, const float *delta, I
 		paramVector[0] = (float)(delta[0]); paramVector[1] = (float)(delta[1]); paramVector[2] = (float)(delta[2]);
 		paramVector[3] = (float)(delta[3]); paramVector[4] = (float)(delta[4]); paramVector[5] = (float)(delta[5]);
 	}
-	para_new.SetFrom(paramVector); para_new.SetModelViewFromParams();
+	para_new.SetFrom(paramVector);
 	para_new.MultiplyWith(&(para_old));
 }
 

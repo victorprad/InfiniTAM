@@ -14,7 +14,7 @@ namespace ITMLib
 		*/
 		class ITMPose
 		{
-		public:
+		private:
 			/** This is the minimal representation of the pose with
 			    six parameters. The three rotation parameters are
 			    the Lie algebra representation of SO3.
@@ -26,42 +26,53 @@ namespace ITMLib
 					float tx, ty, tz;
 					float rx, ry, rz;
 				}each;
-			}params;
+			} params;
 
 			/** The pose as a 4x4 transformation matrix ("modelview
 			    matrix).
 			*/
 			Matrix4f M;
-			Matrix3f R; Vector3f T;
-
-			/** The inverse of the pose as a 4x4 transformation
-			    matrix.
-			*/
-			Matrix4f invM;
-			Matrix3f invR; Vector3f invT;
-
-			void SetFrom(float tx, float ty, float tz, float rx, float ry, float rz);
-			void SetFrom(const float pose[6]);
-			void SetFrom(const ITMPose *pose);
-			void SetFrom(const Matrix4f & M);
-
-			/** This will multiply a pose @p pose on the right, i.e.
-			    this = this * pose.
-			*/
-			void MultiplyWith(const ITMPose *pose);
 
 			/** This will update the minimal parameterisation from
 			    the current modelview matrix.
 			*/
 			void SetParamsFromModelView();
 
-			/** This will update the inverse modelview matrix */
-			void SetRTInvM_FromM();
-
 			/** This will update the "modelview matrix" M from the
 			    minimal representation.
 			*/
 			void SetModelViewFromParams();
+		public:
+
+			void SetFrom(float tx, float ty, float tz, float rx, float ry, float rz);
+			void SetFrom(const float pose[6]);
+			void SetFrom(const ITMPose *pose);
+
+			/** This will multiply a pose @p pose on the right, i.e.
+			    this = this * pose.
+			*/
+			void MultiplyWith(const ITMPose *pose);
+
+			const Matrix4f & GetM(void) const
+			{ return M; }
+
+			Matrix3f GetR(void) const;
+			Vector3f GetT(void) const;
+
+			void SetM(const Matrix4f & M);
+
+			void SetR(const Matrix3f & R);
+			void SetT(const Vector3f & t);
+			void SetRT(const Matrix3f & R, const Vector3f & t);
+
+			Matrix4f GetInvM(void) const;
+			void SetInvM(const Matrix4f & invM);
+
+			/** This will enforce the orthonormality constraints on
+			    the rotation matrix. It's recommended to call this
+			    function after manipulating the matrix M.
+			*/
+			void Coerce(void);
 
 			ITMPose(const Matrix4f & src);
 			ITMPose(float tx, float ty, float tz, float rx, float ry, float rz);
