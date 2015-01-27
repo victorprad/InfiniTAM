@@ -80,13 +80,11 @@ void ITMVisualisationEngine_CPU<TVoxel,TIndex>::CreateExpectedDepths(const ITMSc
 	Vector2i imgSize = renderState->renderingRangeImage->noDims;
 	Vector2f *minmaxData = renderState->renderingRangeImage->GetData(MEMORYDEVICE_CPU);
 
-	for (int y = 0; y < imgSize.y; ++y) {
-		for (int x = 0; x < imgSize.x; ++x) {
-			//TODO : this could be improved a bit...
-			Vector2f & pixel = minmaxData[x + y*imgSize.x];
-			pixel.x = 0.2f;
-			pixel.y = 3.0f;
-		}
+	for (int locId = 0; locId < imgSize.x*imgSize.y; ++locId) {
+		//TODO : this could be improved a bit...
+		Vector2f & pixel = minmaxData[locId];
+		pixel.x = 0.2f;
+		pixel.y = 3.0f;
 	}
 }
 
@@ -97,12 +95,10 @@ void ITMVisualisationEngine_CPU<TVoxel,ITMVoxelBlockHash>::CreateExpectedDepths(
 	Vector2i imgSize = renderState->renderingRangeImage->noDims;
 	Vector2f *minmaxData = renderState->renderingRangeImage->GetData(MEMORYDEVICE_CPU);
 
-	for (int y = 0; y < imgSize.y; ++y) {
-		for (int x = 0; x < imgSize.x; ++x) {
-			Vector2f & pixel = minmaxData[x + y*imgSize.x];
-			pixel.x = FAR_AWAY;
-			pixel.y = VERY_CLOSE;
-		}
+	for (int locId = 0; locId < imgSize.x*imgSize.y; ++locId) {
+		Vector2f & pixel = minmaxData[locId];
+		pixel.x = FAR_AWAY;
+		pixel.y = VERY_CLOSE;
 	}
 
 	float voxelSize = scene->sceneParams->voxelSize;
@@ -169,9 +165,10 @@ static void GenericRaycast(const ITMScene<TVoxel,TIndex> *scene, const Vector2i&
 #ifdef WITH_OPENMP
 	#pragma omp parallel for
 #endif
-	for (int y = 0; y < imgSize.y; y++) for (int x = 0; x < imgSize.x; x++)
+	for (int locId = 0; locId < imgSize.x*imgSize.y; ++locId)
 	{
-		int locId = x + y * imgSize.x;
+		int y = locId/imgSize.x;
+		int x = locId - y*imgSize.x;
 		int locId2 = (int)floor((float)x / minmaximg_subsample) + (int)floor((float)y / minmaximg_subsample) * imgSize.x;
 
 		castRay<TVoxel, TIndex>(

@@ -52,6 +52,9 @@ void ITMSceneReconstructionEngine_CPU<TVoxel, ITMVoxelBlockHash>::IntegrateIntoS
 
 	bool stopIntegratingAtMaxW = scene->sceneParams->stopIntegratingAtMaxW;
 
+#ifdef WITH_OPENMP
+	#pragma omp parallel for
+#endif
 	for (int entryId = 0; entryId < noVisibleEntries; entryId++)
 	{
 		Vector3i globalPos;
@@ -134,8 +137,13 @@ void ITMSceneReconstructionEngine_CPU<TVoxel, ITMVoxelBlockHash>::AllocateSceneF
 		entriesVisibleType[visibleEntryIDs[i]] = 3; // visible at previous frame and unstreamed
 
 	//build hashVisibility
-	for (int y = 0; y < depthImgSize.y; y++) for (int x = 0; x < depthImgSize.x; x++)
+#ifdef WITH_OPENMP
+	#pragma omp parallel for
+#endif
+	for (int locId = 0; locId < depthImgSize.x*depthImgSize.y; locId++)
 	{
+		int y = locId / depthImgSize.x;
+		int x = locId - y * depthImgSize.x;
 		buildHashAllocAndVisibleTypePP(entriesAllocType, entriesVisibleType, x, y, blockCoords, depth, invM_d,
 			invProjParams_d, mu, depthImgSize, oneOverVoxelSize, hashTable, scene->sceneParams->viewFrustum_min,
 			scene->sceneParams->viewFrustum_max);
@@ -156,10 +164,10 @@ void ITMSceneReconstructionEngine_CPU<TVoxel, ITMVoxelBlockHash>::AllocateSceneF
 			{
 				Vector4s pt_block_all = blockCoords[targetIdx];
 
-                ITMHashEntry hashEntry;
-                hashEntry.pos.x = pt_block_all.x; hashEntry.pos.y = pt_block_all.y; hashEntry.pos.z = pt_block_all.z;
-                hashEntry.ptr = voxelAllocationList[vbaIdx];
-                hashEntry.offset = 0;
+				ITMHashEntry hashEntry;
+				hashEntry.pos.x = pt_block_all.x; hashEntry.pos.y = pt_block_all.y; hashEntry.pos.z = pt_block_all.z;
+				hashEntry.ptr = voxelAllocationList[vbaIdx];
+				hashEntry.offset = 0;
 
 				hashTable[targetIdx] = hashEntry;
 			}
@@ -173,10 +181,10 @@ void ITMSceneReconstructionEngine_CPU<TVoxel, ITMVoxelBlockHash>::AllocateSceneF
 			{
 				Vector4s pt_block_all = blockCoords[targetIdx];
 
-                ITMHashEntry hashEntry;
-                hashEntry.pos.x = pt_block_all.x; hashEntry.pos.y = pt_block_all.y; hashEntry.pos.z = pt_block_all.z;
-                hashEntry.ptr = voxelAllocationList[vbaIdx];
-                hashEntry.offset = 0;
+				ITMHashEntry hashEntry;
+				hashEntry.pos.x = pt_block_all.x; hashEntry.pos.y = pt_block_all.y; hashEntry.pos.z = pt_block_all.z;
+				hashEntry.ptr = voxelAllocationList[vbaIdx];
+				hashEntry.offset = 0;
 
 				int exlOffset = excessAllocationList[exlIdx];
 
@@ -230,7 +238,7 @@ void ITMSceneReconstructionEngine_CPU<TVoxel, ITMVoxelBlockHash>::AllocateSceneF
 		}
 	}
 
-	//reallocate deletes ones from previous swap operation
+	//reallocate deleted ones from previous swap operation
 	if (useSwapping)
 	{
 		for (int targetIdx = 0; targetIdx < noTotalEntries; targetIdx++)
@@ -293,11 +301,16 @@ void ITMSceneReconstructionEngine_CPU<TVoxel, ITMPlainVoxelArray>::IntegrateInto
 
 	bool stopIntegratingAtMaxW = scene->sceneParams->stopIntegratingAtMaxW;
 
-	for (int z = 0; z < scene->index.getVolumeSize().z; z++) for (int y = 0; y < scene->index.getVolumeSize().y; y++) for (int x = 0; x < scene->index.getVolumeSize().x; x++)
+#ifdef WITH_OPENMP
+	#pragma omp parallel for
+#endif
+	for (int locId = 0; locId < scene->index.getVolumeSize().x*scene->index.getVolumeSize().y*scene->index.getVolumeSize().z; ++locId)
 	{
-		Vector4f pt_model; int locId;
-
-		locId = x + y * scene->index.getVolumeSize().x + z * scene->index.getVolumeSize().x * scene->index.getVolumeSize().y;
+		int z = locId / (scene->index.getVolumeSize().x*scene->index.getVolumeSize().y);
+		int tmp = locId - z * scene->index.getVolumeSize().x*scene->index.getVolumeSize().y;
+		int y = tmp / scene->index.getVolumeSize().x;
+		int x = tmp - y * scene->index.getVolumeSize().x;
+		Vector4f pt_model;
 
 		if (stopIntegratingAtMaxW) if (voxelArray[locId].w_depth == maxW) continue;
 
