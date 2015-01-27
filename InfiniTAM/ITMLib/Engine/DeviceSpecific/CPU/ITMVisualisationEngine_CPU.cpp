@@ -42,7 +42,7 @@ void ITMVisualisationEngine_CPU<TVoxel,ITMVoxelBlockHash>::FindVisibleBlocks(con
 	float voxelSize = scene->sceneParams->voxelSize;
 	Vector2i imgSize = renderState->renderingRangeImage->noDims;
 
-	Matrix4f M = pose->M;
+	Matrix4f M = pose->GetM();
 	Vector4f projParams = intrinsics->projectionParamsSimple.all;
 
 	ITMRenderState_VH *renderState_vh = (ITMRenderState_VH*)renderState;
@@ -123,7 +123,7 @@ void ITMVisualisationEngine_CPU<TVoxel,ITMVoxelBlockHash>::CreateExpectedDepths(
 		Vector2f zRange;
 		bool validProjection = false;
 		if (blockData.ptr>=0) {
-			validProjection = ProjectSingleBlock(blockData.pos, pose->M, intrinsics->projectionParamsSimple.all, imgSize, voxelSize, upperLeft, lowerRight, zRange);
+			validProjection = ProjectSingleBlock(blockData.pos, pose->GetM(), intrinsics->projectionParamsSimple.all, imgSize, voxelSize, upperLeft, lowerRight, zRange);
 		}
 		if (!validProjection) continue;
 
@@ -193,7 +193,7 @@ static void RenderImage_common(const ITMScene<TVoxel,TIndex> *scene, const ITMPo
 	const ITMRenderState *renderState, ITMUChar4Image *outputImage, bool useColour)
 {
 	Vector2i imgSize = outputImage->noDims;
-	Matrix4f invM = pose->invM;
+	Matrix4f invM = pose->GetInvM();
 	GenericRaycast(scene, imgSize, invM, intrinsics->projectionParamsSimple.all, renderState);
 
 	Vector3f lightSource = -Vector3f(invM.getColumn(2));
@@ -231,7 +231,7 @@ static void CreatePointCloud_common(const ITMScene<TVoxel,TIndex> *scene, const 
 	ITMRenderState *renderState, bool skipPoints)
 {
 	Vector2i imgSize = view->depth->noDims;
-	Matrix4f invM = trackingState->pose_d->invM * view->calib->trafo_rgb_to_depth.calib;
+	Matrix4f invM = trackingState->pose_d->GetInvM() * view->calib->trafo_rgb_to_depth.calib;
 	GenericRaycast(scene, imgSize, invM, view->calib->intrinsics_rgb.projectionParamsSimple.all, renderState);
 
 	trackingState->pointCloud->noTotalPoints = RenderPointCloud<TVoxel, TIndex>(
@@ -252,7 +252,7 @@ template<class TVoxel, class TIndex>
 static void CreateICPMaps_common(const ITMScene<TVoxel,TIndex> *scene, const ITMView *view, ITMTrackingState *trackingState, ITMRenderState *renderState)
 {
 	Vector2i imgSize = view->depth->noDims;
-	Matrix4f invM = trackingState->pose_d->invM;
+	Matrix4f invM = trackingState->pose_d->GetInvM();
 	GenericRaycast(scene, imgSize, invM, view->calib->intrinsics_d.projectionParamsSimple.all, renderState);
 
 	Vector3f lightSource = -Vector3f(invM.getColumn(2));
@@ -293,14 +293,14 @@ template<class TVoxel, class TIndex>
 void ITMVisualisationEngine_CPU<TVoxel,TIndex>::FindSurface(const ITMScene<TVoxel,TIndex> *scene, const ITMPose *pose, const ITMIntrinsics *intrinsics,
 	const ITMRenderState *renderState)
 {
-	GenericRaycast(scene, renderState->raycastResult->noDims, pose->invM, intrinsics->projectionParamsSimple.all, renderState);
+	GenericRaycast(scene, renderState->raycastResult->noDims, pose->GetInvM(), intrinsics->projectionParamsSimple.all, renderState);
 }
 
 template<class TVoxel>
 void ITMVisualisationEngine_CPU<TVoxel,ITMVoxelBlockHash>::FindSurface(const ITMScene<TVoxel,ITMVoxelBlockHash> *scene, const ITMPose *pose,
 	const ITMIntrinsics *intrinsics, const ITMRenderState *renderState)
 {
-	GenericRaycast(scene, renderState->raycastResult->noDims, pose->invM, intrinsics->projectionParamsSimple.all, renderState);
+	GenericRaycast(scene, renderState->raycastResult->noDims, pose->GetInvM(), intrinsics->projectionParamsSimple.all, renderState);
 }
 
 template<class TVoxel, class TIndex>

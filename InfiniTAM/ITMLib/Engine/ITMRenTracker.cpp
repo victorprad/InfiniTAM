@@ -171,7 +171,7 @@ void ITMRenTracker<TVoxel,TIndex>::TrackCamera(ITMTrackingState *trackingState, 
 	//// Carl Gaussian Newton
 
 	float step[6]; Matrix4f invM, tmpM;
-	invM = trackingState->pose_d->invM;
+	invM = trackingState->pose_d->GetInvM();
 
 	for (int mlevelId = viewHierarchy->noLevels - 1; mlevelId >= 0; mlevelId--)
 	{
@@ -196,7 +196,7 @@ void ITMRenTracker<TVoxel,TIndex>::TrackCamera(ITMTrackingState *trackingState, 
 		}
 	}
 
-	invM.inv(tmpM); trackingState->pose_d->SetFrom(tmpM);
+	trackingState->pose_d->SetInvM(invM);
 }
 
 template<class TVoxel, class TIndex>
@@ -206,7 +206,7 @@ void ITMRenTracker<TVoxel,TIndex>::EvaluationPoint::computeGradients(bool hessia
 	cacheNabla = new float[numPara];
 	cacheHessian = new float[numPara*numPara];
 
-	mParent->G_oneLevel(cacheNabla, cacheHessian, mPara->invM);
+	mParent->G_oneLevel(cacheNabla, cacheHessian, mPara->GetInvM());
 }
 
 template<class TVoxel, class TIndex>
@@ -214,7 +214,7 @@ ITMRenTracker<TVoxel,TIndex>::EvaluationPoint::EvaluationPoint(ITMPose *pos, con
 {
 	this->mPara = pos; this->mParent = f_parent;
 	ITMRenTracker *parent = (ITMRenTracker *)mParent;
-	parent->F_oneLevel(&cacheF, mPara->invM);
+	parent->F_oneLevel(&cacheF, mPara->GetInvM());
 
 	cacheHessian = NULL; cacheNabla = NULL;
 }
@@ -233,7 +233,8 @@ void ITMRenTracker<TVoxel,TIndex>::applyDelta(const ITMPose & para_old, const fl
 	deltaM.m20 = R[2];		deltaM.m21 = R[5];		deltaM.m22 = R[8];		deltaM.m23 = 0.0f;
 	deltaM.m30 = delta[0];	deltaM.m31 = delta[1];	deltaM.m32 = delta[2];	deltaM.m33 = 1.0f;
 
-	para_new.invM = deltaM * para_old.invM;
+	para_new.SetInvM(deltaM * para_old.GetInvM());
+	para_new.Coerce();
 }
 
 // LM optimisation -- same as ITMColorTracker

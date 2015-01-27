@@ -153,7 +153,7 @@ namespace ORUtils {
 		}
 
 		// The inverse matrix for float/double type
-		_CPU_AND_GPU_CODE_ inline bool inv(Matrix4 &out) {			
+		_CPU_AND_GPU_CODE_ inline bool inv(Matrix4 &out) const {
 			T tmp[12], src[16], det;
 			T *dst = out.m;
 			for (int i = 0; i < 4; i++) {
@@ -323,12 +323,12 @@ namespace ORUtils {
 		}
 
 		// Matrix determinant
-		_CPU_AND_GPU_CODE_ inline T det(){
+		_CPU_AND_GPU_CODE_ inline T det() const {
 			return (this->m11*this->m22 - this->m12*this->m21)*this->m00 + (this->m12*this->m20 - this->m10*this->m22)*this->m01 + (this->m10*this->m21 - this->m11*this->m20)*this->m02;
 		}
 
 		// The inverse matrix for float/double type
-		_CPU_AND_GPU_CODE_ inline bool inv(Matrix3 &out) {
+		_CPU_AND_GPU_CODE_ inline bool inv(Matrix3 &out) const {
 			T determinant = det();
 			if (determinant == 0) {
 				out.setZeros();
