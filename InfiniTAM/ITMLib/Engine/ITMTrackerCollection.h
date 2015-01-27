@@ -46,29 +46,33 @@ namespace ITMLib
 					{
 					case ITMLibSettings::TRACKER_ICP:
 						noTrackers = 1;
-						trackers = new ITMTracker*[noTrackers];
-						trackers[0] = new ITMDepthTracker_CPU(imgSize_d, settings->noHierarchyLevels, settings->noRotationOnlyLevels, settings->noICPRunTillLevel,
-							settings->depthTrackerICPThreshold, lowLevelEngine);
+						trackers = new ITMTracker*[noTrackers] {
+							new ITMDepthTracker_CPU(imgSize_d, settings->noHierarchyLevels, settings->noRotationOnlyLevels, settings->noICPRunTillLevel,
+								settings->depthTrackerICPThreshold, lowLevelEngine)
+						};
 						break;
 					case ITMLibSettings::TRACKER_IMU:
 						noTrackers = 2;
-						trackers = new ITMTracker*[noTrackers];
-						trackers[0] = new ITMIMUTracker(lowLevelEngine);
-						trackers[1] = new ITMDepthTracker_CPU(imgSize_d, settings->noHierarchyLevels, settings->noRotationOnlyLevels, settings->noICPRunTillLevel,
-							settings->depthTrackerICPThreshold, lowLevelEngine);
+						trackers = new ITMTracker*[noTrackers] {
+							new ITMIMUTracker(lowLevelEngine),
+							new ITMDepthTracker_CPU(imgSize_d, settings->noHierarchyLevels, settings->noRotationOnlyLevels, settings->noICPRunTillLevel,
+								settings->depthTrackerICPThreshold, lowLevelEngine)
+						};
 						break;
 					case ITMLibSettings::TRACKER_COLOR:
 						noTrackers = 1;
-						trackers = new ITMTracker*[noTrackers];
-						trackers[0] = new ITMColorTracker_CPU(imgSize_rgb, settings->noHierarchyLevels, settings->noRotationOnlyLevels, lowLevelEngine);
+						trackers = new ITMTracker*[noTrackers] {
+							new ITMColorTracker_CPU(imgSize_rgb, settings->noHierarchyLevels, settings->noRotationOnlyLevels, lowLevelEngine)
+						};
 						skipPoints = settings->skipPoints;
 						break;
 					case ITMLibSettings::TRACKER_REN:
 						noTrackers = 2;
-						trackers = new ITMTracker*[noTrackers];
-						trackers[0] = new ITMDepthTracker_CPU(imgSize_d, settings->noHierarchyLevels, settings->noRotationOnlyLevels, settings->noICPRunTillLevel,
-							settings->depthTrackerICPThreshold, lowLevelEngine);
-						trackers[1] = new ITMRenTracker_CPU<TVoxel, TIndex>(imgSize_d, settings->noICPRunTillLevel, lowLevelEngine, denseMapper->getScene());
+						trackers = new ITMTracker*[noTrackers] {
+							new ITMDepthTracker_CPU(imgSize_d, settings->noHierarchyLevels, settings->noRotationOnlyLevels, settings->noICPRunTillLevel,
+								settings->depthTrackerICPThreshold, lowLevelEngine),
+							new ITMRenTracker_CPU<TVoxel, TIndex>(imgSize_d, settings->noICPRunTillLevel, lowLevelEngine, denseMapper->getScene())
+						};
 						break;
 					default: break;
 					}
@@ -80,29 +84,33 @@ namespace ITMLib
 					{
 					case ITMLibSettings::TRACKER_ICP:
 						noTrackers = 1;
-						trackers = new ITMTracker*[noTrackers];
-						trackers[0] = new ITMDepthTracker_CUDA(imgSize_d, settings->noHierarchyLevels, settings->noRotationOnlyLevels, settings->noICPRunTillLevel,
-							settings->depthTrackerICPThreshold, lowLevelEngine);
+						trackers = new ITMTracker*[noTrackers] {
+							new ITMDepthTracker_CUDA(imgSize_d, settings->noHierarchyLevels, settings->noRotationOnlyLevels, settings->noICPRunTillLevel,
+								settings->depthTrackerICPThreshold, lowLevelEngine)
+						};
 						break;
 					case ITMLibSettings::TRACKER_IMU:
 						noTrackers = 2;
-						trackers = new ITMTracker*[noTrackers];
-						trackers[0] = new ITMIMUTracker(lowLevelEngine);
-						trackers[1] = new ITMDepthTracker_CUDA(imgSize_d, settings->noHierarchyLevels, settings->noRotationOnlyLevels, settings->noICPRunTillLevel,
-							settings->depthTrackerICPThreshold, lowLevelEngine);
+						trackers = new ITMTracker*[noTrackers] {
+							new ITMIMUTracker(lowLevelEngine),
+							new ITMDepthTracker_CUDA(imgSize_d, settings->noHierarchyLevels, settings->noRotationOnlyLevels, settings->noICPRunTillLevel,
+								settings->depthTrackerICPThreshold, lowLevelEngine)
+						};
 						break;
 					case ITMLibSettings::TRACKER_COLOR:
 						noTrackers = 1;
-						trackers = new ITMTracker*[noTrackers];
-						trackers[0] = new ITMColorTracker_CUDA(imgSize_rgb, settings->noHierarchyLevels, settings->noRotationOnlyLevels, lowLevelEngine);
+						trackers = new ITMTracker*[noTrackers] {
+							new ITMColorTracker_CUDA(imgSize_rgb, settings->noHierarchyLevels, settings->noRotationOnlyLevels, lowLevelEngine)
+						};
 						skipPoints = settings->skipPoints;
 						break;
 					case ITMLibSettings::TRACKER_REN:
 						noTrackers = 2;
-						trackers = new ITMTracker*[noTrackers];
-						trackers[0] = new ITMDepthTracker_CUDA(imgSize_d, settings->noHierarchyLevels, settings->noRotationOnlyLevels, settings->noICPRunTillLevel,
-							settings->depthTrackerICPThreshold, lowLevelEngine);
-						trackers[1] = new ITMRenTracker_CUDA<TVoxel, TIndex>(imgSize_d, settings->noICPRunTillLevel, lowLevelEngine, denseMapper->getScene());
+						trackers = new ITMTracker*[noTrackers] {
+							new ITMDepthTracker_CUDA(imgSize_d, settings->noHierarchyLevels, settings->noRotationOnlyLevels, settings->noICPRunTillLevel,
+								settings->depthTrackerICPThreshold, lowLevelEngine),
+							new ITMRenTracker_CUDA<TVoxel, TIndex>(imgSize_d, settings->noICPRunTillLevel, lowLevelEngine, denseMapper->getScene())
+						};
 						break;
 					default: break;
 					}
@@ -116,29 +124,33 @@ namespace ITMLib
 					{
 					case ITMLibSettings::TRACKER_ICP:
 						noTrackers = 1;
-						trackers = new ITMTracker*[noTrackers];
-						trackers[0] = new ITMDepthTracker_Metal(imgSize_d, settings->noHierarchyLevels, settings->noRotationOnlyLevels, settings->noICPRunTillLevel,
-							settings->depthTrackerICPThreshold, lowLevelEngine);
+						trackers = new ITMTracker*[noTrackers] {
+							new ITMDepthTracker_Metal(imgSize_d, settings->noHierarchyLevels, settings->noRotationOnlyLevels, settings->noICPRunTillLevel,
+								settings->depthTrackerICPThreshold, lowLevelEngine)
+						};
 						break;
 					case ITMLibSettings::TRACKER_IMU:
 						noTrackers = 2;
-						trackers = new ITMTracker*[noTrackers];
-						trackers[0] = new ITMIMUTracker(lowLevelEngine);
-						trackers[1] = new ITMDepthTracker_Metal(imgSize_d, settings->noHierarchyLevels, settings->noRotationOnlyLevels, settings->noICPRunTillLevel,
-							settings->depthTrackerICPThreshold, lowLevelEngine);
+						trackers = new ITMTracker*[noTrackers] {
+							new ITMIMUTracker(lowLevelEngine),
+							new ITMDepthTracker_Metal(imgSize_d, settings->noHierarchyLevels, settings->noRotationOnlyLevels, settings->noICPRunTillLevel,
+								settings->depthTrackerICPThreshold, lowLevelEngine)
+						};
 						break;
 					case ITMLibSettings::TRACKER_COLOR:
 						noTrackers = 1;
-						trackers = new ITMTracker*[noTrackers];
-						trackers[0] = new ITMColorTracker_CPU(imgSize_rgb, settings->noHierarchyLevels, settings->noRotationOnlyLevels, lowLevelEngine);
+						trackers = new ITMTracker*[noTrackers] {
+							new ITMColorTracker_CPU(imgSize_rgb, settings->noHierarchyLevels, settings->noRotationOnlyLevels, lowLevelEngine)
+						};
 						skipPoints = settings->skipPoints;
 						break;
 					case ITMLibSettings::TRACKER_REN:
 						noTrackers = 2;
-						trackers = new ITMTracker*[noTrackers];
-						trackers[0] = new ITMDepthTracker_CUDA(imgSize_d, settings->noHierarchyLevels, settings->noRotationOnlyLevels, settings->noICPRunTillLevel,
-							settings->depthTrackerICPThreshold, lowLevelEngine);
-						trackers[1] = new ITMRenTracker_CPU<TVoxel, TIndex>(imgSize_d, settings.noICPRunTillLevel, lowLevelEngine, denseMapper->getScene());
+						trackers = new ITMTracker*[noTrackers] {
+							new ITMDepthTracker_CPU(imgSize_d, settings->noHierarchyLevels, settings->noRotationOnlyLevels, settings->noICPRunTillLevel,
+								settings->depthTrackerICPThreshold, lowLevelEngine),
+							new ITMRenTracker_CPU<TVoxel, TIndex>(imgSize_d, settings->noICPRunTillLevel, lowLevelEngine, denseMapper->getScene())
+						};
 						break;
 					default: break;
 					}
@@ -153,7 +165,7 @@ namespace ITMLib
 				for (int i = 0; i < noTrackers; i++)
 					delete trackers[i];
 
-				delete[] trackers;
+				delete trackers;
 			}
 
 			ITMTrackingState *BuildTrackingState()

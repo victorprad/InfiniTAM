@@ -25,7 +25,7 @@ namespace ITMLib
 		public:
 			void TrackCamera(ITMTrackingState *trackingState, const ITMView *view);
 
-			ITMIMUTracker(ITMLowLevelEngine *lowLevelEngine);
+			explicit ITMIMUTracker(ITMLowLevelEngine *lowLevelEngine);
 			virtual ~ITMIMUTracker(void);
 		};
 	}
