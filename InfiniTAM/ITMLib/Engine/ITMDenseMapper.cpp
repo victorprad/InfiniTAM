@@ -1,7 +1,6 @@
 // Copyright 2014 Isis Innovation Limited and the authors of InfiniTAM
 
 #include "ITMDenseMapper.h"
-#include "ITMTrackerFactory.h"
 
 #include "../Objects/ITMRenderState_VH.h"
 
@@ -10,10 +9,8 @@
 using namespace ITMLib::Engine;
 
 template<class TVoxel, class TIndex>
-ITMDenseMapper<TVoxel,TIndex>::ITMDenseMapper(const ITMLibSettings *settings, Vector2i imgSize_rgb, Vector2i imgSize_d)
+ITMDenseMapper<TVoxel,TIndex>::ITMDenseMapper(const ITMLibSettings *settings, Vector2i imgSize)
 {
-	if ((imgSize_d.x == -1) || (imgSize_d.y == -1)) imgSize_d = imgSize_rgb;
-
 	this->settings = settings;
 
 	MemoryDeviceType memoryType = settings->deviceType == ITMLibSettings::DEVICE_CUDA ? MEMORYDEVICE_CUDA : MEMORYDEVICE_CPU;
@@ -43,7 +40,8 @@ ITMDenseMapper<TVoxel,TIndex>::ITMDenseMapper(const ITMLibSettings *settings, Ve
 		break;
 	}
 
-	this->renderState_live = visualisationEngine->CreateRenderState(scene, ITMTrackerFactory::GetTrackedImageSize(*settings, imgSize_rgb, imgSize_d));
+	//TODO FIX ME
+	this->renderState_live = visualisationEngine->CreateRenderState(scene, imgSize);
 	this->renderState_freeview = NULL;
 }
 

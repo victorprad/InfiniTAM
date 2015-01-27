@@ -28,12 +28,6 @@
     <Filter Include="ITMLib\Objects">
       <UniqueIdentifier>{95e47f30-61d1-4489-bada-6f08739de6a5}</UniqueIdentifier>
     </Filter>
-    <Filter Include="ITMLib\Objects\Header Files">
-      <UniqueIdentifier>{199e50d6-21b1-46b5-be6b-6e006daa27c5}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ITMLib\Objects\Source Files">
-      <UniqueIdentifier>{606de3dd-ae2c-467a-80f5-7422b5e4f6c4}</UniqueIdentifier>
-    </Filter>
     <Filter Include="ITMLib\Utils">
       <UniqueIdentifier>{18ccd70d-1127-4103-9624-6b7cd10b8f4e}</UniqueIdentifier>
     </Filter>
@@ -61,6 +55,18 @@
     <Filter Include="ORUtils">
       <UniqueIdentifier>{6f3899ea-e71c-4ae8-a73c-79035b001e5c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ITMLib\Objects\Views">
+      <UniqueIdentifier>{e4f41d8a-7752-4cc8-8049-6d535c90a5b1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ITMLib\Objects\Calibration">
+      <UniqueIdentifier>{772798a5-4ba4-4789-840f-9c482439838a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ITMLib\Objects\VoxelHashing">
+      <UniqueIdentifier>{88256208-5f8b-47de-8978-2aaae8ba1eea}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ITMLib\Objects\PlainVoxelArray">
+      <UniqueIdentifier>{85026f07-5c4c-4518-91e8-73a350f87441}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Utils\FileUtils.cpp">
@@ -70,9 +76,6 @@
       <Filter>Engine\Source Files</Filter>
     </ClCompile>
     <ClCompile Include="InfiniTAM.cpp" />
-    <ClCompile Include="ITMLib\Objects\ITMPose.cpp">
-      <Filter>ITMLib\Objects\Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="ITMLib\Utils\ITMCalibIO.cpp">
       <Filter>ITMLib\Utils\Source Files</Filter>
     </ClCompile>
@@ -124,14 +127,20 @@
     <ClCompile Include="ITMLib\Engine\ITMRenTracker.cpp">
       <Filter>ITMLib\Engine\Trackers</Filter>
     </ClCompile>
-    <ClCompile Include="ITMLib\Engine\ITMTrackerFactory.cpp">
-      <Filter>ITMLib\Engine</Filter>
-    </ClCompile>
     <ClCompile Include="ITMLib\Engine\ITMDenseMapper.cpp">
       <Filter>ITMLib\Engine</Filter>
     </ClCompile>
     <ClCompile Include="ITMLib\Engine\DeviceSpecific\CPU\ITMViewBuilder_CPU.cpp">
       <Filter>ITMLib\Engine\DeviceSpecific\CPU</Filter>
+    </ClCompile>
+    <ClCompile Include="ITMLib\Engine\ITMIMUTracker.cpp">
+      <Filter>ITMLib\Engine\Trackers</Filter>
+    </ClCompile>
+    <ClCompile Include="ITMLib\Objects\ITMPose.cpp">
+      <Filter>ITMLib\Objects</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\IMUSourceEngine.cpp">
+      <Filter>Engine\Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -143,42 +152,6 @@
     </ClInclude>
     <ClInclude Include="ITMLib\ITMLib.h">
       <Filter>ITMLib</Filter>
-    </ClInclude>
-    <ClInclude Include="ITMLib\Objects\ITMDisparityCalib.h">
-      <Filter>ITMLib\Objects\Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ITMLib\Objects\ITMExtrinsics.h">
-      <Filter>ITMLib\Objects\Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ITMLib\Objects\ITMHashTable.h">
-      <Filter>ITMLib\Objects\Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ITMLib\Objects\ITMIntrinsics.h">
-      <Filter>ITMLib\Objects\Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ITMLib\Objects\ITMPointCloud.h">
-      <Filter>ITMLib\Objects\Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ITMLib\Objects\ITMPose.h">
-      <Filter>ITMLib\Objects\Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ITMLib\Objects\ITMScene.h">
-      <Filter>ITMLib\Objects\Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ITMLib\Objects\ITMSceneParams.h">
-      <Filter>ITMLib\Objects\Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ITMLib\Objects\ITMView.h">
-      <Filter>ITMLib\Objects\Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ITMLib\Objects\ITMViewHierarchyLevel.h">
-      <Filter>ITMLib\Objects\Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ITMLib\Objects\ITMImageHierarchy.h">
-      <Filter>ITMLib\Objects\Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ITMLib\Objects\ITMSceneHierarchyLevel.h">
-      <Filter>ITMLib\Objects\Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ITMLib\Utils\ITMCalibIO.h">
       <Filter>ITMLib\Utils\Header Files</Filter>
@@ -255,9 +228,6 @@
     <ClInclude Include="ITMLib\Engine\DeviceSpecific\CPU\ITMSwappingEngine_CPU.h">
       <Filter>ITMLib\Engine\DeviceSpecific\CPU</Filter>
     </ClInclude>
-    <ClInclude Include="ITMLib\Objects\ITMLocalVBA.h">
-      <Filter>ITMLib\Objects\Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="ITMLib\Engine\DeviceSpecific\CUDA\ITMCUDAUtils.h">
       <Filter>ITMLib\Engine\DeviceSpecific\CUDA</Filter>
     </ClInclude>
@@ -266,18 +236,6 @@
     </ClInclude>
     <ClInclude Include="ITMLib\Utils\ITMLibDefines.h">
       <Filter>ITMLib\Utils\Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ITMLib\Objects\ITMGlobalCache.h">
-      <Filter>ITMLib\Objects\Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ITMLib\Objects\ITMTrackingState.h">
-      <Filter>ITMLib\Objects\Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ITMLib\Objects\ITMPlainVoxelArray.h">
-      <Filter>ITMLib\Objects\Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ITMLib\Objects\ITMVoxelBlockHash.h">
-      <Filter>ITMLib\Objects\Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ITMLib\Engine\DeviceAgnostic\ITMSwappingEngine.h">
       <Filter>ITMLib\Engine\DeviceAgnostic</Filter>
@@ -318,18 +276,6 @@
     <ClInclude Include="ITMLib\Engine\ITMTracker.h">
       <Filter>ITMLib\Engine\Trackers</Filter>
     </ClInclude>
-    <ClInclude Include="ITMLib\Objects\ITMTemplatedHierarchyLevel.h">
-      <Filter>ITMLib\Objects\Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ITMLib\Engine\ITMTrackerFactory.h">
-      <Filter>ITMLib\Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="ITMLib\Objects\ITMRenderState.h">
-      <Filter>ITMLib\Objects\Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ITMLib\Objects\ITMRenderState_VH.h">
-      <Filter>ITMLib\Objects\Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="ORUtils\Cholesky.h">
       <Filter>ORUtils</Filter>
     </ClInclude>
@@ -366,8 +312,83 @@
     <ClInclude Include="ITMLib\Engine\DeviceSpecific\CUDA\ITMViewBuilder_CUDA.h">
       <Filter>ITMLib\Engine\DeviceSpecific\CUDA</Filter>
     </ClInclude>
+    <ClInclude Include="ITMLib\Engine\ITMIMUTracker.h">
+      <Filter>ITMLib\Engine\Trackers</Filter>
+    </ClInclude>
+    <ClInclude Include="ITMLib\Objects\ITMView.h">
+      <Filter>ITMLib\Objects\Views</Filter>
+    </ClInclude>
+    <ClInclude Include="ITMLib\Objects\ITMViewIMU.h">
+      <Filter>ITMLib\Objects\Views</Filter>
+    </ClInclude>
+    <ClInclude Include="ITMLib\Objects\ITMGlobalCache.h">
+      <Filter>ITMLib\Objects</Filter>
+    </ClInclude>
+    <ClInclude Include="ITMLib\Objects\ITMImageHierarchy.h">
+      <Filter>ITMLib\Objects</Filter>
+    </ClInclude>
+    <ClInclude Include="ITMLib\Objects\ITMIMUMeasurement.h">
+      <Filter>ITMLib\Objects</Filter>
+    </ClInclude>
+    <ClInclude Include="ITMLib\Objects\ITMPointCloud.h">
+      <Filter>ITMLib\Objects</Filter>
+    </ClInclude>
+    <ClInclude Include="ITMLib\Objects\ITMPose.h">
+      <Filter>ITMLib\Objects</Filter>
+    </ClInclude>
+    <ClInclude Include="ITMLib\Objects\ITMRenderState.h">
+      <Filter>ITMLib\Objects</Filter>
+    </ClInclude>
+    <ClInclude Include="ITMLib\Objects\ITMRenderState_VH.h">
+      <Filter>ITMLib\Objects</Filter>
+    </ClInclude>
+    <ClInclude Include="ITMLib\Objects\ITMScene.h">
+      <Filter>ITMLib\Objects</Filter>
+    </ClInclude>
+    <ClInclude Include="ITMLib\Objects\ITMSceneHierarchyLevel.h">
+      <Filter>ITMLib\Objects</Filter>
+    </ClInclude>
+    <ClInclude Include="ITMLib\Objects\ITMSceneParams.h">
+      <Filter>ITMLib\Objects</Filter>
+    </ClInclude>
+    <ClInclude Include="ITMLib\Objects\ITMTemplatedHierarchyLevel.h">
+      <Filter>ITMLib\Objects</Filter>
+    </ClInclude>
+    <ClInclude Include="ITMLib\Objects\ITMTrackingState.h">
+      <Filter>ITMLib\Objects</Filter>
+    </ClInclude>
+    <ClInclude Include="ITMLib\Objects\ITMViewHierarchyLevel.h">
+      <Filter>ITMLib\Objects</Filter>
+    </ClInclude>
+    <ClInclude Include="ITMLib\Objects\ITMDisparityCalib.h">
+      <Filter>ITMLib\Objects\Calibration</Filter>
+    </ClInclude>
+    <ClInclude Include="ITMLib\Objects\ITMExtrinsics.h">
+      <Filter>ITMLib\Objects\Calibration</Filter>
+    </ClInclude>
+    <ClInclude Include="ITMLib\Objects\ITMIntrinsics.h">
+      <Filter>ITMLib\Objects\Calibration</Filter>
+    </ClInclude>
     <ClInclude Include="ITMLib\Objects\ITMRGBDCalib.h">
-      <Filter>ITMLib\Objects\Header Files</Filter>
+      <Filter>ITMLib\Objects\Calibration</Filter>
+    </ClInclude>
+    <ClInclude Include="ITMLib\Objects\ITMLocalVBA.h">
+      <Filter>ITMLib\Objects\VoxelHashing</Filter>
+    </ClInclude>
+    <ClInclude Include="ITMLib\Objects\ITMVoxelBlockHash.h">
+      <Filter>ITMLib\Objects\VoxelHashing</Filter>
+    </ClInclude>
+    <ClInclude Include="ITMLib\Objects\ITMHashTable.h">
+      <Filter>ITMLib\Objects\VoxelHashing</Filter>
+    </ClInclude>
+    <ClInclude Include="ITMLib\Objects\ITMPlainVoxelArray.h">
+      <Filter>ITMLib\Objects\PlainVoxelArray</Filter>
+    </ClInclude>
+    <ClInclude Include="ITMLib\Engine\ITMTrackerCollection.h">
+      <Filter>ITMLib\Engine\Trackers</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\IMUSourceEngine.h">
+      <Filter>Engine\Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

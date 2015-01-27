@@ -29,7 +29,7 @@ namespace ITMLib
 
 			ITMView() { isAllocated = false; }
 
-			~ITMView(void)
+			virtual ~ITMView(void)
 			{
 				if (isAllocated)
 				{

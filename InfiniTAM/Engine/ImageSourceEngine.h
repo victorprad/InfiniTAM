@@ -10,7 +10,7 @@ namespace InfiniTAM
 	{
 		class ImageSourceEngine
 		{
-			public:
+		public:
 			ITMRGBDCalib calib;
 
 			ImageSourceEngine(const char *calibFilename);
@@ -44,6 +44,50 @@ namespace InfiniTAM
 			void getImages(ITMUChar4Image *rgb, ITMShortImage *rawDepth);
 			Vector2i getDepthImageSize(void);
 			Vector2i getRGBImageSize(void);
+		};
+
+		class CalibSource : public ImageSourceEngine
+		{
+		private:
+			Vector2i imgSize;
+			void ResizeIntrinsics(ITMIntrinsics &intrinsics, float ratio);
+
+		public:
+			CalibSource(const char *calibFilename, Vector2i setImageSize, float ratio);
+			~CalibSource() { }
+
+			bool hasMoreImages(void) { return true; }
+			void getImages(ITMUChar4Image *rgb, ITMShortImage *rawDepth) { }
+			Vector2i getDepthImageSize(void) { return imgSize; }
+			Vector2i getRGBImageSize(void) { return imgSize; }
+		};
+
+		class RawFileReader : public ImageSourceEngine
+		{
+		private:
+			static const int BUF_SIZE = 2048;
+			char rgbImageMask[BUF_SIZE];
+			char depthImageMask[BUF_SIZE];
+
+			ITMUChar4Image *cached_rgb;
+			ITMShortImage *cached_depth;
+
+			void loadIntoCache();
+			int cachedFrameNo;
+			int currentFrameNo;
+
+			Vector2i imgSize;
+			void ResizeIntrinsics(ITMIntrinsics &intrinsics, float ratio);
+
+		public:
+			RawFileReader(const char *calibFilename, const char *rgbImageMask, const char *depthImageMask, Vector2i setImageSize, float ratio);
+			~RawFileReader() { }
+
+			bool hasMoreImages(void);
+			void getImages(ITMUChar4Image *rgb, ITMShortImage *rawDepth);
+
+			Vector2i getDepthImageSize(void) { return imgSize; }
+			Vector2i getRGBImageSize(void) { return imgSize; }
 		};
 	}
 }

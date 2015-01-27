@@ -2,7 +2,6 @@
 
 #include "ITMMainEngine.h"
 
-#include "ITMTrackerFactory.h"
 using namespace ITMLib::Engine;
 
 ITMMainEngine::ITMMainEngine(const ITMLibSettings *settings, const ITMRGBDCalib *calib, Vector2i imgSize_rgb, Vector2i imgSize_d)
@@ -11,10 +10,8 @@ ITMMainEngine::ITMMainEngine(const ITMLibSettings *settings, const ITMRGBDCalib 
 
 	this->settings = new ITMLibSettings(*settings);
 
-	this->trackingState = ITMTrackerFactory::MakeTrackingState(*settings, imgSize_rgb, imgSize_d);
-	trackingState->pose_d->SetFrom(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f); 
-
-	denseMapper = new ITMDenseMapper<ITMVoxel, ITMVoxelIndex>(this->settings, imgSize_rgb, imgSize_d);
+	denseMapper = new ITMDenseMapper<ITMVoxel, ITMVoxelIndex>(this->settings, ITMTrackerCollection::GetTrackedImageSize(settings,
+		imgSize_rgb, imgSize_d));
 
 	switch (settings->deviceType)
 	{
@@ -36,11 +33,10 @@ ITMMainEngine::ITMMainEngine(const ITMLibSettings *settings, const ITMRGBDCalib 
 		break;
 	}
 
-	this->trackerPrimary = ITMTrackerFactory::MakePrimaryTracker(*settings, imgSize_rgb, imgSize_d, lowLevelEngine);
-	this->trackerSecondary = ITMTrackerFactory::MakeSecondaryTracker<ITMVoxel, ITMVoxelIndex>(*settings, imgSize_rgb, imgSize_d, lowLevelEngine, denseMapper->getScene());
+	this->trackerCollection = new ITMTrackerCollection(settings, imgSize_rgb, imgSize_d, denseMapper, lowLevelEngine);
+	trackingState = trackerCollection->BuildTrackingState();
 
-	this->view = new ITMView();
-	this->viewBuilder->AllocateView(this->view, imgSize_rgb, imgSize_d);
+	this->view = new ITMViewIMU(); // members will be allocated by the view builder
 
 	hasStartedObjectReconstruction = false;
 	fusionActive = true;
@@ -51,8 +47,7 @@ ITMMainEngine::~ITMMainEngine()
 {
 	delete denseMapper;
 
-	if (trackerPrimary != NULL) delete trackerPrimary;
-	if (trackerSecondary != NULL) delete trackerSecondary;
+	if (trackerCollection != NULL) delete trackerCollection;
 
 	delete lowLevelEngine;
 	delete viewBuilder;
@@ -68,30 +63,35 @@ void ITMMainEngine::ProcessFrame(ITMUChar4Image *rgbImage, ITMShortImage *rawDep
 	// prepare image and turn it into a depth image
 	viewBuilder->UpdateView(view, rgbImage, rawDepthImage);
 
-//	if (!mainProcessingActive) return;
+	if (!mainProcessingActive) return;
 
 	// tracking
-	if (hasStartedObjectReconstruction)
-	{
-		if (trackerPrimary != NULL) trackerPrimary->TrackCamera(trackingState, view);
-		if (trackerSecondary != NULL) trackerSecondary->TrackCamera(trackingState, view);
-	}
+	if (hasStartedObjectReconstruction) trackerCollection->TrackCamera(trackingState, view);
 
+	// fusion
 	if (fusionActive) denseMapper->ProcessFrame(view, trackingState);
 
-	switch (settings->trackerType)
-	{
-	case ITMLibSettings::TRACKER_ICP:
-	case ITMLibSettings::TRACKER_REN:
-		// raycasting
-		denseMapper->GetICPMaps(trackingState->pose_d, &(view->calib->intrinsics_d), view, trackingState);
-		break;
-	case ITMLibSettings::TRACKER_COLOR:
-		// raycasting
-		ITMPose pose_rgb(view->calib->trafo_rgb_to_depth.calib_inv * trackingState->pose_d->M);
-		denseMapper->GetPointCloud(&pose_rgb, &(view->calib->intrinsics_rgb), view, trackingState, settings->skipPoints);
-		break;
-	}
+	// raycast
+	trackerCollection->RenderWorld(denseMapper, trackingState, view);
+
+	hasStartedObjectReconstruction = true;
+}
+
+void ITMMainEngine::ProcessFrame(ITMUChar4Image *rgbImage, ITMShortImage *rawDepthImage, ITMIMUMeasurement *imuMeasurement)
+{
+	// prepare image and turn it into a depth image
+	viewBuilder->UpdateView(view, rgbImage, rawDepthImage, imuMeasurement);
+
+	if (!mainProcessingActive) return;
+
+	// tracking
+	if (hasStartedObjectReconstruction) trackerCollection->TrackCamera(trackingState, view);
+
+	// fusion
+	if (fusionActive) denseMapper->ProcessFrame(view, trackingState);
+
+	// raycast
+	trackerCollection->RenderWorld(denseMapper, trackingState, view);
 
 	hasStartedObjectReconstruction = true;
 }

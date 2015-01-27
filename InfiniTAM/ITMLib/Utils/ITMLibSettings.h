@@ -31,7 +31,9 @@ namespace ITMLib
 				//! Identifies a tracker based on depth image
 				TRACKER_ICP,
 				//! Identifies a tracker based on depth image (Ren et al, 2012)
-				TRACKER_REN
+				TRACKER_REN,
+				//! Identifies a tracker based on depth image and IMU measurement
+				TRACKER_IMU
 			} TrackerType;
 
 			/// Select the type of tracker to use

@@ -15,6 +15,7 @@ try
 	const char *calibFile = "";
 	const char *imagesource_part1 = NULL;
 	const char *imagesource_part2 = NULL;
+	const char *imagesource_part3 = NULL;
 
 	int arg = 1;
 	do {
@@ -23,6 +24,8 @@ try
 		if (argv[arg] != NULL) imagesource_part1 = argv[arg]; else break;
 		++arg;
 		if (argv[arg] != NULL) imagesource_part2 = argv[arg]; else break;
+		++arg;
+		if (argv[arg] != NULL) imagesource_part3 = argv[arg]; else break;
 	} while (false);
 
 	if (arg == 1) {
@@ -40,8 +43,10 @@ try
 	ITMLibSettings *internalSettings = new ITMLibSettings();
 
 	ImageSourceEngine *imageSource;
+	IMUSourceEngine *imuSource = NULL;
 	printf("using calibration file: %s\n", calibFile);
-	if (imagesource_part2 == NULL) {
+	if (imagesource_part2 == NULL) 
+	{
 		printf("using OpenNI device: %s\n", (imagesource_part1==NULL)?"<OpenNI default device>":imagesource_part1);
 		imageSource = new OpenNIEngine(calibFile, imagesource_part1);
 		if (imageSource->getDepthImageSize().x == 0) {
@@ -49,14 +54,25 @@ try
 			printf("trying MS Kinect device\n");
 			imageSource = new Kinect2Engine(calibFile);
 		}
-	} else {
-		printf("using rgb images: %s\nusing depth images: %s\n", imagesource_part1, imagesource_part2);
-		imageSource = new ImageFileReader(calibFile, imagesource_part1, imagesource_part2);
+	} 
+	else
+	{
+		if (imagesource_part3 == NULL)
+		{
+			printf("using rgb images: %s\nusing depth images: %s\n", imagesource_part1, imagesource_part2);
+			imageSource = new ImageFileReader(calibFile, imagesource_part1, imagesource_part2);
+		}
+		else
+		{
+			printf("using rgb images: %s\nusing depth images: %s\nusing imu data: %s\n", imagesource_part1, imagesource_part2, imagesource_part3);
+			imageSource = new RawFileReader(calibFile, imagesource_part1, imagesource_part2, Vector2i(320, 240), 0.5f);
+			imuSource = new IMUSourceEngine(imagesource_part3);
+		}
 	}
 
 	ITMMainEngine *mainEngine = new ITMMainEngine(internalSettings, &imageSource->calib, imageSource->getRGBImageSize(), imageSource->getDepthImageSize());
 
-	UIEngine::Instance()->Initialise(argc, argv, imageSource, mainEngine, "./Files/Out", internalSettings->deviceType);
+	UIEngine::Instance()->Initialise(argc, argv, imageSource, imuSource, mainEngine, "./Files/Out", internalSettings->deviceType);
 	UIEngine::Instance()->Run();
 	UIEngine::Instance()->Shutdown();
 

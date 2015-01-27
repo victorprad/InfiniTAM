@@ -71,6 +71,9 @@
 #include "Engine/DeviceSpecific/Metal/ITMRenTracker_Metal.h"
 #endif
 
+#include "Engine/ITMIMUTracker.h"
+#include "Engine/ITMTrackerCollection.h"
+
 #include "Engine/ITMViewBuilder.h"
 #include "Engine/DeviceSpecific/CPU/ITMViewBuilder_CPU.h"
 #ifndef COMPILE_WITHOUT_CUDA

@@ -12,7 +12,9 @@ ITMViewBuilder_CPU::ITMViewBuilder_CPU(const ITMRGBDCalib *calib):ITMViewBuilder
 ITMViewBuilder_CPU::~ITMViewBuilder_CPU(void) { }
 
 void ITMViewBuilder_CPU::UpdateView(ITMView *view, ITMUChar4Image *rgbImage, ITMShortImage *rawDepthImage)
-{
+{ 
+	if (!view->isAllocated) this->AllocateView(view, rgbImage->noDims, rawDepthImage->noDims);
+
 	view->rgb->SetFrom(rgbImage, MemoryBlock<Vector4u>::CPU_TO_CPU);
 	this->shortImage->SetFrom(rawDepthImage, MemoryBlock<short>::CPU_TO_CPU);
 
@@ -31,8 +33,22 @@ void ITMViewBuilder_CPU::UpdateView(ITMView *view, ITMUChar4Image *rgbImage, ITM
 
 void ITMViewBuilder_CPU::UpdateView(ITMView *view, ITMUChar4Image *rgbImage, ITMFloatImage *depthImage)
 {
+	if (!view->isAllocated) this->AllocateView(view, rgbImage->noDims, depthImage->noDims);
+
 	view->rgb->UpdateDeviceFromHost();
 	view->depth->UpdateDeviceFromHost();
+}
+
+void ITMViewBuilder_CPU::UpdateView(ITMView *view, ITMUChar4Image *rgbImage, ITMShortImage *depthImage, ITMIMUMeasurement *imuMeasurement)
+{
+	if (!view->isAllocated)
+	{
+		ITMViewIMU* imuView = (ITMViewIMU*)view;
+		imuView->imu = new ITMIMUMeasurement();
+		imuView->imu->SetFrom(imuMeasurement);
+	}
+
+	this->UpdateView(view, rgbImage, depthImage);
 }
 
 void ITMViewBuilder_CPU::ConvertDisparityToDepth(ITMFloatImage *depth_out, const ITMShortImage *depth_in, const ITMIntrinsics *depthIntrinsics,

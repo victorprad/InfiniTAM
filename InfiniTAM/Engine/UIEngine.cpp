@@ -326,13 +326,15 @@ void UIEngine::glutMouseWheelFunction(int button, int dir, int x, int y)
 	uiEngine->needsRefresh = true;
 }
 
-void UIEngine::Initialise(int & argc, char** argv, ImageSourceEngine *imageSource, ITMMainEngine *mainEngine, const char *outFolder, ITMLibSettings::DeviceType deviceType)
+void UIEngine::Initialise(int & argc, char** argv, ImageSourceEngine *imageSource, IMUSourceEngine *imuSource, ITMMainEngine *mainEngine, 
+	const char *outFolder, ITMLibSettings::DeviceType deviceType)
 {
 	this->freeviewActive = false;
 	this->colourActive = false;
 	this->intergrationActive = true;
 
 	this->imageSource = imageSource;
+	this->imuSource = imuSource;
 	this->mainEngine = mainEngine;
 	{
 		size_t len = strlen(outFolder);
@@ -389,6 +391,7 @@ void UIEngine::Initialise(int & argc, char** argv, ImageSourceEngine *imageSourc
 
 	inputRGBImage = new ITMUChar4Image(imageSource->getRGBImageSize(), true, allocateGPU);
 	inputRawDepthImage = new ITMShortImage(imageSource->getDepthImageSize(), true, allocateGPU);
+	inputIMUMeasurement = new ITMIMUMeasurement();
 
 	saveImage = new ITMUChar4Image(imageSource->getDepthImageSize(), true, false);
 
@@ -429,6 +432,8 @@ void UIEngine::ProcessFrame()
 	if (!imageSource->hasMoreImages()) return;
 	imageSource->getImages(inputRGBImage, inputRawDepthImage);
 
+	if (imuSource != NULL) imuSource->getMeasurement(inputIMUMeasurement);
+
 	sdkResetTimer(&timer_instant); 
 	sdkStartTimer(&timer_instant); sdkStartTimer(&timer_average);
 
@@ -444,7 +449,8 @@ void UIEngine::ProcessFrame()
 	}
 
 	//actual processing on the mailEngine
-	mainEngine->ProcessFrame(inputRGBImage, inputRawDepthImage);
+	if (imuSource != NULL) mainEngine->ProcessFrame(inputRGBImage, inputRawDepthImage, inputIMUMeasurement);
+	else mainEngine->ProcessFrame(inputRGBImage, inputRawDepthImage);
 
 	sdkStopTimer(&timer_instant); sdkStopTimer(&timer_average);
 
