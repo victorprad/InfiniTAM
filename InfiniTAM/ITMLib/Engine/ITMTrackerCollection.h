@@ -182,7 +182,7 @@ namespace ITMLib
 					denseMapper->GetICPMaps(trackingState->pose_d, &(view->calib->intrinsics_d), view, trackingState);
 					break;
 				case ITMLibSettings::TRACKER_COLOR:
-					ITMPose pose_rgb(view->calib->trafo_rgb_to_depth.calib_inv * trackingState->pose_d->M);
+					ITMPose pose_rgb(view->calib->trafo_rgb_to_depth.calib_inv * trackingState->pose_d->GetM());
 					denseMapper->GetPointCloud(&pose_rgb, &(view->calib->intrinsics_rgb), view, trackingState, skipPoints);
 					break;
 				}

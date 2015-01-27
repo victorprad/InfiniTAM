@@ -290,14 +290,14 @@ void UIEngine::glutMouseMoveFunction(int x, int y)
 	case 2:
 	{
 		// right button: translation in x and y direction
-		uiEngine->freeviewPose.SetT(uiEngine->freeviewPose.GetT() + scale_translation * Vector3f(movement.x, movement.y, 0.0f));
+		uiEngine->freeviewPose.SetT(uiEngine->freeviewPose.GetT() + scale_translation * Vector3f((float)movement.x, (float)movement.y, 0.0f));
 		uiEngine->needsRefresh = true;
 		break;
 	}
 	case 3:
 	{
 		// middle button: translation along z axis
-		uiEngine->freeviewPose.SetT(uiEngine->freeviewPose.GetT() + scale_translation * Vector3f(0.0f, 0.0f, movement.y));
+		uiEngine->freeviewPose.SetT(uiEngine->freeviewPose.GetT() + scale_translation * Vector3f(0.0f, 0.0f, (float)movement.y));
 		uiEngine->needsRefresh = true;
 		break;
 	}
