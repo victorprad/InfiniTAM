@@ -23,8 +23,6 @@ namespace ITMLib
 			const ITMRGBDCalib *calib;
 			ITMShortImage *shortImage;
 
-			virtual void AllocateView(ITMView *view, Vector2i imgSize_rgb, Vector2i imgSize_d) = 0;
-
 		public:
 			enum InputImageType
 			{
@@ -41,10 +39,10 @@ namespace ITMLib
 				const ITMDisparityCalib *disparityCalib) = 0;
 			virtual void ConvertDepthMMToFloat(ITMFloatImage *depth_out, const ITMShortImage *depth_in) = 0;
 
-			virtual void UpdateView(ITMView* view, ITMUChar4Image *rgbImage, ITMShortImage *rawDepthImage) = 0;
-			virtual void UpdateView(ITMView *view, ITMUChar4Image *rgbImage, ITMFloatImage *depthImage) = 0;
+			virtual void UpdateView(ITMView **view, ITMUChar4Image *rgbImage, ITMShortImage *rawDepthImage) = 0;
+			virtual void UpdateView(ITMView **view, ITMUChar4Image *rgbImage, ITMFloatImage *depthImage) = 0;
 
-			virtual void UpdateView(ITMView *view, ITMUChar4Image *rgbImage, ITMShortImage *depthImage, ITMIMUMeasurement *imuMeasurement) = 0;
+			virtual void UpdateView(ITMView **view, ITMUChar4Image *rgbImage, ITMShortImage *depthImage, ITMIMUMeasurement *imuMeasurement) = 0;
 
 			ITMViewBuilder(const ITMRGBDCalib *calib)
 			{

@@ -10,18 +10,15 @@ namespace ITMLib
 	{
 		class ITMViewBuilder_CUDA : public ITMViewBuilder
 		{
-		protected:
-			void AllocateView(ITMView *view, Vector2i imgSize_rgb, Vector2i imgSize_d);
-
 		public:
 			void ConvertDisparityToDepth(ITMFloatImage *depth_out, const ITMShortImage *depth_in, const ITMIntrinsics *depthIntrinsics, 
 				const ITMDisparityCalib *disparityCalib);
 			void ConvertDepthMMToFloat(ITMFloatImage *depth_out, const ITMShortImage *depth_in);
 
-			void UpdateView(ITMView *view, ITMUChar4Image *rgbImage, ITMShortImage *rawDepthImage);
-			void UpdateView(ITMView *view, ITMUChar4Image *rgbImage, ITMFloatImage *depthImage);
+			void UpdateView(ITMView **view, ITMUChar4Image *rgbImage, ITMShortImage *rawDepthImage);
+			void UpdateView(ITMView **view, ITMUChar4Image *rgbImage, ITMFloatImage *depthImage);
 
-			void UpdateView(ITMView *view, ITMUChar4Image *rgbImage, ITMShortImage *depthImage, ITMIMUMeasurement *imuMeasurement);
+			void UpdateView(ITMView **view, ITMUChar4Image *rgbImage, ITMShortImage *depthImage, ITMIMUMeasurement *imuMeasurement);
 
 			ITMViewBuilder_CUDA(const ITMRGBDCalib *calib);
 			~ITMViewBuilder_CUDA(void);

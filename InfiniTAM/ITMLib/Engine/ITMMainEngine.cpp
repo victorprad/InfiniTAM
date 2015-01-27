@@ -36,7 +36,7 @@ ITMMainEngine::ITMMainEngine(const ITMLibSettings *settings, const ITMRGBDCalib 
 	this->trackerCollection = new ITMTrackerCollection(settings, imgSize_rgb, imgSize_d, denseMapper, lowLevelEngine);
 	trackingState = trackerCollection->BuildTrackingState();
 
-	this->view = new ITMViewIMU(); // members will be allocated by the view builder
+	this->view = NULL; // will be allocated by the view builder
 
 	hasStartedObjectReconstruction = false;
 	fusionActive = true;
@@ -46,14 +46,13 @@ ITMMainEngine::ITMMainEngine(const ITMLibSettings *settings, const ITMRGBDCalib 
 ITMMainEngine::~ITMMainEngine()
 {
 	delete denseMapper;
-
-	if (trackerCollection != NULL) delete trackerCollection;
+	delete trackerCollection;
 
 	delete lowLevelEngine;
 	delete viewBuilder;
 
 	delete trackingState;
-	delete view;
+	if (view != NULL) delete view;
 
 	delete settings;
 }
@@ -61,7 +60,7 @@ ITMMainEngine::~ITMMainEngine()
 void ITMMainEngine::ProcessFrame(ITMUChar4Image *rgbImage, ITMShortImage *rawDepthImage)
 {
 	// prepare image and turn it into a depth image
-	viewBuilder->UpdateView(view, rgbImage, rawDepthImage);
+	viewBuilder->UpdateView(&view, rgbImage, rawDepthImage);
 
 	if (!mainProcessingActive) return;
 
@@ -80,7 +79,7 @@ void ITMMainEngine::ProcessFrame(ITMUChar4Image *rgbImage, ITMShortImage *rawDep
 void ITMMainEngine::ProcessFrame(ITMUChar4Image *rgbImage, ITMShortImage *rawDepthImage, ITMIMUMeasurement *imuMeasurement)
 {
 	// prepare image and turn it into a depth image
-	viewBuilder->UpdateView(view, rgbImage, rawDepthImage, imuMeasurement);
+	viewBuilder->UpdateView(&view, rgbImage, rawDepthImage, imuMeasurement);
 
 	if (!mainProcessingActive) return;
 
@@ -98,7 +97,7 @@ void ITMMainEngine::ProcessFrame(ITMUChar4Image *rgbImage, ITMShortImage *rawDep
 
 void ITMMainEngine::GetImage(ITMUChar4Image *out, GetImageType getImageType, bool useColour, ITMPose *pose, ITMIntrinsics *intrinsics)
 {
-	if (!view->isAllocated) return;
+	if (view == NULL) return;
 
 	out->Clear();
 

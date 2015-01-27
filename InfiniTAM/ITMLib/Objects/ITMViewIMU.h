@@ -18,9 +18,13 @@ namespace ITMLib
 		public:
 			ITMIMUMeasurement *imu;
 
-			ITMViewIMU() :ITMView() { }
+			ITMViewIMU(const ITMRGBDCalib *calibration, Vector2i imgSize_rgb, Vector2i imgSize_d, bool useGPU)
+			 : ITMView(calibration, imgSize_rgb, imgSize_d, useGPU)
+			{
+				imu = new ITMIMUMeasurement();
+			}
 
-			~ITMViewIMU(void) { if (isAllocated) delete imu; }
+			~ITMViewIMU(void) { delete imu; }
 
 			// Suppress the default copy constructor and assignment operator
 			ITMViewIMU(const ITMViewIMU&);

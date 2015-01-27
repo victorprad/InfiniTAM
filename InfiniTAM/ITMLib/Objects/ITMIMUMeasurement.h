@@ -18,12 +18,12 @@ namespace ITMLib
 				this->R.setIdentity();
 			}
 
-			ITMIMUMeasurement(Matrix3f R)
+			ITMIMUMeasurement(const Matrix3f & R)
 			{
 				this->R = R;
 			}
 
-			void SetFrom(ITMIMUMeasurement *measurement)
+			void SetFrom(const ITMIMUMeasurement *measurement)
 			{
 				this->R = measurement->R;
 			}
