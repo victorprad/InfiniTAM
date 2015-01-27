@@ -288,8 +288,8 @@ void ITMSceneReconstructionEngine_CPU<TVoxel,ITMVoxelBlockHHash>::IntegrateIntoS
 
 	ITMRenderState_VH *renderState_vh = (ITMRenderState_VH*)renderState;
 
-	M_d = trackingState->pose_d->M;
-	if (TVoxel::hasColorInformation) M_rgb = view->calib->trafo_rgb_to_depth.calib_inv * trackingState->pose_d->M;
+	M_d = trackingState->pose_d->GetM();
+	if (TVoxel::hasColorInformation) M_rgb = view->calib->trafo_rgb_to_depth.calib_inv * M_d;
 
 	projParams_d = view->calib->intrinsics_d.projectionParamsSimple.all;
 	projParams_rgb = view->calib->intrinsics_rgb.projectionParamsSimple.all;
@@ -306,6 +306,9 @@ void ITMSceneReconstructionEngine_CPU<TVoxel,ITMVoxelBlockHHash>::IntegrateIntoS
 
 	bool stopIntegratingAtMaxW = scene->sceneParams->stopIntegratingAtMaxW;
 
+#ifdef WITH_OPENMP
+	#pragma omp parallel for
+#endif
 	for (int entryNo = 0; entryNo < noVisibleEntries; entryNo++)
 	{
 		Vector3i globalPos;
@@ -348,7 +351,7 @@ void ITMSceneReconstructionEngine_CPU<TVoxel,ITMVoxelBlockHHash>::AllocateSceneF
 
 	ITMRenderState_VH *renderState_vh = (ITMRenderState_VH*)renderState;
 
-	M_d = trackingState->pose_d->M; M_d.inv(invM_d);
+	M_d = trackingState->pose_d->GetM(); M_d.inv(invM_d);
 
 	projParams_d = view->calib->intrinsics_d.projectionParamsSimple.all;
 	invProjParams_d = projParams_d;
@@ -382,8 +385,13 @@ void ITMSceneReconstructionEngine_CPU<TVoxel,ITMVoxelBlockHHash>::AllocateSceneF
 		entriesVisibleType[visibleEntryIDs[i]] = 3; // visible at previous frame and unstreamed
 
 	//build hashVisibility
-	for (int y = 0; y < depthImgSize.y; y++) for (int x = 0; x < depthImgSize.x; x++)
+#ifdef WITH_OPENMP
+	#pragma omp parallel for
+#endif
+	for (int locId = 0; locId < depthImgSize.x*depthImgSize.y; locId++)
 	{
+		int y = locId / depthImgSize.x;
+		int x = locId - y * depthImgSize.x;
 		buildHHashAllocAndVisibleTypePP(entriesAllocType, entriesVisibleType, x, y, blockCoords, depth, invM_d,
 			invProjParams_d, mu, depthImgSize, oneOverSmallestVoxelSize, hashTable, scene->sceneParams->viewFrustum_min,
 			scene->sceneParams->viewFrustum_max);

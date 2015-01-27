@@ -163,7 +163,7 @@ void ITMVisualisationEngine_CPU<TVoxel,ITMVoxelBlockHHash>::FindVisibleBlocks(co
 	float smallestVoxelSize = scene->sceneParams->voxelSize;
 	Vector2i imgSize = renderState->renderingRangeImage->noDims;
 
-	Matrix4f M = pose->M;
+	Matrix4f M = pose->GetM();
 	Vector4f projParams = intrinsics->projectionParamsSimple.all;
 
 	ITMRenderState_VH *renderState_vh = (ITMRenderState_VH*)renderState;
@@ -231,7 +231,7 @@ void ITMVisualisationEngine_CPU<TVoxel,ITMVoxelBlockHHash>::CreateExpectedDepths
 		Vector2f zRange;
 		bool validProjection = false;
 		if (blockData.ptr>=0) {
-			validProjection = ProjectSingleBlock(blockData.pos, pose->M, intrinsics->projectionParamsSimple.all, imgSize, voxelSize, upperLeft, lowerRight, zRange);
+			validProjection = ProjectSingleBlock(blockData.pos, pose->GetM(), intrinsics->projectionParamsSimple.all, imgSize, voxelSize, upperLeft, lowerRight, zRange);
 		}
 		if (!validProjection) continue;
 
@@ -490,7 +490,7 @@ template<class TVoxel>
 void ITMVisualisationEngine_CPU<TVoxel,ITMVoxelBlockHHash>::FindSurface(const ITMScene<TVoxel,ITMVoxelBlockHHash> *scene, const ITMPose *pose, const ITMIntrinsics *intrinsics,
 	const ITMRenderState *renderState)
 {
-	GenericRaycast(scene, renderState->raycastResult->noDims, pose->invM, intrinsics->projectionParamsSimple.all, renderState);
+	GenericRaycast(scene, renderState->raycastResult->noDims, pose->GetInvM(), intrinsics->projectionParamsSimple.all, renderState);
 }
 
 template<class TVoxel>

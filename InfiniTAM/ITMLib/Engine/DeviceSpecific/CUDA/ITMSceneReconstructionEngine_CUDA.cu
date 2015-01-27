@@ -275,7 +275,7 @@ void ITMSceneReconstructionEngine_CUDA<TVoxel, ITMVoxelBlockHHash>::AllocateScen
 
 	ITMRenderState_VH *renderState_vh = (ITMRenderState_VH*)renderState;
 
-	M_d = trackingState->pose_d->M; M_d.inv(invM_d);
+	M_d = trackingState->pose_d->GetM(); M_d.inv(invM_d);
 
 	projParams_d = view->calib->intrinsics_d.projectionParamsSimple.all;
 	invProjParams_d = projParams_d;
@@ -373,8 +373,8 @@ void ITMSceneReconstructionEngine_CUDA<TVoxel, ITMVoxelBlockHHash>::IntegrateInt
 
 	ITMRenderState_VH *renderState_vh = (ITMRenderState_VH*)renderState;
 
-	M_d = trackingState->pose_d->M;
-	if (TVoxel::hasColorInformation) M_rgb = view->calib->trafo_rgb_to_depth.calib_inv * trackingState->pose_d->M;
+	M_d = trackingState->pose_d->GetM();
+	if (TVoxel::hasColorInformation) M_rgb = view->calib->trafo_rgb_to_depth.calib_inv * M_d;
 
 	projParams_d = view->calib->intrinsics_d.projectionParamsSimple.all;
 	projParams_rgb = view->calib->intrinsics_rgb.projectionParamsSimple.all;

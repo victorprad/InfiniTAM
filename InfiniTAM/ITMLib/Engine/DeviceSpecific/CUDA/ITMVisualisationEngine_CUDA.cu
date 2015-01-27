@@ -228,7 +228,7 @@ void ITMVisualisationEngine_CUDA<TVoxel,ITMVoxelBlockHHash>::FindVisibleBlocks(c
 	float smallestVoxelSize = scene->sceneParams->voxelSize;
 	Vector2i imgSize = renderState->renderingRangeImage->noDims;
 
-	Matrix4f M = pose->M;
+	Matrix4f M = pose->GetM();
 	Vector4f projParams = intrinsics->projectionParamsSimple.all;
 
 	ITMRenderState_VH *renderState_vh = (ITMRenderState_VH*)renderState;
@@ -275,7 +275,7 @@ void ITMVisualisationEngine_CUDA<TVoxel,ITMVoxelBlockHHash>::CreateExpectedDepth
 		dim3 blockSize(256);
 		dim3 gridSize((int)ceil((float)noVisibleEntries / (float)blockSize.x));
 		ITMSafeCall(cudaMemset(noTotalBlocks_device, 0, sizeof(uint)));
-		projectAndSplitBlocksHHash_device << <gridSize, blockSize >> >(hash_entries, visibleEntryIDs, noVisibleEntries, pose->M,
+		projectAndSplitBlocksHHash_device << <gridSize, blockSize >> >(hash_entries, visibleEntryIDs, noVisibleEntries, pose->GetM(),
 			intrinsics->projectionParamsSimple.all, imgSize, smallestVoxelSize, renderingBlockList_device, noTotalBlocks_device);
 	}
 
@@ -423,7 +423,7 @@ template<class TVoxel>
 void ITMVisualisationEngine_CUDA<TVoxel, ITMVoxelBlockHHash>::FindSurface(const ITMScene<TVoxel, ITMVoxelBlockHHash> *scene, const ITMPose *pose,
 	const ITMIntrinsics *intrinsics, const ITMRenderState *renderState)
 {
-	GenericRaycast(scene, renderState->raycastResult->noDims, pose->invM, intrinsics->projectionParamsSimple.all, renderState);
+	GenericRaycast(scene, renderState->raycastResult->noDims, pose->GetInvM(), intrinsics->projectionParamsSimple.all, renderState);
 }
 
 template<class TVoxel, class TIndex>
