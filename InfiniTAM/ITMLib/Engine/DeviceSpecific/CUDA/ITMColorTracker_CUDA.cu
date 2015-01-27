@@ -51,7 +51,7 @@ void ITMColorTracker_CUDA::F_oneLevel(float *f, ITMPose *pose)
 	projParams.x /= 1 << levelId; projParams.y /= 1 << levelId;
 	projParams.z /= 1 << levelId; projParams.w /= 1 << levelId;
 
-	Matrix4f M = pose->M;
+	Matrix4f M = pose->GetM();
 
 	Vector2i imgSize = viewHierarchy->levels[levelId]->rgb->noDims;
 
@@ -87,7 +87,7 @@ void ITMColorTracker_CUDA::G_oneLevel(float *gradient, float *hessian, ITMPose *
 	projParams.x /= 1 << levelId; projParams.y /= 1 << levelId;
 	projParams.z /= 1 << levelId; projParams.w /= 1 << levelId;
 
-	Matrix4f M = pose->M;
+	Matrix4f M = pose->GetM();
 
 	Vector2i imgSize = viewHierarchy->levels[levelId]->rgb->noDims;
 

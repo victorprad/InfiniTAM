@@ -108,7 +108,7 @@ void ITMDepthTracker::TrackCamera(ITMTrackingState *trackingState, const ITMView
 
 	this->PrepareForEvaluation();
 
-	Matrix4f approxInvPose = trackingState->pose_d->invM, imagePose = trackingState->pose_d->M;
+	Matrix4f approxInvPose = trackingState->pose_d->GetInvM(), imagePose = trackingState->pose_d->GetM();
 
 	for (int levelId = viewHierarchy->noLevels - 1; levelId >= noICPLevel; levelId--)
 	{
@@ -138,10 +138,8 @@ void ITMDepthTracker::TrackCamera(ITMTrackingState *trackingState, const ITMView
 		}
 	}
 
-	approxInvPose.inv(trackingState->pose_d->M);
-	trackingState->pose_d->SetRTInvM_FromM();
-	trackingState->pose_d->SetParamsFromModelView();
-	trackingState->pose_d->SetModelViewFromParams();
+	trackingState->pose_d->SetInvM(approxInvPose);
+	trackingState->pose_d->Coerce();
 
 	//printf(">> %f %f %f %f %f %f\n", scene->pose->params.each.rx, scene->pose->params.each.ry, scene->pose->params.each.rz,
 	//	scene->pose->params.each.tx, scene->pose->params.each.ty, scene->pose->params.each.tz);
