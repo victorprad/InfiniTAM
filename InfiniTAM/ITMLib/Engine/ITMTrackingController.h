@@ -11,6 +11,18 @@
 #include "../Engine/ITMVisualisationEngine.h"
 #include "../Engine/ITMLowLevelEngine.h"
 
+#include "../Engine/DeviceSpecific/CPU/ITMColorTracker_CPU.h"
+#include "../Engine/DeviceSpecific/CPU/ITMDepthTracker_CPU.h"
+#include "../Engine/DeviceSpecific/CPU/ITMRenTracker_CPU.h"
+
+#ifndef COMPILE_WITHOUT_CUDA
+#include "../Engine/DeviceSpecific/CUDA/ITMColorTracker_CUDA.h"
+#include "../Engine/DeviceSpecific/CUDA/ITMDepthTracker_CUDA.h"
+#include "../Engine/DeviceSpecific/CUDA/ITMRenTracker_CUDA.h"
+#endif
+
+#include "ITMCompositeTracker.h"
+#include "ITMIMUTracker.h"
 #include "ITMTracker.h"
 
 namespace ITMLib
@@ -160,4 +172,3 @@ namespace ITMLib
 		};
 	}
 }
-
