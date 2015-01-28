@@ -21,6 +21,9 @@ namespace ITMLib
 			ITMLowLevelEngine *lowLevelEngine;
 			
 			ITMTrackingState *trackingState; const ITMView *view;
+			ITMPose *imuPose_imucoords, *imuPose_cameracoords;
+			Matrix3f oldR_visual;
+			bool hasAtLeastTwoFrames;
 
 		public:
 			void TrackCamera(ITMTrackingState *trackingState, const ITMView *view);

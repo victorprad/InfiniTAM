@@ -57,6 +57,8 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_Depth(THREADPTR(float) *localNa
 	A[2] = +tmp3Dpoint.y * corr3Dnormal.x - tmp3Dpoint.x * corr3Dnormal.y;
 	if (!rotationOnly) { A[rotationOnly ? 0 : 3] = corr3Dnormal.x; A[rotationOnly ? 0 : 4] = corr3Dnormal.y; A[rotationOnly ? 0 : 5] = corr3Dnormal.z; }
 
+	//A[0] = corr3Dnormal.x; A[1] = corr3Dnormal.y; A[2] = corr3Dnormal.z;
+
 	float b = corr3Dnormal.x * ptDiff.x + corr3Dnormal.y * ptDiff.y + corr3Dnormal.z * ptDiff.z;
 
 #if (defined(__CUDACC__) && defined(__CUDA_ARCH__)) || (defined(__METALC__))
