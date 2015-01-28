@@ -37,7 +37,7 @@ static inline void GetMFromParam(float* pose, Matrix4f& M)
 }
 
 
-void ComputeSingleStep(float *step, float *ATA, float *ATb, float lambda)
+static void ComputeSingleStep(float *step, float *ATA, float *ATb, float lambda)
 {
 	float tmpATA[6 * 6];
 	memcpy(tmpATA, ATA, 6 * 6 * sizeof(float));
