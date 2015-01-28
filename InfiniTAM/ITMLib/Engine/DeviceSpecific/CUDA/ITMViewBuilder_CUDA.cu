@@ -25,6 +25,7 @@ void ITMViewBuilder_CUDA::UpdateView(ITMView **view_ptr, ITMUChar4Image *rgbImag
 		if (this->shortImage != NULL) delete this->shortImage;
 		this->shortImage = new ITMShortImage(rawDepthImage->noDims, true, true);
 	}
+
 	ITMView *view = *view_ptr;
 
 	view->rgb->SetFrom(rgbImage, MemoryBlock<Vector4u>::CPU_TO_CUDA);
@@ -45,10 +46,9 @@ void ITMViewBuilder_CUDA::UpdateView(ITMView **view_ptr, ITMUChar4Image *rgbImag
 
 void ITMViewBuilder_CUDA::UpdateView(ITMView **view_ptr, ITMUChar4Image *rgbImage, ITMFloatImage *depthImage)
 {
-	if (view_ptr == NULL)
-	{
+	if (*view_ptr == NULL)
 		*view_ptr = new ITMView(calib, rgbImage->noDims, depthImage->noDims, true);
-	}
+
 	ITMView *view = *view_ptr;
 
 	view->rgb->UpdateDeviceFromHost();
@@ -57,12 +57,13 @@ void ITMViewBuilder_CUDA::UpdateView(ITMView **view_ptr, ITMUChar4Image *rgbImag
 
 void ITMViewBuilder_CUDA::UpdateView(ITMView **view_ptr, ITMUChar4Image *rgbImage, ITMShortImage *depthImage, ITMIMUMeasurement *imuMeasurement)
 {
-	if (view_ptr == NULL) 
+	if (*view_ptr == NULL) 
 	{
 		*view_ptr = new ITMViewIMU(calib, rgbImage->noDims, depthImage->noDims, true);
 		if (this->shortImage != NULL) delete this->shortImage;
 		this->shortImage = new ITMShortImage(depthImage->noDims, true, true);
 	}
+
 	ITMViewIMU* imuView = (ITMViewIMU*)(*view_ptr);
 	imuView->imu->SetFrom(imuMeasurement);
 

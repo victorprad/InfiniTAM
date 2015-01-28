@@ -38,6 +38,18 @@ void ITMPose::SetFrom(float tx, float ty, float tz, float rx, float ry, float rz
 	this->SetModelViewFromParams();
 }
 
+void ITMPose::SetFrom(const Vector3f &translation, const Vector3f &rotation)
+{
+	this->params.each.tx = translation.x;
+	this->params.each.ty = translation.y;
+	this->params.each.tz = translation.z;
+	this->params.each.rx = rotation.x;
+	this->params.each.ry = rotation.y;
+	this->params.each.rz = rotation.z;
+
+	this->SetModelViewFromParams();
+}
+
 void ITMPose::SetFrom(const float pose[6])
 {
 	SetFrom(pose[0], pose[1], pose[2], pose[3], pose[4], pose[5]);
@@ -229,6 +241,17 @@ Vector3f ITMPose::GetT(void) const
 	T.v[0] = M.m[0 + 4*3]; T.v[1] = M.m[1 + 4*3]; T.v[2] = M.m[2 + 4*3];
 
 	return T;
+}
+
+void ITMPose::GetParams(Vector3f &translation, Vector3f &rotation)
+{
+	translation.x = this->params.each.tx;
+	translation.y = this->params.each.ty;
+	translation.z = this->params.each.tz;
+
+	rotation.x = this->params.each.rx;
+	rotation.y = this->params.each.ry;
+	rotation.z = this->params.each.rz;
 }
 
 void ITMPose::SetM(const Matrix4f & src)
