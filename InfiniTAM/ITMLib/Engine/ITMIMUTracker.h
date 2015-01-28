@@ -18,8 +18,6 @@ namespace ITMLib
 		class ITMIMUTracker : public ITMTracker
 		{
 		private:
-			ITMLowLevelEngine *lowLevelEngine;
-			
 			ITMTrackingState *trackingState; const ITMView *view;
 			ITMPose *imuPose_imucoords, *imuPose_cameracoords;
 			Matrix3f oldR_visual;
@@ -28,7 +26,7 @@ namespace ITMLib
 		public:
 			void TrackCamera(ITMTrackingState *trackingState, const ITMView *view);
 
-			explicit ITMIMUTracker(ITMLowLevelEngine *lowLevelEngine);
+			ITMIMUTracker();
 			virtual ~ITMIMUTracker(void);
 		};
 	}

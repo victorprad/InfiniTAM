@@ -20,7 +20,7 @@ __global__ void gradientY_device(Vector4s *grad, const Vector4u *image, Vector2i
 
 // host methods
 
-void ITMLowLevelEngine_CUDA::CopyImage(ITMUChar4Image *image_out, const ITMUChar4Image *image_in)
+void ITMLowLevelEngine_CUDA::CopyImage(ITMUChar4Image *image_out, const ITMUChar4Image *image_in) const
 {
 	Vector4u *dest = image_out->GetData(MEMORYDEVICE_CUDA);
 	const Vector4u *src = image_in->GetData(MEMORYDEVICE_CUDA);
@@ -28,7 +28,7 @@ void ITMLowLevelEngine_CUDA::CopyImage(ITMUChar4Image *image_out, const ITMUChar
 	ITMSafeCall(cudaMemcpy(dest, src, image_in->dataSize * sizeof(Vector4u), cudaMemcpyDeviceToDevice));
 }
 
-void ITMLowLevelEngine_CUDA::CopyImage(ITMFloatImage *image_out, const ITMFloatImage *image_in)
+void ITMLowLevelEngine_CUDA::CopyImage(ITMFloatImage *image_out, const ITMFloatImage *image_in) const
 {
 	float *dest = image_out->GetData(MEMORYDEVICE_CUDA);
 	const float *src = image_in->GetData(MEMORYDEVICE_CUDA);
@@ -36,7 +36,7 @@ void ITMLowLevelEngine_CUDA::CopyImage(ITMFloatImage *image_out, const ITMFloatI
 	ITMSafeCall(cudaMemcpy(dest, src, image_in->dataSize * sizeof(float), cudaMemcpyDeviceToDevice));
 }
 
-void ITMLowLevelEngine_CUDA::CopyImage(ITMFloat4Image *image_out, const ITMFloat4Image *image_in)
+void ITMLowLevelEngine_CUDA::CopyImage(ITMFloat4Image *image_out, const ITMFloat4Image *image_in) const
 {
 	Vector4f *dest = image_out->GetData(MEMORYDEVICE_CUDA);
 	const Vector4f *src = image_in->GetData(MEMORYDEVICE_CUDA);
@@ -44,7 +44,7 @@ void ITMLowLevelEngine_CUDA::CopyImage(ITMFloat4Image *image_out, const ITMFloat
 	ITMSafeCall(cudaMemcpy(dest, src, image_in->dataSize * sizeof(Vector4f), cudaMemcpyDeviceToDevice));
 }
 
-void ITMLowLevelEngine_CUDA::FilterSubsample(ITMUChar4Image *image_out, const ITMUChar4Image *image_in)
+void ITMLowLevelEngine_CUDA::FilterSubsample(ITMUChar4Image *image_out, const ITMUChar4Image *image_in) const
 {
 	Vector2i oldDims = image_in->noDims;
 	Vector2i newDims; newDims.x = image_in->noDims.x / 2; newDims.y = image_in->noDims.y / 2;
@@ -60,7 +60,7 @@ void ITMLowLevelEngine_CUDA::FilterSubsample(ITMUChar4Image *image_out, const IT
 	filterSubsample_device << <gridSize, blockSize >> >(imageData_out, newDims, imageData_in, oldDims);
 }
 
-void ITMLowLevelEngine_CUDA::FilterSubsampleWithHoles(ITMFloatImage *image_out, const ITMFloatImage *image_in)
+void ITMLowLevelEngine_CUDA::FilterSubsampleWithHoles(ITMFloatImage *image_out, const ITMFloatImage *image_in) const
 {
 	Vector2i oldDims = image_in->noDims;
 	Vector2i newDims; newDims.x = image_in->noDims.x / 2; newDims.y = image_in->noDims.y / 2;
@@ -76,7 +76,7 @@ void ITMLowLevelEngine_CUDA::FilterSubsampleWithHoles(ITMFloatImage *image_out, 
 	filterSubsampleWithHoles_device << <gridSize, blockSize >> >(imageData_out, newDims, imageData_in, oldDims);
 }
 
-void ITMLowLevelEngine_CUDA::FilterSubsampleWithHoles(ITMFloat4Image *image_out, const ITMFloat4Image *image_in)
+void ITMLowLevelEngine_CUDA::FilterSubsampleWithHoles(ITMFloat4Image *image_out, const ITMFloat4Image *image_in) const
 {
 	Vector2i oldDims = image_in->noDims;
 	Vector2i newDims; newDims.x = image_in->noDims.x / 2; newDims.y = image_in->noDims.y / 2;
@@ -92,7 +92,7 @@ void ITMLowLevelEngine_CUDA::FilterSubsampleWithHoles(ITMFloat4Image *image_out,
 	filterSubsampleWithHoles_device << <gridSize, blockSize >> >(imageData_out, newDims, imageData_in, oldDims);
 }
 
-void ITMLowLevelEngine_CUDA::GradientX(ITMShort4Image *grad_out, const ITMUChar4Image *image_in)
+void ITMLowLevelEngine_CUDA::GradientX(ITMShort4Image *grad_out, const ITMUChar4Image *image_in) const
 {
 	grad_out->ChangeDims(image_in->noDims);
 	Vector2i imgSize = image_in->noDims;
@@ -108,7 +108,7 @@ void ITMLowLevelEngine_CUDA::GradientX(ITMShort4Image *grad_out, const ITMUChar4
 	gradientX_device << <gridSize, blockSize >> >(grad, image, imgSize);
 }
 
-void ITMLowLevelEngine_CUDA::GradientY(ITMShort4Image *grad_out, const ITMUChar4Image *image_in)
+void ITMLowLevelEngine_CUDA::GradientY(ITMShort4Image *grad_out, const ITMUChar4Image *image_in) const
 {
 	grad_out->ChangeDims(image_in->noDims);
 	Vector2i imgSize = image_in->noDims;

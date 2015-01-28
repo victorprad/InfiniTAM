@@ -53,11 +53,16 @@ namespace ITMLib
 			bool hasStartedObjectReconstruction;
 			bool fusionActive, mainProcessingActive;
 
-			ITMTrackerCollection *trackerCollection;
 			ITMLowLevelEngine *lowLevelEngine;
-			ITMViewBuilder *viewBuilder;
-		
+			IITMVisualisationEngine *visualisationEngine;
+
+			ITMViewBuilder *viewBuilder;		
 			ITMDenseMapper<ITMVoxel,ITMVoxelIndex> *denseMapper;
+			ITMTrackingController *trackingController;
+
+			ITMScene<ITMVoxel, ITMVoxelIndex> *scene;
+			ITMRenderState *renderState_live;
+			ITMRenderState *renderState_freeview;
 		public:
 			enum GetImageType
 			{

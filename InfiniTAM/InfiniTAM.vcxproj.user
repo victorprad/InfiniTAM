@@ -8,4 +8,7 @@
     <LocalDebuggerCommandArguments>../../Files/iPad/calib.txt  ../../Files/iPad/Frames/img_"%"08i.mis ../../Files/iPad/Frames/img_"%"08i.irw ../../Files/iPad/Frames/imu_"%"08i.txt</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
+  <PropertyGroup>
+    <ShowAllFiles>false</ShowAllFiles>
+  </PropertyGroup>
 </Project>

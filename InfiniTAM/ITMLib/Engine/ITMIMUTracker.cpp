@@ -5,7 +5,7 @@
 
 using namespace ITMLib::Engine;
 
-ITMIMUTracker::ITMIMUTracker(ITMLowLevelEngine *lowLevelEngine)
+ITMIMUTracker::ITMIMUTracker()
 {
 	this->hasAtLeastTwoFrames = false;
 

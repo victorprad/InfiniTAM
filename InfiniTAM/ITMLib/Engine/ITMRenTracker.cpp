@@ -54,7 +54,7 @@ static void ComputeSingleStep(float *step, float *ATA, float *ATb, float lambda)
 
 
 template<class TVoxel, class TIndex>
-ITMRenTracker<TVoxel, TIndex>::ITMRenTracker(Vector2i imgSize, int noHierarchyLevels, ITMLowLevelEngine *lowLevelEngine, 
+ITMRenTracker<TVoxel, TIndex>::ITMRenTracker(Vector2i imgSize, int noHierarchyLevels, const ITMLowLevelEngine *lowLevelEngine, 
 	const ITMScene<TVoxel,TIndex> *scene, MemoryDeviceType memoryType)
 { 
 	//TODO from parameters, rotationOnly not implemented

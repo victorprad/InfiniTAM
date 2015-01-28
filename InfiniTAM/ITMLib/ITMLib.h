@@ -72,7 +72,8 @@
 #endif
 
 #include "Engine/ITMIMUTracker.h"
-#include "Engine/ITMTrackerCollection.h"
+#include "Engine/ITMCompositeTracker.h"
+#include "Engine/ITMTrackingController.h"
 
 #include "Engine/ITMViewBuilder.h"
 #include "Engine/DeviceSpecific/CPU/ITMViewBuilder_CPU.h"

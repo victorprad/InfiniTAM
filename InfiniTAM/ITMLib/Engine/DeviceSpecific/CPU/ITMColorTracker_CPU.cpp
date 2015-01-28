@@ -6,7 +6,7 @@
 
 using namespace ITMLib::Engine;
 
-ITMColorTracker_CPU::ITMColorTracker_CPU(Vector2i imgSize, int noHierarchyLevels, int noRotationOnlyLevels, ITMLowLevelEngine *lowLevelEngine) 
+ITMColorTracker_CPU::ITMColorTracker_CPU(Vector2i imgSize, int noHierarchyLevels, int noRotationOnlyLevels, const ITMLowLevelEngine *lowLevelEngine) 
 	: ITMColorTracker(imgSize, noHierarchyLevels, noRotationOnlyLevels, lowLevelEngine, MEMORYDEVICE_CPU) {  }
 
 ITMColorTracker_CPU::~ITMColorTracker_CPU(void) { }

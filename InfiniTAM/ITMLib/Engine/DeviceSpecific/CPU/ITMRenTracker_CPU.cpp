@@ -5,7 +5,7 @@
 using namespace ITMLib::Engine;
 
 template<class TVoxel, class TIndex>
-ITMRenTracker_CPU<TVoxel, TIndex>::ITMRenTracker_CPU(Vector2i imgSize, int noHierarchyLevels, ITMLowLevelEngine *lowLevelEngine, const ITMScene<TVoxel,TIndex> *scene)
+ITMRenTracker_CPU<TVoxel, TIndex>::ITMRenTracker_CPU(Vector2i imgSize, int noHierarchyLevels, const ITMLowLevelEngine *lowLevelEngine, const ITMScene<TVoxel,TIndex> *scene)
 	: ITMRenTracker<TVoxel, TIndex>(imgSize, noHierarchyLevels, lowLevelEngine, scene, MEMORYDEVICE_CPU) { }
 
 template<class TVoxel, class TIndex>

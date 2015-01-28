@@ -8,7 +8,7 @@
 using namespace ITMLib::Engine;
 
 ITMDepthTracker::ITMDepthTracker(Vector2i imgSize, int noHierarchyLevels, int noRotationOnlyLevels, int noICPRunTillLevel, float distThresh, 
-	ITMLowLevelEngine *lowLevelEngine, MemoryDeviceType memoryType)
+	const ITMLowLevelEngine *lowLevelEngine, MemoryDeviceType memoryType)
 {
 	viewHierarchy = new ITMImageHierarchy<ITMTemplatedHierarchyLevel<ITMFloatImage> >(imgSize, noHierarchyLevels, noRotationOnlyLevels, memoryType, true);
 	sceneHierarchy = new ITMImageHierarchy<ITMSceneHierarchyLevel>(imgSize, noHierarchyLevels, noRotationOnlyLevels, memoryType, true);

@@ -142,6 +142,9 @@
     <ClCompile Include="Engine\IMUSourceEngine.cpp">
       <Filter>Engine\Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ITMLib\Engine\ITMTrackingController.cpp">
+      <Filter>ITMLib\Engine</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Utils\FileUtils.h">
@@ -384,11 +387,14 @@
     <ClInclude Include="ITMLib\Objects\ITMPlainVoxelArray.h">
       <Filter>ITMLib\Objects\PlainVoxelArray</Filter>
     </ClInclude>
-    <ClInclude Include="ITMLib\Engine\ITMTrackerCollection.h">
-      <Filter>ITMLib\Engine\Trackers</Filter>
-    </ClInclude>
     <ClInclude Include="Engine\IMUSourceEngine.h">
       <Filter>Engine\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ITMLib\Engine\ITMTrackingController.h">
+      <Filter>ITMLib\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="ITMLib\Engine\ITMCompositeTracker.h">
+      <Filter>ITMLib\Engine\Trackers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

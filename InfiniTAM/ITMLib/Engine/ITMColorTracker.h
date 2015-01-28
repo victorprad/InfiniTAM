@@ -24,7 +24,7 @@ namespace ITMLib
 		class ITMColorTracker : public ITMTracker
 		{
 		private:
-			ITMLowLevelEngine *lowLevelEngine;
+			const ITMLowLevelEngine *lowLevelEngine;
 
 			void PrepareForEvaluation(const ITMView *view);
 
@@ -79,7 +79,7 @@ namespace ITMLib
 			void TrackCamera(ITMTrackingState *trackingState, const ITMView *view);
 
 			ITMColorTracker(Vector2i imgSize, int noHierarchyLevels, int noRotationOnlyLevels,
-				ITMLowLevelEngine *lowLevelEngine, MemoryDeviceType memoryType);
+				const ITMLowLevelEngine *lowLevelEngine, MemoryDeviceType memoryType);
 			virtual ~ITMColorTracker(void);
 		};
 	}
