@@ -131,7 +131,6 @@ void ITMSceneReconstructionEngine_CPU<TVoxel, ITMVoxelBlockHash>::AllocateSceneF
 	int noVisibleEntries = 0, noActiveEntries = 0;
 
 	memset(entriesAllocType, 0, noTotalEntries);
-	memset(blockCoords, 0, noTotalEntries * sizeof(Vector4s));
 
 	for (int i = 0; i < renderState_vh->noVisibleEntries; i++)
 		entriesVisibleType[visibleEntryIDs[i]] = 3; // visible at previous frame and unstreamed
