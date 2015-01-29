@@ -126,7 +126,7 @@ void ITMSceneReconstructionEngine_CPU<TVoxel, ITMVoxelBlockHash>::AllocateSceneF
 	float oneOverVoxelSize = 1.0f / (voxelSize * SDF_BLOCK_SIZE);
 
 	int lastFreeVoxelBlockId = scene->localVBA.lastFreeBlockId;
-	int lastFreeExcessListId = scene->index.lastFreeExcessListId;
+	int lastFreeExcessListId = scene->index.GetLastFreeExcessListId();
 
 	int noVisibleEntries = 0, noActiveEntries = 0;
 
@@ -257,7 +257,7 @@ void ITMSceneReconstructionEngine_CPU<TVoxel, ITMVoxelBlockHash>::AllocateSceneF
 	renderState_vh->noActiveEntries = noActiveEntries;
 
 	scene->localVBA.lastFreeBlockId = lastFreeVoxelBlockId;
-	scene->index.lastFreeExcessListId = lastFreeExcessListId;
+	scene->index.SetLastFreeExcessListId(lastFreeExcessListId);
 }
 
 template<class TVoxel>

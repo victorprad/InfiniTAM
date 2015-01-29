@@ -36,6 +36,8 @@ namespace ITMLib
 
 #ifndef __METALC__
 		private:
+			int lastFreeExcessListId;
+
 			/** The actual data in the hash table. */
 			ORUtils::MemoryBlock<ITMHashEntry> *hashEntries;
 
@@ -49,8 +51,6 @@ namespace ITMLib
 			MemoryDeviceType memoryType;
 
 		public:
-			int lastFreeExcessListId;
-
 			ITMVoxelBlockHash(MemoryDeviceType memoryType)
 			{
 				this->memoryType = memoryType;
@@ -105,7 +105,10 @@ namespace ITMLib
 			*/
 			const int *GetExcessAllocationList(void) const { return excessAllocationList->GetData(memoryType); }
 			int *GetExcessAllocationList(void) { return excessAllocationList->GetData(memoryType); }
-			
+
+			int GetLastFreeExcessListId(void) { return lastFreeExcessListId; }
+			void SetLastFreeExcessListId(int lastFreeExcessListId) { this->lastFreeExcessListId = lastFreeExcessListId; }
+
 #ifdef COMPILE_WITH_METAL
 			const void* GetEntries_MB(void) { return hashData->entries->GetMetalBuffer(); }
 			const void* GetExcessAllocationList_MB(void) { return hashData->excessAllocationList->GetMetalBuffer(); }
