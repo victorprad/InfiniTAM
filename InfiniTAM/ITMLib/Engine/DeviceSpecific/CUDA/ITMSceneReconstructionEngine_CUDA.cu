@@ -44,7 +44,7 @@ ITMSceneReconstructionEngine_CUDA<TVoxel,ITMVoxelBlockHash>::ITMSceneReconstruct
 	ITMSafeCall(cudaMalloc((void**)&noAllocatedVoxelEntries_device, sizeof(int)));
 	ITMSafeCall(cudaMalloc((void**)&noAllocatedExcessEntries_device, sizeof(int)));
 
-	int noTotalEntries = ITMVoxelBlockHash::noVoxelBlocks;
+	int noTotalEntries = ITMVoxelBlockHash::noTotalEntries;
 	ITMSafeCall(cudaMalloc((void**)&entriesAllocType_device, noTotalEntries));
 	ITMSafeCall(cudaMalloc((void**)&blockCoords_device, noTotalEntries * sizeof(Vector4s)));
 }
@@ -88,7 +88,7 @@ void ITMSceneReconstructionEngine_CUDA<TVoxel, ITMVoxelBlockHash>::AllocateScene
 	ITMHashEntry *hashTable = scene->index.GetEntries();
 	ITMHashCacheState *cacheStates = scene->useSwapping ? scene->globalCache->GetCacheStates(true) : 0;
 
-	int noTotalEntries = scene->index.noVoxelBlocks;
+	int noTotalEntries = scene->index.noTotalEntries;
 
 	int *visibleEntryIDs = renderState_vh->GetVisibleEntryIDs();
 	int *activeEntryIDs = renderState_vh->GetActiveEntryIDs();

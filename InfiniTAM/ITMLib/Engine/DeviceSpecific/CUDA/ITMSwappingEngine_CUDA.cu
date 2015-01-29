@@ -57,7 +57,7 @@ int ITMSwappingEngine_CUDA<TVoxel,ITMVoxelBlockHash>::DownloadFromGlobalMemory(I
 	int *neededEntryIDs_global = globalCache->GetNeededEntryIDs(false);
 
 	dim3 blockSize(256);
-	dim3 gridSize((int)ceil((float)scene->index.noVoxelBlocks / (float)blockSize.x));
+	dim3 gridSize((int)ceil((float)scene->index.noTotalEntries / (float)blockSize.x));
 
 	ITMSafeCall(cudaMemset(noNeededEntries_device, 0, sizeof(int)));
 
@@ -145,7 +145,7 @@ void ITMSwappingEngine_CUDA<TVoxel, ITMVoxelBlockHash>::SaveToGlobalMemory(ITMSc
 
 	{
 		blockSize = dim3(256);
-		gridSize = dim3((int)ceil((float)scene->index.noVoxelBlocks / (float)blockSize.x));
+		gridSize = dim3((int)ceil((float)scene->index.noTotalEntries / (float)blockSize.x));
 
 		ITMSafeCall(cudaMemset(noNeededEntries_device, 0, sizeof(int)));
 

@@ -27,7 +27,7 @@ template<class TVoxel>
 ITMRenderState* ITMVisualisationEngine_CPU<TVoxel, ITMVoxelBlockHash>::CreateRenderState(const Vector2i & imgSize) const
 {
 	return new ITMRenderState_VH(
-		ITMHashTable::noTotalEntries, imgSize, this->scene->sceneParams->viewFrustum_min, this->scene->sceneParams->viewFrustum_max, MEMORYDEVICE_CPU
+		ITMVoxelBlockHash::noTotalEntries, imgSize, this->scene->sceneParams->viewFrustum_min, this->scene->sceneParams->viewFrustum_max, MEMORYDEVICE_CPU
 	);
 }
 
@@ -41,7 +41,7 @@ void ITMVisualisationEngine_CPU<TVoxel,ITMVoxelBlockHash>::FindVisibleBlocks(con
 	ITMRenderState *renderState) const
 {
 	const ITMHashEntry *hashTable = this->scene->index.GetEntries();
-	int noTotalEntries = this->scene->index.noVoxelBlocks;
+	int noTotalEntries = this->scene->index.noTotalEntries;
 	float voxelSize = this->scene->sceneParams->voxelSize;
 	Vector2i imgSize = renderState->renderingRangeImage->noDims;
 

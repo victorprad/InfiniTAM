@@ -8,8 +8,7 @@
 
 #include "../Utils/ITMLibDefines.h"
 
-#include "ITMHashTable.h"
-#include "ITMRenderState.h"
+#include "../../ORUtils/MemoryBlock.h"
 
 namespace ITMLib
 {
@@ -32,13 +31,21 @@ namespace ITMLib
 			};
 
 			/** Maximum number of total entries. */
-			static const CONSTANT(int) noVoxelBlocks = ITMHashTable::noTotalEntries;
+			static const CONSTANT(int) noTotalEntries = SDF_BUCKET_NUM * SDF_ENTRY_NUM_PER_BUCKET + SDF_EXCESS_LIST_SIZE;
 			static const CONSTANT(int) voxelBlockSize = SDF_BLOCK_SIZE * SDF_BLOCK_SIZE * SDF_BLOCK_SIZE;
 
 #ifndef __METALC__
-            
 		private:
-			DEVICEPTR(ITMHashTable) *hashData;
+			/** The actual data in the hash table. */
+			ORUtils::MemoryBlock<ITMHashEntry> *hashEntries;
+
+			/** Identifies which entries of the overflow
+			list are allocated. This is used if too
+			many hash collisions caused the buckets to
+			overflow.
+			*/
+			ORUtils::MemoryBlock<int> *excessAllocationList;
+        
 			MemoryDeviceType memoryType;
 
 		public:
@@ -48,45 +55,62 @@ namespace ITMLib
 			{
 				this->memoryType = memoryType;
 
-				ITMHashTable *hashData_host = new ITMHashTable(MEMORYDEVICE_CPU);
-				hashData_host->ResetData();
+				ORUtils::MemoryBlock<ITMHashEntry> *hashEntries_host = new ORUtils::MemoryBlock<ITMHashEntry>(noTotalEntries, MEMORYDEVICE_CPU);
+				ORUtils::MemoryBlock<int> *excessAllocationList_host = new ORUtils::MemoryBlock<int>(SDF_EXCESS_LIST_SIZE, MEMORYDEVICE_CPU);
+
+				{
+					ITMHashEntry *data = hashEntries_host->GetData(MEMORYDEVICE_CPU);
+					memset(data, 0, noTotalEntries * sizeof(ITMHashEntry));
+					for (int i = 0; i < noTotalEntries; i++) data[i].ptr = -2;
+
+					int *data_i = excessAllocationList_host->GetData(MEMORYDEVICE_CPU);
+					for (int i = 0; i < SDF_EXCESS_LIST_SIZE; i++) data_i[i] = i;
+				}
 
 				if (memoryType == MEMORYDEVICE_CUDA)
 				{
 #ifndef COMPILE_WITHOUT_CUDA
-					hashData = new ITMHashTable(MEMORYDEVICE_CUDA);
-					hashData->entries->SetFrom(hashData_host->entries, ORUtils::MemoryBlock<ITMHashEntry>::CPU_TO_CUDA);
-					hashData->excessAllocationList->SetFrom(hashData_host->excessAllocationList, ORUtils::MemoryBlock<int>::CPU_TO_CUDA);
+					hashEntries = new ORUtils::MemoryBlock<ITMHashEntry>(noTotalEntries, memoryType);
+					excessAllocationList = new ORUtils::MemoryBlock<int>(SDF_EXCESS_LIST_SIZE, memoryType);
+					hashEntries->SetFrom(hashEntries_host, ORUtils::MemoryBlock<ITMHashEntry>::CPU_TO_CUDA);
+					excessAllocationList->SetFrom(excessAllocationList_host, ORUtils::MemoryBlock<int>::CPU_TO_CUDA);
 #endif
-					delete hashData_host;
+					delete hashEntries_host;
+					delete excessAllocationList_host;
 				}
-				else hashData = hashData_host;
+				else
+				{
+					hashEntries = hashEntries_host;
+					excessAllocationList = excessAllocationList_host;
+				}
 				lastFreeExcessListId = SDF_EXCESS_LIST_SIZE - 1;
 			}
 
 			~ITMVoxelBlockHash(void)
 			{
-				delete hashData;
+				delete hashEntries;
+				delete excessAllocationList;
 			}
 
 			/** Get the list of actual entries in the hash table. */
-			const ITMHashEntry *GetEntries(void) const { return hashData->entries->GetData(memoryType); }
-			ITMHashEntry *GetEntries(void) { return hashData->entries->GetData(memoryType); }
-			
+			const ITMHashEntry *GetEntries(void) const { return hashEntries->GetData(memoryType); }
+			ITMHashEntry *GetEntries(void) { return hashEntries->GetData(memoryType); }
+
+			const IndexData *getIndexData(void) const { return hashEntries->GetData(memoryType); }
+			IndexData *getIndexData(void) { return hashEntries->GetData(memoryType); }
+
 			/** Get the list that identifies which entries of the
 			overflow list are allocated. This is used if too
 			many hash collisions caused the buckets to overflow.
 			*/
-			const int *GetExcessAllocationList(void) const { return hashData->excessAllocationList->GetData(memoryType); }
-			int *GetExcessAllocationList(void) { return hashData->excessAllocationList->GetData(memoryType); }
+			const int *GetExcessAllocationList(void) const { return excessAllocationList->GetData(memoryType); }
+			int *GetExcessAllocationList(void) { return excessAllocationList->GetData(memoryType); }
 			
 #ifdef COMPILE_WITH_METAL
 			const void* GetEntries_MB(void) { return hashData->entries->GetMetalBuffer(); }
 			const void* GetExcessAllocationList_MB(void) { return hashData->excessAllocationList->GetMetalBuffer(); }
 			const void* getIndexData_MB(void) const { return hashData->entries->GetMetalBuffer(); }
 #endif
-
-			inline const IndexData* getIndexData(void) const { return hashData->entries->GetData(memoryType); }
 
 			/** Maximum number of total entries. */
 			int getNumAllocatedVoxelBlocks(void) { return SDF_LOCAL_BLOCK_NUM; }

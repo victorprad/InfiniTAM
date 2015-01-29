@@ -105,7 +105,6 @@ set(ITMLIB_OBJECTS_HEADERS
 Objects/ITMDisparityCalib.h
 Objects/ITMExtrinsics.h
 Objects/ITMGlobalCache.h
-Objects/ITMHashTable.h
 Objects/ITMImageHierarchy.h
 Objects/ITMIntrinsics.h
 Objects/ITMLocalVBA.h

@@ -15,14 +15,14 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_Depth(THREADPTR(float) *localNa
 
 	if (depth <= 1e-8f) return false; //check if valid -- != 0.0f
 
-    Vector4f tmp3Dpoint, tmp3Dpoint_reproj; Vector3f ptDiff;
+	Vector4f tmp3Dpoint, tmp3Dpoint_reproj; Vector3f ptDiff;
 	Vector4f curr3Dpoint, corr3Dnormal; Vector2f tmp2Dpoint;
 	float A[noPara];
 
 	tmp3Dpoint.x = depth * ((float(x) - viewIntrinsics.z) / viewIntrinsics.x);
 	tmp3Dpoint.y = depth * ((float(y) - viewIntrinsics.w) / viewIntrinsics.y);
 	tmp3Dpoint.z = depth;
-    tmp3Dpoint.w = 1.0f;
+	tmp3Dpoint.w = 1.0f;
     
 	// transform to previous frame coordinates
 	tmp3Dpoint = approxInvPose * tmp3Dpoint;
