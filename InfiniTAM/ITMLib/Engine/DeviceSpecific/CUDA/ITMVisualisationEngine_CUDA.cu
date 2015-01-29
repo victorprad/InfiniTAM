@@ -56,7 +56,8 @@ __global__ void renderColour_device(Vector4u *outRendering, const Vector4f *ptsR
 // class implementation
 
 template<class TVoxel, class TIndex>
-ITMVisualisationEngine_CUDA<TVoxel, TIndex>::ITMVisualisationEngine_CUDA(void)
+ITMVisualisationEngine_CUDA<TVoxel, TIndex>::ITMVisualisationEngine_CUDA(ITMScene<TVoxel, TIndex> *scene)
+	: ITMVisualisationEngine<TVoxel, TIndex>(scene)
 {
 	ITMSafeCall(cudaMalloc((void**)&noTotalPoints_device, sizeof(uint)));
 }
@@ -68,7 +69,8 @@ ITMVisualisationEngine_CUDA<TVoxel, TIndex>::~ITMVisualisationEngine_CUDA(void)
 }
 
 template<class TVoxel>
-ITMVisualisationEngine_CUDA<TVoxel, ITMVoxelBlockHash>::ITMVisualisationEngine_CUDA(void)
+ITMVisualisationEngine_CUDA<TVoxel, ITMVoxelBlockHash>::ITMVisualisationEngine_CUDA(ITMScene<TVoxel, ITMVoxelBlockHash> *scene)
+	: ITMVisualisationEngine<TVoxel, ITMVoxelBlockHash>(scene)
 {
 	ITMSafeCall(cudaMalloc((void**)&renderingBlockList_device, sizeof(RenderingBlock) * MAX_RENDERING_BLOCKS));
 	ITMSafeCall(cudaMalloc((void**)&noTotalBlocks_device, sizeof(uint)));
@@ -86,30 +88,32 @@ ITMVisualisationEngine_CUDA<TVoxel, ITMVoxelBlockHash>::~ITMVisualisationEngine_
 }
 
 template<class TVoxel, class TIndex>
-ITMRenderState* ITMVisualisationEngine_CUDA<TVoxel, TIndex>::CreateRenderState(const ITMScene<TVoxel, TIndex> *scene, const Vector2i & imgSize)
+ITMRenderState* ITMVisualisationEngine_CUDA<TVoxel, TIndex>::CreateRenderState(const Vector2i & imgSize) const
 {
-	return new ITMRenderState(imgSize, scene->sceneParams->viewFrustum_min, scene->sceneParams->viewFrustum_max, MEMORYDEVICE_CUDA);
+	return new ITMRenderState(
+		imgSize, this->scene->sceneParams->viewFrustum_min, this->scene->sceneParams->viewFrustum_max, MEMORYDEVICE_CUDA
+	);
 }
 
 template<class TVoxel>
-ITMRenderState* ITMVisualisationEngine_CUDA<TVoxel, ITMVoxelBlockHash>::CreateRenderState(const ITMScene<TVoxel, ITMVoxelBlockHash> *scene, const Vector2i & imgSize)
+ITMRenderState* ITMVisualisationEngine_CUDA<TVoxel, ITMVoxelBlockHash>::CreateRenderState(const Vector2i & imgSize) const
 {
-	return new ITMRenderState_VH(ITMHashTable::noTotalEntries, imgSize, scene->sceneParams->viewFrustum_min, scene->sceneParams->viewFrustum_max, MEMORYDEVICE_CUDA);
+	return new ITMRenderState_VH(
+		ITMVoxelBlockHash::noTotalEntries, imgSize, this->scene->sceneParams->viewFrustum_min, this->scene->sceneParams->viewFrustum_max, MEMORYDEVICE_CUDA
+	);
 }
 
 template<class TVoxel, class TIndex>
-void ITMVisualisationEngine_CUDA<TVoxel, TIndex>::FindVisibleBlocks(const ITMScene<TVoxel, TIndex> *scene, const ITMPose *pose,
-	const ITMIntrinsics *intrinsics, ITMRenderState *renderState)
+void ITMVisualisationEngine_CUDA<TVoxel, TIndex>::FindVisibleBlocks(const ITMPose *pose, const ITMIntrinsics *intrinsics, ITMRenderState *renderState) const
 {
 }
 
 template<class TVoxel>
-void ITMVisualisationEngine_CUDA<TVoxel, ITMVoxelBlockHash>::FindVisibleBlocks(const ITMScene<TVoxel, ITMVoxelBlockHash> *scene, const ITMPose *pose,
-	const ITMIntrinsics *intrinsics, ITMRenderState *renderState)
+void ITMVisualisationEngine_CUDA<TVoxel, ITMVoxelBlockHash>::FindVisibleBlocks(const ITMPose *pose, const ITMIntrinsics *intrinsics, ITMRenderState *renderState) const
 {
-	const ITMHashEntry *hashTable = scene->index.GetEntries();
-	int noTotalEntries = scene->index.noVoxelBlocks;
-	float voxelSize = scene->sceneParams->voxelSize;
+	const ITMHashEntry *hashTable = this->scene->index.GetEntries();
+	int noTotalEntries = this->scene->index.noTotalEntries;
+	float voxelSize = this->scene->sceneParams->voxelSize;
 	Vector2i imgSize = renderState->renderingRangeImage->noDims;
 
 	Matrix4f M = pose->GetM();
@@ -121,11 +125,11 @@ void ITMVisualisationEngine_CUDA<TVoxel, ITMVoxelBlockHash>::FindVisibleBlocks(c
 
 	dim3 cudaBlockSizeAL(256, 1);
 	dim3 gridSizeAL((int)ceil((float)noTotalEntries / (float)cudaBlockSizeAL.x));
-	buildVisibleList_device << <gridSizeAL, cudaBlockSizeAL >> >(hashTable, /*cacheStates, scene->useSwapping,*/ noTotalEntries, 
+	buildVisibleList_device << <gridSizeAL, cudaBlockSizeAL >> >(hashTable, /*cacheStates, this->scene->useSwapping,*/ noTotalEntries,
 		renderState_vh->GetVisibleEntryIDs(), noVisibleEntries_device, renderState_vh->GetEntriesVisibleType(), M, projParams, 
 		imgSize, voxelSize, 0);
 
-	/*	if (scene->useSwapping)
+	/*	if (this->scene->useSwapping)
 			{
 			reAllocateSwappedOutVoxelBlocks_device << <gridSizeAL, cudaBlockSizeAL >> >(voxelAllocationList, hashTable, noTotalEntries,
 			noAllocatedVoxelEntries_device, entriesVisibleType);
@@ -135,8 +139,7 @@ void ITMVisualisationEngine_CUDA<TVoxel, ITMVoxelBlockHash>::FindVisibleBlocks(c
 }
 
 template<class TVoxel, class TIndex>
-void ITMVisualisationEngine_CUDA<TVoxel, TIndex>::CreateExpectedDepths(const ITMScene<TVoxel, TIndex> *scene, const ITMPose *pose,
-	const ITMIntrinsics *intrinsics, ITMRenderState *renderState)
+void ITMVisualisationEngine_CUDA<TVoxel, TIndex>::CreateExpectedDepths(const ITMPose *pose,	const ITMIntrinsics *intrinsics, ITMRenderState *renderState) const
 {
 	Vector2f *minmaxData = renderState->renderingRangeImage->GetData(MEMORYDEVICE_CUDA);
 
@@ -151,10 +154,10 @@ void ITMVisualisationEngine_CUDA<TVoxel, TIndex>::CreateExpectedDepths(const ITM
 }
 
 template<class TVoxel>
-void ITMVisualisationEngine_CUDA<TVoxel, ITMVoxelBlockHash>::CreateExpectedDepths(const ITMScene<TVoxel, ITMVoxelBlockHash> *scene, const ITMPose *pose,
-	const ITMIntrinsics *intrinsics, ITMRenderState *renderState)
+void ITMVisualisationEngine_CUDA<TVoxel, ITMVoxelBlockHash>::CreateExpectedDepths(const ITMPose *pose, const ITMIntrinsics *intrinsics, 
+	ITMRenderState *renderState) const
 {
-	float voxelSize = scene->sceneParams->voxelSize;
+	float voxelSize = this->scene->sceneParams->voxelSize;
 
 	Vector2i imgSize = renderState->renderingRangeImage->noDims;
 	Vector2f *minmaxData = renderState->renderingRangeImage->GetData(MEMORYDEVICE_CUDA);
@@ -171,7 +174,7 @@ void ITMVisualisationEngine_CUDA<TVoxel, ITMVoxelBlockHash>::CreateExpectedDepth
 
 	//go through list of visible 8x8x8 blocks
 	{
-		const ITMHashEntry *hash_entries = scene->index.GetEntries();
+		const ITMHashEntry *hash_entries = this->scene->index.GetEntries();
 		const int *visibleEntryIDs = renderState_vh->GetVisibleEntryIDs();
 		int noVisibleEntries = renderState_vh->noVisibleEntries;
 
@@ -196,7 +199,8 @@ void ITMVisualisationEngine_CUDA<TVoxel, ITMVoxelBlockHash>::CreateExpectedDepth
 }
 
 template<class TVoxel>
-ITMVisualisationEngine_CUDA<TVoxel,ITMVoxelBlockHHash>::ITMVisualisationEngine_CUDA(void)
+ITMVisualisationEngine_CUDA<TVoxel,ITMVoxelBlockHHash>::ITMVisualisationEngine_CUDA(ITMScene<TVoxel, ITMVoxelBlockHHash> *scene)
+        : ITMVisualisationEngine<TVoxel, ITMVoxelBlockHHash>(scene)
 {
 	ITMSafeCall(cudaMalloc((void**)&renderingBlockList_device, sizeof(RenderingBlock) * MAX_RENDERING_BLOCKS));
 	ITMSafeCall(cudaMalloc((void**)&noTotalBlocks_device, sizeof(uint)));
@@ -214,18 +218,18 @@ ITMVisualisationEngine_CUDA<TVoxel,ITMVoxelBlockHHash>::~ITMVisualisationEngine_
 }
 
 template<class TVoxel>
-ITMRenderState* ITMVisualisationEngine_CUDA<TVoxel, ITMVoxelBlockHHash>::CreateRenderState(const ITMScene<TVoxel, ITMVoxelBlockHHash> *scene, const Vector2i & imgSize)
+ITMRenderState* ITMVisualisationEngine_CUDA<TVoxel, ITMVoxelBlockHHash>::CreateRenderState(const Vector2i & imgSize) const
 {
-	return new ITMRenderState_VH(ITMHHashTable::noTotalEntries, imgSize, scene->sceneParams->viewFrustum_min, scene->sceneParams->viewFrustum_max, MEMORYDEVICE_CUDA);
+	return new ITMRenderState_VH(ITMHHashTable::noTotalEntries, imgSize, this->scene->sceneParams->viewFrustum_min, this->scene->sceneParams->viewFrustum_max, MEMORYDEVICE_CUDA);
 }
 
 template<class TVoxel>
-void ITMVisualisationEngine_CUDA<TVoxel,ITMVoxelBlockHHash>::FindVisibleBlocks(const ITMScene<TVoxel,ITMVoxelBlockHHash> *scene, const ITMPose *pose, const ITMIntrinsics *intrinsics, ITMRenderState *renderState)
+void ITMVisualisationEngine_CUDA<TVoxel,ITMVoxelBlockHHash>::FindVisibleBlocks(const ITMPose *pose, const ITMIntrinsics *intrinsics, ITMRenderState *renderState) const
 {
-	const ITMHashEntry *hashTable = scene->index.GetEntries();
+	const ITMHashEntry *hashTable = this->scene->index.GetEntries();
 	int noLevels = ITMHHashTable::noLevels;
 	int noTotalEntriesPerLevel = ITMHHashTable::noTotalEntriesPerLevel;
-	float smallestVoxelSize = scene->sceneParams->voxelSize;
+	float smallestVoxelSize = this->scene->sceneParams->voxelSize;
 	Vector2i imgSize = renderState->renderingRangeImage->noDims;
 
 	Matrix4f M = pose->GetM();
@@ -250,7 +254,7 @@ void ITMVisualisationEngine_CUDA<TVoxel,ITMVoxelBlockHHash>::FindVisibleBlocks(c
 }
 
 template<class TVoxel>
-void ITMVisualisationEngine_CUDA<TVoxel,ITMVoxelBlockHHash>::CreateExpectedDepths(const ITMScene<TVoxel,ITMVoxelBlockHHash> *scene, const ITMPose *pose, const ITMIntrinsics *intrinsics, ITMRenderState *renderState)
+void ITMVisualisationEngine_CUDA<TVoxel,ITMVoxelBlockHHash>::CreateExpectedDepths(const ITMPose *pose, const ITMIntrinsics *intrinsics, ITMRenderState *renderState) const
 {
 	Vector2i imgSize = renderState->renderingRangeImage->noDims;
 	Vector2f *minmaxData = renderState->renderingRangeImage->GetData(MEMORYDEVICE_CUDA);
@@ -264,11 +268,11 @@ void ITMVisualisationEngine_CUDA<TVoxel,ITMVoxelBlockHHash>::CreateExpectedDepth
 	}
 
 	ITMRenderState_VH* renderState_vh = (ITMRenderState_VH*)renderState;
-	float smallestVoxelSize = scene->sceneParams->voxelSize;
+	float smallestVoxelSize = this->scene->sceneParams->voxelSize;
 
 	//go through list of visible 8x8x8 blocks
 	{
-		const ITMHHashEntry *hash_entries = scene->index.GetEntries();
+		const ITMHHashEntry *hash_entries = this->scene->index.GetEntries();
 		const int *visibleEntryIDs = renderState_vh->GetVisibleEntryIDs();
 		int noVisibleEntries = renderState_vh->noVisibleEntries;
 
@@ -322,6 +326,7 @@ static void RenderImage_common(const ITMScene<TVoxel, TIndex> *scene, const ITMP
 {
 	Vector2i imgSize = outputImage->noDims;
 	Matrix4f invM = pose->GetInvM();
+
 	GenericRaycast(scene, imgSize, invM, intrinsics->projectionParamsSimple.all, renderState);
 
 	Vector3f lightSource = -Vector3f(invM.getColumn(2));
@@ -345,7 +350,9 @@ static void CreatePointCloud_common(const ITMScene<TVoxel, TIndex> *scene, const
 {
 	Vector2i imgSize = view->rgb->noDims;
 	Matrix4f invM = trackingState->pose_d->GetInvM() * view->calib->trafo_rgb_to_depth.calib;
+
 	GenericRaycast(scene, imgSize, invM, view->calib->intrinsics_rgb.projectionParamsSimple.all, renderState);
+	trackingState->pose_pointCloud->SetFrom(trackingState->pose_d);
 
 	ITMSafeCall(cudaMemset(noTotalPoints_device, 0, sizeof(uint)));
 
@@ -368,7 +375,9 @@ void CreateICPMaps_common(const ITMScene<TVoxel, TIndex> *scene, const ITMView *
 {
 	Vector2i imgSize = view->depth->noDims;
 	Matrix4f invM = trackingState->pose_d->GetInvM();
+
 	GenericRaycast(scene, imgSize, invM, view->calib->intrinsics_d.projectionParamsSimple.all, renderState);
+	trackingState->pose_pointCloud->SetFrom(trackingState->pose_d);
 
 	Vector4f *pointsMap = trackingState->pointCloud->locations->GetData(MEMORYDEVICE_CUDA);
 	Vector4f *normalsMap = trackingState->pointCloud->colours->GetData(MEMORYDEVICE_CUDA);
@@ -385,87 +394,84 @@ void CreateICPMaps_common(const ITMScene<TVoxel, TIndex> *scene, const ITMView *
 }
 
 template<class TVoxel, class TIndex>
-void ITMVisualisationEngine_CUDA<TVoxel, TIndex>::RenderImage(const ITMScene<TVoxel, TIndex> *scene, const ITMPose *pose, const ITMIntrinsics *intrinsics,
-	const ITMRenderState *renderState, ITMUChar4Image *outputImage, bool useColour)
+void ITMVisualisationEngine_CUDA<TVoxel, TIndex>::RenderImage(const ITMPose *pose, const ITMIntrinsics *intrinsics,	const ITMRenderState *renderState, 
+	ITMUChar4Image *outputImage, bool useColour) const
 {
-	RenderImage_common(scene, pose, intrinsics, renderState, outputImage, useColour);
+	RenderImage_common(this->scene, pose, intrinsics, renderState, outputImage, useColour);
 }
 
 template<class TVoxel>
-void ITMVisualisationEngine_CUDA<TVoxel, ITMVoxelBlockHash>::RenderImage(const ITMScene<TVoxel, ITMVoxelBlockHash> *scene, const ITMPose *pose,
-	const ITMIntrinsics *intrinsics, const ITMRenderState *renderState, ITMUChar4Image *outputImage, bool useColour)
+void ITMVisualisationEngine_CUDA<TVoxel, ITMVoxelBlockHash>::RenderImage(const ITMPose *pose, const ITMIntrinsics *intrinsics, 
+	const ITMRenderState *renderState, ITMUChar4Image *outputImage, bool useColour) const
 {
-	RenderImage_common(scene, pose, intrinsics, renderState, outputImage, useColour);
+	RenderImage_common(this->scene, pose, intrinsics, renderState, outputImage, useColour);
 }
 
 template<class TVoxel>
-void ITMVisualisationEngine_CUDA<TVoxel,ITMVoxelBlockHHash>::RenderImage(const ITMScene<TVoxel,ITMVoxelBlockHHash> *scene, const ITMPose *pose,
-	const ITMIntrinsics *intrinsics, const ITMRenderState *renderState, ITMUChar4Image *outputImage, bool useColour)
+void ITMVisualisationEngine_CUDA<TVoxel,ITMVoxelBlockHHash>::RenderImage(const ITMPose *pose,
+	const ITMIntrinsics *intrinsics, const ITMRenderState *renderState, ITMUChar4Image *outputImage, bool useColour) const
 {
-	RenderImage_common(scene, pose, intrinsics, renderState, outputImage, useColour);
+	RenderImage_common(this->scene, pose, intrinsics, renderState, outputImage, useColour);
 }
 
 template<class TVoxel, class TIndex>
-void ITMVisualisationEngine_CUDA<TVoxel, TIndex>::FindSurface(const ITMScene<TVoxel, TIndex> *scene, const ITMPose *pose, const ITMIntrinsics *intrinsics,
-	const ITMRenderState *renderState)
+void ITMVisualisationEngine_CUDA<TVoxel, TIndex>::FindSurface(const ITMPose *pose, const ITMIntrinsics *intrinsics, const ITMRenderState *renderState) const
 {
-	GenericRaycast(scene, renderState->raycastResult->noDims, pose->GetInvM(), intrinsics->projectionParamsSimple.all, renderState);
+	GenericRaycast(this->scene, renderState->raycastResult->noDims, pose->GetInvM(), intrinsics->projectionParamsSimple.all, renderState);
 }
 
 template<class TVoxel>
-void ITMVisualisationEngine_CUDA<TVoxel, ITMVoxelBlockHash>::FindSurface(const ITMScene<TVoxel, ITMVoxelBlockHash> *scene, const ITMPose *pose,
-	const ITMIntrinsics *intrinsics, const ITMRenderState *renderState)
+void ITMVisualisationEngine_CUDA<TVoxel, ITMVoxelBlockHash>::FindSurface(const ITMPose *pose, const ITMIntrinsics *intrinsics,
+	const ITMRenderState *renderState) const
 {
-	GenericRaycast(scene, renderState->raycastResult->noDims, pose->GetInvM(), intrinsics->projectionParamsSimple.all, renderState);
+	GenericRaycast(this->scene, renderState->raycastResult->noDims, pose->GetInvM(), intrinsics->projectionParamsSimple.all, renderState);
 }
 
 template<class TVoxel>
-void ITMVisualisationEngine_CUDA<TVoxel, ITMVoxelBlockHHash>::FindSurface(const ITMScene<TVoxel, ITMVoxelBlockHHash> *scene, const ITMPose *pose,
-	const ITMIntrinsics *intrinsics, const ITMRenderState *renderState)
+void ITMVisualisationEngine_CUDA<TVoxel, ITMVoxelBlockHHash>::FindSurface(const ITMPose *pose,
+	const ITMIntrinsics *intrinsics, const ITMRenderState *renderState) const
 {
-	GenericRaycast(scene, renderState->raycastResult->noDims, pose->GetInvM(), intrinsics->projectionParamsSimple.all, renderState);
+	GenericRaycast(this->scene, renderState->raycastResult->noDims, pose->GetInvM(), intrinsics->projectionParamsSimple.all, renderState);
 }
 
 template<class TVoxel, class TIndex>
-void ITMVisualisationEngine_CUDA<TVoxel, TIndex>::CreatePointCloud(const ITMScene<TVoxel, TIndex> *scene, const ITMView *view, ITMTrackingState *trackingState, 
-	ITMRenderState *renderState, bool skipPoints)
+void ITMVisualisationEngine_CUDA<TVoxel, TIndex>::CreatePointCloud(const ITMView *view, ITMTrackingState *trackingState, ITMRenderState *renderState, 
+	bool skipPoints) const
 {
-	CreatePointCloud_common(scene, view, trackingState, renderState, skipPoints, noTotalPoints_device);
+	CreatePointCloud_common(this->scene, view, trackingState, renderState, skipPoints, noTotalPoints_device);
 }
 
 template<class TVoxel>
-void ITMVisualisationEngine_CUDA<TVoxel, ITMVoxelBlockHash>::CreatePointCloud(const ITMScene<TVoxel, ITMVoxelBlockHash> *scene, const ITMView *view,
-	ITMTrackingState *trackingState, ITMRenderState *renderState, bool skipPoints)
+void ITMVisualisationEngine_CUDA<TVoxel, ITMVoxelBlockHash>::CreatePointCloud(const ITMView *view, ITMTrackingState *trackingState, 
+	ITMRenderState *renderState, bool skipPoints) const
 {
-	CreatePointCloud_common(scene, view, trackingState, renderState, skipPoints, noTotalPoints_device);
+	CreatePointCloud_common(this->scene, view, trackingState, renderState, skipPoints, noTotalPoints_device);
 }
 
 template<class TVoxel>
-void ITMVisualisationEngine_CUDA<TVoxel,ITMVoxelBlockHHash>::CreatePointCloud(const ITMScene<TVoxel,ITMVoxelBlockHHash> *scene, const ITMView *view,
-	ITMTrackingState *trackingState, ITMRenderState *renderState,bool skipPoints)
+void ITMVisualisationEngine_CUDA<TVoxel,ITMVoxelBlockHHash>::CreatePointCloud(const ITMView *view,
+	ITMTrackingState *trackingState, ITMRenderState *renderState,bool skipPoints) const
 {
-	CreatePointCloud_common(scene, view, trackingState, renderState, skipPoints, noTotalPoints_device);
+	CreatePointCloud_common(this->scene, view, trackingState, renderState, skipPoints, noTotalPoints_device);
 }
 
 template<class TVoxel, class TIndex>
-void ITMVisualisationEngine_CUDA<TVoxel, TIndex>::CreateICPMaps(const ITMScene<TVoxel, TIndex> *scene, const ITMView *view, ITMTrackingState *trackingState,
-	ITMRenderState *renderState)
+void ITMVisualisationEngine_CUDA<TVoxel, TIndex>::CreateICPMaps(const ITMView *view, ITMTrackingState *trackingState, ITMRenderState *renderState) const
 {
-	CreateICPMaps_common(scene, view, trackingState, renderState);
+	CreateICPMaps_common(this->scene, view, trackingState, renderState);
 }
 
 template<class TVoxel>
-void ITMVisualisationEngine_CUDA<TVoxel, ITMVoxelBlockHash>::CreateICPMaps(const ITMScene<TVoxel, ITMVoxelBlockHash> *scene, const ITMView *view,
-	ITMTrackingState *trackingState, ITMRenderState *renderState)
+void ITMVisualisationEngine_CUDA<TVoxel, ITMVoxelBlockHash>::CreateICPMaps(const ITMView *view, ITMTrackingState *trackingState, ITMRenderState *renderState) const
 {
-	CreateICPMaps_common(scene, view, trackingState, renderState);
+	CreateICPMaps_common(this->scene, view, trackingState, renderState);
 }
 
 template<class TVoxel>
-void ITMVisualisationEngine_CUDA<TVoxel,ITMVoxelBlockHHash>::CreateICPMaps(const ITMScene<TVoxel,ITMVoxelBlockHHash> *scene, const ITMView *view,
-	ITMTrackingState *trackingState, ITMRenderState *renderState)
+void ITMVisualisationEngine_CUDA<TVoxel,ITMVoxelBlockHHash>::CreateICPMaps(const ITMView *view,
+	ITMTrackingState *trackingState, ITMRenderState *renderState) const
 {
-	CreateICPMaps_common(scene, view, trackingState, renderState);
+	CreateICPMaps_common(this->scene, view, trackingState, renderState);
 }
 
 //device implementations

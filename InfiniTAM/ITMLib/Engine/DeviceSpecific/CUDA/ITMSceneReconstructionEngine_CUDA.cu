@@ -36,7 +36,7 @@ __global__ void reAllocateSwappedOutVoxelBlocks_device(int *voxelAllocationList,
 	int *noAllocatedVoxelEntries, uchar *entriesVisibleType);
 
 __global__ void setToType3(uchar *entriesVisibleType, int *visibleEntryIDs, int noVisibleEntries);
-__global__ void setToType3HH(uchar *entriesVisibleType, int *visibleEntryIDs, int noVisibleEntries);
+__global__ void setToType3HH(uchar *entriesVisibleType, int *visibleEntryIDs, int noVisibleEntries, const ITMHashEntry *hashTable);
 
 template<bool useSwapping>
 __global__ void buildVisibleList_device(ITMHashEntry *hashTable, ITMHashCacheState *cacheStates, int noTotalEntries,
@@ -53,7 +53,7 @@ ITMSceneReconstructionEngine_CUDA<TVoxel,ITMVoxelBlockHash>::ITMSceneReconstruct
 	ITMSafeCall(cudaMalloc((void**)&noAllocatedVoxelEntries_device, sizeof(int)));
 	ITMSafeCall(cudaMalloc((void**)&noAllocatedExcessEntries_device, sizeof(int)));
 
-	int noTotalEntries = ITMVoxelBlockHash::noVoxelBlocks;
+	int noTotalEntries = ITMVoxelBlockHash::noTotalEntries;
 	ITMSafeCall(cudaMalloc((void**)&entriesAllocType_device, noTotalEntries));
 	ITMSafeCall(cudaMalloc((void**)&blockCoords_device, noTotalEntries * sizeof(Vector4s)));
 }
@@ -97,7 +97,7 @@ void ITMSceneReconstructionEngine_CUDA<TVoxel, ITMVoxelBlockHash>::AllocateScene
 	ITMHashEntry *hashTable = scene->index.GetEntries();
 	ITMHashCacheState *cacheStates = scene->useSwapping ? scene->globalCache->GetCacheStates(true) : 0;
 
-	int noTotalEntries = scene->index.noVoxelBlocks;
+	int noTotalEntries = scene->index.noTotalEntries;
 	int lastFreeExcessListId = scene->index.GetLastFreeExcessListId();
 
 	int *visibleEntryIDs = renderState_vh->GetVisibleEntryIDs();
@@ -320,7 +320,7 @@ void ITMSceneReconstructionEngine_CUDA<TVoxel, ITMVoxelBlockHHash>::AllocateScen
 
 	ITMSafeCall(cudaMemset(entriesAllocType_device, 0, sizeof(unsigned char)* noTotalEntries));
 
-	if (gridSizeVS.x > 0) setToType3HH << <gridSizeVS, cudaBlockSizeVS >> > (entriesVisibleType, visibleEntryIDs, renderState_vh->noVisibleEntries);
+	if (gridSizeVS.x > 0) setToType3HH << <gridSizeVS, cudaBlockSizeVS >> > (entriesVisibleType, visibleEntryIDs, renderState_vh->noVisibleEntries, hashTable);
 
 	buildHHashAllocAndVisibleType_device << <gridSizeHV, cudaBlockSizeHV >> >(entriesAllocType_device, entriesVisibleType,
 		blockCoords_device, depth, invM_d, invProjParams_d, mu, depthImgSize, oneOverSmallestVoxelSize, hashTable,
@@ -530,9 +530,9 @@ __global__ void setToType3HH(uchar *entriesVisibleType, int *visibleEntryIDs, in
 	int entryId = threadIdx.x + blockIdx.x * blockDim.x;
 	if (entryId > noVisibleEntries - 1) return;
 
-	int ptr = hashTable[visibleEntryIDs[i]].ptr;
+	int ptr = hashTable[visibleEntryIDs[entryId]].ptr;
 	// blocks might have disappeared due to splitting and merging
-	if (ptr < -1) entriesVisibleType[visibleEntryIDs[i]] = 0;
+	if (ptr < -1) entriesVisibleType[visibleEntryIDs[entryId]] = 0;
 	else entriesVisibleType[visibleEntryIDs[entryId]] = 3;
 }
 

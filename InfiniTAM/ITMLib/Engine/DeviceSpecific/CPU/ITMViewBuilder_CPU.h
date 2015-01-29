@@ -15,10 +15,10 @@ namespace ITMLib
 				const ITMDisparityCalib *disparityCalib);
 			void ConvertDepthMMToFloat(ITMFloatImage *depth_out, const ITMShortImage *depth_in);
 
-			void AllocateView(ITMView *view, Vector2i imgSize_rgb, Vector2i imgSize_d);
+			void UpdateView(ITMView **view, ITMUChar4Image *rgbImage, ITMShortImage *rawDepthImage);
+			void UpdateView(ITMView **view, ITMUChar4Image *rgbImage, ITMFloatImage *depthImage);
 
-			void UpdateView(ITMView *view, ITMUChar4Image *rgbImage, ITMShortImage *rawDepthImage);
-			void UpdateView(ITMView *view, ITMUChar4Image *rgbImage, ITMFloatImage *depthImage);
+			void UpdateView(ITMView **view, ITMUChar4Image *rgbImage, ITMShortImage *depthImage, ITMIMUMeasurement *imuMeasurement);
 
 			ITMViewBuilder_CPU(const ITMRGBDCalib *calib);
 			~ITMViewBuilder_CPU(void);

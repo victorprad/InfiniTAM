@@ -16,8 +16,7 @@ inline float base(float val) {
 	else return 0.0;
 }
 
-template<class TVoxel, class TIndex>
-void ITMVisualisationEngine<TVoxel,TIndex>::DepthToUchar4(ITMUChar4Image *dst, ITMFloatImage *src)
+void IITMVisualisationEngine::DepthToUchar4(ITMUChar4Image *dst, ITMFloatImage *src)
 {
 	Vector4u *dest = dst->GetData(MEMORYDEVICE_CPU);
 	float *source = src->GetData(MEMORYDEVICE_CPU);

@@ -53,12 +53,16 @@ namespace ITMLib
 			bool hasStartedObjectReconstruction;
 			bool fusionActive, mainProcessingActive;
 
-			ITMTracker *trackerPrimary, *trackerSecondary;
 			ITMLowLevelEngine *lowLevelEngine;
+			IITMVisualisationEngine *visualisationEngine;
 
-			ITMViewBuilder *viewBuilder;
-
+			ITMViewBuilder *viewBuilder;		
 			ITMDenseMapper<ITMVoxel,ITMVoxelIndex> *denseMapper;
+			ITMTrackingController *trackingController;
+
+			ITMScene<ITMVoxel, ITMVoxelIndex> *scene;
+			ITMRenderState *renderState_live;
+			ITMRenderState *renderState_freeview;
 		public:
 			enum GetImageType
 			{
@@ -77,8 +81,11 @@ namespace ITMLib
 			/// Gives access to the current input frame
 			ITMView* GetView() { return view; }
 
-			/// Process the frame accessed with @ref GetView()
+			/// Process a frame with an rgb and a depth image
 			void ProcessFrame(ITMUChar4Image *rgbImage, ITMShortImage *rawDepthImage);
+
+			/// Process a frame with rgb and depth images and a corresponding imu measurement
+			void ProcessFrame(ITMUChar4Image *rgbImage, ITMShortImage *rawDepthImage, ITMIMUMeasurement *imuMeasurement);
 
 			/// Get a result image as output
 			void GetImage(ITMUChar4Image *out, GetImageType getImageType, bool useColour, ITMPose *pose = NULL, ITMIntrinsics *intrinsics = NULL);

@@ -40,6 +40,7 @@ ITMLibSettings::ITMLibSettings(void)
 	The processing time on each frame is increased by around 50% (~5ms on a GTX Titan Black)**/
 
 	//trackerType = TRACKER_REN;
+	//trackerType = TRACKER_IMU;
 
 	if (trackerType == TRACKER_REN) noICPRunTillLevel = 1;
 	else noICPRunTillLevel = 0;

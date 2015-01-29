@@ -24,7 +24,7 @@ namespace ITMLib
 		class ITMDepthTracker : public ITMTracker
 		{
 		private:
-			ITMLowLevelEngine *lowLevelEngine;
+			const ITMLowLevelEngine *lowLevelEngine;
 			ITMImageHierarchy<ITMSceneHierarchyLevel> *sceneHierarchy;
 			ITMImageHierarchy<ITMTemplatedHierarchyLevel<ITMFloatImage> > *viewHierarchy;
 
@@ -56,7 +56,7 @@ namespace ITMLib
 			void TrackCamera(ITMTrackingState *trackingState, const ITMView *view);
 
 			ITMDepthTracker(Vector2i imgSize, int noHierarchyLevels, int noRotationOnlyLevels, int noICPRunTillLevel, float distThresh, 
-				ITMLowLevelEngine *lowLevelEngine, MemoryDeviceType memoryType);
+				const ITMLowLevelEngine *lowLevelEngine, MemoryDeviceType memoryType);
 			virtual ~ITMDepthTracker(void);
 		};
 	}

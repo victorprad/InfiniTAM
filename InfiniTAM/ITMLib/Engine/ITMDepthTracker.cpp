@@ -8,7 +8,7 @@
 using namespace ITMLib::Engine;
 
 ITMDepthTracker::ITMDepthTracker(Vector2i imgSize, int noHierarchyLevels, int noRotationOnlyLevels, int noICPRunTillLevel, float distThresh, 
-	ITMLowLevelEngine *lowLevelEngine, MemoryDeviceType memoryType)
+	const ITMLowLevelEngine *lowLevelEngine, MemoryDeviceType memoryType)
 {
 	viewHierarchy = new ITMImageHierarchy<ITMTemplatedHierarchyLevel<ITMFloatImage> >(imgSize, noHierarchyLevels, noRotationOnlyLevels, memoryType, true);
 	sceneHierarchy = new ITMImageHierarchy<ITMSceneHierarchyLevel>(imgSize, noHierarchyLevels, noRotationOnlyLevels, memoryType, true);
@@ -108,11 +108,10 @@ void ITMDepthTracker::TrackCamera(ITMTrackingState *trackingState, const ITMView
 
 	this->PrepareForEvaluation();
 
-	Matrix4f approxInvPose = trackingState->pose_d->GetInvM(), imagePose = trackingState->pose_d->GetM();
+	Matrix4f approxInvPose = trackingState->pose_d->GetInvM(), imagePose = trackingState->pose_pointCloud->GetM();
 
 	for (int levelId = viewHierarchy->noLevels - 1; levelId >= noICPLevel; levelId--)
 	{
-		
 		this->SetEvaluationParams(levelId);
 
 		int noValidPoints;

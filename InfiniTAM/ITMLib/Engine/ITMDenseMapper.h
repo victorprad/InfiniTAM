@@ -28,11 +28,8 @@ namespace ITMLib
 
 			ITMSceneReconstructionEngine<TVoxel,TIndex> *sceneRecoEngine;
 			ITMSwappingEngine<TVoxel,TIndex> *swappingEngine;
-			ITMVisualisationEngine<TVoxel,TIndex> *visualisationEngine;
 			ITMVoxelBlockOpEngine<TVoxel,TIndex> *voxelBlockOpEngine;
 			ITMScene<TVoxel,TIndex> *scene;
-
-			ITMRenderState *renderState_freeview;
 
 		public:
 			/// Pointer to information used by the raycaster
@@ -42,20 +39,13 @@ namespace ITMLib
 			void ProcessFrame(const ITMView *view, const ITMTrackingState *trackingState);
 
 			/// Get pointer to the current model of the 3D scene
-			const ITMScene<TVoxel,TIndex> *getScene() const
-			{ return scene; } 
-
-//			const ITMVisualisationEngine<TVoxel,TIndex> *getVisualisationEngine(void) const { return visualisationEngine; }
-
-			void GetICPMaps(const ITMPose *pose, const ITMIntrinsics *intrinsics, const ITMView *view, ITMTrackingState *trackingState);
-			void GetPointCloud(const ITMPose *pose, const ITMIntrinsics *intrinsics, const ITMView *view, ITMTrackingState *trackingState, bool skipPoints);
-			void GetRendering(const ITMPose *pose, const ITMIntrinsics *intrinsics, bool useColour, ITMUChar4Image *out);
+			const ITMScene<TVoxel,TIndex> *getScene() const { return scene; } 
 
 			/** \brief Constructor
 			    Ommitting a separate image size for the depth images
 			    will assume same resolution as for the RGB images.
 			*/
-			ITMDenseMapper(const ITMLibSettings *settings, /*const ITMRGBDCalib *calib,*/ Vector2i imgSize_rgb, Vector2i imgSize_d = Vector2i(-1,-1));
+			ITMDenseMapper(const ITMLibSettings *settings, ITMScene<TVoxel, TIndex>* scene, ITMRenderState *renderState_live);
 			~ITMDenseMapper();
 		};
 	}

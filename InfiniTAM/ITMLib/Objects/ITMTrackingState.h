@@ -28,19 +28,28 @@ namespace ITMLib
 			*/
 			ITMPointCloud *pointCloud;
 
+			/// The pose used to generate the point cloud.
+			ITMPose *pose_pointCloud;
+
 			/// Current pose of the depth camera.
 			ITMPose *pose_d;
 
 			ITMTrackingState(Vector2i imgSize, MemoryDeviceType memoryType)
 			{
 				this->pointCloud = new ITMPointCloud(imgSize, memoryType);
+
 				this->pose_d = new ITMPose();
+				this->pose_d->SetFrom(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
+
+				this->pose_pointCloud = new ITMPose();
+				this->pose_pointCloud->SetFrom(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
 			}
 
 			~ITMTrackingState(void)
 			{
 				delete pointCloud;
 				delete pose_d;
+				delete pose_pointCloud;
 			}
 
 			// Suppress the default copy constructor and assignment operator

@@ -10,25 +10,28 @@ ITMLib.h
 ##
 SET(ITMLIB_ENGINE_SOURCES
 Engine/ITMColorTracker.cpp
-Engine/ITMDepthTracker.cpp
-Engine/ITMMainEngine.cpp
 Engine/ITMDenseMapper.cpp
+Engine/ITMDepthTracker.cpp
+Engine/ITMIMUTracker.cpp
+Engine/ITMMainEngine.cpp
 Engine/ITMRenTracker.cpp
-Engine/ITMTrackerFactory.cpp
+Engine/ITMTrackingController.cpp
 Engine/ITMVisualisationEngine.cpp
 )
 
 SET(ITMLIB_ENGINE_HEADERS
 Engine/ITMColorTracker.h
+Engine/ITMCompositeTracker.h
+Engine/ITMDenseMapper.h
 Engine/ITMDepthTracker.h
+Engine/ITMIMUTracker.h
 Engine/ITMLowLevelEngine.h
 Engine/ITMMainEngine.h
-Engine/ITMDenseMapper.h
 Engine/ITMRenTracker.h
 Engine/ITMSceneReconstructionEngine.h
 Engine/ITMSwappingEngine.h
 Engine/ITMTracker.h
-Engine/ITMTrackerFactory.h
+Engine/ITMTrackingController.h
 Engine/ITMViewBuilder.h
 Engine/ITMVisualisationEngine.h
 )
@@ -106,7 +109,6 @@ set(ITMLIB_OBJECTS_HEADERS
 Objects/ITMDisparityCalib.h
 Objects/ITMExtrinsics.h
 Objects/ITMGlobalCache.h
-Objects/ITMHashTable.h
 Objects/ITMImageHierarchy.h
 Objects/ITMIntrinsics.h
 Objects/ITMLocalVBA.h
@@ -120,11 +122,13 @@ Objects/ITMSceneParams.h
 Objects/ITMTemplatedHierarchyLevel.h
 Objects/ITMTrackingState.h
 Objects/ITMView.h
+Objects/ITMViewIMU.h
 Objects/ITMViewHierarchyLevel.h
 Objects/ITMRenderState.h
 Objects/ITMRenderState_VH.h
 Objects/ITMVoxelBlockHash.h
 Objects/ITMVoxelBlockHHash.h
+Objects/ITMIMUMeasurement.h
 )
 
 ##

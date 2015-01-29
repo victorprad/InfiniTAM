@@ -103,6 +103,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Engine\ImageSourceEngine.cpp" />
+    <ClCompile Include="Engine\IMUSourceEngine.cpp" />
     <ClCompile Include="Engine\Kinect2Engine.cpp" />
     <ClCompile Include="Engine\OpenNIEngine.cpp" />
     <ClCompile Include="Engine\UIEngine.cpp" />
@@ -118,9 +119,10 @@
     <ClCompile Include="ITMLib\Engine\ITMColorTracker.cpp" />
     <ClCompile Include="ITMLib\Engine\ITMDenseMapper.cpp" />
     <ClCompile Include="ITMLib\Engine\ITMDepthTracker.cpp" />
+    <ClCompile Include="ITMLib\Engine\ITMIMUTracker.cpp" />
     <ClCompile Include="ITMLib\Engine\ITMMainEngine.cpp" />
     <ClCompile Include="ITMLib\Engine\ITMRenTracker.cpp" />
-    <ClCompile Include="ITMLib\Engine\ITMTrackerFactory.cpp" />
+    <ClCompile Include="ITMLib\Engine\ITMTrackingController.cpp" />
     <ClCompile Include="ITMLib\Engine\ITMVisualisationEngine.cpp" />
     <ClCompile Include="ITMLib\Utils\ITMLibSettings.cpp" />
     <ClCompile Include="ITMLib\Utils\ITMCalibIO.cpp" />
@@ -130,6 +132,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\ImageSourceEngine.h" />
+    <ClInclude Include="Engine\IMUSourceEngine.h" />
     <ClInclude Include="Engine\Kinect2Engine.h" />
     <ClInclude Include="Engine\OpenNIEngine.h" />
     <ClInclude Include="Engine\UIEngine.h" />
@@ -163,17 +166,20 @@
     <ClInclude Include="ITMLib\Engine\DeviceSpecific\CUDA\ITMVisualisationEngine_CUDA.h" />
     <ClInclude Include="ITMLib\Engine\DeviceSpecific\CUDA\ITMVoxelBlockOpEngine_CUDA.h" />
     <ClInclude Include="ITMLib\Engine\ITMColorTracker.h" />
+    <ClInclude Include="ITMLib\Engine\ITMCompositeTracker.h" />
     <ClInclude Include="ITMLib\Engine\ITMDenseMapper.h" />
     <ClInclude Include="ITMLib\Engine\ITMDepthTracker.h" />
+    <ClInclude Include="ITMLib\Engine\ITMIMUTracker.h" />
     <ClInclude Include="ITMLib\Engine\ITMLowLevelEngine.h" />
     <ClInclude Include="ITMLib\Engine\ITMMainEngine.h" />
     <ClInclude Include="ITMLib\Engine\ITMRenTracker.h" />
     <ClInclude Include="ITMLib\Engine\ITMSceneReconstructionEngine.h" />
     <ClInclude Include="ITMLib\Engine\ITMSwappingEngine.h" />
     <ClInclude Include="ITMLib\Engine\ITMTracker.h" />
-    <ClInclude Include="ITMLib\Engine\ITMTrackerFactory.h" />
+    <ClInclude Include="ITMLib\Engine\ITMTrackingController.h" />
     <ClInclude Include="ITMLib\Engine\ITMViewBuilder.h" />
     <ClInclude Include="ITMLib\Engine\ITMVisualisationEngine.h" />
+    <ClInclude Include="ITMLib\Objects\ITMIMUMeasurement.h" />
     <ClInclude Include="ITMLib\Objects\ITMRenderState.h" />
     <ClInclude Include="ITMLib\Objects\ITMRenderState_VH.h" />
     <ClInclude Include="ITMLib\Engine\ITMVoxelBlockOpEngine.h" />
@@ -184,6 +190,7 @@
     <ClInclude Include="ITMLib\Objects\ITMPlainVoxelArray.h" />
     <ClInclude Include="ITMLib\Objects\ITMSceneHierarchyLevel.h" />
     <ClInclude Include="ITMLib\Objects\ITMTrackingState.h" />
+    <ClInclude Include="ITMLib\Objects\ITMViewIMU.h" />
     <ClInclude Include="ITMLib\Objects\ITMVoxelBlockHash.h" />
     <ClInclude Include="ITMLib\Objects\ITMVoxelBlockHHash.h" />
     <ClInclude Include="ITMLib\Utils\ITMLibDefines.h" />

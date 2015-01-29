@@ -6,6 +6,7 @@
 #include "../Utils/ITMLibSettings.h"
 
 #include "../Objects/ITMView.h"
+#include "../Objects/ITMViewIMU.h"
 #include "../Objects/ITMRGBDCalib.h"
 
 using namespace ITMLib::Objects;
@@ -34,14 +35,14 @@ namespace ITMLib
 				InfiniTAM_FLOAT_DEPTH_IMAGE
 			}inputImageType;
 
-			virtual void AllocateView(ITMView *view, Vector2i imgSize_rgb, Vector2i imgSize_d) = 0;
-
 			virtual void ConvertDisparityToDepth(ITMFloatImage *depth_out, const ITMShortImage *disp_in, const ITMIntrinsics *depthIntrinsics,
 				const ITMDisparityCalib *disparityCalib) = 0;
 			virtual void ConvertDepthMMToFloat(ITMFloatImage *depth_out, const ITMShortImage *depth_in) = 0;
 
-			virtual void UpdateView(ITMView* view, ITMUChar4Image *rgbImage, ITMShortImage *rawDepthImage) = 0;
-			virtual void UpdateView(ITMView *view, ITMUChar4Image *rgbImage, ITMFloatImage *depthImage) = 0;
+			virtual void UpdateView(ITMView **view, ITMUChar4Image *rgbImage, ITMShortImage *rawDepthImage) = 0;
+			virtual void UpdateView(ITMView **view, ITMUChar4Image *rgbImage, ITMFloatImage *depthImage) = 0;
+
+			virtual void UpdateView(ITMView **view, ITMUChar4Image *rgbImage, ITMShortImage *depthImage, ITMIMUMeasurement *imuMeasurement) = 0;
 
 			ITMViewBuilder(const ITMRGBDCalib *calib)
 			{

@@ -22,7 +22,8 @@ namespace ITMLib
 				Matrix4f approxInvPose, Matrix4f imagePose, bool rotationOnly);
 
 		public:
-			ITMDepthTracker_CUDA(Vector2i imgSize, int noHierarchyLevels, int noRotationOnlyLevels, int noICPRunTillLevel, float distThresh, ITMLowLevelEngine *lowLevelEngine);
+			ITMDepthTracker_CUDA(Vector2i imgSize, int noHierarchyLevels, int noRotationOnlyLevels, int noICPRunTillLevel, float distThresh, 
+				const ITMLowLevelEngine *lowLevelEngine);
 			~ITMDepthTracker_CUDA(void);
 		};
 	}

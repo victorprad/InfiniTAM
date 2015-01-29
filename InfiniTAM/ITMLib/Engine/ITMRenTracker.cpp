@@ -37,7 +37,7 @@ static inline void GetMFromParam(float* pose, Matrix4f& M)
 }
 
 
-void ComputeSingleStep(float *step, float *ATA, float *ATb, float lambda)
+static void ComputeSingleStep(float *step, float *ATA, float *ATb, float lambda)
 {
 	float tmpATA[6 * 6];
 	memcpy(tmpATA, ATA, 6 * 6 * sizeof(float));
@@ -54,7 +54,7 @@ void ComputeSingleStep(float *step, float *ATA, float *ATb, float lambda)
 
 
 template<class TVoxel, class TIndex>
-ITMRenTracker<TVoxel, TIndex>::ITMRenTracker(Vector2i imgSize, int noHierarchyLevels, ITMLowLevelEngine *lowLevelEngine, 
+ITMRenTracker<TVoxel, TIndex>::ITMRenTracker(Vector2i imgSize, int noHierarchyLevels, const ITMLowLevelEngine *lowLevelEngine, 
 	const ITMScene<TVoxel,TIndex> *scene, MemoryDeviceType memoryType)
 { 
 	//TODO from parameters, rotationOnly not implemented

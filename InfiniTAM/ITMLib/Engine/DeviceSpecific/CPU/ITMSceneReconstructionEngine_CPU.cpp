@@ -9,7 +9,7 @@ using namespace ITMLib::Engine;
 template<class TVoxel>
 ITMSceneReconstructionEngine_CPU<TVoxel,ITMVoxelBlockHash>::ITMSceneReconstructionEngine_CPU(void) 
 {
-	int noTotalEntries = ITMVoxelBlockHash::noVoxelBlocks;
+	int noTotalEntries = ITMVoxelBlockHash::noTotalEntries;
 	entriesAllocType = new ORUtils::MemoryBlock<unsigned char>(noTotalEntries, MEMORYDEVICE_CPU);
 	blockCoords = new ORUtils::MemoryBlock<Vector4s>(noTotalEntries, MEMORYDEVICE_CPU);
 }
@@ -119,7 +119,7 @@ void ITMSceneReconstructionEngine_CPU<TVoxel, ITMVoxelBlockHash>::AllocateSceneF
 	uchar *entriesVisibleType = renderState_vh->GetEntriesVisibleType();
 	uchar *entriesAllocType = this->entriesAllocType->GetData(MEMORYDEVICE_CPU);
 	Vector4s *blockCoords = this->blockCoords->GetData(MEMORYDEVICE_CPU);
-	int noTotalEntries = scene->index.noVoxelBlocks;
+	int noTotalEntries = scene->index.noTotalEntries;
 
 	bool useSwapping = scene->useSwapping;
 
@@ -131,7 +131,6 @@ void ITMSceneReconstructionEngine_CPU<TVoxel, ITMVoxelBlockHash>::AllocateSceneF
 	int noVisibleEntries = 0, noActiveEntries = 0;
 
 	memset(entriesAllocType, 0, noTotalEntries);
-	//memset(blockCoords, 0, noTotalEntries * sizeof(Vector4s));
 
 	for (int i = 0; i < renderState_vh->noVisibleEntries; i++)
 		entriesVisibleType[visibleEntryIDs[i]] = 3; // visible at previous frame and unstreamed

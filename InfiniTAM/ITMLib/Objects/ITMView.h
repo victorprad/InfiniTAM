@@ -16,8 +16,6 @@ namespace ITMLib
 		class ITMView
 		{
 		public:
-			bool isAllocated;
-
 			/// Intrinsic calibration information for the view.
 			ITMRGBDCalib *calib;
 
@@ -27,17 +25,19 @@ namespace ITMLib
 			/// Float valued depth image, if available according to @ref inputImageType.
 			ITMFloatImage *depth;
 
-			ITMView() { isAllocated = false; }
-
-			~ITMView(void)
+			ITMView(const ITMRGBDCalib *calibration, Vector2i imgSize_rgb, Vector2i imgSize_d, bool useGPU)
 			{
-				if (isAllocated)
-				{
-					delete calib;
+				this->calib = new ITMRGBDCalib(*calibration);
+				this->rgb = new ITMUChar4Image(imgSize_rgb, true, useGPU);
+				this->depth = new ITMFloatImage(imgSize_d, true, useGPU);
+			}
 
-					delete rgb;
-					delete depth;
-				}
+			virtual ~ITMView(void)
+			{
+				delete calib;
+
+				delete rgb;
+				delete depth;
 			}
 
 			// Suppress the default copy constructor and assignment operator

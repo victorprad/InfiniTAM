@@ -43,8 +43,9 @@ namespace ITMLib
 			*/
 			void SetModelViewFromParams();
 		public:
-
 			void SetFrom(float tx, float ty, float tz, float rx, float ry, float rz);
+			void SetFrom(const Vector3f &translation, const Vector3f &rotation);
+
 			void SetFrom(const float pose[6]);
 			void SetFrom(const ITMPose *pose);
 
@@ -58,6 +59,8 @@ namespace ITMLib
 
 			Matrix3f GetR(void) const;
 			Vector3f GetT(void) const;
+
+			void GetParams(Vector3f &translation, Vector3f &rotation);
 
 			void SetM(const Matrix4f & M);
 

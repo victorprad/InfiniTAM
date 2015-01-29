@@ -22,6 +22,8 @@ ENDIF(MSKINECTAPI_FOUND)
 add_library(Engine
 ImageSourceEngine.cpp
 ImageSourceEngine.h
+IMUSourceEngine.cpp
+IMUSourceEngine.h
 Kinect2Engine.cpp
 Kinect2Engine.h
 OpenNIEngine.cpp
