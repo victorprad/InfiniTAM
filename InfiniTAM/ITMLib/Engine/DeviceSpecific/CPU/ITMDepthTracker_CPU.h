@@ -12,10 +12,10 @@ namespace ITMLib
 		{
 		protected:
 			int ComputeGandH(ITMSceneHierarchyLevel *sceneHierarchyLevel, ITMTemplatedHierarchyLevel<ITMFloatImage> *viewHierarchyLevel,
-				Matrix4f approxInvPose, Matrix4f imagePose, bool rotationOnly);
+				Matrix4f approxInvPose, Matrix4f imagePose, TrackerIterationType iterationType);
 
 		public:
-			ITMDepthTracker_CPU(Vector2i imgSize, int noHierarchyLevels, int noRotationOnlyLevels, int noICPRunTillLevel, float distThresh, 
+			ITMDepthTracker_CPU(Vector2i imgSize, TrackerIterationType *trackingRegime, int noHierarchyLevels, int noICPRunTillLevel, float distThresh,
 				const ITMLowLevelEngine *lowLevelEngine);
 			~ITMDepthTracker_CPU(void);
 		};

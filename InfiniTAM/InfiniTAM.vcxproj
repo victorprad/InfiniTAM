@@ -191,7 +191,6 @@
     <ClInclude Include="ITMLib\Utils\ITMCalibIO.h" />
     <ClInclude Include="ITMLib\Utils\ITMMath.h" />
     <ClInclude Include="ITMLib\Utils\ITMPixelUtils.h" />
-    <ClInclude Include="ITMLib\Objects\ITMHashTable.h" />
     <ClInclude Include="ITMLib\Objects\ITMDisparityCalib.h" />
     <ClInclude Include="ITMLib\Objects\ITMExtrinsics.h" />
     <ClInclude Include="ITMLib\Objects\ITMIntrinsics.h" />

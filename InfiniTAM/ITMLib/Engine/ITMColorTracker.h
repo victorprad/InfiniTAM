@@ -29,7 +29,7 @@ namespace ITMLib
 			void PrepareForEvaluation(const ITMView *view);
 
 		protected: 
-			bool rotationOnly;
+			TrackerIterationType iterationType;
 			ITMTrackingState *trackingState; const ITMView *view;
 			ITMImageHierarchy<ITMViewHierarchyLevel> *viewHierarchy;
 			int levelId;
@@ -69,7 +69,7 @@ namespace ITMLib
 				return new EvaluationPoint(para, this);
 			}
 
-			int numParameters(void) const { return rotationOnly ? 3 : 6; }
+			int numParameters(void) const { return (iterationType == TRACKER_ITERATION_ROTATION) ? 3 : 6; }
 
 			virtual void F_oneLevel(float *f, ITMPose *pose) = 0;
 			virtual void G_oneLevel(float *gradient, float *hessian, ITMPose *pose) const = 0;
@@ -78,7 +78,7 @@ namespace ITMLib
 
 			void TrackCamera(ITMTrackingState *trackingState, const ITMView *view);
 
-			ITMColorTracker(Vector2i imgSize, int noHierarchyLevels, int noRotationOnlyLevels,
+			ITMColorTracker(Vector2i imgSize, TrackerIterationType *trackingRegime, int noHierarchyLevels,
 				const ITMLowLevelEngine *lowLevelEngine, MemoryDeviceType memoryType);
 			virtual ~ITMColorTracker(void);
 		};

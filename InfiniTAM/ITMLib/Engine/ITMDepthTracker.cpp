@@ -7,11 +7,11 @@
 
 using namespace ITMLib::Engine;
 
-ITMDepthTracker::ITMDepthTracker(Vector2i imgSize, int noHierarchyLevels, int noRotationOnlyLevels, int noICPRunTillLevel, float distThresh, 
+ITMDepthTracker::ITMDepthTracker(Vector2i imgSize, TrackerIterationType *trackingRegime, int noHierarchyLevels, int noICPRunTillLevel, float distThresh,
 	const ITMLowLevelEngine *lowLevelEngine, MemoryDeviceType memoryType)
 {
-	viewHierarchy = new ITMImageHierarchy<ITMTemplatedHierarchyLevel<ITMFloatImage> >(imgSize, noHierarchyLevels, noRotationOnlyLevels, memoryType, true);
-	sceneHierarchy = new ITMImageHierarchy<ITMSceneHierarchyLevel>(imgSize, noHierarchyLevels, noRotationOnlyLevels, memoryType, true);
+	viewHierarchy = new ITMImageHierarchy<ITMTemplatedHierarchyLevel<ITMFloatImage> >(imgSize, trackingRegime, noHierarchyLevels, memoryType, true);
+	sceneHierarchy = new ITMImageHierarchy<ITMSceneHierarchyLevel>(imgSize, trackingRegime, noHierarchyLevels, memoryType, true);
 
 	this->noIterationsPerLevel = new int[noHierarchyLevels];
 
@@ -68,14 +68,14 @@ void ITMDepthTracker::PrepareForEvaluation()
 void ITMDepthTracker::SetEvaluationParams(int levelId)
 {
 	this->levelId = levelId;
-	this->rotationOnly = viewHierarchy->levels[levelId]->rotationOnly;
+	this->iterationType = viewHierarchy->levels[levelId]->iterationType;
 }
 
-void ITMDepthTracker::ComputeSingleStep(float *step, float *ATA, float *ATb, bool rotationOnly)
+void ITMDepthTracker::ComputeSingleStep(float *step, float *ATA, float *ATb, bool shortIteration)
 {
 	for (int i = 0; i < 6; i++) step[i] = 0;
 
-	if (rotationOnly)
+	if (shortIteration)
 	{
 		float smallATA[3 * 3];
 		for (int r = 0; r < 3; r++) for (int c = 0; c < 3; c++) smallATA[r + c * 3] = ATA[r + c * 6];
@@ -110,9 +110,13 @@ void ITMDepthTracker::TrackCamera(ITMTrackingState *trackingState, const ITMView
 
 	Matrix4f approxInvPose = trackingState->pose_d->GetInvM(), imagePose = trackingState->pose_pointCloud->GetM();
 
+	float f_old = 1e10;
+
 	for (int levelId = viewHierarchy->noLevels - 1; levelId >= noICPLevel; levelId--)
 	{
 		this->SetEvaluationParams(levelId);
+
+		if (iterationType == TRACKER_ITERATION_NONE) continue;
 
 		int noValidPoints;
 
@@ -121,11 +125,20 @@ void ITMDepthTracker::TrackCamera(ITMTrackingState *trackingState, const ITMView
 
 		for (int iterNo = 0; iterNo < noIterationsPerLevel[levelId]; iterNo++)
 		{
-			noValidPoints = this->ComputeGandH(sceneHierarchyLevel, viewHierarchyLevel, approxInvPose, imagePose, rotationOnly);
+			noValidPoints = this->ComputeGandH(sceneHierarchyLevel, viewHierarchyLevel, approxInvPose, imagePose, iterationType);
 
 			if (noValidPoints > 0)
 			{
-				this->ComputeSingleStep(step, ATA_host, ATb_host, rotationOnly);
+				this->ComputeSingleStep(step, ATA_host, ATb_host, iterationType != TRACKER_ITERATION_BOTH);
+
+				float f_new = sqrtf(f) / noValidPoints;
+				if (f_new > f_old) break;
+
+				if (iterationType == TRACKER_ITERATION_TRANSLATION)
+				{
+					step[3] = step[0]; step[4] = step[1]; step[5] = step[2];
+					step[0] = 0; step[1] = 0; step[2] = 0;
+				}
 
 				float stepLength = 0.0f;
 				for (int i = 0; i < 6; i++) stepLength += step[i] * step[i];

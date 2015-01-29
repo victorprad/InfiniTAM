@@ -35,7 +35,7 @@ void UIEngine::glutDisplayFunction()
 	UIEngine *uiEngine = UIEngine::Instance();
 
 	// get updated images from processing thread
-	if (uiEngine->freeviewActive) 
+	if (uiEngine->freeviewActive)
 		uiEngine->mainEngine->GetImage(uiEngine->outImage[0], uiEngine->outImageType[0], uiEngine->colourActive, &uiEngine->freeviewPose, &uiEngine->freeviewIntrinsics);
 	else uiEngine->mainEngine->GetImage(uiEngine->outImage[0], uiEngine->outImageType[0], false);
 
@@ -45,7 +45,7 @@ void UIEngine::glutDisplayFunction()
 	glClear(GL_COLOR_BUFFER_BIT);
 	glColor3f(1.0f, 1.0f, 1.0f);
 	glEnable(GL_TEXTURE_2D);
-	
+
 	ITMUChar4Image** showImgs = uiEngine->outImage;
 	Vector4f *winReg = uiEngine->winReg;
 	glMatrixMode(GL_PROJECTION);
@@ -86,7 +86,7 @@ void UIEngine::glutDisplayFunction()
 	glRasterPos2f(-0.95f, -0.95f);
 	if (ITMVoxel::hasColorInformation)
 	{
-		sprintf(str, "n - next frame \t b - all frames \t e - exit \t f - %s \t c - %s", uiEngine->freeviewActive?"follow camera":"free viewpoint", uiEngine->colourActive?"stop using colour":"use colour");
+		sprintf(str, "n - next frame \t b - all frames \t e - exit \t f - %s \t c - %s", uiEngine->freeviewActive ? "follow camera" : "free viewpoint", uiEngine->colourActive ? "stop using colour" : "use colour");
 	}
 	else
 	{
@@ -113,22 +113,22 @@ void UIEngine::glutIdleFunction()
 		uiEngine->ProcessFrame(); uiEngine->processedFrameNo++;
 		uiEngine->needsRefresh = true;
 		break;
-	//case SAVE_TO_DISK:
-	//	if (!uiEngine->actionDone)
-	//	{
-	//		char outFile[255];
+		//case SAVE_TO_DISK:
+		//	if (!uiEngine->actionDone)
+		//	{
+		//		char outFile[255];
 
-	//		ITMUChar4Image *saveImage = uiEngine->saveImage;
+		//		ITMUChar4Image *saveImage = uiEngine->saveImage;
 
-	//		glReadBuffer(GL_BACK);
-	//		glReadPixels(0, 0, saveImage->noDims.x, saveImage->noDims.x, GL_RGBA, GL_UNSIGNED_BYTE, (unsigned char*)saveImage->GetData(false));
-	//		sprintf(outFile, "%s/out_%05d.ppm", uiEngine->outFolder, uiEngine->processedFrameNo);
+		//		glReadBuffer(GL_BACK);
+		//		glReadPixels(0, 0, saveImage->noDims.x, saveImage->noDims.x, GL_RGBA, GL_UNSIGNED_BYTE, (unsigned char*)saveImage->GetData(false));
+		//		sprintf(outFile, "%s/out_%05d.ppm", uiEngine->outFolder, uiEngine->processedFrameNo);
 
-	//		SaveImageToFile(saveImage, outFile, true);
+		//		SaveImageToFile(saveImage, outFile, true);
 
-	//		uiEngine->actionDone = true;
-	//	}
-	//	break;
+		//		uiEngine->actionDone = true;
+		//	}
+		//	break;
 	case EXIT:
 #ifdef FREEGLUT
 		glutLeaveMainLoop();
@@ -241,16 +241,16 @@ static inline Matrix3f createRotation(const Vector3f & _axis, float angle)
 	ret.setIdentity();
 
 	ret *= co;
-	for (int r = 0; r < 3; ++r) for (int c = 0; c < 3; ++c) ret.at(c,r) += (1.0f - co) * axis[c] * axis[r];
+	for (int r = 0; r < 3; ++r) for (int c = 0; c < 3; ++c) ret.at(c, r) += (1.0f - co) * axis[c] * axis[r];
 
 	Matrix3f skewmat;
 	skewmat.setZeros();
-	skewmat.at(1,0) = -axis.z;
-	skewmat.at(0,1) =  axis.z;
-	skewmat.at(2,0) =  axis.y;
-	skewmat.at(0,2) = -axis.y;
-	skewmat.at(2,1) =  axis.x;
-	skewmat.at(1,2) = -axis.x;
+	skewmat.at(1, 0) = -axis.z;
+	skewmat.at(0, 1) = axis.z;
+	skewmat.at(2, 0) = axis.y;
+	skewmat.at(0, 2) = -axis.y;
+	skewmat.at(2, 1) = axis.x;
+	skewmat.at(1, 2) = -axis.x;
 	skewmat *= si;
 	ret += skewmat;
 
@@ -311,11 +311,11 @@ void UIEngine::glutMouseWheelFunction(int button, int dir, int x, int y)
 
 	static const float scale_translation = 0.05f;
 
-	uiEngine->freeviewPose.SetT(uiEngine->freeviewPose.GetT() + scale_translation * Vector3f(0.0f, 0.0f, (dir > 0)?-1.0f:1.0f));
+	uiEngine->freeviewPose.SetT(uiEngine->freeviewPose.GetT() + scale_translation * Vector3f(0.0f, 0.0f, (dir > 0) ? -1.0f : 1.0f));
 	uiEngine->needsRefresh = true;
 }
 
-void UIEngine::Initialise(int & argc, char** argv, ImageSourceEngine *imageSource, IMUSourceEngine *imuSource, ITMMainEngine *mainEngine, 
+void UIEngine::Initialise(int & argc, char** argv, ImageSourceEngine *imageSource, IMUSourceEngine *imuSource, ITMMainEngine *mainEngine,
 	const char *outFolder, ITMLibSettings::DeviceType deviceType)
 {
 	this->freeviewActive = false;
@@ -352,7 +352,7 @@ void UIEngine::Initialise(int & argc, char** argv, ImageSourceEngine *imageSourc
 	winReg[1] = Vector4f(0.665f, h2, 1.0f, 1.0f);   // Side sub window 0
 	winReg[2] = Vector4f(0.665f, h1, 1.0f, h2);     // Side sub window 2
 
-	this->isRecording = false; 
+	this->isRecording = false;
 	this->currentFrameNo = 0;
 
 	glutInit(&argc, argv);
@@ -360,7 +360,7 @@ void UIEngine::Initialise(int & argc, char** argv, ImageSourceEngine *imageSourc
 	glutInitWindowSize(winSize.x, winSize.y);
 	glutCreateWindow("InfiniTAM");
 	glGenTextures(NUM_WIN, textureId);
-	
+
 	glutDisplayFunc(UIEngine::glutDisplayFunction);
 	glutKeyboardUpFunc(UIEngine::glutKeyUpFunction);
 	glutMouseFunc(UIEngine::glutMouseButtonFunction);
@@ -421,9 +421,10 @@ void UIEngine::ProcessFrame()
 	if (!imageSource->hasMoreImages()) return;
 	imageSource->getImages(inputRGBImage, inputRawDepthImage);
 
-	if (imuSource != NULL) imuSource->getMeasurement(inputIMUMeasurement);
+	if (imuSource != NULL) if (!imuSource->hasMoreMeasurements()) return;
+	else imuSource->getMeasurement(inputIMUMeasurement);
 
-	sdkResetTimer(&timer_instant); 
+	sdkResetTimer(&timer_instant);
 	sdkStartTimer(&timer_instant); sdkStartTimer(&timer_average);
 
 	if (isRecording)
@@ -434,7 +435,7 @@ void UIEngine::ProcessFrame()
 		SaveImageToFile(inputRawDepthImage, str);
 
 		sprintf(str, "%s/%04d.ppm", outFolder, currentFrameNo);
-		SaveImageToFile(inputRGBImage , str);
+		SaveImageToFile(inputRGBImage, str);
 	}
 
 	//actual processing on the mailEngine
@@ -450,18 +451,18 @@ void UIEngine::ProcessFrame()
 }
 
 void UIEngine::Run() { glutMainLoop(); }
-void UIEngine::Shutdown() 
-{ 
+void UIEngine::Shutdown()
+{
 	sdkDeleteTimer(&timer_instant);
 	sdkDeleteTimer(&timer_average);
 
 	for (int w = 0; w < NUM_WIN; w++)
-		delete outImage[w]; 
+		delete outImage[w];
 
 	delete inputRGBImage;
 	delete inputRawDepthImage;
 
 	delete[] outFolder;
-	delete saveImage; 
-	delete instance; 
+	delete saveImage;
+	delete instance;
 }

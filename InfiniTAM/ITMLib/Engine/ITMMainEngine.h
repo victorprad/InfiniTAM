@@ -48,7 +48,7 @@ namespace ITMLib
 		class ITMMainEngine
 		{
 		private:
-			ITMLibSettings *settings;
+			const ITMLibSettings *settings;
 
 			bool hasStartedObjectReconstruction;
 			bool fusionActive, mainProcessingActive;

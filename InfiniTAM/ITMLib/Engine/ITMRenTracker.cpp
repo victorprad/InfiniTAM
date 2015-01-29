@@ -54,12 +54,10 @@ static void ComputeSingleStep(float *step, float *ATA, float *ATb, float lambda)
 
 
 template<class TVoxel, class TIndex>
-ITMRenTracker<TVoxel, TIndex>::ITMRenTracker(Vector2i imgSize, int noHierarchyLevels, const ITMLowLevelEngine *lowLevelEngine, 
+ITMRenTracker<TVoxel, TIndex>::ITMRenTracker(Vector2i imgSize, const ITMLowLevelEngine *lowLevelEngine, 
 	const ITMScene<TVoxel,TIndex> *scene, MemoryDeviceType memoryType)
 { 
 	//TODO from parameters, rotationOnly not implemented
-
-	viewHierarchy = new ITMImageHierarchy<ITMTemplatedHierarchyLevel<ITMFloat4Image> >(imgSize, noHierarchyLevels, 0, memoryType);
 
 	tempImage1 = new ITMFloatImage(imgSize, memoryType);
 	tempImage2 = new ITMFloatImage(imgSize, memoryType);
@@ -71,8 +69,6 @@ ITMRenTracker<TVoxel, TIndex>::ITMRenTracker(Vector2i imgSize, int noHierarchyLe
 template<class TVoxel, class TIndex>
 ITMRenTracker<TVoxel,TIndex>::~ITMRenTracker(void)
 {
-	delete this->viewHierarchy;
-
 	delete tempImage1;
 	delete tempImage2;
 };

@@ -9,9 +9,6 @@ using namespace ITMLib::Objects;
 ITMLibSettings::ITMLibSettings(void)
 	: sceneParams(0.02f, 100, 0.005f, 0.2f, 3.0f, true)
 {
-	noHierarchyLevels = 5;
-	noRotationOnlyLevels = 3;
-
 	/// depth threashold for the ICP tracker
 	depthTrackerICPThreshold = 0.1f * 0.1f;
 
@@ -42,10 +39,37 @@ ITMLibSettings::ITMLibSettings(void)
 	//trackerType = TRACKER_REN;
 	//trackerType = TRACKER_IMU;
 
+	// builds the tracking regime. level 0 is full resolution
+	if (trackerType == TRACKER_IMU)
+	{
+		noHierarchyLevels = 3;
+		trackingRegime = new TrackerIterationType[noHierarchyLevels];
+
+		trackingRegime[0] = TRACKER_ITERATION_NONE;
+		trackingRegime[1] = TRACKER_ITERATION_BOTH;
+		trackingRegime[2] = TRACKER_ITERATION_TRANSLATION;
+	}
+	else
+	{
+		noHierarchyLevels = 5;
+		trackingRegime = new TrackerIterationType[noHierarchyLevels];
+
+		trackingRegime[0] = TRACKER_ITERATION_BOTH;
+		trackingRegime[1] = TRACKER_ITERATION_BOTH;
+		trackingRegime[2] = TRACKER_ITERATION_ROTATION;
+		trackingRegime[3] = TRACKER_ITERATION_ROTATION;
+		trackingRegime[4] = TRACKER_ITERATION_ROTATION;
+	}
+
 	if (trackerType == TRACKER_REN) noICPRunTillLevel = 1;
 	else noICPRunTillLevel = 0;
 
 	if ((trackerType == TRACKER_COLOR) && (!ITMVoxel::hasColorInformation)) {
 		printf("Error: Color tracker requires a voxel type with color information!\n");
 	}
+}
+
+ITMLibSettings::~ITMLibSettings()
+{
+	delete trackingRegime;
 }

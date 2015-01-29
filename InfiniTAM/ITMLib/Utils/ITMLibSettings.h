@@ -3,6 +3,7 @@
 #pragma once
 
 #include "../Objects/ITMSceneParams.h"
+#include "../Engine/ITMTracker.h"
 
 namespace ITMLib
 {
@@ -39,11 +40,11 @@ namespace ITMLib
 			/// Select the type of tracker to use
 			TrackerType trackerType;
 
-			/// Number of resolution levels for the tracker.
-			int noHierarchyLevels;
+			/// The tracking regime used by the tracking controller
+			TrackerIterationType *trackingRegime;
 
-			/// Number of resolution levels to track only rotation instead of full SE3.
-			int noRotationOnlyLevels;
+			/// The number of levels in the trackingRegime
+			int noHierarchyLevels;
 			
 			/// Run ICP till # Hierarchy level, then switch to ITMRenTracker for local refinement.
 			int noICPRunTillLevel;
@@ -58,7 +59,11 @@ namespace ITMLib
 			ITMLib::Objects::ITMSceneParams sceneParams;
 
 			ITMLibSettings(void);
-			~ITMLibSettings(void) { }
+			~ITMLibSettings(void);
+
+			// Suppress the default copy constructor and assignment operator
+			ITMLibSettings(const ITMLibSettings&);
+			ITMLibSettings& operator=(const ITMLibSettings&);
 		};
 	}
 }

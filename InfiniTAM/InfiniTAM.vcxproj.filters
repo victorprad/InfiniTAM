@@ -31,12 +31,6 @@
     <Filter Include="ITMLib\Utils">
       <UniqueIdentifier>{18ccd70d-1127-4103-9624-6b7cd10b8f4e}</UniqueIdentifier>
     </Filter>
-    <Filter Include="ITMLib\Utils\Header Files">
-      <UniqueIdentifier>{775eec87-1f2a-4289-b546-b155f1d29c26}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ITMLib\Utils\Source Files">
-      <UniqueIdentifier>{bc6db8cd-cc3a-4c90-b85e-9e38c76db125}</UniqueIdentifier>
-    </Filter>
     <Filter Include="ITMLib\Engine\DeviceSpecific">
       <UniqueIdentifier>{0bc217ca-3a93-4865-b554-4b5c013a93b9}</UniqueIdentifier>
     </Filter>
@@ -76,14 +70,8 @@
       <Filter>Engine\Source Files</Filter>
     </ClCompile>
     <ClCompile Include="InfiniTAM.cpp" />
-    <ClCompile Include="ITMLib\Utils\ITMCalibIO.cpp">
-      <Filter>ITMLib\Utils\Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Engine\ImageSourceEngine.cpp">
       <Filter>Engine\Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ITMLib\Utils\ITMLibSettings.cpp">
-      <Filter>ITMLib\Utils\Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ITMLib\Engine\DeviceSpecific\CPU\ITMLowLevelEngine_CPU.cpp">
       <Filter>ITMLib\Engine\DeviceSpecific\CPU</Filter>
@@ -145,6 +133,12 @@
     <ClCompile Include="ITMLib\Engine\ITMTrackingController.cpp">
       <Filter>ITMLib\Engine</Filter>
     </ClCompile>
+    <ClCompile Include="ITMLib\Utils\ITMCalibIO.cpp">
+      <Filter>ITMLib\Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="ITMLib\Utils\ITMLibSettings.cpp">
+      <Filter>ITMLib\Utils</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Utils\FileUtils.h">
@@ -156,20 +150,8 @@
     <ClInclude Include="ITMLib\ITMLib.h">
       <Filter>ITMLib</Filter>
     </ClInclude>
-    <ClInclude Include="ITMLib\Utils\ITMCalibIO.h">
-      <Filter>ITMLib\Utils\Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ITMLib\Utils\ITMMath.h">
-      <Filter>ITMLib\Utils\Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Engine\ImageSourceEngine.h">
       <Filter>Engine\Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ITMLib\Utils\ITMLibSettings.h">
-      <Filter>ITMLib\Utils\Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ITMLib\Utils\ITMPixelUtils.h">
-      <Filter>ITMLib\Utils\Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ITMLib\Engine\DeviceSpecific\CPU\ITMLowLevelEngine_CPU.h">
       <Filter>ITMLib\Engine\DeviceSpecific\CPU</Filter>
@@ -236,9 +218,6 @@
     </ClInclude>
     <ClInclude Include="Utils\NVTimer.h">
       <Filter>Utils\Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ITMLib\Utils\ITMLibDefines.h">
-      <Filter>ITMLib\Utils\Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ITMLib\Engine\DeviceAgnostic\ITMSwappingEngine.h">
       <Filter>ITMLib\Engine\DeviceAgnostic</Filter>
@@ -381,9 +360,6 @@
     <ClInclude Include="ITMLib\Objects\ITMVoxelBlockHash.h">
       <Filter>ITMLib\Objects\VoxelHashing</Filter>
     </ClInclude>
-    <ClInclude Include="ITMLib\Objects\ITMHashTable.h">
-      <Filter>ITMLib\Objects\VoxelHashing</Filter>
-    </ClInclude>
     <ClInclude Include="ITMLib\Objects\ITMPlainVoxelArray.h">
       <Filter>ITMLib\Objects\PlainVoxelArray</Filter>
     </ClInclude>
@@ -395,6 +371,21 @@
     </ClInclude>
     <ClInclude Include="ITMLib\Engine\ITMCompositeTracker.h">
       <Filter>ITMLib\Engine\Trackers</Filter>
+    </ClInclude>
+    <ClInclude Include="ITMLib\Utils\ITMCalibIO.h">
+      <Filter>ITMLib\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="ITMLib\Utils\ITMLibDefines.h">
+      <Filter>ITMLib\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="ITMLib\Utils\ITMLibSettings.h">
+      <Filter>ITMLib\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="ITMLib\Utils\ITMMath.h">
+      <Filter>ITMLib\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="ITMLib\Utils\ITMPixelUtils.h">
+      <Filter>ITMLib\Utils</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -12,17 +12,18 @@ namespace ITMLib
 		public:
 			int levelId;
 
-			bool rotationOnly;
+			TrackerIterationType iterationType;
 
 			ImageType *depth;
 			Vector4f intrinsics;
 			bool manageData;
 
-			ITMTemplatedHierarchyLevel(Vector2i imgSize, int levelId, bool rotationOnly, MemoryDeviceType memoryType, bool skipAllocation = false)
+			ITMTemplatedHierarchyLevel(Vector2i imgSize, int levelId, TrackerIterationType iterationType, 
+				MemoryDeviceType memoryType, bool skipAllocation = false)
 			{
 				this->manageData = !skipAllocation;
 				this->levelId = levelId;
-				this->rotationOnly = rotationOnly;
+				this->iterationType = iterationType;
 
 				if (!skipAllocation) this->depth = new ImageType(imgSize, memoryType);
 			}

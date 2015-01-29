@@ -9,20 +9,21 @@ using namespace ITMLib::Engine;
 
 struct ITMDepthTracker_CUDA::AccuCell {
 	int numPoints;
+	float f;
 	float g[6];
 	float h[6+5+4+3+2+1];
 };
 
-template<bool rotationOnly>
+template<bool shortIteration, bool rotationOnly>
 __global__ void depthTrackerOneLevel_g_rt_device(ITMDepthTracker_CUDA::AccuCell *accu, float *depth, Matrix4f approxInvPose, Vector4f *pointsMap,
 	Vector4f *normalsMap, Vector4f sceneIntrinsics, Vector2i sceneImageSize, Matrix4f scenePose, Vector4f viewIntrinsics, Vector2i viewImageSize,
 	float distThresh);
 
 // host methods
 
-ITMDepthTracker_CUDA::ITMDepthTracker_CUDA(Vector2i imgSize, int noHierarchyLevels, int noRotationOnlyLevels, int noICPRunTillLevel,  
+ITMDepthTracker_CUDA::ITMDepthTracker_CUDA(Vector2i imgSize, TrackerIterationType *trackingRegime, int noHierarchyLevels, int noICPRunTillLevel,
 	float distThresh, const ITMLowLevelEngine *lowLevelEngine)
-	:ITMDepthTracker(imgSize, noHierarchyLevels, noRotationOnlyLevels, noICPRunTillLevel, distThresh, lowLevelEngine, MEMORYDEVICE_CUDA)
+	:ITMDepthTracker(imgSize, trackingRegime, noHierarchyLevels, noICPRunTillLevel, distThresh, lowLevelEngine, MEMORYDEVICE_CUDA)
 {
 	Vector2i gridSize((imgSize.x+15)/16, (imgSize.y+15)/16);
 
@@ -37,7 +38,7 @@ ITMDepthTracker_CUDA::~ITMDepthTracker_CUDA(void)
 }
 
 int ITMDepthTracker_CUDA::ComputeGandH(ITMSceneHierarchyLevel *sceneHierarchyLevel, ITMTemplatedHierarchyLevel<ITMFloatImage> *viewHierarchyLevel,
-	Matrix4f approxInvPose, Matrix4f scenePose, bool rotationOnly)
+	Matrix4f approxInvPose, Matrix4f scenePose, TrackerIterationType iterationType)
 {
 	int noValidPoints;
 
@@ -50,30 +51,44 @@ int ITMDepthTracker_CUDA::ComputeGandH(ITMSceneHierarchyLevel *sceneHierarchyLev
 	Vector4f viewIntrinsics = viewHierarchyLevel->intrinsics;
 	Vector2i viewImageSize = viewHierarchyLevel->depth->noDims;
 
+	noValidPoints = 0; memset(ATA_host, 0, sizeof(float) * 6 * 6); memset(ATb_host, 0, sizeof(float) * 6); f = 0;
+	if (iterationType == TRACKER_ITERATION_NONE) return 0;
+
+	bool shortIteration = (iterationType == TRACKER_ITERATION_ROTATION) || (iterationType == TRACKER_ITERATION_TRANSLATION);
+
 	float packedATA[6 * 6];
-	int noPara = rotationOnly ? 3 : 6, noParaSQ = rotationOnly ? 3 + 2 + 1 : 6 + 5 + 4 + 3 + 2 + 1;
+	int noPara = shortIteration ? 3 : 6, noParaSQ = shortIteration ? 3 + 2 + 1 : 6 + 5 + 4 + 3 + 2 + 1;
 
 	dim3 blockSize(16, 16);
 	dim3 gridSize((int)ceil((float)viewImageSize.x / (float)blockSize.x), (int)ceil((float)viewImageSize.y / (float)blockSize.y));
 
 	int gridSizeTotal = gridSize.x * gridSize.y;
 
-	if (rotationOnly) {
-		depthTrackerOneLevel_g_rt_device<true> << <gridSize, blockSize >> >(accu_device, depth, approxInvPose, pointsMap,
+	switch (iterationType)
+	{
+	case TRACKER_ITERATION_ROTATION:
+		depthTrackerOneLevel_g_rt_device<true, true> << <gridSize, blockSize >> >(accu_device, depth, approxInvPose, pointsMap,
 			normalsMap, sceneIntrinsics, sceneImageSize, scenePose, viewIntrinsics, viewImageSize, distThresh);
-	} else {
-		depthTrackerOneLevel_g_rt_device<false> << <gridSize, blockSize >> >(accu_device, depth, approxInvPose, pointsMap,
+		break;
+	case TRACKER_ITERATION_TRANSLATION:
+		depthTrackerOneLevel_g_rt_device<true, false> << <gridSize, blockSize >> >(accu_device, depth, approxInvPose, pointsMap,
 			normalsMap, sceneIntrinsics, sceneImageSize, scenePose, viewIntrinsics, viewImageSize, distThresh);
+		break;
+	case TRACKER_ITERATION_BOTH:
+		depthTrackerOneLevel_g_rt_device<false, false> << <gridSize, blockSize >> >(accu_device, depth, approxInvPose, pointsMap,
+			normalsMap, sceneIntrinsics, sceneImageSize, scenePose, viewIntrinsics, viewImageSize, distThresh);
+		break;
+	default: break;
 	}
 
 	ITMSafeCall(cudaMemcpy(accu_host, accu_device, sizeof(AccuCell)* gridSizeTotal, cudaMemcpyDeviceToHost));
 
-	noValidPoints = 0; memset(ATA_host, 0, sizeof(float) * 6 * 6); memset(ATb_host, 0, sizeof(float) * 6);
 	memset(packedATA, 0, sizeof(float) * noParaSQ);
 
 	for (int i = 0; i < gridSizeTotal; i++)
 	{
 		noValidPoints += accu_host[i].numPoints;
+		f += accu_host[i].f;
 		for (int p = 0; p < noPara; p++) ATb_host[p] += accu_host[i].g[p];
 		for (int p = 0; p < noParaSQ; p++) packedATA[p] += accu_host[i].h[p];
 	}
@@ -86,7 +101,7 @@ int ITMDepthTracker_CUDA::ComputeGandH(ITMSceneHierarchyLevel *sceneHierarchyLev
 
 // device functions
 
-template<bool rotationOnly>
+template<bool shortIteration, bool rotationOnly>
 __global__ void depthTrackerOneLevel_g_rt_device(ITMDepthTracker_CUDA::AccuCell *accu, float *depth, Matrix4f approxInvPose, Vector4f *pointsMap,
 	Vector4f *normalsMap, Vector4f sceneIntrinsics, Vector2i sceneImageSize, Matrix4f scenePose, Vector4f viewIntrinsics, Vector2i viewImageSize,
 	float distThresh)
@@ -95,43 +110,59 @@ __global__ void depthTrackerOneLevel_g_rt_device(ITMDepthTracker_CUDA::AccuCell 
 
 	int locId_local = threadIdx.x + threadIdx.y * blockDim.x;
 	int blockId_global = blockIdx.x + blockIdx.y * gridDim.x;
-	__shared__ float dim_shared[256];
+	__shared__ float dim_shared1[256];
 	__shared__ float dim_shared2[256];
 	__shared__ float dim_shared3[256];
 	__shared__ bool should_prefix;
+
 	should_prefix = false;
 	__syncthreads();
 
-	const int noPara = rotationOnly ? 3 : 6;
-	const int noParaSQ = rotationOnly ? 3 + 2 + 1 : 6 + 5 + 4 + 3 + 2 + 1;
-	float localNabla[noPara], localHessian[noParaSQ]; bool isValidPoint = false;
+	const int noPara = shortIteration ? 3 : 6;
+	const int noParaSQ = shortIteration ? 3 + 2 + 1 : 6 + 5 + 4 + 3 + 2 + 1;
+	float localNabla[noPara], localHessian[noParaSQ], localF = 0; bool isValidPoint = false;
 
 	for (int i = 0; i < noPara; i++) localNabla[i] = 0.0f;
 	for (int i = 0; i < noParaSQ; i++) localHessian[i] = 0.0f;
 
 	if (x < viewImageSize.x && y < viewImageSize.y)
 	{
-		isValidPoint = computePerPointGH_Depth<rotationOnly>(localNabla, localHessian, x, y, depth[x + y * viewImageSize.x], viewImageSize, viewIntrinsics, 
-			sceneImageSize, sceneIntrinsics, approxInvPose, scenePose, pointsMap, normalsMap, distThresh);
+		isValidPoint = computePerPointGH_Depth<shortIteration, rotationOnly>(localNabla, localHessian, localF, x, y, depth[x + y * viewImageSize.x],
+			viewImageSize, viewIntrinsics, sceneImageSize, sceneIntrinsics, approxInvPose, scenePose, pointsMap, normalsMap, distThresh);
 
 		if (isValidPoint) should_prefix = true;
 	}
 
 	__syncthreads();
+
 	if (should_prefix) {
-	//reduction for noValidPoints
-	{
-		dim_shared[locId_local] = isValidPoint;
+	
+	{ //reduction for noValidPoints
+		dim_shared1[locId_local] = isValidPoint;
 		__syncthreads();
 
-		if (locId_local < 128) dim_shared[locId_local] += dim_shared[locId_local + 128];
+		if (locId_local < 128) dim_shared1[locId_local] += dim_shared1[locId_local + 128];
 		__syncthreads();
-		if (locId_local < 64) dim_shared[locId_local] += dim_shared[locId_local + 64];
+		if (locId_local < 64) dim_shared1[locId_local] += dim_shared1[locId_local + 64];
 		__syncthreads();
 
-		if (locId_local < 32) warpReduce(dim_shared, locId_local);
+		if (locId_local < 32) warpReduce(dim_shared1, locId_local);
 
-		if (locId_local == 0) accu[blockId_global].numPoints = dim_shared[locId_local];
+		if (locId_local == 0) accu[blockId_global].numPoints = dim_shared1[locId_local];
+	}
+
+	{ //reduction for energy function value
+		dim_shared1[locId_local] = localF;
+		__syncthreads();
+
+		if (locId_local < 128) dim_shared1[locId_local] += dim_shared1[locId_local + 128];
+		__syncthreads();
+		if (locId_local < 64) dim_shared1[locId_local] += dim_shared1[locId_local + 64];
+		__syncthreads();
+
+		if (locId_local < 32) warpReduce(dim_shared1, locId_local);
+
+		if (locId_local == 0) accu[blockId_global].f = dim_shared1[locId_local];
 	}
 
 	__syncthreads();
@@ -139,33 +170,33 @@ __global__ void depthTrackerOneLevel_g_rt_device(ITMDepthTracker_CUDA::AccuCell 
 	//reduction for nabla
 	for (unsigned char paraId = 0; paraId < noPara; paraId+=3)
 	{
-		dim_shared[locId_local] = localNabla[paraId+0];
+		dim_shared1[locId_local] = localNabla[paraId+0];
 		dim_shared2[locId_local]= localNabla[paraId+1];
 		dim_shared3[locId_local]= localNabla[paraId+2];
 		__syncthreads();
 
 		if (locId_local < 128) {
-			dim_shared[locId_local] += dim_shared[locId_local + 128];
+			dim_shared1[locId_local] += dim_shared1[locId_local + 128];
 			dim_shared2[locId_local] += dim_shared2[locId_local + 128];
 			dim_shared3[locId_local] += dim_shared3[locId_local + 128];
 		}
 		__syncthreads();
 		if (locId_local < 64) {
-			dim_shared[locId_local] += dim_shared[locId_local + 64];
+			dim_shared1[locId_local] += dim_shared1[locId_local + 64];
 			dim_shared2[locId_local] += dim_shared2[locId_local + 64];
 			dim_shared3[locId_local] += dim_shared3[locId_local + 64];
 		}
 		__syncthreads();
 
 		if (locId_local < 32) {
-			warpReduce(dim_shared, locId_local);
+			warpReduce(dim_shared1, locId_local);
 			warpReduce(dim_shared2, locId_local);
 			warpReduce(dim_shared3, locId_local);
 		}
 		__syncthreads();
 
 		if (locId_local == 0) {
-			accu[blockId_global].g[paraId+0] = dim_shared[0];
+			accu[blockId_global].g[paraId+0] = dim_shared1[0];
 			accu[blockId_global].g[paraId+1] = dim_shared2[0];
 			accu[blockId_global].g[paraId+2] = dim_shared3[0];
 		}
@@ -176,33 +207,33 @@ __global__ void depthTrackerOneLevel_g_rt_device(ITMDepthTracker_CUDA::AccuCell 
 	//reduction for hessian
 	for (unsigned char paraId = 0; paraId < noParaSQ; paraId+=3)
 	{
-		dim_shared[locId_local] = localHessian[paraId+0];
+		dim_shared1[locId_local] = localHessian[paraId+0];
 		dim_shared2[locId_local]= localHessian[paraId+1];
 		dim_shared3[locId_local]= localHessian[paraId+2];
 		__syncthreads();
 
 		if (locId_local < 128) {
-			dim_shared[locId_local] += dim_shared[locId_local + 128];
+			dim_shared1[locId_local] += dim_shared1[locId_local + 128];
 			dim_shared2[locId_local] += dim_shared2[locId_local + 128];
 			dim_shared3[locId_local] += dim_shared3[locId_local + 128];
 		}
 		__syncthreads();
 		if (locId_local < 64) {
-			dim_shared[locId_local] += dim_shared[locId_local + 64];
+			dim_shared1[locId_local] += dim_shared1[locId_local + 64];
 			dim_shared2[locId_local] += dim_shared2[locId_local + 64];
 			dim_shared3[locId_local] += dim_shared3[locId_local + 64];
 		}
 		__syncthreads();
 
 		if (locId_local < 32) {
-			warpReduce(dim_shared, locId_local);
+			warpReduce(dim_shared1, locId_local);
 			warpReduce(dim_shared2, locId_local);
 			warpReduce(dim_shared3, locId_local);
 		}
 		__syncthreads();
 
 		if (locId_local == 0) {
-			accu[blockId_global].h[paraId+0] = dim_shared[0];
+			accu[blockId_global].h[paraId+0] = dim_shared1[0];
 			accu[blockId_global].h[paraId+1] = dim_shared2[0];
 			accu[blockId_global].h[paraId+2] = dim_shared3[0];
 		}
@@ -213,18 +244,19 @@ __global__ void depthTrackerOneLevel_g_rt_device(ITMDepthTracker_CUDA::AccuCell 
 		//	if (locId_local < s)
 		//	{
 		//		sdataTargetOffset = locId_local + s;
-		//		dim_shared[locId_local] += dim_shared[sdataTargetOffset];
+		//		dim_shared1[locId_local] += dim_shared1[sdataTargetOffset];
 		//	}
 		//	__syncthreads();
 		//}
 
-		//atomicAdd(&ATA[paraId], dim_shared[locId_local]);
+		//atomicAdd(&ATA[paraId], dim_shared1[locId_local]);
 	}
 
 	}
 	else if (locId_local)
 	{
 		accu[blockId_global].numPoints = 0;
+		accu[blockId_global].f = 0;
 		for (int i = 0; i < noPara; ++i) accu[blockId_global].g[i] = 0.0f;
 		for (int i = 0; i < noParaSQ; ++i) accu[blockId_global].h[i] = 0.0f;
 	}
