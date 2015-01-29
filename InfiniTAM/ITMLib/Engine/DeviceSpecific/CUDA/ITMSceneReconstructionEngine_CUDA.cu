@@ -89,6 +89,7 @@ void ITMSceneReconstructionEngine_CUDA<TVoxel, ITMVoxelBlockHash>::AllocateScene
 	ITMHashCacheState *cacheStates = scene->useSwapping ? scene->globalCache->GetCacheStates(true) : 0;
 
 	int noTotalEntries = scene->index.noTotalEntries;
+	int lastFreeExcessListId = scene->index.GetLastFreeExcessListId();
 
 	int *visibleEntryIDs = renderState_vh->GetVisibleEntryIDs();
 	int *activeEntryIDs = renderState_vh->GetActiveEntryIDs();
@@ -106,7 +107,7 @@ void ITMSceneReconstructionEngine_CUDA<TVoxel, ITMVoxelBlockHash>::AllocateScene
 	float oneOverVoxelSize = 1.0f / (voxelSize * SDF_BLOCK_SIZE);
 
 	ITMSafeCall(cudaMemcpy(noAllocatedVoxelEntries_device, &scene->localVBA.lastFreeBlockId, sizeof(int), cudaMemcpyHostToDevice));
-	ITMSafeCall(cudaMemcpy(noAllocatedExcessEntries_device, &scene->index.lastFreeExcessListId, sizeof(int), cudaMemcpyHostToDevice));
+	ITMSafeCall(cudaMemcpy(noAllocatedExcessEntries_device, &lastFreeExcessListId, sizeof(int), cudaMemcpyHostToDevice));
 
 	ITMSafeCall(cudaMemset(noVisibleEntries_device, 0, sizeof(int)));
 	ITMSafeCall(cudaMemset(noActiveEntries_device, 0, sizeof(int)));
@@ -141,7 +142,9 @@ void ITMSceneReconstructionEngine_CUDA<TVoxel, ITMVoxelBlockHash>::AllocateScene
 	ITMSafeCall(cudaMemcpy(&renderState_vh->noVisibleEntries, noVisibleEntries_device, sizeof(int), cudaMemcpyDeviceToHost));
 
 	ITMSafeCall(cudaMemcpy(&scene->localVBA.lastFreeBlockId, noAllocatedVoxelEntries_device, sizeof(int), cudaMemcpyDeviceToHost));
-	ITMSafeCall(cudaMemcpy(&scene->index.lastFreeExcessListId, noAllocatedExcessEntries_device, sizeof(int), cudaMemcpyDeviceToHost));
+	ITMSafeCall(cudaMemcpy(&lastFreeExcessListId, noAllocatedExcessEntries_device, sizeof(int), cudaMemcpyDeviceToHost));
+
+	scene->index.SetLastFreeExcessListId(lastFreeExcessListId);
 }
 
 template<class TVoxel>
