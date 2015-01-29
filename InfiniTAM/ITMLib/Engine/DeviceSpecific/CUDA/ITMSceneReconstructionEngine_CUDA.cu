@@ -36,6 +36,7 @@ __global__ void reAllocateSwappedOutVoxelBlocks_device(int *voxelAllocationList,
 	int *noAllocatedVoxelEntries, uchar *entriesVisibleType);
 
 __global__ void setToType3(uchar *entriesVisibleType, int *visibleEntryIDs, int noVisibleEntries);
+__global__ void setToType3HH(uchar *entriesVisibleType, int *visibleEntryIDs, int noVisibleEntries);
 
 template<bool useSwapping>
 __global__ void buildVisibleList_device(ITMHashEntry *hashTable, ITMHashCacheState *cacheStates, int noTotalEntries,
@@ -319,7 +320,7 @@ void ITMSceneReconstructionEngine_CUDA<TVoxel, ITMVoxelBlockHHash>::AllocateScen
 
 	ITMSafeCall(cudaMemset(entriesAllocType_device, 0, sizeof(unsigned char)* noTotalEntries));
 
-	if (gridSizeVS.x > 0) setToType3 << <gridSizeVS, cudaBlockSizeVS >> > (entriesVisibleType, visibleEntryIDs, renderState_vh->noVisibleEntries);
+	if (gridSizeVS.x > 0) setToType3HH << <gridSizeVS, cudaBlockSizeVS >> > (entriesVisibleType, visibleEntryIDs, renderState_vh->noVisibleEntries);
 
 	buildHHashAllocAndVisibleType_device << <gridSizeHV, cudaBlockSizeHV >> >(entriesAllocType_device, entriesVisibleType,
 		blockCoords_device, depth, invM_d, invProjParams_d, mu, depthImgSize, oneOverSmallestVoxelSize, hashTable,
@@ -522,6 +523,17 @@ __global__ void setToType3(uchar *entriesVisibleType, int *visibleEntryIDs, int 
 	int entryId = threadIdx.x + blockIdx.x * blockDim.x;
 	if (entryId > noVisibleEntries - 1) return;
 	entriesVisibleType[visibleEntryIDs[entryId]] = 3;
+}
+
+__global__ void setToType3HH(uchar *entriesVisibleType, int *visibleEntryIDs, int noVisibleEntries, const ITMHashEntry *hashTable)
+{
+	int entryId = threadIdx.x + blockIdx.x * blockDim.x;
+	if (entryId > noVisibleEntries - 1) return;
+
+	int ptr = hashTable[visibleEntryIDs[i]].ptr;
+	// blocks might have disappeared due to splitting and merging
+	if (ptr < -1) entriesVisibleType[visibleEntryIDs[i]] = 0;
+	else entriesVisibleType[visibleEntryIDs[entryId]] = 3;
 }
 
 __global__ void allocateVoxelBlocksList_device(int *voxelAllocationList, int *excessAllocationList, ITMHashEntry *hashTable, int noTotalEntries,

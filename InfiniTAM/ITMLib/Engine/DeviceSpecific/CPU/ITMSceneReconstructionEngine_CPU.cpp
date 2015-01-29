@@ -381,8 +381,14 @@ void ITMSceneReconstructionEngine_CPU<TVoxel,ITMVoxelBlockHHash>::AllocateSceneF
 
 	memset(entriesAllocType, 0, noTotalEntries);
 
-	for (int i = 0; i < renderState_vh->noVisibleEntries; i++)
-		entriesVisibleType[visibleEntryIDs[i]] = 3; // visible at previous frame and unstreamed
+	for (int i = 0; i < renderState_vh->noVisibleEntries; i++) {
+		// visible at previous frame and unstreamed
+		// but maybe not there anymore...
+		int ptr = hashTable[visibleEntryIDs[i]].ptr;
+		// blocks might have disappeared due to splitting and merging
+		if (ptr < -1) entriesVisibleType[visibleEntryIDs[i]] = 0;
+		else entriesVisibleType[visibleEntryIDs[i]] = 3;
+	}
 
 	//build hashVisibility
 #ifdef WITH_OPENMP
