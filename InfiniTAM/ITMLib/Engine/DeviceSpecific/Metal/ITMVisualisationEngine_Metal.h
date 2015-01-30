@@ -18,10 +18,9 @@ namespace ITMLib
         class ITMVisualisationEngine_Metal<TVoxel, ITMVoxelBlockHash> : public ITMVisualisationEngine_CPU < TVoxel, ITMVoxelBlockHash >
         {
         public:
-            void CreateICPMaps(const ITMScene<TVoxel, ITMVoxelBlockHash> *scene, const ITMView *view, ITMTrackingState *trackingState,
-                               ITMRenderState *renderState);
+            void CreateICPMaps(const ITMView *view, ITMTrackingState *trackingState, ITMRenderState *renderState) const;
             
-            ITMVisualisationEngine_Metal(void);
+            ITMVisualisationEngine_Metal(ITMScene<TVoxel, ITMVoxelBlockHash> *scene);
         };
     }
 }

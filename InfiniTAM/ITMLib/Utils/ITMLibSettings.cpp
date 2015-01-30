@@ -42,12 +42,11 @@ ITMLibSettings::ITMLibSettings(void)
 	// builds the tracking regime. level 0 is full resolution
 	if (trackerType == TRACKER_IMU)
 	{
-		noHierarchyLevels = 3;
+		noHierarchyLevels = 2;
 		trackingRegime = new TrackerIterationType[noHierarchyLevels];
 
-		trackingRegime[0] = TRACKER_ITERATION_NONE;
-		trackingRegime[1] = TRACKER_ITERATION_BOTH;
-		trackingRegime[2] = TRACKER_ITERATION_TRANSLATION;
+		trackingRegime[0] = TRACKER_ITERATION_BOTH;
+		trackingRegime[1] = TRACKER_ITERATION_TRANSLATION;
 	}
 	else
 	{

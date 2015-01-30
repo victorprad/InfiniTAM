@@ -21,8 +21,8 @@ id<MTLBuffer> paramsBuffer_visualisation;
 using namespace ITMLib::Engine;
 
 template<class TVoxel>
-ITMVisualisationEngine_Metal<TVoxel, ITMVoxelBlockHash>::ITMVisualisationEngine_Metal()
-: ITMVisualisationEngine_CPU<TVoxel, ITMVoxelBlockHash>()
+ITMVisualisationEngine_Metal<TVoxel, ITMVoxelBlockHash>::ITMVisualisationEngine_Metal(ITMScene<TVoxel, ITMVoxelBlockHash> *scene)
+: ITMVisualisationEngine_CPU<TVoxel, ITMVoxelBlockHash>(scene)
 {
     NSError *errors;
     
@@ -36,10 +36,9 @@ ITMVisualisationEngine_Metal<TVoxel, ITMVoxelBlockHash>::ITMVisualisationEngine_
 }
 
 template<class TVoxel>
-void ITMVisualisationEngine_Metal<TVoxel, ITMVoxelBlockHash>::CreateICPMaps(const ITMScene<TVoxel, ITMVoxelBlockHash> *scene, const ITMView *view, ITMTrackingState *trackingState,
-                                                                ITMRenderState *renderState)
+void ITMVisualisationEngine_Metal<TVoxel, ITMVoxelBlockHash>::CreateICPMaps(const ITMView *view, ITMTrackingState *trackingState, ITMRenderState *renderState) const
 {
-    CreateICPMaps_common_metal(scene, view, trackingState, renderState);
+    CreateICPMaps_common_metal(this->scene, view, trackingState, renderState);
 }
 
 template<class TVoxel, class TIndex>
@@ -48,11 +47,13 @@ static void CreateICPMaps_common_metal(const ITMScene<TVoxel,TIndex> *scene, con
     id<MTLCommandBuffer> commandBuffer = [[[MetalContext instance]commandQueue]commandBuffer];
     id<MTLComputeCommandEncoder> commandEncoder = [commandBuffer computeCommandEncoder];
     
+    trackingState->pose_pointCloud->SetFrom(trackingState->pose_d);
+    
     CreateICPMaps_Params *params = (CreateICPMaps_Params*)[paramsBuffer_visualisation contents];
     params->imgSize = view->depth->noDims;
     params->voxelSizes.x = scene->sceneParams->voxelSize;
     params->voxelSizes.y = 1.0f / scene->sceneParams->voxelSize;
-    params->invM = trackingState->pose_d->invM;
+    params->invM = trackingState->pose_d->GetInvM();
     params->projParams = view->calib->intrinsics_d.projectionParamsSimple.all;
     params->projParams.x = 1.0f / params->projParams.x; params->projParams.y = 1.0f / params->projParams.y;
     params->lightSource.x = -Vector3f(params->invM.getColumn(2)).x;

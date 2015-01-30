@@ -110,9 +110,9 @@ namespace ITMLib
 			void SetLastFreeExcessListId(int lastFreeExcessListId) { this->lastFreeExcessListId = lastFreeExcessListId; }
 
 #ifdef COMPILE_WITH_METAL
-			const void* GetEntries_MB(void) { return hashData->entries->GetMetalBuffer(); }
-			const void* GetExcessAllocationList_MB(void) { return hashData->excessAllocationList->GetMetalBuffer(); }
-			const void* getIndexData_MB(void) const { return hashData->entries->GetMetalBuffer(); }
+			const void* GetEntries_MB(void) { return hashEntries->GetMetalBuffer(); }
+			const void* GetExcessAllocationList_MB(void) { return excessAllocationList->GetMetalBuffer(); }
+			const void* getIndexData_MB(void) const { return hashEntries->GetMetalBuffer(); }
 #endif
 
 			/** Maximum number of total entries. */

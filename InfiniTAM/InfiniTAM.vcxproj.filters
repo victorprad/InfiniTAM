@@ -13,12 +13,6 @@
     <Filter Include="Engine\Source Files">
       <UniqueIdentifier>{9e558372-5722-4550-818d-f06fa01c97a8}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Utils\Header Files">
-      <UniqueIdentifier>{09c3db78-edff-4d45-8c20-e1f3b08c2793}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Utils\Source Files">
-      <UniqueIdentifier>{bd8256f3-0f2c-4d4e-9941-0f4826b17735}</UniqueIdentifier>
-    </Filter>
     <Filter Include="ITMLib">
       <UniqueIdentifier>{96026be7-cddc-4827-a6f2-a92f671fa68a}</UniqueIdentifier>
     </Filter>
@@ -63,9 +57,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Utils\FileUtils.cpp">
-      <Filter>Utils\Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Engine\OpenNIEngine.cpp">
       <Filter>Engine\Source Files</Filter>
     </ClCompile>
@@ -139,11 +130,11 @@
     <ClCompile Include="ITMLib\Utils\ITMLibSettings.cpp">
       <Filter>ITMLib\Utils</Filter>
     </ClCompile>
+    <ClCompile Include="Utils\FileUtils.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Utils\FileUtils.h">
-      <Filter>Utils\Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Engine\OpenNIEngine.h">
       <Filter>Engine\Header Files</Filter>
     </ClInclude>
@@ -215,9 +206,6 @@
     </ClInclude>
     <ClInclude Include="ITMLib\Engine\DeviceSpecific\CUDA\ITMCUDAUtils.h">
       <Filter>ITMLib\Engine\DeviceSpecific\CUDA</Filter>
-    </ClInclude>
-    <ClInclude Include="Utils\NVTimer.h">
-      <Filter>Utils\Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ITMLib\Engine\DeviceAgnostic\ITMSwappingEngine.h">
       <Filter>ITMLib\Engine\DeviceAgnostic</Filter>
@@ -389,6 +377,12 @@
     </ClInclude>
     <ClInclude Include="ITMLib\Engine\ITMIMUCalibrator.h">
       <Filter>ITMLib\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\FileUtils.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\NVTimer.h">
+      <Filter>Utils</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
