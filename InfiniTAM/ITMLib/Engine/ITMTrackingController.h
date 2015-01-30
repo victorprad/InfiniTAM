@@ -39,7 +39,8 @@ namespace ITMLib
 			const ITMLowLevelEngine *lowLevelEngine;
 
 			ITMTracker *tracker;
-			
+			ITMIMUCalibrator *imuCalibrator;
+
 			Vector2i trackedImageSize;
 
 			MemoryDeviceType memoryType;
@@ -67,6 +68,8 @@ namespace ITMLib
 				memoryType = MEMORYDEVICE_CPU;
 				trackerType = settings->trackerType;
 
+				imuCalibrator = new ITMIMUCalibrator_iPad();
+
 				switch (settings->deviceType)
 				{
 				case ITMLibSettings::DEVICE_CPU:
@@ -74,15 +77,15 @@ namespace ITMLib
 					{
 					case ITMLibSettings::TRACKER_ICP:
 					{
-						tracker = new ITMDepthTracker_CPU(trackedImageSize, settings->noHierarchyLevels, settings->noRotationOnlyLevels, settings->noICPRunTillLevel,
+						tracker = new ITMDepthTracker_CPU(trackedImageSize, settings->trackingRegime, settings->noHierarchyLevels, settings->noICPRunTillLevel,
 							settings->depthTrackerICPThreshold, lowLevelEngine);
 						break;
 					}
 					case ITMLibSettings::TRACKER_IMU:
 					{
 						ITMCompositeTracker *compositeTracker = new ITMCompositeTracker(2);
-						compositeTracker->SetTracker(new ITMIMUTracker(), 0);
-						compositeTracker->SetTracker(new ITMDepthTracker_CPU(trackedImageSize, settings->noHierarchyLevels, settings->noRotationOnlyLevels,
+						compositeTracker->SetTracker(new ITMIMUTracker(imuCalibrator), 0);
+						compositeTracker->SetTracker(new ITMDepthTracker_CPU(trackedImageSize, settings->trackingRegime, settings->noHierarchyLevels,
 							settings->noICPRunTillLevel, settings->depthTrackerICPThreshold, lowLevelEngine), 1);
 
 						tracker = compositeTracker;
@@ -90,15 +93,15 @@ namespace ITMLib
 					}
 					case ITMLibSettings::TRACKER_COLOR:
 					{
-						tracker = new ITMColorTracker_CPU(trackedImageSize, settings->noHierarchyLevels, settings->noRotationOnlyLevels, lowLevelEngine);
+						tracker = new ITMColorTracker_CPU(trackedImageSize, settings->trackingRegime, settings->noHierarchyLevels, lowLevelEngine);
 						break;
 					}
 					case ITMLibSettings::TRACKER_REN:
 					{
 						ITMCompositeTracker *compositeTracker = new ITMCompositeTracker(2);
-						compositeTracker->SetTracker(new ITMDepthTracker_CPU(trackedImageSize, settings->noHierarchyLevels, settings->noRotationOnlyLevels,
+						compositeTracker->SetTracker(new ITMDepthTracker_CPU(trackedImageSize, settings->trackingRegime, settings->noHierarchyLevels,
 							settings->noICPRunTillLevel, settings->depthTrackerICPThreshold, lowLevelEngine), 0);
-						compositeTracker->SetTracker(new ITMRenTracker_CPU<TVoxel, TIndex>(trackedImageSize, settings->noICPRunTillLevel, lowLevelEngine, scene), 1);
+						compositeTracker->SetTracker(new ITMRenTracker_CPU<TVoxel, TIndex>(trackedImageSize, lowLevelEngine, scene), 1);
 
 						tracker = compositeTracker;
 						break;
@@ -112,15 +115,15 @@ namespace ITMLib
 					{
 					case ITMLibSettings::TRACKER_ICP:
 					{
-						tracker = new ITMDepthTracker_CUDA(trackedImageSize, settings->noHierarchyLevels, settings->noRotationOnlyLevels, settings->noICPRunTillLevel,
+						tracker = new ITMDepthTracker_CUDA(trackedImageSize, settings->trackingRegime, settings->noHierarchyLevels, settings->noICPRunTillLevel,
 							settings->depthTrackerICPThreshold, lowLevelEngine);
 						break;
 					}
 					case ITMLibSettings::TRACKER_IMU:
 					{
 						ITMCompositeTracker *compositeTracker = new ITMCompositeTracker(2);
-						compositeTracker->SetTracker(new ITMIMUTracker(), 0);
-						compositeTracker->SetTracker(new ITMDepthTracker_CUDA(trackedImageSize, settings->noHierarchyLevels, settings->noRotationOnlyLevels,
+						compositeTracker->SetTracker(new ITMIMUTracker(imuCalibrator), 0);
+						compositeTracker->SetTracker(new ITMDepthTracker_CUDA(trackedImageSize, settings->trackingRegime, settings->noHierarchyLevels,
 							settings->noICPRunTillLevel, settings->depthTrackerICPThreshold, lowLevelEngine), 1);
 
 						tracker = compositeTracker;
@@ -128,15 +131,15 @@ namespace ITMLib
 					}
 					case ITMLibSettings::TRACKER_COLOR:
 					{
-						tracker = new ITMColorTracker_CUDA(trackedImageSize, settings->noHierarchyLevels, settings->noRotationOnlyLevels, lowLevelEngine);
+						tracker = new ITMColorTracker_CUDA(trackedImageSize, settings->trackingRegime, settings->noHierarchyLevels, lowLevelEngine);
 						break;
 					}
 					case ITMLibSettings::TRACKER_REN:
 					{
 						ITMCompositeTracker *compositeTracker = new ITMCompositeTracker(2);
-						compositeTracker->SetTracker(new ITMDepthTracker_CUDA(trackedImageSize, settings->noHierarchyLevels, settings->noRotationOnlyLevels,
+						compositeTracker->SetTracker(new ITMDepthTracker_CUDA(trackedImageSize, settings->trackingRegime, settings->noHierarchyLevels,
 							settings->noICPRunTillLevel, settings->depthTrackerICPThreshold, lowLevelEngine), 0);
-						compositeTracker->SetTracker(new ITMRenTracker_CUDA<TVoxel, TIndex>(trackedImageSize, settings->noICPRunTillLevel, lowLevelEngine, scene), 1);
+						compositeTracker->SetTracker(new ITMRenTracker_CUDA<TVoxel, TIndex>(trackedImageSize, lowLevelEngine, scene), 1);
 						tracker = compositeTracker;
 						break;
 					}
@@ -154,7 +157,11 @@ namespace ITMLib
 				}
 			}
 
-			~ITMTrackingController();
+			~ITMTrackingController()
+			{
+				delete tracker;
+				delete imuCalibrator;
+			}
 
 			ITMTrackingState *BuildTrackingState()
 			{

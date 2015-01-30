@@ -9,10 +9,10 @@ using namespace ITMLib::Engine;
 
 static inline bool minimizeLM(const ITMColorTracker & tracker, ITMPose & initialization);
 
-ITMColorTracker::ITMColorTracker(Vector2i imgSize, int noHierarchyLevels, int noRotationOnlyLevels,
+ITMColorTracker::ITMColorTracker(Vector2i imgSize, TrackerIterationType *trackingRegime, int noHierarchyLevels,
 	const ITMLowLevelEngine *lowLevelEngine, MemoryDeviceType memoryType)
 {
-	viewHierarchy = new ITMImageHierarchy<ITMViewHierarchyLevel>(imgSize, noHierarchyLevels, noRotationOnlyLevels, memoryType);
+	viewHierarchy = new ITMImageHierarchy<ITMViewHierarchyLevel>(imgSize, trackingRegime, noHierarchyLevels, memoryType);
 
 	this->lowLevelEngine = lowLevelEngine;
 }
@@ -32,7 +32,7 @@ void ITMColorTracker::TrackCamera(ITMTrackingState *trackingState, const ITMView
 	for (int levelId = viewHierarchy->noLevels - 1; levelId >= 0; levelId--)
 	{
 		this->levelId = levelId;
-		this->rotationOnly = viewHierarchy->levels[levelId]->rotationOnly;
+		this->iterationType = viewHierarchy->levels[levelId]->iterationType;
 
 		minimizeLM(*this, currentPara);
 	}
@@ -72,16 +72,23 @@ void ITMColorTracker::applyDelta(const ITMPose & para_old, const float *delta, I
 {
 	float paramVector[6];
 
-	if (rotationOnly)
+	switch (iterationType)
 	{
+	case TRACKER_ITERATION_ROTATION:
 		paramVector[0] = 0.0f; paramVector[1] = 0.0f; paramVector[2] = 0.0f;
 		paramVector[3] = (float)(delta[0]); paramVector[4] = (float)(delta[1]); paramVector[5] = (float)(delta[2]);
-	}
-	else
-	{
+		break;
+	case TRACKER_ITERATION_TRANSLATION:
+		paramVector[0] = (float)(delta[0]); paramVector[1] = (float)(delta[1]); paramVector[2] = (float)(delta[2]);
+		paramVector[3] = 0.0f; paramVector[4] = 0.0f; paramVector[5] = 0.0f;
+		break;
+	case TRACKER_ITERATION_BOTH:
 		paramVector[0] = (float)(delta[0]); paramVector[1] = (float)(delta[1]); paramVector[2] = (float)(delta[2]);
 		paramVector[3] = (float)(delta[3]); paramVector[4] = (float)(delta[4]); paramVector[5] = (float)(delta[5]);
+		break;
+	default: break;
 	}
+
 	para_new.SetFrom(paramVector);
 	para_new.MultiplyWith(&(para_old));
 }

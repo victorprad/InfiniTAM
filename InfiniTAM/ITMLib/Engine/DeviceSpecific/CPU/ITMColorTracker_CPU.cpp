@@ -6,8 +6,8 @@
 
 using namespace ITMLib::Engine;
 
-ITMColorTracker_CPU::ITMColorTracker_CPU(Vector2i imgSize, int noHierarchyLevels, int noRotationOnlyLevels, const ITMLowLevelEngine *lowLevelEngine) 
-	: ITMColorTracker(imgSize, noHierarchyLevels, noRotationOnlyLevels, lowLevelEngine, MEMORYDEVICE_CPU) {  }
+ITMColorTracker_CPU::ITMColorTracker_CPU(Vector2i imgSize, TrackerIterationType *trackingRegime, int noHierarchyLevels, const ITMLowLevelEngine *lowLevelEngine)
+	: ITMColorTracker(imgSize, trackingRegime, noHierarchyLevels, lowLevelEngine, MEMORYDEVICE_CPU) {  }
 
 ITMColorTracker_CPU::~ITMColorTracker_CPU(void) { }
 
@@ -56,6 +56,7 @@ void ITMColorTracker_CPU::G_oneLevel(float *gradient, float *hessian, ITMPose *p
 
 	float scaleForOcclusions;
 
+	bool rotationOnly = iterationType == TRACKER_ITERATION_ROTATION;
 	int numPara = rotationOnly ? 3 : 6, startPara = rotationOnly ? 3 : 0, numParaSQ = rotationOnly ? 3 + 2 + 1 : 6 + 5 + 4 + 3 + 2 + 1;
 
 	float globalGradient[6], globalHessian[21];

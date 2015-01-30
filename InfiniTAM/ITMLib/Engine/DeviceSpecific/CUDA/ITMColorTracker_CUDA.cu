@@ -17,8 +17,8 @@ __global__ void colorTrackerOneLevel_g_ro_device(float *g_out, float *h_out, Vec
 
 // host methods
 
-ITMColorTracker_CUDA::ITMColorTracker_CUDA(Vector2i imgSize, int noHierarchyLevels, int noRotationOnlyLevels, const ITMLowLevelEngine *lowLevelEngine) 
-	:ITMColorTracker(imgSize, noHierarchyLevels, noRotationOnlyLevels, lowLevelEngine, MEMORYDEVICE_CUDA)
+ITMColorTracker_CUDA::ITMColorTracker_CUDA(Vector2i imgSize, TrackerIterationType *trackingRegime, int noHierarchyLevels, const ITMLowLevelEngine *lowLevelEngine)
+	:ITMColorTracker(imgSize, trackingRegime, noHierarchyLevels, lowLevelEngine, MEMORYDEVICE_CUDA)
 { 
 	int dim_g = 6;
 	int dim_h = 6 + 5 + 4 + 3 + 2 + 1;
@@ -93,6 +93,7 @@ void ITMColorTracker_CUDA::G_oneLevel(float *gradient, float *hessian, ITMPose *
 
 	float scaleForOcclusions;
 
+	bool rotationOnly = iterationType == TRACKER_ITERATION_ROTATION;
 	int numPara = rotationOnly ? 3 : 6, numParaSQ = rotationOnly ? 3 + 2 + 1 : 6 + 5 + 4 + 3 + 2 + 1;
 
 	float globalGradient[6], globalHessian[21];

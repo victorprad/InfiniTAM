@@ -13,7 +13,7 @@ namespace ITMLib
 		public:
 			int levelId;
 
-			bool rotationOnly;
+			TrackerIterationType iterationType;
 
 			ITMUChar4Image *rgb; ITMFloatImage *depth;
 			ITMShort4Image *gradientX_rgb, *gradientY_rgb;
@@ -21,11 +21,11 @@ namespace ITMLib
 
 			bool manageData;
 
-			ITMViewHierarchyLevel(Vector2i imgSize, int levelId, bool rotationOnly, MemoryDeviceType memoryType, bool skipAllocation)
+			ITMViewHierarchyLevel(Vector2i imgSize, int levelId, TrackerIterationType iterationType, MemoryDeviceType memoryType, bool skipAllocation)
 			{
 				this->manageData = !skipAllocation;
 				this->levelId = levelId;
-				this->rotationOnly = rotationOnly;
+				this->iterationType = iterationType;
 
 				if (!skipAllocation) {
 					this->rgb = new ITMUChar4Image(imgSize, memoryType);

@@ -272,3 +272,15 @@ typedef ITMLib::Objects::ITMVoxelBlockHash ITMVoxelIndex;
 	ryifrklaeybfcklarybckyar++; \
 }
 #endif
+
+#ifndef TRACKER_ITERATION_TYPE
+#define TRACKER_ITERATION_TYPE
+/// The tracker iteration type used to define the tracking iteration regime
+typedef enum
+{
+	TRACKER_ITERATION_ROTATION,
+	TRACKER_ITERATION_TRANSLATION,
+	TRACKER_ITERATION_BOTH,
+	TRACKER_ITERATION_NONE
+} TrackerIterationType;
+#endif

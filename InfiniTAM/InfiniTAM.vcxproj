@@ -169,6 +169,7 @@
     <ClInclude Include="ITMLib\Engine\ITMCompositeTracker.h" />
     <ClInclude Include="ITMLib\Engine\ITMDenseMapper.h" />
     <ClInclude Include="ITMLib\Engine\ITMDepthTracker.h" />
+    <ClInclude Include="ITMLib\Engine\ITMIMUCalibrator.h" />
     <ClInclude Include="ITMLib\Engine\ITMIMUTracker.h" />
     <ClInclude Include="ITMLib\Engine\ITMLowLevelEngine.h" />
     <ClInclude Include="ITMLib\Engine\ITMMainEngine.h" />
@@ -198,7 +199,6 @@
     <ClInclude Include="ITMLib\Utils\ITMCalibIO.h" />
     <ClInclude Include="ITMLib\Utils\ITMMath.h" />
     <ClInclude Include="ITMLib\Utils\ITMPixelUtils.h" />
-    <ClInclude Include="ITMLib\Objects\ITMHashTable.h" />
     <ClInclude Include="ITMLib\Objects\ITMDisparityCalib.h" />
     <ClInclude Include="ITMLib\Objects\ITMExtrinsics.h" />
     <ClInclude Include="ITMLib\Objects\ITMIntrinsics.h" />

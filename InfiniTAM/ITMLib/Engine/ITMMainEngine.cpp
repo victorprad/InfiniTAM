@@ -8,7 +8,7 @@ ITMMainEngine::ITMMainEngine(const ITMLibSettings *settings, const ITMRGBDCalib 
 {
 	if ((imgSize_d.x == -1) || (imgSize_d.y == -1)) imgSize_d = imgSize_rgb;
 
-	this->settings = new ITMLibSettings(*settings);
+	this->settings = settings;
 
 	this->scene = new ITMScene<ITMVoxel, ITMVoxelIndex>(&(settings->sceneParams), settings->useSwapping, 
 		settings->deviceType == ITMLibSettings::DEVICE_CUDA ? MEMORYDEVICE_CUDA : MEMORYDEVICE_CPU);
@@ -65,8 +65,6 @@ ITMMainEngine::~ITMMainEngine()
 	if (view != NULL) delete view;
 
 	delete visualisationEngine;
-
-	delete settings;
 }
 
 void ITMMainEngine::ProcessFrame(ITMUChar4Image *rgbImage, ITMShortImage *rawDepthImage)
