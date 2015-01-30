@@ -21,7 +21,7 @@ namespace ITMLib
 
 		public:
 			void AllocateSceneFromDepth(ITMScene<TVoxel, ITMVoxelBlockHash> *scene, const ITMView *view, const ITMTrackingState *trackingState,
-				const ITMRenderState *renderState);
+				const ITMRenderState *renderState, bool onlyUpdateVisibleList = false);
 
 			void IntegrateIntoScene(ITMScene<TVoxel, ITMVoxelBlockHash> *scene, const ITMView *view, const ITMTrackingState *trackingState,
 				const ITMRenderState *renderState);
@@ -39,7 +39,7 @@ namespace ITMLib
 
 		public:
 			void AllocateSceneFromDepth(ITMScene<TVoxel, ITMPlainVoxelArray> *scene, const ITMView *view, const ITMTrackingState *trackingState,
-				const ITMRenderState *renderState);
+				const ITMRenderState *renderState, bool onlyUpdateVisibleList = false);
 
 			void IntegrateIntoScene(ITMScene<TVoxel, ITMPlainVoxelArray> *scene, const ITMView *view, const ITMTrackingState *trackingState,
 				const ITMRenderState *renderState);

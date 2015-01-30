@@ -90,7 +90,7 @@ void ITMSceneReconstructionEngine_CPU<TVoxel, ITMVoxelBlockHash>::IntegrateIntoS
 
 template<class TVoxel>
 void ITMSceneReconstructionEngine_CPU<TVoxel, ITMVoxelBlockHash>::AllocateSceneFromDepth(ITMScene<TVoxel, ITMVoxelBlockHash> *scene, const ITMView *view,
-	const ITMTrackingState *trackingState, const ITMRenderState *renderState)
+	const ITMTrackingState *trackingState, const ITMRenderState *renderState, bool onlyUpdateVisibleList)
 {
 	Vector2i depthImgSize = view->depth->noDims;
 	float voxelSize = scene->sceneParams->voxelSize;
@@ -148,53 +148,57 @@ void ITMSceneReconstructionEngine_CPU<TVoxel, ITMVoxelBlockHash>::AllocateSceneF
 			scene->sceneParams->viewFrustum_max);
 	}
 
-	//allocate
-	for (int targetIdx = 0; targetIdx < noTotalEntries; targetIdx++)
+	if (onlyUpdateVisibleList) useSwapping = false;
+	if (!onlyUpdateVisibleList)
 	{
-		int vbaIdx, exlIdx;
-		unsigned char hashChangeType = entriesAllocType[targetIdx];
-
-		switch (hashChangeType)
+		//allocate
+		for (int targetIdx = 0; targetIdx < noTotalEntries; targetIdx++)
 		{
-		case 1: //needs allocation, fits in the ordered list
-			vbaIdx = lastFreeVoxelBlockId; lastFreeVoxelBlockId--;
+			int vbaIdx, exlIdx;
+			unsigned char hashChangeType = entriesAllocType[targetIdx];
 
-			if (vbaIdx >= 0) //there is room in the voxel block array
+			switch (hashChangeType)
 			{
-				Vector4s pt_block_all = blockCoords[targetIdx];
+			case 1: //needs allocation, fits in the ordered list
+				vbaIdx = lastFreeVoxelBlockId; lastFreeVoxelBlockId--;
 
-				ITMHashEntry hashEntry;
-				hashEntry.pos.x = pt_block_all.x; hashEntry.pos.y = pt_block_all.y; hashEntry.pos.z = pt_block_all.z;
-				hashEntry.ptr = voxelAllocationList[vbaIdx];
-				hashEntry.offset = 0;
+				if (vbaIdx >= 0) //there is room in the voxel block array
+				{
+					Vector4s pt_block_all = blockCoords[targetIdx];
 
-				hashTable[targetIdx] = hashEntry;
+					ITMHashEntry hashEntry;
+					hashEntry.pos.x = pt_block_all.x; hashEntry.pos.y = pt_block_all.y; hashEntry.pos.z = pt_block_all.z;
+					hashEntry.ptr = voxelAllocationList[vbaIdx];
+					hashEntry.offset = 0;
+
+					hashTable[targetIdx] = hashEntry;
+				}
+
+				break;
+			case 2: //needs allocation in the excess list
+				vbaIdx = lastFreeVoxelBlockId; lastFreeVoxelBlockId--;
+				exlIdx = lastFreeExcessListId; lastFreeExcessListId--;
+
+				if (vbaIdx >= 0 && exlIdx >= 0) //there is room in the voxel block array and excess list
+				{
+					Vector4s pt_block_all = blockCoords[targetIdx];
+
+					ITMHashEntry hashEntry;
+					hashEntry.pos.x = pt_block_all.x; hashEntry.pos.y = pt_block_all.y; hashEntry.pos.z = pt_block_all.z;
+					hashEntry.ptr = voxelAllocationList[vbaIdx];
+					hashEntry.offset = 0;
+
+					int exlOffset = excessAllocationList[exlIdx];
+
+					hashTable[targetIdx].offset = exlOffset + 1; //connect to child
+
+					hashTable[SDF_BUCKET_NUM * SDF_ENTRY_NUM_PER_BUCKET + exlOffset] = hashEntry; //add child to the excess list
+
+					entriesVisibleType[SDF_BUCKET_NUM * SDF_ENTRY_NUM_PER_BUCKET + exlOffset] = 1; //make child visible and in memory
+				}
+
+				break;
 			}
-
-			break;
-		case 2: //needs allocation in the excess list
-			vbaIdx = lastFreeVoxelBlockId; lastFreeVoxelBlockId--;
-			exlIdx = lastFreeExcessListId; lastFreeExcessListId--;
-
-			if (vbaIdx >= 0 && exlIdx >= 0) //there is room in the voxel block array and excess list
-			{
-				Vector4s pt_block_all = blockCoords[targetIdx];
-
-				ITMHashEntry hashEntry;
-				hashEntry.pos.x = pt_block_all.x; hashEntry.pos.y = pt_block_all.y; hashEntry.pos.z = pt_block_all.z;
-				hashEntry.ptr = voxelAllocationList[vbaIdx];
-				hashEntry.offset = 0;
-
-				int exlOffset = excessAllocationList[exlIdx];
-
-				hashTable[targetIdx].offset = exlOffset + 1; //connect to child
-
-				hashTable[SDF_BUCKET_NUM * SDF_ENTRY_NUM_PER_BUCKET + exlOffset] = hashEntry; //add child to the excess list
-
-				entriesVisibleType[SDF_BUCKET_NUM * SDF_ENTRY_NUM_PER_BUCKET + exlOffset] = 1; //make child visible and in memory
-			}
-
-			break;
 		}
 	}
 
@@ -270,7 +274,7 @@ ITMSceneReconstructionEngine_CPU<TVoxel,ITMPlainVoxelArray>::~ITMSceneReconstruc
 
 template<class TVoxel>
 void ITMSceneReconstructionEngine_CPU<TVoxel, ITMPlainVoxelArray>::AllocateSceneFromDepth(ITMScene<TVoxel, ITMPlainVoxelArray> *scene, const ITMView *view,
-	const ITMTrackingState *trackingState, const ITMRenderState *renderState)
+	const ITMTrackingState *trackingState, const ITMRenderState *renderState, bool onlyUpdateVisibleList)
 {}
 
 template<class TVoxel>
