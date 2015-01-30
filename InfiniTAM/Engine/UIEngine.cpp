@@ -421,8 +421,10 @@ void UIEngine::ProcessFrame()
 	if (!imageSource->hasMoreImages()) return;
 	imageSource->getImages(inputRGBImage, inputRawDepthImage);
 
-	if (imuSource != NULL) if (!imuSource->hasMoreMeasurements()) return;
-	else imuSource->getMeasurement(inputIMUMeasurement);
+	if (imuSource != NULL) {
+		if (!imuSource->hasMoreMeasurements()) return;
+		else imuSource->getMeasurement(inputIMUMeasurement);
+	}
 
 	sdkResetTimer(&timer_instant);
 	sdkStartTimer(&timer_instant); sdkStartTimer(&timer_average);
