@@ -58,7 +58,9 @@ int ITMDepthTracker_CPU::ComputeGandH(ITMSceneHierarchyLevel *sceneHierarchyLeve
 			isValidPoint = computePerPointGH_Depth<false, false>(localNabla, localHessian, localF, x, y, depth[x + y * viewImageSize.x], viewImageSize,
 				viewIntrinsics, sceneImageSize, sceneIntrinsics, approxInvPose, scenePose, pointsMap, normalsMap, distThresh);
 			break;
-		default: break;
+		default:
+			isValidPoint = false;
+			break;
 		}
 
 		if (isValidPoint)
