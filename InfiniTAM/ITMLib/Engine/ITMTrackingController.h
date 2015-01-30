@@ -39,7 +39,8 @@ namespace ITMLib
 			const ITMLowLevelEngine *lowLevelEngine;
 
 			ITMTracker *tracker;
-			
+			ITMIMUCalibrator *imuCalibrator;
+
 			Vector2i trackedImageSize;
 
 			MemoryDeviceType memoryType;
@@ -67,6 +68,8 @@ namespace ITMLib
 				memoryType = MEMORYDEVICE_CPU;
 				trackerType = settings->trackerType;
 
+				imuCalibrator = new ITMIMUCalibrator_iPad();
+
 				switch (settings->deviceType)
 				{
 				case ITMLibSettings::DEVICE_CPU:
@@ -81,7 +84,7 @@ namespace ITMLib
 					case ITMLibSettings::TRACKER_IMU:
 					{
 						ITMCompositeTracker *compositeTracker = new ITMCompositeTracker(2);
-						compositeTracker->SetTracker(new ITMIMUTracker(), 0);
+						compositeTracker->SetTracker(new ITMIMUTracker(imuCalibrator), 0);
 						compositeTracker->SetTracker(new ITMDepthTracker_CPU(trackedImageSize, settings->trackingRegime, settings->noHierarchyLevels,
 							settings->noICPRunTillLevel, settings->depthTrackerICPThreshold, lowLevelEngine), 1);
 
@@ -119,7 +122,7 @@ namespace ITMLib
 					case ITMLibSettings::TRACKER_IMU:
 					{
 						ITMCompositeTracker *compositeTracker = new ITMCompositeTracker(2);
-						compositeTracker->SetTracker(new ITMIMUTracker(), 0);
+						compositeTracker->SetTracker(new ITMIMUTracker(imuCalibrator), 0);
 						compositeTracker->SetTracker(new ITMDepthTracker_CUDA(trackedImageSize, settings->trackingRegime, settings->noHierarchyLevels,
 							settings->noICPRunTillLevel, settings->depthTrackerICPThreshold, lowLevelEngine), 1);
 
@@ -154,7 +157,11 @@ namespace ITMLib
 				}
 			}
 
-			~ITMTrackingController();
+			~ITMTrackingController()
+			{
+				delete tracker;
+				delete imuCalibrator;
+			}
 
 			ITMTrackingState *BuildTrackingState()
 			{

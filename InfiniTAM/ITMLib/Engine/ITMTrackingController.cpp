@@ -8,11 +8,6 @@
 
 using namespace ITMLib::Engine;
 
-ITMTrackingController::~ITMTrackingController() 
-{
-	delete tracker;
-}
-
 void ITMTrackingController::Track(ITMTrackingState *trackingState, const ITMView *view)
 {
 	tracker->TrackCamera(trackingState, view);

@@ -165,6 +165,7 @@
     <ClInclude Include="ITMLib\Engine\ITMCompositeTracker.h" />
     <ClInclude Include="ITMLib\Engine\ITMDenseMapper.h" />
     <ClInclude Include="ITMLib\Engine\ITMDepthTracker.h" />
+    <ClInclude Include="ITMLib\Engine\ITMIMUCalibrator.h" />
     <ClInclude Include="ITMLib\Engine\ITMIMUTracker.h" />
     <ClInclude Include="ITMLib\Engine\ITMLowLevelEngine.h" />
     <ClInclude Include="ITMLib\Engine\ITMMainEngine.h" />

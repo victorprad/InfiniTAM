@@ -387,6 +387,9 @@
     <ClInclude Include="ITMLib\Utils\ITMPixelUtils.h">
       <Filter>ITMLib\Utils</Filter>
     </ClInclude>
+    <ClInclude Include="ITMLib\Engine\ITMIMUCalibrator.h">
+      <Filter>ITMLib\Engine</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CudaCompile Include="ITMLib\Engine\DeviceSpecific\CUDA\ITMColorTracker_CUDA.cu">

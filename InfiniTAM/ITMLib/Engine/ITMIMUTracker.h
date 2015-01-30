@@ -8,6 +8,7 @@
 
 #include "../Engine/ITMTracker.h"
 #include "../Engine/ITMLowLevelEngine.h"
+#include "../Engine/ITMIMUCalibrator.h"
 
 using namespace ITMLib::Objects;
 
@@ -18,15 +19,12 @@ namespace ITMLib
 		class ITMIMUTracker : public ITMTracker
 		{
 		private:
-			ITMTrackingState *trackingState; const ITMView *view;
-			ITMPose *imuPose_imucoords, *imuPose_cameracoords;
-			Matrix3f oldR_visual;
-			bool hasAtLeastTwoFrames;
+			ITMIMUCalibrator *calibrator;
 
 		public:
 			void TrackCamera(ITMTrackingState *trackingState, const ITMView *view);
 
-			ITMIMUTracker();
+			ITMIMUTracker(ITMIMUCalibrator *calibrator);
 			virtual ~ITMIMUTracker(void);
 		};
 	}
