@@ -147,7 +147,7 @@ void performMergeOperations(int *blocklist, int blockListPos, TVoxel *voxelBlock
 	// read data from old voxel blocks
 	for (int child = 0; child < 8; ++child) {
 		int locId_parent = ((child&1)?4:0) + ((child&2)?4:0) * SDF_BLOCK_SIZE + ((child&4)?4:0) * SDF_BLOCK_SIZE * SDF_BLOCK_SIZE;
-		int blockId_child = blocklist[blockListPos++];
+		int blockId_child = blocklist[blockListPos+child];
 		TVoxel *voxelBlock_child = &(voxelBlocks[blockId_child * (SDF_BLOCK_SIZE3)]);
 		// TODO: yes, I have heard of "aliasing effects", but I'm lazy
 		for (int z=0; z<SDF_BLOCK_SIZE/2; ++z) for (int y=0; y<SDF_BLOCK_SIZE/2; ++y) for (int x=0; x<SDF_BLOCK_SIZE/2; ++x) {
@@ -162,7 +162,7 @@ void performMergeOperations(int *blocklist, int blockListPos, TVoxel *voxelBlock
 	}
 
 	for (int child = 1; child < 8; ++child) {
-		int blockId_child = blocklist[blockListPos++];
+		int blockId_child = blocklist[blockListPos+child];
 		TVoxel *voxelBlock_child = &(voxelBlocks[blockId_child * (SDF_BLOCK_SIZE3)]);
 		for (int i = 0; i < (SDF_BLOCK_SIZE3); ++i) {
 			voxelBlock_child[i] = TVoxel();

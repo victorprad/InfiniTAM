@@ -66,7 +66,7 @@ _CPU_AND_GPU_CODE_ inline void createSplitOperations(ITMHashEntry *hashTablePare
 	int newBlockPtr = blockId_parent;
 
 	// any space left in voxel block array?
-	if (newBlockPtr < 0) {
+	if (newBlockListPtr < 7) {
 		// if it fails for this one, all other parallel ones will
 		// equally fail, so this is thread safe:
 		*lastFreeVoxelBlockId = newBlockListPtr;

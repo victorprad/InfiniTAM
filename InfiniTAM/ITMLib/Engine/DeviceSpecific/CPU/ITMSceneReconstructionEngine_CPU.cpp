@@ -496,7 +496,7 @@ void ITMSceneReconstructionEngine_CPU<TVoxel,ITMVoxelBlockHHash>::AllocateSceneF
 		}
 	}
 
-	//reallocate deletes ones from previous swap operation
+	//reallocate deleted ones from previous swap operation
 	if (useSwapping)
 	{
 		for (int targetIdx = 0; targetIdx < noTotalEntries; targetIdx++)
