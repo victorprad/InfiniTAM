@@ -31,7 +31,6 @@ namespace ITMLib
 			Vector2i trackedImageSize;
 
 			MemoryDeviceType memoryType;
-			ITMLibSettings::TrackerType trackerType;
 
 			ITMRenderState *renderState_live;
 
@@ -53,10 +52,9 @@ namespace ITMLib
 				trackedImageSize = renderState_live->raycastImage->noDims;
 
 				memoryType = settings->deviceType == ITMLibSettings::DEVICE_CUDA ? MEMORYDEVICE_CUDA : MEMORYDEVICE_CPU;
-				trackerType = settings->trackerType;
 
 				imuCalibrator = new ITMIMUCalibrator_iPad();
-				tracker = ITMTrackerFactory<TVoxel,TIndex>::Instance().Make(trackerType, trackedImageSize, settings, lowLevelEngine, imuCalibrator, scene);
+				tracker = ITMTrackerFactory<TVoxel,TIndex>::Instance().Make(trackedImageSize, settings, lowLevelEngine, imuCalibrator, scene);
 			}
 
 			~ITMTrackingController()

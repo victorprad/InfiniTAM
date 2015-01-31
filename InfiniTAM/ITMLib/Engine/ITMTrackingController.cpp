@@ -16,7 +16,7 @@ void ITMTrackingController::Track(ITMTrackingState *trackingState, const ITMView
 void ITMTrackingController::Prepare(ITMTrackingState *trackingState, const ITMView *view)
 {
 	//render for tracking
-	if (trackerType == ITMLibSettings::TRACKER_COLOR)
+	if (settings->trackerType == ITMLibSettings::TRACKER_COLOR)
 	{
 		ITMPose pose_rgb(view->calib->trafo_rgb_to_depth.calib_inv * trackingState->pose_d->GetM());
 		visualisationEngine->CreateExpectedDepths(&pose_rgb, &(view->calib->intrinsics_rgb), renderState_live);

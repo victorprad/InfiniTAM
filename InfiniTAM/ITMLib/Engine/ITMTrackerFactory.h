@@ -72,10 +72,10 @@ namespace ITMLib
       /**
        * \brief Makes a tracker of the specified type.
        */
-      ITMTracker *Make(ITMLibSettings::TrackerType trackerType, const Vector2i& trackedImageSize, const ITMLibSettings *settings,
-                       const ITMLowLevelEngine *lowLevelEngine, ITMIMUCalibrator *imuCalibrator, ITMScene<TVoxel,TIndex> *scene) const
+      ITMTracker *Make(const Vector2i& trackedImageSize, const ITMLibSettings *settings, const ITMLowLevelEngine *lowLevelEngine,
+                       ITMIMUCalibrator *imuCalibrator, ITMScene<TVoxel,TIndex> *scene) const
       {
-        typename std::map<ITMLibSettings::TrackerType,Maker>::const_iterator it = makers.find(trackerType);
+        typename std::map<ITMLibSettings::TrackerType,Maker>::const_iterator it = makers.find(settings->trackerType);
         if(it == makers.end()) throw std::runtime_error("Unknown tracker type");
 
         Maker maker = it->second;
