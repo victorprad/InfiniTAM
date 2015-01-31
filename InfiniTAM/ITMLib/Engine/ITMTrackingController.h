@@ -38,29 +38,19 @@ namespace ITMLib
 			void Track(ITMTrackingState *trackingState, const ITMView *view);
 			void Prepare(ITMTrackingState *trackingState, const ITMView *view);
 
-			template <typename TVoxel, typename TIndex>
-			ITMTrackingController(const ITMLibSettings *settings, const IITMVisualisationEngine *visualisationEngine,
-				const ITMLowLevelEngine *lowLevelEngine, ITMScene<TVoxel, TIndex> *scene, ITMRenderState *renderState_live)
+			ITMTrackingController(ITMTracker *tracker, ITMIMUCalibrator *imuCalibrator, const ITMLibSettings *settings,
+				const IITMVisualisationEngine *visualisationEngine, const ITMLowLevelEngine *lowLevelEngine,
+				ITMRenderState *renderState_live)
 			{
+				this->tracker = tracker;
+				this->imuCalibrator = imuCalibrator;
 				this->settings = settings;
-
 				this->renderState_live = renderState_live;
-				
 				this->visualisationEngine = visualisationEngine;
 				this->lowLevelEngine = lowLevelEngine;
 
 				trackedImageSize = renderState_live->raycastImage->noDims;
-
 				memoryType = settings->deviceType == ITMLibSettings::DEVICE_CUDA ? MEMORYDEVICE_CUDA : MEMORYDEVICE_CPU;
-
-				imuCalibrator = new ITMIMUCalibrator_iPad();
-				tracker = ITMTrackerFactory<TVoxel,TIndex>::Instance().Make(trackedImageSize, settings, lowLevelEngine, imuCalibrator, scene);
-			}
-
-			~ITMTrackingController()
-			{
-				delete tracker;
-				delete imuCalibrator;
 			}
 
 			ITMTrackingState *BuildTrackingState() const

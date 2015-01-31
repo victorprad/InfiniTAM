@@ -36,11 +36,16 @@ ITMMainEngine::ITMMainEngine(const ITMLibSettings *settings, const ITMRGBDCalib 
 		break;
 	}
 
-	renderState_live = visualisationEngine->CreateRenderState(ITMTrackingController::GetTrackedImageSize(settings, imgSize_rgb, imgSize_d));
+	Vector2i trackedImageSize = ITMTrackingController::GetTrackedImageSize(settings, imgSize_rgb, imgSize_d);
+
+	renderState_live = visualisationEngine->CreateRenderState(trackedImageSize);
 	renderState_freeview = NULL; //will be created by the visualisation engine
 
 	denseMapper = new ITMDenseMapper<ITMVoxel, ITMVoxelIndex>(settings, scene, renderState_live);
-	trackingController = new ITMTrackingController(settings, visualisationEngine, lowLevelEngine, scene, renderState_live);
+
+	imuCalibrator = new ITMIMUCalibrator_iPad();
+	tracker = ITMTrackerFactory<ITMVoxel, ITMVoxelIndex>::Instance().Make(trackedImageSize, settings, lowLevelEngine, imuCalibrator, scene);
+	trackingController = new ITMTrackingController(tracker, imuCalibrator, settings, visualisationEngine, lowLevelEngine, renderState_live);
 
 	trackingState = trackingController->BuildTrackingState();
 
@@ -58,11 +63,14 @@ ITMMainEngine::~ITMMainEngine()
 	delete denseMapper;
 	delete trackingController;
 
+	delete tracker;
+	delete imuCalibrator;
+
 	delete lowLevelEngine;
 	delete viewBuilder;
 
 	delete trackingState;
-	if (view != NULL) delete view;
+	delete view;
 
 	delete visualisationEngine;
 }
