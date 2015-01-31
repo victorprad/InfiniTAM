@@ -37,7 +37,7 @@ namespace ITMLib
     {
       //#################### TYPEDEFS ####################
     private:
-      typedef ITMTracker *(*Maker)(const Vector2i&,const ITMLibSettings*,ITMLowLevelEngine*,ITMIMUCalibrator*,ITMScene<TVoxel,TIndex>*);
+      typedef ITMTracker *(*Maker)(const Vector2i&,const ITMLibSettings*,const ITMLowLevelEngine*,ITMIMUCalibrator*,ITMScene<TVoxel,TIndex>*);
 
       //#################### PRIVATE VARIABLES ####################
     private:
@@ -73,7 +73,7 @@ namespace ITMLib
        * \brief Makes a tracker of the specified type.
        */
       ITMTracker *Make(ITMLibSettings::TrackerType trackerType, const Vector2i& trackedImageSize, const ITMLibSettings *settings,
-                       ITMLowLevelEngine *lowLevelEngine, ITMIMUCalibrator *imuCalibrator, ITMScene<TVoxel,TIndex> *scene) const
+                       const ITMLowLevelEngine *lowLevelEngine, ITMIMUCalibrator *imuCalibrator, ITMScene<TVoxel,TIndex> *scene) const
       {
         typename std::map<ITMLibSettings::TrackerType,Maker>::const_iterator it = makers.find(trackerType);
         if(it == makers.end()) throw std::runtime_error("Unknown tracker type");
@@ -87,7 +87,7 @@ namespace ITMLib
       /**
        * \brief Makes a colour tracker.
        */
-      static ITMTracker *MakeColourTracker(const Vector2i& trackedImageSize, const ITMLibSettings *settings, ITMLowLevelEngine *lowLevelEngine,
+      static ITMTracker *MakeColourTracker(const Vector2i& trackedImageSize, const ITMLibSettings *settings, const ITMLowLevelEngine *lowLevelEngine,
                                            ITMIMUCalibrator *imuCalibrator, ITMScene<TVoxel,TIndex> *scene)
       {
         switch(settings->deviceType)
@@ -121,7 +121,7 @@ namespace ITMLib
       /**
        * \brief Makes an ICP tracker.
        */
-      static ITMTracker *MakeICPTracker(const Vector2i& trackedImageSize, const ITMLibSettings *settings, ITMLowLevelEngine *lowLevelEngine,
+      static ITMTracker *MakeICPTracker(const Vector2i& trackedImageSize, const ITMLibSettings *settings, const ITMLowLevelEngine *lowLevelEngine,
                                         ITMIMUCalibrator *imuCalibrator, ITMScene<TVoxel,TIndex> *scene)
       {
         switch(settings->deviceType)
@@ -176,7 +176,7 @@ namespace ITMLib
       /**
        * \brief Makes an IMU tracker.
        */
-      static ITMTracker *MakeIMUTracker(const Vector2i& trackedImageSize, const ITMLibSettings *settings, ITMLowLevelEngine *lowLevelEngine,
+      static ITMTracker *MakeIMUTracker(const Vector2i& trackedImageSize, const ITMLibSettings *settings, const ITMLowLevelEngine *lowLevelEngine,
                                         ITMIMUCalibrator *imuCalibrator, ITMScene<TVoxel,TIndex> *scene)
       {
         switch(settings->deviceType)
@@ -246,7 +246,7 @@ namespace ITMLib
       /**
        * \brief Makes a Ren tracker.
        */
-      static ITMTracker *MakeRenTracker(const Vector2i& trackedImageSize, const ITMLibSettings *settings, ITMLowLevelEngine *lowLevelEngine,
+      static ITMTracker *MakeRenTracker(const Vector2i& trackedImageSize, const ITMLibSettings *settings, const ITMLowLevelEngine *lowLevelEngine,
                                         ITMIMUCalibrator *imuCalibrator, ITMScene<TVoxel,TIndex> *scene)
       {
         switch(settings->deviceType)
