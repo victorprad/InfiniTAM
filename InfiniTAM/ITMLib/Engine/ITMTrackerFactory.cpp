@@ -2,4 +2,4 @@
 
 #include "ITMTrackerFactory.h"
 
-// TODO
+template class ITMLib::Engine::ITMTrackerFactory<ITMVoxel, ITMVoxelIndex>;
