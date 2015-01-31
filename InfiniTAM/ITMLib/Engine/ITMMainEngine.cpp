@@ -45,7 +45,7 @@ ITMMainEngine::ITMMainEngine(const ITMLibSettings *settings, const ITMRGBDCalib 
 
 	imuCalibrator = new ITMIMUCalibrator_iPad();
 	tracker = ITMTrackerFactory<ITMVoxel, ITMVoxelIndex>::Instance().Make(trackedImageSize, settings, lowLevelEngine, imuCalibrator, scene);
-	trackingController = new ITMTrackingController(tracker, imuCalibrator, settings, visualisationEngine, lowLevelEngine, renderState_live);
+	trackingController = new ITMTrackingController(tracker, visualisationEngine, lowLevelEngine, renderState_live, settings);
 
 	trackingState = trackingController->BuildTrackingState();
 

@@ -26,7 +26,6 @@ namespace ITMLib
 			const ITMLowLevelEngine *lowLevelEngine;
 
 			ITMTracker *tracker;
-			ITMIMUCalibrator *imuCalibrator;
 
 			Vector2i trackedImageSize;
 
@@ -38,12 +37,10 @@ namespace ITMLib
 			void Track(ITMTrackingState *trackingState, const ITMView *view);
 			void Prepare(ITMTrackingState *trackingState, const ITMView *view);
 
-			ITMTrackingController(ITMTracker *tracker, ITMIMUCalibrator *imuCalibrator, const ITMLibSettings *settings,
-				const IITMVisualisationEngine *visualisationEngine, const ITMLowLevelEngine *lowLevelEngine,
-				ITMRenderState *renderState_live)
+			ITMTrackingController(ITMTracker *tracker, const IITMVisualisationEngine *visualisationEngine, const ITMLowLevelEngine *lowLevelEngine,
+				ITMRenderState *renderState_live, const ITMLibSettings *settings)
 			{
 				this->tracker = tracker;
-				this->imuCalibrator = imuCalibrator;
 				this->settings = settings;
 				this->renderState_live = renderState_live;
 				this->visualisationEngine = visualisationEngine;
