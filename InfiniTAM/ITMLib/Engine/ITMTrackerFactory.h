@@ -10,10 +10,12 @@
 #include "ITMLowLevelEngine.h"
 #include "ITMTracker.h"
 
+#include "DeviceSpecific/CPU/ITMColorTracker_CPU.h"
 #include "DeviceSpecific/CPU/ITMDepthTracker_CPU.h"
 #include "../Utils/ITMLibSettings.h"
 
 #ifndef COMPILE_WITHOUT_CUDA
+#include "DeviceSpecific/CUDA/ITMColorTracker_CUDA.h"
 #include "DeviceSpecific/CUDA/ITMDepthTracker_CUDA.h"
 #endif
 
@@ -86,8 +88,32 @@ namespace ITMLib
       static ITMTracker *MakeColourTracker(const Vector2i& trackedImageSize, const ITMLibSettings *settings, ITMLowLevelEngine *lowLevelEngine,
                                            ITMIMUCalibrator *imuCalibrator)
       {
-        // TODO
-        return NULL;
+        switch(settings->deviceType)
+        {
+          case ITMLibSettings::DEVICE_CPU:
+          {
+            return new ITMColorTracker_CPU(trackedImageSize, settings->trackingRegime, settings->noHierarchyLevels, lowLevelEngine);
+          }
+          case ITMLibSettings::DEVICE_CUDA:
+          {
+#ifndef COMPILE_WITHOUT_CUDA
+            return new ITMColorTracker_CUDA(trackedImageSize, settings->trackingRegime, settings->noHierarchyLevels, lowLevelEngine);
+#else
+            break;
+#endif
+          }
+          case ITMLibSettings::DEVICE_METAL:
+          {
+#ifdef COMPILE_WITH_METAL
+            return new ITMColorTracker_CPU(trackedImageSize, settings->trackingRegime, settings->noHierarchyLevels, lowLevelEngine);
+#else
+            break;
+#endif
+          }
+          default: break;
+        }
+
+        throw std::runtime_error("Failed to make colour tracker");
       }
 
       /**
