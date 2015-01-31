@@ -201,7 +201,7 @@ namespace ITMLib
 				delete imuCalibrator;
 			}
 
-			ITMTrackingState *BuildTrackingState()
+			ITMTrackingState *BuildTrackingState() const
 			{
 				return new ITMTrackingState(trackedImageSize, memoryType);
 			}
