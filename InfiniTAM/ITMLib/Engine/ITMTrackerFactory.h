@@ -3,19 +3,22 @@
 #pragma once
 
 #include <map>
+#include <stdexcept>
 
-#include "../Utils/ITMLibSettings.h"
-#include "DeviceSpecific/CPU/ITMDepthTracker_CPU.h"
-#include "ITMIMUCalibrator.h"
+#include "ITMCompositeTracker.h"
+#include "ITMIMUTracker.h"
 #include "ITMLowLevelEngine.h"
 #include "ITMTracker.h"
+
+#include "DeviceSpecific/CPU/ITMDepthTracker_CPU.h"
+#include "../Utils/ITMLibSettings.h"
 
 #ifndef COMPILE_WITHOUT_CUDA
 #include "DeviceSpecific/CUDA/ITMDepthTracker_CUDA.h"
 #endif
 
 #ifdef COMPILE_WITH_METAL
-#include "../Engine/DeviceSpecific/Metal/ITMDepthTracker_Metal.h"
+#include "DeviceSpecific/Metal/ITMDepthTracker_Metal.h"
 #endif
 
 namespace ITMLib
@@ -45,11 +48,14 @@ namespace ITMLib
       ITMTrackerFactory()
       {
         makers.insert(std::make_pair(ITMLibSettings::TRACKER_ICP, &MakeICPTracker));
+        makers.insert(std::make_pair(ITMLibSettings::TRACKER_IMU, &MakeIMUTracker));
         // TODO
       }
 
     public:
-      /** \brief Gets the singleton instance for the current set of template parameters. */
+      /**
+       * \brief Gets the singleton instance for the current set of template parameters.
+       */
       static ITMTrackerFactory& Instance()
       {
         static ITMTrackerFactory s_instance;
@@ -119,7 +125,80 @@ namespace ITMLib
             break;
 #endif
           }
+          default: break;
         }
+
+        throw std::runtime_error("Failed to make ICP tracker");
+      }
+
+      /**
+       * \brief Makes an IMU tracker.
+       */
+      static ITMTracker *MakeIMUTracker(const Vector2i& trackedImageSize, const ITMLibSettings *settings, ITMLowLevelEngine *lowLevelEngine,
+                                        ITMIMUCalibrator *imuCalibrator)
+      {
+        switch(settings->deviceType)
+        {
+          case ITMLibSettings::DEVICE_CPU:
+          {
+            ITMCompositeTracker *compositeTracker = new ITMCompositeTracker(2);
+            compositeTracker->SetTracker(new ITMIMUTracker(imuCalibrator), 0);
+            compositeTracker->SetTracker(
+              new ITMDepthTracker_CPU(
+                trackedImageSize,
+                settings->trackingRegime,
+                settings->noHierarchyLevels,
+                settings->noICPRunTillLevel,
+                settings->depthTrackerICPThreshold,
+                lowLevelEngine
+              ), 1
+            );
+						return compositeTracker;
+          }
+          case ITMLibSettings::DEVICE_CUDA:
+          {
+#ifndef COMPILE_WITHOUT_CUDA
+            ITMCompositeTracker *compositeTracker = new ITMCompositeTracker(2);
+            compositeTracker->SetTracker(new ITMIMUTracker(imuCalibrator), 0);
+            compositeTracker->SetTracker(
+              new ITMDepthTracker_CUDA(
+                trackedImageSize,
+                settings->trackingRegime,
+                settings->noHierarchyLevels,
+                settings->noICPRunTillLevel,
+                settings->depthTrackerICPThreshold,
+                lowLevelEngine
+              ), 1
+            );
+						return compositeTracker;
+#else
+            break;
+#endif
+          }
+          case ITMLibSettings::DEVICE_METAL:
+          {
+#ifdef COMPILE_WITH_METAL
+            ITMCompositeTracker *compositeTracker = new ITMCompositeTracker(2);
+            compositeTracker->SetTracker(new ITMIMUTracker(imuCalibrator), 0);
+            compositeTracker->SetTracker(
+              new ITMDepthTracker_Metal(
+                trackedImageSize,
+                settings->trackingRegime,
+                settings->noHierarchyLevels,
+                settings->noICPRunTillLevel,
+                settings->depthTrackerICPThreshold,
+                lowLevelEngine
+              ), 1
+            );
+            return compositeTracker;
+#else
+            break;
+#endif
+          }
+          default: break;
+        }
+
+        throw std::runtime_error("Failed to make IMU tracker");
       }
     };
   }
