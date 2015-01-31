@@ -145,7 +145,7 @@ namespace ITMLib
               settings->trackingRegime,
               settings->noHierarchyLevels,
               settings->noICPRunTillLevel,
-							settings->depthTrackerICPThreshold,
+              settings->depthTrackerICPThreshold,
               lowLevelEngine
             );
 #else
@@ -195,7 +195,7 @@ namespace ITMLib
                 lowLevelEngine
               ), 1
             );
-						return compositeTracker;
+            return compositeTracker;
           }
           case ITMLibSettings::DEVICE_CUDA:
           {
@@ -212,7 +212,7 @@ namespace ITMLib
                 lowLevelEngine
               ), 1
             );
-						return compositeTracker;
+            return compositeTracker;
 #else
             break;
 #endif
