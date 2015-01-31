@@ -47,9 +47,10 @@ namespace ITMLib
        */
       ITMTrackerFactory()
       {
+        makers.insert(std::make_pair(ITMLibSettings::TRACKER_COLOR, &MakeColourTracker));
         makers.insert(std::make_pair(ITMLibSettings::TRACKER_ICP, &MakeICPTracker));
         makers.insert(std::make_pair(ITMLibSettings::TRACKER_IMU, &MakeIMUTracker));
-        // TODO
+        makers.insert(std::make_pair(ITMLibSettings::TRACKER_REN, &MakeRenTracker));
       }
 
     public:
@@ -68,14 +69,27 @@ namespace ITMLib
        * \brief Makes a tracker of the specified type.
        */
       ITMTracker *Make(ITMLibSettings::TrackerType trackerType, const Vector2i& trackedImageSize, const ITMLibSettings *settings,
-                       ITMLowLevelEngine *lowLevelEngine, ITMIMUCalibrator *imuCalibrator)
+                       ITMLowLevelEngine *lowLevelEngine, ITMIMUCalibrator *imuCalibrator) const
+      {
+        typename std::map<ITMLibSettings::TrackerType,Maker>::const_iterator it = makers.find(trackerType);
+        if(it == makers.end()) throw std::runtime_error("Unknown tracker type");
+
+        Maker maker = it->second;
+        return (*maker)(trackedImageSize, settings, lowLevelEngine, imuCalibrator);
+      }
+
+      //#################### PRIVATE STATIC MEMBER FUNCTIONS ####################
+    private:
+      /**
+       * \brief Makes a colour tracker.
+       */
+      static ITMTracker *MakeColourTracker(const Vector2i& trackedImageSize, const ITMLibSettings *settings, ITMLowLevelEngine *lowLevelEngine,
+                                           ITMIMUCalibrator *imuCalibrator)
       {
         // TODO
         return NULL;
       }
 
-      //#################### PRIVATE STATIC MEMBER FUNCTIONS ####################
-    private:
       /**
        * \brief Makes an ICP tracker.
        */
@@ -199,6 +213,16 @@ namespace ITMLib
         }
 
         throw std::runtime_error("Failed to make IMU tracker");
+      }
+
+      /**
+       * \brief Makes a Ren tracker.
+       */
+      static ITMTracker *MakeRenTracker(const Vector2i& trackedImageSize, const ITMLibSettings *settings, ITMLowLevelEngine *lowLevelEngine,
+                                        ITMIMUCalibrator *imuCalibrator)
+      {
+        // TODO
+        return NULL;
       }
     };
   }
