@@ -15,6 +15,7 @@ Engine/ITMDepthTracker.cpp
 Engine/ITMIMUTracker.cpp
 Engine/ITMMainEngine.cpp
 Engine/ITMRenTracker.cpp
+Engine/ITMTrackerFactory.cpp
 Engine/ITMTrackingController.cpp
 Engine/ITMVisualisationEngine.cpp
 )
@@ -31,6 +32,7 @@ Engine/ITMRenTracker.h
 Engine/ITMSceneReconstructionEngine.h
 Engine/ITMSwappingEngine.h
 Engine/ITMTracker.h
+Engine/ITMTrackerFactory.h
 Engine/ITMTrackingController.h
 Engine/ITMViewBuilder.h
 Engine/ITMVisualisationEngine.h
