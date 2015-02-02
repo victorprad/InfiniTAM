@@ -350,25 +350,21 @@ _CPU_AND_GPU_CODE_ inline TVoxel readVoxel(DEVICEPTR(const TVoxel) *voxelData, D
 		return voxelData[cache.blockPtr + linearIdx];
 	}
 
-	int offsetExcess = -1;
-
-	bool shouldContinueDown = false;
 	int level = 0;
+	isFound = false;
 	do
 	{
+		bool shouldContinueDown = false;
 		int hierBlockSize = (1 << level);
 		const ITMHHashEntry *hashTable = voxelIndex + level * ITMHHashTable::noTotalEntriesPerLevel;
 
 		int linearIdx = TRounding::pointPosParse(point, blockPos, hierBlockSize);
-		int hashIdx = hashIndex(blockPos, SDF_HASH_MASK) * SDF_ENTRY_NUM_PER_BUCKET;
+		// start at ordered list of buckets
+		int hashIdx = hashIndex(blockPos, SDF_HASH_MASK);
 
-		isFound = false;
-
-		//check ordered list
-		for (int inBucketIdx = 0; inBucketIdx < SDF_ENTRY_NUM_PER_BUCKET; inBucketIdx++)
+		do
 		{
-			THREADPTR(const ITMHHashEntry) &hashEntry = hashTable[hashIdx + inBucketIdx];
-			offsetExcess = hashEntry.offset - 1;
+			THREADPTR(const ITMHHashEntry) &hashEntry = hashTable[hashIdx];
 
 			if (hashEntry.pos == blockPos)
 			{
@@ -381,30 +377,12 @@ _CPU_AND_GPU_CODE_ inline TVoxel readVoxel(DEVICEPTR(const TVoxel) *voxelData, D
 				
 				if (hashEntry.ptr == -2) { shouldContinueDown = true; point = TRounding::pointPosRound(point, hierBlockSize); break; }
 			}
-		}
 
-		if (!shouldContinueDown) {
-			//check excess list
-			while (offsetExcess >= 0)
-			{
-				THREADPTR(const ITMHHashEntry) &hashEntry = hashTable[SDF_BUCKET_NUM * SDF_ENTRY_NUM_PER_BUCKET + offsetExcess];
-
-				if (hashEntry.pos == blockPos)
-				{
-					if (hashEntry.ptr >= 0)
-					{
-						isFound = true;
-						cache.blockPos = blockPos; cache.blockPtr = hashEntry.ptr * SDF_BLOCK_SIZE3; cache.blockSize = hierBlockSize;
-						point = TRounding::pointPosRound(point, hierBlockSize);
-						return voxelData[(hashEntry.ptr * SDF_BLOCK_SIZE3) + linearIdx];
-					}
-
-					if (hashEntry.ptr == -2) { shouldContinueDown=true; point = TRounding::pointPosRound(point, hierBlockSize); break; }
-				}
-
-				offsetExcess = hashEntry.offset - 1;
-			}
-		}
+			// crawl along excess list
+			int offsetExcess = hashEntry.offset - 1;
+			if (offsetExcess < 0) break;
+			hashIdx = SDF_BUCKET_NUM + offsetExcess;
+		} while (true);
 
 		if (!shouldContinueDown) {
 			level++;

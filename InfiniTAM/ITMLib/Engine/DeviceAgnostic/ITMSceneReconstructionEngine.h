@@ -222,7 +222,7 @@ _CPU_AND_GPU_CODE_ inline void buildHHashAllocAndVisibleTypePP(DEVICEPTR(uchar) 
 	DEVICEPTR(Vector4s) *globalBlockCoords, const DEVICEPTR(float) *depth, Matrix4f invM_d, Vector4f projParams_d, float mu, Vector2i imgSize,
 	float oneOverSmallestVoxelSize, DEVICEPTR(ITMHHashEntry) *globalHashTable, float viewFrustum_min, float viewFrustum_max)
 {
-	float depth_measure; unsigned int hashIdx; int noSteps, lastFreeInBucketIdx;
+	float depth_measure; unsigned int hashIdx; int noSteps;
 	Vector4f pt_camera_f; Vector3f pt_voxel, pt_voxel_e, direction; Vector3s pt_block;
 
 	depth_measure = depth[x + y * imgSize.x];
@@ -260,15 +260,15 @@ _CPU_AND_GPU_CODE_ inline void buildHHashAllocAndVisibleTypePP(DEVICEPTR(uchar) 
 			pt_block.z = tmp_block.z;
 
 			//compute index in hash table
-			hashIdx = hashIndex(pt_block, SDF_HASH_MASK) * SDF_ENTRY_NUM_PER_BUCKET;
+			hashIdx = hashIndex(pt_block, SDF_HASH_MASK);
 
 			//check if hash table contains entry
 			bool shouldContinueDown = false;
-			lastFreeInBucketIdx = -1; bool foundValue = false; int offsetExcess;
-			for (int inBucketIdx = 0; inBucketIdx < SDF_ENTRY_NUM_PER_BUCKET; inBucketIdx++)
+			bool foundValue = false;
+			char allocType = 1;
+			do
 			{
-				const ITMHHashEntry &hashEntry = hashTable[hashIdx + inBucketIdx];
-				offsetExcess = hashEntry.offset - 1;
+				const ITMHHashEntry &hashEntry = hashTable[hashIdx];
 
 				if (hashEntry.pos == pt_block) {
 					if (hashEntry.ptr == -2) {
@@ -276,71 +276,31 @@ _CPU_AND_GPU_CODE_ inline void buildHHashAllocAndVisibleTypePP(DEVICEPTR(uchar) 
 						shouldContinueDown = true;
 					} else if (hashEntry.ptr == -1) {
 						// block found, but swapped out
-						entriesVisibleType[hashIdx + inBucketIdx] = 2;
+						entriesVisibleType[hashIdx] = 2;
 					} else if (hashEntry.ptr >= 0) {
 						// block found
-						entriesVisibleType[hashIdx + inBucketIdx] = 1;
+						entriesVisibleType[hashIdx] = 1;
 					}
 					foundValue = true;
 					break;
 				}
+				if (hashEntry.ptr < -2) break;
 
-				if (lastFreeInBucketIdx == -1 && hashEntry.ptr < -2) lastFreeInBucketIdx = inBucketIdx;
-			}
+				allocType = 2;
+				int offsetExcess = hashEntry.offset - 1;
+				if (offsetExcess < 0) break;
 
-			if (!foundValue)
-			{
-				int hashIdx_toModify; //will contain parent index for excess list or normal hash+bucket index for ordered list
+				hashIdx = SDF_BUCKET_NUM + offsetExcess;
+			} while (true);
 
-				if (lastFreeInBucketIdx >= 0) //not found and have room in the ordered part of the list (-> no excess list to search)
-				{
-					hashIdx_toModify = hashIdx + lastFreeInBucketIdx;
+			if (shouldContinueDown) continue;
+			if (foundValue) break;
 
-					entriesAllocType[hashIdx_toModify] = 1; //needs allocation and has room in ordered list
-					entriesVisibleType[hashIdx_toModify] = 1; //new entry is visible
-
-					Vector4s tempVector(pt_block.x, pt_block.y, pt_block.z, 1);
-					blockCoords[hashIdx_toModify] = tempVector; //per-image hash collisions are ignored (will be picked up next frame)
-				}
-				else //might be in the excess list
-				{
-					hashIdx_toModify = hashIdx + SDF_ENTRY_NUM_PER_BUCKET - 1;
-
-					int noOrderedEntries = SDF_BUCKET_NUM * SDF_ENTRY_NUM_PER_BUCKET;
-
-					while (offsetExcess >= 0)
-					{
-						const ITMHHashEntry &hashEntry = hashTable[noOrderedEntries + offsetExcess];
-
-						if (hashEntry.pos == pt_block) {
-							if (hashEntry.ptr == -2) {
-								// block found, but it's split
-								shouldContinueDown = true;
-							} else if (hashEntry.ptr == -1) {
-								// block found, but swapped out
-								entriesVisibleType[noOrderedEntries + offsetExcess] = 2;
-							} else if (hashEntry.ptr >= 0) {
-								// block found
-								entriesVisibleType[noOrderedEntries + offsetExcess] = 1;
-							}
-							foundValue = true;
-							break;
-						}
-
-						hashIdx_toModify = noOrderedEntries + offsetExcess;
-						offsetExcess = hashEntry.offset - 1;
-					}
-
-					if (!foundValue) //still not found -> must add into excess list
-					{
-						entriesAllocType[hashIdx_toModify] = 2; //needs allocation in the excess list
-						Vector4s tempVector(pt_block.x, pt_block.y, pt_block.z, 1);
-						blockCoords[hashIdx_toModify] = tempVector; //per-image hash collisions are ignored 
-					}
-				}
-			}
-
-			if (!shouldContinueDown) break;
+			entriesAllocType[hashIdx] = allocType;
+			Vector4s tempVector(pt_block.x, pt_block.y, pt_block.z, 1);
+			blockCoords[hashIdx] = tempVector;
+			//per-image hash collisions are ignored (will be picked up next frame)
+			break;
 		}
 
 		pt_voxel += direction;

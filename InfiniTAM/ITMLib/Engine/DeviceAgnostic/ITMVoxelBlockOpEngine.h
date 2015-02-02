@@ -81,33 +81,22 @@ _CPU_AND_GPU_CODE_ inline void createSplitOperations(ITMHashEntry *hashTablePare
 
 		// - compute hash
 		Vector3i blockPos_child = blockPos_parent * 2 + Vector3i(child&1, (child&2)?1:0, (child&4)?1:0);
-		int hashIdx = hashIndex(blockPos_child, SDF_HASH_MASK) * SDF_ENTRY_NUM_PER_BUCKET;
+		int hashIdx = hashIndex(blockPos_child, SDF_HASH_MASK);
 
-		ITMHashEntry *hashEntry; bool allocated = false;
-		// - go through ordered list
-		for (int inBucketIdx = 0; inBucketIdx < SDF_ENTRY_NUM_PER_BUCKET; inBucketIdx++) {
-			hashEntry = &(hashTableChild[hashIdx+inBucketIdx]);
+		bool allocated = false;
+		// - go through linked list
+		while (true) {
+			ITMHashEntry & hashEntry = hashTableChild[hashIdx];
 
 			// - atomic_cas: if ptr == -1 then ptr = new ptr. if success, done
-			int old = myAtomicCAS(&hashEntry->ptr, EMPTY_BLOCK_PTR, newBlockPtr);
+			int old = myAtomicCAS(&(hashEntry.ptr), EMPTY_BLOCK_PTR, newBlockPtr);
 			if (old == EMPTY_BLOCK_PTR) {
 				allocated = true;
 				break;
 			}
-		}
-		// - if no space in ordered list
-		if (!allocated) {
-			// - try to find an unused entry in the linked list
-			while (hashEntry->offset != EMPTY_LINKED_LIST) {
-				hashEntry = &(hashTableChild[SDF_BUCKET_NUM * SDF_ENTRY_NUM_PER_BUCKET + hashEntry->offset - 1]);
 
-				// - atomic_cas: if ptr == -1 then ptr = new ptr. if success, done
-				int old = myAtomicCAS(&hashEntry->ptr, EMPTY_BLOCK_PTR, newBlockPtr);
-				if (old == EMPTY_BLOCK_PTR) {
-					allocated = true;
-					break;
-				}
-			}
+			if (hashEntry.offset == EMPTY_LINKED_LIST) break;
+			hashIdx = SDF_BUCKET_NUM + hashEntry.offset - 1;
 		}
 		// - if no space in allocated excess list
 		if (!allocated) {
@@ -122,29 +111,31 @@ _CPU_AND_GPU_CODE_ inline void createSplitOperations(ITMHashEntry *hashTablePare
 			newOffsetExcess = excessAllocationList[newOffsetExcess];
 
 			// - prepare the entry
-			hashTableChild[SDF_BUCKET_NUM * SDF_ENTRY_NUM_PER_BUCKET + newOffsetExcess].offset = EMPTY_LINKED_LIST;
-			hashTableChild[SDF_BUCKET_NUM * SDF_ENTRY_NUM_PER_BUCKET + newOffsetExcess].ptr = newBlockPtr;
+			hashTableChild[SDF_BUCKET_NUM + newOffsetExcess].offset = EMPTY_LINKED_LIST;
+			hashTableChild[SDF_BUCKET_NUM + newOffsetExcess].ptr = newBlockPtr;
 
 			// - start from end of ordered list:
 			while (true) {
+				ITMHashEntry & hashEntry = hashTableChild[hashIdx];
+
 				// - atomic_cas: if offsetExcess == -1 then write new ptr. done
-				int old = myAtomicCAS(&hashEntry->offset, EMPTY_LINKED_LIST, newOffsetExcess + 1);
+				int old = myAtomicCAS(&hashEntry.offset, EMPTY_LINKED_LIST, newOffsetExcess + 1);
 				if (old == EMPTY_LINKED_LIST) {
 					allocated = true;
 					break;
 				}
 				// - if failed, go to next entry
-				hashEntry = &(hashTableChild[SDF_BUCKET_NUM * SDF_ENTRY_NUM_PER_BUCKET + old - 1]);
+				hashIdx = SDF_BUCKET_NUM + old - 1;
 			}
-			hashEntry = &(hashTableChild[SDF_BUCKET_NUM * SDF_ENTRY_NUM_PER_BUCKET + newOffsetExcess]);
+			hashIdx = SDF_BUCKET_NUM + newOffsetExcess;
 		}
 		// make sure the allocation worked well
 		if (!allocated) continue;
 
 		// write data to new hash entry
-		hashEntry->pos.x = blockPos_child.x;
-		hashEntry->pos.y = blockPos_child.y;
-		hashEntry->pos.z = blockPos_child.z;
+		hashTableChild[hashIdx].pos.x = blockPos_child.x;
+		hashTableChild[hashIdx].pos.y = blockPos_child.y;
+		hashTableChild[hashIdx].pos.z = blockPos_child.z;
 
 		newBlockPtr = voxelAllocationList[newBlockListPtr--];
 	}
@@ -163,29 +154,20 @@ _CPU_AND_GPU_CODE_ inline void createMergeOperations(ITMHashEntry *hashTablePare
 	for (int child = 0; child < 8; ++child) {
 		// - compute hash
 		Vector3i blockPos_child = blockPos_parent * 2 + Vector3i(child&1, (child&2)?1:0, (child&4)?1:0);
-		int hashIdx = hashIndex(blockPos_child, SDF_HASH_MASK) * SDF_ENTRY_NUM_PER_BUCKET;
+		int hashIdx = hashIndex(blockPos_child, SDF_HASH_MASK);
 
-		// - go through ordered list
-		int offsetExcess = -1;
+		// - go through linked list
 		int predecessor = -1;
-		for (int inBucketIdx = 0; inBucketIdx < SDF_ENTRY_NUM_PER_BUCKET; inBucketIdx++) {
-			const ITMHashEntry & hashEntry = hashTableChild[hashIdx+inBucketIdx];
+		while (true) {
+			const ITMHashEntry & hashEntry = hashTableChild[hashIdx];
 			if (hashEntry.pos == blockPos_child) {
-				childPositions[child] = hashIdx + inBucketIdx;
-				offsetExcess = -1;
+				childPositions[child] = hashIdx;
 				break;
 			}
-			predecessor = hashIdx + inBucketIdx;
-			offsetExcess = hashEntry.offset - 1;
-		}
-		while (offsetExcess >= 0) {
-			const ITMHashEntry & hashEntry = hashTableChild[SDF_BUCKET_NUM * SDF_ENTRY_NUM_PER_BUCKET + offsetExcess];
-			if (hashEntry.pos == blockPos_child) {
-				childPositions[child] = SDF_BUCKET_NUM * SDF_ENTRY_NUM_PER_BUCKET + offsetExcess;
-				break;
-			}
-			predecessor = SDF_BUCKET_NUM * SDF_ENTRY_NUM_PER_BUCKET + offsetExcess;
-			offsetExcess = hashEntry.offset - 1;
+			predecessor = hashIdx;
+			int offsetExcess = hashEntry.offset - 1;
+			if (offsetExcess < 0) break;
+			hashIdx = SDF_BUCKET_NUM + offsetExcess;
 		}
 		childPredecessors[child] = predecessor;
 	}
@@ -233,7 +215,7 @@ _CPU_AND_GPU_CODE_ inline void createMergeOperations(ITMHashEntry *hashTablePare
 		if (hashEntry.offset != 0) continue; // this will avoid race conditions! However, it will not clean up the whole excess list...
 		hashTableChild[childPredecessors[child]].offset = 0;
 		int place = myAtomicAdd(lastFreeExcessListId) + 1;
-		excessAllocationList[place] = childPositions[child] - SDF_BUCKET_NUM * SDF_ENTRY_NUM_PER_BUCKET;
+		excessAllocationList[place] = childPositions[child] - SDF_BUCKET_NUM;
 	}
 }
 

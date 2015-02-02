@@ -31,6 +31,8 @@ __global__ void buildHHashAllocAndVisibleType_device(uchar *entriesAllocType, uc
 
 __global__ void allocateVoxelBlocksList_device(int *voxelAllocationList, int *excessAllocationList, ITMHashEntry *hashTable, int noTotalEntries,
 	int *noAllocatedVoxelEntries, int *noAllocatedExcessEntries, uchar *entriesAllocType, uchar *entriesVisibleType, Vector4s *blockCoords);
+__global__ void allocateVoxelBlocksListHHash_device(int *voxelAllocationList, int *excessAllocationList, ITMHashEntry *hashTable, int noTotalEntries,
+	int *noAllocatedVoxelEntries, int *noAllocatedExcessEntries, uchar *entriesAllocType, uchar *entriesVisibleType, Vector4s *blockCoords);
 
 __global__ void reAllocateSwappedOutVoxelBlocks_device(int *voxelAllocationList, ITMHashEntry *hashTable, int noTotalEntries,
 	int *noAllocatedVoxelEntries, uchar *entriesVisibleType);
@@ -307,6 +309,9 @@ void ITMSceneReconstructionEngine_CUDA<TVoxel, ITMVoxelBlockHHash>::AllocateScen
 	dim3 cudaBlockSizeAL(256, 1);
 	dim3 gridSizeAL((int)ceil((float)noTotalEntriesPerLevel / (float)cudaBlockSizeAL.x));
 
+	dim3 cudaBlockSizeAL3(256, 1);
+	dim3 gridSizeAL3((int)ceil((float)noTotalEntries / (float)cudaBlockSizeAL.x));
+
 	dim3 cudaBlockSizeVS(256, 1);
 	dim3 gridSizeVS((int)ceil((float)renderState_vh->noVisibleEntries / (float)cudaBlockSizeAL.x));
 
@@ -326,14 +331,8 @@ void ITMSceneReconstructionEngine_CUDA<TVoxel, ITMVoxelBlockHHash>::AllocateScen
 		blockCoords_device, depth, invM_d, invProjParams_d, mu, depthImgSize, oneOverSmallestVoxelSize, hashTable,
 		scene->sceneParams->viewFrustum_min, scene->sceneParams->viewFrustum_max);
 
-	for (int level = 0; level < noLevels; ++level) {
-		int levelOffset = level * noTotalEntriesPerLevel;
-		int levelOffsetExcList = level * SDF_EXCESS_LIST_SIZE;
-
-		allocateVoxelBlocksList_device << <gridSizeAL, cudaBlockSizeAL >> >(voxelAllocationList, excessAllocationList + levelOffsetExcList, hashTable + levelOffset,
-			noTotalEntriesPerLevel, noAllocatedVoxelEntries_device, noAllocatedExcessEntries_device + level, entriesAllocType_device + levelOffset,
-			entriesVisibleType + levelOffset, blockCoords_device + levelOffset);
-	}
+	allocateVoxelBlocksListHHash_device << <gridSizeAL3, cudaBlockSizeAL3 >> >(voxelAllocationList, excessAllocationList, hashTable,
+		noTotalEntries, noAllocatedVoxelEntries_device, noAllocatedExcessEntries_device, entriesAllocType_device, entriesVisibleType, blockCoords_device);
 
 	for (int level = 0; level < noLevels; ++level) {
 		float voxelSize = smallestVoxelSize * (1 << level);
@@ -590,13 +589,13 @@ __global__ void allocateVoxelBlocksList_device(int *voxelAllocationList, int *ex
 }
 
 __global__ void allocateVoxelBlocksListHHash_device(int *voxelAllocationList, int *excessAllocationList, ITMHashEntry *hashTable, int noTotalEntries,
-	int *noAllocatedVoxelEntries, int *noAllocatedExcessEntries, uchar *entriesAllocType, uchar *entriesVisibleType, Vector3s *blockCoords)
+	int *noAllocatedVoxelEntries, int *noAllocatedExcessEntries, uchar *entriesAllocType, uchar *entriesVisibleType, Vector4s *blockCoords)
 {
 	int targetIdx = threadIdx.x + blockIdx.x * blockDim.x;
 	if (targetIdx > noTotalEntries - 1) return;
 
 	int vbaIdx, exlIdx;
-	ITMHashEntry hashEntry = hashTable[targetIdx];
+	ITMHashEntry hashEntry;
 
 	switch (entriesAllocType[targetIdx])
 	{
@@ -605,12 +604,14 @@ __global__ void allocateVoxelBlocksListHHash_device(int *voxelAllocationList, in
 
 		if (vbaIdx >= 0) //there is room in the voxel block array
 		{
-			Vector3s pt_block_all = blockCoords[targetIdx];
+			Vector4s pt_block_all = blockCoords[targetIdx];
 
 			hashEntry.pos.x = pt_block_all.x; hashEntry.pos.y = pt_block_all.y; hashEntry.pos.z = pt_block_all.z;
 			hashEntry.ptr = voxelAllocationList[vbaIdx];
+			hashEntry.offset = 0;
 
 			hashTable[targetIdx] = hashEntry;
+			entriesVisibleType[targetIdx] = 1; //make entry visible
 		}
 		break;
 
@@ -622,18 +623,19 @@ __global__ void allocateVoxelBlocksListHHash_device(int *voxelAllocationList, in
 
 		if (vbaIdx >= 0 && exlIdx >= 0) //there is room in the voxel block array and excess list
 		{
-			Vector3s pt_block_all = blockCoords[targetIdx];
+			Vector4s pt_block_all = blockCoords[targetIdx];
 
 			hashEntry.pos.x = pt_block_all.x; hashEntry.pos.y = pt_block_all.y; hashEntry.pos.z = pt_block_all.z;
 			hashEntry.ptr = voxelAllocationList[vbaIdx];
+			hashEntry.offset = 0;
 
 			int exlOffset = excessAllocationList[level*SDF_EXCESS_LIST_SIZE + exlIdx];
 
 			hashTable[targetIdx].offset = exlOffset + 1; //connect to child
 
-			hashTable[level * ITMHHashTable::noTotalEntriesPerLevel + SDF_BUCKET_NUM * SDF_ENTRY_NUM_PER_BUCKET + exlOffset] = hashEntry; //add child to the excess list
+			hashTable[level * ITMHHashTable::noTotalEntriesPerLevel + SDF_BUCKET_NUM + exlOffset] = hashEntry; //add child to the excess list
 
-			entriesVisibleType[level * ITMHHashTable::noTotalEntriesPerLevel + SDF_BUCKET_NUM * SDF_ENTRY_NUM_PER_BUCKET + exlOffset] = 1; //make child visible
+			entriesVisibleType[level * ITMHHashTable::noTotalEntriesPerLevel + SDF_BUCKET_NUM + exlOffset] = 1; //make child visible
 		}
 
 		break;

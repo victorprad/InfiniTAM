@@ -21,8 +21,8 @@ namespace ITMLib
 		class ITMHHashTable
 		{
 			public:
-			static const CONSTANT(int) noTotalEntriesPerLevel = SDF_BUCKET_NUM * SDF_ENTRY_NUM_PER_BUCKET + SDF_EXCESS_LIST_SIZE;
-			static const CONSTANT(int) noTotalEntries = (SDF_BUCKET_NUM * SDF_ENTRY_NUM_PER_BUCKET + SDF_EXCESS_LIST_SIZE) * SDF_HASH_NO_H_LEVELS;
+			static const CONSTANT(int) noTotalEntriesPerLevel = SDF_BUCKET_NUM + SDF_EXCESS_LIST_SIZE;
+			static const CONSTANT(int) noTotalEntries = (SDF_BUCKET_NUM + SDF_EXCESS_LIST_SIZE) * SDF_HASH_NO_H_LEVELS;
 			static const int noLevels = SDF_HASH_NO_H_LEVELS;
 
 			/** The actual data in the hash table. */
