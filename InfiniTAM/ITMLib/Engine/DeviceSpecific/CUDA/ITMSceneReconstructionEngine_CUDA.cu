@@ -273,7 +273,7 @@ ITMSceneReconstructionEngine_CUDA<TVoxel, ITMVoxelBlockHHash>::~ITMSceneReconstr
 }
 
 template<class TVoxel>
-void ITMSceneReconstructionEngine_CUDA<TVoxel, ITMVoxelBlockHHash>::AllocateSceneFromDepth(ITMScene<TVoxel, ITMVoxelBlockHHash> *scene, const ITMView *view, const ITMTrackingState *trackingState, const ITMRenderState *renderState)
+void ITMSceneReconstructionEngine_CUDA<TVoxel, ITMVoxelBlockHHash>::AllocateSceneFromDepth(ITMScene<TVoxel, ITMVoxelBlockHHash> *scene, const ITMView *view, const ITMTrackingState *trackingState, const ITMRenderState *renderState, bool onlyUpdateVisibleList)
 {
 	Vector2i depthImgSize = view->depth->noDims;
 	float smallestVoxelSize = scene->sceneParams->voxelSize;
@@ -336,20 +336,26 @@ void ITMSceneReconstructionEngine_CUDA<TVoxel, ITMVoxelBlockHHash>::AllocateScen
 		blockCoords_device, depth, invM_d, invProjParams_d, mu, depthImgSize, oneOverSmallestVoxelSize, hashTable,
 		scene->sceneParams->viewFrustum_min, scene->sceneParams->viewFrustum_max);
 
-	allocateVoxelBlocksListHHash_device << <gridSizeAL3, cudaBlockSizeAL3 >> >(voxelAllocationList, excessAllocationList, hashTable,
-		noTotalEntries, noAllocatedVoxelEntries_device, noAllocatedExcessEntries_device, entriesAllocType_device, entriesVisibleType, blockCoords_device);
+	if (!onlyUpdateVisibleList)
+	{
+		allocateVoxelBlocksListHHash_device << <gridSizeAL3, cudaBlockSizeAL3 >> >(voxelAllocationList, excessAllocationList, hashTable,
+			noTotalEntries, noAllocatedVoxelEntries_device, noAllocatedExcessEntries_device, entriesAllocType_device, entriesVisibleType, blockCoords_device);
+	}
+
+	bool useSwapping = scene->useSwapping;
+	if (onlyUpdateVisibleList) useSwapping = false;
 
 	for (int level = 0; level < noLevels; ++level) {
 		float voxelSize = smallestVoxelSize * (1 << level);
 		int levelOffset = level * noTotalEntriesPerLevel;
 
-		if (scene->useSwapping)
+		if (useSwapping)
 			buildVisibleList_device<true> << <gridSizeAL, cudaBlockSizeAL >> >(hashTable + levelOffset, cacheStates + levelOffset, noTotalEntriesPerLevel, visibleEntryIDs, noVisibleEntries_device, activeEntryIDs, noActiveEntries_device, entriesVisibleType + levelOffset, M_d, projParams_d, depthImgSize, voxelSize, levelOffset);
 		else
 			buildVisibleList_device<false> << <gridSizeAL, cudaBlockSizeAL >> >(hashTable + levelOffset, cacheStates + levelOffset, noTotalEntriesPerLevel, visibleEntryIDs, noVisibleEntries_device, activeEntryIDs, noActiveEntries_device, entriesVisibleType + levelOffset, M_d, projParams_d, depthImgSize, voxelSize, levelOffset);
 	}
 
-	if (scene->useSwapping)
+	if (useSwapping)
 	{
 		cudaBlockSizeAL = dim3(256, 1);
 		gridSizeAL = dim3((int)ceil((float)noTotalEntries / (float)cudaBlockSizeAL.x));

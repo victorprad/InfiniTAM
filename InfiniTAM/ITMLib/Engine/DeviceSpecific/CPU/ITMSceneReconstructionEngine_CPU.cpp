@@ -344,7 +344,7 @@ void ITMSceneReconstructionEngine_CPU<TVoxel,ITMVoxelBlockHHash>::IntegrateIntoS
 }
 
 template<class TVoxel>
-void ITMSceneReconstructionEngine_CPU<TVoxel,ITMVoxelBlockHHash>::AllocateSceneFromDepth(ITMScene<TVoxel,ITMVoxelBlockHHash> *scene, const ITMView *view, const ITMTrackingState *trackingState, const ITMRenderState *renderState)
+void ITMSceneReconstructionEngine_CPU<TVoxel,ITMVoxelBlockHHash>::AllocateSceneFromDepth(ITMScene<TVoxel,ITMVoxelBlockHHash> *scene, const ITMView *view, const ITMTrackingState *trackingState, const ITMRenderState *renderState, bool onlyUpdateVisibleList)
 {
 	Vector2i depthImgSize = view->depth->noDims;
 	float smallestVoxelSize = scene->sceneParams->voxelSize;
@@ -374,6 +374,7 @@ void ITMSceneReconstructionEngine_CPU<TVoxel,ITMVoxelBlockHHash>::AllocateSceneF
 	int noTotalEntries = scene->index.noVoxelBlocks;
 
 	bool useSwapping = scene->useSwapping;
+	if (onlyUpdateVisibleList) useSwapping = false;
 
 	float oneOverSmallestVoxelSize = 1.0f / smallestVoxelSize;
 
@@ -407,7 +408,7 @@ void ITMSceneReconstructionEngine_CPU<TVoxel,ITMVoxelBlockHHash>::AllocateSceneF
 	}
 
 	//allocate
-	for (int targetIdx = 0; targetIdx < noTotalEntries; targetIdx++)
+	if (!onlyUpdateVisibleList) for (int targetIdx = 0; targetIdx < noTotalEntries; targetIdx++)
 	{
 		int vbaIdx, exlIdx;
 		ITMHHashEntry hashEntry;
