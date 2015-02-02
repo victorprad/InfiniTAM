@@ -23,7 +23,8 @@ namespace ITMLib
             void IntegrateIntoScene(ITMScene<TVoxel, ITMVoxelBlockHash> *scene, const ITMView *view, const ITMTrackingState *trackingState,
                                     const ITMRenderState *renderState);
             void AllocateSceneFromDepth(ITMScene<TVoxel, ITMVoxelBlockHash> *scene, const ITMView *view,
-                                        const ITMTrackingState *trackingState, const ITMRenderState *renderState);
+                                        const ITMTrackingState *trackingState, const ITMRenderState *renderState,
+                                        bool onlyUpdateVisibleList = false);
             
             ITMSceneReconstructionEngine_Metal(void);
         };

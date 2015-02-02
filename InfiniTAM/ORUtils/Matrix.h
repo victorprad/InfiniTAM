@@ -256,11 +256,11 @@ namespace ORUtils {
 		_CPU_AND_GPU_CODE_ inline void setScale(T s) { this->m00 = this->m11 = this->m22 = s; }
 		_CPU_AND_GPU_CODE_ inline void setScale(const Vector3_<T> &s) { this->m00 = s[0]; this->m11 = s[1]; this->m22 = s[2]; }
 		_CPU_AND_GPU_CODE_ inline void setRow(int r, const Vector3_<T> &t){ for (int x = 0; x < 3; x++) at(x, r) = t[x]; }
-		_CPU_AND_GPU_CODE_ inline void setColumn(int c, const Vector3_<T> &t) { memcpy(this->m + 4 * c, t.v, sizeof(T) * 4); }
+		_CPU_AND_GPU_CODE_ inline void setColumn(int c, const Vector3_<T> &t) { memcpy(this->m + 3 * c, t.v, sizeof(T) * 3); }
 
 		// get values
 		_CPU_AND_GPU_CODE_ inline Vector3<T> getRow(int r) const { Vector3<T> v; for (int x = 0; x < 3; x++) v[x] = at(x, r); return v; }
-		_CPU_AND_GPU_CODE_ inline Vector3<T> getColumn(int c) const { Vector3<T> v; memcpy(v.v, this->m + 4 * c, sizeof(T) * 4); return v; }
+		_CPU_AND_GPU_CODE_ inline Vector3<T> getColumn(int c) const { Vector3<T> v; memcpy(v.v, this->m + 3 * c, sizeof(T) * 3); return v; }
 		_CPU_AND_GPU_CODE_ inline Matrix3 t() { // transpose
 			Matrix3 mtrans;
 			for (int x = 0; x < 3; x++)	for (int y = 0; y < 3; y++)

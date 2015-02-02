@@ -63,6 +63,9 @@ namespace ITMLib
 			ITMScene<ITMVoxel, ITMVoxelIndex> *scene;
 			ITMRenderState *renderState_live;
 			ITMRenderState *renderState_freeview;
+
+			ITMTracker *tracker;
+			ITMIMUCalibrator *imuCalibrator;
 		public:
 			enum GetImageType
 			{

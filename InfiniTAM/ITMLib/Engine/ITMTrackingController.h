@@ -3,7 +3,6 @@
 #pragma once
 
 #include "../Utils/ITMLibDefines.h"
-#include "../Utils/ITMLibSettings.h"
 
 #include "../Objects/ITMTrackingState.h"
 #include "../Objects/ITMRenderState.h"
@@ -11,19 +10,7 @@
 #include "../Engine/ITMVisualisationEngine.h"
 #include "../Engine/ITMLowLevelEngine.h"
 
-#include "../Engine/DeviceSpecific/CPU/ITMColorTracker_CPU.h"
-#include "../Engine/DeviceSpecific/CPU/ITMDepthTracker_CPU.h"
-#include "../Engine/DeviceSpecific/CPU/ITMRenTracker_CPU.h"
-
-#ifndef COMPILE_WITHOUT_CUDA
-#include "../Engine/DeviceSpecific/CUDA/ITMColorTracker_CUDA.h"
-#include "../Engine/DeviceSpecific/CUDA/ITMDepthTracker_CUDA.h"
-#include "../Engine/DeviceSpecific/CUDA/ITMRenTracker_CUDA.h"
-#endif
-
-#include "ITMCompositeTracker.h"
-#include "ITMIMUTracker.h"
-#include "ITMTracker.h"
+#include "ITMTrackerFactory.h"
 
 namespace ITMLib
 {
@@ -39,12 +26,10 @@ namespace ITMLib
 			const ITMLowLevelEngine *lowLevelEngine;
 
 			ITMTracker *tracker;
-			ITMIMUCalibrator *imuCalibrator;
 
 			Vector2i trackedImageSize;
 
 			MemoryDeviceType memoryType;
-			ITMLibSettings::TrackerType trackerType;
 
 			ITMRenderState *renderState_live;
 
@@ -52,118 +37,20 @@ namespace ITMLib
 			void Track(ITMTrackingState *trackingState, const ITMView *view);
 			void Prepare(ITMTrackingState *trackingState, const ITMView *view);
 
-			template <typename TVoxel, typename TIndex>
-			ITMTrackingController(const ITMLibSettings *settings, const IITMVisualisationEngine *visualisationEngine,
-				const ITMLowLevelEngine *lowLevelEngine, ITMScene<TVoxel, TIndex> *scene, ITMRenderState *renderState_live)
+			ITMTrackingController(ITMTracker *tracker, const IITMVisualisationEngine *visualisationEngine, const ITMLowLevelEngine *lowLevelEngine,
+				ITMRenderState *renderState_live, const ITMLibSettings *settings)
 			{
+				this->tracker = tracker;
 				this->settings = settings;
-
 				this->renderState_live = renderState_live;
-				
 				this->visualisationEngine = visualisationEngine;
 				this->lowLevelEngine = lowLevelEngine;
 
 				trackedImageSize = renderState_live->raycastImage->noDims;
-
-				memoryType = MEMORYDEVICE_CPU;
-				trackerType = settings->trackerType;
-
-				imuCalibrator = new ITMIMUCalibrator_iPad();
-
-				switch (settings->deviceType)
-				{
-				case ITMLibSettings::DEVICE_CPU:
-					switch (trackerType)
-					{
-					case ITMLibSettings::TRACKER_ICP:
-					{
-						tracker = new ITMDepthTracker_CPU(trackedImageSize, settings->trackingRegime, settings->noHierarchyLevels, settings->noICPRunTillLevel,
-							settings->depthTrackerICPThreshold, lowLevelEngine);
-						break;
-					}
-					case ITMLibSettings::TRACKER_IMU:
-					{
-						ITMCompositeTracker *compositeTracker = new ITMCompositeTracker(2);
-						compositeTracker->SetTracker(new ITMIMUTracker(imuCalibrator), 0);
-						compositeTracker->SetTracker(new ITMDepthTracker_CPU(trackedImageSize, settings->trackingRegime, settings->noHierarchyLevels,
-							settings->noICPRunTillLevel, settings->depthTrackerICPThreshold, lowLevelEngine), 1);
-
-						tracker = compositeTracker;
-						break;
-					}
-					case ITMLibSettings::TRACKER_COLOR:
-					{
-						tracker = new ITMColorTracker_CPU(trackedImageSize, settings->trackingRegime, settings->noHierarchyLevels, lowLevelEngine);
-						break;
-					}
-					case ITMLibSettings::TRACKER_REN:
-					{
-						ITMCompositeTracker *compositeTracker = new ITMCompositeTracker(2);
-						compositeTracker->SetTracker(new ITMDepthTracker_CPU(trackedImageSize, settings->trackingRegime, settings->noHierarchyLevels,
-							settings->noICPRunTillLevel, settings->depthTrackerICPThreshold, lowLevelEngine), 0);
-						compositeTracker->SetTracker(new ITMRenTracker_CPU<TVoxel, TIndex>(trackedImageSize, lowLevelEngine, scene), 1);
-
-						tracker = compositeTracker;
-						break;
-					}
-					default: break;
-					}
-					break;
-				case ITMLibSettings::DEVICE_CUDA:
-#ifndef COMPILE_WITHOUT_CUDA
-					switch (trackerType)
-					{
-					case ITMLibSettings::TRACKER_ICP:
-					{
-						tracker = new ITMDepthTracker_CUDA(trackedImageSize, settings->trackingRegime, settings->noHierarchyLevels, settings->noICPRunTillLevel,
-							settings->depthTrackerICPThreshold, lowLevelEngine);
-						break;
-					}
-					case ITMLibSettings::TRACKER_IMU:
-					{
-						ITMCompositeTracker *compositeTracker = new ITMCompositeTracker(2);
-						compositeTracker->SetTracker(new ITMIMUTracker(imuCalibrator), 0);
-						compositeTracker->SetTracker(new ITMDepthTracker_CUDA(trackedImageSize, settings->trackingRegime, settings->noHierarchyLevels,
-							settings->noICPRunTillLevel, settings->depthTrackerICPThreshold, lowLevelEngine), 1);
-
-						tracker = compositeTracker;
-						break;
-					}
-					case ITMLibSettings::TRACKER_COLOR:
-					{
-						tracker = new ITMColorTracker_CUDA(trackedImageSize, settings->trackingRegime, settings->noHierarchyLevels, lowLevelEngine);
-						break;
-					}
-					case ITMLibSettings::TRACKER_REN:
-					{
-						ITMCompositeTracker *compositeTracker = new ITMCompositeTracker(2);
-						compositeTracker->SetTracker(new ITMDepthTracker_CUDA(trackedImageSize, settings->trackingRegime, settings->noHierarchyLevels,
-							settings->noICPRunTillLevel, settings->depthTrackerICPThreshold, lowLevelEngine), 0);
-						compositeTracker->SetTracker(new ITMRenTracker_CUDA<TVoxel, TIndex>(trackedImageSize, lowLevelEngine, scene), 1);
-						tracker = compositeTracker;
-						break;
-					}
-					default: break;
-					}
-					memoryType = MEMORYDEVICE_CUDA;
-#endif
-					break;
-				case ITMLibSettings::DEVICE_METAL:
-#ifdef COMPILE_WITH_METAL
-
-#endif
-					break;
-				default: break;
-				}
+				memoryType = settings->deviceType == ITMLibSettings::DEVICE_CUDA ? MEMORYDEVICE_CUDA : MEMORYDEVICE_CPU;
 			}
 
-			~ITMTrackingController()
-			{
-				delete tracker;
-				delete imuCalibrator;
-			}
-
-			ITMTrackingState *BuildTrackingState()
+			ITMTrackingState *BuildTrackingState() const
 			{
 				return new ITMTrackingState(trackedImageSize, memoryType);
 			}

@@ -18,16 +18,19 @@ namespace ITMLib
             float *ATb_metal;
             float *ATA_metal;
             float *noValidPoints_metal;
+            float *f_metal;
             
             void *ATb_metal_mb;
             void *ATA_metal_mb;
             void *noValidPoints_metal_mb;
+            void *f_metal_mb;
 		protected:
 			int ComputeGandH(ITMSceneHierarchyLevel *sceneHierarchyLevel, ITMTemplatedHierarchyLevel<ITMFloatImage> *viewHierarchyLevel,
-				Matrix4f approxInvPose, Matrix4f imagePose, bool rotationOnly);
+				Matrix4f approxInvPose, Matrix4f scenePose, TrackerIterationType iterationType);
 
 		public:
-			 ITMDepthTracker_Metal(Vector2i imgSize, int noHierarchyLevels, int noRotationOnlyLevels, int noICPRunTillLevel, float distThresh, ITMLowLevelEngine *lowLevelEngine);
+            ITMDepthTracker_Metal(Vector2i imgSize, TrackerIterationType *trackingRegime, int noHierarchyLevels,
+                                  int noICPRunTillLevel, float distThresh, const ITMLowLevelEngine *lowLevelEngine);
 			~ITMDepthTracker_Metal(void);
 		};
 	}
