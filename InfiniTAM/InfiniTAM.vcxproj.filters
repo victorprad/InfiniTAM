@@ -133,6 +133,9 @@
     <ClCompile Include="Utils\FileUtils.cpp">
       <Filter>Utils</Filter>
     </ClCompile>
+    <ClCompile Include="ITMLib\Engine\ITMTrackerFactory.cpp">
+      <Filter>ITMLib\Engine</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\OpenNIEngine.h">
@@ -383,6 +386,9 @@
     </ClInclude>
     <ClInclude Include="Utils\NVTimer.h">
       <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="ITMLib\Engine\ITMTrackerFactory.h">
+      <Filter>ITMLib\Engine</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -164,8 +164,13 @@ _CPU_AND_GPU_CODE_ inline bool castRay(DEVICEPTR(Vector4f) &pt_out, int x, int y
 		pt_result += stepLength * rayDirection; totalLength += stepLength;
 		if (totalLength > totalLengthMax) break;
 
-		sdfValue = readFromSDF_float_uninterpolated(voxelData, voxelIndex, pt_result, hash_found, cache);
-		if ((sdfValue <= 0.0f) && (sdfValue >= -0.1f)) sdfValue = readFromSDF_float_interpolated(voxelData, voxelIndex, pt_result, hash_found, cache);
+		if (state == SEARCH_SURFACE || state == SEARCH_BLOCK_FINE)
+		{
+			sdfValue = readFromSDF_float_uninterpolated(voxelData, voxelIndex, pt_result, hash_found, cache);
+			if ((sdfValue <= 0.1f) && (sdfValue >= -0.5f))
+				sdfValue = readFromSDF_float_interpolated(voxelData, voxelIndex, pt_result, hash_found, cache);
+		}
+		else sdfValue = readFromSDF_float_uninterpolated(voxelData, voxelIndex, pt_result, hash_found, cache);
 
 		if (sdfValue <= 0.0f) if (state == SEARCH_BLOCK_FINE) state = WRONG_SIDE; else state = BEHIND_SURFACE;
 		else if (state == WRONG_SIDE) state = SEARCH_SURFACE;
@@ -174,8 +179,12 @@ _CPU_AND_GPU_CODE_ inline bool castRay(DEVICEPTR(Vector4f) &pt_out, int x, int y
 	if (state == BEHIND_SURFACE)
 	{
 		stepLength = sdfValue * stepScale;
-
 		pt_result += stepLength * rayDirection;
+
+		sdfValue = readFromSDF_float_interpolated(voxelData, voxelIndex, pt_result, hash_found, cache);
+		stepLength = sdfValue * stepScale;
+		pt_result += stepLength * rayDirection;
+
 		pt_found = true;
 	}
 
@@ -193,6 +202,55 @@ _CPU_AND_GPU_CODE_ inline void computeNormalAndAngle(THREADPTR(bool) & foundPoin
 	if (!foundPoint) return;
 
 	outNormal = computeSingleNormalFromSDF(voxelBlockData, indexData, point);
+
+	float normScale = 1.0f / sqrt(outNormal.x * outNormal.x + outNormal.y * outNormal.y + outNormal.z * outNormal.z);
+	outNormal *= normScale;
+
+	angle = outNormal.x * lightSource.x + outNormal.y * lightSource.y + outNormal.z * lightSource.z;
+	if (!(angle > 0.0)) foundPoint = false;
+}
+
+_CPU_AND_GPU_CODE_ inline void computeNormalAndAngle(THREADPTR(bool) & foundPoint, const THREADPTR(int) &x, const THREADPTR(int) &y,
+	const DEVICEPTR(Vector4f) *pointsRay, const THREADPTR(Vector3f) & lightSource, const THREADPTR(float) &voxelSize, 
+	const THREADPTR(Vector2i) &imgSize, THREADPTR(Vector3f) & outNormal, THREADPTR(float) & angle)
+{
+	if (!foundPoint) return;
+	
+	if (y <= 2 || y >= imgSize.y - 3 || x <= 2 || x >= imgSize.x - 3) { foundPoint = false; return; }
+
+	Vector4f xp1_y = pointsRay[(x + 2) + y * imgSize.x], x_yp1 = pointsRay[x + (y + 2) * imgSize.x];
+	Vector4f xm1_y = pointsRay[(x - 2) + y * imgSize.x], x_ym1 = pointsRay[x + (y - 2) * imgSize.x];
+
+	Vector4f diff_x(0.0f), diff_y(0.0f);
+
+	bool doPlus1 = false;
+	if (xp1_y.w <= 0 || x_yp1.w <= 0 || xm1_y.w <= 0 || x_ym1.w <= 0) doPlus1 = true;
+	else
+	{
+		diff_x = xp1_y - xm1_y, diff_y = x_yp1 - x_ym1;
+
+		float length_diff = MAX(diff_x.x * diff_x.x + diff_x.y * diff_x.y + diff_x.z * diff_x.z,
+			diff_y.x * diff_y.x + diff_y.y * diff_y.y + diff_y.z * diff_y.z);
+
+		if (length_diff * voxelSize * voxelSize > (0.15f * 0.15f)) doPlus1 = true;
+	}
+
+	if (doPlus1)
+	{
+		xp1_y = pointsRay[(x + 1) + y * imgSize.x]; x_yp1 = pointsRay[x + (y + 1) * imgSize.x];
+		xm1_y = pointsRay[(x - 1) + y * imgSize.x]; x_ym1 = pointsRay[x + (y - 1) * imgSize.x];
+		diff_x = xp1_y - xm1_y; diff_y = x_yp1 - x_ym1;
+
+		if (xp1_y.w <= 0 || x_yp1.w <= 0 || xm1_y.w <= 0 || x_ym1.w <= 0)
+		{
+			foundPoint = false;
+			return;
+		}
+	}
+
+	outNormal.x = -(diff_x.y * diff_y.z - diff_x.z*diff_y.y);
+	outNormal.y = -(diff_x.z * diff_y.x - diff_x.x*diff_y.z);
+	outNormal.z = -(diff_x.x * diff_y.y - diff_x.y*diff_y.x);
 
 	float normScale = 1.0f / sqrt(outNormal.x * outNormal.x + outNormal.y * outNormal.y + outNormal.z * outNormal.z);
 	outNormal *= normScale;
@@ -248,6 +306,42 @@ _CPU_AND_GPU_CODE_ inline void processPixelICP(DEVICEPTR(Vector4u) &outRendering
 		out4.x = 0.0f; out4.y = 0.0f; out4.z = 0.0f; out4.w = -1.0f;
 
 		pointsMap = out4; normalsMap = out4; outRendering = Vector4u((uchar)0);
+	}
+}
+
+_CPU_AND_GPU_CODE_ inline void processPixelICP(DEVICEPTR(Vector4u) *outRendering, DEVICEPTR(Vector4f) *pointsMap, DEVICEPTR(Vector4f) *normalsMap,
+	const DEVICEPTR(Vector4f) *pointsRay, const THREADPTR(Vector2i) &imgSize, const THREADPTR(int) &x, const THREADPTR(int) &y, float voxelSize, 
+	const THREADPTR(Vector3f) &lightSource)
+{
+	Vector3f outNormal;
+	float angle;
+
+	int locId = x + y * imgSize.x;
+	Vector4f point = pointsRay[locId];
+
+	bool foundPoint = point.w > 0.0f;
+
+	computeNormalAndAngle(foundPoint, x, y, pointsRay, lightSource, voxelSize, imgSize, outNormal, angle);
+
+	if (foundPoint)
+	{
+		drawPixelGrey(outRendering[locId], angle);
+
+		Vector4f outPoint4;
+		outPoint4.x = point.x * voxelSize; outPoint4.y = point.y * voxelSize;
+		outPoint4.z = point.z * voxelSize; outPoint4.w = 1.0f;
+		pointsMap[locId] = outPoint4;
+
+		Vector4f outNormal4;
+		outNormal4.x = outNormal.x; outNormal4.y = outNormal.y; outNormal4.z = outNormal.z; outNormal4.w = 0.0f;
+		normalsMap[locId] = outNormal4;
+	}
+	else
+	{
+		Vector4f out4;
+		out4.x = 0.0f; out4.y = 0.0f; out4.z = 0.0f; out4.w = -1.0f;
+
+		pointsMap[locId] = out4; normalsMap[locId] = out4; outRendering[locId] = Vector4u((uchar)0);
 	}
 }
 

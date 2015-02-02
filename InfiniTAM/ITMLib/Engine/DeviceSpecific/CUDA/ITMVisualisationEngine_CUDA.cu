@@ -452,19 +452,14 @@ __global__ void genericRaycast_device(Vector4f *out_ptsRay, const TVoxel *voxelD
 }
 
 template<class TVoxel, class TIndex>
-__global__ void renderICP_device(Vector4u *outRendering, Vector4f *pointsMap, Vector4f *normalsMap, const Vector4f *ptsRay,
+__global__ void renderICP_device(Vector4u *outRendering, Vector4f *pointsMap, Vector4f *normalsMap, const Vector4f *pointsRay,
 	const TVoxel *voxelData, const typename TIndex::IndexData *voxelIndex, float voxelSize, Vector2i imgSize, Vector3f lightSource)
 {
 	int x = (threadIdx.x + blockIdx.x * blockDim.x), y = (threadIdx.y + blockIdx.y * blockDim.y);
 
 	if (x >= imgSize.x || y >= imgSize.y) return;
 
-	int locId = x + y * imgSize.x;
-
-	Vector4f ptRay = ptsRay[locId];
-
-	processPixelICP<TVoxel, TIndex>(outRendering[locId], pointsMap[locId], normalsMap[locId], ptRay.toVector3(), ptRay.w > 0, voxelData,
-		voxelIndex, voxelSize, lightSource);
+	processPixelICP(outRendering, pointsMap, normalsMap, pointsRay, imgSize, x, y, voxelSize, lightSource);
 }
 
 template<class TVoxel, class TIndex>

@@ -250,6 +250,8 @@ static void CreatePointCloud_common(const ITMScene<TVoxel,TIndex> *scene, const 
 	);
 }
 
+Vector4f *newpts;
+
 template<class TVoxel, class TIndex>
 static void CreateICPMaps_common(const ITMScene<TVoxel,TIndex> *scene, const ITMView *view, ITMTrackingState *trackingState, ITMRenderState *renderState)
 {
@@ -271,12 +273,8 @@ static void CreateICPMaps_common(const ITMScene<TVoxel,TIndex> *scene, const ITM
 #ifdef WITH_OPENMP
 	#pragma omp parallel for
 #endif
-	for (int locId = 0; locId < imgSize.x * imgSize.y; locId++)
-	{
-		Vector4f ptRay = pointsRay[locId];
-		processPixelICP<TVoxel, TIndex>(outRendering[locId], pointsMap[locId], normalsMap[locId], ptRay.toVector3(), ptRay.w > 0, voxelData,
-			voxelIndex, voxelSize, lightSource);
-	}
+	for (int y = 0; y < imgSize.y; y++) for (int x = 0; x < imgSize.x; x++)
+		processPixelICP(outRendering, pointsMap, normalsMap, pointsRay, imgSize, x, y, voxelSize, lightSource);
 }
 
 template<class TVoxel, class TIndex>
