@@ -352,7 +352,7 @@ _CPU_AND_GPU_CODE_ inline TVoxel readVoxel(DEVICEPTR(const TVoxel) *voxelData, D
 
 	int level = 0;
 	isFound = false;
-	do
+	while (true)
 	{
 		bool shouldContinueDown = false;
 		int hierBlockSize = (1 << level);
@@ -362,9 +362,9 @@ _CPU_AND_GPU_CODE_ inline TVoxel readVoxel(DEVICEPTR(const TVoxel) *voxelData, D
 		// start at ordered list of buckets
 		int hashIdx = hashIndex(blockPos, SDF_HASH_MASK);
 
-		do
+		while (true)
 		{
-			THREADPTR(const ITMHHashEntry) &hashEntry = hashTable[hashIdx];
+			ITMHHashEntry hashEntry = hashTable[hashIdx];
 
 			if (hashEntry.pos == blockPos)
 			{
@@ -382,7 +382,7 @@ _CPU_AND_GPU_CODE_ inline TVoxel readVoxel(DEVICEPTR(const TVoxel) *voxelData, D
 			int offsetExcess = hashEntry.offset - 1;
 			if (offsetExcess < 0) break;
 			hashIdx = SDF_BUCKET_NUM + offsetExcess;
-		} while (true);
+		}
 
 		if (!shouldContinueDown) {
 			level++;
@@ -391,7 +391,7 @@ _CPU_AND_GPU_CODE_ inline TVoxel readVoxel(DEVICEPTR(const TVoxel) *voxelData, D
 			level--;
 			if (level < 0) break;
 		}
-	} while (true);
+	}
 
 	point = TRounding::pointPosRound(point, (1<<(SDF_HASH_NO_H_LEVELS-1)));
 	return TVoxel();
