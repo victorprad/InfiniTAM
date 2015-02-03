@@ -170,7 +170,7 @@ _CPU_AND_GPU_CODE_ inline bool castRay(DEVICEPTR(Vector4f) &pt_out, int x, int y
 			if ((sdfValue <= 0.1f) && (sdfValue >= -0.5f))
 				sdfValue = readFromSDF_float_interpolated(voxelData, voxelIndex, pt_result, hash_found, cache);
 		}
-		else sdfValue = readFromSDF_float_uninterpolated(voxelData, voxelIndex, pt_result, hash_found, cache);
+		else sdfValue = readFromSDF_float_uninterpolated(voxelData, voxelIndex, pt_result, hash_found);
 
 		if (sdfValue <= 0.0f) if (state == SEARCH_BLOCK_FINE) state = WRONG_SIDE; else state = BEHIND_SURFACE;
 		else if (state == WRONG_SIDE) state = SEARCH_SURFACE;
