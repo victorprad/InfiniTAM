@@ -17,7 +17,7 @@ namespace ITMLib
 		{
 		private:
 			int *noAllocatedVoxelEntries_device, *noAllocatedExcessEntries_device;
-			int *noVisibleEntries_device, *noActiveEntries_device;
+			int *noVisibleEntries_device;
 
 			unsigned char *entriesAllocType_device;
 			Vector4s *blockCoords_device;

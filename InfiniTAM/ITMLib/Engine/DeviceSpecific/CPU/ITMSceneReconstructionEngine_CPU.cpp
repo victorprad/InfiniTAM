@@ -115,7 +115,6 @@ void ITMSceneReconstructionEngine_CPU<TVoxel, ITMVoxelBlockHash>::AllocateSceneF
 	ITMHashEntry *hashTable = scene->index.GetEntries();
 	ITMHashCacheState *cacheStates = scene->useSwapping ? scene->globalCache->GetCacheStates(false) : 0;
 	int *visibleEntryIDs = renderState_vh->GetVisibleEntryIDs();
-	int *activeEntryIDs = renderState_vh->GetActiveEntryIDs();
 	uchar *entriesVisibleType = renderState_vh->GetEntriesVisibleType();
 	uchar *entriesAllocType = this->entriesAllocType->GetData(MEMORYDEVICE_CPU);
 	Vector4s *blockCoords = this->blockCoords->GetData(MEMORYDEVICE_CPU);
@@ -128,7 +127,7 @@ void ITMSceneReconstructionEngine_CPU<TVoxel, ITMVoxelBlockHash>::AllocateSceneF
 	int lastFreeVoxelBlockId = scene->localVBA.lastFreeBlockId;
 	int lastFreeExcessListId = scene->index.GetLastFreeExcessListId();
 
-	int noVisibleEntries = 0, noActiveEntries = 0;
+	int noVisibleEntries = 0;
 
 	memset(entriesAllocType, 0, noTotalEntries);
 
@@ -234,11 +233,14 @@ void ITMSceneReconstructionEngine_CPU<TVoxel, ITMVoxelBlockHash>::AllocateSceneF
 			noVisibleEntries++;
 		}
 
+#if 0
+		// "active list", currently disabled
 		if (hashVisibleType == 1)
 		{
 			activeEntryIDs[noActiveEntries] = targetIdx;
 			noActiveEntries++;
 		}
+#endif
 	}
 
 	//reallocate deleted ones from previous swap operation
@@ -258,7 +260,6 @@ void ITMSceneReconstructionEngine_CPU<TVoxel, ITMVoxelBlockHash>::AllocateSceneF
 	}
 
 	renderState_vh->noVisibleEntries = noVisibleEntries;
-	renderState_vh->noActiveEntries = noActiveEntries;
 
 	scene->localVBA.lastFreeBlockId = lastFreeVoxelBlockId;
 	scene->index.SetLastFreeExcessListId(lastFreeExcessListId);
