@@ -20,7 +20,7 @@ _CPU_AND_GPU_CODE_ inline float computeUpdatedVoxelDepthInfo(DEVICEPTR(TVoxel) &
 
 	pt_image.x = projParams_d.x * pt_camera.x / pt_camera.z + projParams_d.z;
 	pt_image.y = projParams_d.y * pt_camera.y / pt_camera.z + projParams_d.w;
-	if ((pt_image.x < 1) || (pt_image.x > imgSize.x - 2) || (pt_image.y < 1) || (pt_image.y > imgSize.y - 2)) return - 1;
+	if ((pt_image.x < 1) || (pt_image.x > imgSize.x - 2) || (pt_image.y < 1) || (pt_image.y > imgSize.y - 2)) return -1;
 
 	// get measured depth from image
 	depth_measure = depth[(int)(pt_image.x + 0.5f) + (int)(pt_image.y + 0.5f) * imgSize.x];
@@ -50,7 +50,7 @@ _CPU_AND_GPU_CODE_ inline float computeUpdatedVoxelDepthInfo(DEVICEPTR(TVoxel) &
 
 
 template<class TVoxel>
-_CPU_AND_GPU_CODE_ inline void computeUpdatedVoxelColorInfo(DEVICEPTR(TVoxel) &voxel, const THREADPTR(Vector4f) & pt_model, const CONSTANT(Matrix4f) & M_rgb, 
+_CPU_AND_GPU_CODE_ inline void computeUpdatedVoxelColorInfo(DEVICEPTR(TVoxel) &voxel, const THREADPTR(Vector4f) & pt_model, const CONSTANT(Matrix4f) & M_rgb,
 	const CONSTANT(Vector4f) & projParams_rgb, float mu, uchar maxW, float eta, const DEVICEPTR(Vector4u) *rgb, const CONSTANT(Vector2i) & imgSize)
 {
 	Vector4f pt_camera; Vector2f pt_image;
@@ -80,15 +80,15 @@ _CPU_AND_GPU_CODE_ inline void computeUpdatedVoxelColorInfo(DEVICEPTR(TVoxel) &v
 	newW = MIN(newW, maxW);
 
 	buffV3u = TO_UCHAR3(newC * 255.0f);
-	
+
 	voxel.clr = buffV3u;
 	voxel.w_color = (uchar)newW;
 }
 
-template<bool hasColor,class TVoxel> struct ComputeUpdatedVoxelInfo;
+template<bool hasColor, class TVoxel> struct ComputeUpdatedVoxelInfo;
 
 template<class TVoxel>
-struct ComputeUpdatedVoxelInfo<false,TVoxel> {
+struct ComputeUpdatedVoxelInfo<false, TVoxel> {
 	_CPU_AND_GPU_CODE_ static void compute(DEVICEPTR(TVoxel) & voxel, const THREADPTR(Vector4f) & pt_model,
 		const CONSTANT(Matrix4f) & M_d, const CONSTANT(Vector4f) & projParams_d,
 		const CONSTANT(Matrix4f) & M_rgb, const CONSTANT(Vector4f) & projParams_rgb,
@@ -101,7 +101,7 @@ struct ComputeUpdatedVoxelInfo<false,TVoxel> {
 };
 
 template<class TVoxel>
-struct ComputeUpdatedVoxelInfo<true,TVoxel> {
+struct ComputeUpdatedVoxelInfo<true, TVoxel> {
 	_CPU_AND_GPU_CODE_ static void compute(DEVICEPTR(TVoxel) & voxel, const THREADPTR(Vector4f) & pt_model,
 		const THREADPTR(Matrix4f) & M_d, const THREADPTR(Vector4f) & projParams_d,
 		const THREADPTR(Matrix4f) & M_rgb, const THREADPTR(Vector4f) & projParams_rgb,
@@ -119,111 +119,88 @@ _CPU_AND_GPU_CODE_ inline void buildHashAllocAndVisibleTypePP(DEVICEPTR(uchar) *
 	DEVICEPTR(Vector4s) *blockCoords, const DEVICEPTR(float) *depth, Matrix4f invM_d, Vector4f projParams_d, float mu, Vector2i imgSize,
 	float oneOverVoxelSize, const DEVICEPTR(ITMHashEntry) *hashTable, float viewFrustum_min, float viewFrustum_max)
 {
-    float depth_measure; unsigned int hashIdx; int noSteps, lastFreeInBucketIdx;
-    Vector4f pt_camera_f; Vector3f pt_block_e, pt_block, direction; Vector3s pt_block_a;
-    
-    depth_measure = depth[x + y * imgSize.x];
-    if (depth_measure <= 0 || (depth_measure - mu) < 0 || (depth_measure - mu) < viewFrustum_min || (depth_measure + mu) > viewFrustum_max) return;
-    
-    pt_camera_f.z = depth_measure;
-    pt_camera_f.x = pt_camera_f.z * ((float(x) - projParams_d.z) * projParams_d.x);
-    pt_camera_f.y = pt_camera_f.z * ((float(y) - projParams_d.w) * projParams_d.y);
-    pt_camera_f.w = 1.0f;
-    
-    float norm = sqrt(pt_camera_f.x * pt_camera_f.x + pt_camera_f.y * pt_camera_f.y + pt_camera_f.z * pt_camera_f.z);
-    
-    pt_block   = TO_VECTOR3(invM_d * (pt_camera_f * (1.0f - mu/norm))) * oneOverVoxelSize;
-    pt_block_e = TO_VECTOR3(invM_d * (pt_camera_f * (1.0f + mu/norm))) * oneOverVoxelSize;
-    
-    direction = pt_block_e - pt_block;
-    norm = sqrt(direction.x * direction.x + direction.y * direction.y + direction.z * direction.z);
-    noSteps = (int)ceil(2.0f*norm);
-    
-    direction /= (float)(noSteps-1);
-    
-    //add neighbouring blocks
-    for (int i = 0; i < noSteps; i++)
-    {
-        pt_block_a = TO_SHORT_FLOOR3(pt_block);
-        
-        //compute index in hash table
-        hashIdx = hashIndex(pt_block_a) * SDF_ENTRY_NUM_PER_BUCKET;
-        
-        //check if hash table contains entry
-        lastFreeInBucketIdx = -1; bool foundValue = false; int offsetExcess = 0;
-#if (defined(__CUDACC__) && defined(__CUDA_ARCH__)) || (defined(__METALC__))
-#pragma unroll
-#endif
-        for (int inBucketIdx = 0; inBucketIdx < SDF_ENTRY_NUM_PER_BUCKET; inBucketIdx++)
-        {
-            const DEVICEPTR(ITMHashEntry) &hashEntry = hashTable[hashIdx + inBucketIdx];
-            offsetExcess = hashEntry.offset - 1;
-            
-            if (IS_EQUAL3(hashEntry.pos, pt_block_a) && hashEntry.ptr >= -1)
-            {
-                if (hashEntry.ptr == -1) entriesVisibleType[hashIdx + inBucketIdx] = 2; //entry has been streamed out but is visible
-                else entriesVisibleType[hashIdx + inBucketIdx] = 1; // entry is in memory and visible
-                
-                foundValue = true;
-                break;
-            }
-            
-            if (lastFreeInBucketIdx == -1 && hashEntry.ptr < -1) lastFreeInBucketIdx = inBucketIdx;
-        }
-        
-        if (!foundValue)
-        {
-            int hashIdx_toModify; //will contain parent index for excess list or normal hash+bucket index for ordered list
-            
-            if (lastFreeInBucketIdx >= 0) //not found and have room in the ordered part of the list (-> no excess list to search)
-            {
-                hashIdx_toModify = hashIdx + lastFreeInBucketIdx;
-                
-                entriesAllocType[hashIdx_toModify] = 1; //needs allocation and has room in ordered list
-                entriesVisibleType[hashIdx_toModify] = 1; //new entry is visible
-                
-				Vector4s tempVector(pt_block_a.x, pt_block_a.y, pt_block_a.z, 1);
-				blockCoords[hashIdx_toModify] = tempVector; //per-image hash collisions are ignored (will be picked up next frame)
-            }
-            else //might be in the excess list
-            {
-                hashIdx_toModify = hashIdx + SDF_ENTRY_NUM_PER_BUCKET - 1;
-                
-                int noOrderedEntries = SDF_BUCKET_NUM * SDF_ENTRY_NUM_PER_BUCKET;
-                
-                while (offsetExcess >= 0)
-                {
-                    const DEVICEPTR(ITMHashEntry) &hashEntry = hashTable[noOrderedEntries + offsetExcess];
-                    
-                    if (IS_EQUAL3(hashEntry.pos, pt_block_a) && hashEntry.ptr >= -1)
-                    {
-                        if (hashEntry.ptr == -1) entriesVisibleType[noOrderedEntries + offsetExcess] = 2; //entry streamed out but visible
-                        else entriesVisibleType[noOrderedEntries + offsetExcess] = 1; // entry is in memory and visible
-                        
-                        foundValue = true;
-                        break;
-                    }
-                    
-                    hashIdx_toModify = noOrderedEntries + offsetExcess;
-                    offsetExcess = hashEntry.offset - 1;
-                }
-                
-                if (!foundValue) //still not found -> must add into excess list
-                {
-                    entriesAllocType[hashIdx_toModify] = 2; //needs allocation in the excess list
-					Vector4s tempVector(pt_block_a.x, pt_block_a.y, pt_block_a.z, 1);
-					blockCoords[hashIdx_toModify] = tempVector; //per-image hash collisions are ignored 
-                }
-            }
-        }
-        
-        pt_block += direction;
-    }
+	float depth_measure; unsigned int hashIdx; int noSteps;
+	Vector4f pt_camera_f; Vector3f point_e, point, direction; Vector3s blockPos;
+
+	depth_measure = depth[x + y * imgSize.x];
+	if (depth_measure <= 0 || (depth_measure - mu) < 0 || (depth_measure - mu) < viewFrustum_min || (depth_measure + mu) > viewFrustum_max) return;
+
+	pt_camera_f.z = depth_measure;
+	pt_camera_f.x = pt_camera_f.z * ((float(x) - projParams_d.z) * projParams_d.x);
+	pt_camera_f.y = pt_camera_f.z * ((float(y) - projParams_d.w) * projParams_d.y);
+	pt_camera_f.w = 1.0f;
+
+	float norm = sqrt(pt_camera_f.x * pt_camera_f.x + pt_camera_f.y * pt_camera_f.y + pt_camera_f.z * pt_camera_f.z);
+
+	point = TO_VECTOR3(invM_d * (pt_camera_f * (1.0f - mu / norm))) * oneOverVoxelSize;
+	point_e = TO_VECTOR3(invM_d * (pt_camera_f * (1.0f + mu / norm))) * oneOverVoxelSize;
+
+	direction = point_e - point;
+	norm = sqrt(direction.x * direction.x + direction.y * direction.y + direction.z * direction.z);
+	noSteps = (int)ceil(2.0f*norm);
+
+	direction /= (float)(noSteps - 1);
+
+	//add neighbouring blocks
+	for (int i = 0; i < noSteps; i++)
+	{
+		blockPos = TO_SHORT_FLOOR3(point);
+
+		//compute index in hash table
+		hashIdx = hashIndex(blockPos);
+
+		//check if hash table contains entry
+		bool isFound = false;
+
+		ITMHashEntry hashEntry = hashTable[hashIdx];
+
+		if (IS_EQUAL3(hashEntry.pos, blockPos) && hashEntry.ptr >= -1)
+		{
+			//entry has been streamed out but is visible or in memory and visible
+			entriesVisibleType[hashIdx] = (hashEntry.ptr == -1) ? 2 : 1;
+
+			isFound = true;
+		}
+
+		if (!isFound)
+		{
+			bool isExcess = false;
+			if (hashEntry.ptr >= 1) //seach excess list only if there is no room in ordered part
+			{
+				while (hashEntry.offset >= 1)
+				{
+					hashIdx = SDF_BUCKET_NUM + hashEntry.offset - 1;
+					hashEntry = hashTable[hashIdx];
+
+					if (IS_EQUAL3(hashEntry.pos, blockPos) && hashEntry.ptr >= -1)
+					{
+						//entry has been streamed out but is visible or in memory and visible
+						entriesVisibleType[hashIdx] = (hashEntry.ptr == -1) ? 2 : 1;
+
+						isFound = true;
+						break;
+					}
+				}
+
+				isExcess = true;
+			}
+
+			if (!isFound) //still not found
+			{
+				entriesAllocType[hashIdx] = isExcess ? 2 : 1; //needs allocation 
+				entriesVisibleType[hashIdx] = 1; //new entry is visible
+
+				blockCoords[hashIdx] = Vector4s(blockPos.x, blockPos.y, blockPos.z, 1);
+			}
+		}
+
+		point += direction;
+	}
 }
 
 template<bool useSwapping>
-_CPU_AND_GPU_CODE_ inline void checkPointVisibility(THREADPTR(bool) &isVisible, THREADPTR(bool) &isVisibleEnlarged, 
-	const THREADPTR(Vector4f) &pt_image, const DEVICEPTR(Matrix4f) & M_d, const DEVICEPTR(Vector4f) &projParams_d, 
+_CPU_AND_GPU_CODE_ inline void checkPointVisibility(THREADPTR(bool) &isVisible, THREADPTR(bool) &isVisibleEnlarged,
+	const THREADPTR(Vector4f) &pt_image, const DEVICEPTR(Matrix4f) & M_d, const DEVICEPTR(Vector4f) &projParams_d,
 	const DEVICEPTR(Vector2i) &imgSize)
 {
 	Vector4f pt_buff;

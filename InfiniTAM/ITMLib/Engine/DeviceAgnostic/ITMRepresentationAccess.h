@@ -14,8 +14,9 @@ _CPU_AND_GPU_CODE_ inline int pointToVoxelBlockPos(const THREADPTR(Vector3i) & p
 	blockPos.y = ((point.y < 0) ? point.y - SDF_BLOCK_SIZE + 1 : point.y) / SDF_BLOCK_SIZE;
 	blockPos.z = ((point.z < 0) ? point.z - SDF_BLOCK_SIZE + 1 : point.z) / SDF_BLOCK_SIZE;
 
-	Vector3i locPos = point - blockPos * SDF_BLOCK_SIZE;
-	return locPos.x + (locPos.y + locPos.z * SDF_BLOCK_SIZE) * SDF_BLOCK_SIZE;
+	//Vector3i locPos = point - blockPos * SDF_BLOCK_SIZE;
+	//return locPos.x + locPos.y * SDF_BLOCK_SIZE + locPos.z * SDF_BLOCK_SIZE * SDF_BLOCK_SIZE;
+	return point.x + (point.y - blockPos.x) * SDF_BLOCK_SIZE + (point.z - blockPos.y) * SDF_BLOCK_SIZE * SDF_BLOCK_SIZE - blockPos.z * SDF_BLOCK_SIZE3;
 }
 
 template<class TVoxel>
@@ -31,10 +32,10 @@ _CPU_AND_GPU_CODE_ inline TVoxel readVoxel(const DEVICEPTR(TVoxel) *voxelData, c
 		return voxelData[cache.blockPtr + linearIdx];
 	}
 
-	isFound = false;
 	int hashIdx = hashIndex(blockPos);
 
-	while (true) {
+	while (true) 
+	{
 		ITMHashEntry hashEntry = voxelIndex[hashIdx];
 
 		if (IS_EQUAL3(hashEntry.pos, blockPos) && hashEntry.ptr >= 0)
@@ -44,11 +45,11 @@ _CPU_AND_GPU_CODE_ inline TVoxel readVoxel(const DEVICEPTR(TVoxel) *voxelData, c
 			return voxelData[cache.blockPtr + linearIdx];
 		}
 
-		int offset = hashEntry.offset-1;
-		if (offset < 0) break;
-		hashIdx = SDF_BUCKET_NUM + offset;
+		if (hashEntry.offset < 1) break;
+		hashIdx = SDF_BUCKET_NUM + hashEntry.offset - 1;
 	}
 
+	isFound = false;
 	return TVoxel();
 }
 

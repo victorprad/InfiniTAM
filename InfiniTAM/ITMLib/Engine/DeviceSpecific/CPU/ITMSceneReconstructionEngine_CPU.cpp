@@ -191,9 +191,9 @@ void ITMSceneReconstructionEngine_CPU<TVoxel, ITMVoxelBlockHash>::AllocateSceneF
 
 					hashTable[targetIdx].offset = exlOffset + 1; //connect to child
 
-					hashTable[SDF_BUCKET_NUM * SDF_ENTRY_NUM_PER_BUCKET + exlOffset] = hashEntry; //add child to the excess list
+					hashTable[SDF_BUCKET_NUM + exlOffset] = hashEntry; //add child to the excess list
 
-					entriesVisibleType[SDF_BUCKET_NUM * SDF_ENTRY_NUM_PER_BUCKET + exlOffset] = 1; //make child visible and in memory
+					entriesVisibleType[SDF_BUCKET_NUM + exlOffset] = 1; //make child visible and in memory
 				}
 
 				break;

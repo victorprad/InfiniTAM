@@ -346,9 +346,9 @@ __global__ void allocateVoxelBlocksList_device(int *voxelAllocationList, int *ex
 
 			hashTable[targetIdx].offset = exlOffset + 1; //connect to child
 
-			hashTable[SDF_BUCKET_NUM * SDF_ENTRY_NUM_PER_BUCKET + exlOffset] = hashEntry; //add child to the excess list
+			hashTable[SDF_BUCKET_NUM + exlOffset] = hashEntry; //add child to the excess list
 
-			entriesVisibleType[SDF_BUCKET_NUM * SDF_ENTRY_NUM_PER_BUCKET + exlOffset] = 1; //make child visible
+			entriesVisibleType[SDF_BUCKET_NUM + exlOffset] = 1; //make child visible
 		}
 
 		break;
