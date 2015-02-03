@@ -235,9 +235,8 @@ _CPU_AND_GPU_CODE_ inline void checkPointVisibility(THREADPTR(bool) &isVisible, 
 	pt_buff.x = projParams_d.x * pt_buff.x / pt_buff.z + projParams_d.z;
 	pt_buff.y = projParams_d.y * pt_buff.y / pt_buff.z + projParams_d.w;
 
-	if (pt_buff.x >= 0 && pt_buff.x < imgSize.x && pt_buff.y >= 0 && pt_buff.y < imgSize.y) isVisible = true;
-
-	if (useSwapping)
+	if (pt_buff.x >= 0 && pt_buff.x < imgSize.x && pt_buff.y >= 0 && pt_buff.y < imgSize.y) { isVisible = true; isVisibleEnlarged = true; }
+	else if (useSwapping)
 	{
 		Vector4i lims;
 		lims.x = -imgSize.x / 8; lims.y = imgSize.x + imgSize.x / 8;
@@ -245,7 +244,6 @@ _CPU_AND_GPU_CODE_ inline void checkPointVisibility(THREADPTR(bool) &isVisible, 
 
 		if (pt_buff.x >= lims.x && pt_buff.x < lims.y && pt_buff.y >= lims.z && pt_buff.y < lims.w) isVisibleEnlarged = true;
 	}
-	else isVisibleEnlarged = true;
 }
 
 template<bool useSwapping>
@@ -262,40 +260,40 @@ _CPU_AND_GPU_CODE_ inline void checkBlockVisibility(THREADPTR(bool) &isVisible, 
 	pt_image.x = (float)hashPos.x * factor; pt_image.y = (float)hashPos.y * factor;
 	pt_image.z = (float)hashPos.z * factor; pt_image.w = 1.0f;
 	checkPointVisibility<useSwapping>(isVisible, isVisibleEnlarged, pt_image, M_d, projParams_d, imgSize);
-	if (isVisible && isVisibleEnlarged) return;
+	if (isVisible) return;
 
 	// 0 0 1
 	pt_image.z += factor;
 	checkPointVisibility<useSwapping>(isVisible, isVisibleEnlarged, pt_image, M_d, projParams_d, imgSize);
-	if (isVisible && isVisibleEnlarged) return;
+	if (isVisible) return;
 
 	// 0 1 1
 	pt_image.y += factor;
 	checkPointVisibility<useSwapping>(isVisible, isVisibleEnlarged, pt_image, M_d, projParams_d, imgSize);
-	if (isVisible && isVisibleEnlarged) return;
+	if (isVisible) return;
 
 	// 1 1 1
 	pt_image.x += factor;
 	checkPointVisibility<useSwapping>(isVisible, isVisibleEnlarged, pt_image, M_d, projParams_d, imgSize);
-	if (isVisible && isVisibleEnlarged) return;
+	if (isVisible) return;
 
 	// 1 1 0 
 	pt_image.z -= factor;
 	checkPointVisibility<useSwapping>(isVisible, isVisibleEnlarged, pt_image, M_d, projParams_d, imgSize);
-	if (isVisible && isVisibleEnlarged) return;
+	if (isVisible) return;
 
 	// 1 0 0 
 	pt_image.y -= factor;
 	checkPointVisibility<useSwapping>(isVisible, isVisibleEnlarged, pt_image, M_d, projParams_d, imgSize);
-	if (isVisible && isVisibleEnlarged) return;
+	if (isVisible) return;
 
 	// 0 1 0
 	pt_image.x -= factor; pt_image.y += factor;
 	checkPointVisibility<useSwapping>(isVisible, isVisibleEnlarged, pt_image, M_d, projParams_d, imgSize);
-	if (isVisible && isVisibleEnlarged) return;
+	if (isVisible) return;
 
 	// 1 0 1
 	pt_image.x += factor; pt_image.y -= factor; pt_image.z += factor;
 	checkPointVisibility<useSwapping>(isVisible, isVisibleEnlarged, pt_image, M_d, projParams_d, imgSize);
-	if (isVisible && isVisibleEnlarged) return;
+	if (isVisible) return;
 }
