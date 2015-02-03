@@ -69,13 +69,12 @@ void ITMSceneReconstructionEngine_CPU<TVoxel, ITMVoxelBlockHash>::IntegrateIntoS
 
 		TVoxel *localVoxelBlock = &(localVBA[currentHashEntry.ptr * (SDF_BLOCK_SIZE3)]);
 
-		if (stopIntegratingAtMaxW) if (localVoxelBlock->w_depth == maxW) continue;
-
 		for (int z = 0; z < SDF_BLOCK_SIZE; z++) for (int y = 0; y < SDF_BLOCK_SIZE; y++) for (int x = 0; x < SDF_BLOCK_SIZE; x++)
 		{
 			Vector4f pt_model; int locId;
 
 			locId = x + y * SDF_BLOCK_SIZE + z * SDF_BLOCK_SIZE * SDF_BLOCK_SIZE;
+			if (stopIntegratingAtMaxW) if (localVoxelBlock[locId].w_depth == maxW) continue;
 
 			pt_model.x = (float)(globalPos.x + x) * voxelSize;
 			pt_model.y = (float)(globalPos.y + y) * voxelSize;
