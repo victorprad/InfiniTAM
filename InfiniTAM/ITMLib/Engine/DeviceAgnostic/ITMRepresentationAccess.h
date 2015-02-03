@@ -5,8 +5,8 @@
 #include "../../Utils/ITMLibDefines.h"
 #include "../../Utils/ITMPixelUtils.h"
 
-template<typename T> _CPU_AND_GPU_CODE_ inline int hashIndex(const THREADPTR(T) & blockPos, const int hashMask) {
-	return (((uint)blockPos.x * 73856093) ^ ((uint)blockPos.y * 19349669) ^ ((uint)blockPos.z * 83492791)) & (uint)hashMask;
+template<typename T> _CPU_AND_GPU_CODE_ inline int hashIndex(const THREADPTR(T) & blockPos) {
+	return (((uint)blockPos.x * 73856093u) ^ ((uint)blockPos.y * 19349669u) ^ ((uint)blockPos.z * 83492791u)) & (uint)SDF_HASH_MASK;
 }
 
 _CPU_AND_GPU_CODE_ inline int pointToVoxelBlockPos(const THREADPTR(Vector3i) & point, THREADPTR(Vector3i) &blockPos) {
@@ -15,51 +15,36 @@ _CPU_AND_GPU_CODE_ inline int pointToVoxelBlockPos(const THREADPTR(Vector3i) & p
 	blockPos.z = ((point.z < 0) ? point.z - SDF_BLOCK_SIZE + 1 : point.z) / SDF_BLOCK_SIZE;
 
 	Vector3i locPos = point - blockPos * SDF_BLOCK_SIZE;
-	return locPos.x + locPos.y * SDF_BLOCK_SIZE + locPos.z * SDF_BLOCK_SIZE * SDF_BLOCK_SIZE;
+	return locPos.x + (locPos.y + locPos.z * SDF_BLOCK_SIZE) * SDF_BLOCK_SIZE;
 }
 
 template<class TVoxel>
 _CPU_AND_GPU_CODE_ inline TVoxel readVoxel(const DEVICEPTR(TVoxel) *voxelData, const DEVICEPTR(ITMLib::Objects::ITMVoxelBlockHash::IndexData) *voxelIndex,
 	const THREADPTR(Vector3i) & point, THREADPTR(bool) &isFound, THREADPTR(ITMLib::Objects::ITMVoxelBlockHash::IndexCache) & cache)
 {
-	Vector3i blockPos; 
+	Vector3i blockPos;
 	int linearIdx = pointToVoxelBlockPos(point, blockPos);
 
 	if IS_EQUAL3(blockPos, cache.blockPos)
 	{
-		isFound = true; 
+		isFound = true;
 		return voxelData[cache.blockPtr + linearIdx];
 	}
 
-	const DEVICEPTR(ITMHashEntry) *hashTable = voxelIndex;
-	int offsetExcess = 0;
-
-	int hashIdx = hashIndex(blockPos, SDF_HASH_MASK) * SDF_ENTRY_NUM_PER_BUCKET;
-
 	isFound = false;
 
-	//check ordered list
-#if (defined(__CUDACC__) && defined(__CUDA_ARCH__)) || (defined(__METALC__))
-#pragma unroll
-#endif
-	for (int inBucketIdx = 0; inBucketIdx < SDF_ENTRY_NUM_PER_BUCKET; inBucketIdx++)
+	ITMHashEntry hashEntry = voxelIndex[hashIndex(blockPos)];
+
+	if (IS_EQUAL3(hashEntry.pos, blockPos) && hashEntry.ptr >= 0)
 	{
-		const DEVICEPTR(ITMHashEntry) &hashEntry = hashTable[hashIdx + inBucketIdx];
-
-		if (IS_EQUAL3(hashEntry.pos, blockPos) && hashEntry.ptr >= 0)
-		{
-			isFound = true;
-			cache.blockPos = blockPos; cache.blockPtr = hashEntry.ptr * SDF_BLOCK_SIZE3;
-			return voxelData[cache.blockPtr + linearIdx];
-		}
-
-		offsetExcess = hashEntry.offset - 1;
+		isFound = true;
+		cache.blockPos = blockPos; cache.blockPtr = hashEntry.ptr * SDF_BLOCK_SIZE3;
+		return voxelData[cache.blockPtr + linearIdx];
 	}
 
-	//check excess list
-	while (offsetExcess >= 0)
+	while (hashEntry.offset >= 1)
 	{
-		const DEVICEPTR(ITMHashEntry) &hashEntry = hashTable[SDF_BUCKET_NUM * SDF_ENTRY_NUM_PER_BUCKET + offsetExcess];
+		hashEntry = voxelIndex[SDF_BUCKET_NUM + hashEntry.offset - 1];
 
 		if (IS_EQUAL3(hashEntry.pos, blockPos) && hashEntry.ptr >= 0)
 		{
@@ -67,8 +52,6 @@ _CPU_AND_GPU_CODE_ inline TVoxel readVoxel(const DEVICEPTR(TVoxel) *voxelData, c
 			cache.blockPos = blockPos; cache.blockPtr = hashEntry.ptr * SDF_BLOCK_SIZE3;
 			return voxelData[cache.blockPtr + linearIdx];
 		}
-
-		offsetExcess = hashEntry.offset - 1;
 	}
 
 	return TVoxel();

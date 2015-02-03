@@ -147,7 +147,7 @@ _CPU_AND_GPU_CODE_ inline void buildHashAllocAndVisibleTypePP(DEVICEPTR(uchar) *
         pt_block_a = TO_SHORT_FLOOR3(pt_block);
         
         //compute index in hash table
-        hashIdx = hashIndex(pt_block_a, SDF_HASH_MASK) * SDF_ENTRY_NUM_PER_BUCKET;
+        hashIdx = hashIndex(pt_block_a) * SDF_ENTRY_NUM_PER_BUCKET;
         
         //check if hash table contains entry
         lastFreeInBucketIdx = -1; bool foundValue = false; int offsetExcess = 0;
