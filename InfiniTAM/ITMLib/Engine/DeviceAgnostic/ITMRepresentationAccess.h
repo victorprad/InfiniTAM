@@ -47,6 +47,9 @@ _CPU_AND_GPU_CODE_ inline TVoxel readVoxel(const DEVICEPTR(TVoxel) *voxelData, c
 	isFound = false;
 
 	//check ordered list
+#if (defined(__CUDACC__) && defined(__CUDA_ARCH__)) || (defined(__METALC__))
+#pragma unroll
+#endif
 	for (int inBucketIdx = 0; inBucketIdx < SDF_ENTRY_NUM_PER_BUCKET; inBucketIdx++)
 	{
 		const DEVICEPTR(ITMHashEntry) &hashEntry = hashTable[hashIdx + inBucketIdx];

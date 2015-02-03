@@ -151,6 +151,9 @@ _CPU_AND_GPU_CODE_ inline void buildHashAllocAndVisibleTypePP(DEVICEPTR(uchar) *
         
         //check if hash table contains entry
         lastFreeInBucketIdx = -1; bool foundValue = false; int offsetExcess = 0;
+#if (defined(__CUDACC__) && defined(__CUDA_ARCH__)) || (defined(__METALC__))
+#pragma unroll
+#endif
         for (int inBucketIdx = 0; inBucketIdx < SDF_ENTRY_NUM_PER_BUCKET; inBucketIdx++)
         {
             const DEVICEPTR(ITMHashEntry) &hashEntry = hashTable[hashIdx + inBucketIdx];
