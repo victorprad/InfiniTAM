@@ -31,7 +31,7 @@ namespace ITMLib
 			};
 
 			/** Maximum number of total entries. */
-			static const CONSTANT(int) noTotalEntries = SDF_BUCKET_NUM * SDF_ENTRY_NUM_PER_BUCKET + SDF_EXCESS_LIST_SIZE;
+			static const CONSTANT(int) noTotalEntries = SDF_BUCKET_NUM + SDF_EXCESS_LIST_SIZE;
 			static const CONSTANT(int) voxelBlockSize = SDF_BLOCK_SIZE * SDF_BLOCK_SIZE * SDF_BLOCK_SIZE;
 
 #ifndef __METALC__
