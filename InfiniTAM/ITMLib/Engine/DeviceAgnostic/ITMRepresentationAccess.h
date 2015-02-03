@@ -32,19 +32,10 @@ _CPU_AND_GPU_CODE_ inline TVoxel readVoxel(const DEVICEPTR(TVoxel) *voxelData, c
 	}
 
 	isFound = false;
+	int hashIdx = hashIndex(blockPos);
 
-	ITMHashEntry hashEntry = voxelIndex[hashIndex(blockPos)];
-
-	if (IS_EQUAL3(hashEntry.pos, blockPos) && hashEntry.ptr >= 0)
-	{
-		isFound = true;
-		cache.blockPos = blockPos; cache.blockPtr = hashEntry.ptr * SDF_BLOCK_SIZE3;
-		return voxelData[cache.blockPtr + linearIdx];
-	}
-
-	while (hashEntry.offset >= 1)
-	{
-		hashEntry = voxelIndex[SDF_BUCKET_NUM + hashEntry.offset - 1];
+	while (true) {
+		ITMHashEntry hashEntry = voxelIndex[hashIdx];
 
 		if (IS_EQUAL3(hashEntry.pos, blockPos) && hashEntry.ptr >= 0)
 		{
@@ -52,6 +43,10 @@ _CPU_AND_GPU_CODE_ inline TVoxel readVoxel(const DEVICEPTR(TVoxel) *voxelData, c
 			cache.blockPos = blockPos; cache.blockPtr = hashEntry.ptr * SDF_BLOCK_SIZE3;
 			return voxelData[cache.blockPtr + linearIdx];
 		}
+
+		int offset = hashEntry.offset-1;
+		if (offset < 0) break;
+		hashIdx = SDF_BUCKET_NUM + offset;
 	}
 
 	return TVoxel();
