@@ -387,35 +387,34 @@ __global__ void buildVisibleList_device(ITMHashEntry *hashTable, ITMHashCacheSta
 	if (targetIdx > noTotalEntries - 1) return;
 
 	__shared__ bool shouldPrefix;
-
-	unsigned char hashVisibleType = entriesVisibleType[targetIdx];
-	const ITMHashEntry &hashEntry = hashTable[targetIdx];
-
 	shouldPrefix = false;
 	__syncthreads();
 
-	if (hashVisibleType >= 2)
+	unsigned char hashVisibleType = entriesVisibleType[targetIdx];
+	const ITMHashEntry & hashEntry = hashTable[targetIdx];
+
 	{
 		bool isVisibleEnlarged, isVisible;
 
 		if (hashVisibleType == 3)
 		{
 			checkBlockVisibility<false>(isVisible, isVisibleEnlarged, hashEntry.pos, M_d, projParams_d, voxelSize, depthImgSize);
-			if (!isVisible) { entriesVisibleType[targetIdx] = 0; hashVisibleType = 0; }
+			if (!isVisible) hashVisibleType = 0;
 		}
 
 		if (useSwapping && hashVisibleType == 2)
 		{
 			checkBlockVisibility<true>(isVisible, isVisibleEnlarged, hashEntry.pos, M_d, projParams_d, voxelSize, depthImgSize);
-			entriesVisibleType[targetIdx] = isVisibleEnlarged; hashVisibleType = isVisibleEnlarged;
+			hashVisibleType = isVisibleEnlarged;
 		}
 	}
+	entriesVisibleType[targetIdx] = hashVisibleType;
 
 	if (hashVisibleType > 0) shouldPrefix = true;
 
 	if (useSwapping)
 	{
-		if (entriesVisibleType[targetIdx] > 0 && cacheStates[targetIdx].cacheFromHost != 2) cacheStates[targetIdx].cacheFromHost = 1;
+		if (hashVisibleType > 0 && cacheStates[targetIdx].cacheFromHost != 2) cacheStates[targetIdx].cacheFromHost = 1;
 	}
 
 	__syncthreads();
@@ -426,6 +425,9 @@ __global__ void buildVisibleList_device(ITMHashEntry *hashTable, ITMHashCacheSta
 		if (offset != -1) visibleEntryIDs[offset] = targetIdx;
 	}
 
+#if 0
+	// "active list": blocks that have new information from depth image
+	// currently not used...
 	__syncthreads();
 
 	if (shouldPrefix)
@@ -433,6 +435,7 @@ __global__ void buildVisibleList_device(ITMHashEntry *hashTable, ITMHashCacheSta
 		int offset = computePrefixSum_device<int>(hashVisibleType == 1, noActiveEntries, blockDim.x * blockDim.y, threadIdx.x);
 		if (offset != -1) activeEntryIDs[offset] = targetIdx;
 	}
+#endif
 }
 
 template class ITMLib::Engine::ITMSceneReconstructionEngine_CUDA<ITMVoxel, ITMVoxelIndex>;
