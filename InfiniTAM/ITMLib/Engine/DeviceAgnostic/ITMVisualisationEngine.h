@@ -362,6 +362,42 @@ _CPU_AND_GPU_CODE_ inline void processPixelGrey(DEVICEPTR(Vector4u) &outRenderin
 }
 
 template<class TVoxel, class TIndex>
+struct PixelColourcoder
+{
+	static _CPU_AND_GPU_CODE_ inline void process(DEVICEPTR(Vector4u) &outRendering, const DEVICEPTR(Vector3f) & point,
+		bool foundPoint, const DEVICEPTR(TVoxel) *voxelData, const DEVICEPTR(typename TIndex::IndexData) *voxelIndex, Vector3f lightSource)
+	{
+		processPixelGrey<TVoxel, TIndex>(outRendering, point, foundPoint, voxelData, voxelIndex, lightSource);
+	}
+};
+
+template<class TVoxel>
+struct PixelColourcoder<TVoxel, ITMVoxelBlockHHash> {
+	static _CPU_AND_GPU_CODE_ inline void process(DEVICEPTR(Vector4u) &outRendering, const DEVICEPTR(Vector3f) & point, 
+	bool foundPoint, const DEVICEPTR(TVoxel) *voxelData, const DEVICEPTR(ITMVoxelBlockHHash::IndexData) *voxelIndex, Vector3f lightSource)
+	{
+		Vector3f outNormal;
+		float angle;
+
+		computeNormalAndAngle<TVoxel, ITMVoxelBlockHHash>(foundPoint, point, voxelData, voxelIndex, lightSource, outNormal, angle);
+
+		ITMVoxelBlockHHash::IndexCache cache; bool isFound;
+		readFromSDF_float_uninterpolated(voxelData, voxelIndex, point, isFound, cache);
+
+		Vector4u colour;
+		if (foundPoint) {
+			float outRes = (0.8f * angle + 0.2f) * 255.0f;
+			if (cache.blockSize<=1) colour = Vector4u(outRes, 0.0f, 0.0f, 255.0f);
+			else if (cache.blockSize<=2) colour = Vector4u(outRes, outRes, 0.0f, 255.0f);
+			else if (cache.blockSize<=4) colour = Vector4u(0.0f, outRes, 0.0f, 255.0f);
+			else colour = Vector4u(0.0f, 0.0f, outRes, 255.0f);
+		}
+		else colour = Vector4u((uchar)0);
+		outRendering = colour;
+	}
+};
+
+template<class TVoxel, class TIndex>
 _CPU_AND_GPU_CODE_ inline void processPixelColour(DEVICEPTR(Vector4u) &outRendering, const DEVICEPTR(Vector3f) & point,
 	bool foundPoint, const DEVICEPTR(TVoxel) *voxelData, const DEVICEPTR(typename TIndex::IndexData) *voxelIndex, 
 	Vector3f lightSource)

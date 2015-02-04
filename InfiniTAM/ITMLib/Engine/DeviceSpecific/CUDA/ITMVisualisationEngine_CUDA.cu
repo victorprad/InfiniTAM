@@ -52,6 +52,10 @@ template<class TVoxel, class TIndex>
 __global__ void renderColour_device(Vector4u *outRendering, const Vector4f *ptsRay, const TVoxel *voxelData,
 	const typename TIndex::IndexData *voxelIndex, Vector2i imgSize, Vector3f lightSource);
 
+template<class TVoxel, class TIndex>
+__global__ void renderColourcoded_device(Vector4u *outRendering, const Vector4f *ptsRay, const TVoxel *voxelData,
+	const typename TIndex::IndexData *voxelIndex, Vector2i imgSize, Vector3f lightSource);
+
 // class implementation
 
 template<class TVoxel, class TIndex>
@@ -338,6 +342,9 @@ static void RenderImage_common(const ITMScene<TVoxel, TIndex> *scene, const ITMP
 	if (useColour && TVoxel::hasColorInformation)
 		renderColour_device<TVoxel, TIndex> <<<gridSize, cudaBlockSize>>>(outRendering, pointsRay, scene->localVBA.GetVoxelBlocks(),
 		scene->index.getIndexData(), imgSize, lightSource);
+	else if (useColour)
+		renderColourcoded_device<TVoxel,TIndex> <<<gridSize, cudaBlockSize>>>(outRendering, pointsRay, scene->localVBA.GetVoxelBlocks(),
+		scene->index.getIndexData(), imgSize, lightSource);
 	else
 		renderGrey_device<TVoxel, TIndex> <<<gridSize, cudaBlockSize>>>(outRendering, pointsRay, scene->localVBA.GetVoxelBlocks(),
 		scene->index.getIndexData(), imgSize, lightSource);
@@ -620,6 +627,21 @@ __global__ void renderGrey_device(Vector4u *outRendering, const Vector4f *ptsRay
 	Vector4f ptRay = ptsRay[locId];
 
 	processPixelGrey<TVoxel, TIndex>(outRendering[locId], ptRay.toVector3(), ptRay.w > 0, voxelData, voxelIndex, lightSource);
+}
+
+template<class TVoxel, class TIndex>
+__global__ void renderColourcoded_device(Vector4u *outRendering, const Vector4f *ptsRay, const TVoxel *voxelData,
+	const typename TIndex::IndexData *voxelIndex, Vector2i imgSize, Vector3f lightSource)
+{
+	int x = (threadIdx.x + blockIdx.x * blockDim.x), y = (threadIdx.y + blockIdx.y * blockDim.y);
+
+	if (x >= imgSize.x || y >= imgSize.y) return;
+
+	int locId = x + y * imgSize.x;
+
+	Vector4f ptRay = ptsRay[locId];
+
+	PixelColourcoder<TVoxel,TIndex>::process(outRendering[locId], ptRay.toVector3(), ptRay.w > 0, voxelData, voxelIndex, lightSource);
 }
 
 template<class TVoxel, class TIndex>

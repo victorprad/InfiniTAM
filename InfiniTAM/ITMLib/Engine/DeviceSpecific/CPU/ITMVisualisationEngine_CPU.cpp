@@ -325,7 +325,18 @@ static void RenderImage_common(const ITMScene<TVoxel,TIndex> *scene, const ITMPo
 			processPixelColour<TVoxel, TIndex>(outRendering[locId], ptRay.toVector3(), ptRay.w > 0, voxelData, voxelIndex, lightSource);
 		}
 	}
-	else 
+	else if (useColour)
+	{
+#ifdef WITH_OPENMP
+		#pragma omp parallel for
+#endif
+		for (int locId = 0; locId < imgSize.x * imgSize.y; locId++)
+		{
+			Vector4f ptRay = pointsRay[locId];
+			PixelColourcoder<TVoxel, TIndex>::process(outRendering[locId], ptRay.toVector3(), ptRay.w > 0, voxelData, voxelIndex, lightSource);
+		}
+	}
+	else
 	{
 #ifdef WITH_OPENMP
 		#pragma omp parallel for
