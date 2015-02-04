@@ -81,7 +81,7 @@ _CPU_AND_GPU_CODE_ inline void createSplitOperations(ITMHashEntry *hashTablePare
 
 		// - compute hash
 		Vector3i blockPos_child = blockPos_parent * 2 + Vector3i(child&1, (child&2)?1:0, (child&4)?1:0);
-		int hashIdx = hashIndex(blockPos_child, SDF_HASH_MASK);
+		int hashIdx = hashIndex(blockPos_child);
 
 		bool allocated = false;
 		// - go through linked list
@@ -154,7 +154,7 @@ _CPU_AND_GPU_CODE_ inline void createMergeOperations(ITMHashEntry *hashTablePare
 	for (int child = 0; child < 8; ++child) {
 		// - compute hash
 		Vector3i blockPos_child = blockPos_parent * 2 + Vector3i(child&1, (child&2)?1:0, (child&4)?1:0);
-		int hashIdx = hashIndex(blockPos_child, SDF_HASH_MASK);
+		int hashIdx = hashIndex(blockPos_child);
 
 		// - go through linked list
 		int predecessor = -1;

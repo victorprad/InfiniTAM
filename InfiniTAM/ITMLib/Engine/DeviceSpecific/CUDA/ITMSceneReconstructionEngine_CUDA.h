@@ -16,9 +16,7 @@ namespace ITMLib
 		class ITMSceneReconstructionEngine_CUDA<TVoxel, ITMVoxelBlockHash> : public ITMSceneReconstructionEngine < TVoxel, ITMVoxelBlockHash >
 		{
 		private:
-			int *noAllocatedVoxelEntries_device, *noAllocatedExcessEntries_device;
-			int *noVisibleEntries_device, *noActiveEntries_device;
-
+			void *allocationTempData_device;
 			unsigned char *entriesAllocType_device;
 			Vector4s *blockCoords_device;
 
@@ -37,9 +35,8 @@ namespace ITMLib
 		class ITMSceneReconstructionEngine_CUDA<TVoxel, ITMVoxelBlockHHash> : public ITMSceneReconstructionEngine<TVoxel, ITMVoxelBlockHHash>
 		{
 		private:
-			uint *noTotalPoints_device;
-			int *noAllocatedVoxelEntries_device, *noAllocatedExcessEntries_device;
-			int *noVisibleEntries_device, *noActiveEntries_device;
+			void *allocationTempData_device;
+			int *noAllocatedExcessEntries_device;
 
 			unsigned char *entriesAllocType_device;
 			Vector4s *blockCoords_device;
