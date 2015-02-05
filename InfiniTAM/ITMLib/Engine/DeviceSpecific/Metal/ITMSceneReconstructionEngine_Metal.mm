@@ -72,7 +72,7 @@ void ITMSceneReconstructionEngine_Metal<TVoxel,ITMVoxelBlockHash>::IntegrateInto
     
     [commandBuffer commit];
     
-    [commandBuffer waitUntilCompleted];
+//    [commandBuffer waitUntilCompleted];
 }
 
 template<class TVoxel>
@@ -218,39 +218,35 @@ void ITMSceneReconstructionEngine_Metal<TVoxel, ITMVoxelBlockHash>::AllocateScen
                     
                     break;
             }
-        }
-    }
-    
-    //build visible list
-    for (int targetIdx = 0; targetIdx < noTotalEntries; targetIdx++)
-    {
-        unsigned char hashVisibleType = entriesVisibleType[targetIdx];
-        const ITMHashEntry &hashEntry = hashTable[targetIdx];
         
-        if (hashVisibleType >= 2)
-        {
-            bool isVisibleEnlarged, isVisible;
+            unsigned char hashVisibleType = entriesVisibleType[targetIdx];
+            const ITMHashEntry &hashEntry = hashTable[targetIdx];
             
-            if (hashVisibleType == 3)
+            if (hashVisibleType >= 2)
             {
-                checkBlockVisibility<false>(isVisible, isVisibleEnlarged, hashEntry.pos, M_d, projParams_d, voxelSize, depthImgSize);
-                if (!isVisible) { entriesVisibleType[targetIdx] = 0; hashVisibleType = 0; }
+                bool isVisibleEnlarged, isVisible;
+                
+                if (hashVisibleType == 3)
+                {
+                    checkBlockVisibility<false>(isVisible, isVisibleEnlarged, hashEntry.pos, M_d, projParams_d, voxelSize, depthImgSize);
+                    if (!isVisible) { entriesVisibleType[targetIdx] = 0; hashVisibleType = 0; }
+                }
+                
+                if (useSwapping && hashVisibleType == 2)
+                {
+                    checkBlockVisibility<true>(isVisible, isVisibleEnlarged, hashEntry.pos, M_d, projParams_d, voxelSize, depthImgSize);
+                    entriesVisibleType[targetIdx] = isVisibleEnlarged; hashVisibleType = isVisibleEnlarged;
+                }
             }
             
-            if (useSwapping && hashVisibleType == 2)
+            if (useSwapping)
+                if (entriesVisibleType[targetIdx] > 0 && cacheStates[targetIdx].cacheFromHost != 2) cacheStates[targetIdx].cacheFromHost = 1;
+            
+            if (hashVisibleType > 0)
             {
-                checkBlockVisibility<true>(isVisible, isVisibleEnlarged, hashEntry.pos, M_d, projParams_d, voxelSize, depthImgSize);
-                entriesVisibleType[targetIdx] = isVisibleEnlarged; hashVisibleType = isVisibleEnlarged;
+                visibleEntryIDs[noVisibleEntries] = targetIdx;
+                noVisibleEntries++;
             }
-        }
-        
-        if (useSwapping)
-            if (entriesVisibleType[targetIdx] > 0 && cacheStates[targetIdx].cacheFromHost != 2) cacheStates[targetIdx].cacheFromHost = 1;
-        
-        if (hashVisibleType > 0)
-        {	
-            visibleEntryIDs[noVisibleEntries] = targetIdx;
-            noVisibleEntries++;
         }
     }
     

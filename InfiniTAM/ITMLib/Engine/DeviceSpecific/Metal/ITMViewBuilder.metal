@@ -7,12 +7,12 @@
 
 using namespace metal;
 
-kernel void convertDisparityToDepth_device(device float *d_out [[ buffer(0) ]],
-                                           const device short *d_in [[ buffer(1) ]],
-                                           CONSTANT(ConvertDisparityToDepth_Params*) params [[ buffer(2) ]],
-                                           uint2 threadIdx [[ thread_position_in_threadgroup ]],
-                                           uint2 blockIdx [[ threadgroup_position_in_grid ]],
-                                           uint2 blockDim [[ threads_per_threadgroup ]])
+kernel void convertDisparityToDepth_device(device float *d_out                                  [[ buffer(0) ]],
+                                           const CONSTANT(short) *d_in                          [[ buffer(1) ]],
+                                           CONSTANT(ConvertDisparityToDepth_Params*) params     [[ buffer(2) ]],
+                                           uint2 threadIdx                                      [[ thread_position_in_threadgroup ]],
+                                           uint2 blockIdx                                       [[ threadgroup_position_in_grid ]],
+                                           uint2 blockDim                                       [[ threads_per_threadgroup ]])
 {
     int x = threadIdx.x + blockIdx.x * blockDim.x;
     int y = threadIdx.y + blockIdx.y * blockDim.y;

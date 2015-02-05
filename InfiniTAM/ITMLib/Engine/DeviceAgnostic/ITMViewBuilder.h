@@ -4,7 +4,7 @@
 
 #include "../../Utils/ITMLibDefines.h"
 
-_CPU_AND_GPU_CODE_ inline void convertDisparityToDepth(DEVICEPTR(float) *d_out, int x, int y, const DEVICEPTR(short) *d_in,
+_CPU_AND_GPU_CODE_ inline void convertDisparityToDepth(DEVICEPTR(float) *d_out, int x, int y, const CONSTANT(short) *d_in,
 	Vector2f disparityCalibParams, float fx_depth, Vector2i imgSize)
 {
 	int locId = x + y * imgSize.x;
@@ -19,7 +19,7 @@ _CPU_AND_GPU_CODE_ inline void convertDisparityToDepth(DEVICEPTR(float) *d_out, 
 	d_out[locId] = (depth > 0) ? depth : -1.0f;
 }
 
-_CPU_AND_GPU_CODE_ inline void convertDepthMMToFloat(DEVICEPTR(float) *d_out, int x, int y, const DEVICEPTR(short) *d_in, Vector2i imgSize)
+_CPU_AND_GPU_CODE_ inline void convertDepthMMToFloat(DEVICEPTR(float) *d_out, int x, int y, const CONSTANT(short) *d_in, Vector2i imgSize)
 {
 	int locId = x + y * imgSize.x;
 

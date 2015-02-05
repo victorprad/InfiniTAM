@@ -3,14 +3,14 @@
 #pragma once
 
 #include "../../Utils/ITMLibDefines.h"
-#include "../../Utils/ITMPixelUtils.h"
+#include "ITMPixelUtils.h"
 
 template<bool shortIteration, bool rotationOnly>
 _CPU_AND_GPU_CODE_ inline bool computePerPointGH_Depth(THREADPTR(float) *localNabla, THREADPTR(float) *localHessian, THREADPTR(float) &localF,
 	const THREADPTR(int) & x, const THREADPTR(int) & y,
-	const DEVICEPTR(float) &depth, const CONSTANT(Vector2i) & viewImageSize, const CONSTANT(Vector4f) & viewIntrinsics, const CONSTANT(Vector2i) & sceneImageSize,
-	const CONSTANT(Vector4f) & sceneIntrinsics, const CONSTANT(Matrix4f) & approxInvPose, const CONSTANT(Matrix4f) & scenePose, const DEVICEPTR(Vector4f) *pointsMap,
-	const DEVICEPTR(Vector4f) *normalsMap, float distThresh)
+	const CONSTANT(float) &depth, const CONSTANT(Vector2i) & viewImageSize, const CONSTANT(Vector4f) & viewIntrinsics, const CONSTANT(Vector2i) & sceneImageSize,
+	const CONSTANT(Vector4f) & sceneIntrinsics, const CONSTANT(Matrix4f) & approxInvPose, const CONSTANT(Matrix4f) & scenePose, const CONSTANT(Vector4f) *pointsMap,
+	const CONSTANT(Vector4f) *normalsMap, float distThresh)
 {
 	const int noPara = shortIteration ? 3 : 6;
 

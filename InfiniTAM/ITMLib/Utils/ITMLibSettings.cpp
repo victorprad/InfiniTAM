@@ -47,6 +47,7 @@ ITMLibSettings::ITMLibSettings(void)
 
 		trackingRegime[0] = TRACKER_ITERATION_BOTH;
 		trackingRegime[1] = TRACKER_ITERATION_TRANSLATION;
+	    //trackingRegime[2] = TRACKER_ITERATION_TRANSLATION;
 	}
 	else
 	{

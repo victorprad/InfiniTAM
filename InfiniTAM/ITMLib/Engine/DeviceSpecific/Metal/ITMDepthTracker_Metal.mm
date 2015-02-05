@@ -92,7 +92,7 @@ int ITMDepthTracker_Metal::ComputeGandH(ITMSceneHierarchyLevel *sceneHierarchyLe
     [commandBuffer commit];
 
     [commandBuffer waitUntilCompleted];
-   
+    
     for (int locId = 0; locId < (viewImageTotalSize / (ratio * ratio)); locId++)
     {
         if (noValidPoints_metal[locId] > 0)
