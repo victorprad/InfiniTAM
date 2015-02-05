@@ -107,9 +107,9 @@ void ITMSceneReconstructionEngine_CUDA<TVoxel, ITMVoxelBlockHash>::AllocateScene
 	tempData.noAllocatedVoxelEntries = scene->localVBA.lastFreeBlockId;
 	tempData.noAllocatedExcessEntries = scene->index.GetLastFreeExcessListId();
 	tempData.noVisibleEntries = 0;
-	ITMSafeCall(cudaMemcpy(allocationTempData_device, &tempData, sizeof(AllocationTempData), cudaMemcpyHostToDevice));
+	ITMSafeCall(cudaMemcpyAsync(allocationTempData_device, &tempData, sizeof(AllocationTempData), cudaMemcpyHostToDevice));
 
-	ITMSafeCall(cudaMemset(entriesAllocType_device, 0, sizeof(unsigned char)* noTotalEntries));
+	ITMSafeCall(cudaMemsetAsync(entriesAllocType_device, 0, sizeof(unsigned char)* noTotalEntries));
 
 	if (gridSizeVS.x > 0) setToType3 << <gridSizeVS, cudaBlockSizeVS >> > (entriesVisibleType, visibleEntryIDs, renderState_vh->noVisibleEntries);
 

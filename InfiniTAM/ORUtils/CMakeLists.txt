@@ -30,6 +30,10 @@ SOURCE_GROUP("" FILES ${ORUTILS_HEADERS})
 # Specify the include directories, target and link libraries #
 ##############################################################
 
+add_library(ORUtils ${ORUTILS_OBJECTS})
+
+SET_TARGET_PROPERTIES(ORUtils PROPERTIES LINKER_LANGUAGE C++)
+
 IF(WITH_CUDA)
 #  include_directories(${CUDA_INCLUDE_DIRS})
 #  cuda_add_library(ITMLib
