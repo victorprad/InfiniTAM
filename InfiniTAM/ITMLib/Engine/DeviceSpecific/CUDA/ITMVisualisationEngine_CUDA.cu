@@ -255,7 +255,7 @@ static void CreatePointCloud_common(const ITMScene<TVoxel, TIndex> *scene, const
 	GenericRaycast(scene, imgSize, invM, view->calib->intrinsics_rgb.projectionParamsSimple.all, renderState);
 	trackingState->pose_pointCloud->SetFrom(trackingState->pose_d);
 
-	ITMSafeCall(cudaMemset(noTotalPoints_device, 0, sizeof(uint)));
+	ITMSafeCall(cudaMemsetAsync(noTotalPoints_device, 0, sizeof(uint)));
 
 	Vector3f lightSource = -Vector3f(invM.getColumn(2));
 	Vector4f *locations = trackingState->pointCloud->locations->GetData(MEMORYDEVICE_CUDA);
