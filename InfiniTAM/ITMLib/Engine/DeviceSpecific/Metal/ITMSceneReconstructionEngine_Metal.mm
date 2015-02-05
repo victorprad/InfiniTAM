@@ -150,7 +150,6 @@ void ITMSceneReconstructionEngine_Metal<TVoxel, ITMVoxelBlockHash>::AllocateScen
     ITMHashEntry *hashTable = scene->index.GetEntries();
     ITMHashCacheState *cacheStates = scene->useSwapping ? scene->globalCache->GetCacheStates(false) : 0;
     int *visibleEntryIDs = renderState_vh->GetVisibleEntryIDs();
-    int *activeEntryIDs = renderState_vh->GetActiveEntryIDs();
     uchar *entriesVisibleType = renderState_vh->GetEntriesVisibleType();
     uchar *entriesAllocType = this->entriesAllocType->GetData(MEMORYDEVICE_CPU);
     Vector4s *blockCoords = this->blockCoords->GetData(MEMORYDEVICE_CPU);
@@ -212,9 +211,9 @@ void ITMSceneReconstructionEngine_Metal<TVoxel, ITMVoxelBlockHash>::AllocateScen
                         
                         hashTable[targetIdx].offset = exlOffset + 1; //connect to child
                         
-                        hashTable[SDF_BUCKET_NUM * SDF_ENTRY_NUM_PER_BUCKET + exlOffset] = hashEntry; //add child to the excess list
+                        hashTable[SDF_BUCKET_NUM + exlOffset] = hashEntry; //add child to the excess list
                         
-                        entriesVisibleType[SDF_BUCKET_NUM * SDF_ENTRY_NUM_PER_BUCKET + exlOffset] = 1; //make child visible
+                        entriesVisibleType[SDF_BUCKET_NUM + exlOffset] = 1; //make child visible
                     }
                     
                     break;
@@ -252,12 +251,6 @@ void ITMSceneReconstructionEngine_Metal<TVoxel, ITMVoxelBlockHash>::AllocateScen
         {	
             visibleEntryIDs[noVisibleEntries] = targetIdx;
             noVisibleEntries++;
-            
-            if (hashVisibleType == 1)
-            {
-                activeEntryIDs[noActiveEntries] = targetIdx;
-                noActiveEntries++;
-            }
         }
     }
     
@@ -278,7 +271,6 @@ void ITMSceneReconstructionEngine_Metal<TVoxel, ITMVoxelBlockHash>::AllocateScen
     }
     
     renderState_vh->noVisibleEntries = noVisibleEntries;
-    renderState_vh->noActiveEntries = noActiveEntries;
     
     scene->localVBA.lastFreeBlockId = lastFreeVoxelBlockId;
     scene->index.SetLastFreeExcessListId(lastFreeExcessListId);

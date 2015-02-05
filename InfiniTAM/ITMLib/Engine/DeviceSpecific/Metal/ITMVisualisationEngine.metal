@@ -29,7 +29,7 @@ kernel void createICPMaps_vh_device(DEVICEPTR(float) *depth                     
                                      params->voxelSizes.y, params->lightSource.w, minmaxdata[locId2]);
 }
 
-kernel void createICPMaps_vh_normals_device(DEVICEPTR(Vector4f) *pointsRay                                 [[ buffer(0) ]],
+kernel void createICPMaps_vh_normals_device(const DEVICEPTR(Vector4f) *pointsRay                           [[ buffer(0) ]],
                                             DEVICEPTR(Vector4f) *pointsMap                                 [[ buffer(1) ]],
                                             DEVICEPTR(Vector4f) *normalsMap                                [[ buffer(2) ]],
                                             DEVICEPTR(Vector4u) *outRendering                              [[ buffer(3) ]],
@@ -44,9 +44,5 @@ kernel void createICPMaps_vh_normals_device(DEVICEPTR(Vector4f) *pointsRay      
     
     if (x >= params->imgSize.x || y >= params->imgSize.y) return;
     
-    int locId = x + y * params->imgSize.x;
-    
-    Vector4f ptRay = pointsRay[locId];
-    processPixelICP<ITMVoxel, ITMVoxelIndex>(outRendering[locId], pointsMap[locId], normalsMap[locId], TO_VECTOR3(ptRay), ptRay.w > 0, voxelData,
-                                             voxelIndex, params->voxelSizes.x, TO_VECTOR3(params->lightSource));
+    processPixelICP(outRendering, pointsMap, normalsMap, pointsRay, params->imgSize, x, y, params->voxelSizes.x, TO_VECTOR3(params->lightSource));
 }
