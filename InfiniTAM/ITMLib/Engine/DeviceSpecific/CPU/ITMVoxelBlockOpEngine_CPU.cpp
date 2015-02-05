@@ -92,6 +92,7 @@ void performSplitOperations(int *blocklist, int blockListPos, TVoxel *voxelBlock
 			if (doInterpolate.y) fac <<= 1;
 			if (doInterpolate.z) fac <<= 1;
 			res.sdf = sdf / (float) fac;
+			res.w_depth /= 2;
 
 			int locId_child = x + y * SDF_BLOCK_SIZE + z * SDF_BLOCK_SIZE * SDF_BLOCK_SIZE;
 			voxelBlock_child[locId_child] = res;

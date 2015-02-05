@@ -198,6 +198,7 @@ __global__ void performSplitOperations_device(const int *blocklist, TVoxel *voxe
 		if (doInterpolate.y) fac <<= 1;
 		if (doInterpolate.z) fac <<= 1;
 		res.sdf = sdf / (float) fac;
+		res.w_depth /= 2;
 
 		voxelBlock_child[locId] = res;
 	}
