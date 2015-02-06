@@ -37,6 +37,12 @@ namespace ORUtils {
 		};
 	};
 
+	template <class T> struct Vector6_ {
+		//union {
+			T v[6];
+		//};
+	};
+
 	//////////////////////////////////////////////////////////////////////////
 	// Vector class with math operators: +, -, *, /, +=, -=, /=, [], ==, !=, T*(), etc.
 	//////////////////////////////////////////////////////////////////////////
@@ -500,6 +506,141 @@ namespace ORUtils {
 
 		friend std::ostream& operator<<(std::ostream& os, const Vector4<T>& dt){
 			os << dt.x << ", " << dt.y << ", " << dt.z << ", " << dt.w;
+			return os;
+		}
+	};
+
+	template <class T> class Vector6 : public Vector6_ < T >
+	{
+	public:
+		typedef T value_type;
+		_CPU_AND_GPU_CODE_ inline int size() const { return 6; }
+
+		////////////////////////////////////////////////////////
+		//  Constructors
+		////////////////////////////////////////////////////////
+
+		_CPU_AND_GPU_CODE_ Vector6() {} // Default constructor
+		_CPU_AND_GPU_CODE_ Vector6(const T &t) { this->v[0] = t; this->v[1] = t; this->v[2] = t; this->v[3] = t; this->v[4] = t; this->v[5] = t; } //Scalar constructor
+		_CPU_AND_GPU_CODE_ Vector6(const T *tp) { this->v[0] = tp[0]; this->v[1] = tp[1]; this->v[2] = tp[2]; this->v[3] = tp[3]; this->v[4] = tp[4]; this->v[5] = tp[5]; } // Construct from array
+		_CPU_AND_GPU_CODE_ Vector6(const T v0, const T v1, const T v2, const T v3, const T v4, const T v5) { this->v[0] = v0; this->v[1] = v1; this->v[2] = v2; this->v[3] = v3; this->v[4] = v4; this->v[5] = v5; } // Construct from explicit values
+		_CPU_AND_GPU_CODE_ explicit Vector6(const Vector4_<T> &u, T v0, T v1) { this->v[0] = u.x; this->v[1] = u.y; this->v[2] = u.z; this->v[3] = u.w; this->v[4] = v0; this->v[5] = v1; }
+		_CPU_AND_GPU_CODE_ explicit Vector6(const Vector3_<T> &u, T v0, T v1, T v2) { this->v[0] = u.x; this->v[1] = u.y; this->v[2] = u.z; this->v[3] = v0; this->v[4] = v1; this->v[5] = v2; }
+		_CPU_AND_GPU_CODE_ explicit Vector6(const Vector2_<T> &u, T v0, T v1, T v2, T v3) { this->v[0] = u.x; this->v[1] = u.y; this->v[2] = v0; this->v[3] = v1; this->v[4] = v2, this->v[5] = v3; }
+
+		_CPU_AND_GPU_CODE_ inline Vector6<int> toIntRound() const {
+			return Vector6<int>((int)ROUND(this[0]), (int)ROUND(this[1]), (int)ROUND(this[2]), (int)ROUND(this[3]), (int)ROUND(this[4]), (int)ROUND(this[5]));
+		}
+
+		_CPU_AND_GPU_CODE_ inline Vector6<unsigned char> toUChar() const {
+			Vector6<int> vi = toIntRound(); return Vector6<unsigned char>((unsigned char)CLAMP(vi[0], 0, 255), (unsigned char)CLAMP(vi[1], 0, 255), (unsigned char)CLAMP(vi[2], 0, 255), (unsigned char)CLAMP(vi[3], 0, 255), (unsigned char)CLAMP(vi[4], 0, 255), (unsigned char)CLAMP(vi[5], 0, 255));
+		}
+
+		_CPU_AND_GPU_CODE_ inline Vector6<float> toFloat() const {
+			return Vector6<float>((float)this[0], (float)this[1], (float)this[2], (float)this[3], (float)this[4], (float)this[5]);
+		}
+
+		_CPU_AND_GPU_CODE_ const T *getValues() const { return this->v; }
+		_CPU_AND_GPU_CODE_ Vector6<T> &setValues(const T *rhs) { this[0] = rhs[0]; this[1] = rhs[1]; this[2] = rhs[2]; this[3] = rhs[3]; this[4] = rhs[4]; this[5] = rhs[5]; return *this; }
+
+		// indexing operators
+		_CPU_AND_GPU_CODE_ T &operator [](int i) { return this->v[i]; }
+		_CPU_AND_GPU_CODE_ const T &operator [](int i) const { return this->v[i]; }
+
+		// type-cast operators
+		_CPU_AND_GPU_CODE_ operator T *() { return this->v; }
+		_CPU_AND_GPU_CODE_ operator const T *() const { return this->v; }
+
+		////////////////////////////////////////////////////////
+		//  Math operators
+		////////////////////////////////////////////////////////
+
+		// scalar multiply assign
+		_CPU_AND_GPU_CODE_ friend Vector6<T> &operator *= (Vector6<T> &lhs, T d) {
+			lhs[0] *= d; lhs[1] *= d; lhs[2] *= d; lhs[3] *= d; lhs[4] *= d; lhs[5] *= d; return lhs;
+		}
+
+		// component-wise vector multiply assign
+		_CPU_AND_GPU_CODE_ friend Vector6<T> &operator *= (Vector6<T> &lhs, const Vector6<T> &rhs) {
+			lhs[0] *= rhs[0]; lhs[1] *= rhs[1]; lhs[2] *= rhs[2]; lhs[3] *= rhs[3]; lhs[4] *= rhs[4]; lhs[5] *= rhs[5]; return lhs;
+		}
+
+		// scalar divide assign
+		_CPU_AND_GPU_CODE_ friend Vector6<T> &operator /= (Vector6<T> &lhs, T d){
+			lhs[0] /= d; lhs[1] /= d; lhs[2] /= d; lhs[3] /= d; lhs[4] /= d; lhs[5] /= d; return lhs;
+		}
+
+		// component-wise vector divide assign
+		_CPU_AND_GPU_CODE_ friend Vector6<T> &operator /= (Vector6<T> &lhs, const Vector6<T> &rhs) {
+			lhs[0] /= rhs[0]; lhs[1] /= rhs[1]; lhs[2] /= rhs[2]; lhs[3] /= rhs[3]; lhs[4] /= rhs[4]; lhs[5] /= rhs[5]; return lhs;
+		}
+
+		// component-wise vector add assign
+		_CPU_AND_GPU_CODE_ friend Vector6<T> &operator += (Vector6<T> &lhs, const Vector6<T> &rhs)	{
+			lhs[0] += rhs[0]; lhs[1] += rhs[1]; lhs[2] += rhs[2]; lhs[3] += rhs[3]; lhs[4] += rhs[4]; lhs[5] += rhs[5]; return lhs;
+		}
+
+		// component-wise vector subtract assign
+		_CPU_AND_GPU_CODE_ friend Vector6<T> &operator -= (Vector6<T> &lhs, const Vector6<T> &rhs)	{
+			lhs[0] -= rhs[0]; lhs[1] -= rhs[1]; lhs[2] -= rhs[2]; lhs[3] -= rhs[3]; lhs[4] -= rhs[4]; lhs[5] -= rhs[5];  return lhs;
+		}
+
+		// unary negate
+		_CPU_AND_GPU_CODE_ friend Vector6<T> operator - (const Vector6<T> &rhs)	{
+			Vector6<T> rv; rv[0] = -rhs[0]; rv[1] = -rhs[1]; rv[2] = -rhs[2]; rv[3] = -rhs[3]; rv[4] = -rhs[4]; rv[5] = -rhs[5];  return rv;
+		}
+
+		// vector add
+		_CPU_AND_GPU_CODE_ friend Vector6<T> operator + (const Vector6<T> &lhs, const Vector6<T> &rhs) {
+			Vector6<T> rv(lhs); return rv += rhs;
+		}
+
+		// vector subtract
+		_CPU_AND_GPU_CODE_ friend Vector6<T> operator - (const Vector6<T> &lhs, const Vector6<T> &rhs) {
+			Vector6<T> rv(lhs); return rv -= rhs;
+		}
+
+		// scalar multiply
+		_CPU_AND_GPU_CODE_ friend Vector6<T> operator * (const Vector6<T> &lhs, T rhs) {
+			Vector6<T> rv(lhs); return rv *= rhs;
+		}
+
+		// scalar multiply
+		_CPU_AND_GPU_CODE_ friend Vector6<T> operator * (T lhs, const Vector6<T> &rhs) {
+			Vector6<T> rv(lhs); return rv *= rhs;
+		}
+
+		// vector component-wise multiply
+		_CPU_AND_GPU_CODE_ friend Vector6<T> operator * (const Vector6<T> &lhs, const Vector6<T> &rhs) {
+			Vector6<T> rv(lhs); return rv *= rhs;
+		}
+
+		// scalar divide
+		_CPU_AND_GPU_CODE_ friend Vector6<T> operator / (const Vector6<T> &lhs, T rhs) {
+			Vector6<T> rv(lhs); return rv /= rhs;
+		}
+
+		// vector component-wise divide
+		_CPU_AND_GPU_CODE_ friend Vector6<T> operator / (const Vector6<T> &lhs, const Vector6<T> &rhs) {
+			Vector6<T> rv(lhs); return rv /= rhs;
+		}
+
+		////////////////////////////////////////////////////////
+		//  Comparison operators
+		////////////////////////////////////////////////////////
+
+		// equality
+		_CPU_AND_GPU_CODE_ friend bool operator == (const Vector6<T> &lhs, const Vector6<T> &rhs) {
+			return (lhs[0] == rhs[0]) && (lhs[1] == rhs[1]) && (lhs[2] == rhs[2]) && (lhs[3] == rhs[3]) && (lhs[4] == rhs[4]) && (lhs[5] == rhs[5]);
+		}
+
+		// inequality
+		_CPU_AND_GPU_CODE_ friend bool operator != (const Vector6<T> &lhs, const Vector6<T> &rhs) {
+			return (lhs[0] != rhs[0]) || (lhs[1] != rhs[1]) || (lhs[2] != rhs[2]) || (lhs[3] != rhs[3]) || (lhs[4] != rhs[4]) || (lhs[5] != rhs[5]);
+		}
+
+		friend std::ostream& operator<<(std::ostream& os, const Vector6<T>& dt){
+			os << dt[0] << ", " << dt[1] << ", " << dt[2] << ", " << dt[3] << ", " << dt[4] << ", " << dt[5];
 			return os;
 		}
 	};

@@ -43,9 +43,10 @@ namespace ITMLib
 			*/
 			void SetModelViewFromParams();
 		public:
+
 			void SetFrom(float tx, float ty, float tz, float rx, float ry, float rz);
 			void SetFrom(const Vector3f &translation, const Vector3f &rotation);
-
+			
 			void SetFrom(const float pose[6]);
 			void SetFrom(const ITMPose *pose);
 
@@ -82,6 +83,10 @@ namespace ITMLib
 			explicit ITMPose(const float pose[6]);
 
 			ITMPose(void);
+
+			/** This builds a Pose based on its exp representation
+			*/
+			static ITMPose exp(const Vector6f& tangent);
 		};
 	}
 }

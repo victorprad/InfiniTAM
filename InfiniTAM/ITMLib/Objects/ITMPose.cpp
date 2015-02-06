@@ -219,6 +219,58 @@ void ITMPose::SetParamsFromModelView()
 	this->params.each.tx = rottrans.x; this->params.each.ty = rottrans.y; this->params.each.tz = rottrans.z; 
 }
 
+ITMPose ITMPose::exp(const Vector6f& tangent)
+{
+	ITMPose pose;
+
+	const float* upsilon = tangent.getValues();				// not normalized
+	const float* omega = upsilon + 3;						// not normalized
+
+	float theta_sq = omega[0] * omega[0] + omega[1] * omega[1] + omega[2] * omega[2];
+
+	if (theta_sq < 1e-8f){
+		// Produce a vaild expansion
+		pose.M.m[0 + 4 * 3] = upsilon[0];
+		pose.M.m[1 + 4 * 3] = upsilon[1];
+		pose.M.m[2 + 4 * 3] = upsilon[2];
+		return pose;
+	}
+
+	float theta = sqrtf(theta_sq);
+	float oneMinCosTheta = (1 - cosf(theta)) / theta_sq;	// normalize omega indirect
+	float sinTheta = sinf(theta) / theta;					// and again
+
+
+	// Rotation Matrix
+	// row 1
+	pose.M.m[0 + 4 * 0] = 1 - (omega[1] * omega[1] + omega[2] * omega[2]) * oneMinCosTheta;
+	pose.M.m[0 + 4 * 1] = -omega[2] * sinTheta + (omega[0] * omega[1]) * oneMinCosTheta;
+	pose.M.m[0 + 4 * 2] = omega[1] * sinTheta + (omega[0] * omega[2]) * oneMinCosTheta;
+
+	// row 2
+	pose.M.m[1 + 4 * 0] = omega[2] * sinTheta + (omega[0] * omega[1]) * oneMinCosTheta;
+	pose.M.m[1 + 4 * 1] = 1 - (omega[0] * omega[0] + omega[2] * omega[2]) * oneMinCosTheta;
+	pose.M.m[1 + 4 * 2] = -omega[0] * sinTheta + (omega[1] * omega[2]) * oneMinCosTheta;
+
+	// row 3
+	pose.M.m[2 + 4 * 0] = -omega[1] * sinTheta + (omega[0] * omega[2]) * oneMinCosTheta;
+	pose.M.m[2 + 4 * 1] = omega[0] * sinTheta + (omega[1] * omega[2]) * oneMinCosTheta;
+	pose.M.m[2 + 4 * 2] = 1 - (omega[0] * omega[0] + omega[1] * omega[1]) * oneMinCosTheta;
+
+	// Translation Vector
+	float x = ((omega[1] * upsilon[2] - omega[2] * upsilon[1]) + (omega[0] * omega[0] * upsilon[0] + omega[0] * omega[1] * upsilon[1] + omega[0] * omega[2] * upsilon[2])) / theta_sq; // normalized
+	float y = ((omega[2] * upsilon[0] - omega[0] * upsilon[2]) + (omega[0] * omega[1] * upsilon[0] + omega[1] * omega[1] * upsilon[1] + omega[1] * omega[2] * upsilon[2])) / theta_sq;
+	float z = ((omega[0] * upsilon[1] - omega[1] * upsilon[0]) + (omega[0] * omega[2] * upsilon[0] + omega[1] * omega[2] * upsilon[1] + omega[2] * omega[2] * upsilon[2])) / theta_sq;
+	pose.M.m[0 + 4 * 3] = -pose.M.m[0 + 4 * 0] * x - pose.M.m[0 + 4 * 1] * y - pose.M.m[0 + 4 * 2] * z + x;
+	pose.M.m[1 + 4 * 3] = -pose.M.m[1 + 4 * 0] * x - pose.M.m[1 + 4 * 1] * y - pose.M.m[1 + 4 * 2] * z + y;
+	pose.M.m[2 + 4 * 3] = -pose.M.m[2 + 4 * 0] * x - pose.M.m[2 + 4 * 1] * y - pose.M.m[2 + 4 * 2] * z + z;
+
+	// Finalize
+	pose.M.m[3 + 4 * 3] = 1;
+	
+	return pose;
+}
+
 void ITMPose::MultiplyWith(const ITMPose *pose)
 {
 	M = M * pose->M;
