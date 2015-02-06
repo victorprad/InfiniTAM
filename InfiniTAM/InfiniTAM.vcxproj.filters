@@ -398,9 +398,6 @@
     <ClInclude Include="ITMLib\Utils\ITMMath.h">
       <Filter>ITMLib\Utils</Filter>
     </ClInclude>
-    <ClInclude Include="ITMLib\Utils\ITMPixelUtils.h">
-      <Filter>ITMLib\Utils</Filter>
-    </ClInclude>
     <ClInclude Include="ITMLib\Engine\ITMIMUCalibrator.h">
       <Filter>ITMLib\Engine</Filter>
     </ClInclude>
@@ -412,6 +409,9 @@
     </ClInclude>
     <ClInclude Include="ITMLib\Engine\ITMTrackerFactory.h">
       <Filter>ITMLib\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="ITMLib\Engine\DeviceAgnostic\ITMPixelUtils.h">
+      <Filter>ITMLib\Engine\DeviceAgnostic</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

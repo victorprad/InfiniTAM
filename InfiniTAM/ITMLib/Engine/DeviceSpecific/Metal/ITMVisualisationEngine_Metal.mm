@@ -62,14 +62,13 @@ static void CreateICPMaps_common_metal(const ITMScene<TVoxel,TIndex> *scene, con
     params->lightSource.w = scene->sceneParams->mu;
     
     [commandEncoder setComputePipelineState:p_createICPMaps_vh_device];
-    [commandEncoder setBuffer:(__bridge id<MTLBuffer>) view->depth->GetMetalBuffer()                            offset:0 atIndex:0];
-    [commandEncoder setBuffer:(__bridge id<MTLBuffer>) renderState->raycastResult->GetMetalBuffer()             offset:0 atIndex:1];
-    [commandEncoder setBuffer:(__bridge id<MTLBuffer>) scene->localVBA.GetVoxelBlocks_MB()                      offset:0 atIndex:2];
-    [commandEncoder setBuffer:(__bridge id<MTLBuffer>) scene->index.getIndexData_MB()                           offset:0 atIndex:3];
-    [commandEncoder setBuffer:(__bridge id<MTLBuffer>) renderState->renderingRangeImage->GetMetalBuffer()       offset:0 atIndex:4];
-    [commandEncoder setBuffer:paramsBuffer_visualisation                                                        offset:0 atIndex:5];
+    [commandEncoder setBuffer:(__bridge id<MTLBuffer>) renderState->raycastResult->GetMetalBuffer()             offset:0 atIndex:0];
+    [commandEncoder setBuffer:(__bridge id<MTLBuffer>) scene->localVBA.GetVoxelBlocks_MB()                      offset:0 atIndex:1];
+    [commandEncoder setBuffer:(__bridge id<MTLBuffer>) scene->index.getIndexData_MB()                           offset:0 atIndex:2];
+    [commandEncoder setBuffer:(__bridge id<MTLBuffer>) renderState->renderingRangeImage->GetMetalBuffer()       offset:0 atIndex:3];
+    [commandEncoder setBuffer:paramsBuffer_visualisation                                                        offset:0 atIndex:4];
     
-    MTLSize blockSize = {16, 16, 1};
+    MTLSize blockSize = {8, 8, 1};
     MTLSize gridSize = {(NSUInteger)ceil((float)view->depth->noDims.x / (float)blockSize.width),
         (NSUInteger)ceil((float)view->depth->noDims.y / (float)blockSize.height), 1};
     

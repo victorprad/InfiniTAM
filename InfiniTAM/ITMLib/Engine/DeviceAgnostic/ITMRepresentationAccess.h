@@ -3,7 +3,7 @@
 #pragma once
 
 #include "../../Utils/ITMLibDefines.h"
-#include "../../Utils/ITMPixelUtils.h"
+#include "ITMPixelUtils.h"
 
 #include "../../Utils/ITMMath.h"
 
@@ -19,7 +19,7 @@ _CPU_AND_GPU_CODE_ inline int pointToVoxelBlockPos(const THREADPTR(Vector3i) & p
 }
 
 template<class TVoxel>
-_CPU_AND_GPU_CODE_ inline TVoxel readVoxel(const DEVICEPTR(TVoxel) *voxelData, const DEVICEPTR(ITMLib::Objects::ITMVoxelBlockHash::IndexData) *voxelIndex,
+_CPU_AND_GPU_CODE_ inline TVoxel readVoxel(const CONSTANT(TVoxel) *voxelData, const CONSTANT(ITMLib::Objects::ITMVoxelBlockHash::IndexData) *voxelIndex,
 	const THREADPTR(Vector3i) & point, THREADPTR(bool) &isFound, THREADPTR(ITMLib::Objects::ITMVoxelBlockHash::IndexCache) & cache)
 {
 	Vector3i blockPos;
@@ -53,7 +53,7 @@ _CPU_AND_GPU_CODE_ inline TVoxel readVoxel(const DEVICEPTR(TVoxel) *voxelData, c
 }
 
 template<class TVoxel>
-_CPU_AND_GPU_CODE_ inline TVoxel readVoxel(const DEVICEPTR(TVoxel) *voxelData, const DEVICEPTR(ITMLib::Objects::ITMVoxelBlockHash::IndexData) *voxelIndex,
+_CPU_AND_GPU_CODE_ inline TVoxel readVoxel(const CONSTANT(TVoxel) *voxelData, const CONSTANT(ITMLib::Objects::ITMVoxelBlockHash::IndexData) *voxelIndex,
 	Vector3i point, THREADPTR(bool) &isFound)
 {
 	ITMLib::Objects::ITMVoxelBlockHash::IndexCache cache;
@@ -61,7 +61,7 @@ _CPU_AND_GPU_CODE_ inline TVoxel readVoxel(const DEVICEPTR(TVoxel) *voxelData, c
 }
 
 template<class TVoxel>
-_CPU_AND_GPU_CODE_ inline TVoxel readVoxel(const DEVICEPTR(TVoxel) *voxelData, const DEVICEPTR(ITMLib::Objects::ITMPlainVoxelArray::IndexData) *voxelIndex,
+_CPU_AND_GPU_CODE_ inline TVoxel readVoxel(const CONSTANT(TVoxel) *voxelData, const CONSTANT(ITMLib::Objects::ITMPlainVoxelArray::IndexData) *voxelIndex,
 	const THREADPTR(Vector3i) & point_orig, THREADPTR(bool) &isFound)
 {
 	Vector3i point = point_orig - voxelIndex->offset;
@@ -80,31 +80,31 @@ _CPU_AND_GPU_CODE_ inline TVoxel readVoxel(const DEVICEPTR(TVoxel) *voxelData, c
 }
 
 template<class TVoxel>
-_CPU_AND_GPU_CODE_ inline TVoxel readVoxel(const DEVICEPTR(TVoxel) *voxelData, const DEVICEPTR(ITMLib::Objects::ITMPlainVoxelArray::IndexData) *voxelIndex,
+_CPU_AND_GPU_CODE_ inline TVoxel readVoxel(const CONSTANT(TVoxel) *voxelData, const CONSTANT(ITMLib::Objects::ITMPlainVoxelArray::IndexData) *voxelIndex,
 	const THREADPTR(Vector3i) & point_orig, THREADPTR(bool) &isFound, THREADPTR(ITMLib::Objects::ITMPlainVoxelArray::IndexCache) & cache)
 {
 	return readVoxel(voxelData, voxelIndex, point_orig, isFound);
 }
 
 template<class TVoxel, class TIndex>
-_CPU_AND_GPU_CODE_ inline float readFromSDF_float_uninterpolated(const DEVICEPTR(TVoxel) *voxelData,
-	const DEVICEPTR(TIndex) *voxelIndex, Vector3f point, THREADPTR(bool) &isFound)
+_CPU_AND_GPU_CODE_ inline float readFromSDF_float_uninterpolated(const CONSTANT(TVoxel) *voxelData,
+	const CONSTANT(TIndex) *voxelIndex, Vector3f point, THREADPTR(bool) &isFound)
 {
 	TVoxel res = readVoxel(voxelData, voxelIndex, Vector3i((int)ROUND(point.x), (int)ROUND(point.y), (int)ROUND(point.z)), isFound);
 	return TVoxel::SDF_valueToFloat(res.sdf);
 }
 
 template<class TVoxel, class TIndex, class TCache>
-_CPU_AND_GPU_CODE_ inline float readFromSDF_float_uninterpolated(const DEVICEPTR(TVoxel) *voxelData,
-	const DEVICEPTR(TIndex) *voxelIndex, Vector3f point, THREADPTR(bool) &isFound, THREADPTR(TCache) & cache)
+_CPU_AND_GPU_CODE_ inline float readFromSDF_float_uninterpolated(const CONSTANT(TVoxel) *voxelData,
+	const CONSTANT(TIndex) *voxelIndex, Vector3f point, THREADPTR(bool) &isFound, THREADPTR(TCache) & cache)
 {
 	TVoxel res = readVoxel(voxelData, voxelIndex, Vector3i((int)ROUND(point.x), (int)ROUND(point.y), (int)ROUND(point.z)), isFound, cache);
 	return TVoxel::SDF_valueToFloat(res.sdf);
 }
 
 template<class TVoxel, class TIndex, class TCache>
-_CPU_AND_GPU_CODE_ inline float readFromSDF_float_interpolated(const DEVICEPTR(TVoxel) *voxelData,
-	const DEVICEPTR(TIndex) *voxelIndex, Vector3f point, THREADPTR(bool) &isFound, THREADPTR(TCache) & cache)
+_CPU_AND_GPU_CODE_ inline float readFromSDF_float_interpolated(const CONSTANT(TVoxel) *voxelData,
+	const CONSTANT(TIndex) *voxelIndex, Vector3f point, THREADPTR(bool) &isFound, THREADPTR(TCache) & cache)
 {
 	float res1, res2, v1, v2;
 	Vector3f coeff; Vector3i pos; TO_INT_FLOOR3(pos, coeff, point);
@@ -130,8 +130,8 @@ _CPU_AND_GPU_CODE_ inline float readFromSDF_float_interpolated(const DEVICEPTR(T
 }
 
 template<class TVoxel, class TIndex, class TCache>
-_CPU_AND_GPU_CODE_ inline Vector4f readFromSDF_color4u_interpolated(const DEVICEPTR(TVoxel) *voxelData,
-	const DEVICEPTR(TIndex) *voxelIndex, const THREADPTR(Vector3f) & point, THREADPTR(TCache) & cache)
+_CPU_AND_GPU_CODE_ inline Vector4f readFromSDF_color4u_interpolated(const CONSTANT(TVoxel) *voxelData,
+	const CONSTANT(TIndex) *voxelIndex, const THREADPTR(Vector3f) & point, THREADPTR(TCache) & cache)
 {
 	TVoxel resn; Vector3f ret = 0.0f; Vector4f ret4; bool isFound;
 	Vector3f coeff; Vector3i pos; TO_INT_FLOOR3(pos, coeff, point);
@@ -166,7 +166,7 @@ _CPU_AND_GPU_CODE_ inline Vector4f readFromSDF_color4u_interpolated(const DEVICE
 }
 
 template<class TVoxel, class TIndex>
-_CPU_AND_GPU_CODE_ inline Vector3f computeSingleNormalFromSDF(const DEVICEPTR(TVoxel) *voxelData, const DEVICEPTR(TIndex) *voxelIndex, const THREADPTR(Vector3f) &point)
+_CPU_AND_GPU_CODE_ inline Vector3f computeSingleNormalFromSDF(const CONSTANT(TVoxel) *voxelData, const CONSTANT(TIndex) *voxelIndex, const THREADPTR(Vector3f) &point)
 {
 	bool isFound;
 
@@ -656,14 +656,14 @@ template<bool hasColor,class TVoxel,class TIndex> struct VoxelColorReader;
 
 template<class TVoxel, class TIndex>
 struct VoxelColorReader<false,TVoxel,TIndex> {
-	_CPU_AND_GPU_CODE_ static Vector4f interpolate(const DEVICEPTR(TVoxel) *voxelData, const DEVICEPTR(typename TIndex::IndexData) *voxelIndex,
+	_CPU_AND_GPU_CODE_ static Vector4f interpolate(const CONSTANT(TVoxel) *voxelData, const CONSTANT(typename TIndex::IndexData) *voxelIndex,
 		const THREADPTR(Vector3f) & point)
 	{ return Vector4f(0.0f,0.0f,0.0f,0.0f); }
 };
 
 template<class TVoxel, class TIndex>
 struct VoxelColorReader<true,TVoxel,TIndex> {
-	_CPU_AND_GPU_CODE_ static Vector4f interpolate(const DEVICEPTR(TVoxel) *voxelData, const DEVICEPTR(typename TIndex::IndexData) *voxelIndex,
+	_CPU_AND_GPU_CODE_ static Vector4f interpolate(const CONSTANT(TVoxel) *voxelData, const CONSTANT(typename TIndex::IndexData) *voxelIndex,
 		const THREADPTR(Vector3f) & point)
 	{
 		typename TIndex::IndexCache cache;

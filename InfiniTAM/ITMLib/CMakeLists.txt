@@ -43,6 +43,7 @@ set(ITMLIB_ENGINE_DEVICEAGNOSTIC_HEADERS
 Engine/DeviceAgnostic/ITMColorTracker.h
 Engine/DeviceAgnostic/ITMDepthTracker.h
 Engine/DeviceAgnostic/ITMLowLevelEngine.h
+Engine/DeviceAgnostic/ITMPixelUtils.h
 Engine/DeviceAgnostic/ITMRenTracker.h
 Engine/DeviceAgnostic/ITMRepresentationAccess.h
 Engine/DeviceAgnostic/ITMSceneReconstructionEngine.h
@@ -144,7 +145,6 @@ Utils/ITMCalibIO.h
 Utils/ITMLibDefines.h
 Utils/ITMLibSettings.h
 Utils/ITMMath.h
-Utils/ITMPixelUtils.h
 )
 
 #################################################################

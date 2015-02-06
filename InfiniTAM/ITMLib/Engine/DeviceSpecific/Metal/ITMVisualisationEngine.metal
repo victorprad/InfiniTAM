@@ -8,15 +8,14 @@
 
 using namespace metal;
 
-kernel void createICPMaps_vh_device(DEVICEPTR(float) *depth                                        [[ buffer(0) ]],
-                                    DEVICEPTR(Vector4f) *pointsRay                                 [[ buffer(1) ]],
-                                    const DEVICEPTR(ITMVoxel) *voxelData                           [[ buffer(2) ]],
-                                    const DEVICEPTR(typename ITMVoxelIndex::IndexData) *voxelIndex [[ buffer(3) ]],
-                                    const DEVICEPTR(Vector2f) *minmaxdata                          [[ buffer(4) ]],
-                                    const CONSTANT(CreateICPMaps_Params) *params                   [[ buffer(5) ]],
-                                    uint2 threadIdx                                                [[ thread_position_in_threadgroup ]],
-                                    uint2 blockIdx                                                 [[ threadgroup_position_in_grid ]],
-                                    uint2 blockDim                                                 [[ threads_per_threadgroup ]])
+kernel void createICPMaps_vh_device(DEVICEPTR(Vector4f) *pointsRay                                  [[ buffer(0) ]],
+                                    const CONSTANT(ITMVoxel) *voxelData                             [[ buffer(1) ]],
+                                    const CONSTANT(typename ITMVoxelIndex::IndexData) *voxelIndex   [[ buffer(2) ]],
+                                    const CONSTANT(Vector2f) *minmaxdata                            [[ buffer(3) ]],
+                                    const CONSTANT(CreateICPMaps_Params) *params                    [[ buffer(4) ]],
+                                    uint2 threadIdx                                                 [[ thread_position_in_threadgroup ]],
+                                    uint2 blockIdx                                                  [[ threadgroup_position_in_grid ]],
+                                    uint2 blockDim                                                  [[ threads_per_threadgroup ]])
 {
     int x = threadIdx.x + blockIdx.x * blockDim.x, y = threadIdx.y + blockIdx.y * blockDim.y;
     
@@ -29,12 +28,12 @@ kernel void createICPMaps_vh_device(DEVICEPTR(float) *depth                     
                                      params->voxelSizes.y, params->lightSource.w, minmaxdata[locId2]);
 }
 
-kernel void createICPMaps_vh_normals_device(DEVICEPTR(Vector4f) *pointsRay                                 [[ buffer(0) ]],
+kernel void createICPMaps_vh_normals_device(const CONSTANT(Vector4f) *pointsRay                           [[ buffer(0) ]],
                                             DEVICEPTR(Vector4f) *pointsMap                                 [[ buffer(1) ]],
                                             DEVICEPTR(Vector4f) *normalsMap                                [[ buffer(2) ]],
                                             DEVICEPTR(Vector4u) *outRendering                              [[ buffer(3) ]],
-                                            const DEVICEPTR(ITMVoxel) *voxelData                           [[ buffer(4) ]],
-                                            const DEVICEPTR(typename ITMVoxelIndex::IndexData) *voxelIndex [[ buffer(5) ]],
+                                            const CONSTANT(ITMVoxel) *voxelData                           [[ buffer(4) ]],
+                                            const CONSTANT(typename ITMVoxelIndex::IndexData) *voxelIndex [[ buffer(5) ]],
                                             const CONSTANT(CreateICPMaps_Params) *params                   [[ buffer(6) ]],
                                             uint2 threadIdx                                                [[ thread_position_in_threadgroup ]],
                                             uint2 blockIdx                                                 [[ threadgroup_position_in_grid ]],
@@ -44,9 +43,5 @@ kernel void createICPMaps_vh_normals_device(DEVICEPTR(Vector4f) *pointsRay      
     
     if (x >= params->imgSize.x || y >= params->imgSize.y) return;
     
-    int locId = x + y * params->imgSize.x;
-    
-    Vector4f ptRay = pointsRay[locId];
-    processPixelICP<ITMVoxel, ITMVoxelIndex>(outRendering[locId], pointsMap[locId], normalsMap[locId], TO_VECTOR3(ptRay), ptRay.w > 0, voxelData,
-                                             voxelIndex, params->voxelSizes.x, TO_VECTOR3(params->lightSource));
+    processPixelICP(outRendering, pointsMap, normalsMap, pointsRay, params->imgSize, x, y, params->voxelSizes.x, TO_VECTOR3(params->lightSource));
 }

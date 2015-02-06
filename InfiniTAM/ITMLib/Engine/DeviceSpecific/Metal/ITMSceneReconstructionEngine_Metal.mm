@@ -72,7 +72,7 @@ void ITMSceneReconstructionEngine_Metal<TVoxel,ITMVoxelBlockHash>::IntegrateInto
     
     [commandBuffer commit];
     
-    [commandBuffer waitUntilCompleted];
+//    [commandBuffer waitUntilCompleted];
 }
 
 template<class TVoxel>
@@ -150,7 +150,6 @@ void ITMSceneReconstructionEngine_Metal<TVoxel, ITMVoxelBlockHash>::AllocateScen
     ITMHashEntry *hashTable = scene->index.GetEntries();
     ITMHashCacheState *cacheStates = scene->useSwapping ? scene->globalCache->GetCacheStates(false) : 0;
     int *visibleEntryIDs = renderState_vh->GetVisibleEntryIDs();
-    int *activeEntryIDs = renderState_vh->GetActiveEntryIDs();
     uchar *entriesVisibleType = renderState_vh->GetEntriesVisibleType();
     uchar *entriesAllocType = this->entriesAllocType->GetData(MEMORYDEVICE_CPU);
     Vector4s *blockCoords = this->blockCoords->GetData(MEMORYDEVICE_CPU);
@@ -212,51 +211,41 @@ void ITMSceneReconstructionEngine_Metal<TVoxel, ITMVoxelBlockHash>::AllocateScen
                         
                         hashTable[targetIdx].offset = exlOffset + 1; //connect to child
                         
-                        hashTable[SDF_BUCKET_NUM * SDF_ENTRY_NUM_PER_BUCKET + exlOffset] = hashEntry; //add child to the excess list
+                        hashTable[SDF_BUCKET_NUM + exlOffset] = hashEntry; //add child to the excess list
                         
-                        entriesVisibleType[SDF_BUCKET_NUM * SDF_ENTRY_NUM_PER_BUCKET + exlOffset] = 1; //make child visible
+                        entriesVisibleType[SDF_BUCKET_NUM + exlOffset] = 1; //make child visible
                     }
                     
                     break;
             }
-        }
-    }
-    
-    //build visible list
-    for (int targetIdx = 0; targetIdx < noTotalEntries; targetIdx++)
-    {
-        unsigned char hashVisibleType = entriesVisibleType[targetIdx];
-        const ITMHashEntry &hashEntry = hashTable[targetIdx];
         
-        if (hashVisibleType >= 2)
-        {
-            bool isVisibleEnlarged, isVisible;
+            unsigned char hashVisibleType = entriesVisibleType[targetIdx];
+            const ITMHashEntry &hashEntry = hashTable[targetIdx];
             
-            if (hashVisibleType == 3)
+            if (hashVisibleType >= 2)
             {
-                checkBlockVisibility<false>(isVisible, isVisibleEnlarged, hashEntry.pos, M_d, projParams_d, voxelSize, depthImgSize);
-                if (!isVisible) { entriesVisibleType[targetIdx] = 0; hashVisibleType = 0; }
+                bool isVisibleEnlarged, isVisible;
+                
+                if (hashVisibleType == 3)
+                {
+                    checkBlockVisibility<false>(isVisible, isVisibleEnlarged, hashEntry.pos, M_d, projParams_d, voxelSize, depthImgSize);
+                    if (!isVisible) { entriesVisibleType[targetIdx] = 0; hashVisibleType = 0; }
+                }
+                
+                if (useSwapping && hashVisibleType == 2)
+                {
+                    checkBlockVisibility<true>(isVisible, isVisibleEnlarged, hashEntry.pos, M_d, projParams_d, voxelSize, depthImgSize);
+                    entriesVisibleType[targetIdx] = isVisibleEnlarged; hashVisibleType = isVisibleEnlarged;
+                }
             }
             
-            if (useSwapping && hashVisibleType == 2)
-            {
-                checkBlockVisibility<true>(isVisible, isVisibleEnlarged, hashEntry.pos, M_d, projParams_d, voxelSize, depthImgSize);
-                entriesVisibleType[targetIdx] = isVisibleEnlarged; hashVisibleType = isVisibleEnlarged;
-            }
-        }
-        
-        if (useSwapping)
-            if (entriesVisibleType[targetIdx] > 0 && cacheStates[targetIdx].cacheFromHost != 2) cacheStates[targetIdx].cacheFromHost = 1;
-        
-        if (hashVisibleType > 0)
-        {	
-            visibleEntryIDs[noVisibleEntries] = targetIdx;
-            noVisibleEntries++;
+            if (useSwapping)
+                if (entriesVisibleType[targetIdx] > 0 && cacheStates[targetIdx].cacheFromHost != 2) cacheStates[targetIdx].cacheFromHost = 1;
             
-            if (hashVisibleType == 1)
+            if (hashVisibleType > 0)
             {
-                activeEntryIDs[noActiveEntries] = targetIdx;
-                noActiveEntries++;
+                visibleEntryIDs[noVisibleEntries] = targetIdx;
+                noVisibleEntries++;
             }
         }
     }
@@ -278,7 +267,6 @@ void ITMSceneReconstructionEngine_Metal<TVoxel, ITMVoxelBlockHash>::AllocateScen
     }
     
     renderState_vh->noVisibleEntries = noVisibleEntries;
-    renderState_vh->noActiveEntries = noActiveEntries;
     
     scene->localVBA.lastFreeBlockId = lastFreeVoxelBlockId;
     scene->index.SetLastFreeExcessListId(lastFreeExcessListId);

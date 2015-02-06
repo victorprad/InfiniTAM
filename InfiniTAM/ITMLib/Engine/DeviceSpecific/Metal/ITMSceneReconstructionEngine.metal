@@ -8,10 +8,10 @@
 using namespace metal;
 
 kernel void integrateIntoScene_vh_device(DEVICEPTR(ITMVoxel) *localVBA                          [[ buffer(0) ]],
-                                         const DEVICEPTR(ITMHashEntry) *hashTable               [[ buffer(1) ]],
+                                         const CONSTANT(ITMHashEntry) *hashTable                [[ buffer(1) ]],
                                          DEVICEPTR(int) *visibleEntryIDs                        [[ buffer(2) ]],
-                                         const DEVICEPTR(Vector4u) *rgb                         [[ buffer(3) ]],
-                                         const DEVICEPTR(float) *depth                          [[ buffer(4) ]],
+                                         const CONSTANT(Vector4u) *rgb                          [[ buffer(3) ]],
+                                         const CONSTANT(float) *depth                           [[ buffer(4) ]],
                                          const CONSTANT(IntegrateIntoScene_VH_Params) *params   [[ buffer(5) ]],
                                          uint3 threadIdx                                        [[ thread_position_in_threadgroup ]],
                                          uint3 blockIdx                                         [[ threadgroup_position_in_grid ]],
@@ -20,7 +20,7 @@ kernel void integrateIntoScene_vh_device(DEVICEPTR(ITMVoxel) *localVBA          
     Vector3i globalPos;
     int entryId = visibleEntryIDs[blockIdx.x];
 
-    const DEVICEPTR(ITMHashEntry) &currentHashEntry = hashTable[entryId];
+    const CONSTANT(ITMHashEntry) &currentHashEntry = hashTable[entryId];
 
     if (currentHashEntry.ptr < 0) return;
 
@@ -50,8 +50,8 @@ kernel void integrateIntoScene_vh_device(DEVICEPTR(ITMVoxel) *localVBA          
 kernel void buildAllocAndVisibleType_vh_device(DEVICEPTR(unsigned char) *entriesAllocType                   [[ buffer(0) ]],
                                                DEVICEPTR(unsigned char) *entriesVisibleType                 [[ buffer(1) ]],
                                                DEVICEPTR(Vector4s) *blockCoords                             [[ buffer(2) ]],
-                                               const DEVICEPTR(ITMHashEntry) *hashTable                     [[ buffer(3) ]],
-                                               const DEVICEPTR(float) *depth                                [[ buffer(4) ]],
+                                               const CONSTANT(ITMHashEntry) *hashTable                      [[ buffer(3) ]],
+                                               const CONSTANT(float) *depth                                 [[ buffer(4) ]],
                                                const CONSTANT(BuildAllocVisibleType_VH_Params) *params      [[ buffer(5) ]],
                                                uint3 threadIdx                                              [[ thread_position_in_threadgroup ]],
                                                uint3 blockIdx                                               [[ threadgroup_position_in_grid ]],

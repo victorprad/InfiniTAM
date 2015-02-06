@@ -6,9 +6,9 @@
 #include <ostream>
 #endif
 
-#include "../Utils/ITMLibDefines.h"
+#include "../../Utils/ITMLibDefines.h"
 
-template<typename T> _CPU_AND_GPU_CODE_ inline Vector4f interpolateBilinear(const DEVICEPTR(T) *source,
+template<typename T> _CPU_AND_GPU_CODE_ inline Vector4f interpolateBilinear(const CONSTANT(T) *source,
 	const THREADPTR(Vector2f) & position, const CONSTANT(Vector2i) & imgSize)
 {
 	T a, b, c, d; Vector4f result;
@@ -38,7 +38,7 @@ template<typename T> _CPU_AND_GPU_CODE_ inline Vector4f interpolateBilinear(cons
 	return result;
 }
 
-template<typename T> _CPU_AND_GPU_CODE_ inline Vector4f interpolateBilinear_withHoles(const DEVICEPTR(T) *source,
+template<typename T> _CPU_AND_GPU_CODE_ inline Vector4f interpolateBilinear_withHoles(const CONSTANT(T) *source,
 	const THREADPTR(Vector2f) & position, const CONSTANT(Vector2i) & imgSize)
 {
 	T a, b, c, d; Vector4f result;
@@ -70,7 +70,7 @@ template<typename T> _CPU_AND_GPU_CODE_ inline Vector4f interpolateBilinear_with
 	return result;
 }
 
-template<typename T> _CPU_AND_GPU_CODE_ inline float interpolateBilinear_withHoles_single(const DEVICEPTR(T) *source,
+template<typename T> _CPU_AND_GPU_CODE_ inline float interpolateBilinear_withHoles_single(const CONSTANT(T) *source,
 	const THREADPTR(Vector2f) & position, const CONSTANT(Vector2i) & imgSize)
 {
 	T a = 0, b = 0, c = 0, d = 0; float result;

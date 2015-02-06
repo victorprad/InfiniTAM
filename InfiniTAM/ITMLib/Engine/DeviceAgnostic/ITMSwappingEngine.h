@@ -5,7 +5,7 @@
 #include "../../Utils/ITMLibDefines.h"
 
 template<class TVoxel>
-_CPU_AND_GPU_CODE_ inline void combineVoxelDepthInformation(const DEVICEPTR(TVoxel) & src, DEVICEPTR(TVoxel) & dst, int maxW)
+_CPU_AND_GPU_CODE_ inline void combineVoxelDepthInformation(const CONSTANT(TVoxel) & src, DEVICEPTR(TVoxel) & dst, int maxW)
 {
 	int newW = dst.w_depth;
 	int oldW = src.w_depth;
@@ -24,7 +24,7 @@ _CPU_AND_GPU_CODE_ inline void combineVoxelDepthInformation(const DEVICEPTR(TVox
 }
 
 template<class TVoxel>
-_CPU_AND_GPU_CODE_ inline void combineVoxelColorInformation(const DEVICEPTR(TVoxel) & src, DEVICEPTR(TVoxel) & dst, int maxW)
+_CPU_AND_GPU_CODE_ inline void combineVoxelColorInformation(const CONSTANT(TVoxel) & src, DEVICEPTR(TVoxel) & dst, int maxW)
 {
 	int newW = dst.w_color;
 	int oldW = src.w_color;
@@ -47,7 +47,7 @@ template<bool hasColor,class TVoxel> struct CombineVoxelInformation;
 
 template<class TVoxel>
 struct CombineVoxelInformation<false,TVoxel> {
-	_CPU_AND_GPU_CODE_ static void compute(const DEVICEPTR(TVoxel) & src, DEVICEPTR(TVoxel) & dst, int maxW)
+	_CPU_AND_GPU_CODE_ static void compute(const CONSTANT(TVoxel) & src, DEVICEPTR(TVoxel) & dst, int maxW)
 	{
 		combineVoxelDepthInformation(src, dst, maxW);
 	}
@@ -55,7 +55,7 @@ struct CombineVoxelInformation<false,TVoxel> {
 
 template<class TVoxel>
 struct CombineVoxelInformation<true,TVoxel> {
-	_CPU_AND_GPU_CODE_ static void compute(const DEVICEPTR(TVoxel) & src, DEVICEPTR(TVoxel) & dst, int maxW)
+	_CPU_AND_GPU_CODE_ static void compute(const CONSTANT(TVoxel) & src, DEVICEPTR(TVoxel) & dst, int maxW)
 	{
 		combineVoxelDepthInformation(src, dst, maxW);
 		combineVoxelColorInformation(src, dst, maxW);

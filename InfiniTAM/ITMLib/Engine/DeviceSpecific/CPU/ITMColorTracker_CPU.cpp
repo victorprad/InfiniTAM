@@ -2,7 +2,7 @@
 
 #include "ITMColorTracker_CPU.h"
 #include "../../DeviceAgnostic/ITMColorTracker.h"
-#include "../../../Utils/ITMPixelUtils.h"
+#include "../../DeviceAgnostic/ITMPixelUtils.h"
 
 using namespace ITMLib::Engine;
 
