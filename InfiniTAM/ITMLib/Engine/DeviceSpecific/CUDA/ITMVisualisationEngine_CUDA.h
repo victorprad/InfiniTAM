@@ -27,6 +27,7 @@ namespace ITMLib
 			void FindSurface(const ITMPose *pose, const ITMIntrinsics *intrinsics, const ITMRenderState *renderState) const;
 			void CreatePointCloud(const ITMView *view, ITMTrackingState *trackingState, ITMRenderState *renderState, bool skipPoints) const;
 			void CreateICPMaps(const ITMView *view, ITMTrackingState *trackingState, ITMRenderState *renderState) const;
+			void CreateICPMaps_Incremental(const ITMView *view, ITMTrackingState *trackingState, ITMRenderState *renderState) const;
 
 			ITMRenderState* CreateRenderState(const Vector2i & imgSize) const;
 		};
@@ -50,6 +51,7 @@ namespace ITMLib
 			void FindSurface(const ITMPose *pose, const ITMIntrinsics *intrinsics, const ITMRenderState *renderState) const;
 			void CreatePointCloud(const ITMView *view, ITMTrackingState *trackingState, ITMRenderState *renderState, bool skipPoints) const;
 			void CreateICPMaps(const ITMView *view, ITMTrackingState *trackingState, ITMRenderState *renderState) const;
+			void CreateICPMaps_Incremental(const ITMView *view, ITMTrackingState *trackingState, ITMRenderState *renderState) const;
 
 			ITMRenderState* CreateRenderState(const Vector2i & imgSize) const;
 		};

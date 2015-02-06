@@ -328,6 +328,20 @@ void ITMVisualisationEngine_CPU<TVoxel,ITMVoxelBlockHash>::CreateICPMaps(const I
 }
 
 template<class TVoxel, class TIndex>
+void ITMVisualisationEngine_CPU<TVoxel, TIndex>::CreateICPMaps_Incremental(const ITMView *view, ITMTrackingState *trackingState, 
+	ITMRenderState *renderState) const
+{
+	CreateICPMaps_common(this->scene, view, trackingState, renderState);
+}
+
+template<class TVoxel>
+void ITMVisualisationEngine_CPU<TVoxel, ITMVoxelBlockHash>::CreateICPMaps_Incremental(const ITMView *view, ITMTrackingState *trackingState,
+	ITMRenderState *renderState) const
+{
+	CreateICPMaps_common(this->scene, view, trackingState, renderState);
+}
+
+template<class TVoxel, class TIndex>
 static int RenderPointCloud(Vector4u *outRendering, Vector4f *locations, Vector4f *colours, const Vector4f *ptsRay, 
 	const TVoxel *voxelData, const typename TIndex::IndexData *voxelIndex, bool skipPoints, float voxelSize, 
 	Vector2i imgSize, Vector3f lightSource)

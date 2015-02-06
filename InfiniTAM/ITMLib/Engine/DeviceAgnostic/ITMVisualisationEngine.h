@@ -194,6 +194,23 @@ _CPU_AND_GPU_CODE_ inline bool castRay(DEVICEPTR(Vector4f) &pt_out, int x, int y
 	return pt_found;
 }
 
+_CPU_AND_GPU_CODE_ inline int forwardProjectPixel(Vector4f pixel, const CONSTANT(Matrix4f) &M, const CONSTANT(Vector4f) &projParams,
+	const CONSTANT(Vector2i) imgSize)
+{
+	if (pixel.w <= 0) return -1;
+
+	pixel.w = 1;
+	pixel = M * pixel;
+
+	Vector2f pt_image;
+	pt_image.x = projParams.x * pixel.x / pixel.z + projParams.z;
+	pt_image.y = projParams.y * pixel.y / pixel.z + projParams.w;
+
+	if ((pt_image.x < 0) || (pt_image.x > imgSize.x - 1) || (pt_image.y < 0) || (pt_image.y > imgSize.y - 1)) return -1;
+
+	return (int)(pt_image.x + 0.5f) + (int)(pt_image.y + 0.5f) * imgSize.x;
+}
+
 template<class TVoxel, class TIndex>
 _CPU_AND_GPU_CODE_ inline void computeNormalAndAngle(THREADPTR(bool) & foundPoint, const THREADPTR(Vector3f) & point,
                                                      const CONSTANT(TVoxel) *voxelBlockData, const CONSTANT(typename TIndex::IndexData) *indexData,
