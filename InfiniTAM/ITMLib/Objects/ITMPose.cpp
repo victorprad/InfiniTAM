@@ -13,6 +13,7 @@ ITMPose::ITMPose(float tx, float ty, float tz, float rx, float ry, float rz)
 { this->SetFrom(tx, ty, tz, rx, ry, rz); }
 ITMPose::ITMPose(const float pose[6]) { this->SetFrom(pose); }
 ITMPose::ITMPose(const Matrix4f & src) { this->SetM(src); }
+ITMPose::ITMPose(const Vector6f & tangent) { this->SetFrom(tangent); }
 
 #ifndef M_SQRT1_2
 #define M_SQRT1_2 0.707106781186547524401
@@ -46,6 +47,18 @@ void ITMPose::SetFrom(const Vector3f &translation, const Vector3f &rotation)
 	this->params.each.rx = rotation.x;
 	this->params.each.ry = rotation.y;
 	this->params.each.rz = rotation.z;
+
+	this->SetModelViewFromParams();
+}
+
+void ITMPose::SetFrom(const Vector6f &tangent)
+{
+	this->params.each.tx = tangent[0];
+	this->params.each.ty = tangent[1];
+	this->params.each.tz = tangent[2];
+	this->params.each.rx = tangent[3];
+	this->params.each.ry = tangent[4];
+	this->params.each.rz = tangent[5];
 
 	this->SetModelViewFromParams();
 }
@@ -217,6 +230,11 @@ void ITMPose::SetParamsFromModelView()
 
 	this->params.each.rx = resultRot.x; this->params.each.ry = resultRot.y; this->params.each.rz = resultRot.z;
 	this->params.each.tx = rottrans.x; this->params.each.ty = rottrans.y; this->params.each.tz = rottrans.z; 
+}
+
+ITMPose ITMPose::exp(const Vector6f& tangent)
+{
+	return ITMPose(tangent);
 }
 
 void ITMPose::MultiplyWith(const ITMPose *pose)
