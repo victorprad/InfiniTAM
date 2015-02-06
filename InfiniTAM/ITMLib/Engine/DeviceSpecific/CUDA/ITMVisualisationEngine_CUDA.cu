@@ -545,8 +545,8 @@ __global__ void findMissingPoints_device(int *fwdProjMissingPoints, uint *noMiss
 	shouldPrefix = false;
 	__syncthreads();
 
-	//if ((fwdPoint.w <= 0) && (minmaxval.x < minmaxval.y))
-	if ((fwdPoint.x == 0 && fwdPoint.y == 0 && fwdPoint.z == 0 && fwdPoint.w <= 0) && (minmaxval.x < minmaxval.y))		
+	if ((fwdPoint.w <= 0) && (minmaxval.x < minmaxval.y))
+	//if ((fwdPoint.x == 0 && fwdPoint.y == 0 && fwdPoint.z == 0 && fwdPoint.w <= 0) && (minmaxval.x < minmaxval.y))		
 	{ shouldPrefix = true; hasPoint = true; }
 
 	__syncthreads();

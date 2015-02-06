@@ -49,7 +49,7 @@ void ITMDenseMapper<TVoxel,TIndex>::ProcessFrame(const ITMView *view, const ITMT
 {
 	bool useSwapping = settings->useSwapping;
 
-	if (!trackingState->isKeyFrame) return;
+	//if (!trackingState->isKeyFrame) return;
 
 	// allocation
 	sceneRecoEngine->AllocateSceneFromDepth(scene, view, trackingState, renderState_live);

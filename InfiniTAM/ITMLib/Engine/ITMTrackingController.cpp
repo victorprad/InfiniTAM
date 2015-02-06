@@ -31,6 +31,7 @@ void ITMTrackingController::Prepare(ITMTrackingState *trackingState, const ITMVi
 		}
 		else
 		{
+			visualisationEngine->CreateExpectedDepths(trackingState->pose_d, &(view->calib->intrinsics_d), renderState_live);
 			visualisationEngine->ForwardRender(view, trackingState, renderState_live);
 		}
 	}

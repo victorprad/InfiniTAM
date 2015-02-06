@@ -49,6 +49,7 @@ Engine/DeviceAgnostic/ITMSceneReconstructionEngine.h
 Engine/DeviceAgnostic/ITMSwappingEngine.h
 Engine/DeviceAgnostic/ITMViewBuilder.h
 Engine/DeviceAgnostic/ITMVisualisationEngine.h
+Engine/DeviceAgnostic/ITMPixelUtils.h
 )
 
 ##
@@ -139,7 +140,6 @@ Utils/ITMCalibIO.h
 Utils/ITMLibDefines.h
 Utils/ITMLibSettings.h
 Utils/ITMMath.h
-Utils/ITMPixelUtils.h
 )
 
 #################################################################
