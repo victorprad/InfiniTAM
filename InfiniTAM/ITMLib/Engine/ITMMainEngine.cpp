@@ -75,12 +75,16 @@ ITMMainEngine::~ITMMainEngine()
 	delete visualisationEngine;
 }
 
+int currentFrameNo = 0;
 void ITMMainEngine::ProcessFrame(ITMUChar4Image *rgbImage, ITMShortImage *rawDepthImage)
 {
 	// prepare image and turn it into a depth image
 	viewBuilder->UpdateView(&view, rgbImage, rawDepthImage);
 
 	if (!mainProcessingActive) return;
+
+	if (currentFrameNo % 5 == 0) trackingState->isKeyFrame = true;
+	else trackingState->isKeyFrame = false;
 
 	// tracking
 	if (hasStartedObjectReconstruction) trackingController->Track(trackingState, view);
@@ -92,6 +96,7 @@ void ITMMainEngine::ProcessFrame(ITMUChar4Image *rgbImage, ITMShortImage *rawDep
 	trackingController->Prepare(trackingState, view);
 
 	hasStartedObjectReconstruction = true;
+	currentFrameNo++;
 }
 
 void ITMMainEngine::ProcessFrame(ITMUChar4Image *rgbImage, ITMShortImage *rawDepthImage, ITMIMUMeasurement *imuMeasurement)

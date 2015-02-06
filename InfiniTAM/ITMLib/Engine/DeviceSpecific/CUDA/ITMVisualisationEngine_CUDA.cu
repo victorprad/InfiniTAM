@@ -350,14 +350,14 @@ void ITMVisualisationEngine_CUDA<TVoxel, ITMVoxelBlockHash>::CreateICPMaps(const
 }
 
 template<class TVoxel, class TIndex>
-void ITMVisualisationEngine_CUDA<TVoxel, TIndex>::CreateICPMaps_Incremental(const ITMView *view, ITMTrackingState *trackingState, 
+void ITMVisualisationEngine_CUDA<TVoxel, TIndex>::ForwardRender(const ITMView *view, ITMTrackingState *trackingState, 
 	ITMRenderState *renderState) const
 {
 	CreateICPMaps_common(this->scene, view, trackingState, renderState);
 }
 
 template<class TVoxel>
-void ITMVisualisationEngine_CUDA<TVoxel, ITMVoxelBlockHash>::CreateICPMaps_Incremental(const ITMView *view, ITMTrackingState *trackingState, 
+void ITMVisualisationEngine_CUDA<TVoxel, ITMVoxelBlockHash>::ForwardRender(const ITMView *view, ITMTrackingState *trackingState, 
 	ITMRenderState *renderState) const
 {
 	CreateICPMaps_common(this->scene, view, trackingState, renderState);

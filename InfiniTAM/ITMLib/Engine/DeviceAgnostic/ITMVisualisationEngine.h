@@ -197,8 +197,6 @@ _CPU_AND_GPU_CODE_ inline bool castRay(DEVICEPTR(Vector4f) &pt_out, int x, int y
 _CPU_AND_GPU_CODE_ inline int forwardProjectPixel(Vector4f pixel, const CONSTANT(Matrix4f) &M, const CONSTANT(Vector4f) &projParams,
 	const CONSTANT(Vector2i) imgSize)
 {
-	if (pixel.w <= 0) return -1;
-
 	pixel.w = 1;
 	pixel = M * pixel;
 
@@ -360,6 +358,30 @@ _CPU_AND_GPU_CODE_ inline void processPixelICP(DEVICEPTR(Vector4u) *outRendering
 
 		pointsMap[locId] = out4; normalsMap[locId] = out4; outRendering[locId] = Vector4u((uchar)0);
 	}
+}
+
+_CPU_AND_GPU_CODE_ inline void processPixelForwardRender(DEVICEPTR(Vector4u) *outRendering, const CONSTANT(Vector4f) *pointsRay, 
+	const CONSTANT(Vector4f) *normalsMap, const CONSTANT(Vector2i) &imgSize, const THREADPTR(int) &x, const THREADPTR(int) &y, 
+	float voxelSize, const THREADPTR(Vector3f) &lightSource)
+{
+	Vector3f outNormal;
+	float angle;
+
+	int locId = x + y * imgSize.x;
+	Vector4f point = pointsRay[locId];
+
+	bool foundPoint = point.w > 0.0f;
+	//outNormal = TO_VECTOR3(normalsMap[locId]);
+
+	//if (outNormal.x == 0 && outNormal.y == 0 && outNormal.z == 0 && foundPoint)
+		computeNormalAndAngle(foundPoint, x, y, pointsRay, lightSource, voxelSize, imgSize, outNormal, angle);
+	//else
+	//{
+		//angle = outNormal.x * lightSource.x + outNormal.y * lightSource.y + outNormal.z * lightSource.z;
+	//}
+
+	if (foundPoint) drawPixelGrey(outRendering[locId], angle);
+	else outRendering[locId] = Vector4u((uchar)0);
 }
 
 template<class TVoxel, class TIndex>

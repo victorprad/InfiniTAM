@@ -62,7 +62,7 @@ namespace ITMLib
 
 			Incrementally previous raycast result.
 			*/
-			virtual void CreateICPMaps_Incremental(const ITMView *view, ITMTrackingState *trackingState,
+			virtual void ForwardRender(const ITMView *view, ITMTrackingState *trackingState,
 				ITMRenderState *renderState) const = 0;
 
 			/** Creates a render state, containing rendering info
