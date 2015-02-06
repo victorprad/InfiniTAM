@@ -24,8 +24,14 @@ void ITMTrackingController::Prepare(ITMTrackingState *trackingState, const ITMVi
 	}
 	else
 	{
-		visualisationEngine->CreateExpectedDepths(trackingState->pose_d, &(view->calib->intrinsics_d), renderState_live);
-		if (trackingState->isKeyFrame) visualisationEngine->CreateICPMaps(view, trackingState, renderState_live);
-		else visualisationEngine->ForwardRender(view, trackingState, renderState_live);
+		if (trackingState->isKeyFrame)
+		{
+			visualisationEngine->CreateExpectedDepths(trackingState->pose_d, &(view->calib->intrinsics_d), renderState_live);
+			visualisationEngine->CreateICPMaps(view, trackingState, renderState_live);
+		}
+		else
+		{
+			visualisationEngine->ForwardRender(view, trackingState, renderState_live);
+		}
 	}
 }
