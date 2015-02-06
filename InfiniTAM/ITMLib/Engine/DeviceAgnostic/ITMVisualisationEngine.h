@@ -361,8 +361,7 @@ _CPU_AND_GPU_CODE_ inline void processPixelICP(DEVICEPTR(Vector4u) *outRendering
 }
 
 _CPU_AND_GPU_CODE_ inline void processPixelForwardRender(DEVICEPTR(Vector4u) *outRendering, const CONSTANT(Vector4f) *pointsRay, 
-	const CONSTANT(Vector4f) *normalsMap, const CONSTANT(Vector2i) &imgSize, const THREADPTR(int) &x, const THREADPTR(int) &y, 
-	float voxelSize, const THREADPTR(Vector3f) &lightSource)
+	const CONSTANT(Vector2i) &imgSize, const THREADPTR(int) &x, const THREADPTR(int) &y, float voxelSize, const THREADPTR(Vector3f) &lightSource)
 {
 	Vector3f outNormal;
 	float angle;
@@ -371,14 +370,7 @@ _CPU_AND_GPU_CODE_ inline void processPixelForwardRender(DEVICEPTR(Vector4u) *ou
 	Vector4f point = pointsRay[locId];
 
 	bool foundPoint = point.w > 0.0f;
-	//outNormal = TO_VECTOR3(normalsMap[locId]);
-
-	//if (outNormal.x == 0 && outNormal.y == 0 && outNormal.z == 0 && foundPoint)
-		computeNormalAndAngle(foundPoint, x, y, pointsRay, lightSource, voxelSize, imgSize, outNormal, angle);
-	//else
-	//{
-		//angle = outNormal.x * lightSource.x + outNormal.y * lightSource.y + outNormal.z * lightSource.z;
-	//}
+	computeNormalAndAngle(foundPoint, x, y, pointsRay, lightSource, voxelSize, imgSize, outNormal, angle);
 
 	if (foundPoint) drawPixelGrey(outRendering[locId], angle);
 	else outRendering[locId] = Vector4u((uchar)0);

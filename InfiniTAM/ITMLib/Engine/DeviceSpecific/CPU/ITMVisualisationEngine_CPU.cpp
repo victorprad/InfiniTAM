@@ -333,7 +333,7 @@ static void ForwardRender_common(const ITMScene<TVoxel, TIndex> *scene, const IT
 	}
 
 	for (int y = 0; y < imgSize.y; y++) for (int x = 0; x < imgSize.x; x++)
-		processPixelForwardRender(outRendering, forwardProjection, 0, imgSize, x, y, voxelSize, lightSource);
+		processPixelForwardRender(outRendering, forwardProjection, imgSize, x, y, voxelSize, lightSource);
 
 	renderState->noFwdProjMissingPoints = noMissingPoints;
 }
