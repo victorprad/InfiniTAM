@@ -46,7 +46,8 @@ namespace ITMLib
 
 			void SetFrom(float tx, float ty, float tz, float rx, float ry, float rz);
 			void SetFrom(const Vector3f &translation, const Vector3f &rotation);
-			
+			void SetFrom(const Vector6f &tangent);
+
 			void SetFrom(const float pose[6]);
 			void SetFrom(const ITMPose *pose);
 
@@ -80,6 +81,7 @@ namespace ITMLib
 
 			ITMPose(const Matrix4f & src);
 			ITMPose(float tx, float ty, float tz, float rx, float ry, float rz);
+			ITMPose(const Vector6f & tangent);
 			explicit ITMPose(const float pose[6]);
 
 			ITMPose(void);

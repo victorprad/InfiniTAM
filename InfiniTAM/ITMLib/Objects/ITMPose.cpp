@@ -13,6 +13,7 @@ ITMPose::ITMPose(float tx, float ty, float tz, float rx, float ry, float rz)
 { this->SetFrom(tx, ty, tz, rx, ry, rz); }
 ITMPose::ITMPose(const float pose[6]) { this->SetFrom(pose); }
 ITMPose::ITMPose(const Matrix4f & src) { this->SetM(src); }
+ITMPose::ITMPose(const Vector6f & tangent) { this->SetFrom(tangent); }
 
 #ifndef M_SQRT1_2
 #define M_SQRT1_2 0.707106781186547524401
@@ -46,6 +47,18 @@ void ITMPose::SetFrom(const Vector3f &translation, const Vector3f &rotation)
 	this->params.each.rx = rotation.x;
 	this->params.each.ry = rotation.y;
 	this->params.each.rz = rotation.z;
+
+	this->SetModelViewFromParams();
+}
+
+void ITMPose::SetFrom(const Vector6f &tangent)
+{
+	this->params.each.tx = tangent[0];
+	this->params.each.ty = tangent[1];
+	this->params.each.tz = tangent[2];
+	this->params.each.rx = tangent[3];
+	this->params.each.ry = tangent[4];
+	this->params.each.rz = tangent[5];
 
 	this->SetModelViewFromParams();
 }
@@ -221,54 +234,7 @@ void ITMPose::SetParamsFromModelView()
 
 ITMPose ITMPose::exp(const Vector6f& tangent)
 {
-	ITMPose pose;
-
-	const float* upsilon = tangent.getValues();				// not normalized
-	const float* omega = upsilon + 3;						// not normalized
-
-	float theta_sq = omega[0] * omega[0] + omega[1] * omega[1] + omega[2] * omega[2];
-
-	if (theta_sq < 1e-8f){
-		// Produce a vaild expansion
-		pose.M.m[0 + 4 * 3] = upsilon[0];
-		pose.M.m[1 + 4 * 3] = upsilon[1];
-		pose.M.m[2 + 4 * 3] = upsilon[2];
-		return pose;
-	}
-
-	float theta = sqrtf(theta_sq);
-	float oneMinCosTheta = (1 - cosf(theta)) / theta_sq;	// normalize omega indirect
-	float sinTheta = sinf(theta) / theta;					// and again
-
-
-	// Rotation Matrix
-	// row 1
-	pose.M.m[0 + 4 * 0] = 1 - (omega[1] * omega[1] + omega[2] * omega[2]) * oneMinCosTheta;
-	pose.M.m[0 + 4 * 1] = -omega[2] * sinTheta + (omega[0] * omega[1]) * oneMinCosTheta;
-	pose.M.m[0 + 4 * 2] = omega[1] * sinTheta + (omega[0] * omega[2]) * oneMinCosTheta;
-
-	// row 2
-	pose.M.m[1 + 4 * 0] = omega[2] * sinTheta + (omega[0] * omega[1]) * oneMinCosTheta;
-	pose.M.m[1 + 4 * 1] = 1 - (omega[0] * omega[0] + omega[2] * omega[2]) * oneMinCosTheta;
-	pose.M.m[1 + 4 * 2] = -omega[0] * sinTheta + (omega[1] * omega[2]) * oneMinCosTheta;
-
-	// row 3
-	pose.M.m[2 + 4 * 0] = -omega[1] * sinTheta + (omega[0] * omega[2]) * oneMinCosTheta;
-	pose.M.m[2 + 4 * 1] = omega[0] * sinTheta + (omega[1] * omega[2]) * oneMinCosTheta;
-	pose.M.m[2 + 4 * 2] = 1 - (omega[0] * omega[0] + omega[1] * omega[1]) * oneMinCosTheta;
-
-	// Translation Vector
-	float x = ((omega[1] * upsilon[2] - omega[2] * upsilon[1]) + (omega[0] * omega[0] * upsilon[0] + omega[0] * omega[1] * upsilon[1] + omega[0] * omega[2] * upsilon[2])) / theta_sq; // normalized
-	float y = ((omega[2] * upsilon[0] - omega[0] * upsilon[2]) + (omega[0] * omega[1] * upsilon[0] + omega[1] * omega[1] * upsilon[1] + omega[1] * omega[2] * upsilon[2])) / theta_sq;
-	float z = ((omega[0] * upsilon[1] - omega[1] * upsilon[0]) + (omega[0] * omega[2] * upsilon[0] + omega[1] * omega[2] * upsilon[1] + omega[2] * omega[2] * upsilon[2])) / theta_sq;
-	pose.M.m[0 + 4 * 3] = -pose.M.m[0 + 4 * 0] * x - pose.M.m[0 + 4 * 1] * y - pose.M.m[0 + 4 * 2] * z + x;
-	pose.M.m[1 + 4 * 3] = -pose.M.m[1 + 4 * 0] * x - pose.M.m[1 + 4 * 1] * y - pose.M.m[1 + 4 * 2] * z + y;
-	pose.M.m[2 + 4 * 3] = -pose.M.m[2 + 4 * 0] * x - pose.M.m[2 + 4 * 1] * y - pose.M.m[2 + 4 * 2] * z + z;
-
-	// Finalize
-	pose.M.m[3 + 4 * 3] = 1;
-	
-	return pose;
+	return ITMPose(tangent);
 }
 
 void ITMPose::MultiplyWith(const ITMPose *pose)
