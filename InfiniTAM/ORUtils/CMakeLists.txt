@@ -17,6 +17,7 @@ CUDADefines.h
 #################################################################
 
 set(ORUTILS_OBJECTS
+Dummy.cpp
 ${ORUTILS_HEADERS}
 )
 
@@ -31,8 +32,6 @@ SOURCE_GROUP("" FILES ${ORUTILS_HEADERS})
 ##############################################################
 
 add_library(ORUtils ${ORUTILS_OBJECTS})
-
-SET_TARGET_PROPERTIES(ORUtils PROPERTIES LINKER_LANGUAGE C++)
 
 IF(WITH_CUDA)
 #  include_directories(${CUDA_INCLUDE_DIRS})
