@@ -13,9 +13,27 @@ void ITMTrackingController::Track(ITMTrackingState *trackingState, const ITMView
 	tracker->TrackCamera(trackingState, view);
 }
 
+bool ITMTrackingController::IsFarFromPrevious(ITMTrackingState *trackingState)
+{
+	if (!hasPrevPose) return true;
+
+	Vector3f cameraCenter_pc = -1.0f * (this->prevPose->GetR().t() * this->prevPose->GetT());
+	Vector3f cameraCenter_live = -1.0f * (trackingState->pose_d->GetR().t() * trackingState->pose_d->GetT());
+
+	Vector3f diff3 = cameraCenter_pc - cameraCenter_live;
+
+	float diff = diff3.x * diff3.x + diff3.y * diff3.y + diff3.z * diff3.z;
+
+	if (diff > 0.0001f)
+		return true;
+
+	return false;
+}
+
 void ITMTrackingController::Prepare(ITMTrackingState *trackingState, const ITMView *view)
 {
 	//render for tracking
+
 	if (settings->trackerType == ITMLibSettings::TRACKER_COLOR)
 	{
 		ITMPose pose_rgb(view->calib->trafo_rgb_to_depth.calib_inv * trackingState->pose_d->GetM());
@@ -24,15 +42,15 @@ void ITMTrackingController::Prepare(ITMTrackingState *trackingState, const ITMVi
 	}
 	else
 	{
-		if (trackingState->isKeyFrame)
+		visualisationEngine->CreateExpectedDepths(trackingState->pose_d, &(view->calib->intrinsics_d), renderState_live);
+
+		if (this->IsFarFromPrevious(trackingState))
 		{
-			visualisationEngine->CreateExpectedDepths(trackingState->pose_d, &(view->calib->intrinsics_d), renderState_live);
 			visualisationEngine->CreateICPMaps(view, trackingState, renderState_live);
+			this->prevPose->SetFrom(trackingState->pose_d);
 		}
-		else
-		{
-			visualisationEngine->CreateExpectedDepths(trackingState->pose_d, &(view->calib->intrinsics_d), renderState_live);
-			visualisationEngine->ForwardRender(view, trackingState, renderState_live);
-		}
+		else visualisationEngine->ForwardRender(view, trackingState, renderState_live);
 	}
+
+	this->hasPrevPose = true;
 }
