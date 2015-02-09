@@ -11,11 +11,12 @@ using namespace ITMLib::Engine;
 void ITMTrackingController::Track(ITMTrackingState *trackingState, const ITMView *view)
 {
 	tracker->TrackCamera(trackingState, view);
+	noTrackedFrames++;
 }
 
 bool ITMTrackingController::IsFarFromPrevious(ITMTrackingState *trackingState)
 {
-	if (!hasPrevPose) return true;
+	if (!hasPrevPose || (noTrackedFrames < 5)) return true;
 
 	Vector3f cameraCenter_pc = -1.0f * (this->prevPose->GetR().t() * this->prevPose->GetT());
 	Vector3f cameraCenter_live = -1.0f * (trackingState->pose_d->GetR().t() * trackingState->pose_d->GetT());
@@ -24,8 +25,7 @@ bool ITMTrackingController::IsFarFromPrevious(ITMTrackingState *trackingState)
 
 	float diff = diff3.x * diff3.x + diff3.y * diff3.y + diff3.z * diff3.z;
 
-	if (diff > 0.0001f)
-		return true;
+	if (diff > 0.001f || (noFramesForLastIntegration == 10)) return true;
 
 	return false;
 }
@@ -48,8 +48,13 @@ void ITMTrackingController::Prepare(ITMTrackingState *trackingState, const ITMVi
 		{
 			visualisationEngine->CreateICPMaps(view, trackingState, renderState_live);
 			this->prevPose->SetFrom(trackingState->pose_d);
+			noFramesForLastIntegration = 0;
 		}
-		else visualisationEngine->ForwardRender(view, trackingState, renderState_live);
+		else
+		{
+			visualisationEngine->ForwardRender(view, trackingState, renderState_live);
+			noFramesForLastIntegration++;
+		}
 	}
 
 	this->hasPrevPose = true;

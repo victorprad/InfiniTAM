@@ -32,6 +32,7 @@ namespace ITMLib
 			MemoryDeviceType memoryType;
 
 			ITMRenderState *renderState_live;
+			int noTrackedFrames, noFramesForLastIntegration;
 			ITMPose *prevPose; bool hasPrevPose;
 
 			bool IsFarFromPrevious(ITMTrackingState *trackingState);
@@ -54,6 +55,8 @@ namespace ITMLib
 
 				this->prevPose = new ITMPose();
 				this->hasPrevPose = false;
+				this->noTrackedFrames = 0;
+				this->noFramesForLastIntegration = 0;
 			}
 
 			~ITMTrackingController()
