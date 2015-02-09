@@ -197,7 +197,7 @@ struct ITMVoxel_f
 /** This chooses the information stored at each voxel. At the moment, valid
     options are ITMVoxel_s, ITMVoxel_f, ITMVoxel_s_rgb and ITMVoxel_f_rgb 
 */
-typedef ITMVoxel_f ITMVoxel;
+typedef ITMVoxel_s ITMVoxel;
 
 /** This chooses the way the voxels are addressed and indexed. At the moment,
     valid options are ITMVoxelBlockHash and ITMPlainVoxelArray.

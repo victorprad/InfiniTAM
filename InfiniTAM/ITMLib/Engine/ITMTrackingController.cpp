@@ -16,7 +16,7 @@ void ITMTrackingController::Track(ITMTrackingState *trackingState, const ITMView
 
 bool ITMTrackingController::IsFarFromPrevious(ITMTrackingState *trackingState)
 {
-	if (!hasPrevPose || (noTrackedFrames < 5)) return true;
+	if (!hasPrevPose || (noTrackedFrames < 2)) return true;
 
 	Vector3f cameraCenter_pc = -1.0f * (this->prevPose->GetR().t() * this->prevPose->GetT());
 	Vector3f cameraCenter_live = -1.0f * (trackingState->pose_d->GetR().t() * trackingState->pose_d->GetT());
@@ -25,7 +25,7 @@ bool ITMTrackingController::IsFarFromPrevious(ITMTrackingState *trackingState)
 
 	float diff = diff3.x * diff3.x + diff3.y * diff3.y + diff3.z * diff3.z;
 
-	if (diff > 0.001f || (noFramesForLastIntegration == 10)) return true;
+	if (diff > 0.0002f && noFramesForLastIntegration > 5) return true;
 
 	return false;
 }
@@ -44,7 +44,7 @@ void ITMTrackingController::Prepare(ITMTrackingState *trackingState, const ITMVi
 	{
 		visualisationEngine->CreateExpectedDepths(trackingState->pose_d, &(view->calib->intrinsics_d), renderState_live);
 
-		if (this->IsFarFromPrevious(trackingState))
+		if (this->IsFarFromPrevious(trackingState) || !useApproximateRaycast)
 		{
 			visualisationEngine->CreateICPMaps(view, trackingState, renderState_live);
 			this->prevPose->SetFrom(trackingState->pose_d);

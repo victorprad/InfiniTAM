@@ -34,6 +34,7 @@ namespace ITMLib
 			ITMRenderState *renderState_live;
 			int noTrackedFrames, noFramesForLastIntegration;
 			ITMPose *prevPose; bool hasPrevPose;
+			bool useApproximateRaycast;
 
 			bool IsFarFromPrevious(ITMTrackingState *trackingState);
 
@@ -57,6 +58,7 @@ namespace ITMLib
 				this->hasPrevPose = false;
 				this->noTrackedFrames = 0;
 				this->noFramesForLastIntegration = 0;
+				this->useApproximateRaycast = settings->useApproximateRaycast;
 			}
 
 			~ITMTrackingController()

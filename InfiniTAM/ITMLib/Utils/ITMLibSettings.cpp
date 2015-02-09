@@ -30,6 +30,9 @@ ITMLibSettings::ITMLibSettings(void)
 	/// enables or disables swapping. HERE BE DRAGONS: It should work, but requires more testing
 	useSwapping = false;
 
+	/// enables or disables approximate raycast
+	useApproximateRaycast = true;
+
 	//trackerType = TRACKER_COLOR;
 	trackerType = TRACKER_ICP;
 
