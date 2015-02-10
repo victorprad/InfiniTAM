@@ -65,7 +65,7 @@ namespace ITMLib
 		};
 
 		template<class TIndex> struct IndexToRenderState { typedef ITMRenderState type; };
-		template <> struct IndexToRenderState<ITMVoxelBlockHash> { typedef ITMRenderState_VH type; };
+		template<> struct IndexToRenderState<ITMVoxelBlockHash> { typedef ITMRenderState_VH type; };
 
 		/** \brief
 			Interface to engines helping with the visualisation of
