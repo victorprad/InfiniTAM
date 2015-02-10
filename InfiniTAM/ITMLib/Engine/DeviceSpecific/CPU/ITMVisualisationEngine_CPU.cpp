@@ -314,14 +314,15 @@ static void ForwardRender_common(const ITMScene<TVoxel, TIndex> *scene, const IT
 		Vector4f fwdPoint = forwardProjection[locId];
 		Vector2f minmaxval = minmaximg[locId2];
 
-		if ((fwdPoint.x == 0 && fwdPoint.y == 0 && fwdPoint.z == 0 && fwdPoint.w <= 0) && (minmaxval.x < minmaxval.y))
-		//if ((fwdPoint.w <= 0) && (minmaxval.x < minmaxval.y))
+		if ((fwdPoint.w <= 0) && (minmaxval.x < minmaxval.y))
 		{
 			fwdProjMissingPoints[noMissingPoints] = locId;
 			noMissingPoints++;
 		}
 	}
 
+    renderState->noFwdProjMissingPoints = noMissingPoints;
+    
 	for (int pointId = 0; pointId < noMissingPoints; pointId++)
 	{
 		int locId = fwdProjMissingPoints[pointId];
@@ -334,8 +335,6 @@ static void ForwardRender_common(const ITMScene<TVoxel, TIndex> *scene, const IT
 
 	for (int y = 0; y < imgSize.y; y++) for (int x = 0; x < imgSize.x; x++)
 		processPixelForwardRender(outRendering, forwardProjection, imgSize, x, y, voxelSize, lightSource);
-
-	renderState->noFwdProjMissingPoints = noMissingPoints;
 }
 
 template<class TVoxel, class TIndex>

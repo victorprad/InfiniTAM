@@ -51,6 +51,7 @@ void ITMSceneReconstructionEngine_CPU<TVoxel, ITMVoxelBlockHash>::IntegrateIntoS
 	int noVisibleEntries = renderState_vh->noVisibleEntries;
 
 	bool stopIntegratingAtMaxW = scene->sceneParams->stopIntegratingAtMaxW;
+	bool approximateIntegration = !trackingState->requiresFullRendering;
 
 #ifdef WITH_OPENMP
 	#pragma omp parallel for
@@ -74,7 +75,9 @@ void ITMSceneReconstructionEngine_CPU<TVoxel, ITMVoxelBlockHash>::IntegrateIntoS
 			Vector4f pt_model; int locId;
 
 			locId = x + y * SDF_BLOCK_SIZE + z * SDF_BLOCK_SIZE * SDF_BLOCK_SIZE;
+
 			if (stopIntegratingAtMaxW) if (localVoxelBlock[locId].w_depth == maxW) continue;
+			if (approximateIntegration) if (localVoxelBlock[locId].w_depth != 0) return;
 
 			pt_model.x = (float)(globalPos.x + x) * voxelSize;
 			pt_model.y = (float)(globalPos.y + y) * voxelSize;
@@ -303,6 +306,7 @@ void ITMSceneReconstructionEngine_CPU<TVoxel, ITMPlainVoxelArray>::IntegrateInto
 	const ITMPlainVoxelArray::IndexData *arrayInfo = scene->index.getIndexData();
 
 	bool stopIntegratingAtMaxW = scene->sceneParams->stopIntegratingAtMaxW;
+	bool approximateIntegration = !trackingState->requiresFullRendering;
 
 #ifdef WITH_OPENMP
 	#pragma omp parallel for
@@ -316,6 +320,7 @@ void ITMSceneReconstructionEngine_CPU<TVoxel, ITMPlainVoxelArray>::IntegrateInto
 		Vector4f pt_model;
 
 		if (stopIntegratingAtMaxW) if (voxelArray[locId].w_depth == maxW) continue;
+		if (approximateIntegration) if (localVoxelBlock[locId].w_depth != 0) return;
 
 		pt_model.x = (float)(x + arrayInfo->offset.x) * voxelSize;
 		pt_model.y = (float)(y + arrayInfo->offset.y) * voxelSize;
