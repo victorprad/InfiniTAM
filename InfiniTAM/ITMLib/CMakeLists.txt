@@ -50,6 +50,7 @@ Engine/DeviceAgnostic/ITMSceneReconstructionEngine.h
 Engine/DeviceAgnostic/ITMSwappingEngine.h
 Engine/DeviceAgnostic/ITMViewBuilder.h
 Engine/DeviceAgnostic/ITMVisualisationEngine.h
+Engine/DeviceAgnostic/ITMPixelUtils.h
 )
 
 ##

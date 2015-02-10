@@ -7,7 +7,7 @@
 #include "../Objects/ITMScene.h"
 #include "../Objects/ITMView.h"
 #include "../Objects/ITMTrackingState.h"
-#include "../Objects/ITMRenderState.h"
+#include "../Objects/ITMRenderState_VH.h"
 
 using namespace ITMLib::Objects;
 
@@ -52,10 +52,17 @@ namespace ITMLib
 				ITMRenderState *renderState, bool skipPoints) const = 0;
 
 			/** Create an image of reference points and normals as
-			required by the ITMLib::Engine::ITMDepthTracker
-			classes.
+			required by the ITMLib::Engine::ITMDepthTracker classes.
 			*/
 			virtual void CreateICPMaps(const ITMView *view, ITMTrackingState *trackingState, 
+				ITMRenderState *renderState) const = 0;
+
+			/** Create an image of reference points and normals as
+			required by the ITMLib::Engine::ITMDepthTracker classes.
+
+			Incrementally previous raycast result.
+			*/
+			virtual void ForwardRender(const ITMView *view, ITMTrackingState *trackingState,
 				ITMRenderState *renderState) const = 0;
 
 			/** Creates a render state, containing rendering info
@@ -63,6 +70,9 @@ namespace ITMLib
 			*/
 			virtual ITMRenderState* CreateRenderState(const Vector2i & imgSize) const = 0;
 		};
+
+		template<class TIndex> struct IndexToRenderState { typedef ITMRenderState type; };
+		template<> struct IndexToRenderState<ITMVoxelBlockHash> { typedef ITMRenderState_VH type; };
 
 		/** \brief
 			Interface to engines helping with the visualisation of
@@ -85,6 +95,9 @@ namespace ITMLib
 			{
 				this->scene = scene;
 			}
+		public:
+			/** Override */
+			virtual typename IndexToRenderState<TIndex>::type *CreateRenderState(const Vector2i & imgSize) const = 0;
 		};
 	}
 }

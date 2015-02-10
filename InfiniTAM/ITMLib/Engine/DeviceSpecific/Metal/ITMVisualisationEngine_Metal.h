@@ -18,7 +18,9 @@ namespace ITMLib
         class ITMVisualisationEngine_Metal<TVoxel, ITMVoxelBlockHash> : public ITMVisualisationEngine_CPU < TVoxel, ITMVoxelBlockHash >
         {
         public:
+            void CreateExpectedDepths(const ITMPose *pose, const ITMIntrinsics *intrinsics, ITMRenderState *renderState) const;
             void CreateICPMaps(const ITMView *view, ITMTrackingState *trackingState, ITMRenderState *renderState) const;
+            void ForwardRender(const ITMView *view, ITMTrackingState *trackingState, ITMRenderState *renderState) const;
             
             ITMVisualisationEngine_Metal(ITMScene<TVoxel, ITMVoxelBlockHash> *scene);
         };
@@ -32,10 +34,12 @@ namespace ITMLib
 struct CreateICPMaps_Params
 {
     Matrix4f invM;
+    Matrix4f M;
     Vector4f projParams;
-    Vector2f voxelSizes;
-    Vector2i imgSize;
+    Vector4f invProjParams;
     Vector4f lightSource;
+    Vector4i imgSize;
+    Vector2f voxelSizes;
 };
 
 #endif

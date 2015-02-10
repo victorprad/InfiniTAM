@@ -32,6 +32,11 @@ namespace ITMLib
 			MemoryDeviceType memoryType;
 
 			ITMRenderState *renderState_live;
+			int noTrackedFrames, noFramesForLastIntegration;
+			ITMPose *prevPose; bool hasPrevPose;
+			bool useApproximateRaycast;
+
+			bool IsFarFromPrevious(ITMTrackingState *trackingState);
 
 		public:
 			void Track(ITMTrackingState *trackingState, const ITMView *view);
@@ -48,6 +53,17 @@ namespace ITMLib
 
 				trackedImageSize = renderState_live->raycastImage->noDims;
 				memoryType = settings->deviceType == ITMLibSettings::DEVICE_CUDA ? MEMORYDEVICE_CUDA : MEMORYDEVICE_CPU;
+
+				this->prevPose = new ITMPose();
+				this->hasPrevPose = false;
+				this->noTrackedFrames = 0;
+				this->noFramesForLastIntegration = 0;
+				this->useApproximateRaycast = settings->useApproximateRaycast;
+			}
+
+			~ITMTrackingController()
+			{
+				delete this->prevPose;
 			}
 
 			ITMTrackingState *BuildTrackingState() const

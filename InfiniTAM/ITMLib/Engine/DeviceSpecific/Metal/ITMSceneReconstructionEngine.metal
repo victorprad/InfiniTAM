@@ -34,7 +34,7 @@ kernel void integrateIntoScene_vh_device(DEVICEPTR(ITMVoxel) *localVBA          
 
     locId = x + y * SDF_BLOCK_SIZE + z * SDF_BLOCK_SIZE * SDF_BLOCK_SIZE;
 
-    if (params->others.w > 0.5f) if (localVoxelBlock[locId].w_depth == params->others.z) return;
+    if (params->others.w < 0.5f) if (localVoxelBlock[locId].w_depth != 0) return;
     
     pt_model.x = (float)(globalPos.x + x) * params->others.x;
     pt_model.y = (float)(globalPos.y + y) * params->others.x;

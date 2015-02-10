@@ -25,8 +25,13 @@ ITMLibSettings::ITMLibSettings(void)
 #endif
 #endif
 
+	//deviceType = DEVICE_CPU;
+
 	/// enables or disables swapping. HERE BE DRAGONS: It should work, but requires more testing
 	useSwapping = false;
+
+	/// enables or disables approximate raycast
+	useApproximateRaycast = false;
 
 	//trackerType = TRACKER_COLOR;
 	trackerType = TRACKER_ICP;
@@ -71,5 +76,5 @@ ITMLibSettings::ITMLibSettings(void)
 
 ITMLibSettings::~ITMLibSettings()
 {
-	delete trackingRegime;
+	delete[] trackingRegime;
 }

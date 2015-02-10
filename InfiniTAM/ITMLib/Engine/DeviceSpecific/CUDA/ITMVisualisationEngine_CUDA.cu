@@ -32,12 +32,25 @@ __global__ void projectAndSplitBlocksHHash_device(const ITMHHashEntry *hashEntri
 __global__ void fillBlocks_device(const uint *noTotalBlocks, const RenderingBlock *renderingBlocks,
 	Vector2i imgSize, Vector2f *minmaxData);
 
+__global__ void findMissingPoints_device(int *fwdProjMissingPoints, uint *noMissingPoints, const Vector2f *minmaximg,
+	Vector4f *forwardProjection, Vector2i imgSize);
+
 template<class TVoxel, class TIndex>
 __global__ void genericRaycast_device(Vector4f *out_ptsRay, const TVoxel *voxelData, const typename TIndex::IndexData *voxelIndex,
 	Vector2i imgSize, Matrix4f invM, Vector4f projParams, float oneOverVoxelSize, const Vector2f *minmaxdata, float mu);
 
+template<class TVoxel, class TIndex>
+__global__ void genericRaycastMissingPoints_device(Vector4f *forwardProjection, const TVoxel *voxelData, const typename TIndex::IndexData *voxelIndex,
+	Vector2i imgSize, Matrix4f invM, Vector4f invProjParams, float oneOverVoxelSize, int *fwdProjMissingPoints, int noMissingPoints,
+	const Vector2f *minmaximg, float mu);
+
+__global__ void forwardProject_device(Vector4f *forwardProjection, const Vector4f *pointsRay, Vector2i imgSize, Matrix4f M,
+	Vector4f projParams, float voxelSize);
+
 __global__ void renderICP_device(Vector4u *outRendering, Vector4f *pointsMap, Vector4f *normalsMap, const Vector4f *ptsRay,
 	float voxelSize, Vector2i imgSize, Vector3f lightSource);
+
+__global__ void renderForward_device(Vector4u *outRendering, const Vector4f *pointsRay, float voxelSize, Vector2i imgSize, Vector3f lightSource);
 
 template<class TVoxel, class TIndex>
 __global__ void renderGrey_device(Vector4u *outRendering, const Vector4f *ptsRay, const TVoxel *voxelData,
@@ -99,7 +112,7 @@ ITMRenderState* ITMVisualisationEngine_CUDA<TVoxel, TIndex>::CreateRenderState(c
 }
 
 template<class TVoxel>
-ITMRenderState* ITMVisualisationEngine_CUDA<TVoxel, ITMVoxelBlockHash>::CreateRenderState(const Vector2i & imgSize) const
+ITMRenderState_VH* ITMVisualisationEngine_CUDA<TVoxel, ITMVoxelBlockHash>::CreateRenderState(const Vector2i & imgSize) const
 {
 	return new ITMRenderState_VH(
 		ITMVoxelBlockHash::noTotalEntries, imgSize, this->scene->sceneParams->viewFrustum_min, this->scene->sceneParams->viewFrustum_max, MEMORYDEVICE_CUDA
@@ -400,6 +413,67 @@ void CreateICPMaps_common(const ITMScene<TVoxel, TIndex> *scene, const ITMView *
 }
 
 template<class TVoxel, class TIndex>
+static void ForwardRender_common(const ITMScene<TVoxel, TIndex> *scene, const ITMView *view, ITMTrackingState *trackingState, ITMRenderState *renderState, 
+	uint *noTotalPoints_device)
+{
+	Vector2i imgSize = view->depth->noDims;
+	Matrix4f M = trackingState->pose_d->GetM();
+	Matrix4f invM = trackingState->pose_d->GetInvM();
+	Vector4f projParams = view->calib->intrinsics_d.projectionParamsSimple.all;
+	Vector4f invProjParams = view->calib->intrinsics_d.projectionParamsSimple.all;
+	invProjParams.x = 1.0f / invProjParams.x;
+	invProjParams.y = 1.0f / invProjParams.y;
+
+	Vector3f lightSource = -Vector3f(invM.getColumn(2));
+	const Vector4f *pointsRay = renderState->raycastResult->GetData(MEMORYDEVICE_CUDA);
+	Vector4f *forwardProjection = renderState->forwardProjection->GetData(MEMORYDEVICE_CUDA);
+	int *fwdProjMissingPoints = renderState->fwdProjMissingPoints->GetData(MEMORYDEVICE_CUDA);
+	Vector4u *outRendering = renderState->raycastImage->GetData(MEMORYDEVICE_CUDA);
+	const Vector2f *minmaximg = renderState->renderingRangeImage->GetData(MEMORYDEVICE_CUDA);
+	float oneOverVoxelSize = 1.0f / scene->sceneParams->voxelSize;
+	float voxelSize = scene->sceneParams->voxelSize;
+	const TVoxel *voxelData = scene->localVBA.GetVoxelBlocks();
+	const typename TIndex::IndexData *voxelIndex = scene->index.getIndexData();
+
+	renderState->forwardProjection->Clear();
+
+	dim3 blockSize, gridSize;
+
+	{ // forward projection
+		blockSize = dim3(16, 16);
+		gridSize = dim3((int)ceil((float)imgSize.x / (float)blockSize.x), (int)ceil((float)imgSize.y / (float)blockSize.y));
+
+		forwardProject_device << <gridSize, blockSize >> >(forwardProjection, pointsRay, imgSize, M, projParams, voxelSize);
+	}
+
+	ITMSafeCall(cudaMemset(noTotalPoints_device, 0, sizeof(uint)));
+
+	{ // find missing points
+		blockSize = dim3(16, 16);
+		gridSize = dim3((int)ceil((float)imgSize.x / (float)blockSize.x), (int)ceil((float)imgSize.y / (float)blockSize.y));
+
+		findMissingPoints_device << <gridSize, blockSize >> >(fwdProjMissingPoints, noTotalPoints_device, minmaximg, forwardProjection, imgSize);
+	}
+
+	ITMSafeCall(cudaMemcpy(&renderState->noFwdProjMissingPoints, noTotalPoints_device, sizeof(uint), cudaMemcpyDeviceToHost));
+
+	{ // render missing points
+		blockSize = dim3(256);
+		gridSize = dim3((int)ceil((float)renderState->noFwdProjMissingPoints / blockSize.x));
+
+		genericRaycastMissingPoints_device<TVoxel, TIndex> << <gridSize, blockSize >> >(forwardProjection, voxelData, voxelIndex, imgSize, invM,
+			invProjParams, oneOverVoxelSize, fwdProjMissingPoints, renderState->noFwdProjMissingPoints, minmaximg, scene->sceneParams->mu);
+	}
+
+	{
+		blockSize = dim3(16, 16);
+		gridSize = dim3((int)ceil((float)imgSize.x / (float)blockSize.x), (int)ceil((float)imgSize.y / (float)blockSize.y));
+
+		renderForward_device << <gridSize, blockSize >> >(outRendering, forwardProjection, voxelSize, imgSize, lightSource);
+	}
+}
+
+template<class TVoxel, class TIndex>
 void ITMVisualisationEngine_CUDA<TVoxel, TIndex>::RenderImage(const ITMPose *pose, const ITMIntrinsics *intrinsics,	const ITMRenderState *renderState, 
 	ITMUChar4Image *outputImage, bool useColour) const
 {
@@ -462,13 +536,15 @@ void ITMVisualisationEngine_CUDA<TVoxel,ITMVoxelBlockHHash>::CreatePointCloud(co
 }
 
 template<class TVoxel, class TIndex>
-void ITMVisualisationEngine_CUDA<TVoxel, TIndex>::CreateICPMaps(const ITMView *view, ITMTrackingState *trackingState, ITMRenderState *renderState) const
+void ITMVisualisationEngine_CUDA<TVoxel, TIndex>::CreateICPMaps(const ITMView *view, ITMTrackingState *trackingState, 
+	ITMRenderState *renderState) const
 {
 	CreateICPMaps_common(this->scene, view, trackingState, renderState);
 }
 
 template<class TVoxel>
-void ITMVisualisationEngine_CUDA<TVoxel, ITMVoxelBlockHash>::CreateICPMaps(const ITMView *view, ITMTrackingState *trackingState, ITMRenderState *renderState) const
+void ITMVisualisationEngine_CUDA<TVoxel, ITMVoxelBlockHash>::CreateICPMaps(const ITMView *view, ITMTrackingState *trackingState, 
+	ITMRenderState *renderState) const
 {
 	CreateICPMaps_common(this->scene, view, trackingState, renderState);
 }
@@ -478,6 +554,27 @@ void ITMVisualisationEngine_CUDA<TVoxel,ITMVoxelBlockHHash>::CreateICPMaps(const
 	ITMTrackingState *trackingState, ITMRenderState *renderState) const
 {
 	CreateICPMaps_common(this->scene, view, trackingState, renderState);
+}
+
+template<class TVoxel, class TIndex>
+void ITMVisualisationEngine_CUDA<TVoxel, TIndex>::ForwardRender(const ITMView *view, ITMTrackingState *trackingState, 
+	ITMRenderState *renderState) const
+{
+	CreateICPMaps_common(this->scene, view, trackingState, renderState);
+}
+
+template<class TVoxel>
+void ITMVisualisationEngine_CUDA<TVoxel, ITMVoxelBlockHash>::ForwardRender(const ITMView *view, ITMTrackingState *trackingState, 
+	ITMRenderState *renderState) const
+{
+	ForwardRender_common(this->scene, view, trackingState, renderState, this->noTotalPoints_device);
+}
+
+template<class TVoxel>
+void ITMVisualisationEngine_CUDA<TVoxel, ITMVoxelBlockHHash>::ForwardRender(const ITMView *view, ITMTrackingState *trackingState, 
+	ITMRenderState *renderState) const
+{
+	ForwardRender_common(this->scene, view, trackingState, renderState, this->noTotalPoints_device);
 }
 
 //device implementations
@@ -590,9 +687,8 @@ __global__ void fillBlocks_device(const uint *noTotalBlocks, const RenderingBloc
 	atomicMin(&pixel.x, b.zRange.x); atomicMax(&pixel.y, b.zRange.y);
 }
 
-template<class TVoxel, class TIndex>
-__global__ void genericRaycast_device(Vector4f *out_ptsRay, const TVoxel *voxelData, const typename TIndex::IndexData *voxelIndex,
-	Vector2i imgSize, Matrix4f invM, Vector4f projParams, float oneOverVoxelSize, const Vector2f *minmaxdata, float mu)
+__global__ void findMissingPoints_device(int *fwdProjMissingPoints, uint *noMissingPoints, const Vector2f *minmaximg,
+	Vector4f *forwardProjection, Vector2i imgSize)
 {
 	int x = (threadIdx.x + blockIdx.x * blockDim.x), y = (threadIdx.y + blockIdx.y * blockDim.y);
 
@@ -601,7 +697,70 @@ __global__ void genericRaycast_device(Vector4f *out_ptsRay, const TVoxel *voxelD
 	int locId = x + y * imgSize.x;
 	int locId2 = (int)floor((float)x / minmaximg_subsample) + (int)floor((float)y / minmaximg_subsample) * imgSize.x;
 
-	castRay<TVoxel, TIndex>(out_ptsRay[locId], x, y, voxelData, voxelIndex, invM, projParams, oneOverVoxelSize, mu, minmaxdata[locId2]);
+	Vector4f fwdPoint = forwardProjection[locId];
+	Vector2f minmaxval = minmaximg[locId2];
+
+	bool hasPoint = false;
+
+	__shared__ bool shouldPrefix;
+	shouldPrefix = false;
+	__syncthreads();
+
+	if ((fwdPoint.w <= 0) && (minmaxval.x < minmaxval.y))
+	//if ((fwdPoint.x == 0 && fwdPoint.y == 0 && fwdPoint.z == 0 && fwdPoint.w <= 0) && (minmaxval.x < minmaxval.y))		
+	{ shouldPrefix = true; hasPoint = true; }
+
+	__syncthreads();
+
+	if (shouldPrefix)
+	{
+		int offset = computePrefixSum_device(hasPoint, noMissingPoints, blockDim.x * blockDim.y, threadIdx.x + threadIdx.y * blockDim.x);
+		if (offset != -1) fwdProjMissingPoints[offset] = locId;
+	}
+}
+
+template<class TVoxel, class TIndex>
+__global__ void genericRaycast_device(Vector4f *out_ptsRay, const TVoxel *voxelData, const typename TIndex::IndexData *voxelIndex,
+	Vector2i imgSize, Matrix4f invM, Vector4f invProjParams, float oneOverVoxelSize, const Vector2f *minmaximg, float mu)
+{
+	int x = (threadIdx.x + blockIdx.x * blockDim.x), y = (threadIdx.y + blockIdx.y * blockDim.y);
+
+	if (x >= imgSize.x || y >= imgSize.y) return;
+
+	int locId = x + y * imgSize.x;
+	int locId2 = (int)floor((float)x / minmaximg_subsample) + (int)floor((float)y / minmaximg_subsample) * imgSize.x;
+
+	castRay<TVoxel, TIndex>(out_ptsRay[locId], x, y, voxelData, voxelIndex, invM, invProjParams, oneOverVoxelSize, mu, minmaximg[locId2]);
+}
+
+template<class TVoxel, class TIndex>
+__global__ void genericRaycastMissingPoints_device(Vector4f *forwardProjection, const TVoxel *voxelData, const typename TIndex::IndexData *voxelIndex,
+	Vector2i imgSize, Matrix4f invM, Vector4f invProjParams, float oneOverVoxelSize, int *fwdProjMissingPoints, int noMissingPoints,
+	const Vector2f *minmaximg, float mu)
+{
+	int pointId = threadIdx.x + blockIdx.x * blockDim.x;
+
+	if (pointId >= noMissingPoints) return;
+
+	int locId = fwdProjMissingPoints[pointId];
+	int y = locId / imgSize.x, x = locId - y*imgSize.x;
+	int locId2 = (int)floor((float)x / minmaximg_subsample) + (int)floor((float)y / minmaximg_subsample) * imgSize.x;
+
+	castRay<TVoxel, TIndex>(forwardProjection[locId], x, y, voxelData, voxelIndex, invM, invProjParams, oneOverVoxelSize, mu, minmaximg[locId2]);
+}
+
+__global__ void forwardProject_device(Vector4f *forwardProjection, const Vector4f *pointsRay, Vector2i imgSize, Matrix4f M,
+	Vector4f projParams, float voxelSize)
+{
+	int x = (threadIdx.x + blockIdx.x * blockDim.x), y = (threadIdx.y + blockIdx.y * blockDim.y);
+
+	if (x >= imgSize.x || y >= imgSize.y) return;
+
+	int locId = x + y * imgSize.x;
+	Vector4f pixel = pointsRay[locId];
+
+	int locId_new = forwardProjectPixel(pixel * voxelSize, M, projParams, imgSize);
+	if (locId_new >= 0) forwardProjection[locId_new] = pixel;
 }
 
 __global__ void renderICP_device(Vector4u *outRendering, Vector4f *pointsMap, Vector4f *normalsMap, const Vector4f *pointsRay,
@@ -612,6 +771,15 @@ __global__ void renderICP_device(Vector4u *outRendering, Vector4f *pointsMap, Ve
 	if (x >= imgSize.x || y >= imgSize.y) return;
 
 	processPixelICP(outRendering, pointsMap, normalsMap, pointsRay, imgSize, x, y, voxelSize, lightSource);
+}
+
+__global__ void renderForward_device(Vector4u *outRendering, const Vector4f *pointsRay, float voxelSize, Vector2i imgSize, Vector3f lightSource)
+{
+	int x = (threadIdx.x + blockIdx.x * blockDim.x), y = (threadIdx.y + blockIdx.y * blockDim.y);
+
+	if (x >= imgSize.x || y >= imgSize.y) return;
+
+	processPixelForwardRender(outRendering, pointsRay, imgSize, x, y, voxelSize, lightSource);
 }
 
 template<class TVoxel, class TIndex>

@@ -25,6 +25,8 @@ namespace ITMLib
 			/// Enables swapping between host and device.
 			bool useSwapping;
 
+			bool useApproximateRaycast;
+
 			/// Tracker types
 			typedef enum {
 				//! Identifies a tracker based on colour image
