@@ -225,16 +225,29 @@ _CPU_AND_GPU_CODE_ inline void computeNormalAndAngle(THREADPTR(bool) & foundPoin
 	if (!(angle > 0.0)) foundPoint = false;
 }
 
+template <bool useSmoothing>
 _CPU_AND_GPU_CODE_ inline void computeNormalAndAngle(THREADPTR(bool) & foundPoint, const THREADPTR(int) &x, const THREADPTR(int) &y,
 	const CONSTANT(Vector4f) *pointsRay, const THREADPTR(Vector3f) & lightSource, const THREADPTR(float) &voxelSize,
 	const THREADPTR(Vector2i) &imgSize, THREADPTR(Vector3f) & outNormal, THREADPTR(float) & angle)
 {
 	if (!foundPoint) return;
-	
-	if (y <= 2 || y >= imgSize.y - 3 || x <= 2 || x >= imgSize.x - 3) { foundPoint = false; return; }
 
-	Vector4f xp1_y = pointsRay[(x + 2) + y * imgSize.x], x_yp1 = pointsRay[x + (y + 2) * imgSize.x];
-	Vector4f xm1_y = pointsRay[(x - 2) + y * imgSize.x], x_ym1 = pointsRay[x + (y - 2) * imgSize.x];
+	Vector4f xp1_y, xm1_y, x_yp1, x_ym1;
+
+	if (useSmoothing)
+	{
+		if (y <= 2 || y >= imgSize.y - 3 || x <= 2 || x >= imgSize.x - 3) { foundPoint = false; return; }
+
+		xp1_y = pointsRay[(x + 2) + y * imgSize.x], x_yp1 = pointsRay[x + (y + 2) * imgSize.x];
+		xm1_y = pointsRay[(x - 2) + y * imgSize.x], x_ym1 = pointsRay[x + (y - 2) * imgSize.x];
+	}
+	else
+	{
+		if (y <= 1 || y >= imgSize.y - 2 || x <= 1 || x >= imgSize.x - 2) { foundPoint = false; return; }
+
+		xp1_y = pointsRay[(x + 1) + y * imgSize.x], x_yp1 = pointsRay[x + (y + 1) * imgSize.x];
+		xm1_y = pointsRay[(x - 1) + y * imgSize.x], x_ym1 = pointsRay[x + (y - 1) * imgSize.x];
+	}
 
 	Vector4f diff_x(0.0f), diff_y(0.0f);
 
@@ -252,9 +265,12 @@ _CPU_AND_GPU_CODE_ inline void computeNormalAndAngle(THREADPTR(bool) & foundPoin
 
 	if (doPlus1)
 	{
-		xp1_y = pointsRay[(x + 1) + y * imgSize.x]; x_yp1 = pointsRay[x + (y + 1) * imgSize.x];
-		xm1_y = pointsRay[(x - 1) + y * imgSize.x]; x_ym1 = pointsRay[x + (y - 1) * imgSize.x];
-		diff_x = xp1_y - xm1_y; diff_y = x_yp1 - x_ym1;
+		if (useSmoothing)
+		{
+			xp1_y = pointsRay[(x + 1) + y * imgSize.x]; x_yp1 = pointsRay[x + (y + 1) * imgSize.x];
+			xm1_y = pointsRay[(x - 1) + y * imgSize.x]; x_ym1 = pointsRay[x + (y - 1) * imgSize.x];
+			diff_x = xp1_y - xm1_y; diff_y = x_yp1 - x_ym1;
+		}
 
 		if (xp1_y.w <= 0 || x_yp1.w <= 0 || xm1_y.w <= 0 || x_ym1.w <= 0)
 		{
@@ -324,6 +340,7 @@ _CPU_AND_GPU_CODE_ inline void processPixelICP(DEVICEPTR(Vector4u) &outRendering
 	}
 }
 
+template<bool useSmoothing>
 _CPU_AND_GPU_CODE_ inline void processPixelICP(DEVICEPTR(Vector4u) *outRendering, DEVICEPTR(Vector4f) *pointsMap, DEVICEPTR(Vector4f) *normalsMap,
 	const CONSTANT(Vector4f) *pointsRay, const THREADPTR(Vector2i) &imgSize, const THREADPTR(int) &x, const THREADPTR(int) &y, float voxelSize,
 	const THREADPTR(Vector3f) &lightSource)
@@ -336,7 +353,7 @@ _CPU_AND_GPU_CODE_ inline void processPixelICP(DEVICEPTR(Vector4u) *outRendering
 
 	bool foundPoint = point.w > 0.0f;
 
-	computeNormalAndAngle(foundPoint, x, y, pointsRay, lightSource, voxelSize, imgSize, outNormal, angle);
+	computeNormalAndAngle<useSmoothing>(foundPoint, x, y, pointsRay, lightSource, voxelSize, imgSize, outNormal, angle);
 
 	if (foundPoint)
 	{
@@ -360,6 +377,7 @@ _CPU_AND_GPU_CODE_ inline void processPixelICP(DEVICEPTR(Vector4u) *outRendering
 	}
 }
 
+template<bool useSmoothing>
 _CPU_AND_GPU_CODE_ inline void processPixelForwardRender(DEVICEPTR(Vector4u) *outRendering, const CONSTANT(Vector4f) *pointsRay, 
 	const THREADPTR(Vector2i) &imgSize, const THREADPTR(int) &x, const THREADPTR(int) &y, float voxelSize, const THREADPTR(Vector3f) &lightSource)
 {
@@ -370,7 +388,7 @@ _CPU_AND_GPU_CODE_ inline void processPixelForwardRender(DEVICEPTR(Vector4u) *ou
 	Vector4f point = pointsRay[locId];
 
 	bool foundPoint = point.w > 0.0f;
-	computeNormalAndAngle(foundPoint, x, y, pointsRay, lightSource, voxelSize, imgSize, outNormal, angle);
+	computeNormalAndAngle<useSmoothing>(foundPoint, x, y, pointsRay, lightSource, voxelSize, imgSize, outNormal, angle);
 
 	if (foundPoint) drawPixelGrey(outRendering[locId], angle);
 	else outRendering[locId] = Vector4u((uchar)0);

@@ -609,7 +609,7 @@ __global__ void renderICP_device(Vector4u *outRendering, Vector4f *pointsMap, Ve
 
 	if (x >= imgSize.x || y >= imgSize.y) return;
 
-	processPixelICP(outRendering, pointsMap, normalsMap, pointsRay, imgSize, x, y, voxelSize, lightSource);
+	processPixelICP<true>(outRendering, pointsMap, normalsMap, pointsRay, imgSize, x, y, voxelSize, lightSource);
 }
 
 __global__ void renderForward_device(Vector4u *outRendering, const Vector4f *pointsRay, float voxelSize, Vector2i imgSize, Vector3f lightSource)
@@ -618,7 +618,7 @@ __global__ void renderForward_device(Vector4u *outRendering, const Vector4f *poi
 
 	if (x >= imgSize.x || y >= imgSize.y) return;
 
-	processPixelForwardRender(outRendering, pointsRay, imgSize, x, y, voxelSize, lightSource);
+	processPixelForwardRender<true>(outRendering, pointsRay, imgSize, x, y, voxelSize, lightSource);
 }
 
 template<class TVoxel, class TIndex>
