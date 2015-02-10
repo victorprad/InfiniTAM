@@ -76,5 +76,5 @@ ITMLibSettings::ITMLibSettings(void)
 
 ITMLibSettings::~ITMLibSettings()
 {
-	delete trackingRegime;
+	delete[] trackingRegime;
 }

@@ -66,8 +66,8 @@ namespace ITMLib
 					voxelBlocks->SetFrom(voxelBlocks_host, ORUtils::MemoryBlock<TVoxel>::CPU_TO_CUDA);
 					allocationList->SetFrom(allocationList_host, ORUtils::MemoryBlock<int>::CPU_TO_CUDA);
 #endif
-					free(voxelBlocks_host);
-					free(allocationList_host);
+					delete voxelBlocks_host;
+					delete allocationList_host;
 				}
 				else
 				{

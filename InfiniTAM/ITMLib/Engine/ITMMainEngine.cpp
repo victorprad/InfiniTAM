@@ -58,6 +58,9 @@ ITMMainEngine::ITMMainEngine(const ITMLibSettings *settings, const ITMRGBDCalib 
 
 ITMMainEngine::~ITMMainEngine()
 {
+	delete renderState_live;
+	if (renderState_freeview!=NULL) delete renderState_freeview;
+
 	delete scene;
 
 	delete denseMapper;
