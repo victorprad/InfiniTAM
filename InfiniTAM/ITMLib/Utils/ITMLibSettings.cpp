@@ -31,7 +31,7 @@ ITMLibSettings::ITMLibSettings(void)
 	useSwapping = false;
 
 	/// enables or disables approximate raycast
-	useApproximateRaycast = true;
+	useApproximateRaycast = false;
 
 	//trackerType = TRACKER_COLOR;
 	trackerType = TRACKER_ICP;

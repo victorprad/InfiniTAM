@@ -77,7 +77,7 @@ void ITMSceneReconstructionEngine_CPU<TVoxel, ITMVoxelBlockHash>::IntegrateIntoS
 			locId = x + y * SDF_BLOCK_SIZE + z * SDF_BLOCK_SIZE * SDF_BLOCK_SIZE;
 
 			if (stopIntegratingAtMaxW) if (localVoxelBlock[locId].w_depth == maxW) continue;
-			if (approximateIntegration) if (localVoxelBlock[locId].w_depth != 0) return;
+			if (approximateIntegration) if (localVoxelBlock[locId].w_depth != 0) continue;
 
 			pt_model.x = (float)(globalPos.x + x) * voxelSize;
 			pt_model.y = (float)(globalPos.y + y) * voxelSize;
@@ -320,7 +320,7 @@ void ITMSceneReconstructionEngine_CPU<TVoxel, ITMPlainVoxelArray>::IntegrateInto
 		Vector4f pt_model;
 
 		if (stopIntegratingAtMaxW) if (voxelArray[locId].w_depth == maxW) continue;
-		if (approximateIntegration) if (localVoxelBlock[locId].w_depth != 0) return;
+		if (approximateIntegration) if (voxelArray[locId].w_depth != 0) continue;
 
 		pt_model.x = (float)(x + arrayInfo->offset.x) * voxelSize;
 		pt_model.y = (float)(y + arrayInfo->offset.y) * voxelSize;
