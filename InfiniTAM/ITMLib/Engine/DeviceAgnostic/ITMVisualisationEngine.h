@@ -3,7 +3,6 @@
 #pragma once
 
 #include "../../Utils/ITMLibDefines.h"
-#include "ITMRepresentationAccess.h"
 
 struct RenderingBlock {
 	Vector2s upperLeft;
