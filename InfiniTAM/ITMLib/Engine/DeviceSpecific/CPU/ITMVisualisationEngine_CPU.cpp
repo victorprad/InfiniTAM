@@ -395,7 +395,7 @@ template<class TVoxel, class TIndex>
 void ITMVisualisationEngine_CPU<TVoxel, TIndex>::ForwardRender(const ITMView *view, ITMTrackingState *trackingState, 
 	ITMRenderState *renderState) const
 {
-	CreateICPMaps_common(this->scene, view, trackingState, renderState);
+	ForwardRender_common(this->scene, view, trackingState, renderState);
 }
 
 template<class TVoxel>
