@@ -560,7 +560,7 @@ template<class TVoxel, class TIndex>
 void ITMVisualisationEngine_CUDA<TVoxel, TIndex>::ForwardRender(const ITMView *view, ITMTrackingState *trackingState, 
 	ITMRenderState *renderState) const
 {
-	CreateICPMaps_common(this->scene, view, trackingState, renderState);
+	ForwardRender_common(this->scene, view, trackingState, renderState, this->noTotalPoints_device);
 }
 
 template<class TVoxel>
@@ -770,7 +770,7 @@ __global__ void renderICP_device(Vector4u *outRendering, Vector4f *pointsMap, Ve
 
 	if (x >= imgSize.x || y >= imgSize.y) return;
 
-	processPixelICP(outRendering, pointsMap, normalsMap, pointsRay, imgSize, x, y, voxelSize, lightSource);
+	processPixelICP<true>(outRendering, pointsMap, normalsMap, pointsRay, imgSize, x, y, voxelSize, lightSource);
 }
 
 __global__ void renderForward_device(Vector4u *outRendering, const Vector4f *pointsRay, float voxelSize, Vector2i imgSize, Vector3f lightSource)
@@ -779,7 +779,7 @@ __global__ void renderForward_device(Vector4u *outRendering, const Vector4f *poi
 
 	if (x >= imgSize.x || y >= imgSize.y) return;
 
-	processPixelForwardRender(outRendering, pointsRay, imgSize, x, y, voxelSize, lightSource);
+	processPixelForwardRender<true>(outRendering, pointsRay, imgSize, x, y, voxelSize, lightSource);
 }
 
 template<class TVoxel, class TIndex>

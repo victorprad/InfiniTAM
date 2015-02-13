@@ -393,7 +393,7 @@ static void CreateICPMaps_common(const ITMScene<TVoxel,TIndex> *scene, const ITM
 	#pragma omp parallel for
 #endif
 	for (int y = 0; y < imgSize.y; y++) for (int x = 0; x < imgSize.x; x++)
-		processPixelICP(outRendering, pointsMap, normalsMap, pointsRay, imgSize, x, y, voxelSize, lightSource);
+		processPixelICP<true>(outRendering, pointsMap, normalsMap, pointsRay, imgSize, x, y, voxelSize, lightSource);
 }
 
 template<class TVoxel, class TIndex>
@@ -457,7 +457,7 @@ static void ForwardRender_common(const ITMScene<TVoxel, TIndex> *scene, const IT
 	}
 
 	for (int y = 0; y < imgSize.y; y++) for (int x = 0; x < imgSize.x; x++)
-		processPixelForwardRender(outRendering, forwardProjection, imgSize, x, y, voxelSize, lightSource);
+		processPixelForwardRender<true>(outRendering, forwardProjection, imgSize, x, y, voxelSize, lightSource);
 }
 
 template<class TVoxel, class TIndex>
@@ -518,7 +518,7 @@ template<class TVoxel, class TIndex>
 void ITMVisualisationEngine_CPU<TVoxel, TIndex>::ForwardRender(const ITMView *view, ITMTrackingState *trackingState, 
 	ITMRenderState *renderState) const
 {
-	CreateICPMaps_common(this->scene, view, trackingState, renderState);
+	ForwardRender_common(this->scene, view, trackingState, renderState);
 }
 
 template<class TVoxel>
