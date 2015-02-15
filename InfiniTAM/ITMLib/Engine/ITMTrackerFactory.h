@@ -134,6 +134,7 @@ namespace ITMLib
               settings->noHierarchyLevels,
               settings->noICPRunTillLevel,
               settings->depthTrackerICPThreshold,
+			  settings->depthTrackerTerminationThreshold,
               lowLevelEngine
             );
           }
@@ -146,6 +147,7 @@ namespace ITMLib
               settings->noHierarchyLevels,
               settings->noICPRunTillLevel,
               settings->depthTrackerICPThreshold,
+			  settings->depthTrackerTerminationThreshold,
               lowLevelEngine
             );
 #else
@@ -161,6 +163,7 @@ namespace ITMLib
               settings->noHierarchyLevels,
               settings->noICPRunTillLevel,
               settings->depthTrackerICPThreshold,
+			  settings->depthTrackerTerminationThreshold,
               lowLevelEngine
             );
 #else
@@ -192,6 +195,7 @@ namespace ITMLib
                 settings->noHierarchyLevels,
                 settings->noICPRunTillLevel,
                 settings->depthTrackerICPThreshold,
+				settings->depthTrackerTerminationThreshold,
                 lowLevelEngine
               ), 1
             );
@@ -209,6 +213,7 @@ namespace ITMLib
                 settings->noHierarchyLevels,
                 settings->noICPRunTillLevel,
                 settings->depthTrackerICPThreshold,
+				settings->depthTrackerTerminationThreshold,
                 lowLevelEngine
               ), 1
             );
@@ -229,6 +234,7 @@ namespace ITMLib
                 settings->noHierarchyLevels,
                 settings->noICPRunTillLevel,
                 settings->depthTrackerICPThreshold,
+				settings->depthTrackerTerminationThreshold,
                 lowLevelEngine
               ), 1
             );
@@ -261,6 +267,7 @@ namespace ITMLib
                 settings->noHierarchyLevels,
                 settings->noICPRunTillLevel,
                 settings->depthTrackerICPThreshold,
+				settings->depthTrackerTerminationThreshold,
                 lowLevelEngine
               ), 0
             );
@@ -278,6 +285,7 @@ namespace ITMLib
                 settings->noHierarchyLevels,
                 settings->noICPRunTillLevel,
                 settings->depthTrackerICPThreshold,
+				settings->depthTrackerTerminationThreshold,
                 lowLevelEngine
               ), 0
             );
@@ -298,6 +306,7 @@ namespace ITMLib
                 settings->noHierarchyLevels,
                 settings->noICPRunTillLevel,
                 settings->depthTrackerICPThreshold,
+				settings->depthTrackerTerminationThreshold,
                 lowLevelEngine
               ), 0
             );

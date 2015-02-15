@@ -8,24 +8,30 @@
 using namespace ITMLib::Engine;
 
 ITMDepthTracker::ITMDepthTracker(Vector2i imgSize, TrackerIterationType *trackingRegime, int noHierarchyLevels, int noICPRunTillLevel, float distThresh,
-	const ITMLowLevelEngine *lowLevelEngine, MemoryDeviceType memoryType)
+	float terminationThreshold, const ITMLowLevelEngine *lowLevelEngine, MemoryDeviceType memoryType)
 {
 	viewHierarchy = new ITMImageHierarchy<ITMTemplatedHierarchyLevel<ITMFloatImage> >(imgSize, trackingRegime, noHierarchyLevels, memoryType, true);
 	sceneHierarchy = new ITMImageHierarchy<ITMSceneHierarchyLevel>(imgSize, trackingRegime, noHierarchyLevels, memoryType, true);
 
 	this->noIterationsPerLevel = new int[noHierarchyLevels];
-
+	this->distThresh = new float[noHierarchyLevels];
+	
 	this->noIterationsPerLevel[0] = 2; //TODO -> make parameter
 	for (int levelId = 1; levelId < noHierarchyLevels; levelId++)
 	{
 		noIterationsPerLevel[levelId] = noIterationsPerLevel[levelId - 1] + 2;
 	}
 
+	float distThreshStep = distThresh / noHierarchyLevels;
+	this->distThresh[noHierarchyLevels - 1] = distThresh;
+	for (int levelId = noHierarchyLevels - 2; levelId >= 0; levelId--)
+		this->distThresh[levelId] = this->distThresh[levelId + 1] - distThreshStep;
+
 	this->lowLevelEngine = lowLevelEngine;
 
-	this->distThresh = distThresh;
-
 	this->noICPLevel = noICPRunTillLevel;
+
+	this->terminationThreshold = terminationThreshold;
 }
 
 ITMDepthTracker::~ITMDepthTracker(void) 
@@ -94,6 +100,18 @@ void ITMDepthTracker::ComputeDelta(float *step, float *nabla, float *hessian, bo
 	}
 }
 
+bool ITMDepthTracker::HasConverged(float f_new, float f_old, float *step) const
+{
+	if (f_new > f_old) return true;
+
+	float stepLength = 0.0f;
+	for (int i = 0; i < 6; i++) stepLength += step[i] * step[i];
+
+	if (sqrt(stepLength) / 6 < terminationThreshold) return true; //converged
+
+	return false;
+}
+
 void ITMDepthTracker::ApplyDelta(const Matrix4f & para_old, const float *delta, Matrix4f & para_new) const
 {
 	float step[6];
@@ -128,7 +146,6 @@ void ITMDepthTracker::ApplyDelta(const Matrix4f & para_old, const float *delta, 
 void ITMDepthTracker::TrackCamera(ITMTrackingState *trackingState, const ITMView *view)
 {
 	this->SetEvaluationData(trackingState, view);
-
 	this->PrepareForEvaluation();
 
 	Matrix4f approxInvPose = trackingState->pose_d->GetInvM();
@@ -141,23 +158,14 @@ void ITMDepthTracker::TrackCamera(ITMTrackingState *trackingState, const ITMView
 
 		if (iterationType == TRACKER_ITERATION_NONE) continue;
 
-		int noValidPoints;
-
 		for (int iterNo = 0; iterNo < noIterationsPerLevel[levelId]; iterNo++)
 		{
-			noValidPoints = this->ComputeGandH(f_new, nabla, hessian, approxInvPose);
+			int noValidPoints = this->ComputeGandH(f_new, nabla, hessian, approxInvPose);
 
 			if (noValidPoints > 0)
 			{
 				ComputeDelta(step, nabla, hessian, iterationType != TRACKER_ITERATION_BOTH);
-
-				if (f_new > f_old) break;
-
-				float stepLength = 0.0f;
-				for (int i = 0; i < 6; i++) stepLength += step[i] * step[i];
-
-				if (sqrt(stepLength) / 6 < 1e-3) break; //converged
-
+				if (HasConverged(f_new, f_old, step)) break;
 				ApplyDelta(approxInvPose, step, approxInvPose);
 			}
 		}
@@ -165,8 +173,5 @@ void ITMDepthTracker::TrackCamera(ITMTrackingState *trackingState, const ITMView
 
 	trackingState->pose_d->SetInvM(approxInvPose);
 	trackingState->pose_d->Coerce();
-
-	//printf(">> %f %f %f %f %f %f\n", scene->pose->params.each.rx, scene->pose->params.each.ry, scene->pose->params.each.rz,
-	//	scene->pose->params.each.tx, scene->pose->params.each.ty, scene->pose->params.each.tz);
 }
 

@@ -25,12 +25,11 @@ namespace ITMLib
             void *noValidPoints_metal_mb;
             void *f_metal_mb;
 		protected:
-			int ComputeGandH(ITMSceneHierarchyLevel *sceneHierarchyLevel, ITMTemplatedHierarchyLevel<ITMFloatImage> *viewHierarchyLevel,
-				Matrix4f approxInvPose, Matrix4f scenePose, TrackerIterationType iterationType);
+            int ComputeGandH(float &f, float *nabla, float *hessian, Matrix4f approxInvPose);
 
 		public:
             ITMDepthTracker_Metal(Vector2i imgSize, TrackerIterationType *trackingRegime, int noHierarchyLevels,
-                                  int noICPRunTillLevel, float distThresh, const ITMLowLevelEngine *lowLevelEngine);
+                                  int noICPRunTillLevel, float distThresh, float terminationThreshold, const ITMLowLevelEngine *lowLevelEngine);
 			~ITMDepthTracker_Metal(void);
 		};
 	}

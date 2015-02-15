@@ -12,6 +12,9 @@ ITMLibSettings::ITMLibSettings(void)
 	/// depth threashold for the ICP tracker
 	depthTrackerICPThreshold = 0.1f * 0.1f;
 
+	/// For ITMDepthTracker: ICP iteration termination threshold
+	depthTrackerTerminationThreshold = 1e-3f;
+
 	/// skips every other point when using the colour tracker
 	skipPoints = true;
 

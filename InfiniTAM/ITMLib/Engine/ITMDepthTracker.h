@@ -33,6 +33,8 @@ namespace ITMLib
 			int *noIterationsPerLevel;
 			int noICPLevel;
 
+			float terminationThreshold;
+
 			float hessian[6 * 6];
 			float nabla[6];
 			float step[6];
@@ -43,10 +45,11 @@ namespace ITMLib
 
 			void ComputeDelta(float *delta, float *nabla, float *hessian, bool shortIteration) const;
 			void ApplyDelta(const Matrix4f & para_old, const float *delta, Matrix4f & para_new) const;
+			bool HasConverged(float f_new, float f_old, float *step) const;
 
 			void SetEvaluationData(ITMTrackingState *trackingState, const ITMView *view);
 		protected:
-			float distThresh;
+			float *distThresh;
 
 			int levelId;
 			TrackerIterationType iterationType;
@@ -61,7 +64,7 @@ namespace ITMLib
 			void TrackCamera(ITMTrackingState *trackingState, const ITMView *view);
 
 			ITMDepthTracker(Vector2i imgSize, TrackerIterationType *trackingRegime, int noHierarchyLevels, int noICPRunTillLevel, float distThresh,
-				const ITMLowLevelEngine *lowLevelEngine, MemoryDeviceType memoryType);
+				float terminationThreshold, const ITMLowLevelEngine *lowLevelEngine, MemoryDeviceType memoryType);
 			virtual ~ITMDepthTracker(void);
 		};
 	}
