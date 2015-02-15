@@ -41,7 +41,7 @@ namespace ITMLib
 			void PrepareForEvaluation();
 			void SetEvaluationParams(int levelId);
 
-			void ComputeSingleStep(float *step, float *ATA, float *ATb, bool shortIteration);
+			void ComputeDelta(float *step, float *ATA, float *ATb, bool shortIteration) const;
 			void ApplyDelta(const Matrix4f & para_old, const float *delta, Matrix4f & para_new) const;
 
 			void SetEvaluationData(ITMTrackingState *trackingState, const ITMView *view);

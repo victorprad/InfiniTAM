@@ -75,7 +75,7 @@ void ITMDepthTracker::SetEvaluationParams(int levelId)
 	this->viewHierarchyLevel = viewHierarchy->levels[levelId];
 }
 
-void ITMDepthTracker::ComputeSingleStep(float *step, float *ATA, float *ATb, bool shortIteration)
+void ITMDepthTracker::ComputeDelta(float *step, float *ATA, float *ATb, bool shortIteration) const
 {
 	for (int i = 0; i < 6; i++) step[i] = 0;
 
@@ -93,18 +93,6 @@ void ITMDepthTracker::ComputeSingleStep(float *step, float *ATA, float *ATb, boo
 		cholA.Backsub(step, ATb);
 	}
 }
-
-//Matrix4f ITMDepthTracker::ApplyDelta(Matrix4f approxInvPose, float *step) const
-//{
-//	Matrix4f Tinc;
-//
-//	Tinc.m00 = 1.0f;		Tinc.m10 = step[2];		Tinc.m20 = -step[1];	Tinc.m30 = step[3];
-//	Tinc.m01 = -step[2];	Tinc.m11 = 1.0f;		Tinc.m21 = step[0];		Tinc.m31 = step[4];
-//	Tinc.m02 = step[1];		Tinc.m12 = -step[0];	Tinc.m22 = 1.0f;		Tinc.m32 = step[5];
-//	Tinc.m03 = 0.0f;		Tinc.m13 = 0.0f;		Tinc.m23 = 0.0f;		Tinc.m33 = 1.0f;
-//
-//	return Tinc * approxInvPose;
-//}
 
 void ITMDepthTracker::ApplyDelta(const Matrix4f & para_old, const float *delta, Matrix4f & para_new) const
 {
@@ -161,7 +149,7 @@ void ITMDepthTracker::TrackCamera(ITMTrackingState *trackingState, const ITMView
 
 			if (noValidPoints > 0)
 			{
-				this->ComputeSingleStep(step, ATA_host, ATb_host, iterationType != TRACKER_ITERATION_BOTH);
+				ComputeDelta(step, ATA_host, ATb_host, iterationType != TRACKER_ITERATION_BOTH);
 
 				float f_new = sqrtf(f) / noValidPoints;
 				if (f_new > f_old) break;
