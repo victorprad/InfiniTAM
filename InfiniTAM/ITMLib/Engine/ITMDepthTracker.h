@@ -33,15 +33,15 @@ namespace ITMLib
 			int *noIterationsPerLevel;
 			int noICPLevel;
 
-			float ATA_host[6 * 6];
-			float ATb_host[6];
+			float hessian[6 * 6];
+			float nabla[6];
 			float step[6];
 			float f;
 
 			void PrepareForEvaluation();
 			void SetEvaluationParams(int levelId);
 
-			void ComputeDelta(float *step, float *ATA, float *ATb, bool shortIteration) const;
+			void ComputeDelta(float *delta, float *nabla, float *hessian, bool shortIteration) const;
 			void ApplyDelta(const Matrix4f & para_old, const float *delta, Matrix4f & para_new) const;
 
 			void SetEvaluationData(ITMTrackingState *trackingState, const ITMView *view);
@@ -55,7 +55,7 @@ namespace ITMLib
 			ITMSceneHierarchyLevel *sceneHierarchyLevel;
 			ITMTemplatedHierarchyLevel<ITMFloatImage> *viewHierarchyLevel;
 
-			virtual int ComputeGandH(float &f, float *ATb_host, float *ATA_host, Matrix4f approxInvPose) = 0;
+			virtual int ComputeGandH(float &f, float *nabla, float *hessian, Matrix4f approxInvPose) = 0;
 
 		public:
 			void TrackCamera(ITMTrackingState *trackingState, const ITMView *view);

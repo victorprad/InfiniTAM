@@ -37,7 +37,7 @@ ITMDepthTracker_CUDA::~ITMDepthTracker_CUDA(void)
 	ITMSafeCall(cudaFree(accu_device));
 }
 
-int ITMDepthTracker_CUDA::ComputeGandH(float &f, float *ATb_host, float *ATA_host, Matrix4f approxInvPose)
+int ITMDepthTracker_CUDA::ComputeGandH(float &f, float *nabla, float *hessian, Matrix4f approxInvPose)
 {
 	Vector4f *pointsMap = sceneHierarchyLevel->pointsMap->GetData(MEMORYDEVICE_CUDA);
 	Vector4f *normalsMap = sceneHierarchyLevel->normalsMap->GetData(MEMORYDEVICE_CUDA);
@@ -52,12 +52,12 @@ int ITMDepthTracker_CUDA::ComputeGandH(float &f, float *ATb_host, float *ATA_hos
 
 	bool shortIteration = (iterationType == TRACKER_ITERATION_ROTATION) || (iterationType == TRACKER_ITERATION_TRANSLATION);
 
-	float packedATA[6 * 6], ATb[6], sumF; int noValidPoints;
+	float sumHessian[6 * 6], sumNabla[6], sumF; int noValidPoints;
 	int noPara = shortIteration ? 3 : 6, noParaSQ = shortIteration ? 3 + 2 + 1 : 6 + 5 + 4 + 3 + 2 + 1;
 
 	noValidPoints = 0; sumF = 0.0f;
-	memset(packedATA, 0, sizeof(float) * noParaSQ);
-	memset(ATb, 0, sizeof(float) * noPara);
+	memset(sumHessian, 0, sizeof(float) * noParaSQ);
+	memset(sumNabla, 0, sizeof(float) * noPara);
 
 	dim3 blockSize(16, 16);
 	dim3 gridSize((int)ceil((float)viewImageSize.x / (float)blockSize.x), (int)ceil((float)viewImageSize.y / (float)blockSize.y));
@@ -83,20 +83,20 @@ int ITMDepthTracker_CUDA::ComputeGandH(float &f, float *ATb_host, float *ATA_hos
 
 	ITMSafeCall(cudaMemcpy(accu_host, accu_device, sizeof(AccuCell)* gridSizeTotal, cudaMemcpyDeviceToHost));
 
-	memset(packedATA, 0, sizeof(float) * noParaSQ);
+	memset(sumHessian, 0, sizeof(float) * noParaSQ);
 
 	for (int i = 0; i < gridSizeTotal; i++)
 	{
 		noValidPoints += accu_host[i].numPoints;
 		sumF += accu_host[i].f;
-		for (int p = 0; p < noPara; p++) ATb[p] += accu_host[i].g[p];
-		for (int p = 0; p < noParaSQ; p++) packedATA[p] += accu_host[i].h[p];
+		for (int p = 0; p < noPara; p++) sumNabla[p] += accu_host[i].g[p];
+		for (int p = 0; p < noParaSQ; p++) sumHessian[p] += accu_host[i].h[p];
 	}
 
-	for (int r = 0, counter = 0; r < noPara; r++) for (int c = 0; c <= r; c++, counter++) ATA_host[r + c * 6] = packedATA[counter];
-	for (int r = 0; r < noPara; ++r) for (int c = r + 1; c < noPara; c++) ATA_host[r + c * 6] = ATA_host[c + r * 6];
+	for (int r = 0, counter = 0; r < noPara; r++) for (int c = 0; c <= r; c++, counter++) hessian[r + c * 6] = sumHessian[counter];
+	for (int r = 0; r < noPara; ++r) for (int c = r + 1; c < noPara; c++) hessian[r + c * 6] = hessian[c + r * 6];
 
-	memcpy(ATb_host, ATb, noPara * sizeof(float));
+	memcpy(nabla, sumNabla, noPara * sizeof(float));
 	f = sumF;
 
 	return noValidPoints;

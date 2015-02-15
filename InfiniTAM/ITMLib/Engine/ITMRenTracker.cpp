@@ -136,13 +136,13 @@ void ITMRenTracker<TVoxel,TIndex>::TrackCamera(ITMTrackingState *trackingState, 
 
 	//for (iter = 0; iter < 200; iter++)
 	//{
-	//	G_oneLevel(ATb_host, ATA_host, invM);
+	//	G_oneLevel(nabla, hessian, invM);
 
 	//	while (true)
 	//	{
 	//		if (lambda>1e6) { converged = true; break; }
 
-	//		ComputeSingleStep(step, ATA_host, ATb_host, lambda);
+	//		ComputeSingleStep(step, hessian, nabla, lambda);
 	//		GetMFromParam(step, tmpM);
 
 	//		F_oneLevel(&currentEnergy, tmpM * invM);
@@ -176,8 +176,8 @@ void ITMRenTracker<TVoxel,TIndex>::TrackCamera(ITMTrackingState *trackingState, 
 		for (int iterNo = 0; iterNo < 10; iterNo++)
 		{
 			float normal = 0.0f;
-			G_oneLevel(ATb_host, ATA_host, invM);
-			ComputeSingleStep(step, ATA_host, ATb_host, 0.0f);
+			G_oneLevel(nabla, hessian, invM);
+			ComputeSingleStep(step, hessian, nabla, 0.0f);
 
 			for (int i = 0; i < 6; i++)
 			{

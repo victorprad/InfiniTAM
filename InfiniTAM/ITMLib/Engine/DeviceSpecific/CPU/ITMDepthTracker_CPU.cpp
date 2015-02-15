@@ -11,7 +11,7 @@ ITMDepthTracker_CPU::ITMDepthTracker_CPU(Vector2i imgSize, TrackerIterationType 
 
 ITMDepthTracker_CPU::~ITMDepthTracker_CPU(void) { }
 
-int ITMDepthTracker_CPU::ComputeGandH(float &f, float *ATb_host, float *ATA_host, Matrix4f approxInvPose)
+int ITMDepthTracker_CPU::ComputeGandH(float &f, float *nabla, float *hessian, Matrix4f approxInvPose)
 {
 	Vector4f *pointsMap = sceneHierarchyLevel->pointsMap->GetData(MEMORYDEVICE_CPU);
 	Vector4f *normalsMap = sceneHierarchyLevel->normalsMap->GetData(MEMORYDEVICE_CPU);
@@ -26,12 +26,12 @@ int ITMDepthTracker_CPU::ComputeGandH(float &f, float *ATb_host, float *ATA_host
 
 	bool shortIteration = (iterationType == TRACKER_ITERATION_ROTATION) || (iterationType == TRACKER_ITERATION_TRANSLATION);
 
-	float packedATA[6 * 6], ATb[6], sumF; int noValidPoints;
+	float sumHessian[6 * 6], sumNabla[6], sumF; int noValidPoints;
 	int noPara = shortIteration ? 3 : 6, noParaSQ = shortIteration ? 3 + 2 + 1 : 6 + 5 + 4 + 3 + 2 + 1;
 
 	noValidPoints = 0; sumF = 0.0f;
-	memset(packedATA, 0, sizeof(float) * noParaSQ);
-	memset(ATb, 0, sizeof(float) * noPara);
+	memset(sumHessian, 0, sizeof(float) * noParaSQ);
+	memset(sumNabla, 0, sizeof(float) * noPara);
 
 	for (int y = 0; y < viewImageSize.y; y++) for (int x = 0; x < viewImageSize.x; x++)
 	{
@@ -64,16 +64,16 @@ int ITMDepthTracker_CPU::ComputeGandH(float &f, float *ATb_host, float *ATA_host
 		if (isValidPoint)
 		{
 			noValidPoints++; sumF += localF;
-			for (int i = 0; i < noPara; i++) ATb[i] += localNabla[i];
-			for (int i = 0; i < noParaSQ; i++) packedATA[i] += localHessian[i];
+			for (int i = 0; i < noPara; i++) sumNabla[i] += localNabla[i];
+			for (int i = 0; i < noParaSQ; i++) sumHessian[i] += localHessian[i];
 		}
 	}
 
-	for (int r = 0, counter = 0; r < noPara; r++) for (int c = 0; c <= r; c++, counter++) ATA_host[r + c * 6] = packedATA[counter];
-	for (int r = 0; r < noPara; ++r) for (int c = r + 1; c < noPara; c++) ATA_host[r + c * 6] = ATA_host[c + r * 6];
+	for (int r = 0, counter = 0; r < noPara; r++) for (int c = 0; c <= r; c++, counter++) hessian[r + c * 6] = sumHessian[counter];
+	for (int r = 0; r < noPara; ++r) for (int c = r + 1; c < noPara; c++) hessian[r + c * 6] = hessian[c + r * 6];
 	
-	memcpy(ATb_host, ATb, noPara * sizeof(float));
-	f = sumF;
+	memcpy(nabla, sumNabla, noPara * sizeof(float));
+	f = sqrt(sumF) / noValidPoints;
 
 	return noValidPoints;
 }

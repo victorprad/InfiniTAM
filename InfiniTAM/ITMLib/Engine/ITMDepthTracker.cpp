@@ -75,22 +75,22 @@ void ITMDepthTracker::SetEvaluationParams(int levelId)
 	this->viewHierarchyLevel = viewHierarchy->levels[levelId];
 }
 
-void ITMDepthTracker::ComputeDelta(float *step, float *ATA, float *ATb, bool shortIteration) const
+void ITMDepthTracker::ComputeDelta(float *step, float *nabla, float *hessian, bool shortIteration) const
 {
 	for (int i = 0; i < 6; i++) step[i] = 0;
 
 	if (shortIteration)
 	{
-		float smallATA[3 * 3];
-		for (int r = 0; r < 3; r++) for (int c = 0; c < 3; c++) smallATA[r + c * 3] = ATA[r + c * 6];
+		float smallHessian[3 * 3];
+		for (int r = 0; r < 3; r++) for (int c = 0; c < 3; c++) smallHessian[r + c * 3] = hessian[r + c * 6];
 
-		ORUtils::Cholesky cholA(smallATA, 3);
-		cholA.Backsub(step, ATb);
+		ORUtils::Cholesky cholA(smallHessian, 3);
+		cholA.Backsub(step, nabla);
 	}
 	else
 	{
-		ORUtils::Cholesky cholA(ATA, 6);
-		cholA.Backsub(step, ATb);
+		ORUtils::Cholesky cholA(hessian, 6);
+		cholA.Backsub(step, nabla);
 	}
 }
 
@@ -133,7 +133,7 @@ void ITMDepthTracker::TrackCamera(ITMTrackingState *trackingState, const ITMView
 
 	Matrix4f approxInvPose = trackingState->pose_d->GetInvM();
 
-	float f_old = 1e10;
+	float f_old = 1e10, f_new;
 
 	for (int levelId = viewHierarchy->noLevels - 1; levelId >= noICPLevel; levelId--)
 	{
@@ -145,13 +145,12 @@ void ITMDepthTracker::TrackCamera(ITMTrackingState *trackingState, const ITMView
 
 		for (int iterNo = 0; iterNo < noIterationsPerLevel[levelId]; iterNo++)
 		{
-			noValidPoints = this->ComputeGandH(f, ATb_host, ATA_host, approxInvPose);
+			noValidPoints = this->ComputeGandH(f_new, nabla, hessian, approxInvPose);
 
 			if (noValidPoints > 0)
 			{
-				ComputeDelta(step, ATA_host, ATb_host, iterationType != TRACKER_ITERATION_BOTH);
+				ComputeDelta(step, nabla, hessian, iterationType != TRACKER_ITERATION_BOTH);
 
-				float f_new = sqrtf(f) / noValidPoints;
 				if (f_new > f_old) break;
 
 				float stepLength = 0.0f;
