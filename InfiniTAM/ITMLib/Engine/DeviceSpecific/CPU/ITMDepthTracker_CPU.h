@@ -11,8 +11,7 @@ namespace ITMLib
 		class ITMDepthTracker_CPU : public ITMDepthTracker
 		{
 		protected:
-			int ComputeGandH(ITMSceneHierarchyLevel *sceneHierarchyLevel, ITMTemplatedHierarchyLevel<ITMFloatImage> *viewHierarchyLevel,
-				Matrix4f approxInvPose, Matrix4f imagePose, TrackerIterationType iterationType);
+			int ComputeGandH(float &f, float *ATb_host, float *ATA_host, Matrix4f approxInvPose);
 
 		public:
 			ITMDepthTracker_CPU(Vector2i imgSize, TrackerIterationType *trackingRegime, int noHierarchyLevels, int noICPRunTillLevel, float distThresh,

@@ -48,6 +48,8 @@ void ITMDepthTracker::SetEvaluationData(ITMTrackingState *trackingState, const I
 	viewHierarchy->levels[0]->depth = view->depth;
 	sceneHierarchy->levels[0]->pointsMap = trackingState->pointCloud->locations;
 	sceneHierarchy->levels[0]->normalsMap = trackingState->pointCloud->colours;
+
+	scenePose = trackingState->pose_pointCloud->GetM();
 }
 
 void ITMDepthTracker::PrepareForEvaluation()
@@ -69,6 +71,8 @@ void ITMDepthTracker::SetEvaluationParams(int levelId)
 {
 	this->levelId = levelId;
 	this->iterationType = viewHierarchy->levels[levelId]->iterationType;
+	this->sceneHierarchyLevel = sceneHierarchy->levels[0];
+	this->viewHierarchyLevel = viewHierarchy->levels[levelId];
 }
 
 void ITMDepthTracker::ComputeSingleStep(float *step, float *ATA, float *ATb, bool shortIteration)
@@ -90,8 +94,39 @@ void ITMDepthTracker::ComputeSingleStep(float *step, float *ATA, float *ATb, boo
 	}
 }
 
-Matrix4f ITMDepthTracker::ApplySingleStep(Matrix4f approxInvPose, float *step)
+//Matrix4f ITMDepthTracker::ApplyDelta(Matrix4f approxInvPose, float *step) const
+//{
+//	Matrix4f Tinc;
+//
+//	Tinc.m00 = 1.0f;		Tinc.m10 = step[2];		Tinc.m20 = -step[1];	Tinc.m30 = step[3];
+//	Tinc.m01 = -step[2];	Tinc.m11 = 1.0f;		Tinc.m21 = step[0];		Tinc.m31 = step[4];
+//	Tinc.m02 = step[1];		Tinc.m12 = -step[0];	Tinc.m22 = 1.0f;		Tinc.m32 = step[5];
+//	Tinc.m03 = 0.0f;		Tinc.m13 = 0.0f;		Tinc.m23 = 0.0f;		Tinc.m33 = 1.0f;
+//
+//	return Tinc * approxInvPose;
+//}
+
+void ITMDepthTracker::ApplyDelta(const Matrix4f & para_old, const float *delta, Matrix4f & para_new) const
 {
+	float step[6];
+
+	switch (iterationType)
+	{
+	case TRACKER_ITERATION_ROTATION:
+		step[0] = (float)(delta[0]); step[1] = (float)(delta[1]); step[2] = (float)(delta[2]);
+		step[3] = 0.0f; step[4] = 0.0f; step[5] = 0.0f;
+		break;
+	case TRACKER_ITERATION_TRANSLATION:
+		step[0] = 0.0f; step[1] = 0.0f; step[2] = 0.0f;
+		step[3] = (float)(delta[0]); step[4] = (float)(delta[1]); step[5] = (float)(delta[2]);
+		break;
+	case TRACKER_ITERATION_BOTH:
+		step[0] = (float)(delta[0]); step[1] = (float)(delta[1]); step[2] = (float)(delta[2]);
+		step[3] = (float)(delta[3]); step[4] = (float)(delta[4]); step[5] = (float)(delta[5]);
+		break;
+	default: break;
+	}
+
 	Matrix4f Tinc;
 
 	Tinc.m00 = 1.0f;		Tinc.m10 = step[2];		Tinc.m20 = -step[1];	Tinc.m30 = step[3];
@@ -99,7 +134,7 @@ Matrix4f ITMDepthTracker::ApplySingleStep(Matrix4f approxInvPose, float *step)
 	Tinc.m02 = step[1];		Tinc.m12 = -step[0];	Tinc.m22 = 1.0f;		Tinc.m32 = step[5];
 	Tinc.m03 = 0.0f;		Tinc.m13 = 0.0f;		Tinc.m23 = 0.0f;		Tinc.m33 = 1.0f;
 
-	return Tinc * approxInvPose;
+	para_new = Tinc * para_old;
 }
 
 void ITMDepthTracker::TrackCamera(ITMTrackingState *trackingState, const ITMView *view)
@@ -108,7 +143,7 @@ void ITMDepthTracker::TrackCamera(ITMTrackingState *trackingState, const ITMView
 
 	this->PrepareForEvaluation();
 
-	Matrix4f approxInvPose = trackingState->pose_d->GetInvM(), imagePose = trackingState->pose_pointCloud->GetM();
+	Matrix4f approxInvPose = trackingState->pose_d->GetInvM();
 
 	float f_old = 1e10;
 
@@ -120,12 +155,9 @@ void ITMDepthTracker::TrackCamera(ITMTrackingState *trackingState, const ITMView
 
 		int noValidPoints;
 
-		ITMSceneHierarchyLevel *sceneHierarchyLevel = sceneHierarchy->levels[0];
-		ITMTemplatedHierarchyLevel<ITMFloatImage> *viewHierarchyLevel = viewHierarchy->levels[levelId];
-
 		for (int iterNo = 0; iterNo < noIterationsPerLevel[levelId]; iterNo++)
 		{
-			noValidPoints = this->ComputeGandH(sceneHierarchyLevel, viewHierarchyLevel, approxInvPose, imagePose, iterationType);
+			noValidPoints = this->ComputeGandH(f, ATb_host, ATA_host, approxInvPose);
 
 			if (noValidPoints > 0)
 			{
@@ -134,18 +166,12 @@ void ITMDepthTracker::TrackCamera(ITMTrackingState *trackingState, const ITMView
 				float f_new = sqrtf(f) / noValidPoints;
 				if (f_new > f_old) break;
 
-				if (iterationType == TRACKER_ITERATION_TRANSLATION)
-				{
-					step[3] = step[0]; step[4] = step[1]; step[5] = step[2];
-					step[0] = 0; step[1] = 0; step[2] = 0;
-				}
-
 				float stepLength = 0.0f;
 				for (int i = 0; i < 6; i++) stepLength += step[i] * step[i];
 
 				if (sqrt(stepLength) / 6 < 1e-3) break; //converged
 
-				approxInvPose = ApplySingleStep(approxInvPose, step);
+				ApplyDelta(approxInvPose, step, approxInvPose);
 			}
 		}
 	}

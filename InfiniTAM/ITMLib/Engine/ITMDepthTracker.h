@@ -33,25 +33,29 @@ namespace ITMLib
 			int *noIterationsPerLevel;
 			int noICPLevel;
 
-			int levelId;
-			TrackerIterationType iterationType;
+			float ATA_host[6 * 6];
+			float ATb_host[6];
+			float step[6];
+			float f;
 
 			void PrepareForEvaluation();
 			void SetEvaluationParams(int levelId);
 
 			void ComputeSingleStep(float *step, float *ATA, float *ATb, bool shortIteration);
-			Matrix4f ApplySingleStep(Matrix4f approxInvPose, float *step);
+			void ApplyDelta(const Matrix4f & para_old, const float *delta, Matrix4f & para_new) const;
 
 			void SetEvaluationData(ITMTrackingState *trackingState, const ITMView *view);
 		protected:
-			float ATA_host[6 * 6];
-			float ATb_host[6];
-			float step[6];
 			float distThresh;
-			float f;
 
-			virtual int ComputeGandH(ITMSceneHierarchyLevel *sceneHierarchyLevel, ITMTemplatedHierarchyLevel<ITMFloatImage> *viewHierarchyLevel,
-				Matrix4f approxInvPose, Matrix4f imagePose, TrackerIterationType iterationType) = 0;
+			int levelId;
+			TrackerIterationType iterationType;
+
+			Matrix4f scenePose;
+			ITMSceneHierarchyLevel *sceneHierarchyLevel;
+			ITMTemplatedHierarchyLevel<ITMFloatImage> *viewHierarchyLevel;
+
+			virtual int ComputeGandH(float &f, float *ATb_host, float *ATA_host, Matrix4f approxInvPose) = 0;
 
 		public:
 			void TrackCamera(ITMTrackingState *trackingState, const ITMView *view);

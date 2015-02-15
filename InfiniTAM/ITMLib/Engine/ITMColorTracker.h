@@ -74,7 +74,7 @@ namespace ITMLib
 			virtual void F_oneLevel(float *f, ITMPose *pose) = 0;
 			virtual void G_oneLevel(float *gradient, float *hessian, ITMPose *pose) const = 0;
 
-			void applyDelta(const ITMPose & para_old, const float *delta, ITMPose & para_new) const;
+			void ApplyDelta(const ITMPose & para_old, const float *delta, ITMPose & para_new) const;
 
 			void TrackCamera(ITMTrackingState *trackingState, const ITMView *view);
 
