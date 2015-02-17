@@ -70,7 +70,7 @@ namespace ITMLib
       //#################### PUBLIC MEMBER FUNCTIONS ####################
     public:
       /**
-       * \brief Makes a tracker of the specified type.
+       * \brief Makes a tracker of the type specified in the settings.
        */
       ITMTracker *Make(const Vector2i& trackedImageSize, const ITMLibSettings *settings, const ITMLowLevelEngine *lowLevelEngine,
                        ITMIMUCalibrator *imuCalibrator, ITMScene<TVoxel,TIndex> *scene) const
@@ -82,8 +82,8 @@ namespace ITMLib
         return (*maker)(trackedImageSize, settings, lowLevelEngine, imuCalibrator, scene);
       }
 
-      //#################### PRIVATE STATIC MEMBER FUNCTIONS ####################
-    private:
+      //#################### PUBLIC STATIC MEMBER FUNCTIONS ####################
+    public:
       /**
        * \brief Makes a colour tracker.
        */
