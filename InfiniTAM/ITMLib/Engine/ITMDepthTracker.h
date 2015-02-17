@@ -38,7 +38,6 @@ namespace ITMLib
 			float hessian[6 * 6];
 			float nabla[6];
 			float step[6];
-			float f;
 
 			void PrepareForEvaluation();
 			void SetEvaluationParams(int levelId);

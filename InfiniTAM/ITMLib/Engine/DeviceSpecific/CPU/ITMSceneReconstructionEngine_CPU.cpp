@@ -51,7 +51,7 @@ void ITMSceneReconstructionEngine_CPU<TVoxel, ITMVoxelBlockHash>::IntegrateIntoS
 	int noVisibleEntries = renderState_vh->noVisibleEntries;
 
 	bool stopIntegratingAtMaxW = scene->sceneParams->stopIntegratingAtMaxW;
-	bool approximateIntegration = !trackingState->requiresFullRendering;
+	//bool approximateIntegration = !trackingState->requiresFullRendering;
 
 #ifdef WITH_OPENMP
 	#pragma omp parallel for
@@ -306,7 +306,7 @@ void ITMSceneReconstructionEngine_CPU<TVoxel, ITMPlainVoxelArray>::IntegrateInto
 	const ITMPlainVoxelArray::IndexData *arrayInfo = scene->index.getIndexData();
 
 	bool stopIntegratingAtMaxW = scene->sceneParams->stopIntegratingAtMaxW;
-	bool approximateIntegration = !trackingState->requiresFullRendering;
+	//bool approximateIntegration = !trackingState->requiresFullRendering;
 
 #ifdef WITH_OPENMP
 	#pragma omp parallel for
