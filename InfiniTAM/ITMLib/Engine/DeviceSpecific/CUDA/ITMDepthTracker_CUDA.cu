@@ -22,8 +22,8 @@ __global__ void depthTrackerOneLevel_g_rt_device(ITMDepthTracker_CUDA::AccuCell 
 // host methods
 
 ITMDepthTracker_CUDA::ITMDepthTracker_CUDA(Vector2i imgSize, TrackerIterationType *trackingRegime, int noHierarchyLevels, int noICPRunTillLevel,
-	float distThresh, const ITMLowLevelEngine *lowLevelEngine)
-	:ITMDepthTracker(imgSize, trackingRegime, noHierarchyLevels, noICPRunTillLevel, distThresh, lowLevelEngine, MEMORYDEVICE_CUDA)
+	float distThresh, float terminationThreshold, const ITMLowLevelEngine *lowLevelEngine)
+	:ITMDepthTracker(imgSize, trackingRegime, noHierarchyLevels, noICPRunTillLevel, distThresh, terminationThreshold, lowLevelEngine, MEMORYDEVICE_CUDA)
 {
 	Vector2i gridSize((imgSize.x+15)/16, (imgSize.y+15)/16);
 
@@ -37,11 +37,8 @@ ITMDepthTracker_CUDA::~ITMDepthTracker_CUDA(void)
 	ITMSafeCall(cudaFree(accu_device));
 }
 
-int ITMDepthTracker_CUDA::ComputeGandH(ITMSceneHierarchyLevel *sceneHierarchyLevel, ITMTemplatedHierarchyLevel<ITMFloatImage> *viewHierarchyLevel,
-	Matrix4f approxInvPose, Matrix4f scenePose, TrackerIterationType iterationType)
+int ITMDepthTracker_CUDA::ComputeGandH(float &f, float *nabla, float *hessian, Matrix4f approxInvPose)
 {
-	int noValidPoints;
-
 	Vector4f *pointsMap = sceneHierarchyLevel->pointsMap->GetData(MEMORYDEVICE_CUDA);
 	Vector4f *normalsMap = sceneHierarchyLevel->normalsMap->GetData(MEMORYDEVICE_CUDA);
 	Vector4f sceneIntrinsics = sceneHierarchyLevel->intrinsics;
@@ -51,13 +48,16 @@ int ITMDepthTracker_CUDA::ComputeGandH(ITMSceneHierarchyLevel *sceneHierarchyLev
 	Vector4f viewIntrinsics = viewHierarchyLevel->intrinsics;
 	Vector2i viewImageSize = viewHierarchyLevel->depth->noDims;
 
-	noValidPoints = 0; memset(ATA_host, 0, sizeof(float) * 6 * 6); memset(ATb_host, 0, sizeof(float) * 6); f = 0;
 	if (iterationType == TRACKER_ITERATION_NONE) return 0;
 
 	bool shortIteration = (iterationType == TRACKER_ITERATION_ROTATION) || (iterationType == TRACKER_ITERATION_TRANSLATION);
 
-	float packedATA[6 * 6];
+	float sumHessian[6 * 6], sumNabla[6], sumF; int noValidPoints;
 	int noPara = shortIteration ? 3 : 6, noParaSQ = shortIteration ? 3 + 2 + 1 : 6 + 5 + 4 + 3 + 2 + 1;
+
+	noValidPoints = 0; sumF = 0.0f;
+	memset(sumHessian, 0, sizeof(float) * noParaSQ);
+	memset(sumNabla, 0, sizeof(float) * noPara);
 
 	dim3 blockSize(16, 16);
 	dim3 gridSize((int)ceil((float)viewImageSize.x / (float)blockSize.x), (int)ceil((float)viewImageSize.y / (float)blockSize.y));
@@ -68,33 +68,36 @@ int ITMDepthTracker_CUDA::ComputeGandH(ITMSceneHierarchyLevel *sceneHierarchyLev
 	{
 	case TRACKER_ITERATION_ROTATION:
 		depthTrackerOneLevel_g_rt_device<true, true> << <gridSize, blockSize >> >(accu_device, depth, approxInvPose, pointsMap,
-			normalsMap, sceneIntrinsics, sceneImageSize, scenePose, viewIntrinsics, viewImageSize, distThresh);
+			normalsMap, sceneIntrinsics, sceneImageSize, scenePose, viewIntrinsics, viewImageSize, distThresh[levelId]);
 		break;
 	case TRACKER_ITERATION_TRANSLATION:
 		depthTrackerOneLevel_g_rt_device<true, false> << <gridSize, blockSize >> >(accu_device, depth, approxInvPose, pointsMap,
-			normalsMap, sceneIntrinsics, sceneImageSize, scenePose, viewIntrinsics, viewImageSize, distThresh);
+			normalsMap, sceneIntrinsics, sceneImageSize, scenePose, viewIntrinsics, viewImageSize, distThresh[levelId]);
 		break;
 	case TRACKER_ITERATION_BOTH:
 		depthTrackerOneLevel_g_rt_device<false, false> << <gridSize, blockSize >> >(accu_device, depth, approxInvPose, pointsMap,
-			normalsMap, sceneIntrinsics, sceneImageSize, scenePose, viewIntrinsics, viewImageSize, distThresh);
+			normalsMap, sceneIntrinsics, sceneImageSize, scenePose, viewIntrinsics, viewImageSize, distThresh[levelId]);
 		break;
 	default: break;
 	}
 
 	ITMSafeCall(cudaMemcpy(accu_host, accu_device, sizeof(AccuCell)* gridSizeTotal, cudaMemcpyDeviceToHost));
 
-	memset(packedATA, 0, sizeof(float) * noParaSQ);
+	memset(sumHessian, 0, sizeof(float) * noParaSQ);
 
 	for (int i = 0; i < gridSizeTotal; i++)
 	{
 		noValidPoints += accu_host[i].numPoints;
-		f += accu_host[i].f;
-		for (int p = 0; p < noPara; p++) ATb_host[p] += accu_host[i].g[p];
-		for (int p = 0; p < noParaSQ; p++) packedATA[p] += accu_host[i].h[p];
+		sumF += accu_host[i].f;
+		for (int p = 0; p < noPara; p++) sumNabla[p] += accu_host[i].g[p];
+		for (int p = 0; p < noParaSQ; p++) sumHessian[p] += accu_host[i].h[p];
 	}
 
-	for (int r = 0, counter = 0; r < noPara; r++) for (int c = 0; c <= r; c++, counter++) ATA_host[r + c * 6] = packedATA[counter];
-	for (int r = 0; r < noPara; ++r) for (int c = r + 1; c < noPara; c++) ATA_host[r + c * 6] = ATA_host[c + r * 6];
+	for (int r = 0, counter = 0; r < noPara; r++) for (int c = 0; c <= r; c++, counter++) hessian[r + c * 6] = sumHessian[counter];
+	for (int r = 0; r < noPara; ++r) for (int c = r + 1; c < noPara; c++) hessian[r + c * 6] = hessian[c + r * 6];
+
+	memcpy(nabla, sumNabla, noPara * sizeof(float));
+	f = (noValidPoints > 100) ? sqrt(sumF) / noValidPoints : 1e5f;
 
 	return noValidPoints;
 }

@@ -33,31 +33,37 @@ namespace ITMLib
 			int *noIterationsPerLevel;
 			int noICPLevel;
 
-			int levelId;
-			TrackerIterationType iterationType;
+			float terminationThreshold;
+
+			float hessian[6 * 6];
+			float nabla[6];
+			float step[6];
 
 			void PrepareForEvaluation();
 			void SetEvaluationParams(int levelId);
 
-			void ComputeSingleStep(float *step, float *ATA, float *ATb, bool shortIteration);
-			Matrix4f ApplySingleStep(Matrix4f approxInvPose, float *step);
+			void ComputeDelta(float *delta, float *nabla, float *hessian, bool shortIteration) const;
+			void ApplyDelta(const Matrix4f & para_old, const float *delta, Matrix4f & para_new) const;
+			bool HasConverged(float f_new, float f_old, float *step) const;
 
 			void SetEvaluationData(ITMTrackingState *trackingState, const ITMView *view);
 		protected:
-			float ATA_host[6 * 6];
-			float ATb_host[6];
-			float step[6];
-			float distThresh;
-			float f;
+			float *distThresh;
 
-			virtual int ComputeGandH(ITMSceneHierarchyLevel *sceneHierarchyLevel, ITMTemplatedHierarchyLevel<ITMFloatImage> *viewHierarchyLevel,
-				Matrix4f approxInvPose, Matrix4f imagePose, TrackerIterationType iterationType) = 0;
+			int levelId;
+			TrackerIterationType iterationType;
+
+			Matrix4f scenePose;
+			ITMSceneHierarchyLevel *sceneHierarchyLevel;
+			ITMTemplatedHierarchyLevel<ITMFloatImage> *viewHierarchyLevel;
+
+			virtual int ComputeGandH(float &f, float *nabla, float *hessian, Matrix4f approxInvPose) = 0;
 
 		public:
 			void TrackCamera(ITMTrackingState *trackingState, const ITMView *view);
 
 			ITMDepthTracker(Vector2i imgSize, TrackerIterationType *trackingRegime, int noHierarchyLevels, int noICPRunTillLevel, float distThresh,
-				const ITMLowLevelEngine *lowLevelEngine, MemoryDeviceType memoryType);
+				float terminationThreshold, const ITMLowLevelEngine *lowLevelEngine, MemoryDeviceType memoryType);
 			virtual ~ITMDepthTracker(void);
 		};
 	}

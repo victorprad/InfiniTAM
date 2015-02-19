@@ -68,7 +68,7 @@ void ITMColorTracker::PrepareForEvaluation(const ITMView *view)
 	}
 }
 
-void ITMColorTracker::applyDelta(const ITMPose & para_old, const float *delta, ITMPose & para_new) const
+void ITMColorTracker::ApplyDelta(const ITMPose & para_old, const float *delta, ITMPose & para_new) const
 {
 	float paramVector[6];
 
@@ -193,7 +193,7 @@ static inline bool minimizeLM(const ITMColorTracker & tracker, ITMPose & initial
 
 			// make step
 			ITMPose *tmp_para = new ITMPose(x->getParameter());
-			tracker.applyDelta(x->getParameter(), &(d[0]), *tmp_para);
+			tracker.ApplyDelta(x->getParameter(), &(d[0]), *tmp_para);
 
 			// check whether step reduces error function and
 			// compute a new value of lambda

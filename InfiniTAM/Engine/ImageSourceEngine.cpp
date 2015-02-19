@@ -158,33 +158,35 @@ void RawFileReader::loadIntoCache(void)
 	cached_rgb = new ITMUChar4Image(imgSize, MEMORYDEVICE_CPU);
 	cached_depth = new ITMShortImage(imgSize, MEMORYDEVICE_CPU);
 
-	char str[2048]; FILE *f;
+	char str[2048]; FILE *f; bool success = false;
 
 	sprintf(str, rgbImageMask, currentFrameNo);
 
 	f = fopen(str, "rb");
-	if (!f)
+	if (f)
+	{
+		size_t tmp = fread(cached_rgb->GetData(MEMORYDEVICE_CPU), sizeof(Vector4u), imgSize.x * imgSize.y, f);
+		fclose(f);
+		if (tmp == (size_t)imgSize.x * imgSize.y) success = true;
+	}
+	if (!success)
 	{
 		delete cached_rgb; cached_rgb = NULL;
 		printf("error reading file '%s'\n", str);
 	}
-	else
-	{
-		fread(cached_rgb->GetData(MEMORYDEVICE_CPU), sizeof(Vector4u), imgSize.x * imgSize.y, f);
-		fclose(f);
-	}
 
-	sprintf(str, depthImageMask, currentFrameNo);
+	sprintf(str, depthImageMask, currentFrameNo); success = false;
 	f = fopen(str, "rb");
-	if (!f)
+	if (f)
+	{
+		size_t tmp = fread(cached_depth->GetData(MEMORYDEVICE_CPU), sizeof(short), imgSize.x * imgSize.y, f);
+		fclose(f);
+		if (tmp == (size_t)imgSize.x * imgSize.y) success = true;
+	}
+	if (!success)
 	{
 		delete cached_depth; cached_depth = NULL;
 		printf("error reading file '%s'\n", str);
-	}
-	else
-	{
-		fread(cached_depth->GetData(MEMORYDEVICE_CPU), sizeof(short), imgSize.x * imgSize.y, f);
-		fclose(f);
 	}
 }
 

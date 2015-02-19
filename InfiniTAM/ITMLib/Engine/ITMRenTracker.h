@@ -40,8 +40,8 @@ namespace ITMLib
 			int levelId;
 			bool rotationOnly;
 
-			float ATA_host[6 * 6];
-			float ATb_host[6];
+			float hessian[6 * 6];
+			float nabla[6];
 
 			virtual void F_oneLevel(float *f, Matrix4f invM) = 0;
 			virtual void G_oneLevel(float *gradient, float *hessian, Matrix4f invM) const = 0;

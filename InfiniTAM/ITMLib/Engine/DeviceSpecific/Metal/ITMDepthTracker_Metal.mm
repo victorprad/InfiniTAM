@@ -12,8 +12,8 @@ id<MTLComputePipelineState> p_depthTrackerOneLevel_g_rg_device;
 id<MTLBuffer> paramsBuffer_depthTracker;
 
 ITMDepthTracker_Metal::ITMDepthTracker_Metal(Vector2i imgSize, TrackerIterationType *trackingRegime, int noHierarchyLevels,
-                                             int noICPRunTillLevel, float distThresh, const ITMLowLevelEngine *lowLevelEngine)
-:ITMDepthTracker(imgSize, trackingRegime, noHierarchyLevels, noICPRunTillLevel, distThresh, lowLevelEngine, MEMORYDEVICE_CPU)
+                                             int noICPRunTillLevel, float distThresh, float terminationThreshold, const ITMLowLevelEngine *lowLevelEngine)
+:ITMDepthTracker(imgSize, trackingRegime, noHierarchyLevels, noICPRunTillLevel, distThresh, terminationThreshold, lowLevelEngine, MEMORYDEVICE_CPU)
 {
     allocImgSize = imgSize;
 
@@ -37,28 +37,26 @@ ITMDepthTracker_Metal::~ITMDepthTracker_Metal(void)
     freeMetalData((void**)&f_metal, (void**)&f_metal_mb, allocImgSize.x * allocImgSize.y * sizeof(float), true);
 }
 
-int ITMDepthTracker_Metal::ComputeGandH(ITMSceneHierarchyLevel *sceneHierarchyLevel, ITMTemplatedHierarchyLevel<ITMFloatImage> *viewHierarchyLevel,
-                                        Matrix4f approxInvPose, Matrix4f scenePose, TrackerIterationType iterationType)
+int ITMDepthTracker_Metal::ComputeGandH(float &f, float *nabla, float *hessian, Matrix4f approxInvPose)
 {
-    int noValidPoints;
-    
     Vector4f sceneIntrinsics = sceneHierarchyLevel->intrinsics;
     Vector2i sceneImageSize = sceneHierarchyLevel->pointsMap->noDims;
     Vector4f viewIntrinsics = viewHierarchyLevel->intrinsics;
     Vector2i viewImageSize = viewHierarchyLevel->depth->noDims;
     
-    noValidPoints = 0; memset(ATA_host, 0, sizeof(float) * 6 * 6); memset(ATb_host, 0, sizeof(float) * 6); f = 0;
     if (iterationType == TRACKER_ITERATION_NONE) return 0;
     
     bool shortIteration = (iterationType == TRACKER_ITERATION_ROTATION) || (iterationType == TRACKER_ITERATION_TRANSLATION);
     
-    float packedATA[6 * 6];
+    float sumHessian[6 * 6], sumNabla[6], sumF; int noValidPoints;
     int noPara = shortIteration ? 3 : 6, noParaSQ = shortIteration ? 3 + 2 + 1 : 6 + 5 + 4 + 3 + 2 + 1;
+    
+    noValidPoints = 0; sumF = 0.0f;
+    memset(sumHessian, 0, sizeof(float) * noParaSQ);
+    memset(sumNabla, 0, sizeof(float) * noPara);
     
     int viewImageTotalSize = viewImageSize.x * viewImageSize.y;
     int ratio = 4;
-    
-    memset(packedATA, 0, sizeof(float) * noParaSQ);
     
     id<MTLCommandBuffer> commandBuffer = [[[MetalContext instance]commandQueue]commandBuffer];
     id<MTLComputeCommandEncoder> commandEncoder = [commandBuffer computeCommandEncoder];
@@ -67,7 +65,7 @@ int ITMDepthTracker_Metal::ComputeGandH(ITMSceneHierarchyLevel *sceneHierarchyLe
     params->approxInvPose = approxInvPose; params->sceneIntrinsics = sceneIntrinsics;
     params->sceneImageSize = sceneImageSize; params->scenePose = scenePose;
     params->viewIntrinsics = viewIntrinsics; params->viewImageSize = viewImageSize;
-    params->others.x = distThresh; params->others.y = (float)iterationType; params->others.z = (float)ratio; params->others.w = 0;
+    params->others.x = distThresh[levelId]; params->others.y = (float)iterationType; params->others.z = (float)ratio; params->others.w = 0;
     
     [commandEncoder setComputePipelineState:p_depthTrackerOneLevel_g_rg_device];
     [commandEncoder setBuffer:(__bridge id<MTLBuffer>) noValidPoints_metal_mb                               offset:0 atIndex:0];
@@ -98,14 +96,17 @@ int ITMDepthTracker_Metal::ComputeGandH(ITMSceneHierarchyLevel *sceneHierarchyLe
         if (noValidPoints_metal[locId] > 0)
         {
             noValidPoints += noValidPoints_metal[locId];
-            f += f_metal[locId];
-            for (int i = 0; i < noPara; i++) ATb_host[i] += ATb_metal[i + noPara * locId];
-            for (int i = 0; i < noParaSQ; i++) packedATA[i] += ATA_metal[i + noParaSQ * locId];
+            sumF += f_metal[locId];
+            for (int i = 0; i < noPara; i++) sumNabla[i] += ATb_metal[i + noPara * locId];
+            for (int i = 0; i < noParaSQ; i++) sumHessian[i] += ATA_metal[i + noParaSQ * locId];
         }
     }
     
-    for (int r = 0, counter = 0; r < noPara; r++) for (int c = 0; c <= r; c++, counter++) ATA_host[r + c * 6] = packedATA[counter];
-    for (int r = 0; r < noPara; ++r) for (int c = r + 1; c < noPara; c++) ATA_host[r + c * 6] = ATA_host[c + r * 6];
+    for (int r = 0, counter = 0; r < noPara; r++) for (int c = 0; c <= r; c++, counter++) hessian[r + c * 6] = sumHessian[counter];
+    for (int r = 0; r < noPara; ++r) for (int c = r + 1; c < noPara; c++) hessian[r + c * 6] = hessian[c + r * 6];
+    
+    memcpy(nabla, sumNabla, noPara * sizeof(float));
+    f = (noValidPoints > 100) ? sqrt(sumF) / noValidPoints : 1e5f;
     
     return noValidPoints;
 }

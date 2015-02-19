@@ -33,7 +33,7 @@ __global__ void fillBlocks_device(const uint *noTotalBlocks, const RenderingBloc
 	Vector2i imgSize, Vector2f *minmaxData);
 
 __global__ void findMissingPoints_device(int *fwdProjMissingPoints, uint *noMissingPoints, const Vector2f *minmaximg,
-	Vector4f *forwardProjection, Vector2i imgSize);
+	Vector4f *forwardProjection, float *currentDepth, Vector2i imgSize);
 
 template<class TVoxel, class TIndex>
 __global__ void genericRaycast_device(Vector4f *out_ptsRay, const TVoxel *voxelData, const typename TIndex::IndexData *voxelIndex,
@@ -426,6 +426,7 @@ static void ForwardRender_common(const ITMScene<TVoxel, TIndex> *scene, const IT
 
 	Vector3f lightSource = -Vector3f(invM.getColumn(2));
 	const Vector4f *pointsRay = renderState->raycastResult->GetData(MEMORYDEVICE_CUDA);
+	float *currentDepth = view->depth->GetData(MEMORYDEVICE_CUDA);
 	Vector4f *forwardProjection = renderState->forwardProjection->GetData(MEMORYDEVICE_CUDA);
 	int *fwdProjMissingPoints = renderState->fwdProjMissingPoints->GetData(MEMORYDEVICE_CUDA);
 	Vector4u *outRendering = renderState->raycastImage->GetData(MEMORYDEVICE_CUDA);
@@ -452,7 +453,8 @@ static void ForwardRender_common(const ITMScene<TVoxel, TIndex> *scene, const IT
 		blockSize = dim3(16, 16);
 		gridSize = dim3((int)ceil((float)imgSize.x / (float)blockSize.x), (int)ceil((float)imgSize.y / (float)blockSize.y));
 
-		findMissingPoints_device << <gridSize, blockSize >> >(fwdProjMissingPoints, noTotalPoints_device, minmaximg, forwardProjection, imgSize);
+		findMissingPoints_device << <gridSize, blockSize >> >(fwdProjMissingPoints, noTotalPoints_device, minmaximg, 
+			forwardProjection, currentDepth, imgSize);
 	}
 
 	ITMSafeCall(cudaMemcpy(&renderState->noFwdProjMissingPoints, noTotalPoints_device, sizeof(uint), cudaMemcpyDeviceToHost));
@@ -688,7 +690,7 @@ __global__ void fillBlocks_device(const uint *noTotalBlocks, const RenderingBloc
 }
 
 __global__ void findMissingPoints_device(int *fwdProjMissingPoints, uint *noMissingPoints, const Vector2f *minmaximg,
-	Vector4f *forwardProjection, Vector2i imgSize)
+	Vector4f *forwardProjection, float *currentDepth, Vector2i imgSize)
 {
 	int x = (threadIdx.x + blockIdx.x * blockDim.x), y = (threadIdx.y + blockIdx.y * blockDim.y);
 
@@ -699,6 +701,7 @@ __global__ void findMissingPoints_device(int *fwdProjMissingPoints, uint *noMiss
 
 	Vector4f fwdPoint = forwardProjection[locId];
 	Vector2f minmaxval = minmaximg[locId2];
+	float depth = currentDepth[locId];
 
 	bool hasPoint = false;
 
@@ -706,8 +709,8 @@ __global__ void findMissingPoints_device(int *fwdProjMissingPoints, uint *noMiss
 	shouldPrefix = false;
 	__syncthreads();
 
-	if ((fwdPoint.w <= 0) && (minmaxval.x < minmaxval.y))
-	//if ((fwdPoint.x == 0 && fwdPoint.y == 0 && fwdPoint.z == 0 && fwdPoint.w <= 0) && (minmaxval.x < minmaxval.y))		
+	if ((fwdPoint.w <= 0) && ((fwdPoint.x == 0 && fwdPoint.y == 0 && fwdPoint.z == 0) || (depth > 0)) && (minmaxval.x < minmaxval.y))
+	//if ((fwdPoint.w <= 0) && (minmaxval.x < minmaxval.y))
 	{ shouldPrefix = true; hasPoint = true; }
 
 	__syncthreads();

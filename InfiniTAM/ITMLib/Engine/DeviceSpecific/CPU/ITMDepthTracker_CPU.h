@@ -11,12 +11,11 @@ namespace ITMLib
 		class ITMDepthTracker_CPU : public ITMDepthTracker
 		{
 		protected:
-			int ComputeGandH(ITMSceneHierarchyLevel *sceneHierarchyLevel, ITMTemplatedHierarchyLevel<ITMFloatImage> *viewHierarchyLevel,
-				Matrix4f approxInvPose, Matrix4f imagePose, TrackerIterationType iterationType);
+			int ComputeGandH(float &f, float *nabla, float *hessian, Matrix4f approxInvPose);
 
 		public:
 			ITMDepthTracker_CPU(Vector2i imgSize, TrackerIterationType *trackingRegime, int noHierarchyLevels, int noICPRunTillLevel, float distThresh,
-				const ITMLowLevelEngine *lowLevelEngine);
+				float terminationThreshold, const ITMLowLevelEngine *lowLevelEngine);
 			~ITMDepthTracker_CPU(void);
 		};
 	}

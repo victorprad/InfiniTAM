@@ -410,6 +410,7 @@ static void ForwardRender_common(const ITMScene<TVoxel, TIndex> *scene, const IT
 	Vector3f lightSource = -Vector3f(invM.getColumn(2));
 	const Vector4f *pointsRay = renderState->raycastResult->GetData(MEMORYDEVICE_CPU);
 	Vector4f *forwardProjection = renderState->forwardProjection->GetData(MEMORYDEVICE_CPU);
+	float *currentDepth = view->depth->GetData(MEMORYDEVICE_CPU);
 	int *fwdProjMissingPoints = renderState->fwdProjMissingPoints->GetData(MEMORYDEVICE_CPU);
 	Vector4u *outRendering = renderState->raycastImage->GetData(MEMORYDEVICE_CPU);
 	const Vector2f *minmaximg = renderState->renderingRangeImage->GetData(MEMORYDEVICE_CPU);
@@ -436,13 +437,17 @@ static void ForwardRender_common(const ITMScene<TVoxel, TIndex> *scene, const IT
 
 		Vector4f fwdPoint = forwardProjection[locId];
 		Vector2f minmaxval = minmaximg[locId2];
+		float depth = currentDepth[locId];
 
-		if ((fwdPoint.w <= 0) && (minmaxval.x < minmaxval.y))
+		if ((fwdPoint.w <= 0) && ((fwdPoint.x == 0 && fwdPoint.y == 0 && fwdPoint.z == 0) || (depth >= 0)) && (minmaxval.x < minmaxval.y))
+		//if ((fwdPoint.w <= 0) && (minmaxval.x < minmaxval.y))
 		{
 			fwdProjMissingPoints[noMissingPoints] = locId;
 			noMissingPoints++;
 		}
 	}
+
+	printf("%d\n", noMissingPoints);
 
     renderState->noFwdProjMissingPoints = noMissingPoints;
     

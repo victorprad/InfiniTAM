@@ -18,12 +18,11 @@ namespace ITMLib
 			AccuCell *accu_device;
 
 		protected:
-			int ComputeGandH(ITMSceneHierarchyLevel *sceneHierarchyLevel, ITMTemplatedHierarchyLevel<ITMFloatImage> *viewHierarchyLevel,
-				Matrix4f approxInvPose, Matrix4f imagePose, TrackerIterationType iterationType);
+			int ComputeGandH(float &f, float *nabla, float *hessian, Matrix4f approxInvPose);
 
 		public:
 			ITMDepthTracker_CUDA(Vector2i imgSize, TrackerIterationType *trackingRegime, int noHierarchyLevels, int noICPRunTillLevel, float distThresh,
-				const ITMLowLevelEngine *lowLevelEngine);
+				float terminationThreshold, const ITMLowLevelEngine *lowLevelEngine);
 			~ITMDepthTracker_CUDA(void);
 		};
 	}

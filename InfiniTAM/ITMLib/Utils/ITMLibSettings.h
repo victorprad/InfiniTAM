@@ -57,6 +57,9 @@ namespace ITMLib
 			/// For ITMDepthTracker: ICP distance threshold
 			float depthTrackerICPThreshold;
 
+			/// For ITMDepthTracker: ICP iteration termination threshold
+			float depthTrackerTerminationThreshold;
+
 			/// Further, scene specific parameters such as voxel size
 			ITMLib::Objects::ITMSceneParams sceneParams;
 
