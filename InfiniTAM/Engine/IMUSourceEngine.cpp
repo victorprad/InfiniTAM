@@ -20,18 +20,13 @@ IMUSourceEngine::IMUSourceEngine(const char *imuMask)
 
 void IMUSourceEngine::loadIMUIntoCache(void)
 {
-	char str[2048]; FILE *f;
+	char str[2048]; FILE *f; bool success = false;
 
 	cached_imu = new ITMIMUMeasurement();
 
 	sprintf(str, imuMask, currentFrameNo);
 	f = fopen(str, "r");
-	if (!f)
-	{
-		delete cached_imu; cached_imu = NULL;
-		printf("error reading file '%s'\n", str);
-	}
-	else
+	if (f)
 	{
 		size_t ret = fscanf(f, "%f %f %f %f %f %f %f %f %f",
 			&cached_imu->R.m00, &cached_imu->R.m01, &cached_imu->R.m02,
@@ -40,10 +35,12 @@ void IMUSourceEngine::loadIMUIntoCache(void)
 
 		fclose(f);
 
-		if (ret != 9) {
-			delete cached_imu; cached_imu = NULL;
-			printf("error reading file '%s'\n", str);
-		}
+		if (ret == 9) success = true;
+	}
+
+	if (!success) {
+		delete cached_imu; cached_imu = NULL;
+		printf("error reading file '%s'\n", str);
 	}
 }
 
