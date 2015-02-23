@@ -23,7 +23,7 @@ _CPU_AND_GPU_CODE_ inline int findVoxel(const CONSTANT(ITMLib::Objects::ITMVoxel
 	THREADPTR(bool) &isFound, THREADPTR(ITMLib::Objects::ITMVoxelBlockHash::IndexCache) & cache)
 {
 	Vector3i blockPos;
-	int linearIdx = pointToVoxelBlockPos(point, blockPos);
+	short linearIdx = pointToVoxelBlockPos(point, blockPos);
 
 	if IS_EQUAL3(blockPos, cache.blockPos)
 	{
@@ -86,8 +86,36 @@ template<class TVoxel>
 _CPU_AND_GPU_CODE_ inline TVoxel readVoxel(const CONSTANT(TVoxel) *voxelData, const CONSTANT(ITMLib::Objects::ITMVoxelBlockHash::IndexData) *voxelIndex,
 	const THREADPTR(Vector3i) & point, THREADPTR(bool) &isFound, THREADPTR(ITMLib::Objects::ITMVoxelBlockHash::IndexCache) & cache)
 {
-	int voxelAddress = findVoxel(voxelIndex, point, isFound, cache);
-	return isFound ? voxelData[voxelAddress] : TVoxel();
+//	int voxelAddress = findVoxel(voxelIndex, point, isFound, cache);
+//	return isFound ? voxelData[voxelAddress] : TVoxel();
+	Vector3i blockPos;
+	int linearIdx = pointToVoxelBlockPos(point, blockPos);
+
+	if IS_EQUAL3(blockPos, cache.blockPos)
+	{
+		isFound = true;
+		return voxelData[cache.blockPtr + linearIdx];
+	}
+
+	int hashIdx = hashIndex(blockPos);
+
+	while (true) 
+	{
+		ITMHashEntry hashEntry = voxelIndex[hashIdx];
+
+		if (IS_EQUAL3(hashEntry.pos, blockPos) && hashEntry.ptr >= 0)
+		{
+			isFound = true;
+			cache.blockPos = blockPos; cache.blockPtr = hashEntry.ptr * SDF_BLOCK_SIZE3;
+			return voxelData[cache.blockPtr + linearIdx];
+		}
+
+		if (hashEntry.offset < 1) break;
+		hashIdx = SDF_BUCKET_NUM + hashEntry.offset - 1;
+	}
+
+	isFound = false;
+	return TVoxel();
 }
 
 template<class TVoxel>
