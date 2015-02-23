@@ -19,9 +19,8 @@ _CPU_AND_GPU_CODE_ inline int pointToVoxelBlockPos(const THREADPTR(Vector3i) & p
 	return point.x + (point.y - blockPos.x) * SDF_BLOCK_SIZE + (point.z - blockPos.y) * SDF_BLOCK_SIZE * SDF_BLOCK_SIZE - blockPos.z * SDF_BLOCK_SIZE3;
 }
 
-template<class TVoxel>
-_CPU_AND_GPU_CODE_ inline TVoxel readVoxel(const CONSTANT(TVoxel) *voxelData, const CONSTANT(ITMLib::Objects::ITMVoxelBlockHash::IndexData) *voxelIndex,
-	const THREADPTR(Vector3i) & point, THREADPTR(bool) &isFound, THREADPTR(ITMLib::Objects::ITMVoxelBlockHash::IndexCache) & cache)
+_CPU_AND_GPU_CODE_ inline int findVoxel(const CONSTANT(ITMLib::Objects::ITMVoxelBlockHash::IndexData) *voxelIndex, const THREADPTR(Vector3i) & point,
+	THREADPTR(bool) &isFound, THREADPTR(ITMLib::Objects::ITMVoxelBlockHash::IndexCache) & cache)
 {
 	Vector3i blockPos;
 	int linearIdx = pointToVoxelBlockPos(point, blockPos);
@@ -29,7 +28,7 @@ _CPU_AND_GPU_CODE_ inline TVoxel readVoxel(const CONSTANT(TVoxel) *voxelData, co
 	if IS_EQUAL3(blockPos, cache.blockPos)
 	{
 		isFound = true;
-		return voxelData[cache.blockPtr + linearIdx];
+		return cache.blockPtr + linearIdx;
 	}
 
 	int hashIdx = hashIndex(blockPos);
@@ -42,7 +41,7 @@ _CPU_AND_GPU_CODE_ inline TVoxel readVoxel(const CONSTANT(TVoxel) *voxelData, co
 		{
 			isFound = true;
 			cache.blockPos = blockPos; cache.blockPtr = hashEntry.ptr * SDF_BLOCK_SIZE3;
-			return voxelData[cache.blockPtr + linearIdx];
+			return cache.blockPtr + linearIdx;
 		}
 
 		if (hashEntry.offset < 1) break;
@@ -50,7 +49,21 @@ _CPU_AND_GPU_CODE_ inline TVoxel readVoxel(const CONSTANT(TVoxel) *voxelData, co
 	}
 
 	isFound = false;
-	return TVoxel();
+	return -1;
+}
+
+template<class TVoxel>
+_CPU_AND_GPU_CODE_ inline TVoxel readVoxel(const CONSTANT(TVoxel) *voxelData, const CONSTANT(ITMLib::Objects::ITMVoxelBlockHash::IndexData) *voxelIndex,
+	const THREADPTR(Vector3i) & point, THREADPTR(bool) &isFound, THREADPTR(ITMLib::Objects::ITMVoxelBlockHash::IndexCache) & cache)
+{
+	int voxelAddress = findVoxel(voxelIndex, point, isFound, cache);
+	return isFound ? voxelData[voxelAddress] : TVoxel();
+}
+
+_CPU_AND_GPU_CODE_ inline int findVoxel(const CONSTANT(ITMLib::Objects::ITMVoxelBlockHash::IndexData) *voxelIndex, Vector3i point, THREADPTR(bool) &isFound)
+{
+	ITMLib::Objects::ITMVoxelBlockHash::IndexCache cache;
+	return findVoxel(voxelIndex, point, isFound, cache);
 }
 
 template<class TVoxel>
@@ -61,9 +74,8 @@ _CPU_AND_GPU_CODE_ inline TVoxel readVoxel(const CONSTANT(TVoxel) *voxelData, co
 	return readVoxel(voxelData, voxelIndex, point, isFound, cache);
 }
 
-template<class TVoxel>
-_CPU_AND_GPU_CODE_ inline TVoxel readVoxel(const CONSTANT(TVoxel) *voxelData, const CONSTANT(ITMLib::Objects::ITMPlainVoxelArray::IndexData) *voxelIndex,
-	const THREADPTR(Vector3i) & point_orig, THREADPTR(bool) &isFound)
+_CPU_AND_GPU_CODE_ inline int findVoxel(const CONSTANT(ITMLib::Objects::ITMPlainVoxelArray::IndexData) *voxelIndex, const THREADPTR(Vector3i) & point_orig,
+	THREADPTR(bool) &isFound)
 {
 	Vector3i point = point_orig - voxelIndex->offset;
 
@@ -71,13 +83,27 @@ _CPU_AND_GPU_CODE_ inline TVoxel readVoxel(const CONSTANT(TVoxel) *voxelData, co
 	    (point.y < 0) || (point.y >= voxelIndex->size.y) ||
 	    (point.z < 0) || (point.z >= voxelIndex->size.z)) {
 		isFound = false;
-		return TVoxel();
+		return -1;
 	}
 
 	int linearIdx = point.x + point.y * voxelIndex->size.x + point.z * voxelIndex->size.x * voxelIndex->size.y;
 
 	isFound = true;
-	return voxelData[linearIdx];
+	return linearIdx;
+}
+
+template<class TVoxel>
+_CPU_AND_GPU_CODE_ inline TVoxel readVoxel(const CONSTANT(TVoxel) *voxelData, const CONSTANT(ITMLib::Objects::ITMPlainVoxelArray::IndexData) *voxelIndex,
+	const THREADPTR(Vector3i) & point_orig, THREADPTR(bool) &isFound)
+{
+	int voxelAddress = findVoxel(voxelIndex, point_orig, isFound);
+	return isFound ? voxelData[voxelAddress] : TVoxel();
+}
+
+_CPU_AND_GPU_CODE_ inline int findVoxel(const CONSTANT(ITMLib::Objects::ITMPlainVoxelArray::IndexData) *voxelIndex, const THREADPTR(Vector3i) & point_orig,
+	THREADPTR(bool) &isFound, THREADPTR(ITMLib::Objects::ITMPlainVoxelArray::IndexCache) & cache)
+{
+	return findVoxel(voxelIndex, point_orig, isFound);
 }
 
 template<class TVoxel>
