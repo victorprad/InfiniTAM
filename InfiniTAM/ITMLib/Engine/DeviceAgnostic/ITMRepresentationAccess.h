@@ -52,26 +52,10 @@ _CPU_AND_GPU_CODE_ inline int findVoxel(const CONSTANT(ITMLib::Objects::ITMVoxel
 	return -1;
 }
 
-template<class TVoxel>
-_CPU_AND_GPU_CODE_ inline TVoxel readVoxel(const CONSTANT(TVoxel) *voxelData, const CONSTANT(ITMLib::Objects::ITMVoxelBlockHash::IndexData) *voxelIndex,
-	const THREADPTR(Vector3i) & point, THREADPTR(bool) &isFound, THREADPTR(ITMLib::Objects::ITMVoxelBlockHash::IndexCache) & cache)
-{
-	int voxelAddress = findVoxel(voxelIndex, point, isFound, cache);
-	return isFound ? voxelData[voxelAddress] : TVoxel();
-}
-
 _CPU_AND_GPU_CODE_ inline int findVoxel(const CONSTANT(ITMLib::Objects::ITMVoxelBlockHash::IndexData) *voxelIndex, Vector3i point, THREADPTR(bool) &isFound)
 {
 	ITMLib::Objects::ITMVoxelBlockHash::IndexCache cache;
 	return findVoxel(voxelIndex, point, isFound, cache);
-}
-
-template<class TVoxel>
-_CPU_AND_GPU_CODE_ inline TVoxel readVoxel(const CONSTANT(TVoxel) *voxelData, const CONSTANT(ITMLib::Objects::ITMVoxelBlockHash::IndexData) *voxelIndex,
-	Vector3i point, THREADPTR(bool) &isFound)
-{
-	ITMLib::Objects::ITMVoxelBlockHash::IndexCache cache;
-	return readVoxel(voxelData, voxelIndex, point, isFound, cache);
 }
 
 _CPU_AND_GPU_CODE_ inline int findVoxel(const CONSTANT(ITMLib::Objects::ITMPlainVoxelArray::IndexData) *voxelIndex, const THREADPTR(Vector3i) & point_orig,
@@ -92,18 +76,34 @@ _CPU_AND_GPU_CODE_ inline int findVoxel(const CONSTANT(ITMLib::Objects::ITMPlain
 	return linearIdx;
 }
 
+_CPU_AND_GPU_CODE_ inline int findVoxel(const CONSTANT(ITMLib::Objects::ITMPlainVoxelArray::IndexData) *voxelIndex, const THREADPTR(Vector3i) & point_orig,
+	THREADPTR(bool) &isFound, THREADPTR(ITMLib::Objects::ITMPlainVoxelArray::IndexCache) & cache)
+{
+	return findVoxel(voxelIndex, point_orig, isFound);
+}
+
+template<class TVoxel>
+_CPU_AND_GPU_CODE_ inline TVoxel readVoxel(const CONSTANT(TVoxel) *voxelData, const CONSTANT(ITMLib::Objects::ITMVoxelBlockHash::IndexData) *voxelIndex,
+	const THREADPTR(Vector3i) & point, THREADPTR(bool) &isFound, THREADPTR(ITMLib::Objects::ITMVoxelBlockHash::IndexCache) & cache)
+{
+	int voxelAddress = findVoxel(voxelIndex, point, isFound, cache);
+	return isFound ? voxelData[voxelAddress] : TVoxel();
+}
+
+template<class TVoxel>
+_CPU_AND_GPU_CODE_ inline TVoxel readVoxel(const CONSTANT(TVoxel) *voxelData, const CONSTANT(ITMLib::Objects::ITMVoxelBlockHash::IndexData) *voxelIndex,
+	Vector3i point, THREADPTR(bool) &isFound)
+{
+	ITMLib::Objects::ITMVoxelBlockHash::IndexCache cache;
+	return readVoxel(voxelData, voxelIndex, point, isFound, cache);
+}
+
 template<class TVoxel>
 _CPU_AND_GPU_CODE_ inline TVoxel readVoxel(const CONSTANT(TVoxel) *voxelData, const CONSTANT(ITMLib::Objects::ITMPlainVoxelArray::IndexData) *voxelIndex,
 	const THREADPTR(Vector3i) & point_orig, THREADPTR(bool) &isFound)
 {
 	int voxelAddress = findVoxel(voxelIndex, point_orig, isFound);
 	return isFound ? voxelData[voxelAddress] : TVoxel();
-}
-
-_CPU_AND_GPU_CODE_ inline int findVoxel(const CONSTANT(ITMLib::Objects::ITMPlainVoxelArray::IndexData) *voxelIndex, const THREADPTR(Vector3i) & point_orig,
-	THREADPTR(bool) &isFound, THREADPTR(ITMLib::Objects::ITMPlainVoxelArray::IndexCache) & cache)
-{
-	return findVoxel(voxelIndex, point_orig, isFound);
 }
 
 template<class TVoxel>
