@@ -9,16 +9,25 @@ import javax.microedition.khronos.opengles.GL10;
 import javax.microedition.khronos.egl.EGLConfig;
 //import android.opengl.GL10;
 //import android.opengl.EGLConfig;
+import java.lang.Thread;
 
 public class InfiniTAM extends Activity
 {
+	static
+	{
+		System.loadLibrary("InfiniTAM");
+	}
+
 	private InfiniTAMView view;
+	private /*InfiniTAMProcessing*/Thread processor;
 
 	/** Called when the activity is first created. */
 	@Override
 	public void onCreate(Bundle savedInstanceState)
 	{
 		super.onCreate(savedInstanceState);
+
+		InitializeNativeApp();
 
 		view = new InfiniTAMView(this);
 
@@ -29,6 +38,9 @@ public class InfiniTAM extends Activity
 //		view.setRenderer(new InfiniTAM_Renderer());
 
 		setContentView(view);
+
+		processor = new Thread(new InfiniTAMProcessingThread(view));
+		processor.start();
 	}
 
 	@Override
@@ -36,6 +48,7 @@ public class InfiniTAM extends Activity
 	{
 		super.onPause();
 		view.onPause();
+//		processor.pause();
 	}
 
 	@Override
@@ -43,10 +56,14 @@ public class InfiniTAM extends Activity
 	{
 		super.onResume();
 		view.onResume();
+//		processor.resume();
 	}
+
+	public static native void InitializeNativeApp();
 }
 
-class InfiniTAMView extends GLSurfaceView {
+class InfiniTAMView extends GLSurfaceView
+{
 
 	private final InfiniTAMRenderer mRenderer;
 
@@ -54,7 +71,7 @@ class InfiniTAMView extends GLSurfaceView {
 		super(context);
 
 		// Create an OpenGL ES 2.0 context.
-		setEGLContextClientVersion(2);
+		setEGLContextClientVersion(1);
 
 		// Set the Renderer for drawing on the GLSurfaceView
 		mRenderer = new InfiniTAMRenderer();
@@ -65,13 +82,8 @@ class InfiniTAMView extends GLSurfaceView {
 	}
 }
 
-class InfiniTAMRenderer implements GLSurfaceView.Renderer 
+class InfiniTAMRenderer implements GLSurfaceView.Renderer
 {
-	static
-	{
-		System.loadLibrary("InfiniTAM");
-	}
-
 	public void onDrawFrame(GL10 gl) 
 	{
 		//gl.glClear(gl.GL_COLOR_BUFFER_BIT);
@@ -93,5 +105,26 @@ class InfiniTAMRenderer implements GLSurfaceView.Renderer
 	public static native void InitGL();
 	public static native void ResizeGL(int newWidth, int newHeight);
 	public static native void RenderGL();
+}
+
+class InfiniTAMProcessingThread implements Runnable
+{
+	private InfiniTAMView view;
+
+	InfiniTAMProcessingThread(InfiniTAMView _view)
+	{
+		view = _view;
+	}
+
+	public void run()
+	{
+		while (true) {
+			int ret = ProcessFrame();
+			view.requestRender();
+			if (ret == 0) break;
+		}
+	}
+
+	public static native int ProcessFrame();
 }
 

@@ -19,5 +19,15 @@ JNIEXPORT void JNICALL Java_uk_ac_ox_robots_InfiniTAM_InfiniTAMRenderer_RenderGL
 	(InfiniTAMApp::Instance())->RenderGL();
 }
 
+JNIEXPORT void JNICALL Java_uk_ac_ox_robots_InfiniTAM_InfiniTAM_InitializeNativeApp(JNIEnv *env, jobject thiz)
+{
+	InfiniTAMApp::Instance();
+}
+
+JNIEXPORT int JNICALL Java_uk_ac_ox_robots_InfiniTAM_InfiniTAMProcessingThread_ProcessFrame(JNIEnv *env, jobject thiz)
+{
+	return (InfiniTAMApp::Instance())->ProcessFrame()?1:0;
+}
+
 }
 

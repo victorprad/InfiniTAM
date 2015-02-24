@@ -25,6 +25,13 @@
 #include "DeviceSpecific/Metal/ITMDepthTracker_Metal.h"
 #endif
 
+#ifdef ANDROID
+#define DIEWITHEXCEPTION(x) { fprintf(stderr, x "\n"); exit(-1); }
+#else
+#define DIEWITHEXCEPTION(x) throw std::runtime_error(x)
+#endif
+
+
 namespace ITMLib
 {
   namespace Engine
@@ -76,7 +83,7 @@ namespace ITMLib
                        ITMIMUCalibrator *imuCalibrator, ITMScene<TVoxel,TIndex> *scene) const
       {
         typename std::map<ITMLibSettings::TrackerType,Maker>::const_iterator it = makers.find(settings->trackerType);
-        if(it == makers.end()) throw std::runtime_error("Unknown tracker type");
+        if(it == makers.end()) DIEWITHEXCEPTION("Unknown tracker type");
 
         Maker maker = it->second;
         return (*maker)(trackedImageSize, settings, lowLevelEngine, imuCalibrator, scene);
@@ -115,7 +122,7 @@ namespace ITMLib
           default: break;
         }
 
-        throw std::runtime_error("Failed to make colour tracker");
+        DIEWITHEXCEPTION("Failed to make colour tracker");
       }
 
       /**
@@ -173,7 +180,7 @@ namespace ITMLib
           default: break;
         }
 
-        throw std::runtime_error("Failed to make ICP tracker");
+        DIEWITHEXCEPTION("Failed to make ICP tracker");
       }
 
       /**
@@ -246,7 +253,7 @@ namespace ITMLib
           default: break;
         }
 
-        throw std::runtime_error("Failed to make IMU tracker");
+        DIEWITHEXCEPTION("Failed to make IMU tracker");
       }
 
       /**
@@ -319,7 +326,7 @@ namespace ITMLib
           default: break;
         }
 
-        throw std::runtime_error("Failed to make Ren tracker");
+        DIEWITHEXCEPTION("Failed to make Ren tracker");
       }
     };
   }
