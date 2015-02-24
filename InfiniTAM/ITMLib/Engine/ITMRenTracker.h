@@ -24,6 +24,7 @@ namespace ITMLib
 		private:
 			ITMTrackingState *trackingState; 
 			const ITMLowLevelEngine *lowLevelEngine;
+			
 
 			ITMFloatImage *tempImage1, *tempImage2;
 
@@ -53,45 +54,13 @@ namespace ITMLib
 			void applyDelta(const ITMPose & para_old, const float *delta, ITMPose & para_new) const;
 			int numParameters(void) const { return 6; }
 
-			class EvaluationPoint
-			{
-			public:
-				float f(void) { return cacheF; }
-				const float* nabla_f(void) { if (cacheNabla == NULL) computeGradients(false); return cacheNabla; }
-
-				const float* hessian_GN(void) { if (cacheHessian == NULL) computeGradients(true); return cacheHessian; }
-				const ITMPose & getParameter(void) const { return *mPara; }
-
-				EvaluationPoint(ITMPose *pos, const ITMRenTracker *f_parent);
-				~EvaluationPoint(void)
-				{
-					delete mPara;
-					if (cacheNabla!=NULL) delete[] cacheNabla;
-					if (cacheHessian!=NULL) delete[] cacheHessian;
-				}
-
-			protected:
-				void computeGradients(bool requiresHessian);
-
-				ITMPose *mPara;
-				const ITMRenTracker *mParent;
-
-				float cacheF;
-				float *cacheNabla;
-				float *cacheHessian;
-			};
-
-			EvaluationPoint* evaluateAt(ITMPose *para) const
-			{
-				return new EvaluationPoint(para, this);
-			}
-
 			void TrackCamera(ITMTrackingState *trackingState, const ITMView *view);
 
-			ITMRenTracker(Vector2i imgSize, const ITMLowLevelEngine *lowLevelEngine, 
+			ITMRenTracker(Vector2i imgSize, TrackerIterationType *trackingRegime, int noHierarchyLevels, const ITMLowLevelEngine *lowLevelEngine, 
 				const ITMScene<TVoxel, TIndex> *scene, MemoryDeviceType memoryType);
 
 			virtual ~ITMRenTracker(void);
 		};
+
 	}
 }

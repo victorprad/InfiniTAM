@@ -271,7 +271,12 @@ namespace ITMLib
                 lowLevelEngine
               ), 0
             );
-            compositeTracker->SetTracker(new ITMRenTracker_CPU<TVoxel,TIndex>(trackedImageSize, lowLevelEngine, scene), 1);
+            compositeTracker->SetTracker(
+				new ITMRenTracker_CPU<TVoxel,TIndex>(
+				trackedImageSize,
+				settings->trackingRegime,
+				2,
+				lowLevelEngine, scene), 1);
             return compositeTracker;
           }
           case ITMLibSettings::DEVICE_CUDA:
@@ -289,7 +294,13 @@ namespace ITMLib
                 lowLevelEngine
               ), 0
             );
-            compositeTracker->SetTracker(new ITMRenTracker_CUDA<TVoxel,TIndex>(trackedImageSize, lowLevelEngine, scene), 1);
+            compositeTracker->SetTracker(new ITMRenTracker_CUDA<TVoxel,TIndex>(
+				trackedImageSize,
+				settings->trackingRegime,
+				2,
+				lowLevelEngine, 
+				scene
+				), 1);
             return compositeTracker;
 #else
             break;

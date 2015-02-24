@@ -5,8 +5,6 @@
 
 using namespace ITMLib::Engine;
 
-template<class TVoxel, class TIndex>
-static inline bool minimizeLM(const ITMRenTracker<TVoxel,TIndex> & tracker, ITMPose & initialization);
 
 static inline void GetRotationMatrixFromMRP(float *outR, const float* r)
 {
@@ -23,7 +21,6 @@ static inline void GetRotationMatrixFromMRP(float *outR, const float* r)
 	for (int i = 0; i<9; i++) outR[i] /= ((1 + tsq)*(1 + tsq));
 }
 
-// // used by carl LM
 static inline void GetMFromParam(float* pose, Matrix4f& M)
 {
 	float R[9];
@@ -54,27 +51,27 @@ static void ComputeSingleStep(float *step, float *ATA, float *ATb, float lambda)
 
 
 template<class TVoxel, class TIndex>
-ITMRenTracker<TVoxel, TIndex>::ITMRenTracker(Vector2i imgSize, const ITMLowLevelEngine *lowLevelEngine, 
-	const ITMScene<TVoxel,TIndex> *scene, MemoryDeviceType memoryType)
-{ 
-	//TODO from parameters, rotationOnly not implemented
+ITMRenTracker<TVoxel, TIndex>::ITMRenTracker(Vector2i imgSize, TrackerIterationType *trackingRegime, int noHierarchyLevels, const ITMLowLevelEngine *lowLevelEngine, const ITMScene<TVoxel, TIndex> *scene, MemoryDeviceType memoryType)
+{
+	viewHierarchy = new ITMImageHierarchy<ITMTemplatedHierarchyLevel<ITMFloat4Image> >(imgSize, trackingRegime, noHierarchyLevels, memoryType, false);
 
 	tempImage1 = new ITMFloatImage(imgSize, memoryType);
 	tempImage2 = new ITMFloatImage(imgSize, memoryType);
 
 	this->lowLevelEngine = lowLevelEngine;
 	this->scene = scene;
-};
+}
 
 template<class TVoxel, class TIndex>
 ITMRenTracker<TVoxel,TIndex>::~ITMRenTracker(void)
 {
 	delete tempImage1;
 	delete tempImage2;
+	delete viewHierarchy;
 };
 
 template<class TVoxel, class TIndex>
-void ITMRenTracker<TVoxel,TIndex>::PrepareForEvaluation(const ITMView *view)
+void ITMRenTracker<TVoxel, TIndex>::PrepareForEvaluation(const ITMView *view)
 {
 	Vector4f intrinsics = view->calib->intrinsics_d.projectionParamsSimple.all;
 
@@ -105,23 +102,7 @@ void ITMRenTracker<TVoxel,TIndex>::TrackCamera(ITMTrackingState *trackingState, 
 {
 	this->PrepareForEvaluation(view);
 
-	// // Olaf LM
-
-	//ITMPose currentPara(*trackingState->pose_d);
-	//for (int levelId = viewHierarchy->noLevels - 1; levelId >= 2; levelId--) //skips full resolution
-	//{
-	//	this->levelId = levelId;
-	//	this->rotationOnly = rotationOnly; //ignored 
-
-	//	minimizeLM(*this, currentPara);
-	//}
-
-	//Matrix4f M; currentPara.invM.inv(M);
-	//trackingState->pose_d->SetFrom(M);
-
-
 	// // Carl lm
-
 	//float lastEnergy = 0.0f, currentEnergy = 0.0f, lambda = 1000.0f;
 	//float step[6]; Matrix4f invM, tmpM;
 
@@ -130,7 +111,7 @@ void ITMRenTracker<TVoxel,TIndex>::TrackCamera(ITMTrackingState *trackingState, 
 
 	//this->levelId = 0;
 
-	//invM = trackingState->pose_d->invM;
+	//invM = trackingState->pose_d->GetInvM();
 
 	//F_oneLevel(&lastEnergy, invM);
 
@@ -172,7 +153,7 @@ void ITMRenTracker<TVoxel,TIndex>::TrackCamera(ITMTrackingState *trackingState, 
 	for (int mlevelId = viewHierarchy->noLevels - 1; mlevelId >= 0; mlevelId--)
 	{
 		this->levelId = mlevelId;
-		
+
 		for (int iterNo = 0; iterNo < 10; iterNo++)
 		{
 			float normal = 0.0f;
@@ -184,8 +165,8 @@ void ITMRenTracker<TVoxel,TIndex>::TrackCamera(ITMTrackingState *trackingState, 
 				step[i] *= 0.0001f;
 				normal += step[i] * step[i];
 			}
-		
-			if (normal < 1e-9f) {break; }
+
+			if (normal < 1e-9f) { break; }
 
 			GetMFromParam(step, tmpM);
 			invM = tmpM * invM;
@@ -193,26 +174,7 @@ void ITMRenTracker<TVoxel,TIndex>::TrackCamera(ITMTrackingState *trackingState, 
 	}
 
 	trackingState->pose_d->SetInvM(invM);
-}
-
-template<class TVoxel, class TIndex>
-void ITMRenTracker<TVoxel,TIndex>::EvaluationPoint::computeGradients(bool hessianRequired)
-{
-	int numPara = mParent->numParameters();
-	cacheNabla = new float[numPara];
-	cacheHessian = new float[numPara*numPara];
-
-	mParent->G_oneLevel(cacheNabla, cacheHessian, mPara->GetInvM());
-}
-
-template<class TVoxel, class TIndex>
-ITMRenTracker<TVoxel,TIndex>::EvaluationPoint::EvaluationPoint(ITMPose *pos, const ITMRenTracker *f_parent)
-{
-	this->mPara = pos; this->mParent = f_parent;
-	ITMRenTracker *parent = (ITMRenTracker *)mParent;
-	parent->F_oneLevel(&cacheF, mPara->GetInvM());
-
-	cacheHessian = NULL; cacheNabla = NULL;
+	trackingState->pose_d->Coerce();
 }
 
 template<class TVoxel, class TIndex>
