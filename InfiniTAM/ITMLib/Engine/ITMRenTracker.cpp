@@ -155,35 +155,6 @@ void ITMRenTracker<TVoxel,TIndex>::TrackCamera(ITMTrackingState *trackingState, 
 		}
 	}
 
-
-	//// Carl Gaussian Newton
-
-	//float step[6]; Matrix4f invM, tmpM;
-	//invM = trackingState->pose_d->GetInvM();
-
-	//for (int mlevelId = viewHierarchy->noLevels - 1; mlevelId >= 0; mlevelId--)
-	//{
-	//	this->levelId = mlevelId;
-
-	//	for (int iterNo = 0; iterNo < 10; iterNo++)
-	//	{
-	//		float normal = 0.0f;
-	//		G_oneLevel(nabla, hessian, invM);
-	//		ComputeSingleStep(step, hessian, nabla, 0.0f);
-
-	//		for (int i = 0; i < 6; i++)
-	//		{
-	//			step[i] *= 0.0001f;
-	//			normal += step[i] * step[i];
-	//		}
-
-	//		if (normal < 1e-9f) { break; }
-
-	//		GetMFromParam(step, tmpM);
-	//		invM = tmpM * invM;
-	//	}
-	//}
-
 	trackingState->pose_d->SetInvM(invM);
 	trackingState->pose_d->Coerce();
 }
