@@ -48,7 +48,7 @@ try
 	if (imagesource_part2 == NULL) 
 	{
 		printf("using OpenNI device: %s\n", (imagesource_part1==NULL)?"<OpenNI default device>":imagesource_part1);
-		imageSource = new OpenNIEngine(calibFile, imagesource_part1,true);
+		imageSource = new OpenNIEngine(calibFile, imagesource_part1);
 		if (imageSource->getDepthImageSize().x == 0) {
 			delete imageSource;
 			printf("trying MS Kinect device\n");

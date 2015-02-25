@@ -37,14 +37,8 @@ ITMLibSettings::ITMLibSettings(void)
 	useApproximateRaycast = false;
 
 	//trackerType = TRACKER_COLOR;
-	trackerType = TRACKER_ICP;
-
-	/** Use ITMRenTracker to reduce the wiggling when the depth sensor has missing data
-	Using this option, the tracking will frist start ICP from higher hierarchy for
-	initialial pose estimation, then run Ren's tracker at lowest level of hierachy.
-	The processing time on each frame is increased by around 50% (~5ms on a GTX Titan Black)**/
-
-	//trackerType = TRACKER_REN;
+	//trackerType = TRACKER_ICP;
+	trackerType = TRACKER_REN;
 	//trackerType = TRACKER_IMU;
 
 	// builds the tracking regime. level 0 is full resolution

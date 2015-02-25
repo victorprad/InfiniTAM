@@ -40,8 +40,11 @@ static void ComputeSingleStep(float *step, float *ATA, float *ATb, float lambda)
 	memcpy(tmpATA, ATA, 6 * 6 * sizeof(float));
 	memset(step, 0, 6 * sizeof(float));
 
-	for (int i = 0; i < 6 * 6; i += 7) tmpATA[i] += lambda * ATA[i];
-	for (int i = 0; i < 6; i++) step[i] = 0;
+	for (int i = 0; i < 6 * 6; i += 7)
+	{
+		float &ele = tmpATA[i];
+		if (!(fabs(ele) < 1e-15f)) ele *= (1.0f + lambda); else ele = lambda*1e-10f;
+	}
 
 	ORUtils::Cholesky cholA(tmpATA, 6);
 	cholA.Backsub(step, ATb);
@@ -103,75 +106,83 @@ void ITMRenTracker<TVoxel,TIndex>::TrackCamera(ITMTrackingState *trackingState, 
 	this->PrepareForEvaluation(view);
 
 	// // Carl lm
-	//float lastEnergy = 0.0f, currentEnergy = 0.0f, lambda = 1000.0f;
-	//float step[6]; Matrix4f invM, tmpM;
+	float lastEnergy = 0.0f, currentEnergy = 0.0f, lambda = 1000.0f;
+	float step[6]; Matrix4f invM, tmpM;
 
-	//bool converged = false;
-	//int iter;
+	bool converged = false;
+	int iter;
+	this->levelId = 0;
+	invM = trackingState->pose_d->GetInvM();
 
-	//this->levelId = 0;
+	static const int MAX_STEPS = 100;
+	static const float MIN_STEP = 0.00005f;
+	static const float MIN_DECREASE = 0.0001f;
+	static const float TR_REGION_INCREASE = 0.10f;
+	static const float TR_REGION_DECREASE = 10.0f;
 
-	//invM = trackingState->pose_d->GetInvM();
+	{ // minimalist LM main loop
+		F_oneLevel(&lastEnergy, invM);
 
-	//F_oneLevel(&lastEnergy, invM);
+		for (iter = 0; iter < MAX_STEPS; iter++)
+		{
+			G_oneLevel(nabla, hessian, invM);
 
-	//for (iter = 0; iter < 200; iter++)
-	//{
-	//	G_oneLevel(nabla, hessian, invM);
+			while (true)
+			{
+				ComputeSingleStep(step, hessian, nabla, lambda);
 
-	//	while (true)
-	//	{
-	//		if (lambda>1e6) { converged = true; break; }
+				// check if step size is very small, if so, converge.
+				float MAXnorm = 0.0;
+				for (int i = 0; i<6; i++) { float tmp = fabs(step[i]); if (tmp>MAXnorm) MAXnorm = tmp; }
+				if (MAXnorm < MIN_STEP) { converged = true; break; }
 
-	//		ComputeSingleStep(step, hessian, nabla, lambda);
-	//		GetMFromParam(step, tmpM);
+				GetMFromParam(step, tmpM);
+				F_oneLevel(&currentEnergy, tmpM * invM);
 
-	//		F_oneLevel(&currentEnergy, tmpM * invM);
+				if (currentEnergy < lastEnergy)
+				{
+					// check if energy decrease is too small, if so, converge.
+					if (abs(currentEnergy - lastEnergy) / abs(lastEnergy) < MIN_DECREASE) { converged = true; }
+					lastEnergy = currentEnergy;
+					lambda *= TR_REGION_INCREASE;
+					invM = tmpM * invM;
+					break;
+				}
+				else lambda *= TR_REGION_DECREASE;
+			}
 
-	//		if (currentEnergy < lastEnergy)
-	//		{
-	//			lastEnergy = currentEnergy;
-	//			lambda /= 100.0f;
-	//			invM = tmpM * invM;
-
-	//			break;
-	//		}
-	//		else lambda *= 10.0f;
-	//	}
-
-	//	if (converged) break;
-	//}
-
-	//invM.inv(tmpM); trackingState->pose_d->SetFrom(tmpM);
+			if (converged) break;
+		}
+	}
 
 
 	//// Carl Gaussian Newton
 
-	float step[6]; Matrix4f invM, tmpM;
-	invM = trackingState->pose_d->GetInvM();
+	//float step[6]; Matrix4f invM, tmpM;
+	//invM = trackingState->pose_d->GetInvM();
 
-	for (int mlevelId = viewHierarchy->noLevels - 1; mlevelId >= 0; mlevelId--)
-	{
-		this->levelId = mlevelId;
+	//for (int mlevelId = viewHierarchy->noLevels - 1; mlevelId >= 0; mlevelId--)
+	//{
+	//	this->levelId = mlevelId;
 
-		for (int iterNo = 0; iterNo < 10; iterNo++)
-		{
-			float normal = 0.0f;
-			G_oneLevel(nabla, hessian, invM);
-			ComputeSingleStep(step, hessian, nabla, 0.0f);
+	//	for (int iterNo = 0; iterNo < 10; iterNo++)
+	//	{
+	//		float normal = 0.0f;
+	//		G_oneLevel(nabla, hessian, invM);
+	//		ComputeSingleStep(step, hessian, nabla, 0.0f);
 
-			for (int i = 0; i < 6; i++)
-			{
-				step[i] *= 0.0001f;
-				normal += step[i] * step[i];
-			}
+	//		for (int i = 0; i < 6; i++)
+	//		{
+	//			step[i] *= 0.0001f;
+	//			normal += step[i] * step[i];
+	//		}
 
-			if (normal < 1e-9f) { break; }
+	//		if (normal < 1e-9f) { break; }
 
-			GetMFromParam(step, tmpM);
-			invM = tmpM * invM;
-		}
-	}
+	//		GetMFromParam(step, tmpM);
+	//		invM = tmpM * invM;
+	//	}
+	//}
 
 	trackingState->pose_d->SetInvM(invM);
 	trackingState->pose_d->Coerce();
