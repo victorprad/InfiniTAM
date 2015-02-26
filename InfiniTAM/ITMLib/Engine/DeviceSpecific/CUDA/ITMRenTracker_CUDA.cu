@@ -1,6 +1,7 @@
 #include "ITMRenTracker_CUDA.h"
 #include "ITMCUDAUtils.h"
 
+#include "../../../../ORUtils/CUDADefines.h"
 #include "../../DeviceAgnostic/ITMRenTracker.h"
 #include "../../DeviceAgnostic/ITMRepresentationAccess.h" 
 
@@ -19,8 +20,8 @@ __global__ void renTrackerOneLevel_g_device(float *g_device, float *h_device, Ve
 // host functions
 
 template<class TVoxel, class TIndex>
-ITMRenTracker_CUDA<TVoxel, TIndex>::ITMRenTracker_CUDA(Vector2i imgSize, const ITMLowLevelEngine *lowLevelEngine, const ITMScene<TVoxel,TIndex> *scene) 
-	: ITMRenTracker<TVoxel, TIndex>(imgSize, lowLevelEngine, scene, MEMORYDEVICE_CUDA)
+ITMRenTracker_CUDA<TVoxel, TIndex>::ITMRenTracker_CUDA(Vector2i imgSize, TrackerIterationType *trackingRegime, int noHierarchyLevels, const ITMLowLevelEngine *lowLevelEngine, const ITMScene<TVoxel, TIndex> *scene)
+	: ITMRenTracker<TVoxel, TIndex>(imgSize,trackingRegime,noHierarchyLevels,lowLevelEngine,scene, MEMORYDEVICE_CUDA)
 { 
 	int dim_f = 1, dim_g = 6, dim_h = 6 + 5 + 4 + 3 + 2 + 1;
 
