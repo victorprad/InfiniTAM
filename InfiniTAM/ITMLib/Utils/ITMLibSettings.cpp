@@ -37,8 +37,8 @@ ITMLibSettings::ITMLibSettings(void)
 	useApproximateRaycast = false;
 
 	//trackerType = TRACKER_COLOR;
-	trackerType = TRACKER_ICP;
-	//trackerType = TRACKER_REN;
+	//trackerType = TRACKER_ICP;
+	trackerType = TRACKER_REN;
 	//trackerType = TRACKER_IMU;
 
 	// builds the tracking regime. level 0 is full resolution

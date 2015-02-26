@@ -328,8 +328,8 @@ _CPU_AND_GPU_CODE_ inline void processPixelICP(DEVICEPTR(Vector4u) &outRendering
 
 	if (foundPoint)
 	{
-		//drawPixelGrey(outRendering, angle);
-		drawPixelNormal(outRendering[locId], outNormal);
+		drawPixelGrey(outRendering, angle);
+		//drawPixelNormal(outRendering[locId], outNormal);
 
 		Vector4f outPoint4;
 		outPoint4.x = point.x * voxelSize; outPoint4.y = point.y * voxelSize;
@@ -366,8 +366,8 @@ _CPU_AND_GPU_CODE_ inline void processPixelICP(DEVICEPTR(Vector4u) *outRendering
 
 	if (foundPoint)
 	{
-		//drawPixelGrey(outRendering[locId], angle);
-		drawPixelNormal(outRendering[locId], outNormal);
+		drawPixelGrey(outRendering[locId], angle);
+		//drawPixelNormal(outRendering[locId], outNormal);
 
 		Vector4f outPoint4;
 		outPoint4.x = point.x * voxelSize; outPoint4.y = point.y * voxelSize;
@@ -400,8 +400,8 @@ _CPU_AND_GPU_CODE_ inline void processPixelForwardRender(DEVICEPTR(Vector4u) *ou
 	bool foundPoint = point.w > 0.0f;
 	computeNormalAndAngle<useSmoothing>(foundPoint, x, y, pointsRay, lightSource, voxelSize, imgSize, outNormal, angle);
 
-	//if (foundPoint) drawPixelGrey(outRendering[locId], angle);
-	if (foundPoint) drawPixelNormal(outRendering[locId], outNormal);
+	if (foundPoint) drawPixelGrey(outRendering[locId], angle);
+	//if (foundPoint) drawPixelNormal(outRendering[locId], outNormal);
 	else outRendering[locId] = Vector4u((uchar)0);
 }
 
