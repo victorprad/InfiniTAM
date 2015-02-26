@@ -173,6 +173,7 @@ namespace ORUtils
 			Free();
 
 			this->dataSize = dataSize;
+			if (dataSize <=0) return;
 
 			if (allocate_CPU)
 			{
