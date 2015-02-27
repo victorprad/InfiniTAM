@@ -415,8 +415,8 @@ _CPU_AND_GPU_CODE_ inline void processPixelGrey(DEVICEPTR(Vector4u) &outRenderin
 
 	computeNormalAndAngle<TVoxel, TIndex>(foundPoint, point, voxelData, voxelIndex, lightSource, outNormal, angle);
 
-	//if (foundPoint) drawPixelGrey(outRendering, angle);
-	if (foundPoint) drawPixelNormal(outRendering, outNormal);
+	if (foundPoint) drawPixelGrey(outRendering, angle);
+	//if (foundPoint) drawPixelNormal(outRendering, outNormal);
 	else outRendering = Vector4u((uchar)0);
 }
 
