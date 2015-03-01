@@ -170,8 +170,12 @@ void RawFileReader::loadIntoCache(void)
 	}
 	else
 	{
-		fread(cached_rgb->GetData(MEMORYDEVICE_CPU), sizeof(Vector4u), imgSize.x * imgSize.y, f);
+		size_t tmp = fread(cached_rgb->GetData(MEMORYDEVICE_CPU), sizeof(Vector4u), imgSize.x * imgSize.y, f);
 		fclose(f);
+		if (tmp != (size_t)imgSize.x * imgSize.y) {
+			delete cached_rgb; cached_rgb = NULL;
+			printf("error reading file '%s'\n", str);
+		}
 	}
 
 	sprintf(str, depthImageMask, currentFrameNo);
@@ -183,8 +187,12 @@ void RawFileReader::loadIntoCache(void)
 	}
 	else
 	{
-		fread(cached_depth->GetData(MEMORYDEVICE_CPU), sizeof(short), imgSize.x * imgSize.y, f);
+		size_t tmp = fread(cached_depth->GetData(MEMORYDEVICE_CPU), sizeof(short), imgSize.x * imgSize.y, f);
 		fclose(f);
+		if (tmp != (size_t)imgSize.x * imgSize.y) {
+			delete cached_depth; cached_depth = NULL;
+			printf("error reading file '%s'\n", str);
+		}
 	}
 }
 

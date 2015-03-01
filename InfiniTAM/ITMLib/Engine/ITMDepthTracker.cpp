@@ -126,11 +126,11 @@ void ITMDepthTracker::ApplyDelta(const Matrix4f & para_old, const float *delta, 
 		step[0] = 0.0f; step[1] = 0.0f; step[2] = 0.0f;
 		step[3] = (float)(delta[0]); step[4] = (float)(delta[1]); step[5] = (float)(delta[2]);
 		break;
+	default:
 	case TRACKER_ITERATION_BOTH:
 		step[0] = (float)(delta[0]); step[1] = (float)(delta[1]); step[2] = (float)(delta[2]);
 		step[3] = (float)(delta[3]); step[4] = (float)(delta[4]); step[5] = (float)(delta[5]);
 		break;
-	default: break;
 	}
 
 	Matrix4f Tinc;

@@ -92,11 +92,13 @@ namespace ITMLib
 				TVoxel *storedData = storedVoxelBlocks;
 				FILE *f = fopen(fileName, "rb");
 
-				fread(hasStoredData, sizeof(bool), noTotalEntries, f);
-				for (int i = 0; i < noTotalEntries; i++)
-				{
-					fread(storedData, sizeof(TVoxel) * SDF_BLOCK_SIZE3, 1, f);
-					storedData += SDF_BLOCK_SIZE3;
+				size_t tmp = fread(hasStoredData, sizeof(bool), noTotalEntries, f);
+				if (tmp == (size_t)noTotalEntries) {
+					for (int i = 0; i < noTotalEntries; i++)
+					{
+						fread(storedData, sizeof(TVoxel) * SDF_BLOCK_SIZE3, 1, f);
+						storedData += SDF_BLOCK_SIZE3;
+					}
 				}
 
 				fclose(f);

@@ -22,7 +22,7 @@ static PNMtype pnm_readheader(FILE *f, int *xsize, int *ysize, bool *binary)
 	bool isBinary = true;
 
 	/* read identifier */
-	fscanf(f, "%[^ \n\t]", tmp);
+	if (fscanf(f, "%[^ \n\t]", tmp) != 1) return type;
 	if (!strcmp(tmp, pgm_id)) type = PNM_PGM;
 	else if (!strcmp(tmp, pgm_ascii_id)) { type = PNM_PGM; isBinary = false; }
 	else if (!strcmp(tmp, ppm_id)) type = PNM_PPM;
@@ -95,7 +95,8 @@ static bool pnm_readdata_binary(FILE *f, int xsize, int ysize, PNMtype type, voi
 	}
 	if (bytesPerSample == 0) return false;
 
-	fread(data, bytesPerSample, xsize*ysize*channels, f);
+	size_t tmp = fread(data, bytesPerSample, xsize*ysize*channels, f);
+	if (tmp != (size_t)xsize*ysize*channels) return false;
 	return (data != NULL);
 }
 

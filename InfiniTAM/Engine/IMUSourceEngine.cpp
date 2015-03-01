@@ -33,12 +33,17 @@ void IMUSourceEngine::loadIMUIntoCache(void)
 	}
 	else
 	{
-		fscanf(f, "%f %f %f %f %f %f %f %f %f",
+		size_t ret = fscanf(f, "%f %f %f %f %f %f %f %f %f",
 			&cached_imu->R.m00, &cached_imu->R.m01, &cached_imu->R.m02,
 			&cached_imu->R.m10, &cached_imu->R.m11, &cached_imu->R.m12,
 			&cached_imu->R.m20, &cached_imu->R.m21, &cached_imu->R.m22);
 
 		fclose(f);
+
+		if (ret != 9) {
+			delete cached_imu; cached_imu = NULL;
+			printf("error reading file '%s'\n", str);
+		}
 	}
 }
 
