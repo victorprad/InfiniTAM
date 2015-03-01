@@ -30,6 +30,8 @@ OpenNIEngine.cpp
 OpenNIEngine.h
 UIEngine.cpp
 UIEngine.h
+CLIEngine.cpp
+CLIEngine.h
 )
 
 target_link_libraries(Engine ${GLUT_LIBRARIES})
