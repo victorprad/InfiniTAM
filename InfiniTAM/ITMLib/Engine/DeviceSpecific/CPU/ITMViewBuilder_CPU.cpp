@@ -18,6 +18,9 @@ void ITMViewBuilder_CPU::UpdateView(ITMView **view_ptr, ITMUChar4Image *rgbImage
 		*view_ptr = new ITMView(calib, rgbImage->noDims, rawDepthImage->noDims, false);
 		if (this->shortImage != NULL) delete this->shortImage;
 		this->shortImage = new ITMShortImage(rawDepthImage->noDims, true, false);
+		if (this->floatImage != NULL) delete this->floatImage;
+		this->floatImage = new ITMFloatImage(rawDepthImage->noDims, true, false);
+
 	}
 	ITMView *view = *view_ptr;
 
@@ -27,14 +30,17 @@ void ITMViewBuilder_CPU::UpdateView(ITMView **view_ptr, ITMUChar4Image *rgbImage
 	switch (inputImageType)
 	{
 	case InfiniTAM_DISPARITY_IMAGE:
-		this->ConvertDisparityToDepth(view->depth, this->shortImage, &(view->calib->intrinsics_d), &(view->calib->disparityCalib));
+		this->ConvertDisparityToDepth(this->floatImage, this->shortImage, &(view->calib->intrinsics_d), &(view->calib->disparityCalib));
 		break;
 	case InfiniTAM_SHORT_DEPTH_IMAGE:
-		this->ConvertDepthMMToFloat(view->depth, this->shortImage);
+		this->ConvertDepthMMToFloat(this->floatImage, this->shortImage);
 		break;
 	default:
 		break;
 	}
+
+	//view->depth->SetFrom(this->floatImage, MemoryBlock<float>::CPU_TO_CPU);
+	this->SmoothRawDepth(view->depth, this->floatImage);
 }
 
 void ITMViewBuilder_CPU::UpdateView(ITMView **view_ptr, ITMUChar4Image *rgbImage, ITMFloatImage *depthImage)
@@ -89,4 +95,17 @@ void ITMViewBuilder_CPU::ConvertDepthMMToFloat(ITMFloatImage *depth_out, const I
 
 	for (int y = 0; y < imgSize.y; y++) for (int x = 0; x < imgSize.x; x++)
 		convertDepthMMToFloat(d_out, x, y, d_in, imgSize);
+}
+
+void ITMLib::Engine::ITMViewBuilder_CPU::SmoothRawDepth(ITMFloatImage *image_out, const ITMFloatImage *image_in)
+{
+	Vector2i imgSize = image_in->noDims;
+
+	float *imout = image_out->GetData(MEMORYDEVICE_CPU);
+	const float *imin = image_in->GetData(MEMORYDEVICE_CPU);
+
+	memset(imout, 0, imgSize.x * imgSize.y * sizeof(float));
+
+	for (int y = 1; y < imgSize.y - 1; y++) for (int x = 1; x < imgSize.x - 1; x++)
+		smoothingRawDepth(imout, imin, x, y, imgSize);
 }
