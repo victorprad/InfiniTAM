@@ -39,8 +39,8 @@ void ITMViewBuilder_CPU::UpdateView(ITMView **view_ptr, ITMUChar4Image *rgbImage
 		break;
 	}
 
-	//view->depth->SetFrom(this->floatImage, MemoryBlock<float>::CPU_TO_CPU);
-	this->SmoothRawDepth(view->depth, this->floatImage);
+	view->depth->SetFrom(this->floatImage, MemoryBlock<float>::CPU_TO_CPU);
+	//this->SmoothRawDepth(view->depth, this->floatImage);
 }
 
 void ITMViewBuilder_CPU::UpdateView(ITMView **view_ptr, ITMUChar4Image *rgbImage, ITMFloatImage *depthImage)

@@ -47,8 +47,8 @@ void ITMViewBuilder_CUDA::UpdateView(ITMView **view_ptr, ITMUChar4Image *rgbImag
 		break;
 	}
 
-	//view->depth->SetFrom(this->floatImage,MemoryBlock<float>::CUDA_TO_CUDA);
-	this->SmoothRawDepth(view->depth, this->floatImage);
+	view->depth->SetFrom(this->floatImage,MemoryBlock<float>::CUDA_TO_CUDA);
+	//this->SmoothRawDepth(view->depth, this->floatImage);
 
 }
 

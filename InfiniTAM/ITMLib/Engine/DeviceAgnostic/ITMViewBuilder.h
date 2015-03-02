@@ -33,31 +33,33 @@ _CPU_AND_GPU_CODE_ inline void smoothingRawDepth(DEVICEPTR(float) *imageData_out
 	float no_good_pixels = 0.0f, mean_d = 0.0f, mean_u = 0.0f, var_d = 0.0f, var_u = 0.0f;
 	float du, dz, tmpu, final_depth, w;
 
-	if (imageData_in[x + y * imgDims.x] < 0.0f) { imageData_out[x + y * imgDims.x] = -1.0f; return; }
+	//if (imageData_in[x + y * imgDims.x] < 0.0f) { imageData_out[x + y * imgDims.x] = -1.0f; return; }
 
-	for (int i = -1, count = 0; i <= 1; i++) for (int j = -1; j <= 1; j++, count++)
-	{
-		patch[count].x = imageData_in[(x + j) + (y + i) * imgDims.x];
-		if (patch[count].x > 0.0f)
-		{
-			mean_d += patch[count].x;
-			var_d += patch[count].x * patch[count].x;
+	//for (int i = -1, count = 0; i <= 1; i++) for (int j = -1; j <= 1; j++, count++)
+	//{
+	//	patch[count].x = imageData_in[(x + j) + (y + i) * imgDims.x];
+	//	if (patch[count].x > 0.0f)
+	//	{
+	//		mean_d += patch[count].x;
+	//		var_d += patch[count].x * patch[count].x;
 
-			tmpu = i*i + j*j;
-			mean_u += sqrt(tmpu);
-			var_u += tmpu;
-			patch[count].y = tmpu;
+	//		tmpu = i*i + j*j;
+	//		mean_u += sqrt(tmpu);
+	//		var_u += tmpu;
+	//		patch[count].y = tmpu;
 
-			no_good_pixels++;
-		}
-	}
+	//		no_good_pixels++;
+	//	}
+	//}
 
-	if (no_good_pixels == 0.0f){ imageData_out[x + y * imgDims.x] = -1; return; }
+	//if (no_good_pixels == 0.0f){ imageData_out[x + y * imgDims.x] = -1; return; }
 
-	mean_d /= no_good_pixels;
-	mean_u /= no_good_pixels;
-	var_d = var_d / no_good_pixels - mean_d*mean_d;
-	var_u = var_u / no_good_pixels - mean_u*mean_u;
+	//mean_d /= no_good_pixels;
+	//mean_u /= no_good_pixels;
+	//var_d = var_d / no_good_pixels - mean_d*mean_d;
+	//var_u = var_u / no_good_pixels - mean_u*mean_u;
+
+
 
 	tmpu = 0, final_depth = 0; // recycle this var for weight
 
@@ -65,8 +67,7 @@ _CPU_AND_GPU_CODE_ inline void smoothingRawDepth(DEVICEPTR(float) *imageData_out
 	{
 		if (patch[i].x>0)
 		{
-			//dz = patch[i].x - patch[4].x; dz *= dz;
-			dz = patch[i].x - mean_d; dz *= dz;
+			dz = patch[i].x - patch[4].x; dz *= dz;
 			if (dz>0.0005f) continue;
 			du = patch[i].y;
 			w = expf(-0.5f * dz / var_d - 0.5f * du / var_u);
