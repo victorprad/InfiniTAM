@@ -102,7 +102,7 @@ void ITMMainEngine::ProcessFrame(ITMUChar4Image *rgbImage, ITMShortImage *rawDep
 {
 	// prepare image and turn it into a depth image
 	viewBuilder->UpdateView(&view, rgbImage, rawDepthImage, imuMeasurement);
-	viewBuilder->SmoothRawDepth(&view, trackingState->pose_d->GetInvM());
+	//viewBuilder->SmoothRawDepth(&view, trackingState->pose_d->GetInvM());
 
 	if (!mainProcessingActive) return;
 
