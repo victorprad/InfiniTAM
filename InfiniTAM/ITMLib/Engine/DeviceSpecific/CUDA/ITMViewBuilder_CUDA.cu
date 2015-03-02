@@ -14,7 +14,7 @@ ITMViewBuilder_CUDA::~ITMViewBuilder_CUDA(void) { }
 
 __global__ void convertDisparityToDepth_device(float *depth_out, const short *depth_in, Vector2f disparityCalibParams, float fx_depth, Vector2i imgSize);
 __global__ void convertDepthMMToFloat_device(float *d_out, const short *d_in, Vector2i imgSize);
-__global__ void SmoothRawDepth_device(float *imageData_out, const float *imageData_in, Vector2i imgDims);
+__global__ void SmoothRawDepth_device(float *imageData_out, const float *imageData_in, Vector2i imgDims, Vector3f zdric);
 
 // host methods
 
@@ -38,18 +38,14 @@ void ITMViewBuilder_CUDA::UpdateView(ITMView **view_ptr, ITMUChar4Image *rgbImag
 	switch (inputImageType)
 	{
 	case InfiniTAM_DISPARITY_IMAGE:
-		this->ConvertDisparityToDepth(this->floatImage, this->shortImage, &(view->calib->intrinsics_d), &(view->calib->disparityCalib));
+		this->ConvertDisparityToDepth(view->depth, this->shortImage, &(view->calib->intrinsics_d), &(view->calib->disparityCalib));
 		break;
 	case InfiniTAM_SHORT_DEPTH_IMAGE:
-		this->ConvertDepthMMToFloat(this->floatImage, this->shortImage);
+		this->ConvertDepthMMToFloat(view->depth, this->shortImage);
 		break;
 	default:
 		break;
 	}
-
-	view->depth->SetFrom(this->floatImage,MemoryBlock<float>::CUDA_TO_CUDA);
-	//this->SmoothRawDepth(view->depth, this->floatImage);
-
 }
 
 void ITMViewBuilder_CUDA::UpdateView(ITMView **view_ptr, ITMUChar4Image *rgbImage, ITMFloatImage *depthImage)
@@ -110,7 +106,7 @@ void ITMViewBuilder_CUDA::ConvertDepthMMToFloat(ITMFloatImage *depth_out, const 
 	convertDepthMMToFloat_device << <gridSize, blockSize >> >(d_out, d_in, imgSize);
 }
 
-void ITMLib::Engine::ITMViewBuilder_CUDA::SmoothRawDepth(ITMFloatImage *image_out, const ITMFloatImage *image_in)
+void ITMLib::Engine::ITMViewBuilder_CUDA::SmoothRawDepth(ITMFloatImage *image_out, const ITMFloatImage *image_in, Vector3f zdirec)
 {
 	Vector2i imgDims = image_in->noDims;
 
@@ -120,11 +116,22 @@ void ITMLib::Engine::ITMViewBuilder_CUDA::SmoothRawDepth(ITMFloatImage *image_ou
 	dim3 blockSize(16, 16);
 	dim3 gridSize((int)ceil((float)imgDims.x / (float)blockSize.x), (int)ceil((float)imgDims.y / (float)blockSize.y));
 
-	SmoothRawDepth_device << <gridSize, blockSize >> >(imageData_out, imageData_in, imgDims);
+	SmoothRawDepth_device << <gridSize, blockSize >> >(imageData_out, imageData_in, imgDims, zdirec);
 }
 
+void ITMLib::Engine::ITMViewBuilder_CUDA::SmoothRawDepth(ITMView **view_ptr, Matrix4f pose)
+{
+	if (*view_ptr == NULL) return;
+	ITMView *view = *view_ptr;
+	Vector3f zdirc = -Vector3f(pose.getColumn(2));
 
+	this->floatImage->SetFrom(view->depth, MemoryBlock<float>::CUDA_TO_CUDA);
+	SmoothRawDepth(view->depth, this->floatImage, zdirc);
+}
+
+//////////////////////////////////////////////////////////////////////////
 // device functions
+//////////////////////////////////////////////////////////////////////////
 
 __global__ void convertDisparityToDepth_device(float *d_out, const short *d_in, Vector2f disparityCalibParams, float fx_depth, Vector2i imgSize)
 {
@@ -146,11 +153,11 @@ __global__ void convertDepthMMToFloat_device(float *d_out, const short *d_in, Ve
 	convertDepthMMToFloat(d_out, x, y, d_in, imgSize);
 }
 
-__global__ void SmoothRawDepth_device(float *imageData_out, const float *imageData_in, Vector2i imgDims)
+__global__ void SmoothRawDepth_device(float *imageData_out, const float *imageData_in, Vector2i imgDims, Vector3f zdric)
 {
 	int x = threadIdx.x + blockIdx.x * blockDim.x, y = threadIdx.y + blockIdx.y * blockDim.y;
 
 	if (x > imgDims.x - 1 || y > imgDims.y - 1) return;
 
-	smoothingRawDepth(imageData_out, imageData_in, x, y, imgDims);
+	smoothingRawDepth(imageData_out, imageData_in, x, y, imgDims, zdric);
 }

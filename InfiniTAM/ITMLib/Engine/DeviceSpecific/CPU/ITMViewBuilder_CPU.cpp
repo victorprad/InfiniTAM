@@ -97,7 +97,7 @@ void ITMViewBuilder_CPU::ConvertDepthMMToFloat(ITMFloatImage *depth_out, const I
 		convertDepthMMToFloat(d_out, x, y, d_in, imgSize);
 }
 
-void ITMLib::Engine::ITMViewBuilder_CPU::SmoothRawDepth(ITMFloatImage *image_out, const ITMFloatImage *image_in)
+void ITMLib::Engine::ITMViewBuilder_CPU::SmoothRawDepth(ITMFloatImage *image_out, const ITMFloatImage *image_in, Vector3f zdirec)
 {
 	Vector2i imgSize = image_in->noDims;
 
@@ -107,5 +107,15 @@ void ITMLib::Engine::ITMViewBuilder_CPU::SmoothRawDepth(ITMFloatImage *image_out
 	memset(imout, 0, imgSize.x * imgSize.y * sizeof(float));
 
 	for (int y = 1; y < imgSize.y - 1; y++) for (int x = 1; x < imgSize.x - 1; x++)
-		smoothingRawDepth(imout, imin, x, y, imgSize);
+		smoothingRawDepth(imout, imin, x, y, imgSize,zdirec);
+}
+
+void ITMLib::Engine::ITMViewBuilder_CPU::SmoothRawDepth(ITMView **view_ptr, Matrix4f pose)
+{
+	if (*view_ptr == NULL) return;
+	ITMView *view = *view_ptr;
+	Vector3f zdirc = -Vector3f(pose.getColumn(2));
+
+	this->floatImage->SetFrom(view->depth, MemoryBlock<float>::CPU_TO_CPU);
+	SmoothRawDepth(view->depth, this->floatImage, zdirc);
 }

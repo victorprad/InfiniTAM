@@ -54,7 +54,7 @@ __global__ void renderForward_device(Vector4u *outRendering, const Vector4f *poi
 
 template<class TVoxel, class TIndex>
 __global__ void renderGrey_device(Vector4u *outRendering, const Vector4f *ptsRay, const TVoxel *voxelData,
-	const typename TIndex::IndexData *voxelIndex, Vector2i imgSize, Vector3f lightSource);
+	const typename TIndex::IndexData *voxelIndex, Vector2i imgSize, Vector3f lightSource, bool renderNormal = false);
 
 template<class TVoxel, class TIndex>
 __global__ void renderPointCloud_device(Vector4u *outRendering, Vector4f *locations, Vector4f *colours, uint *noTotalPoints,
@@ -236,7 +236,7 @@ static void GenericRaycast(const ITMScene<TVoxel, TIndex> *scene, const Vector2i
 
 template<class TVoxel, class TIndex>
 static void RenderImage_common(const ITMScene<TVoxel, TIndex> *scene, const ITMPose *pose, const ITMIntrinsics *intrinsics, const ITMRenderState *renderState,
-	ITMUChar4Image *outputImage, bool useColour)
+	ITMUChar4Image *outputImage, bool useColour, bool renderNormal = false)
 {
 	Vector2i imgSize = outputImage->noDims;
 	Matrix4f invM = pose->GetInvM();
@@ -255,7 +255,7 @@ static void RenderImage_common(const ITMScene<TVoxel, TIndex> *scene, const ITMP
 		scene->index.getIndexData(), imgSize, lightSource);
 	else
 		renderGrey_device<TVoxel, TIndex> <<<gridSize, cudaBlockSize>>>(outRendering, pointsRay, scene->localVBA.GetVoxelBlocks(),
-		scene->index.getIndexData(), imgSize, lightSource);
+		scene->index.getIndexData(), imgSize, lightSource, renderNormal);
 }
 
 template<class TVoxel, class TIndex>
@@ -372,16 +372,16 @@ static void ForwardRender_common(const ITMScene<TVoxel, TIndex> *scene, const IT
 
 template<class TVoxel, class TIndex>
 void ITMVisualisationEngine_CUDA<TVoxel, TIndex>::RenderImage(const ITMPose *pose, const ITMIntrinsics *intrinsics,	const ITMRenderState *renderState, 
-	ITMUChar4Image *outputImage, bool useColour) const
+	ITMUChar4Image *outputImage, bool useColour, bool renderNormal = false) const
 {
-	RenderImage_common(this->scene, pose, intrinsics, renderState, outputImage, useColour);
+	RenderImage_common(this->scene, pose, intrinsics, renderState, outputImage, useColour,renderNormal);
 }
 
 template<class TVoxel>
 void ITMVisualisationEngine_CUDA<TVoxel, ITMVoxelBlockHash>::RenderImage(const ITMPose *pose, const ITMIntrinsics *intrinsics, 
-	const ITMRenderState *renderState, ITMUChar4Image *outputImage, bool useColour) const
+	const ITMRenderState *renderState, ITMUChar4Image *outputImage, bool useColour, bool renderNormal = false) const
 {
-	RenderImage_common(this->scene, pose, intrinsics, renderState, outputImage, useColour);
+	RenderImage_common(this->scene, pose, intrinsics, renderState, outputImage, useColour,renderNormal);
 }
 
 template<class TVoxel, class TIndex>
@@ -626,7 +626,7 @@ __global__ void renderForward_device(Vector4u *outRendering, const Vector4f *poi
 
 template<class TVoxel, class TIndex>
 __global__ void renderGrey_device(Vector4u *outRendering, const Vector4f *ptsRay, const TVoxel *voxelData,
-	const typename TIndex::IndexData *voxelIndex, Vector2i imgSize, Vector3f lightSource)
+	const typename TIndex::IndexData *voxelIndex, Vector2i imgSize, Vector3f lightSource, bool renderNormal)
 {
 	int x = (threadIdx.x + blockIdx.x * blockDim.x), y = (threadIdx.y + blockIdx.y * blockDim.y);
 
@@ -636,7 +636,8 @@ __global__ void renderGrey_device(Vector4u *outRendering, const Vector4f *ptsRay
 
 	Vector4f ptRay = ptsRay[locId];
 
-	processPixelGrey<TVoxel, TIndex>(outRendering[locId], ptRay.toVector3(), ptRay.w > 0, voxelData, voxelIndex, lightSource);
+	if (renderNormal) processPixelNormal<TVoxel, TIndex>(outRendering[locId], ptRay.toVector3(), ptRay.w > 0, voxelData, voxelIndex, lightSource);
+	else processPixelGrey<TVoxel, TIndex>(outRendering[locId], ptRay.toVector3(), ptRay.w > 0, voxelData, voxelIndex, lightSource);
 }
 
 template<class TVoxel, class TIndex>

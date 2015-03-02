@@ -82,6 +82,7 @@ void ITMMainEngine::ProcessFrame(ITMUChar4Image *rgbImage, ITMShortImage *rawDep
 {
 	// prepare image and turn it into a depth image
 	viewBuilder->UpdateView(&view, rgbImage, rawDepthImage);
+	//viewBuilder->SmoothRawDepth(&view, trackingState->pose_d->GetInvM());
 
 	if (!mainProcessingActive) return;
 
@@ -101,6 +102,7 @@ void ITMMainEngine::ProcessFrame(ITMUChar4Image *rgbImage, ITMShortImage *rawDep
 {
 	// prepare image and turn it into a depth image
 	viewBuilder->UpdateView(&view, rgbImage, rawDepthImage, imuMeasurement);
+	viewBuilder->SmoothRawDepth(&view, trackingState->pose_d->GetInvM());
 
 	if (!mainProcessingActive) return;
 
@@ -116,7 +118,7 @@ void ITMMainEngine::ProcessFrame(ITMUChar4Image *rgbImage, ITMShortImage *rawDep
 	hasStartedObjectReconstruction = true;
 }
 
-void ITMMainEngine::GetImage(ITMUChar4Image *out, GetImageType getImageType, bool useColour, ITMPose *pose, ITMIntrinsics *intrinsics)
+void ITMMainEngine::GetImage(ITMUChar4Image *out, GetImageType getImageType, bool useColour, ITMPose *pose, ITMIntrinsics *intrinsics, bool renderNormal)
 {
 	if (view == NULL) return;
 
@@ -150,7 +152,7 @@ void ITMMainEngine::GetImage(ITMUChar4Image *out, GetImageType getImageType, boo
 		visualisationEngine->FindVisibleBlocks(pose, intrinsics, renderState_freeview);
 		visualisationEngine->CreateExpectedDepths(pose, intrinsics, renderState_freeview);
 		visualisationEngine->RenderImage(pose, intrinsics, renderState_freeview, renderState_freeview->raycastImage, 
-			useColour);
+			useColour, renderNormal);
 
 		if (settings->deviceType == ITMLibSettings::DEVICE_CUDA)
 			out->SetFrom(renderState_freeview->raycastImage, ORUtils::MemoryBlock<Vector4u>::CUDA_TO_CPU);
