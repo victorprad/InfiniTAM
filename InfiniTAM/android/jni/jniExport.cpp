@@ -19,12 +19,20 @@ JNIEXPORT void JNICALL Java_uk_ac_ox_robots_InfiniTAM_InfiniTAMRenderer_RenderGL
 	(InfiniTAMApp::Instance())->RenderGL();
 }
 
-JNIEXPORT void JNICALL Java_uk_ac_ox_robots_InfiniTAM_InfiniTAM_InitializeNativeApp(JNIEnv *env, jobject thiz)
+JNIEXPORT void JNICALL Java_uk_ac_ox_robots_InfiniTAM_InfiniTAMApplication_InitializeNativeApp(JNIEnv *env, jobject thiz, jstring java_libdir)
 {
+	const char *native_libdir = env->GetStringUTFChars(/*env,*/ java_libdir, NULL);
+	chdir(native_libdir);
 	InfiniTAMApp::Instance();
+	env->ReleaseStringUTFChars(/*env,*/ java_libdir, native_libdir);
 }
 
-JNIEXPORT int JNICALL Java_uk_ac_ox_robots_InfiniTAM_InfiniTAMProcessingThread_ProcessFrame(JNIEnv *env, jobject thiz)
+JNIEXPORT void JNICALL Java_uk_ac_ox_robots_InfiniTAM_InfiniTAMProcessor_StartProcessing(JNIEnv *env, jobject thiz, int useLiveCamera)
+{
+	(InfiniTAMApp::Instance())->StartProcessing(useLiveCamera);
+}
+
+JNIEXPORT int JNICALL Java_uk_ac_ox_robots_InfiniTAM_InfiniTAMProcessor_ProcessFrame(JNIEnv *env, jobject thiz)
 {
 	return (InfiniTAMApp::Instance())->ProcessFrame()?1:0;
 }

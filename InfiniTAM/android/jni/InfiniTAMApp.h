@@ -20,7 +20,11 @@ class InfiniTAMApp {
 	void ResizeGL(int newWidth, int newHeight);
 	void RenderGL(void);
 
+	void StartProcessing(int useLiveCamera);
 	bool ProcessFrame(void);
+
+	bool IsInitialized(void) const
+	{ return mIsInitialized; }
 
 	private:
 	static InfiniTAMApp *globalInstance;
@@ -41,6 +45,9 @@ class InfiniTAMApp {
 	uint textureId[NUM_WIN];
 	ITMMainEngine::GetImageType winImageType[NUM_WIN];
 	ITMUChar4Image *outImage[NUM_WIN];
+
+	Vector2i mNewWindowSize;
+	bool mIsInitialized;
 };
 
 

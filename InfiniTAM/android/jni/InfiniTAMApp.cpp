@@ -1,78 +1,62 @@
 #include "InfiniTAMApp.h"
+#include "../../Engine/OpenNIEngine.h"
 
 #include <GLES/gl.h>
-//#include <GLES2/gl2.h>
 
 #include <android/log.h>
+#include <unistd.h>
 
-InfiniTAMApp* InfiniTAMApp::globalInstance = NULL;//new InfiniTAMApp();
+InfiniTAMApp* InfiniTAMApp::globalInstance = NULL;
 
 InfiniTAMApp::InfiniTAMApp(void)
 {
-	const char *calibFile = "/storage/sdcard0/InfiniTAM/teddy/calib.txt";
-	const char *imagesource_part1 = "/storage/sdcard0/InfiniTAM/teddy/video%06i.ppm";
-	const char *imagesource_part2 = "/storage/sdcard0/InfiniTAM/teddy/depth%06i.ppm";
-
-	mInternalSettings = new ITMLibSettings();
-	mImageSource = new InfiniTAM::Engine::ImageFileReader(calibFile, imagesource_part1, imagesource_part2);//ImageSourceEngine;
-	mImuSource = NULL; //new IMUSourceEngine;
-	mMainEngine = new ITMMainEngine(mInternalSettings, &mImageSource->calib, mImageSource->getRGBImageSize(), mImageSource->getDepthImageSize());
+	mImageSource = NULL;
+	mImuSource = NULL;
+	mMainEngine = NULL;
+	mIsInitialized = false;
 
 	winImageType[0] = ITMMainEngine::InfiniTAM_IMAGE_SCENERAYCAST;
 	winImageType[1] = ITMMainEngine::InfiniTAM_IMAGE_ORIGINAL_DEPTH;
 	winImageType[2] = ITMMainEngine::InfiniTAM_IMAGE_ORIGINAL_RGB;
-
-__android_log_print(ANDROID_LOG_VERBOSE, "InfiniTAM", "constructor. imgSize %i %i, %i %i", mImageSource->getDepthImageSize().x, mImageSource->getDepthImageSize().y, mImageSource->getRGBImageSize().x, mImageSource->getRGBImageSize().y);
-
-	bool allocateGPU = false;
-	if (mInternalSettings->deviceType == ITMLibSettings::DEVICE_CUDA) allocateGPU = true;
-
-	for (int w = 0; w < NUM_WIN; w++) {
-		outImage[w] = new ITMUChar4Image(mImageSource->getDepthImageSize(), true, allocateGPU);
-	}
-
-	inputRGBImage = new ITMUChar4Image(mImageSource->getRGBImageSize(), true, allocateGPU);
-	inputRawDepthImage = new ITMShortImage(mImageSource->getDepthImageSize(), true, allocateGPU);
-	inputIMUMeasurement = new ITMIMUMeasurement();
-
-	sdkCreateTimer(&timer_instant);
-	sdkCreateTimer(&timer_average);
-	sdkResetTimer(&timer_average);
 }
 
 void InfiniTAMApp::InitGL(void)
 {
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 	glGenTextures(NUM_WIN, textureId);
-__android_log_print(ANDROID_LOG_VERBOSE, "InfiniTAM", "InitGL");
 }
 
 void InfiniTAMApp::ResizeGL(int newWidth, int newHeight)
 {
-__android_log_print(ANDROID_LOG_VERBOSE, "InfiniTAM", "ResizeGL: %i %i", newWidth, newHeight);
-	Vector2i depthImageSize = mImageSource->getDepthImageSize();
-	float ratio = (float)depthImageSize.x/(float)depthImageSize.y;
-
-//	glViewport(0, 0, newWidth, newHeight);
-	if (newWidth >= newHeight) {
-		winPos[0] = Vector4f(0.0f, 0.0f, 1.0f/ratio, 1.0f);
-		winPos[1] = Vector4f(1.0f/ratio, 0.5f, 1.0f, 1.0f);
-		winPos[2] = Vector4f(1.0f/ratio, 0.0f, 1.0f, 0.5f);
-	} else {
-		winPos[0] = Vector4f(0.0f, 1.0f/3.0f, 1.0f, 1.0f);
-		winPos[1] = Vector4f(0.0f, 0.0f, 0.5f, 1.0f/3.0f);
-		winPos[2] = Vector4f(0.5f, 0.0f, 1.0f, 1.0f/3.0f);
-	}
+	mNewWindowSize.x = newWidth;
+	mNewWindowSize.y = newHeight;
 }
 
 void InfiniTAMApp::RenderGL(void)
 {
-__android_log_print(ANDROID_LOG_VERBOSE, "InfiniTAM", "RenderGL");
+	glClear(GL_COLOR_BUFFER_BIT);
+	if (!IsInitialized()) return;
+
+	if (mNewWindowSize.x > 0) {
+		Vector2i depthImageSize = mMainEngine->GetImageSize();
+		float ratio = (float)depthImageSize.x/(float)depthImageSize.y;
+
+//		glViewport(0, 0, newWidth, newHeight);
+		if (mNewWindowSize.x >= mNewWindowSize.y) {
+			winPos[0] = Vector4f(0.0f, 0.0f, 1.0f/ratio, 1.0f);
+			winPos[1] = Vector4f(1.0f/ratio, 0.5f, 1.0f, 1.0f);
+			winPos[2] = Vector4f(1.0f/ratio, 0.0f, 1.0f, 0.5f);
+		} else {
+			winPos[0] = Vector4f(0.0f, 1.0f/3.0f, 1.0f, 1.0f);
+			winPos[1] = Vector4f(0.0f, 0.0f, 0.5f, 1.0f/3.0f);
+			winPos[2] = Vector4f(0.5f, 0.0f, 1.0f, 1.0f/3.0f);
+		}
+
+		mNewWindowSize.x = mNewWindowSize.y = -1;
+	}
 
 	int localNumWin = 1;//NUM_WIN
 	for (int w = 0; w < localNumWin; w++) mMainEngine->GetImage(outImage[w], winImageType[w], false);
-
-	glClear(GL_COLOR_BUFFER_BIT);
 
 	glMatrixMode(GL_PROJECTION);
 	glPushMatrix();
@@ -118,9 +102,42 @@ __android_log_print(ANDROID_LOG_VERBOSE, "InfiniTAM", "RenderGL");
 	glPopMatrix();
 }
 
+void InfiniTAMApp::StartProcessing(int useLiveCamera)
+{
+	const char *calibFile = "/storage/sdcard0/InfiniTAM/teddy/calib.txt";
+	const char *imagesource_part1 = "/storage/sdcard0/InfiniTAM/teddy/video%06i.ppm";
+	const char *imagesource_part2 = "/storage/sdcard0/InfiniTAM/teddy/depth%06i.ppm";
+
+	mInternalSettings = new ITMLibSettings();
+	if (useLiveCamera == 0) {
+		mImageSource = new InfiniTAM::Engine::ImageFileReader(calibFile, imagesource_part1, imagesource_part2);
+		//mImageSource = new InfiniTAM::Engine::OpenNIEngine(calibFile, "/storage/sdcard0/InfiniTAM/50Hz_closeup.oni");
+	} else {
+		mImageSource = new InfiniTAM::Engine::OpenNIEngine(calibFile);
+	}
+	mImuSource = NULL; //new IMUSourceEngine;
+	mMainEngine = new ITMMainEngine(mInternalSettings, &mImageSource->calib, mImageSource->getRGBImageSize(), mImageSource->getDepthImageSize());
+
+	bool allocateGPU = false;
+	if (mInternalSettings->deviceType == ITMLibSettings::DEVICE_CUDA) allocateGPU = true;
+
+	for (int w = 0; w < NUM_WIN; w++) {
+		outImage[w] = new ITMUChar4Image(mImageSource->getDepthImageSize(), true, allocateGPU);
+	}
+
+	inputRGBImage = new ITMUChar4Image(mImageSource->getRGBImageSize(), true, allocateGPU);
+	inputRawDepthImage = new ITMShortImage(mImageSource->getDepthImageSize(), true, allocateGPU);
+	inputIMUMeasurement = new ITMIMUMeasurement();
+
+	sdkCreateTimer(&timer_instant);
+	sdkCreateTimer(&timer_average);
+	sdkResetTimer(&timer_average);
+
+	mIsInitialized = true;
+}
+
 bool InfiniTAMApp::ProcessFrame(void)
 {
-__android_log_print(ANDROID_LOG_VERBOSE, "InfiniTAM", "Process Frame");
 	if (!mImageSource->hasMoreImages()) return false;
 	mImageSource->getImages(inputRGBImage, inputRawDepthImage);
 
@@ -132,12 +149,13 @@ __android_log_print(ANDROID_LOG_VERBOSE, "InfiniTAM", "Process Frame");
 	sdkResetTimer(&timer_instant);
 	sdkStartTimer(&timer_instant); sdkStartTimer(&timer_average);
 
-	//actual processing on the mailEngine
+	//actual processing on the mainEngine
 	if (mImuSource != NULL) mMainEngine->ProcessFrame(inputRGBImage, inputRawDepthImage, inputIMUMeasurement);
 	else mMainEngine->ProcessFrame(inputRGBImage, inputRawDepthImage);
 
 	sdkStopTimer(&timer_instant); sdkStopTimer(&timer_average);
-__android_log_print(ANDROID_LOG_VERBOSE, "InfiniTAM", "Process Frame finished: %f %f", sdkGetTimerValue(&timer_instant), sdkGetAverageTimerValue(&timer_average));
+
+	__android_log_print(ANDROID_LOG_VERBOSE, "InfiniTAM", "Process Frame finished: %f %f", sdkGetTimerValue(&timer_instant), sdkGetAverageTimerValue(&timer_average));
 
 	return true;
 }
