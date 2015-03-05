@@ -355,14 +355,14 @@ static void ForwardRender_common(const ITMScene<TVoxel, TIndex> *scene, const IT
 
 template<class TVoxel, class TIndex>
 void ITMVisualisationEngine_CPU<TVoxel,TIndex>::RenderImage(const ITMPose *pose, const ITMIntrinsics *intrinsics, 
-	const ITMRenderState *renderState, ITMUChar4Image *outputImage, bool useColour, bool renderNormal = false) const
+	const ITMRenderState *renderState, ITMUChar4Image *outputImage, bool useColour, bool renderNormal) const
 {
 	RenderImage_common(this->scene, pose, intrinsics, renderState, outputImage, useColour,renderNormal);
 }
 
 template<class TVoxel>
 void ITMVisualisationEngine_CPU<TVoxel,ITMVoxelBlockHash>::RenderImage(const ITMPose *pose,  const ITMIntrinsics *intrinsics, 
-	const ITMRenderState *renderState, ITMUChar4Image *outputImage, bool useColour, bool renderNormal = false) const
+	const ITMRenderState *renderState, ITMUChar4Image *outputImage, bool useColour, bool renderNormal) const
 {
 	RenderImage_common(this->scene, pose, intrinsics, renderState, outputImage, useColour,renderNormal);
 }

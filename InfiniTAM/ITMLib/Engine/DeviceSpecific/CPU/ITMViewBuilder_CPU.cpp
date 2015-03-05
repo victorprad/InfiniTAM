@@ -30,17 +30,14 @@ void ITMViewBuilder_CPU::UpdateView(ITMView **view_ptr, ITMUChar4Image *rgbImage
 	switch (inputImageType)
 	{
 	case InfiniTAM_DISPARITY_IMAGE:
-		this->ConvertDisparityToDepth(this->floatImage, this->shortImage, &(view->calib->intrinsics_d), &(view->calib->disparityCalib));
+		this->ConvertDisparityToDepth(view->depth, this->shortImage, &(view->calib->intrinsics_d), &(view->calib->disparityCalib));
 		break;
 	case InfiniTAM_SHORT_DEPTH_IMAGE:
-		this->ConvertDepthMMToFloat(this->floatImage, this->shortImage);
+		this->ConvertDepthMMToFloat(view->depth, this->shortImage);
 		break;
 	default:
 		break;
 	}
-
-	view->depth->SetFrom(this->floatImage, MemoryBlock<float>::CPU_TO_CPU);
-	//this->SmoothRawDepth(view->depth, this->floatImage);
 }
 
 void ITMViewBuilder_CPU::UpdateView(ITMView **view_ptr, ITMUChar4Image *rgbImage, ITMFloatImage *depthImage)
