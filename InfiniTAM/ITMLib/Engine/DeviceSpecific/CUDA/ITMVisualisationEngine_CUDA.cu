@@ -54,7 +54,11 @@ __global__ void renderForward_device(Vector4u *outRendering, const Vector4f *poi
 
 template<class TVoxel, class TIndex>
 __global__ void renderGrey_device(Vector4u *outRendering, const Vector4f *ptsRay, const TVoxel *voxelData,
-	const typename TIndex::IndexData *voxelIndex, Vector2i imgSize, Vector3f lightSource, bool renderNormal = false);
+	const typename TIndex::IndexData *voxelIndex, Vector2i imgSize, Vector3f lightSource);
+
+template<class TVoxel, class TIndex>
+__global__ void renderColourFromNormal_device(Vector4u *outRendering, const Vector4f *ptsRay, const TVoxel *voxelData,
+	const typename TIndex::IndexData *voxelIndex, Vector2i imgSize, Vector3f lightSource);
 
 template<class TVoxel, class TIndex>
 __global__ void renderPointCloud_device(Vector4u *outRendering, Vector4f *locations, Vector4f *colours, uint *noTotalPoints,
@@ -259,13 +263,13 @@ static void RenderImage_common(const ITMScene<TVoxel, TIndex> *scene, const ITMP
 			scene->index.getIndexData(), imgSize, lightSource);
 		break;
 	case IITMVisualisationEngine::RENDER_COLOUR_FROM_NORMAL:
-		renderGrey_device<TVoxel, TIndex> <<<gridSize, cudaBlockSize>>>(outRendering, pointsRay, scene->localVBA.GetVoxelBlocks(),
-			scene->index.getIndexData(), imgSize, lightSource, true);
+		renderColourFromNormal_device<TVoxel, TIndex> <<<gridSize, cudaBlockSize>>>(outRendering, pointsRay, scene->localVBA.GetVoxelBlocks(),
+			scene->index.getIndexData(), imgSize, lightSource);
 		break;
 	case IITMVisualisationEngine::RENDER_SHADED_GREYSCALE:
 	default:
 		renderGrey_device<TVoxel, TIndex> <<<gridSize, cudaBlockSize>>>(outRendering, pointsRay, scene->localVBA.GetVoxelBlocks(),
-			scene->index.getIndexData(), imgSize, lightSource, false);
+			scene->index.getIndexData(), imgSize, lightSource);
 		break;
 	}
 }
@@ -638,7 +642,7 @@ __global__ void renderForward_device(Vector4u *outRendering, const Vector4f *poi
 
 template<class TVoxel, class TIndex>
 __global__ void renderGrey_device(Vector4u *outRendering, const Vector4f *ptsRay, const TVoxel *voxelData,
-	const typename TIndex::IndexData *voxelIndex, Vector2i imgSize, Vector3f lightSource, bool renderNormal)
+	const typename TIndex::IndexData *voxelIndex, Vector2i imgSize, Vector3f lightSource)
 {
 	int x = (threadIdx.x + blockIdx.x * blockDim.x), y = (threadIdx.y + blockIdx.y * blockDim.y);
 
@@ -648,8 +652,22 @@ __global__ void renderGrey_device(Vector4u *outRendering, const Vector4f *ptsRay
 
 	Vector4f ptRay = ptsRay[locId];
 
-	if (renderNormal) processPixelNormal<TVoxel, TIndex>(outRendering[locId], ptRay.toVector3(), ptRay.w > 0, voxelData, voxelIndex, lightSource);
-	else processPixelGrey<TVoxel, TIndex>(outRendering[locId], ptRay.toVector3(), ptRay.w > 0, voxelData, voxelIndex, lightSource);
+	processPixelGrey<TVoxel, TIndex>(outRendering[locId], ptRay.toVector3(), ptRay.w > 0, voxelData, voxelIndex, lightSource);
+}
+
+template<class TVoxel, class TIndex>
+__global__ void renderColourFromNormal_device(Vector4u *outRendering, const Vector4f *ptsRay, const TVoxel *voxelData,
+	const typename TIndex::IndexData *voxelIndex, Vector2i imgSize, Vector3f lightSource)
+{
+	int x = (threadIdx.x + blockIdx.x * blockDim.x), y = (threadIdx.y + blockIdx.y * blockDim.y);
+
+	if (x >= imgSize.x || y >= imgSize.y) return;
+
+	int locId = x + y * imgSize.x;
+
+	Vector4f ptRay = ptsRay[locId];
+
+	processPixelNormal<TVoxel, TIndex>(outRendering[locId], ptRay.toVector3(), ptRay.w > 0, voxelData, voxelIndex, lightSource);
 }
 
 template<class TVoxel, class TIndex>
