@@ -23,7 +23,12 @@ _CPU_AND_GPU_CODE_ inline float computePerPixelEnergy(const THREADPTR(Vector4f) 
 {
 	Vector3f pt; bool dtIsFound;
 	pt = TO_VECTOR3(invM * inpt) * oneOverVoxelSize;
+
+	// faster but theoretically worse
 	float dt = readFromSDF_float_uninterpolated(voxelBlocks, index, pt, dtIsFound);
+
+	//typename TIndex::IndexCache cache;
+	//float dt = readFromSDF_float_interpolated(voxelBlocks, index, pt, dtIsFound, cache);
 
 	if (dt == 1.0f) return 0.0f;
 
@@ -36,6 +41,10 @@ _CPU_AND_GPU_CODE_ inline Vector3f computeDDT(const CONSTANT(Vector3f) &pt_f, co
 	const THREADPTR(typename TIndex::IndexData) *index, float oneOverVoxelSize, DEVICEPTR(bool) &ddtFound)
 {
 	Vector3f ddt;
+
+/*	Vector3i pt = TO_INT_ROUND3(pt_f);
+
+	bool isFound; float dt1, dt2;*/
 
 //	Vector3i pt = TO_INT_ROUND3(pt_f);
 	bool isFound; float dt1, dt2;
@@ -65,7 +74,6 @@ template<class TVoxel, class TIndex>
 _CPU_AND_GPU_CODE_ inline bool computePerPixelJacobian(THREADPTR(float) *jacobian, const THREADPTR(Vector4f) &inpt, 
 	const CONSTANT(TVoxel) *voxelBlocks, const CONSTANT(typename TIndex::IndexData) *index, float oneOverVoxelSize, Matrix4f invM)
 {
-	float dt;
 
 	bool isFound;
 
@@ -75,7 +83,10 @@ _CPU_AND_GPU_CODE_ inline bool computePerPixelJacobian(THREADPTR(float) *jacobia
 
 	pt = cPt * oneOverVoxelSize;
 
-	dt = readFromSDF_float_uninterpolated(voxelBlocks, index, pt, isFound);
+	//typename TIndex::IndexCache cache;
+	//float dt = readFromSDF_float_interpolated(voxelBlocks, index, pt, isFound, cache);
+
+	float dt = readFromSDF_float_uninterpolated(voxelBlocks, index, pt, isFound);
 
 	if (dt == 1.0f || !isFound) return false;
 

@@ -10,6 +10,8 @@
 #include "ImageSourceEngine.h"
 #include "IMUSourceEngine.h"
 
+#include <vector>
+
 namespace InfiniTAM
 {
 	namespace Engine
@@ -23,6 +25,15 @@ namespace InfiniTAM
 				PROCESS_PAUSED, PROCESS_FRAME, PROCESS_VIDEO, EXIT, SAVE_TO_DISK
 			}mainLoopAction;
 
+			struct UIColourMode {
+				const char *name;
+				ITMMainEngine::GetImageType type;
+				UIColourMode(const char *_name, ITMMainEngine::GetImageType _type)
+				 : name(_name), type(_type)
+				{}
+			};
+			std::vector<UIColourMode> colourModes;
+			int currentColourMode;
 
 			ITMLibSettings internalSettings;
 			ImageSourceEngine *imageSource;
@@ -44,8 +55,8 @@ namespace InfiniTAM
 			ITMIMUMeasurement *inputIMUMeasurement;
 
 			bool freeviewActive;
-			bool colourActive;
 			bool intergrationActive;
+
 			ITMPose freeviewPose;
 			ITMIntrinsics freeviewIntrinsics;
 

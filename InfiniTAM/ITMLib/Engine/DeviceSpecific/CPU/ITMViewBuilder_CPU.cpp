@@ -18,6 +18,9 @@ void ITMViewBuilder_CPU::UpdateView(ITMView **view_ptr, ITMUChar4Image *rgbImage
 		*view_ptr = new ITMView(calib, rgbImage->noDims, rawDepthImage->noDims, false);
 		if (this->shortImage != NULL) delete this->shortImage;
 		this->shortImage = new ITMShortImage(rawDepthImage->noDims, true, false);
+		if (this->floatImage != NULL) delete this->floatImage;
+		this->floatImage = new ITMFloatImage(rawDepthImage->noDims, true, false);
+
 	}
 	ITMView *view = *view_ptr;
 
@@ -89,4 +92,27 @@ void ITMViewBuilder_CPU::ConvertDepthMMToFloat(ITMFloatImage *depth_out, const I
 
 	for (int y = 0; y < imgSize.y; y++) for (int x = 0; x < imgSize.x; x++)
 		convertDepthMMToFloat(d_out, x, y, d_in, imgSize);
+}
+
+void ITMLib::Engine::ITMViewBuilder_CPU::SmoothRawDepth(ITMFloatImage *image_out, const ITMFloatImage *image_in, Vector3f zdirec)
+{
+	Vector2i imgSize = image_in->noDims;
+
+	float *imout = image_out->GetData(MEMORYDEVICE_CPU);
+	const float *imin = image_in->GetData(MEMORYDEVICE_CPU);
+
+	memset(imout, 0, imgSize.x * imgSize.y * sizeof(float));
+
+	for (int y = 1; y < imgSize.y - 1; y++) for (int x = 1; x < imgSize.x - 1; x++)
+		smoothingRawDepth(imout, imin, x, y, imgSize,zdirec);
+}
+
+void ITMLib::Engine::ITMViewBuilder_CPU::SmoothRawDepth(ITMView **view_ptr, Matrix4f pose)
+{
+	if (*view_ptr == NULL) return;
+	ITMView *view = *view_ptr;
+	Vector3f zdirc = -Vector3f(pose.getColumn(2));
+
+	this->floatImage->SetFrom(view->depth, MemoryBlock<float>::CPU_TO_CPU);
+	SmoothRawDepth(view->depth, this->floatImage, zdirc);
 }

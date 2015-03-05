@@ -68,6 +68,10 @@ OpenNIEngine::OpenNIEngine(const char *calibFilename, const char *deviceURI, con
 	Vector2i requested_imageSize_rgb, Vector2i requested_imageSize_d)
 	: ImageSourceEngine(calibFilename)
 {
+	// images from openni always come in millimeters...
+	// (don't ask. it does make sense. at least at the moment)
+	this->calib.disparityCalib.params = Vector2f(0.0f, 0.0f);
+
 	this->imageSize_d = Vector2i(0,0);
 	this->imageSize_rgb = Vector2i(0,0);
 
@@ -83,9 +87,11 @@ OpenNIEngine::OpenNIEngine(const char *calibFilename, const char *deviceURI, con
 	rc = data->device.open(deviceURI);
 	if (rc != openni::STATUS_OK)
 	{
+		std::string message("OpenNI: Device open failed!\n");
+		message += openni::OpenNI::getExtendedError();
 		openni::OpenNI::shutdown();
 		delete data;
-		throw std::runtime_error(std::string("OpenNI: Device open failed!\n") + openni::OpenNI::getExtendedError());
+		DIEWITHEXCEPTION(message.c_str());
 	}
 
 	openni::PlaybackControl *control = data->device.getPlaybackControl();
@@ -95,7 +101,7 @@ OpenNIEngine::OpenNIEngine(const char *calibFilename, const char *deviceURI, con
 		control->setRepeatEnabled(false);
 	}
 
-	if (useInternalCalibration) data->device.setImageRegistrationMode(openni::IMAGE_REGISTRATION_DEPTH_TO_COLOR);
+	
 
 	rc = data->depthStream.create(data->device, openni::SENSOR_DEPTH);
 	if (rc == openni::STATUS_OK)
@@ -111,6 +117,8 @@ OpenNIEngine::OpenNIEngine(const char *calibFilename, const char *deviceURI, con
 		data->depthStream.setMirroringEnabled(false);
 
 		rc = data->depthStream.start();
+
+		if (useInternalCalibration) data->device.setImageRegistrationMode(openni::IMAGE_REGISTRATION_DEPTH_TO_COLOR);
 		if (rc != openni::STATUS_OK)
 		{
 			printf("OpenNI: Couldn't start depthStream stream:\n%s\n", openni::OpenNI::getExtendedError());
@@ -161,7 +169,7 @@ OpenNIEngine::OpenNIEngine(const char *calibFilename, const char *deviceURI, con
 	{
 		openni::OpenNI::shutdown();
 		delete data;
-		throw std::runtime_error("OpenNI: No valid streams. Exiting.");
+		DIEWITHEXCEPTION("OpenNI: No valid streams. Exiting.");
 	}
 	
 	data->streams = new openni::VideoStream*[2];

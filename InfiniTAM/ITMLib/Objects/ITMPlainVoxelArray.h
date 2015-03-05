@@ -21,6 +21,8 @@ namespace ITMLib
 		class ITMPlainVoxelArray
 		{
 		public:
+			static const CONSTANT(bool) hasColorCoding = false;
+
 			struct ITMVoxelArrayInfo {
 				/// Size in voxels
 				Vector3i size;

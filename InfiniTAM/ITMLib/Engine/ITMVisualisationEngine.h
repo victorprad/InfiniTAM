@@ -18,6 +18,14 @@ namespace ITMLib
 		class IITMVisualisationEngine
 		{
 		public:
+			enum RenderImageType
+			{
+				RENDER_SHADED_GREYSCALE,
+				RENDER_COLOUR_FROM_VOLUME,
+				RENDER_COLOUR_FROM_NORMAL,
+				RENDER_COLOURCODED
+			};
+
 			virtual ~IITMVisualisationEngine(void) {}
 
 			static void DepthToUchar4(ITMUChar4Image *dst, ITMFloatImage *src);
@@ -39,7 +47,7 @@ namespace ITMLib
 
 			/** This will render an image using raycasting. */
 			virtual void RenderImage(const ITMPose *pose, const ITMIntrinsics *intrinsics,
-				const ITMRenderState *renderState, ITMUChar4Image *outputImage, bool useColour) const = 0;
+				const ITMRenderState *renderState, ITMUChar4Image *outputImage, RenderImageType type = RENDER_SHADED_GREYSCALE) const = 0;
 
 			/** Finds the scene surface using raycasting. */
 			virtual void FindSurface(const ITMPose *pose, const ITMIntrinsics *intrinsics,

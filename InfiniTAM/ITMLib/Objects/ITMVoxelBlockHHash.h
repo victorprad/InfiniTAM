@@ -18,6 +18,8 @@ namespace ITMLib
 		class ITMVoxelBlockHHash
 		{
 			public:
+			static const CONSTANT(bool) hasColorCoding = true;
+
 			typedef ITMHHashEntry IndexData;
 
 			struct IndexCache {

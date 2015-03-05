@@ -1,0 +1,7 @@
+ant.properties
+local.properties
+my-release-key.keystore
+bin/
+gen/
+libs/
+obj/

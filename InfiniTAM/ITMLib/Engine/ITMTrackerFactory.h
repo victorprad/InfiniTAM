@@ -25,6 +25,7 @@
 #include "DeviceSpecific/Metal/ITMDepthTracker_Metal.h"
 #endif
 
+
 namespace ITMLib
 {
   namespace Engine
@@ -76,7 +77,7 @@ namespace ITMLib
                        ITMIMUCalibrator *imuCalibrator, ITMScene<TVoxel,TIndex> *scene) const
       {
         typename std::map<ITMLibSettings::TrackerType,Maker>::const_iterator it = makers.find(settings->trackerType);
-        if(it == makers.end()) throw std::runtime_error("Unknown tracker type");
+        if(it == makers.end()) DIEWITHEXCEPTION("Unknown tracker type");
 
         Maker maker = it->second;
         return (*maker)(trackedImageSize, settings, lowLevelEngine, imuCalibrator, scene);
@@ -115,7 +116,7 @@ namespace ITMLib
           default: break;
         }
 
-        throw std::runtime_error("Failed to make colour tracker");
+        DIEWITHEXCEPTION("Failed to make colour tracker");
       }
 
       /**
@@ -173,7 +174,7 @@ namespace ITMLib
           default: break;
         }
 
-        throw std::runtime_error("Failed to make ICP tracker");
+        DIEWITHEXCEPTION("Failed to make ICP tracker");
       }
 
       /**
@@ -246,7 +247,7 @@ namespace ITMLib
           default: break;
         }
 
-        throw std::runtime_error("Failed to make IMU tracker");
+        DIEWITHEXCEPTION("Failed to make IMU tracker");
       }
 
       /**
@@ -259,38 +260,63 @@ namespace ITMLib
         {
           case ITMLibSettings::DEVICE_CPU:
           {
-            ITMCompositeTracker *compositeTracker = new ITMCompositeTracker(2);
-            compositeTracker->SetTracker(
-              new ITMDepthTracker_CPU(
-                trackedImageSize,
-                settings->trackingRegime,
-                settings->noHierarchyLevels,
-                settings->noICPRunTillLevel,
-                settings->depthTrackerICPThreshold,
-                settings->depthTrackerTerminationThreshold,
-                lowLevelEngine
-              ), 0
-            );
-            compositeTracker->SetTracker(new ITMRenTracker_CPU<TVoxel,TIndex>(trackedImageSize, lowLevelEngine, scene), 1);
-            return compositeTracker;
+			  return new ITMRenTracker_CPU<TVoxel, TIndex>(
+				  trackedImageSize,
+				  settings->trackingRegime,
+				  2,
+				  lowLevelEngine, scene);
+
+    //        ITMCompositeTracker *compositeTracker = new ITMCompositeTracker(2);
+    //        compositeTracker->SetTracker(
+    //          new ITMDepthTracker_CPU(
+    //            trackedImageSize,
+    //            settings->trackingRegime,
+    //            settings->noHierarchyLevels,
+    //            settings->noICPRunTillLevel,
+    //            settings->depthTrackerICPThreshold,
+    //            settings->depthTrackerTerminationThreshold,
+    //            lowLevelEngine
+    //          ), 0
+    //        );
+    //        compositeTracker->SetTracker(
+				//new ITMRenTracker_CPU<TVoxel,TIndex>(
+				//trackedImageSize,
+				//settings->trackingRegime,
+				//2,
+				//lowLevelEngine, scene), 1);
+    //        return compositeTracker;
           }
           case ITMLibSettings::DEVICE_CUDA:
           {
 #ifndef COMPILE_WITHOUT_CUDA
-            ITMCompositeTracker *compositeTracker = new ITMCompositeTracker(2);
-            compositeTracker->SetTracker(
-              new ITMDepthTracker_CUDA(
-                trackedImageSize,
-                settings->trackingRegime,
-                settings->noHierarchyLevels,
-                settings->noICPRunTillLevel,
-                settings->depthTrackerICPThreshold,
-                settings->depthTrackerTerminationThreshold,
-                lowLevelEngine
-              ), 0
-            );
-            compositeTracker->SetTracker(new ITMRenTracker_CUDA<TVoxel,TIndex>(trackedImageSize, lowLevelEngine, scene), 1);
-            return compositeTracker;
+			  return new ITMRenTracker_CUDA<TVoxel, TIndex>(
+				  trackedImageSize,
+				  settings->trackingRegime,
+				  2,
+				  lowLevelEngine,
+				  scene
+				  );
+
+    //        ITMCompositeTracker *compositeTracker = new ITMCompositeTracker(2);
+    //        compositeTracker->SetTracker(
+    //          new ITMDepthTracker_CUDA(
+    //            trackedImageSize,
+    //            settings->trackingRegime,
+    //            settings->noHierarchyLevels,
+    //            settings->noICPRunTillLevel,
+    //            settings->depthTrackerICPThreshold,
+    //            settings->depthTrackerTerminationThreshold,
+    //            lowLevelEngine
+    //          ), 0
+    //        );
+    //        compositeTracker->SetTracker(new ITMRenTracker_CUDA<TVoxel,TIndex>(
+				//trackedImageSize,
+				//settings->trackingRegime,
+				//2,
+				//lowLevelEngine, 
+				//scene
+				//), 1);
+    //        return compositeTracker;
 #else
             break;
 #endif
@@ -319,7 +345,7 @@ namespace ITMLib
           default: break;
         }
 
-        throw std::runtime_error("Failed to make Ren tracker");
+        DIEWITHEXCEPTION("Failed to make Ren tracker");
       }
     };
   }

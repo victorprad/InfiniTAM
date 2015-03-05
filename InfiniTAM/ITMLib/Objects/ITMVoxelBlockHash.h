@@ -22,6 +22,8 @@ namespace ITMLib
 		class ITMVoxelBlockHash
 		{
 		public:
+			static const CONSTANT(bool) hasColorCoding = false;
+
 			typedef ITMHashEntry IndexData;
 
 			struct IndexCache {

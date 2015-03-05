@@ -1,0 +1,58 @@
+Clumsy attempt at providing an Android build environment for the project
+
+  InfiniTAM
+
+
+
+To make it build:
+
+  - Create a file named 'local.properties' with the content:
+
+    sdk.dir=/path/to/your/local/android/android-sdk-linux
+
+
+
+To get it to build in release mode:
+
+  - Create a keystore:
+
+    keytool -genkey -v -keystore my-release-key.keystore -alias alias_name \
+            -keyalg RSA -keysize 2048 -validity 10000
+
+  - Tell the build environment about your keystore by adding the following into
+    a file named 'ant.properties':
+
+    key.store=my-release-key.keystore
+    key.alias=alias_name
+    key.store.password=xxx
+    key.alias.password=xxx
+
+
+
+To actually build it:
+
+  - Go to the directory InfiniTAM/ITMLib and run
+
+    make -f Android.mk libITMLib.a
+
+  - Go back to the directory InfiniTAM/android and run
+
+    ndk-build
+
+  - Stay in the directory InfiniTAM/android and run
+
+    ant release install
+
+
+
+To complain:
+
+  - Don't contact me!
+
+
+
+To improve things:
+
+  - Visit www.infinitam.org and submit patches to the repository linked from
+    there!
+

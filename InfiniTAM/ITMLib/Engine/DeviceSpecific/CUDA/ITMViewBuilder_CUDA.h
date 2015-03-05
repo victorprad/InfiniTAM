@@ -15,6 +15,9 @@ namespace ITMLib
 				const ITMDisparityCalib *disparityCalib);
 			void ConvertDepthMMToFloat(ITMFloatImage *depth_out, const ITMShortImage *depth_in);
 
+			void SmoothRawDepth(ITMView **view, Matrix4f pose);
+			void SmoothRawDepth(ITMFloatImage *image_out, const ITMFloatImage *image_in, Vector3f zdirect);
+
 			void UpdateView(ITMView **view, ITMUChar4Image *rgbImage, ITMShortImage *rawDepthImage);
 			void UpdateView(ITMView **view, ITMUChar4Image *rgbImage, ITMFloatImage *depthImage);
 
