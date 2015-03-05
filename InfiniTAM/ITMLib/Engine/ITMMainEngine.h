@@ -72,7 +72,9 @@ namespace ITMLib
 				InfiniTAM_IMAGE_ORIGINAL_RGB,
 				InfiniTAM_IMAGE_ORIGINAL_DEPTH,
 				InfiniTAM_IMAGE_SCENERAYCAST,
-				InfiniTAM_IMAGE_SCENERAYCAST_FREECAMERA
+				InfiniTAM_IMAGE_FREECAMERA_SHADED,
+				InfiniTAM_IMAGE_FREECAMERA_COLOUR_FROM_VOLUME,
+				InfiniTAM_IMAGE_FREECAMERA_COLOUR_FROM_NORMAL
 			};
 
 			/// Pointer for storing the current input frame
@@ -93,7 +95,7 @@ namespace ITMLib
 			/// Get a result image as output
 			Vector2i GetImageSize(void) const;
 
-			void GetImage(ITMUChar4Image *out, GetImageType getImageType, bool useColour, ITMPose *pose = NULL, ITMIntrinsics *intrinsics = NULL, bool renderNormal = false);
+			void GetImage(ITMUChar4Image *out, GetImageType getImageType, ITMPose *pose = NULL, ITMIntrinsics *intrinsics = NULL);
 
 			/// switch for turning intergration on/off
 			void turnOnIntegration();

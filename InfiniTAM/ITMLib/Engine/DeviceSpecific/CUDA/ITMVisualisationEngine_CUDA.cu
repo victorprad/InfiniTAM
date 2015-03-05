@@ -236,7 +236,7 @@ static void GenericRaycast(const ITMScene<TVoxel, TIndex> *scene, const Vector2i
 
 template<class TVoxel, class TIndex>
 static void RenderImage_common(const ITMScene<TVoxel, TIndex> *scene, const ITMPose *pose, const ITMIntrinsics *intrinsics, const ITMRenderState *renderState,
-	ITMUChar4Image *outputImage, bool useColour, bool renderNormal = false)
+	ITMUChar4Image *outputImage, IITMVisualisationEngine::RenderImageType type)
 {
 	Vector2i imgSize = outputImage->noDims;
 	Matrix4f invM = pose->GetInvM();
@@ -250,12 +250,24 @@ static void RenderImage_common(const ITMScene<TVoxel, TIndex> *scene, const ITMP
 	dim3 cudaBlockSize(8, 8);
 	dim3 gridSize((int)ceil((float)imgSize.x / (float)cudaBlockSize.x), (int)ceil((float)imgSize.y / (float)cudaBlockSize.y));
 
-	if (useColour && TVoxel::hasColorInformation)
+	if ((type == IITMVisualisationEngine::RENDER_COLOUR_FROM_VOLUME)&&
+	    (!TVoxel::hasColorInformation)) type = IITMVisualisationEngine::RENDER_SHADED_GREYSCALE;
+
+	switch (type) {
+	case IITMVisualisationEngine::RENDER_COLOUR_FROM_VOLUME:
 		renderColour_device<TVoxel, TIndex> <<<gridSize, cudaBlockSize>>>(outRendering, pointsRay, scene->localVBA.GetVoxelBlocks(),
-		scene->index.getIndexData(), imgSize, lightSource);
-	else
+			scene->index.getIndexData(), imgSize, lightSource);
+		break;
+	case IITMVisualisationEngine::RENDER_COLOUR_FROM_NORMAL:
 		renderGrey_device<TVoxel, TIndex> <<<gridSize, cudaBlockSize>>>(outRendering, pointsRay, scene->localVBA.GetVoxelBlocks(),
-		scene->index.getIndexData(), imgSize, lightSource, renderNormal);
+			scene->index.getIndexData(), imgSize, lightSource, true);
+		break;
+	case IITMVisualisationEngine::RENDER_SHADED_GREYSCALE:
+	default:
+		renderGrey_device<TVoxel, TIndex> <<<gridSize, cudaBlockSize>>>(outRendering, pointsRay, scene->localVBA.GetVoxelBlocks(),
+			scene->index.getIndexData(), imgSize, lightSource, false);
+		break;
+	}
 }
 
 template<class TVoxel, class TIndex>
@@ -371,17 +383,17 @@ static void ForwardRender_common(const ITMScene<TVoxel, TIndex> *scene, const IT
 }
 
 template<class TVoxel, class TIndex>
-void ITMVisualisationEngine_CUDA<TVoxel, TIndex>::RenderImage(const ITMPose *pose, const ITMIntrinsics *intrinsics,	const ITMRenderState *renderState, 
-	ITMUChar4Image *outputImage, bool useColour, bool renderNormal) const
+void ITMVisualisationEngine_CUDA<TVoxel, TIndex>::RenderImage(const ITMPose *pose, const ITMIntrinsics *intrinsics, const ITMRenderState *renderState, 
+	ITMUChar4Image *outputImage, IITMVisualisationEngine::RenderImageType type) const
 {
-	RenderImage_common(this->scene, pose, intrinsics, renderState, outputImage, useColour,renderNormal);
+	RenderImage_common(this->scene, pose, intrinsics, renderState, outputImage, type);
 }
 
 template<class TVoxel>
 void ITMVisualisationEngine_CUDA<TVoxel, ITMVoxelBlockHash>::RenderImage(const ITMPose *pose, const ITMIntrinsics *intrinsics, 
-	const ITMRenderState *renderState, ITMUChar4Image *outputImage, bool useColour, bool renderNormal) const
+	const ITMRenderState *renderState, ITMUChar4Image *outputImage, IITMVisualisationEngine::RenderImageType type) const
 {
-	RenderImage_common(this->scene, pose, intrinsics, renderState, outputImage, useColour,renderNormal);
+	RenderImage_common(this->scene, pose, intrinsics, renderState, outputImage, type);
 }
 
 template<class TVoxel, class TIndex>

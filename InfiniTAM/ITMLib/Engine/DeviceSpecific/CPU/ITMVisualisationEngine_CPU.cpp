@@ -189,7 +189,7 @@ static void GenericRaycast(const ITMScene<TVoxel,TIndex> *scene, const Vector2i&
 
 template<class TVoxel, class TIndex>
 static void RenderImage_common(const ITMScene<TVoxel,TIndex> *scene, const ITMPose *pose, const ITMIntrinsics *intrinsics, 
-	const ITMRenderState *renderState, ITMUChar4Image *outputImage, bool useColour, bool renderNormal = false)
+	const ITMRenderState *renderState, ITMUChar4Image *outputImage, IITMVisualisationEngine::RenderImageType type)
 {
 	Vector2i imgSize = outputImage->noDims;
 	Matrix4f invM = pose->GetInvM();
@@ -202,8 +202,11 @@ static void RenderImage_common(const ITMScene<TVoxel,TIndex> *scene, const ITMPo
 	const TVoxel *voxelData = scene->localVBA.GetVoxelBlocks();
 	const typename TIndex::IndexData *voxelIndex = scene->index.getIndexData();
 
-	if (useColour && TVoxel::hasColorInformation)
-	{
+	if ((type == IITMVisualisationEngine::RENDER_COLOUR_FROM_VOLUME)&&
+	    (!TVoxel::hasColorInformation)) type = IITMVisualisationEngine::RENDER_SHADED_GREYSCALE;
+
+	switch (type) {
+	case IITMVisualisationEngine::RENDER_COLOUR_FROM_VOLUME:
 #ifdef WITH_OPENMP
 		#pragma omp parallel for
 #endif
@@ -212,20 +215,19 @@ static void RenderImage_common(const ITMScene<TVoxel,TIndex> *scene, const ITMPo
 			Vector4f ptRay = pointsRay[locId];
 			processPixelColour<TVoxel, TIndex>(outRendering[locId], ptRay.toVector3(), ptRay.w > 0, voxelData, voxelIndex, lightSource);
 		}
-	}
-	else if (renderNormal)
-	{
+		break;
+	case IITMVisualisationEngine::RENDER_COLOUR_FROM_NORMAL:
 #ifdef WITH_OPENMP
-#pragma omp parallel for
+		#pragma omp parallel for
 #endif
 		for (int locId = 0; locId < imgSize.x * imgSize.y; locId++)
 		{
 			Vector4f ptRay = pointsRay[locId];
 			processPixelNormal<TVoxel, TIndex>(outRendering[locId], ptRay.toVector3(), ptRay.w > 0, voxelData, voxelIndex, lightSource);
 		}
-	}
-	else
-	{
+		break;
+	case IITMVisualisationEngine::RENDER_SHADED_GREYSCALE:
+	default:
 #ifdef WITH_OPENMP
 		#pragma omp parallel for
 #endif
@@ -355,16 +357,16 @@ static void ForwardRender_common(const ITMScene<TVoxel, TIndex> *scene, const IT
 
 template<class TVoxel, class TIndex>
 void ITMVisualisationEngine_CPU<TVoxel,TIndex>::RenderImage(const ITMPose *pose, const ITMIntrinsics *intrinsics, 
-	const ITMRenderState *renderState, ITMUChar4Image *outputImage, bool useColour, bool renderNormal) const
+	const ITMRenderState *renderState, ITMUChar4Image *outputImage, IITMVisualisationEngine::RenderImageType type) const
 {
-	RenderImage_common(this->scene, pose, intrinsics, renderState, outputImage, useColour,renderNormal);
+	RenderImage_common(this->scene, pose, intrinsics, renderState, outputImage, type);
 }
 
 template<class TVoxel>
 void ITMVisualisationEngine_CPU<TVoxel,ITMVoxelBlockHash>::RenderImage(const ITMPose *pose,  const ITMIntrinsics *intrinsics, 
-	const ITMRenderState *renderState, ITMUChar4Image *outputImage, bool useColour, bool renderNormal) const
+	const ITMRenderState *renderState, ITMUChar4Image *outputImage, IITMVisualisationEngine::RenderImageType type) const
 {
-	RenderImage_common(this->scene, pose, intrinsics, renderState, outputImage, useColour,renderNormal);
+	RenderImage_common(this->scene, pose, intrinsics, renderState, outputImage, type);
 }
 
 template<class TVoxel, class TIndex>
