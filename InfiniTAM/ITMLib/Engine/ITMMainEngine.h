@@ -93,7 +93,7 @@ namespace ITMLib
 			/// Get a result image as output
 			Vector2i GetImageSize(void) const;
 
-			void GetImage(ITMUChar4Image *out, GetImageType getImageType, bool useColour, ITMPose *pose = NULL, ITMIntrinsics *intrinsics = NULL);
+			void GetImage(ITMUChar4Image *out, GetImageType getImageType, bool useColour, ITMPose *pose = NULL, ITMIntrinsics *intrinsics = NULL, bool renderNormal = false);
 
 			/// switch for turning intergration on/off
 			void turnOnIntegration();

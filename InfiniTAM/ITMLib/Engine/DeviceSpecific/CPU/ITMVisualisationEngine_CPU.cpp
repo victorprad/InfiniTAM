@@ -189,7 +189,7 @@ static void GenericRaycast(const ITMScene<TVoxel,TIndex> *scene, const Vector2i&
 
 template<class TVoxel, class TIndex>
 static void RenderImage_common(const ITMScene<TVoxel,TIndex> *scene, const ITMPose *pose, const ITMIntrinsics *intrinsics, 
-	const ITMRenderState *renderState, ITMUChar4Image *outputImage, bool useColour)
+	const ITMRenderState *renderState, ITMUChar4Image *outputImage, bool useColour, bool renderNormal = false)
 {
 	Vector2i imgSize = outputImage->noDims;
 	Matrix4f invM = pose->GetInvM();
@@ -213,7 +213,18 @@ static void RenderImage_common(const ITMScene<TVoxel,TIndex> *scene, const ITMPo
 			processPixelColour<TVoxel, TIndex>(outRendering[locId], ptRay.toVector3(), ptRay.w > 0, voxelData, voxelIndex, lightSource);
 		}
 	}
-	else 
+	else if (renderNormal)
+	{
+#ifdef WITH_OPENMP
+#pragma omp parallel for
+#endif
+		for (int locId = 0; locId < imgSize.x * imgSize.y; locId++)
+		{
+			Vector4f ptRay = pointsRay[locId];
+			processPixelNormal<TVoxel, TIndex>(outRendering[locId], ptRay.toVector3(), ptRay.w > 0, voxelData, voxelIndex, lightSource);
+		}
+	}
+	else
 	{
 #ifdef WITH_OPENMP
 		#pragma omp parallel for
@@ -344,16 +355,16 @@ static void ForwardRender_common(const ITMScene<TVoxel, TIndex> *scene, const IT
 
 template<class TVoxel, class TIndex>
 void ITMVisualisationEngine_CPU<TVoxel,TIndex>::RenderImage(const ITMPose *pose, const ITMIntrinsics *intrinsics, 
-	const ITMRenderState *renderState, ITMUChar4Image *outputImage, bool useColour) const
+	const ITMRenderState *renderState, ITMUChar4Image *outputImage, bool useColour, bool renderNormal) const
 {
-	RenderImage_common(this->scene, pose, intrinsics, renderState, outputImage, useColour);
+	RenderImage_common(this->scene, pose, intrinsics, renderState, outputImage, useColour,renderNormal);
 }
 
 template<class TVoxel>
 void ITMVisualisationEngine_CPU<TVoxel,ITMVoxelBlockHash>::RenderImage(const ITMPose *pose,  const ITMIntrinsics *intrinsics, 
-	const ITMRenderState *renderState, ITMUChar4Image *outputImage, bool useColour) const
+	const ITMRenderState *renderState, ITMUChar4Image *outputImage, bool useColour, bool renderNormal) const
 {
-	RenderImage_common(this->scene, pose, intrinsics, renderState, outputImage, useColour);
+	RenderImage_common(this->scene, pose, intrinsics, renderState, outputImage, useColour,renderNormal);
 }
 
 template<class TVoxel, class TIndex>

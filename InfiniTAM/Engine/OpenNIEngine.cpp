@@ -101,7 +101,7 @@ OpenNIEngine::OpenNIEngine(const char *calibFilename, const char *deviceURI, con
 		control->setRepeatEnabled(false);
 	}
 
-	if (useInternalCalibration) data->device.setImageRegistrationMode(openni::IMAGE_REGISTRATION_DEPTH_TO_COLOR);
+	
 
 	rc = data->depthStream.create(data->device, openni::SENSOR_DEPTH);
 	if (rc == openni::STATUS_OK)
@@ -117,6 +117,8 @@ OpenNIEngine::OpenNIEngine(const char *calibFilename, const char *deviceURI, con
 		data->depthStream.setMirroringEnabled(false);
 
 		rc = data->depthStream.start();
+
+		if (useInternalCalibration) data->device.setImageRegistrationMode(openni::IMAGE_REGISTRATION_DEPTH_TO_COLOR);
 		if (rc != openni::STATUS_OK)
 		{
 			printf("OpenNI: Couldn't start depthStream stream:\n%s\n", openni::OpenNI::getExtendedError());

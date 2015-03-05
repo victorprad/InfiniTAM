@@ -22,6 +22,7 @@ namespace ITMLib
 		protected:
 			const ITMRGBDCalib *calib;
 			ITMShortImage *shortImage;
+			ITMFloatImage *floatImage;
 
 		public:
 			enum InputImageType
@@ -39,6 +40,9 @@ namespace ITMLib
 				const ITMDisparityCalib *disparityCalib) = 0;
 			virtual void ConvertDepthMMToFloat(ITMFloatImage *depth_out, const ITMShortImage *depth_in) = 0;
 
+			virtual void SmoothRawDepth(ITMView **view, Matrix4f pose) = 0;
+			virtual void SmoothRawDepth(ITMFloatImage *image_out, const ITMFloatImage *image_in, Vector3f zdirect) = 0;
+
 			virtual void UpdateView(ITMView **view, ITMUChar4Image *rgbImage, ITMShortImage *rawDepthImage) = 0;
 			virtual void UpdateView(ITMView **view, ITMUChar4Image *rgbImage, ITMFloatImage *depthImage) = 0;
 
@@ -48,6 +52,7 @@ namespace ITMLib
 			{
 				this->calib = calib;
 				this->shortImage = NULL;
+				this->floatImage = NULL;
 
 				if (calib->disparityCalib.params == Vector2f(0.0f, 0.0f)) inputImageType = InfiniTAM_SHORT_DEPTH_IMAGE;
 				else inputImageType = InfiniTAM_DISPARITY_IMAGE;

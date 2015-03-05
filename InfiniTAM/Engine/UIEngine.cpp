@@ -36,7 +36,7 @@ void UIEngine::glutDisplayFunction()
 
 	// get updated images from processing thread
 	if (uiEngine->freeviewActive)
-		uiEngine->mainEngine->GetImage(uiEngine->outImage[0], uiEngine->outImageType[0], uiEngine->colourActive, &uiEngine->freeviewPose, &uiEngine->freeviewIntrinsics);
+		uiEngine->mainEngine->GetImage(uiEngine->outImage[0], uiEngine->outImageType[0], uiEngine->colourActive, &uiEngine->freeviewPose, &uiEngine->freeviewIntrinsics,uiEngine->showSurfaceNormal);
 	else uiEngine->mainEngine->GetImage(uiEngine->outImage[0], uiEngine->outImageType[0], false);
 
 	for (int w = 1; w < NUM_WIN; w++) uiEngine->mainEngine->GetImage(uiEngine->outImage[w], uiEngine->outImageType[w], false);
@@ -90,7 +90,15 @@ void UIEngine::glutDisplayFunction()
 	}
 	else
 	{
-		sprintf(str, "n - next frame \t b - all frames \t e/esc - exit \t f - %s \t t - turn fusion %s", uiEngine->freeviewActive ? "follow camera" : "free viewpoint", uiEngine->intergrationActive ? "off" : "on");
+		if (uiEngine->freeviewActive)
+		{
+			sprintf(str, "n - next frame \t b - all frames \t e/esc - exit \t f - follow camera \t m - show %s \t t - turn fusion %s", uiEngine->showSurfaceNormal ? "surface" : "normal", uiEngine->intergrationActive ? "off" : "on");
+		}
+		else
+		{
+			sprintf(str, "n - next frame \t b - all frames \t e/esc - exit \t f - free viewpoint \t t - turn fusion %s", uiEngine->intergrationActive ? "off" : "on");
+		}
+
 	}
 	safe_glutBitmapString(GLUT_BITMAP_HELVETICA_12, (const char*)str);
 
@@ -202,6 +210,10 @@ void UIEngine::glutKeyUpFunction(unsigned char key, int x, int y)
 		break;
 	case 'c':
 		uiEngine->colourActive = !uiEngine->colourActive;
+		uiEngine->needsRefresh = true;
+		break;
+	case 'm':
+		uiEngine->showSurfaceNormal = !uiEngine->showSurfaceNormal && uiEngine->freeviewActive;
 		uiEngine->needsRefresh = true;
 		break;
 	case 't':
@@ -323,6 +335,7 @@ void UIEngine::Initialise(int & argc, char** argv, ImageSourceEngine *imageSourc
 	this->freeviewActive = false;
 	this->colourActive = false;
 	this->intergrationActive = true;
+	this->showSurfaceNormal = false;
 
 	this->imageSource = imageSource;
 	this->imuSource = imuSource;

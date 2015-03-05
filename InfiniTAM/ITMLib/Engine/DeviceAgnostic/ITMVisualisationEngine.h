@@ -296,6 +296,13 @@ _CPU_AND_GPU_CODE_ inline void drawPixelGrey(DEVICEPTR(Vector4u) & dest, const T
 	dest = Vector4u((uchar)outRes);
 }
 
+_CPU_AND_GPU_CODE_ inline void drawPixelNormal(DEVICEPTR(Vector4u) & dest, const THREADPTR(Vector3f) & normal_obj)
+{
+	dest.r = (uchar)((0.3f + (normal_obj.r + 1.0f)*0.35f)*255.0f);
+	dest.g = (uchar)((0.3f + (normal_obj.g + 1.0f)*0.35f)*255.0f);
+	dest.b = (uchar)((0.3f + (normal_obj.b + 1.0f)*0.35f)*255.0f);
+}
+
 template<class TVoxel, class TIndex>
 _CPU_AND_GPU_CODE_ inline void drawPixelColour(DEVICEPTR(Vector4u) & dest, const CONSTANT(Vector3f) & point, 
 	const CONSTANT(TVoxel) *voxelBlockData, const CONSTANT(typename TIndex::IndexData) *indexData)
@@ -307,6 +314,7 @@ _CPU_AND_GPU_CODE_ inline void drawPixelColour(DEVICEPTR(Vector4u) & dest, const
 	dest.z = (uchar)(clr.z * 255.0f);
 	dest.w = 255;
 }
+
 
 template<class TVoxel, class TIndex>
 _CPU_AND_GPU_CODE_ inline void processPixelICP(DEVICEPTR(Vector4u) &outRendering, DEVICEPTR(Vector4f) &pointsMap, DEVICEPTR(Vector4f) &normalsMap,
@@ -419,5 +427,20 @@ _CPU_AND_GPU_CODE_ inline void processPixelColour(DEVICEPTR(Vector4u) &outRender
 	computeNormalAndAngle<TVoxel, TIndex>(foundPoint, point, voxelData, voxelIndex, lightSource, outNormal, angle);
 
 	if (foundPoint) drawPixelColour<TVoxel, TIndex>(outRendering, point, voxelData, voxelIndex);
+	else outRendering = Vector4u((uchar)0);
+}
+
+
+template<class TVoxel, class TIndex>
+_CPU_AND_GPU_CODE_ inline void processPixelNormal(DEVICEPTR(Vector4u) &outRendering, const CONSTANT(Vector3f) & point,
+	bool foundPoint, const CONSTANT(TVoxel) *voxelData, const CONSTANT(typename TIndex::IndexData) *voxelIndex,
+	Vector3f lightSource)
+{
+	Vector3f outNormal;
+	float angle;
+
+	computeNormalAndAngle<TVoxel, TIndex>(foundPoint, point, voxelData, voxelIndex, lightSource, outNormal, angle);
+
+	if (foundPoint) drawPixelNormal(outRendering, outNormal);
 	else outRendering = Vector4u((uchar)0);
 }

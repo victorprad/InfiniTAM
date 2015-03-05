@@ -39,7 +39,7 @@ namespace ITMLib
 
 			/** This will render an image using raycasting. */
 			virtual void RenderImage(const ITMPose *pose, const ITMIntrinsics *intrinsics,
-				const ITMRenderState *renderState, ITMUChar4Image *outputImage, bool useColour) const = 0;
+				const ITMRenderState *renderState, ITMUChar4Image *outputImage, bool useColour, bool renderNormal = false) const = 0;
 
 			/** Finds the scene surface using raycasting. */
 			virtual void FindSurface(const ITMPose *pose, const ITMIntrinsics *intrinsics,
