@@ -25,12 +25,6 @@
 #include "DeviceSpecific/Metal/ITMDepthTracker_Metal.h"
 #endif
 
-#ifdef ANDROID
-#define DIEWITHEXCEPTION(x) { fprintf(stderr, x "\n"); exit(-1); }
-#else
-#define DIEWITHEXCEPTION(x) throw std::runtime_error(x)
-#endif
-
 
 namespace ITMLib
 {

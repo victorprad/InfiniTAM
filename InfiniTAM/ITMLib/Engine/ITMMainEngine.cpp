@@ -116,6 +116,11 @@ void ITMMainEngine::ProcessFrame(ITMUChar4Image *rgbImage, ITMShortImage *rawDep
 	hasStartedObjectReconstruction = true;
 }
 
+Vector2i ITMMainEngine::GetImageSize(void) const
+{
+	return denseMapper->renderState_live->raycastImage->noDims;
+}
+
 void ITMMainEngine::GetImage(ITMUChar4Image *out, GetImageType getImageType, bool useColour, ITMPose *pose, ITMIntrinsics *intrinsics)
 {
 	if (view == NULL) return;
