@@ -56,7 +56,7 @@ void InfiniTAMApp::RenderGL(void)
 	}
 
 	int localNumWin = 1;//NUM_WIN
-	for (int w = 0; w < localNumWin; w++) mMainEngine->GetImage(outImage[w], winImageType[w], false);
+	for (int w = 0; w < localNumWin; w++) mMainEngine->GetImage(outImage[w], winImageType[w]);
 
 	glMatrixMode(GL_PROJECTION);
 	glPushMatrix();
