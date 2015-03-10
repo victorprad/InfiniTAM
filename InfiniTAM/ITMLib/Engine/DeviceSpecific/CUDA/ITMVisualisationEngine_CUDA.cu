@@ -319,8 +319,6 @@ void CreateICPMaps_common(const ITMScene<TVoxel, TIndex> *scene, const ITMView *
 	dim3 gridSize((int)ceil((float)imgSize.x / (float)cudaBlockSize.x), (int)ceil((float)imgSize.y / (float)cudaBlockSize.y));
 	renderICP_device<<<gridSize, cudaBlockSize>>>(outRendering, pointsMap, normalsMap, pointsRay,
 		scene->sceneParams->voxelSize, imgSize, lightSource);
-
-	ITMSafeCall(cudaThreadSynchronize());
 }
 
 template<class TVoxel, class TIndex>

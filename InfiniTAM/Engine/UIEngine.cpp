@@ -451,6 +451,7 @@ void UIEngine::ProcessFrame()
 	if (imuSource != NULL) mainEngine->ProcessFrame(inputRGBImage, inputRawDepthImage, inputIMUMeasurement);
 	else mainEngine->ProcessFrame(inputRGBImage, inputRawDepthImage);
 
+	ITMSafeCall(cudaThreadSynchronize());
 	sdkStopTimer(&timer_instant); sdkStopTimer(&timer_average);
 
 	//processedTime = sdkGetTimerValue(&timer_instant);
