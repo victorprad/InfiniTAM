@@ -25,6 +25,7 @@ Engine/ITMColorTracker.h
 Engine/ITMCompositeTracker.h
 Engine/ITMDenseMapper.h
 Engine/ITMDepthTracker.h
+Engine/ITMIMUCalibrator.h
 Engine/ITMIMUTracker.h
 Engine/ITMLowLevelEngine.h
 Engine/ITMMainEngine.h
