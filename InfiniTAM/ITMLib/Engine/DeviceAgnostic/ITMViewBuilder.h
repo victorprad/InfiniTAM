@@ -40,7 +40,7 @@ _CPU_AND_GPU_CODE_ inline void smoothingRawDepth(DEVICEPTR(float) *imageData_out
 	for (int i = -1, count = 0; i <= 1; i++) for (int j = -1; j <= 1; j++, count++)
 	{
 		patch[count].x = imageData_in[(x + j) + (y + i) * imgDims.x];
-		if (patch[count].x > 0.0f) patch[count].y = i*i + j*j;
+		if (patch[count].x > 0.0f) patch[count].y = (float)(i*i + j*j);
 	}
 
 	z = patch[4].x;

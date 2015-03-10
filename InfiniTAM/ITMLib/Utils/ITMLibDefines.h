@@ -32,6 +32,12 @@
 #define _CPU_AND_GPU_CODE_ 
 #endif
 
+#if defined(__CUDACC__) && defined(__CUDA_ARCH__)
+#define _CPU_AND_GPU_CONSTANT_ __constant__	// for CUDA device code
+#else
+#define _CPU_AND_GPU_CONSTANT_
+#endif
+
 #if defined(__METALC__) // for METAL device code
 #define THREADPTR(x) thread x
 #define DEVICEPTR(x) device x

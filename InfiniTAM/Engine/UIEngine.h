@@ -56,7 +56,6 @@ namespace InfiniTAM
 
 			bool freeviewActive;
 			bool intergrationActive;
-
 			ITMPose freeviewPose;
 			ITMIntrinsics freeviewIntrinsics;
 
@@ -92,9 +91,10 @@ namespace InfiniTAM
 
 			void Run();
 			void ProcessFrame();
-
+			
 			void GetScreenshot(ITMUChar4Image *dest) const;
 			void SaveScreenshot(const char *filename) const;
+			void SaveSceneToMesh(const char *filename) const;
 		};
 	}
 }
