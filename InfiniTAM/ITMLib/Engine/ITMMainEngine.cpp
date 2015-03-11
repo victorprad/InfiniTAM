@@ -90,7 +90,7 @@ ITMMainEngine::~ITMMainEngine()
 void ITMMainEngine::ProcessFrame(ITMUChar4Image *rgbImage, ITMShortImage *rawDepthImage)
 {
 	// prepare image and turn it into a depth image
-	viewBuilder->UpdateView(&view, rgbImage, rawDepthImage);
+	viewBuilder->UpdateView(&view, rgbImage, rawDepthImage, settings->useBilateralFilter);
 	//viewBuilder->SmoothRawDepth(&view, trackingState->pose_d->GetInvM());
 
 	if (!mainProcessingActive) return;
@@ -116,8 +116,7 @@ void ITMMainEngine::SaveSceneToMesh(const char *objFileName)
 void ITMMainEngine::ProcessFrame(ITMUChar4Image *rgbImage, ITMShortImage *rawDepthImage, ITMIMUMeasurement *imuMeasurement)
 {
 	// prepare image and turn it into a depth image
-	viewBuilder->UpdateView(&view, rgbImage, rawDepthImage, imuMeasurement);
-	//viewBuilder->SmoothRawDepth(&view, trackingState->pose_d->GetInvM());
+	viewBuilder->UpdateView(&view, rgbImage, rawDepthImage, settings->useBilateralFilter, imuMeasurement);
 
 	if (!mainProcessingActive) return;
 

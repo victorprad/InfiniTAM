@@ -36,6 +36,9 @@ ITMLibSettings::ITMLibSettings(void)
 	/// enables or disables approximate raycast
 	useApproximateRaycast = false;
 
+	/// enable or disable bilateral depth filtering;
+	useBilateralFilter = true;
+
 	//trackerType = TRACKER_COLOR;
 	trackerType = TRACKER_ICP;
 	//trackerType = TRACKER_REN;
