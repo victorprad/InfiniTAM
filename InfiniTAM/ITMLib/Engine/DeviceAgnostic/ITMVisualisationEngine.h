@@ -151,7 +151,7 @@ _CPU_AND_GPU_CODE_ inline bool castRay(DEVICEPTR(Vector4f) &pt_out, int x, int y
 			{
 			case SEARCH_BLOCK_COARSE:
 				state = SEARCH_SURFACE;
-				stepLength = 0.25*stepScale;
+				stepLength = 0.25f*stepScale;
 				break;
 			case WRONG_SIDE: stepLength = MIN(sdfValue * stepScale, -1.0f); break;
 			default:
