@@ -27,7 +27,6 @@ void ITMViewBuilder_CUDA::UpdateView(ITMView **view_ptr, ITMUChar4Image *rgbImag
 		this->shortImage = new ITMShortImage(rawDepthImage->noDims, true, true);
 		if (this->floatImage != NULL) delete this->floatImage;
 		this->floatImage = new ITMFloatImage(rawDepthImage->noDims, true, true);
-
 	}
 
 	ITMView *view = *view_ptr;
@@ -77,6 +76,8 @@ void ITMViewBuilder_CUDA::UpdateView(ITMView **view_ptr, ITMUChar4Image *rgbImag
 		*view_ptr = new ITMViewIMU(calib, rgbImage->noDims, depthImage->noDims, true);
 		if (this->shortImage != NULL) delete this->shortImage;
 		this->shortImage = new ITMShortImage(depthImage->noDims, true, true);
+		if (this->floatImage != NULL) delete this->floatImage;
+		this->floatImage = new ITMFloatImage(depthImage->noDims, true, true);
 	}
 
 	ITMViewIMU* imuView = (ITMViewIMU*)(*view_ptr);

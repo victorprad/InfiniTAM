@@ -209,7 +209,7 @@ void UIEngine::glutKeyUpFunction(unsigned char key, int x, int y)
 		break;
 	case 'w':
 		printf("saving mesh to disk ...");
-		uiEngine->SaveSceneToMesh("mesh.obj");
+		uiEngine->SaveSceneToMesh("mesh.stl");
 		printf(" done\n");
 		break;
 	default:

@@ -110,7 +110,7 @@ void ITMMainEngine::ProcessFrame(ITMUChar4Image *rgbImage, ITMShortImage *rawDep
 void ITMMainEngine::SaveSceneToMesh(const char *objFileName)
 {
 	meshingEngine->MeshScene(mesh, scene);
-	mesh->WriteOBJ(objFileName);
+	mesh->WriteSTL(objFileName);
 }
 
 void ITMMainEngine::ProcessFrame(ITMUChar4Image *rgbImage, ITMShortImage *rawDepthImage, ITMIMUMeasurement *imuMeasurement)
