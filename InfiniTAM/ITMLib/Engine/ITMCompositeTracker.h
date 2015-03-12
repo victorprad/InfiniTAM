@@ -39,6 +39,11 @@ namespace ITMLib
 				delete [] trackers;
 			}
 
+			void SetInitialPose(ITMTrackingState *trackingState)
+			{
+				trackers[0]->SetInitialPose(trackingState);
+			}
+
 			void TrackCamera(ITMTrackingState *trackingState, const ITMView *view)
 			{
 				for (int i = 0; i < noTrackers; i++) trackers[i]->TrackCamera(trackingState, view);

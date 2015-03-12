@@ -45,8 +45,8 @@ namespace ITMLib
 
 				this->pose_pointCloud = new ITMPose();
 				this->pose_pointCloud->SetFrom(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
-                
-                requiresFullRendering = true;
+
+				requiresFullRendering = true;
 			}
 
 			~ITMTrackingState(void)
