@@ -46,7 +46,7 @@ namespace ITMLib
 
 			void UpdateInitialPose(ITMTrackingState *trackingState)
 			{
-				for(int i = 0; i < noTrackers; i++) trackers[i]->UpdateInitialPose(trackingState);
+				for (int i = 0; i < noTrackers; i++) trackers[i]->UpdateInitialPose(trackingState);
 			}
 
 			// Suppress the default copy constructor and assignment operator
