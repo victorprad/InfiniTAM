@@ -25,18 +25,11 @@ namespace ITMLib
 			*/
 			virtual void TrackCamera(ITMTrackingState *trackingState, const ITMView *view) = 0;
 
-			/** Sets the initial pose of the depth camera in the scene.
-					This can be used to make the up vector in our scene correspond
+			/** Updates the initial pose of the depth camera in the scene.
+					This can be used to make the scene up vector correspond
 					to the real world's up direction.
 			*/
-			virtual void SetInitialPose(ITMTrackingState *trackingState)
-			{
-				// By default (i.e. in the absence of any hardware support), we don't know the pose of
-				// our camera in the real world, so using the identity matrix is the best we can do.
-				Matrix4f M;
-				M.setIdentity();
-				trackingState->pose_d->SetM(M);
-			}
+			virtual void UpdateInitialPose(ITMTrackingState *trackingState) {}
 
 			virtual ~ITMTracker(void) {}
 		};
