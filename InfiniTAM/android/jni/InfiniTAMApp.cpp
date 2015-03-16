@@ -1,5 +1,6 @@
 #include "InfiniTAMApp.h"
 #include "../../Engine/OpenNIEngine.h"
+#include "../../Engine/IMUSourceEngine.h"
 
 #include <GLES/gl.h>
 
@@ -107,15 +108,21 @@ void InfiniTAMApp::StartProcessing(int useLiveCamera)
 	const char *calibFile = "/storage/sdcard0/InfiniTAM/teddy/calib.txt";
 	const char *imagesource_part1 = "/storage/sdcard0/InfiniTAM/teddy/video%06i.ppm";
 	const char *imagesource_part2 = "/storage/sdcard0/InfiniTAM/teddy/depth%06i.ppm";
+/*	const char *calibFile = "/storage/sdcard0/InfiniTAM/CAsmall/calib.txt";
+	const char *imagesource_part1 = "/storage/sdcard0/InfiniTAM/CAsmall/img_0000%04i.irw";
+	const char *imagesource_part2 = "/storage/sdcard0/InfiniTAM/CAsmall/img_0000%04i.irw";
+	const char *imagesource_part3 = "/storage/sdcard0/InfiniTAM/CAsmall/imu_0000%04i.txt";*/
 
 	mInternalSettings = new ITMLibSettings();
+	mImuSource = NULL; //new IMUSourceEngine;
 	if (useLiveCamera == 0) {
 		mImageSource = new InfiniTAM::Engine::ImageFileReader(calibFile, imagesource_part1, imagesource_part2);
+		//mImageSource = new InfiniTAM::Engine::RawFileReader(calibFile, imagesource_part1, imagesource_part2, Vector2i(320, 240), 0.5f);
+		//mImuSource = new InfiniTAM::Engine::IMUSourceEngine(imagesource_part3);
 		//mImageSource = new InfiniTAM::Engine::OpenNIEngine(calibFile, "/storage/sdcard0/InfiniTAM/50Hz_closeup.oni");
 	} else {
 		mImageSource = new InfiniTAM::Engine::OpenNIEngine(calibFile);
 	}
-	mImuSource = NULL; //new IMUSourceEngine;
 	mMainEngine = new ITMMainEngine(mInternalSettings, &mImageSource->calib, mImageSource->getRGBImageSize(), mImageSource->getDepthImageSize());
 
 	bool allocateGPU = false;
@@ -153,6 +160,7 @@ bool InfiniTAMApp::ProcessFrame(void)
 	if (mImuSource != NULL) mMainEngine->ProcessFrame(inputRGBImage, inputRawDepthImage, inputIMUMeasurement);
 	else mMainEngine->ProcessFrame(inputRGBImage, inputRawDepthImage);
 
+	ITMSafeCall(cudaDeviceSynchronize());
 	sdkStopTimer(&timer_instant); sdkStopTimer(&timer_average);
 
 	__android_log_print(ANDROID_LOG_VERBOSE, "InfiniTAM", "Process Frame finished: %f %f", sdkGetTimerValue(&timer_instant), sdkGetAverageTimerValue(&timer_average));
