@@ -157,9 +157,9 @@ namespace ORUtils
 				break;
 			case CUDA_TO_CUDA:
 				ITMSafeCall(cudaMemcpy(this->data_cuda, source->data_cuda, source->dataSize * sizeof(T), cudaMemcpyDeviceToDevice));
-                break;
+				break;
 #endif
-            default: break;
+			default: break;
 			}
 		}
 

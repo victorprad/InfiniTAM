@@ -433,9 +433,6 @@ void UIEngine::ProcessFrame()
 		else imuSource->getMeasurement(inputIMUMeasurement);
 	}
 
-	sdkResetTimer(&timer_instant);
-	sdkStartTimer(&timer_instant); sdkStartTimer(&timer_average);
-
 	if (isRecording)
 	{
 		char str[250];
@@ -446,6 +443,9 @@ void UIEngine::ProcessFrame()
 		sprintf(str, "%s/%04d.ppm", outFolder, currentFrameNo);
 		SaveImageToFile(inputRGBImage, str);
 	}
+
+	sdkResetTimer(&timer_instant);
+	sdkStartTimer(&timer_instant); sdkStartTimer(&timer_average);
 
 	//actual processing on the mailEngine
 	if (imuSource != NULL) mainEngine->ProcessFrame(inputRGBImage, inputRawDepthImage, inputIMUMeasurement);

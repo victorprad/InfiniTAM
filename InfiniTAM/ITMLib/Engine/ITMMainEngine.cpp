@@ -48,6 +48,7 @@ ITMMainEngine::ITMMainEngine(const ITMLibSettings *settings, const ITMRGBDCalib 
 	trackingController = new ITMTrackingController(tracker, visualisationEngine, lowLevelEngine, renderState_live, settings);
 
 	trackingState = trackingController->BuildTrackingState();
+	tracker->UpdateInitialPose(trackingState);
 
 	view = NULL; // will be allocated by the view builder
 

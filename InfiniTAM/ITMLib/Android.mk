@@ -17,7 +17,7 @@ MY_INCLUDES += $(CUDA_TOOLKIT_ROOT)/targets/armv7-linux-androideabi/include
 	$(NVCC) $(CFLAGS) $(EXTRA_CFLAGS) -c -o "$@" "$<"
 
 %.o: %.cpp
-	$(GCC) -O3 -c -o "$@" "$<" $(MY_INCLUDES:%=-I%)
+	$(GCC) -O3 -march=armv7-a -mtune=cortex-a15 -c -o "$@" "$<" $(MY_INCLUDES:%=-I%)
 
 $(MY_MODULE): $(MY_OBJ_LIST)
 	$(NVCC) -lib -o "$@" $^
