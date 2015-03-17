@@ -56,6 +56,9 @@ namespace ITMLib
 			ITMLowLevelEngine *lowLevelEngine;
 			IITMVisualisationEngine *visualisationEngine;
 
+			ITMMeshingEngine<ITMVoxel, ITMVoxelIndex> *meshingEngine;
+			ITMMesh *mesh;
+
 			ITMViewBuilder *viewBuilder;		
 			ITMDenseMapper<ITMVoxel,ITMVoxelIndex> *denseMapper;
 			ITMTrackingController *trackingController;
@@ -92,6 +95,9 @@ namespace ITMLib
 
 			/// Process a frame with rgb and depth images and a corresponding imu measurement
 			void ProcessFrame(ITMUChar4Image *rgbImage, ITMShortImage *rawDepthImage, ITMIMUMeasurement *imuMeasurement);
+
+			/// Extracts a mesh from the current scene and saves it to the obj file specified by the file name
+			void SaveSceneToMesh(const char *objFileName);
 
 			/// Get a result image as output
 			Vector2i GetImageSize(void) const;

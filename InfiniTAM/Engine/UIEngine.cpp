@@ -207,6 +207,11 @@ void UIEngine::glutKeyUpFunction(unsigned char key, int x, int y)
 		if (uiEngine->intergrationActive) uiEngine->mainEngine->turnOnIntegration();
 		else uiEngine->mainEngine->turnOffIntegration();
 		break;
+	case 'w':
+		printf("saving mesh to disk ...");
+		uiEngine->SaveSceneToMesh("mesh.stl");
+		printf(" done\n");
+		break;
 	default:
 		break;
 	}
@@ -419,6 +424,11 @@ void UIEngine::SaveScreenshot(const char *filename) const
 	SaveImageToFile(&screenshot, filename, true);
 }
 
+void UIEngine::SaveSceneToMesh(const char *filename) const
+{
+	mainEngine->SaveSceneToMesh(filename);
+}
+
 void UIEngine::GetScreenshot(ITMUChar4Image *dest) const
 {
 	glReadPixels(0, 0, dest->noDims.x, dest->noDims.y, GL_RGBA, GL_UNSIGNED_BYTE, dest->GetData(MEMORYDEVICE_CPU));
@@ -434,9 +444,6 @@ void UIEngine::ProcessFrame()
 		else imuSource->getMeasurement(inputIMUMeasurement);
 	}
 
-	sdkResetTimer(&timer_instant);
-	sdkStartTimer(&timer_instant); sdkStartTimer(&timer_average);
-
 	if (isRecording)
 	{
 		char str[250];
@@ -448,10 +455,14 @@ void UIEngine::ProcessFrame()
 		SaveImageToFile(inputRGBImage, str);
 	}
 
+	sdkResetTimer(&timer_instant);
+	sdkStartTimer(&timer_instant); sdkStartTimer(&timer_average);
+
 	//actual processing on the mailEngine
 	if (imuSource != NULL) mainEngine->ProcessFrame(inputRGBImage, inputRawDepthImage, inputIMUMeasurement);
 	else mainEngine->ProcessFrame(inputRGBImage, inputRawDepthImage);
 
+	ITMSafeCall(cudaThreadSynchronize());
 	sdkStopTimer(&timer_instant); sdkStopTimer(&timer_average);
 
 	//processedTime = sdkGetTimerValue(&timer_instant);

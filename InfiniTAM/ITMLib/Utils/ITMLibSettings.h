@@ -27,6 +27,8 @@ namespace ITMLib
 
 			bool useApproximateRaycast;
 
+			bool useBilateralFilter;
+
 			/// Tracker types
 			typedef enum {
 				//! Identifies a tracker based on colour image

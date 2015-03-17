@@ -45,6 +45,18 @@ To actually build it:
 
 
 
+To get OpenNI running:
+
+  - Get the latest sources, go to OpenNI2/Packaging and run
+
+    ./ReleaseVersion.py android
+
+  - Hope and pray that the libusb issues have been fixed! There are
+    tremendous problems with actually accessing a device under all recent
+    Android versions (4.4 and 5.0 at least)
+
+
+
 To complain:
 
   - Don't contact me!

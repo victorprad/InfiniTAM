@@ -110,6 +110,7 @@
     <ClCompile Include="ITMLib\Engine\DeviceSpecific\CPU\ITMColorTracker_CPU.cpp" />
     <ClCompile Include="ITMLib\Engine\DeviceSpecific\CPU\ITMDepthTracker_CPU.cpp" />
     <ClCompile Include="ITMLib\Engine\DeviceSpecific\CPU\ITMLowLevelEngine_CPU.cpp" />
+    <ClCompile Include="ITMLib\Engine\DeviceSpecific\CPU\ITMMeshingEngine_CPU.cpp" />
     <ClCompile Include="ITMLib\Engine\DeviceSpecific\CPU\ITMRenTracker_CPU.cpp" />
     <ClCompile Include="ITMLib\Engine\DeviceSpecific\CPU\ITMSceneReconstructionEngine_CPU.cpp" />
     <ClCompile Include="ITMLib\Engine\DeviceSpecific\CPU\ITMSwappingEngine_CPU.cpp" />
@@ -140,6 +141,7 @@
     <ClInclude Include="ITMLib\Engine\DeviceAgnostic\ITMColorTracker.h" />
     <ClInclude Include="ITMLib\Engine\DeviceAgnostic\ITMDepthTracker.h" />
     <ClInclude Include="ITMLib\Engine\DeviceAgnostic\ITMLowLevelEngine.h" />
+    <ClInclude Include="ITMLib\Engine\DeviceAgnostic\ITMMeshingEngine.h" />
     <ClInclude Include="ITMLib\Engine\DeviceAgnostic\ITMPixelUtils.h" />
     <ClInclude Include="ITMLib\Engine\DeviceAgnostic\ITMRenTracker.h" />
     <ClInclude Include="ITMLib\Engine\DeviceAgnostic\ITMRepresentationAccess.h" />
@@ -151,6 +153,7 @@
     <ClInclude Include="ITMLib\Engine\DeviceSpecific\CPU\ITMColorTracker_CPU.h" />
     <ClInclude Include="ITMLib\Engine\DeviceSpecific\CPU\ITMDepthTracker_CPU.h" />
     <ClInclude Include="ITMLib\Engine\DeviceSpecific\CPU\ITMLowLevelEngine_CPU.h" />
+    <ClInclude Include="ITMLib\Engine\DeviceSpecific\CPU\ITMMeshingEngine_CPU.h" />
     <ClInclude Include="ITMLib\Engine\DeviceSpecific\CPU\ITMRenTracker_CPU.h" />
     <ClInclude Include="ITMLib\Engine\DeviceSpecific\CPU\ITMSceneReconstructionEngine_CPU.h" />
     <ClInclude Include="ITMLib\Engine\DeviceSpecific\CPU\ITMSwappingEngine_CPU.h" />
@@ -161,6 +164,7 @@
     <ClInclude Include="ITMLib\Engine\DeviceSpecific\CUDA\ITMCUDAUtils.h" />
     <ClInclude Include="ITMLib\Engine\DeviceSpecific\CUDA\ITMDepthTracker_CUDA.h" />
     <ClInclude Include="ITMLib\Engine\DeviceSpecific\CUDA\ITMLowLevelEngine_CUDA.h" />
+    <ClInclude Include="ITMLib\Engine\DeviceSpecific\CUDA\ITMMeshingEngine_CUDA.h" />
     <ClInclude Include="ITMLib\Engine\DeviceSpecific\CUDA\ITMRenTracker_CUDA.h" />
     <ClInclude Include="ITMLib\Engine\DeviceSpecific\CUDA\ITMSceneReconstructionEngine_CUDA.h" />
     <ClInclude Include="ITMLib\Engine\DeviceSpecific\CUDA\ITMSwappingEngine_CUDA.h" />
@@ -175,6 +179,7 @@
     <ClInclude Include="ITMLib\Engine\ITMIMUTracker.h" />
     <ClInclude Include="ITMLib\Engine\ITMLowLevelEngine.h" />
     <ClInclude Include="ITMLib\Engine\ITMMainEngine.h" />
+    <ClInclude Include="ITMLib\Engine\ITMMeshingEngine.h" />
     <ClInclude Include="ITMLib\Engine\ITMRenTracker.h" />
     <ClInclude Include="ITMLib\Engine\ITMSceneReconstructionEngine.h" />
     <ClInclude Include="ITMLib\Engine\ITMSwappingEngine.h" />
@@ -184,6 +189,7 @@
     <ClInclude Include="ITMLib\Engine\ITMViewBuilder.h" />
     <ClInclude Include="ITMLib\Engine\ITMVisualisationEngine.h" />
     <ClInclude Include="ITMLib\Objects\ITMIMUMeasurement.h" />
+    <ClInclude Include="ITMLib\Objects\ITMMesh.h" />
     <ClInclude Include="ITMLib\Objects\ITMRenderState.h" />
     <ClInclude Include="ITMLib\Objects\ITMRenderState_VH.h" />
     <ClInclude Include="ITMLib\Engine\ITMVoxelBlockOpEngine.h" />
@@ -227,6 +233,7 @@
     <CudaCompile Include="ITMLib\Engine\DeviceSpecific\CUDA\ITMColorTracker_CUDA.cu" />
     <CudaCompile Include="ITMLib\Engine\DeviceSpecific\CUDA\ITMDepthTracker_CUDA.cu" />
     <CudaCompile Include="ITMLib\Engine\DeviceSpecific\CUDA\ITMLowLevelEngine_CUDA.cu" />
+    <CudaCompile Include="ITMLib\Engine\DeviceSpecific\CUDA\ITMMeshingEngine_CUDA.cu" />
     <CudaCompile Include="ITMLib\Engine\DeviceSpecific\CUDA\ITMRenTracker_CUDA.cu" />
     <CudaCompile Include="ITMLib\Engine\DeviceSpecific\CUDA\ITMSceneReconstructionEngine_CUDA.cu" />
     <CudaCompile Include="ITMLib\Engine\DeviceSpecific\CUDA\ITMSwappingEngine_CUDA.cu" />

@@ -19,12 +19,14 @@ ITMMainEngine::ITMMainEngine(const ITMLibSettings *settings, const ITMRGBDCalib 
 		lowLevelEngine = new ITMLowLevelEngine_CPU();
 		viewBuilder = new ITMViewBuilder_CPU(calib);
 		visualisationEngine = new ITMVisualisationEngine_CPU<ITMVoxel, ITMVoxelIndex>(scene);
+		meshingEngine = new ITMMeshingEngine_CPU<ITMVoxel, ITMVoxelIndex>();
 		break;
 	case ITMLibSettings::DEVICE_CUDA:
 #ifndef COMPILE_WITHOUT_CUDA
 		lowLevelEngine = new ITMLowLevelEngine_CUDA();
 		viewBuilder = new ITMViewBuilder_CUDA(calib);
 		visualisationEngine = new ITMVisualisationEngine_CUDA<ITMVoxel, ITMVoxelIndex>(scene);
+		meshingEngine = new ITMMeshingEngine_CUDA<ITMVoxel, ITMVoxelIndex>();
 #endif
 		break;
 	case ITMLibSettings::DEVICE_METAL:
@@ -32,9 +34,12 @@ ITMMainEngine::ITMMainEngine(const ITMLibSettings *settings, const ITMRGBDCalib 
 		lowLevelEngine = new ITMLowLevelEngine_Metal();
 		viewBuilder = new ITMViewBuilder_Metal(calib);
 		visualisationEngine = new ITMVisualisationEngine_Metal<ITMVoxel, ITMVoxelIndex>(scene);
+		meshingEngine = new ITMMeshingEngine_CPU<ITMVoxel, ITMVoxelIndex>();
 #endif
 		break;
 	}
+
+	mesh = new ITMMesh(settings->deviceType == ITMLibSettings::DEVICE_CUDA ? MEMORYDEVICE_CUDA : MEMORYDEVICE_CPU);
 
 	Vector2i trackedImageSize = ITMTrackingController::GetTrackedImageSize(settings, imgSize_rgb, imgSize_d);
 
@@ -48,6 +53,7 @@ ITMMainEngine::ITMMainEngine(const ITMLibSettings *settings, const ITMRGBDCalib 
 	trackingController = new ITMTrackingController(tracker, visualisationEngine, lowLevelEngine, renderState_live, settings);
 
 	trackingState = trackingController->BuildTrackingState();
+	tracker->UpdateInitialPose(trackingState);
 
 	view = NULL; // will be allocated by the view builder
 
@@ -76,12 +82,16 @@ ITMMainEngine::~ITMMainEngine()
 	delete view;
 
 	delete visualisationEngine;
+
+	delete meshingEngine;
+
+	delete mesh;
 }
 
 void ITMMainEngine::ProcessFrame(ITMUChar4Image *rgbImage, ITMShortImage *rawDepthImage)
 {
 	// prepare image and turn it into a depth image
-	viewBuilder->UpdateView(&view, rgbImage, rawDepthImage);
+	viewBuilder->UpdateView(&view, rgbImage, rawDepthImage, settings->useBilateralFilter);
 	//viewBuilder->SmoothRawDepth(&view, trackingState->pose_d->GetInvM());
 
 	if (!mainProcessingActive) return;
@@ -98,11 +108,16 @@ void ITMMainEngine::ProcessFrame(ITMUChar4Image *rgbImage, ITMShortImage *rawDep
 	hasStartedObjectReconstruction = true;
 }
 
+void ITMMainEngine::SaveSceneToMesh(const char *objFileName)
+{
+	meshingEngine->MeshScene(mesh, scene);
+	mesh->WriteSTL(objFileName);
+}
+
 void ITMMainEngine::ProcessFrame(ITMUChar4Image *rgbImage, ITMShortImage *rawDepthImage, ITMIMUMeasurement *imuMeasurement)
 {
 	// prepare image and turn it into a depth image
-	viewBuilder->UpdateView(&view, rgbImage, rawDepthImage, imuMeasurement);
-	//viewBuilder->SmoothRawDepth(&view, trackingState->pose_d->GetInvM());
+	viewBuilder->UpdateView(&view, rgbImage, rawDepthImage, settings->useBilateralFilter, imuMeasurement);
 
 	if (!mainProcessingActive) return;
 

@@ -40,13 +40,13 @@ namespace ITMLib
 				const ITMDisparityCalib *disparityCalib) = 0;
 			virtual void ConvertDepthMMToFloat(ITMFloatImage *depth_out, const ITMShortImage *depth_in) = 0;
 
-			virtual void SmoothRawDepth(ITMView **view, Matrix4f pose) = 0;
-			virtual void SmoothRawDepth(ITMFloatImage *image_out, const ITMFloatImage *image_in, Vector3f zdirect) = 0;
+			virtual void DepthFiltering(ITMFloatImage *image_out, const ITMFloatImage *image_in) = 0;
 
-			virtual void UpdateView(ITMView **view, ITMUChar4Image *rgbImage, ITMShortImage *rawDepthImage) = 0;
+			virtual void UpdateView(ITMView **view, ITMUChar4Image *rgbImage, ITMShortImage *rawDepthImage, bool useBilateralFilter) = 0;
 			virtual void UpdateView(ITMView **view, ITMUChar4Image *rgbImage, ITMFloatImage *depthImage) = 0;
 
-			virtual void UpdateView(ITMView **view, ITMUChar4Image *rgbImage, ITMShortImage *depthImage, ITMIMUMeasurement *imuMeasurement) = 0;
+			virtual void UpdateView(ITMView **view, ITMUChar4Image *rgbImage, ITMShortImage *depthImage, bool useBilateralFilter,
+				ITMIMUMeasurement *imuMeasurement) = 0;
 
 			ITMViewBuilder(const ITMRGBDCalib *calib)
 			{

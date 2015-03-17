@@ -121,7 +121,7 @@ _CPU_AND_GPU_CODE_ inline bool castRay(DEVICEPTR(Vector4f) &pt_out, int x, int y
 
 	pt_result = pt_block_s;
 
-	enum { SEARCH_BLOCK_COARSE, SEARCH_BLOCK_FINE, SEARCH_SURFACE, BEHIND_SURFACE, WRONG_SIDE } state;
+	enum { SEARCH_BLOCK_COARSE, SEARCH_SURFACE, BEHIND_SURFACE, WRONG_SIDE } state;
 
 	typename TIndex::IndexCache cache;
 
@@ -138,7 +138,6 @@ _CPU_AND_GPU_CODE_ inline bool castRay(DEVICEPTR(Vector4f) &pt_out, int x, int y
 			switch (state)
 			{
 			case SEARCH_BLOCK_COARSE: stepLength = SDF_BLOCK_SIZE; break;
-			case SEARCH_BLOCK_FINE: stepLength = stepScale; break;
 			default:
 			case WRONG_SIDE:
 			case SEARCH_SURFACE:
@@ -152,11 +151,10 @@ _CPU_AND_GPU_CODE_ inline bool castRay(DEVICEPTR(Vector4f) &pt_out, int x, int y
 			switch (state)
 			{
 			case SEARCH_BLOCK_COARSE:
-				state = SEARCH_BLOCK_FINE;
-				stepLength = stepScale - SDF_BLOCK_SIZE;
+				state = SEARCH_SURFACE;
+				stepLength = 0.25f*stepScale;
 				break;
 			case WRONG_SIDE: stepLength = MIN(sdfValue * stepScale, -1.0f); break;
-			case SEARCH_BLOCK_FINE: state = SEARCH_SURFACE;
 			default:
 			case SEARCH_SURFACE: stepLength = MAX(sdfValue * stepScale, 1.0f);
 			}
@@ -165,7 +163,7 @@ _CPU_AND_GPU_CODE_ inline bool castRay(DEVICEPTR(Vector4f) &pt_out, int x, int y
 		pt_result += stepLength * rayDirection; totalLength += stepLength;
 		if (totalLength > totalLengthMax) break;
 
-		if (state == SEARCH_SURFACE || state == SEARCH_BLOCK_FINE)
+		if (state == SEARCH_SURFACE)
 		{
 			sdfValue = readFromSDF_float_uninterpolated(voxelData, voxelIndex, pt_result, hash_found, cache);
 			if ((sdfValue <= 0.1f) && (sdfValue >= -0.5f))
@@ -173,7 +171,7 @@ _CPU_AND_GPU_CODE_ inline bool castRay(DEVICEPTR(Vector4f) &pt_out, int x, int y
 		}
 		else sdfValue = readFromSDF_float_uninterpolated(voxelData, voxelIndex, pt_result, hash_found);
 
-		if (sdfValue <= 0.0f) if (state == SEARCH_BLOCK_FINE) state = WRONG_SIDE; else state = BEHIND_SURFACE;
+		if (sdfValue <= 0.0f) if (state == SEARCH_BLOCK_COARSE) state = WRONG_SIDE; else state = BEHIND_SURFACE;
 		else if (state == WRONG_SIDE) state = SEARCH_SURFACE;
 	}
 

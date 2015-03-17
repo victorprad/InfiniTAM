@@ -139,6 +139,9 @@
     <ClCompile Include="ITMLib\Engine\ITMTrackerFactory.cpp">
       <Filter>ITMLib\Engine</Filter>
     </ClCompile>
+    <ClCompile Include="ITMLib\Engine\DeviceSpecific\CPU\ITMMeshingEngine_CPU.cpp">
+      <Filter>ITMLib\Engine\DeviceSpecific\CPU</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\OpenNIEngine.h">
@@ -413,6 +416,21 @@
     <ClInclude Include="ITMLib\Engine\DeviceAgnostic\ITMPixelUtils.h">
       <Filter>ITMLib\Engine\DeviceAgnostic</Filter>
     </ClInclude>
+    <ClInclude Include="ITMLib\Objects\ITMMesh.h">
+      <Filter>ITMLib\Objects</Filter>
+    </ClInclude>
+    <ClInclude Include="ITMLib\Engine\ITMMeshingEngine.h">
+      <Filter>ITMLib\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="ITMLib\Engine\DeviceAgnostic\ITMMeshingEngine.h">
+      <Filter>ITMLib\Engine\DeviceAgnostic</Filter>
+    </ClInclude>
+    <ClInclude Include="ITMLib\Engine\DeviceSpecific\CPU\ITMMeshingEngine_CPU.h">
+      <Filter>ITMLib\Engine\DeviceSpecific\CPU</Filter>
+    </ClInclude>
+    <ClInclude Include="ITMLib\Engine\DeviceSpecific\CUDA\ITMMeshingEngine_CUDA.h">
+      <Filter>ITMLib\Engine\DeviceSpecific\CUDA</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CudaCompile Include="ITMLib\Engine\DeviceSpecific\CUDA\ITMColorTracker_CUDA.cu">
@@ -438,6 +456,9 @@
       <Filter>ITMLib\Engine\DeviceSpecific\CUDA</Filter>
     </CudaCompile>
     <CudaCompile Include="ITMLib\Engine\DeviceSpecific\CUDA\ITMViewBuilder_CUDA.cu">
+      <Filter>ITMLib\Engine\DeviceSpecific\CUDA</Filter>
+    </CudaCompile>
+    <CudaCompile Include="ITMLib\Engine\DeviceSpecific\CUDA\ITMMeshingEngine_CUDA.cu">
       <Filter>ITMLib\Engine\DeviceSpecific\CUDA</Filter>
     </CudaCompile>
   </ItemGroup>

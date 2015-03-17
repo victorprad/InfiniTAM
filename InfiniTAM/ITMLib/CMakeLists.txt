@@ -25,6 +25,7 @@ Engine/ITMColorTracker.h
 Engine/ITMCompositeTracker.h
 Engine/ITMDenseMapper.h
 Engine/ITMDepthTracker.h
+Engine/ITMIMUCalibrator.h
 Engine/ITMIMUTracker.h
 Engine/ITMLowLevelEngine.h
 Engine/ITMMainEngine.h
@@ -36,6 +37,7 @@ Engine/ITMTrackerFactory.h
 Engine/ITMTrackingController.h
 Engine/ITMViewBuilder.h
 Engine/ITMVisualisationEngine.h
+Engine/ITMMeshingEngine.h
 )
 
 ##
@@ -51,6 +53,7 @@ Engine/DeviceAgnostic/ITMSwappingEngine.h
 Engine/DeviceAgnostic/ITMViewBuilder.h
 Engine/DeviceAgnostic/ITMVisualisationEngine.h
 Engine/DeviceAgnostic/ITMPixelUtils.h
+Engine/DeviceAgnostic/ITMMeshingEngine.h
 )
 
 ##
@@ -64,6 +67,7 @@ Engine/DeviceSpecific/CPU/ITMVoxelBlockOpEngine_CPU.cpp
 Engine/DeviceSpecific/CPU/ITMSwappingEngine_CPU.cpp
 Engine/DeviceSpecific/CPU/ITMViewBuilder_CPU.cpp
 Engine/DeviceSpecific/CPU/ITMVisualisationEngine_CPU.cpp
+Engine/DeviceSpecific/CPU/ITMMeshingEngine_CPU.cpp
 )
 
 set(ITMLIB_ENGINE_DEVICESPECIFIC_CPU_HEADERS
@@ -76,6 +80,7 @@ Engine/DeviceSpecific/CPU/ITMVoxelBlockOpEngine_CPU.h
 Engine/DeviceSpecific/CPU/ITMSwappingEngine_CPU.h
 Engine/DeviceSpecific/CPU/ITMViewBuilder_CPU.h
 Engine/DeviceSpecific/CPU/ITMVisualisationEngine_CPU.h
+Engine/DeviceSpecific/CPU/ITMMeshingEngine_CPU.h
 )
 
 ##
@@ -89,6 +94,7 @@ Engine/DeviceSpecific/CUDA/ITMVoxelBlockOpEngine_CUDA.cu
 Engine/DeviceSpecific/CUDA/ITMSwappingEngine_CUDA.cu
 Engine/DeviceSpecific/CUDA/ITMViewBuilder_CUDA.cu
 Engine/DeviceSpecific/CUDA/ITMVisualisationEngine_CUDA.cu
+Engine/DeviceSpecific/CUDA/ITMMeshingEngine_CUDA.cu
 )
 
 set(ITMLIB_ENGINE_DEVICESPECIFIC_CUDA_HEADERS
@@ -102,6 +108,7 @@ Engine/DeviceSpecific/CUDA/ITMVoxelBlockOpEngine_CUDA.h
 Engine/DeviceSpecific/CUDA/ITMSwappingEngine_CUDA.h
 Engine/DeviceSpecific/CUDA/ITMViewBuilder_CUDA.h
 Engine/DeviceSpecific/CUDA/ITMVisualisationEngine_CUDA.h
+Engine/DeviceSpecific/CUDA/ITMMeshingEngine_CUDA.h
 )
 
 ##
@@ -133,6 +140,7 @@ Objects/ITMRenderState_VH.h
 Objects/ITMVoxelBlockHash.h
 Objects/ITMVoxelBlockHHash.h
 Objects/ITMIMUMeasurement.h
+Objects/ITMMesh.h
 )
 
 ##
