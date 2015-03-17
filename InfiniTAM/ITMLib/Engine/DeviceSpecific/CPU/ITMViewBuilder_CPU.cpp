@@ -11,7 +11,7 @@ using namespace ORUtils;
 ITMViewBuilder_CPU::ITMViewBuilder_CPU(const ITMRGBDCalib *calib):ITMViewBuilder(calib) { }
 ITMViewBuilder_CPU::~ITMViewBuilder_CPU(void) { }
 
-void ITMViewBuilder_CPU::UpdateView(ITMView **view_ptr, ITMUChar4Image *rgbImage, ITMShortImage *rawDepthImage)
+void ITMViewBuilder_CPU::UpdateView(ITMView **view_ptr, ITMUChar4Image *rgbImage, ITMShortImage *rawDepthImage, bool useBilateralFilter)
 { 
 	if (*view_ptr == NULL)
 	{
@@ -38,32 +38,45 @@ void ITMViewBuilder_CPU::UpdateView(ITMView **view_ptr, ITMUChar4Image *rgbImage
 	default:
 		break;
 	}
+
+	if (useBilateralFilter)
+	{
+		//5 steps of bilateral filtering
+		this->DepthFiltering(this->floatImage, view->depth);
+		this->DepthFiltering(view->depth, this->floatImage);
+		this->DepthFiltering(this->floatImage, view->depth);
+		this->DepthFiltering(view->depth, this->floatImage);
+		this->DepthFiltering(this->floatImage, view->depth);
+		view->depth->SetFrom(this->floatImage, MemoryBlock<float>::CPU_TO_CPU);
+	}
 }
 
 void ITMViewBuilder_CPU::UpdateView(ITMView **view_ptr, ITMUChar4Image *rgbImage, ITMFloatImage *depthImage)
 {
 	if (*view_ptr == NULL)
-	{
 		*view_ptr = new ITMView(calib, rgbImage->noDims, depthImage->noDims, false);
-	}
+
 	ITMView *view = *view_ptr;
 
 	view->rgb->UpdateDeviceFromHost();
 	view->depth->UpdateDeviceFromHost();
 }
 
-void ITMViewBuilder_CPU::UpdateView(ITMView **view_ptr, ITMUChar4Image *rgbImage, ITMShortImage *depthImage, ITMIMUMeasurement *imuMeasurement)
+void ITMViewBuilder_CPU::UpdateView(ITMView **view_ptr, ITMUChar4Image *rgbImage, ITMShortImage *depthImage, bool useBilateralFilter, ITMIMUMeasurement *imuMeasurement)
 {
 	if (*view_ptr == NULL)
 	{
 		*view_ptr = new ITMViewIMU(calib, rgbImage->noDims, depthImage->noDims, false);
 		if (this->shortImage != NULL) delete this->shortImage;
 		this->shortImage = new ITMShortImage(depthImage->noDims, true, false);
+		if (this->floatImage != NULL) delete this->floatImage;
+		this->floatImage = new ITMFloatImage(depthImage->noDims, true, false);
 	}
+
 	ITMViewIMU* imuView = (ITMViewIMU*)(*view_ptr);
 	imuView->imu->SetFrom(imuMeasurement);
 
-	this->UpdateView(view_ptr, rgbImage, depthImage);
+	this->UpdateView(view_ptr, rgbImage, depthImage, useBilateralFilter);
 }
 
 void ITMViewBuilder_CPU::ConvertDisparityToDepth(ITMFloatImage *depth_out, const ITMShortImage *depth_in, const ITMIntrinsics *depthIntrinsics,
@@ -94,25 +107,15 @@ void ITMViewBuilder_CPU::ConvertDepthMMToFloat(ITMFloatImage *depth_out, const I
 		convertDepthMMToFloat(d_out, x, y, d_in, imgSize);
 }
 
-void ITMLib::Engine::ITMViewBuilder_CPU::SmoothRawDepth(ITMFloatImage *image_out, const ITMFloatImage *image_in, Vector3f zdirec)
+void ITMViewBuilder_CPU::DepthFiltering(ITMFloatImage *image_out, const ITMFloatImage *image_in)
 {
 	Vector2i imgSize = image_in->noDims;
+
+	image_out->Clear();
 
 	float *imout = image_out->GetData(MEMORYDEVICE_CPU);
 	const float *imin = image_in->GetData(MEMORYDEVICE_CPU);
 
-	memset(imout, 0, imgSize.x * imgSize.y * sizeof(float));
-
-	for (int y = 1; y < imgSize.y - 1; y++) for (int x = 1; x < imgSize.x - 1; x++)
-		smoothingRawDepth(imout, imin, x, y, imgSize,zdirec);
-}
-
-void ITMLib::Engine::ITMViewBuilder_CPU::SmoothRawDepth(ITMView **view_ptr, Matrix4f pose)
-{
-	if (*view_ptr == NULL) return;
-	ITMView *view = *view_ptr;
-	Vector3f zdirc = -Vector3f(pose.getColumn(2));
-
-	this->floatImage->SetFrom(view->depth, MemoryBlock<float>::CPU_TO_CPU);
-	SmoothRawDepth(view->depth, this->floatImage, zdirc);
+	for (int y = 2; y < imgSize.y - 2; y++) for (int x = 2; x < imgSize.x - 2; x++)
+		filterDepth(imout, imin, x, y, imgSize);
 }

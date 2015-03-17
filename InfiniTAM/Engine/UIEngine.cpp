@@ -207,6 +207,11 @@ void UIEngine::glutKeyUpFunction(unsigned char key, int x, int y)
 		if (uiEngine->intergrationActive) uiEngine->mainEngine->turnOnIntegration();
 		else uiEngine->mainEngine->turnOffIntegration();
 		break;
+	case 'w':
+		printf("saving mesh to disk ...");
+		uiEngine->SaveSceneToMesh("mesh.stl");
+		printf(" done\n");
+		break;
 	default:
 		break;
 	}
@@ -416,6 +421,11 @@ void UIEngine::SaveScreenshot(const char *filename) const
 	ITMUChar4Image screenshot(getWindowSize(), true, false);
 	GetScreenshot(&screenshot);
 	SaveImageToFile(&screenshot, filename, true);
+}
+
+void UIEngine::SaveSceneToMesh(const char *filename) const
+{
+	mainEngine->SaveSceneToMesh(filename);
 }
 
 void UIEngine::GetScreenshot(ITMUChar4Image *dest) const

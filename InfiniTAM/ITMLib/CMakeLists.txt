@@ -37,6 +37,7 @@ Engine/ITMTrackerFactory.h
 Engine/ITMTrackingController.h
 Engine/ITMViewBuilder.h
 Engine/ITMVisualisationEngine.h
+Engine/ITMMeshingEngine.h
 )
 
 ##
@@ -52,6 +53,7 @@ Engine/DeviceAgnostic/ITMSwappingEngine.h
 Engine/DeviceAgnostic/ITMViewBuilder.h
 Engine/DeviceAgnostic/ITMVisualisationEngine.h
 Engine/DeviceAgnostic/ITMPixelUtils.h
+Engine/DeviceAgnostic/ITMMeshingEngine.h
 )
 
 ##
@@ -64,6 +66,7 @@ Engine/DeviceSpecific/CPU/ITMSceneReconstructionEngine_CPU.cpp
 Engine/DeviceSpecific/CPU/ITMSwappingEngine_CPU.cpp
 Engine/DeviceSpecific/CPU/ITMViewBuilder_CPU.cpp
 Engine/DeviceSpecific/CPU/ITMVisualisationEngine_CPU.cpp
+Engine/DeviceSpecific/CPU/ITMMeshingEngine_CPU.cpp
 )
 
 set(ITMLIB_ENGINE_DEVICESPECIFIC_CPU_HEADERS
@@ -75,6 +78,7 @@ Engine/DeviceSpecific/CPU/ITMSceneReconstructionEngine_CPU.h
 Engine/DeviceSpecific/CPU/ITMSwappingEngine_CPU.h
 Engine/DeviceSpecific/CPU/ITMViewBuilder_CPU.h
 Engine/DeviceSpecific/CPU/ITMVisualisationEngine_CPU.h
+Engine/DeviceSpecific/CPU/ITMMeshingEngine_CPU.h
 )
 
 ##
@@ -87,6 +91,7 @@ Engine/DeviceSpecific/CUDA/ITMSceneReconstructionEngine_CUDA.cu
 Engine/DeviceSpecific/CUDA/ITMSwappingEngine_CUDA.cu
 Engine/DeviceSpecific/CUDA/ITMViewBuilder_CUDA.cu
 Engine/DeviceSpecific/CUDA/ITMVisualisationEngine_CUDA.cu
+Engine/DeviceSpecific/CUDA/ITMMeshingEngine_CUDA.cu
 )
 
 set(ITMLIB_ENGINE_DEVICESPECIFIC_CUDA_HEADERS
@@ -99,6 +104,7 @@ Engine/DeviceSpecific/CUDA/ITMSceneReconstructionEngine_CUDA.h
 Engine/DeviceSpecific/CUDA/ITMSwappingEngine_CUDA.h
 Engine/DeviceSpecific/CUDA/ITMViewBuilder_CUDA.h
 Engine/DeviceSpecific/CUDA/ITMVisualisationEngine_CUDA.h
+Engine/DeviceSpecific/CUDA/ITMMeshingEngine_CUDA.h
 )
 
 ##
@@ -129,6 +135,7 @@ Objects/ITMRenderState.h
 Objects/ITMRenderState_VH.h
 Objects/ITMVoxelBlockHash.h
 Objects/ITMIMUMeasurement.h
+Objects/ITMMesh.h
 )
 
 ##
