@@ -44,6 +44,11 @@ namespace ITMLib
 				for (int i = 0; i < noTrackers; i++) trackers[i]->TrackCamera(trackingState, view);
 			}
 
+			void UpdateInitialPose(ITMTrackingState *trackingState)
+			{
+				for (int i = 0; i < noTrackers; i++) trackers[i]->UpdateInitialPose(trackingState);
+			}
+
 			// Suppress the default copy constructor and assignment operator
 			ITMCompositeTracker(const ITMCompositeTracker&);
 			ITMCompositeTracker& operator=(const ITMCompositeTracker&);
