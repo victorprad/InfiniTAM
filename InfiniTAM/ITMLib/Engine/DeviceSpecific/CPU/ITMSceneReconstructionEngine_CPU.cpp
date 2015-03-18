@@ -270,7 +270,7 @@ void ITMSceneReconstructionEngine_CPU<TVoxel, ITMVoxelBlockHash>::AllocateSceneF
 template<class TVoxel>
 ITMSceneReconstructionEngine_CPU<TVoxel,ITMVoxelBlockHHash>::ITMSceneReconstructionEngine_CPU(void) 
 {
-	int noTotalEntries = ITMVoxelBlockHHash::noVoxelBlocks;
+	int noTotalEntries = ITMVoxelBlockHHash::noTotalEntries;
 	entriesAllocType = (uchar*)malloc(noTotalEntries);
 	blockCoords = (Vector4s*)malloc(noTotalEntries * sizeof(Vector4s));
 }
@@ -323,7 +323,7 @@ void ITMSceneReconstructionEngine_CPU<TVoxel,ITMVoxelBlockHHash>::IntegrateIntoS
 
 		if (currentHashEntry.ptr < 0) continue;
 
-		float localVoxelSize = smallestVoxelSize * (1 << ITMHHashTable::GetLevelForEntry(entryId));
+		float localVoxelSize = smallestVoxelSize * (1 << ITMVoxelBlockHHash::GetLevelForEntry(entryId));
 		globalPos = currentHashEntry.pos.toInt() * SDF_BLOCK_SIZE;
 
 		TVoxel *localVoxelBlock = &(localVBA[currentHashEntry.ptr * (SDF_BLOCK_SIZE3)]);
@@ -373,7 +373,7 @@ void ITMSceneReconstructionEngine_CPU<TVoxel,ITMVoxelBlockHHash>::AllocateSceneF
 	ITMHashCacheState *cacheStates = scene->useSwapping ? scene->globalCache->GetCacheStates(false) : 0;
 	int *visibleEntryIDs = renderState_vh->GetVisibleEntryIDs();
 	uchar *entriesVisibleType = renderState_vh->GetEntriesVisibleType();
-	int noTotalEntries = scene->index.noVoxelBlocks;
+	int noTotalEntries = scene->index.noTotalEntries;
 
 	bool useSwapping = scene->useSwapping;
 	if (onlyUpdateVisibleList) useSwapping = false;
@@ -434,7 +434,7 @@ void ITMSceneReconstructionEngine_CPU<TVoxel,ITMVoxelBlockHHash>::AllocateSceneF
 			break;
 
 		case 2: //needs allocation in the excess list
-			int level = ITMHHashTable::GetLevelForEntry(targetIdx);
+			int level = ITMVoxelBlockHHash::GetLevelForEntry(targetIdx);
 
 			vbaIdx = lastFreeVoxelBlockId; lastFreeVoxelBlockId--;
 			exlIdx = (lastFreeExcessListIds[level])--;
@@ -451,9 +451,9 @@ void ITMSceneReconstructionEngine_CPU<TVoxel,ITMVoxelBlockHHash>::AllocateSceneF
 
 				hashTable[targetIdx].offset = exlOffset + 1; //connect to child
 
-				hashTable[level * ITMHHashTable::noTotalEntriesPerLevel + SDF_BUCKET_NUM + exlOffset] = hashEntry; //add child to the excess list
+				hashTable[level * ITMVoxelBlockHHash::noTotalEntriesPerLevel + SDF_BUCKET_NUM + exlOffset] = hashEntry; //add child to the excess list
 
-				entriesVisibleType[level * ITMHHashTable::noTotalEntriesPerLevel + SDF_BUCKET_NUM + exlOffset] = 1; //make child visible
+				entriesVisibleType[level * ITMVoxelBlockHHash::noTotalEntriesPerLevel + SDF_BUCKET_NUM + exlOffset] = 1; //make child visible
 			}
 
 			break;
@@ -463,7 +463,7 @@ void ITMSceneReconstructionEngine_CPU<TVoxel,ITMVoxelBlockHHash>::AllocateSceneF
 	//build visible list
 	for (int targetIdx = 0; targetIdx < noTotalEntries; targetIdx++)
 	{
-		int level = ITMHHashTable::GetLevelForEntry(targetIdx);
+		int level = ITMVoxelBlockHHash::GetLevelForEntry(targetIdx);
 		float voxelSize = smallestVoxelSize * (1 << level);
 		unsigned char hashVisibleType = entriesVisibleType[targetIdx];
 		const ITMHHashEntry &hashEntry = hashTable[targetIdx];

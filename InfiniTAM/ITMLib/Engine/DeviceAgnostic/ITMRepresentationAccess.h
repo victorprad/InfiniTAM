@@ -373,7 +373,7 @@ _CPU_AND_GPU_CODE_ inline TVoxel readVoxel(DEVICEPTR(const TVoxel) *voxelData, D
 	{
 		bool shouldContinueDown = false;
 		int hierBlockSize = (1 << level);
-		const ITMHHashEntry *hashTable = voxelIndex + level * ITMHHashTable::noTotalEntriesPerLevel;
+		const ITMHHashEntry *hashTable = voxelIndex + level * ITMVoxelBlockHHash::noTotalEntriesPerLevel;
 
 		int linearIdx = TRounding::pointPosParse(point, blockPos, hierBlockSize);
 		// start at ordered list of buckets

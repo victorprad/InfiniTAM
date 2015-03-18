@@ -240,15 +240,15 @@ ITMVisualisationEngine_CUDA<TVoxel,ITMVoxelBlockHHash>::~ITMVisualisationEngine_
 template<class TVoxel>
 ITMRenderState* ITMVisualisationEngine_CUDA<TVoxel, ITMVoxelBlockHHash>::CreateRenderState(const Vector2i & imgSize) const
 {
-	return new ITMRenderState_VH(ITMHHashTable::noTotalEntries, imgSize, this->scene->sceneParams->viewFrustum_min, this->scene->sceneParams->viewFrustum_max, MEMORYDEVICE_CUDA);
+	return new ITMRenderState_VH(ITMVoxelBlockHHash::noTotalEntries, imgSize, this->scene->sceneParams->viewFrustum_min, this->scene->sceneParams->viewFrustum_max, MEMORYDEVICE_CUDA);
 }
 
 template<class TVoxel>
 void ITMVisualisationEngine_CUDA<TVoxel,ITMVoxelBlockHHash>::FindVisibleBlocks(const ITMPose *pose, const ITMIntrinsics *intrinsics, ITMRenderState *renderState) const
 {
 	const ITMHashEntry *hashTable = this->scene->index.GetEntries();
-	int noLevels = ITMHHashTable::noLevels;
-	int noTotalEntriesPerLevel = ITMHHashTable::noTotalEntriesPerLevel;
+	int noLevels = ITMVoxelBlockHHash::noLevels;
+	int noTotalEntriesPerLevel = ITMVoxelBlockHHash::noTotalEntriesPerLevel;
 	float smallestVoxelSize = this->scene->sceneParams->voxelSize;
 	Vector2i imgSize = renderState->renderingRangeImage->noDims;
 
@@ -665,7 +665,7 @@ __global__ void projectAndSplitBlocksHHash_device(const ITMHHashEntry *hashEntri
 	int in_offset = threadIdx.x + blockDim.x * blockIdx.x;
 
 	int entryId = visibleEntryIDs[in_offset];
-	int level = ITMHHashTable::GetLevelForEntry(entryId);
+	int level = ITMVoxelBlockHHash::GetLevelForEntry(entryId);
 	float localVoxelSize = smallestVoxelSize * (1 << level);
 	const ITMHHashEntry & blockData(hashEntries[entryId]);
 

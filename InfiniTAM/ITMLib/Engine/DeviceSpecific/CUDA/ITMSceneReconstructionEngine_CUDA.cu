@@ -262,11 +262,11 @@ void ITMSceneReconstructionEngine_CUDA<TVoxel, ITMPlainVoxelArray>::IntegrateInt
 template<class TVoxel>
 ITMSceneReconstructionEngine_CUDA<TVoxel, ITMVoxelBlockHHash>::ITMSceneReconstructionEngine_CUDA(void)
 {
-	int noLevels = ITMHHashTable::noLevels;
+	int noLevels = ITMVoxelBlockHHash::noLevels;
 	ITMSafeCall(cudaMalloc((void**)&allocationTempData_device, sizeof(AllocationTempData)));
 	ITMSafeCall(cudaMalloc((void**)&noAllocatedExcessEntries_device, noLevels * sizeof(int)));
 
-	int noTotalEntries = ITMVoxelBlockHHash::noVoxelBlocks;
+	int noTotalEntries = ITMVoxelBlockHHash::noTotalEntries;
 	ITMSafeCall(cudaMalloc((void**)&entriesAllocType_device, noTotalEntries));
 	ITMSafeCall(cudaMalloc((void**)&blockCoords_device, noTotalEntries * sizeof(Vector4s)));
 }
@@ -307,14 +307,14 @@ void ITMSceneReconstructionEngine_CUDA<TVoxel, ITMVoxelBlockHHash>::AllocateScen
 	ITMHHashEntry *hashTable = scene->index.GetEntries();
 	ITMHashCacheState *cacheStates = scene->useSwapping ? scene->globalCache->GetCacheStates(true) : 0;
 
-	int noTotalEntries = scene->index.noVoxelBlocks;
+	int noTotalEntries = scene->index.noTotalEntries;
 	int *lastFreeExcessListIds = scene->index.GetLastFreeExcessListIds();
 
 	int *visibleEntryIDs = renderState_vh->GetVisibleEntryIDs();
 	uchar *entriesVisibleType = renderState_vh->GetEntriesVisibleType();
 
-	int noLevels = ITMHHashTable::noLevels;
-	int noTotalEntriesPerLevel = ITMHHashTable::noTotalEntriesPerLevel;
+	int noLevels = ITMVoxelBlockHHash::noLevels;
+	int noTotalEntriesPerLevel = ITMVoxelBlockHHash::noTotalEntriesPerLevel;
 
 	dim3 cudaBlockSizeHV(16, 16);
 	dim3 gridSizeHV((int)ceil((float)depthImgSize.x / (float)cudaBlockSizeHV.x), (int)ceil((float)depthImgSize.y / (float)cudaBlockSizeHV.y));
@@ -492,7 +492,7 @@ __global__ void integrateIntoSceneH_device(TVoxel *localVBA, const ITMHashEntry 
 
 	if (currentHashEntry.ptr < 0) return;
 
-	float localVoxelSize = smallestVoxelSize * (1 << ITMHHashTable::GetLevelForEntry(entryId));
+	float localVoxelSize = smallestVoxelSize * (1 << ITMVoxelBlockHHash::GetLevelForEntry(entryId));
 	globalPos.x = currentHashEntry.pos.x;
 	globalPos.y = currentHashEntry.pos.y;
 	globalPos.z = currentHashEntry.pos.z;
@@ -638,7 +638,7 @@ __global__ void allocateVoxelBlocksListHHash_device(int *voxelAllocationList, in
 		break;
 
 	case 2: //needs allocation in the excess list
-		int level = ITMHHashTable::GetLevelForEntry(targetIdx);
+		int level = ITMVoxelBlockHHash::GetLevelForEntry(targetIdx);
 
 		vbaIdx = atomicSub(&allocData->noAllocatedVoxelEntries, 1);
 		exlIdx = atomicSub(&noAllocatedExcessEntries[level], 1);
@@ -655,9 +655,9 @@ __global__ void allocateVoxelBlocksListHHash_device(int *voxelAllocationList, in
 
 			hashTable[targetIdx].offset = exlOffset + 1; //connect to child
 
-			hashTable[level * ITMHHashTable::noTotalEntriesPerLevel + SDF_BUCKET_NUM + exlOffset] = hashEntry; //add child to the excess list
+			hashTable[level * ITMVoxelBlockHHash::noTotalEntriesPerLevel + SDF_BUCKET_NUM + exlOffset] = hashEntry; //add child to the excess list
 
-			entriesVisibleType[level * ITMHHashTable::noTotalEntriesPerLevel + SDF_BUCKET_NUM + exlOffset] = 1; //make child visible
+			entriesVisibleType[level * ITMVoxelBlockHHash::noTotalEntriesPerLevel + SDF_BUCKET_NUM + exlOffset] = 1; //make child visible
 		}
 
 		break;

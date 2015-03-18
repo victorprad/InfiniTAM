@@ -10,17 +10,17 @@ using namespace ITMLib::Engine;
 template<class TVoxel>
 ITMVoxelBlockOpEngine_CUDA<TVoxel,ITMVoxelBlockHHash>::ITMVoxelBlockOpEngine_CUDA(void)
 {
-	ITMSafeCall(cudaMalloc((void**)&complexities, sizeof(float) * ITMHHashTable::noTotalEntries));
+	ITMSafeCall(cudaMalloc((void**)&complexities, sizeof(float) * ITMVoxelBlockHHash::noTotalEntries));
 	ITMSafeCall(cudaMalloc((void**)&blocklist, sizeof(int) * 8 * SDF_LOCAL_BLOCK_NUM));
 	ITMSafeCall(cudaMalloc((void**)&blocklist_size_device, sizeof(int)));
 	ITMSafeCall(cudaMalloc((void**)&noAllocatedVoxelEntries_device, sizeof(int)));
-	ITMSafeCall(cudaMalloc((void**)&noAllocatedExcessEntries_device, sizeof(int)*ITMHHashTable::noLevels));
+	ITMSafeCall(cudaMalloc((void**)&noAllocatedExcessEntries_device, sizeof(int)*ITMVoxelBlockHHash::noLevels));
 
 	{
 		dim3 blockSize(256);
 		dim3 gridSize((int)ceil((float)SDF_LOCAL_BLOCK_NUM / (float)blockSize.x));
 		float init = -1.0f;
-		memsetKernel_device<float> << <gridSize, blockSize >> >(complexities, init, ITMHHashTable::noTotalEntries);
+		memsetKernel_device<float> << <gridSize, blockSize >> >(complexities, init, ITMVoxelBlockHHash::noTotalEntries);
 	}
 }
 
@@ -136,7 +136,7 @@ __global__ void createSplits_device(const int *liveList, int liveListSize, float
 	if (listIdx >= liveListSize) return;
 
 	int htIdx = liveList[listIdx];
-	int parentLevel = ITMHHashTable::GetLevelForEntry(htIdx);
+	int parentLevel = ITMVoxelBlockHHash::GetLevelForEntry(htIdx);
 
 	// finest level doesn't need splitting...
 	if (parentLevel == 0) return;
@@ -147,7 +147,7 @@ __global__ void createSplits_device(const int *liveList, int liveListSize, float
 
 	int childLevel = parentLevel-1;
 
-	ITMHHashEntry *childHashTable = &(allHashEntries[ITMHHashTable::noTotalEntriesPerLevel * childLevel]);
+	ITMHHashEntry *childHashTable = &(allHashEntries[ITMVoxelBlockHHash::noTotalEntriesPerLevel * childLevel]);
 	int *childExcessAllocationList = excessAllocationList + (childLevel * SDF_EXCESS_LIST_SIZE);
 
 	createSplitOperations(allHashEntries, childHashTable, childExcessAllocationList, lastFreeExcessListIds + childLevel, voxelAllocationList, lastFreeVoxelBlockId, blocklist, lastEntryBlockList, htIdx, parentLevel);
@@ -226,10 +226,10 @@ void ITMVoxelBlockOpEngine_CUDA<TVoxel,ITMVoxelBlockHHash>::SplitVoxelBlocks(ITM
 
 	if (liveListSize > 0) {
 		ITMSafeCall(cudaMemcpy(noAllocatedVoxelEntries_device, &lastFreeVoxelBlockId, sizeof(int), cudaMemcpyHostToDevice));
-		ITMSafeCall(cudaMemcpy(noAllocatedExcessEntries_device, lastFreeExcessListIds, ITMHHashTable::noLevels * sizeof(int), cudaMemcpyHostToDevice));
+		ITMSafeCall(cudaMemcpy(noAllocatedExcessEntries_device, lastFreeExcessListIds, ITMVoxelBlockHHash::noLevels * sizeof(int), cudaMemcpyHostToDevice));
 		createSplits_device << <gridSize, blockSize >> >(liveList, liveListSize, complexities, allHashEntries, excessAllocationList, noAllocatedExcessEntries_device, voxelAllocationList, noAllocatedVoxelEntries_device, blocklist, blocklist_size_device);
 		ITMSafeCall(cudaMemcpy(&lastFreeVoxelBlockId, noAllocatedVoxelEntries_device, sizeof(int), cudaMemcpyDeviceToHost));
-		ITMSafeCall(cudaMemcpy(lastFreeExcessListIds, noAllocatedExcessEntries_device, ITMHHashTable::noLevels * sizeof(int), cudaMemcpyDeviceToHost));
+		ITMSafeCall(cudaMemcpy(lastFreeExcessListIds, noAllocatedExcessEntries_device, ITMVoxelBlockHHash::noLevels * sizeof(int), cudaMemcpyDeviceToHost));
 	}
 
 	int blockListSize;
@@ -251,9 +251,9 @@ __global__ void createMerges_device(int startOffset, int maxOffset, float *compl
 	// only merge, if the block was previously split
 	if (blockId != -2) return;
 
-	int parentLevel = ITMHHashTable::GetLevelForEntry(htIdx);
+	int parentLevel = ITMVoxelBlockHHash::GetLevelForEntry(htIdx);
 	int childLevel = parentLevel-1;
-	ITMHashEntry *childHashTable = &(allHashEntries[ITMHHashTable::noTotalEntriesPerLevel * childLevel]);
+	ITMHashEntry *childHashTable = &(allHashEntries[ITMVoxelBlockHHash::noTotalEntriesPerLevel * childLevel]);
 
 	createMergeOperations(allHashEntries, childHashTable, excessAllocationList + childLevel * SDF_EXCESS_LIST_SIZE, lastFreeExcessListIds + childLevel, voxelAllocationList, lastFreeVoxelBlockId, complexities, blocklist, lastEntryBlockList, htIdx);
 }
@@ -302,14 +302,14 @@ void ITMVoxelBlockOpEngine_CUDA<TVoxel,ITMVoxelBlockHHash>::MergeVoxelBlocks(ITM
 	ITMSafeCall(cudaMemset(blocklist_size_device, 0, sizeof(int)));
 
 	dim3 blockSize(256);
-	dim3 gridSize(ceil((float)(ITMHHashTable::noTotalEntries - ITMHHashTable::noTotalEntriesPerLevel) / (float)blockSize.x));
+	dim3 gridSize(ceil((float)(ITMVoxelBlockHHash::noTotalEntries - ITMVoxelBlockHHash::noTotalEntriesPerLevel) / (float)blockSize.x));
 
 
 	ITMSafeCall(cudaMemcpy(noAllocatedVoxelEntries_device, &lastFreeVoxelBlockId, sizeof(int), cudaMemcpyHostToDevice));
-	ITMSafeCall(cudaMemcpy(noAllocatedExcessEntries_device, lastFreeExcessListIds, ITMHHashTable::noLevels * sizeof(int), cudaMemcpyHostToDevice));
-	createMerges_device << <gridSize, blockSize >> >(ITMHHashTable::noTotalEntriesPerLevel, ITMHHashTable::noTotalEntries, complexities, allHashEntries, excessAllocationList, noAllocatedExcessEntries_device, voxelAllocationList, noAllocatedVoxelEntries_device, blocklist, blocklist_size_device);
+	ITMSafeCall(cudaMemcpy(noAllocatedExcessEntries_device, lastFreeExcessListIds, ITMVoxelBlockHHash::noLevels * sizeof(int), cudaMemcpyHostToDevice));
+	createMerges_device << <gridSize, blockSize >> >(ITMVoxelBlockHHash::noTotalEntriesPerLevel, ITMVoxelBlockHHash::noTotalEntries, complexities, allHashEntries, excessAllocationList, noAllocatedExcessEntries_device, voxelAllocationList, noAllocatedVoxelEntries_device, blocklist, blocklist_size_device);
 	ITMSafeCall(cudaMemcpy(&lastFreeVoxelBlockId, noAllocatedVoxelEntries_device, sizeof(int), cudaMemcpyDeviceToHost));
-	ITMSafeCall(cudaMemcpy(lastFreeExcessListIds, noAllocatedExcessEntries_device, ITMHHashTable::noLevels * sizeof(int), cudaMemcpyDeviceToHost));
+	ITMSafeCall(cudaMemcpy(lastFreeExcessListIds, noAllocatedExcessEntries_device, ITMVoxelBlockHHash::noLevels * sizeof(int), cudaMemcpyDeviceToHost));
 
 	int blockListSize;
 	ITMSafeCall(cudaMemcpy(&blockListSize, blocklist_size_device, sizeof(int), cudaMemcpyDeviceToHost));

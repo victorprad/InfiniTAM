@@ -23,6 +23,16 @@ namespace ITMLib
 		};
 
 		template<class TVoxel>
+		class ITMMeshingEngine_CPU<TVoxel, ITMVoxelBlockHHash> : public ITMMeshingEngine < TVoxel, ITMVoxelBlockHHash >
+		{
+		public:
+			void MeshScene(ITMMesh *mesh, const ITMScene<TVoxel, ITMVoxelBlockHHash> *scene);
+
+			ITMMeshingEngine_CPU(void);
+			~ITMMeshingEngine_CPU(void);
+		};
+
+		template<class TVoxel>
 		class ITMMeshingEngine_CPU<TVoxel, ITMPlainVoxelArray> : public ITMMeshingEngine < TVoxel, ITMPlainVoxelArray >
 		{
 		public:

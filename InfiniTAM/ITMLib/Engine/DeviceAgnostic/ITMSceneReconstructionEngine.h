@@ -229,10 +229,10 @@ _CPU_AND_GPU_CODE_ inline void buildHHashAllocAndVisibleTypePP(DEVICEPTR(uchar) 
 	{
 		for (int level = SDF_HASH_NO_H_LEVELS-1; level >= 0; level--) {
 			int hierBlockSize = (1 << level);
-			ITMHHashEntry *hashTable = globalHashTable + level * ITMHHashTable::noTotalEntriesPerLevel;
-			uchar *entriesAllocType = globalEntriesAllocType + level * ITMHHashTable::noTotalEntriesPerLevel;
-			uchar *entriesVisibleType = globalEntriesVisibleType + level * ITMHHashTable::noTotalEntriesPerLevel;
-			Vector4s *blockCoords = globalBlockCoords + level * ITMHHashTable::noTotalEntriesPerLevel;
+			ITMHHashEntry *hashTable = globalHashTable + level * ITMVoxelBlockHHash::noTotalEntriesPerLevel;
+			uchar *entriesAllocType = globalEntriesAllocType + level * ITMVoxelBlockHHash::noTotalEntriesPerLevel;
+			uchar *entriesVisibleType = globalEntriesVisibleType + level * ITMVoxelBlockHHash::noTotalEntriesPerLevel;
+			Vector4s *blockCoords = globalBlockCoords + level * ITMVoxelBlockHHash::noTotalEntriesPerLevel;
 
 			blockPos = TO_SHORT_FLOOR3(point/hierBlockSize);
 

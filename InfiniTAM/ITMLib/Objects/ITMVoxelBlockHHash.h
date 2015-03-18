@@ -4,12 +4,14 @@
 
 #include "../Utils/ITMLibDefines.h"
 
-#include "ITMHHashTable.h"
-
 namespace ITMLib
 {
 	namespace Objects
 	{
+		/** Dummy wrapper type to make sure, type inference works. */
+		class ITMHHashEntry : public ITMHashEntry
+		{};
+
 		/** \brief
 		    This is the central class for the voxel block hash
 		    implementation. It contains all the data needed on the CPU
@@ -29,40 +31,60 @@ namespace ITMLib
 			};
 
 			/** Maximum number of total entries. */
-			static const CONSTANT(int) noVoxelBlocks = ITMHHashTable::noTotalEntries;
+			static const CONSTANT(int) noTotalEntriesPerLevel = SDF_BUCKET_NUM + SDF_EXCESS_LIST_SIZE;
+			static const CONSTANT(int) noLevels = SDF_HASH_NO_H_LEVELS;
+			static const CONSTANT(int) noTotalEntries = (SDF_BUCKET_NUM + SDF_EXCESS_LIST_SIZE) * SDF_HASH_NO_H_LEVELS;
 			static const CONSTANT(int) voxelBlockSize = SDF_BLOCK_SIZE * SDF_BLOCK_SIZE * SDF_BLOCK_SIZE;
+
+			_CPU_AND_GPU_CODE_ static int GetLevelForEntry(int entryId)
+			{
+				return (int)(entryId / noTotalEntriesPerLevel);
+			}
 
 			private:
 			int lastFreeExcessListId[SDF_HASH_NO_H_LEVELS];
 
-			ITMHHashTable *hashData;
+			ORUtils::MemoryBlock<ITMHHashEntry> *hashEntries;
+			ORUtils::MemoryBlock<int> *excessAllocationList;
+
 			MemoryDeviceType memoryType;
 
 			public:
-			int* GetLastFreeExcessListIds(void) { return lastFreeExcessListId; }
-			int GetLastFreeExcessListId(int htIndex) { return lastFreeExcessListId[htIndex]; }
-			void SetLastFreeExcessListIds(const int *_lastFreeExcessListIds) { for (int l = 0; l < ITMHHashTable::noLevels; ++l) this->lastFreeExcessListId[l] = _lastFreeExcessListIds[l]; }
-			void SetLastFreeExcessListId(int lastFreeExcessListId, int htIndex) { this->lastFreeExcessListId[htIndex] = lastFreeExcessListId; }
-
 			ITMVoxelBlockHHash(MemoryDeviceType memoryType)
 			{
 				this->memoryType = memoryType;
 
-				ITMHHashTable *hashData_host = new ITMHHashTable(MEMORYDEVICE_CPU);
-				hashData_host->ResetData();
+				ORUtils::MemoryBlock<ITMHHashEntry> *hashEntries_host = new ORUtils::MemoryBlock<ITMHHashEntry>(noTotalEntries, MEMORYDEVICE_CPU);
+				ORUtils::MemoryBlock<int> *excessAllocationList_host = new ORUtils::MemoryBlock<int>(SDF_EXCESS_LIST_SIZE * SDF_HASH_NO_H_LEVELS, MEMORYDEVICE_CPU);
+
+				{
+					ITMHHashEntry *data = hashEntries_host->GetData(MEMORYDEVICE_CPU);
+					memset(data, 0, noTotalEntries * sizeof(ITMHHashEntry));
+					for (int i = 0; i < noTotalEntries; i++) data[i].ptr = -3;
+
+					int *data_i = excessAllocationList_host->GetData(MEMORYDEVICE_CPU);
+					for (int listId = 0; listId < SDF_HASH_NO_H_LEVELS; listId++)
+					{
+						int startPoint = listId * SDF_EXCESS_LIST_SIZE;
+						for (int i = 0; i < SDF_EXCESS_LIST_SIZE; i++) data_i[startPoint + i] = i;
+					}
+				}
 
 				if (memoryType == MEMORYDEVICE_CUDA)
 				{
 #ifndef COMPILE_WITHOUT_CUDA
-					hashData = new ITMHHashTable(MEMORYDEVICE_CUDA);
-					hashData->entries->SetFrom(hashData_host->entries, ORUtils::MemoryBlock<ITMHHashEntry>::CPU_TO_CUDA);
-					hashData->excessAllocationList->SetFrom(hashData_host->excessAllocationList, ORUtils::MemoryBlock<int>::CPU_TO_CUDA);
+					hashEntries = new ORUtils::MemoryBlock<ITMHHashEntry>(noTotalEntries, memoryType);
+					excessAllocationList = new ORUtils::MemoryBlock<int>(SDF_EXCESS_LIST_SIZE * SDF_HASH_NO_H_LEVELS, memoryType);
+					hashEntries->SetFrom(hashEntries_host, ORUtils::MemoryBlock<ITMHHashEntry>::CPU_TO_CUDA);
+					excessAllocationList->SetFrom(excessAllocationList_host, ORUtils::MemoryBlock<int>::CPU_TO_CUDA);
 #endif
-					delete hashData_host;
+					delete hashEntries_host;
+					delete excessAllocationList_host;
 				}
 				else
 				{
-					hashData = hashData_host;
+					hashEntries = hashEntries_host;
+					excessAllocationList = excessAllocationList_host;
 				}
 
 				for (int i = 0; i < SDF_HASH_NO_H_LEVELS; i++) lastFreeExcessListId[i] = SDF_EXCESS_LIST_SIZE - 1;
@@ -70,24 +92,32 @@ namespace ITMLib
 
 			~ITMVoxelBlockHHash(void)	
 			{
-				delete hashData;
+				delete hashEntries;
+				delete excessAllocationList;
 			}
 
 			/** Get the list of actual entries in the hash table. */
-			const ITMHHashEntry *GetEntries(void) const { return hashData->entries->GetData(memoryType); }
-			ITMHHashEntry *GetEntries(void) { return hashData->entries->GetData(memoryType); }
+			const ITMHHashEntry *GetEntries(void) const { return hashEntries->GetData(memoryType); }
+			ITMHHashEntry *GetEntries(void) { return hashEntries->GetData(memoryType); }
+
+			const IndexData *getIndexData(void) const { return hashEntries->GetData(memoryType); }
+			IndexData *getIndexData(void) { return hashEntries->GetData(memoryType); }
+
 			/** Get the list that identifies which entries of the
 			    overflow list are allocated. This is used if too
 			    many hash collisions caused the buckets to overflow.
 			*/
-			const int *GetExcessAllocationList(void) const { return hashData->excessAllocationList->GetData(memoryType); }
-			int *GetExcessAllocationList(void) { return hashData->excessAllocationList->GetData(memoryType); }
+			const int *GetExcessAllocationList(void) const { return excessAllocationList->GetData(memoryType); }
+			int *GetExcessAllocationList(void) { return excessAllocationList->GetData(memoryType); }
+
+			int* GetLastFreeExcessListIds(void) { return lastFreeExcessListId; }
+			int GetLastFreeExcessListId(int htIndex) { return lastFreeExcessListId[htIndex]; }
+			void SetLastFreeExcessListIds(const int *_lastFreeExcessListIds) { for (int l = 0; l < noLevels; ++l) this->lastFreeExcessListId[l] = _lastFreeExcessListIds[l]; }
+			void SetLastFreeExcessListId(int lastFreeExcessListId, int htIndex) { this->lastFreeExcessListId[htIndex] = lastFreeExcessListId; }
 
 			/** Maximum number of total entries. */
 			int getNumAllocatedVoxelBlocks(void) { return SDF_LOCAL_BLOCK_NUM; }
 			int getVoxelBlockSize(void) { return voxelBlockSize; }
-
-			const IndexData* getIndexData(void) const { return hashData->entries->GetData(memoryType); }
 
 			// Suppress the default copy constructor and assignment operator
 			ITMVoxelBlockHHash(const ITMVoxelBlockHHash&);

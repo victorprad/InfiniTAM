@@ -60,6 +60,51 @@ void ITMMeshingEngine_CUDA<TVoxel, ITMVoxelBlockHash>::MeshScene(ITMMesh *mesh, 
 }
 
 template<class TVoxel>
+ITMMeshingEngine_CUDA<TVoxel,ITMVoxelBlockHHash>::ITMMeshingEngine_CUDA(void) 
+{
+	ITMSafeCall(cudaMalloc((void**)&visibleBlockGlobalPos_device, SDF_LOCAL_BLOCK_NUM * sizeof(Vector4s)));
+	ITMSafeCall(cudaMalloc((void**)&noTriangles_device, sizeof(unsigned int)));
+}
+
+template<class TVoxel>
+ITMMeshingEngine_CUDA<TVoxel,ITMVoxelBlockHHash>::~ITMMeshingEngine_CUDA(void) 
+{
+	ITMSafeCall(cudaFree(visibleBlockGlobalPos_device));
+	ITMSafeCall(cudaFree(noTriangles_device));
+}
+
+template<class TVoxel>
+void ITMMeshingEngine_CUDA<TVoxel, ITMVoxelBlockHHash>::MeshScene(ITMMesh *mesh, const ITMScene<TVoxel, ITMVoxelBlockHHash> *scene)
+{
+	ITMMesh::Triangle *triangles = mesh->triangles->GetData(MEMORYDEVICE_CUDA);
+	const TVoxel *localVBA = scene->localVBA.GetVoxelBlocks();
+	const ITMHHashEntry *hashTable = scene->index.GetEntries();
+
+	int noMaxTriangles = mesh->noMaxTriangles, noTotalEntries = scene->index.noTotalEntries;
+	float factor = scene->sceneParams->voxelSize / (float)SDF_BLOCK_SIZE;
+
+	ITMSafeCall(cudaMemset(noTriangles_device, 0, sizeof(unsigned int)));
+	ITMSafeCall(cudaMemset(visibleBlockGlobalPos_device, 0, sizeof(Vector4s) * SDF_LOCAL_BLOCK_NUM));
+
+	{ // identify used voxel blocks
+		dim3 cudaBlockSize(256); 
+		dim3 gridSize((int)ceil((float)noTotalEntries / (float)cudaBlockSize.x));
+
+		findAllocateBlocks << <gridSize, cudaBlockSize >> >(visibleBlockGlobalPos_device, hashTable, noTotalEntries);
+	}
+
+	{ // mesh used voxel blocks
+		dim3 cudaBlockSize(SDF_BLOCK_SIZE, SDF_BLOCK_SIZE, SDF_BLOCK_SIZE);
+		dim3 gridSize(SDF_LOCAL_BLOCK_NUM / 16, 16);
+
+		meshScene_device<TVoxel> << <gridSize, cudaBlockSize >> >(triangles, noTriangles_device, factor, noTotalEntries, noMaxTriangles,
+			visibleBlockGlobalPos_device, localVBA, hashTable);
+
+		ITMSafeCall(cudaMemcpy(&mesh->noTotalTriangles, noTriangles_device, sizeof(unsigned int), cudaMemcpyDeviceToHost));
+	}
+}
+
+template<class TVoxel>
 ITMMeshingEngine_CUDA<TVoxel,ITMPlainVoxelArray>::ITMMeshingEngine_CUDA(void) 
 {}
 

@@ -9,10 +9,10 @@ using namespace ITMLib::Engine;
 template<class TVoxel>
 ITMVoxelBlockOpEngine_CPU<TVoxel,ITMVoxelBlockHHash>::ITMVoxelBlockOpEngine_CPU(void) 
 {
-	complexities = (float*)malloc(sizeof(float) * ITMHHashTable::noTotalEntries);
+	complexities = (float*)malloc(sizeof(float) * ITMVoxelBlockHHash::noTotalEntries);
 	blocklist = (int*)malloc(sizeof(int) * 8 * SDF_LOCAL_BLOCK_NUM);
 
-	for (int i = 0; i < ITMHHashTable::noTotalEntries; i++) complexities[i] = -1;
+	for (int i = 0; i < ITMVoxelBlockHHash::noTotalEntries; i++) complexities[i] = -1;
 }
 
 template<class TVoxel>
@@ -120,7 +120,7 @@ void ITMVoxelBlockOpEngine_CPU<TVoxel,ITMVoxelBlockHHash>::SplitVoxelBlocks(ITMS
 	for (int listIdx = 0; listIdx < liveListSize; ++listIdx)
 	{
 		int htIdx = liveList[listIdx];
-		int parentLevel = ITMHHashTable::GetLevelForEntry(htIdx);
+		int parentLevel = ITMVoxelBlockHHash::GetLevelForEntry(htIdx);
 		// finest level doesn't need splitting...
 		if (parentLevel == 0) continue;
 		int blockId = allHashEntries[htIdx].ptr;
@@ -129,7 +129,7 @@ void ITMVoxelBlockOpEngine_CPU<TVoxel,ITMVoxelBlockHHash>::SplitVoxelBlocks(ITMS
 		complexities[blockId] = -1;
 
 		int childLevel = parentLevel-1;
-		ITMHHashEntry *childHashTable = &(allHashEntries[ITMHHashTable::noTotalEntriesPerLevel * childLevel]);
+		ITMHHashEntry *childHashTable = &(allHashEntries[ITMVoxelBlockHHash::noTotalEntriesPerLevel * childLevel]);
 		int *childExcessAllocationList = excessAllocationList + (childLevel * SDF_EXCESS_LIST_SIZE);
 
 		createSplitOperations(allHashEntries, childHashTable, childExcessAllocationList, lastFreeExcessListIds + childLevel, voxelAllocationList, lastFreeVoxelBlockId, blocklist, &lastEntryBlockList, htIdx, parentLevel);
@@ -185,15 +185,15 @@ void ITMVoxelBlockOpEngine_CPU<TVoxel,ITMVoxelBlockHHash>::MergeVoxelBlocks(ITMS
 
 	// unfortunately we have to go through the whole list, as the -2 blocks
 	// are not in the live list! :(
-	for (int htIdx = ITMHHashTable::noTotalEntriesPerLevel; htIdx < ITMHHashTable::noTotalEntries; htIdx++)
+	for (int htIdx = ITMVoxelBlockHHash::noTotalEntriesPerLevel; htIdx < ITMVoxelBlockHHash::noTotalEntries; htIdx++)
 	{
 		int blockId = allHashEntries[htIdx].ptr;
 		// only merge, if the block was previously split
 		if (blockId != -2) continue;
 
-		int parentLevel = ITMHHashTable::GetLevelForEntry(htIdx);
+		int parentLevel = ITMVoxelBlockHHash::GetLevelForEntry(htIdx);
 		int childLevel = parentLevel-1;
-		ITMHHashEntry *childHashTable = &(allHashEntries[ITMHHashTable::noTotalEntriesPerLevel * childLevel]);
+		ITMHHashEntry *childHashTable = &(allHashEntries[ITMVoxelBlockHHash::noTotalEntriesPerLevel * childLevel]);
 
 		createMergeOperations(allHashEntries, childHashTable, excessAllocationList + childLevel * SDF_EXCESS_LIST_SIZE, lastFreeExcessListIds + childLevel, voxelAllocationList, lastFreeVoxelBlockId, complexities, blocklist, &lastEntryBlockList, htIdx);
 	}

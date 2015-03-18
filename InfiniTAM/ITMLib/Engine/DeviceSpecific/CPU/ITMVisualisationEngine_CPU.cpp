@@ -154,14 +154,14 @@ void ITMVisualisationEngine_CPU<TVoxel,ITMVoxelBlockHash>::CreateExpectedDepths(
 template<class TVoxel>
 ITMRenderState* ITMVisualisationEngine_CPU<TVoxel,ITMVoxelBlockHHash>::CreateRenderState(const Vector2i & imgSize) const
 {
-	return new ITMRenderState_VH(ITMHHashTable::noTotalEntries, imgSize, this->scene->sceneParams->viewFrustum_min, this->scene->sceneParams->viewFrustum_max, MEMORYDEVICE_CPU);
+	return new ITMRenderState_VH(ITMVoxelBlockHHash::noTotalEntries, imgSize, this->scene->sceneParams->viewFrustum_min, this->scene->sceneParams->viewFrustum_max, MEMORYDEVICE_CPU);
 }
 
 template<class TVoxel>
 void ITMVisualisationEngine_CPU<TVoxel,ITMVoxelBlockHHash>::FindVisibleBlocks(const ITMPose *pose, const ITMIntrinsics *intrinsics, ITMRenderState *renderState) const
 {
 	const ITMHHashEntry *hashTable = this->scene->index.GetEntries();
-	int noTotalEntries = this->scene->index.noVoxelBlocks;
+	int noTotalEntries = this->scene->index.noTotalEntries;
 	float smallestVoxelSize = this->scene->sceneParams->voxelSize;
 	Vector2i imgSize = renderState->renderingRangeImage->noDims;
 
@@ -176,7 +176,7 @@ void ITMVisualisationEngine_CPU<TVoxel,ITMVoxelBlockHHash>::FindVisibleBlocks(co
 	//build visible list
 	for (int targetIdx = 0; targetIdx < noTotalEntries; targetIdx++)
 	{
-		int level = ITMHHashTable::GetLevelForEntry(targetIdx);
+		int level = ITMVoxelBlockHHash::GetLevelForEntry(targetIdx);
 		float voxelSize = smallestVoxelSize * (1 << level);
 		unsigned char hashVisibleType = 0;// = entriesVisibleType[targetIdx];
 		const ITMHHashEntry &hashEntry = hashTable[targetIdx];
@@ -225,7 +225,7 @@ void ITMVisualisationEngine_CPU<TVoxel,ITMVoxelBlockHHash>::CreateExpectedDepths
 	//go through list of visible 8x8x8 blocks
 	for (int blockNo = 0; blockNo < noVisibleEntries; ++blockNo) {
 		int blockId = visibleEntryIDs[blockNo];
-		int level = ITMHHashTable::GetLevelForEntry(blockId);
+		int level = ITMVoxelBlockHHash::GetLevelForEntry(blockId);
 		float voxelSize = smallestVoxelSize * (1 << level);
 		const ITMHashEntry & blockData(this->scene->index.GetEntries()[blockId]);
 
