@@ -29,10 +29,6 @@ namespace ITMLib
 		template<class TVoxel>
 		class ITMMeshingEngine_CUDA<TVoxel, ITMVoxelBlockHHash> : public ITMMeshingEngine < TVoxel, ITMVoxelBlockHHash >
 		{
-		private:
-			unsigned int  *noTriangles_device;
-			Vector4s *visibleBlockGlobalPos_device;
-
 		public:
 			void MeshScene(ITMMesh *mesh, const ITMScene<TVoxel, ITMVoxelBlockHHash> *scene);
 
