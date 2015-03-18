@@ -121,60 +121,25 @@ _CPU_AND_GPU_CODE_ inline bool castRay(DEVICEPTR(Vector4f) &pt_out, int x, int y
 
 	pt_result = pt_block_s;
 
-	enum { SEARCH_BLOCK_COARSE, SEARCH_SURFACE, BEHIND_SURFACE, WRONG_SIDE } state;
-
 	typename TIndex::IndexCache cache;
 
-	sdfValue = readFromSDF_float_uninterpolated(voxelData, voxelIndex, pt_result, hash_found, cache);
-	if (!hash_found) state = SEARCH_BLOCK_COARSE;
-	else if (sdfValue <= 0.0f) state = WRONG_SIDE;
-	else state = SEARCH_SURFACE;
+	while (totalLength < totalLengthMax) {
+		sdfValue = readFromSDF_float_uninterpolated(voxelData, voxelIndex, pt_result, hash_found, cache);
 
-	pt_found = false;
-	while (state != BEHIND_SURFACE)
-	{
-		if (!hash_found)
-		{
-			switch (state)
-			{
-			case SEARCH_BLOCK_COARSE: stepLength = SDF_BLOCK_SIZE; break;
-			default:
-			case WRONG_SIDE:
-			case SEARCH_SURFACE:
-				state = SEARCH_BLOCK_COARSE;
-				stepLength = SDF_BLOCK_SIZE;
-				break;
+		if (!hash_found) {
+			stepLength = SDF_BLOCK_SIZE;
+		} else {
+			if ((sdfValue <= 0.1f) && (sdfValue >= -0.5f)) {
+				sdfValue = readFromSDF_float_interpolated(voxelData, voxelIndex, pt_result, hash_found, cache);
 			}
-		}
-		else {
-			switch (state)
-			{
-			case SEARCH_BLOCK_COARSE:
-				state = SEARCH_SURFACE;
-				stepLength = 0.25f*stepScale;
-				break;
-			case WRONG_SIDE: stepLength = MIN(sdfValue * stepScale, -1.0f); break;
-			default:
-			case SEARCH_SURFACE: stepLength = MAX(sdfValue * stepScale, 1.0f);
-			}
+			if (sdfValue <= 0.0f) break;
+			stepLength = MAX(sdfValue * stepScale, 1.0f);
 		}
 
 		pt_result += stepLength * rayDirection; totalLength += stepLength;
-		if (totalLength > totalLengthMax) break;
-
-		if (state == SEARCH_SURFACE)
-		{
-			sdfValue = readFromSDF_float_uninterpolated(voxelData, voxelIndex, pt_result, hash_found, cache);
-			if ((sdfValue <= 0.1f) && (sdfValue >= -0.5f))
-				sdfValue = readFromSDF_float_interpolated(voxelData, voxelIndex, pt_result, hash_found, cache);
-		}
-		else sdfValue = readFromSDF_float_uninterpolated(voxelData, voxelIndex, pt_result, hash_found);
-
-		if (sdfValue <= 0.0f) if (state == SEARCH_BLOCK_COARSE) state = WRONG_SIDE; else state = BEHIND_SURFACE;
-		else if (state == WRONG_SIDE) state = SEARCH_SURFACE;
 	}
 
-	if (state == BEHIND_SURFACE)
+	if (sdfValue <= 0.0f)
 	{
 		stepLength = sdfValue * stepScale;
 		pt_result += stepLength * rayDirection;
@@ -184,7 +149,7 @@ _CPU_AND_GPU_CODE_ inline bool castRay(DEVICEPTR(Vector4f) &pt_out, int x, int y
 		pt_result += stepLength * rayDirection;
 
 		pt_found = true;
-	}
+	} else pt_found = false;
 
 	pt_out.x = pt_result.x; pt_out.y = pt_result.y; pt_out.z = pt_result.z;
 	if (pt_found) pt_out.w = 1.0f; else pt_out.w = 0.0f;
