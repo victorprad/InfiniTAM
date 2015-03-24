@@ -25,7 +25,6 @@
 #include "DeviceSpecific/Metal/ITMDepthTracker_Metal.h"
 #endif
 
-
 namespace ITMLib
 {
   namespace Engine
@@ -260,63 +259,23 @@ namespace ITMLib
         {
           case ITMLibSettings::DEVICE_CPU:
           {
-			  return new ITMRenTracker_CPU<TVoxel, TIndex>(
-				  trackedImageSize,
-				  settings->trackingRegime,
-				  2,
-				  lowLevelEngine, scene);
-
-    //        ITMCompositeTracker *compositeTracker = new ITMCompositeTracker(2);
-    //        compositeTracker->SetTracker(
-    //          new ITMDepthTracker_CPU(
-    //            trackedImageSize,
-    //            settings->trackingRegime,
-    //            settings->noHierarchyLevels,
-    //            settings->noICPRunTillLevel,
-    //            settings->depthTrackerICPThreshold,
-    //            settings->depthTrackerTerminationThreshold,
-    //            lowLevelEngine
-    //          ), 0
-    //        );
-    //        compositeTracker->SetTracker(
-				//new ITMRenTracker_CPU<TVoxel,TIndex>(
-				//trackedImageSize,
-				//settings->trackingRegime,
-				//2,
-				//lowLevelEngine, scene), 1);
-    //        return compositeTracker;
+            return new ITMRenTracker_CPU<TVoxel, TIndex>(
+              trackedImageSize,
+              settings->trackingRegime,
+              2,
+              lowLevelEngine, scene
+            );
           }
           case ITMLibSettings::DEVICE_CUDA:
           {
 #ifndef COMPILE_WITHOUT_CUDA
-			  return new ITMRenTracker_CUDA<TVoxel, TIndex>(
-				  trackedImageSize,
-				  settings->trackingRegime,
-				  2,
-				  lowLevelEngine,
-				  scene
-				  );
-
-    //        ITMCompositeTracker *compositeTracker = new ITMCompositeTracker(2);
-    //        compositeTracker->SetTracker(
-    //          new ITMDepthTracker_CUDA(
-    //            trackedImageSize,
-    //            settings->trackingRegime,
-    //            settings->noHierarchyLevels,
-    //            settings->noICPRunTillLevel,
-    //            settings->depthTrackerICPThreshold,
-    //            settings->depthTrackerTerminationThreshold,
-    //            lowLevelEngine
-    //          ), 0
-    //        );
-    //        compositeTracker->SetTracker(new ITMRenTracker_CUDA<TVoxel,TIndex>(
-				//trackedImageSize,
-				//settings->trackingRegime,
-				//2,
-				//lowLevelEngine, 
-				//scene
-				//), 1);
-    //        return compositeTracker;
+            return new ITMRenTracker_CUDA<TVoxel, TIndex>(
+              trackedImageSize,
+              settings->trackingRegime,
+              2,
+              lowLevelEngine,
+              scene
+            );
 #else
             break;
 #endif
@@ -324,20 +283,12 @@ namespace ITMLib
           case ITMLibSettings::DEVICE_METAL:
           {
 #ifdef COMPILE_WITH_METAL
-            ITMCompositeTracker *compositeTracker = new ITMCompositeTracker(2);
-            compositeTracker->SetTracker(
-              new ITMDepthTracker_Metal(
-                trackedImageSize,
-                settings->trackingRegime,
-                settings->noHierarchyLevels,
-                settings->noICPRunTillLevel,
-                settings->depthTrackerICPThreshold,
-                settings->depthTrackerTerminationThreshold,
-                lowLevelEngine
-              ), 0
+            return new ITMRenTracker_CPU<TVoxel, TIndex>(
+              trackedImageSize,
+              settings->trackingRegime,
+              2,
+              lowLevelEngine, scene
             );
-            compositeTracker->SetTracker(new ITMRenTracker_CPU<TVoxel,TIndex>(trackedImageSize, lowLevelEngine, scene), 1);
-            return compositeTracker;
 #else
             break;
 #endif
