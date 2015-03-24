@@ -11,23 +11,26 @@ using namespace ITMLib::Engine;
 void ITMTrackingController::Track(ITMTrackingState *trackingState, const ITMView *view)
 {
 	tracker->TrackCamera(trackingState, view);
-	noTrackedFrames++;
-    
-    trackingState->requiresFullRendering = this->IsFarFromPrevious(trackingState) || !useApproximateRaycast;
+
+	trackingState->requiresFullRendering = this->IsFarFromPrevious(trackingState) || !settings->useApproximateRaycast;
 }
 
-bool ITMTrackingController::IsFarFromPrevious(ITMTrackingState *trackingState)
+bool ITMTrackingController::IsFarFromPrevious(const ITMTrackingState *trackingState) const
 {
-	if (!hasPrevPose || (noTrackedFrames < 2)) return true;
+	// if no point cloud exists, yet
+	if (trackingState->age_pointCloud < 0) return true;
+	// if the point cloud is older than n frames
+	if (trackingState->age_pointCloud > 5) return true;
 
-	Vector3f cameraCenter_pc = -1.0f * (this->prevPose->GetR().t() * this->prevPose->GetT());
+	Vector3f cameraCenter_pc = -1.0f * (trackingState->pose_pointCloud->GetR().t() * trackingState->pose_pointCloud->GetT());
 	Vector3f cameraCenter_live = -1.0f * (trackingState->pose_d->GetR().t() * trackingState->pose_d->GetT());
 
 	Vector3f diff3 = cameraCenter_pc - cameraCenter_live;
 
 	float diff = diff3.x * diff3.x + diff3.y * diff3.y + diff3.z * diff3.z;
 
-	if (diff > 0.0005f || noFramesForLastIntegration > 5) return true;
+	// if the camera center has moved by more than a threshold
+	if (diff > 0.0005f) return true;
 
 	return false;
 }
@@ -49,15 +52,14 @@ void ITMTrackingController::Prepare(ITMTrackingState *trackingState, const ITMVi
 		if (trackingState->requiresFullRendering)
 		{
 			visualisationEngine->CreateICPMaps(view, trackingState, renderState_live);
-			this->prevPose->SetFrom(trackingState->pose_d);
-			noFramesForLastIntegration = 0;
+			trackingState->pose_pointCloud->SetFrom(trackingState->pose_d);
+			if (trackingState->age_pointCloud==-1) trackingState->age_pointCloud=-2;
+			else trackingState->age_pointCloud = 0;
 		}
 		else
 		{
 			visualisationEngine->ForwardRender(view, trackingState, renderState_live);
-			noFramesForLastIntegration++;
+			trackingState->age_pointCloud++;
 		}
 	}
-
-	this->hasPrevPose = true;
 }
