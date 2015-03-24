@@ -36,6 +36,9 @@ namespace ITMLib
 			/// Process a single frame
 			void ProcessFrame(const ITMView *view, const ITMTrackingState *trackingState);
 
+			/// Update the visible list (this can be called to update the visible list when fusion is turned off)
+			void UpdateVisibleList(const ITMView *view, const ITMTrackingState *trackingState);
+
 			/// Get pointer to the current model of the 3D scene
 			const ITMScene<TVoxel,TIndex> *getScene() const { return scene; } 
 
