@@ -23,27 +23,18 @@ namespace ITMLib
 		class ITMDenseMapper
 		{
 		private:
-			const ITMLibSettings *settings;
-
 			ITMSceneReconstructionEngine<TVoxel,TIndex> *sceneRecoEngine;
 			ITMSwappingEngine<TVoxel,TIndex> *swappingEngine;
-			ITMScene<TVoxel,TIndex> *scene;
 
 		public:
-			/// Pointer to information used by the raycaster
-			ITMRenderState *renderState_live;
-
 			/// Process a single frame
-			void ProcessFrame(const ITMView *view, const ITMTrackingState *trackingState);
-
-			/// Get pointer to the current model of the 3D scene
-			const ITMScene<TVoxel,TIndex> *getScene() const { return scene; } 
+			void ProcessFrame(const ITMView *view, const ITMTrackingState *trackingState, ITMScene<TVoxel,TIndex> *scene, ITMRenderState *renderState_live);
 
 			/** \brief Constructor
 			    Ommitting a separate image size for the depth images
 			    will assume same resolution as for the RGB images.
 			*/
-			ITMDenseMapper(const ITMLibSettings *settings, ITMScene<TVoxel, TIndex>* scene, ITMRenderState *renderState_live);
+			ITMDenseMapper(const ITMLibSettings *settings);
 			~ITMDenseMapper();
 		};
 	}

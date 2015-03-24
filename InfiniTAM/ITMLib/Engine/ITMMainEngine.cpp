@@ -46,7 +46,7 @@ ITMMainEngine::ITMMainEngine(const ITMLibSettings *settings, const ITMRGBDCalib 
 	renderState_live = visualisationEngine->CreateRenderState(trackedImageSize);
 	renderState_freeview = NULL; //will be created by the visualisation engine
 
-	denseMapper = new ITMDenseMapper<ITMVoxel, ITMVoxelIndex>(settings, scene, renderState_live);
+	denseMapper = new ITMDenseMapper<ITMVoxel, ITMVoxelIndex>(settings/*, scene, renderState_live*/);
 
 	imuCalibrator = new ITMIMUCalibrator_iPad();
 	tracker = ITMTrackerFactory<ITMVoxel, ITMVoxelIndex>::Instance().Make(trackedImageSize, settings, lowLevelEngine, imuCalibrator, scene);
@@ -100,7 +100,7 @@ void ITMMainEngine::ProcessFrame(ITMUChar4Image *rgbImage, ITMShortImage *rawDep
 	if (hasStartedObjectReconstruction) trackingController->Track(trackingState, view);
 
 	// fusion
-	if (fusionActive) denseMapper->ProcessFrame(view, trackingState);
+	if (fusionActive) denseMapper->ProcessFrame(view, trackingState, scene, renderState_live);
 
 	// raycast to renderState_live for tracking and free visualisation
 	trackingController->Prepare(trackingState, view);
@@ -125,7 +125,7 @@ void ITMMainEngine::ProcessFrame(ITMUChar4Image *rgbImage, ITMShortImage *rawDep
 	if (hasStartedObjectReconstruction) trackingController->Track(trackingState, view);
 
 	// fusion
-	if (fusionActive) denseMapper->ProcessFrame(view, trackingState);
+	if (fusionActive) denseMapper->ProcessFrame(view, trackingState, scene, renderState_live);
 
 	// raycast to renderState_live for tracking and free visualisation
 	trackingController->Prepare(trackingState, view);
@@ -135,7 +135,7 @@ void ITMMainEngine::ProcessFrame(ITMUChar4Image *rgbImage, ITMShortImage *rawDep
 
 Vector2i ITMMainEngine::GetImageSize(void) const
 {
-	return denseMapper->renderState_live->raycastImage->noDims;
+	return renderState_live->raycastImage->noDims;
 }
 
 void ITMMainEngine::GetImage(ITMUChar4Image *out, GetImageType getImageType, ITMPose *pose, ITMIntrinsics *intrinsics)
@@ -159,7 +159,7 @@ void ITMMainEngine::GetImage(ITMUChar4Image *out, GetImageType getImageType, ITM
 		break;
 	case ITMMainEngine::InfiniTAM_IMAGE_SCENERAYCAST:
 	{
-		ORUtils::Image<Vector4u> *srcImage = denseMapper->renderState_live->raycastImage;
+		ORUtils::Image<Vector4u> *srcImage = renderState_live->raycastImage;
 		out->ChangeDims(srcImage->noDims);
 		if (settings->deviceType == ITMLibSettings::DEVICE_CUDA)
 			out->SetFrom(srcImage, ORUtils::MemoryBlock<Vector4u>::CUDA_TO_CPU);
