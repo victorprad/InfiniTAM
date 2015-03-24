@@ -50,7 +50,6 @@ namespace ITMLib
 		private:
 			const ITMLibSettings *settings;
 
-			bool hasStartedObjectReconstruction;
 			bool fusionActive, mainProcessingActive;
 
 			ITMLowLevelEngine *lowLevelEngine;

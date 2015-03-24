@@ -10,7 +10,7 @@ using namespace ITMLib::Engine;
 
 void ITMTrackingController::Track(ITMTrackingState *trackingState, const ITMView *view)
 {
-	tracker->TrackCamera(trackingState, view);
+	if (trackingState->age_pointCloud!=-1) tracker->TrackCamera(trackingState, view);
 
 	trackingState->requiresFullRendering = trackingState->TrackerFarFromPointCloud() || !settings->useApproximateRaycast;
 }
@@ -24,6 +24,7 @@ void ITMTrackingController::Prepare(ITMTrackingState *trackingState, const ITMVi
 		ITMPose pose_rgb(view->calib->trafo_rgb_to_depth.calib_inv * trackingState->pose_d->GetM());
 		visualisationEngine->CreateExpectedDepths(&pose_rgb, &(view->calib->intrinsics_rgb), renderState);
 		visualisationEngine->CreatePointCloud(view, trackingState, renderState, settings->skipPoints);
+		trackingState->age_pointCloud = 0;
 	}
 	else
 	{

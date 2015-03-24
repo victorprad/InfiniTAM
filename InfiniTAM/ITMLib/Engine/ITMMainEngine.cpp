@@ -57,7 +57,6 @@ ITMMainEngine::ITMMainEngine(const ITMLibSettings *settings, const ITMRGBDCalib 
 
 	view = NULL; // will be allocated by the view builder
 
-	hasStartedObjectReconstruction = false;
 	fusionActive = true;
 	mainProcessingActive = true;
 }
@@ -97,15 +96,13 @@ void ITMMainEngine::ProcessFrame(ITMUChar4Image *rgbImage, ITMShortImage *rawDep
 	if (!mainProcessingActive) return;
 
 	// tracking
-	if (hasStartedObjectReconstruction) trackingController->Track(trackingState, view);
+	trackingController->Track(trackingState, view);
 
 	// fusion
 	if (fusionActive) denseMapper->ProcessFrame(view, trackingState, scene, renderState_live);
 
 	// raycast to renderState_live for tracking and free visualisation
 	trackingController->Prepare(trackingState, view, renderState_live);
-
-	hasStartedObjectReconstruction = true;
 }
 
 void ITMMainEngine::SaveSceneToMesh(const char *objFileName)
@@ -122,15 +119,13 @@ void ITMMainEngine::ProcessFrame(ITMUChar4Image *rgbImage, ITMShortImage *rawDep
 	if (!mainProcessingActive) return;
 
 	// tracking
-	if (hasStartedObjectReconstruction) trackingController->Track(trackingState, view);
+	trackingController->Track(trackingState, view);
 
 	// fusion
 	if (fusionActive) denseMapper->ProcessFrame(view, trackingState, scene, renderState_live);
 
 	// raycast to renderState_live for tracking and free visualisation
 	trackingController->Prepare(trackingState, view, renderState_live);
-
-	hasStartedObjectReconstruction = true;
 }
 
 Vector2i ITMMainEngine::GetImageSize(void) const
