@@ -150,13 +150,13 @@ namespace ORUtils
 				break;
 #ifndef COMPILE_WITHOUT_CUDA
 			case CPU_TO_CUDA:
-				ITMSafeCall(cudaMemcpy(this->data_cuda, source->data_cpu, source->dataSize * sizeof(T), cudaMemcpyHostToDevice));
+				ITMSafeCall(cudaMemcpyAsync(this->data_cuda, source->data_cpu, source->dataSize * sizeof(T), cudaMemcpyHostToDevice));
 				break;
 			case CUDA_TO_CPU:
 				ITMSafeCall(cudaMemcpy(this->data_cpu, source->data_cuda, source->dataSize * sizeof(T), cudaMemcpyDeviceToHost));
 				break;
 			case CUDA_TO_CUDA:
-				ITMSafeCall(cudaMemcpy(this->data_cuda, source->data_cuda, source->dataSize * sizeof(T), cudaMemcpyDeviceToDevice));
+				ITMSafeCall(cudaMemcpyAsync(this->data_cuda, source->data_cuda, source->dataSize * sizeof(T), cudaMemcpyDeviceToDevice));
 				break;
 #endif
 			default: break;
