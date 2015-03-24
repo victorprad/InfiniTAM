@@ -27,32 +27,24 @@ namespace ITMLib
 
 			ITMTracker *tracker;
 
-			Vector2i trackedImageSize;
-
 			MemoryDeviceType memoryType;
-
-			ITMRenderState *renderState_live;
-
-			bool IsFarFromPrevious(const ITMTrackingState *trackingState) const;
 
 		public:
 			void Track(ITMTrackingState *trackingState, const ITMView *view);
-			void Prepare(ITMTrackingState *trackingState, const ITMView *view);
+			void Prepare(ITMTrackingState *trackingState, const ITMView *view, ITMRenderState *renderState);
 
 			ITMTrackingController(ITMTracker *tracker, const IITMVisualisationEngine *visualisationEngine, const ITMLowLevelEngine *lowLevelEngine,
-				ITMRenderState *renderState_live, const ITMLibSettings *settings)
+				const ITMLibSettings *settings)
 			{
 				this->tracker = tracker;
 				this->settings = settings;
-				this->renderState_live = renderState_live;
 				this->visualisationEngine = visualisationEngine;
 				this->lowLevelEngine = lowLevelEngine;
 
-				trackedImageSize = renderState_live->raycastImage->noDims;
 				memoryType = settings->deviceType == ITMLibSettings::DEVICE_CUDA ? MEMORYDEVICE_CUDA : MEMORYDEVICE_CPU;
 			}
 
-			ITMTrackingState *BuildTrackingState() const
+			ITMTrackingState *BuildTrackingState(const Vector2i & trackedImageSize) const
 			{
 				return new ITMTrackingState(trackedImageSize, memoryType);
 			}

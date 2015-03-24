@@ -46,13 +46,13 @@ ITMMainEngine::ITMMainEngine(const ITMLibSettings *settings, const ITMRGBDCalib 
 	renderState_live = visualisationEngine->CreateRenderState(trackedImageSize);
 	renderState_freeview = NULL; //will be created by the visualisation engine
 
-	denseMapper = new ITMDenseMapper<ITMVoxel, ITMVoxelIndex>(settings/*, scene, renderState_live*/);
+	denseMapper = new ITMDenseMapper<ITMVoxel, ITMVoxelIndex>(settings);
 
 	imuCalibrator = new ITMIMUCalibrator_iPad();
 	tracker = ITMTrackerFactory<ITMVoxel, ITMVoxelIndex>::Instance().Make(trackedImageSize, settings, lowLevelEngine, imuCalibrator, scene);
-	trackingController = new ITMTrackingController(tracker, visualisationEngine, lowLevelEngine, renderState_live, settings);
+	trackingController = new ITMTrackingController(tracker, visualisationEngine, lowLevelEngine, settings);
 
-	trackingState = trackingController->BuildTrackingState();
+	trackingState = trackingController->BuildTrackingState(trackedImageSize);
 	tracker->UpdateInitialPose(trackingState);
 
 	view = NULL; // will be allocated by the view builder
@@ -103,7 +103,7 @@ void ITMMainEngine::ProcessFrame(ITMUChar4Image *rgbImage, ITMShortImage *rawDep
 	if (fusionActive) denseMapper->ProcessFrame(view, trackingState, scene, renderState_live);
 
 	// raycast to renderState_live for tracking and free visualisation
-	trackingController->Prepare(trackingState, view);
+	trackingController->Prepare(trackingState, view, renderState_live);
 
 	hasStartedObjectReconstruction = true;
 }
@@ -128,7 +128,7 @@ void ITMMainEngine::ProcessFrame(ITMUChar4Image *rgbImage, ITMShortImage *rawDep
 	if (fusionActive) denseMapper->ProcessFrame(view, trackingState, scene, renderState_live);
 
 	// raycast to renderState_live for tracking and free visualisation
-	trackingController->Prepare(trackingState, view);
+	trackingController->Prepare(trackingState, view, renderState_live);
 
 	hasStartedObjectReconstruction = true;
 }
