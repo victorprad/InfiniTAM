@@ -24,6 +24,7 @@ public class InfiniTAMApplication extends Application
 	private static InfiniTAMApplication s_instance;
 	private Thread processingThread;
 	private InfiniTAMProcessor processor;
+	private IMUReceiver imuReceiver;
 
 	public InfiniTAMApplication()
 	{
@@ -34,6 +35,9 @@ public class InfiniTAMApplication extends Application
 	{
 		super.onCreate();
 		InitializeNativeApp(getApplicationInfo().nativeLibraryDir);
+
+		//imuReceiver = new IMUReceiver(this);
+		//imuReceiver.start();
 
 		InfiniTAMUSBPermissionListener listener = askForUSBPermission();
 
