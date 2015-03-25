@@ -12,19 +12,29 @@ namespace ITMLib
 {
 	namespace Objects
 	{
-		/** \brief
-		Represents the 3D world model as a hash of small voxel
-		blocks
-		*/
-		template<class TVoxel, class TIndex>
-		class ITMScene
-		{
+		class ITMSceneBase {
 		public:
 			bool useSwapping;
 
 			/** Scene parameters like voxel size etc. */
 			const ITMSceneParams *sceneParams;
 
+			ITMSceneBase(const ITMSceneParams *_sceneParams, bool _useSwapping)
+			{
+				useSwapping = _useSwapping;
+				sceneParams = _sceneParams;
+			}
+			virtual ~ITMSceneBase(void) {}
+		};
+
+		/** \brief
+		Represents the 3D world model as a hash of small voxel
+		blocks
+		*/
+		template<class TVoxel, class TIndex>
+		class ITMScene : public ITMSceneBase
+		{
+		public:
 			/** Hash table to reference the 8x8x8 blocks */
 			TIndex index;
 
@@ -35,10 +45,8 @@ namespace ITMLib
 			ITMGlobalCache<TVoxel> *globalCache;
 
 			ITMScene(const ITMSceneParams *sceneParams, bool useSwapping, MemoryDeviceType memoryType)
-				: index(memoryType), localVBA(memoryType, index.getNumAllocatedVoxelBlocks(), index.getVoxelBlockSize())
+				: ITMSceneBase(sceneParams, useSwapping), index(memoryType), localVBA(memoryType, index.getNumAllocatedVoxelBlocks(), index.getVoxelBlockSize())
 			{
-				this->sceneParams = sceneParams;
-				this->useSwapping = useSwapping;
 				if (useSwapping) globalCache = new ITMGlobalCache<TVoxel>();
 			}
 
