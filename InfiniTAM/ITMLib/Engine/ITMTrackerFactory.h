@@ -27,8 +27,6 @@
 
 namespace ITMLib
 {
-  namespace Engine
-  {
     /**
      * \brief An instance of this class can be used to construct trackers.
      */
@@ -299,5 +297,4 @@ namespace ITMLib
         DIEWITHEXCEPTION("Failed to make Ren tracker");
       }
     };
-  }
 }

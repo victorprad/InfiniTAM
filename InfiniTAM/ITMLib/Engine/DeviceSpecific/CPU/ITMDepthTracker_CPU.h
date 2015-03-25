@@ -6,17 +6,14 @@
 
 namespace ITMLib
 {
-	namespace Engine
+	class ITMDepthTracker_CPU : public ITMDepthTracker
 	{
-		class ITMDepthTracker_CPU : public ITMDepthTracker
-		{
-		protected:
-			int ComputeGandH(float &f, float *nabla, float *hessian, Matrix4f approxInvPose);
+	protected:
+		int ComputeGandH(float &f, float *nabla, float *hessian, Matrix4f approxInvPose);
 
-		public:
-			ITMDepthTracker_CPU(Vector2i imgSize, TrackerIterationType *trackingRegime, int noHierarchyLevels, int noICPRunTillLevel, float distThresh,
-				float terminationThreshold, const ITMLowLevelEngine *lowLevelEngine);
-			~ITMDepthTracker_CPU(void);
-		};
-	}
+	public:
+		ITMDepthTracker_CPU(Vector2i imgSize, TrackerIterationType *trackingRegime, int noHierarchyLevels, int noICPRunTillLevel, float distThresh,
+			float terminationThreshold, const ITMLowLevelEngine *lowLevelEngine);
+		~ITMDepthTracker_CPU(void);
+	};
 }

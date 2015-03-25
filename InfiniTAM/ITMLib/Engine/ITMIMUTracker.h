@@ -10,22 +10,17 @@
 #include "../Engine/ITMLowLevelEngine.h"
 #include "../Engine/ITMIMUCalibrator.h"
 
-using namespace ITMLib::Objects;
-
 namespace ITMLib
 {
-	namespace Engine
+	class ITMIMUTracker : public ITMTracker
 	{
-		class ITMIMUTracker : public ITMTracker
-		{
-		private:
-			ITMIMUCalibrator *calibrator;
+	private:
+		ITMIMUCalibrator *calibrator;
 
-		public:
-			void TrackCamera(ITMTrackingState *trackingState, const ITMView *view);
+	public:
+		void TrackCamera(ITMTrackingState *trackingState, const ITMView *view);
 
-			ITMIMUTracker(ITMIMUCalibrator *calibrator);
-			virtual ~ITMIMUTracker(void);
-		};
-	}
+		ITMIMUTracker(ITMIMUCalibrator *calibrator);
+		virtual ~ITMIMUTracker(void);
+	};
 }

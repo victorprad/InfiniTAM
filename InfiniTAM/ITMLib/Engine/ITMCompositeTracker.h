@@ -5,53 +5,49 @@
 #include "../Utils/ITMLibDefines.h"
 #include "../Engine/ITMTracker.h"
 
-using namespace ITMLib::Objects;
-
 namespace ITMLib
 {
-	namespace Engine
+	class ITMCompositeTracker : public ITMTracker
 	{
-		class ITMCompositeTracker : public ITMTracker
+	private:
+		ITMTracker **trackers; int noTrackers;
+	public:
+
+		void SetTracker(ITMTracker *tracker, int trackerId)
 		{
-		private:
-			ITMTracker **trackers; int noTrackers;
-		public:
+			if (trackers[trackerId] != NULL) delete trackers[trackerId];
+			trackers[trackerId] = tracker;
+		}
 
-			void SetTracker(ITMTracker *tracker, int trackerId)
-			{
-				if (trackers[trackerId] != NULL) delete trackers[trackerId];
-				trackers[trackerId] = tracker;
-			}
+		ITMCompositeTracker(int noTrackers)
+		{
+			trackers = new ITMTracker*[noTrackers];
+			for (int i = 0; i < noTrackers; i++) trackers[i] = NULL;
 
-			ITMCompositeTracker(int noTrackers)
-			{
-				trackers = new ITMTracker*[noTrackers];
-				for (int i = 0; i < noTrackers; i++) trackers[i] = NULL;
+			this->noTrackers = noTrackers;
+		}
 
-				this->noTrackers = noTrackers;
-			}
+		~ITMCompositeTracker(void)
+		{
+			for (int i = 0; i < noTrackers; i++)
+				if (trackers[i] != NULL) delete trackers[i];
 
-			~ITMCompositeTracker(void)
-			{
-				for (int i = 0; i < noTrackers; i++)
-					if (trackers[i] != NULL) delete trackers[i];
+			delete [] trackers;
+		}
 
-				delete [] trackers;
-			}
+		void TrackCamera(ITMTrackingState *trackingState, const ITMView *view)
+		{
+			for (int i = 0; i < noTrackers; i++) trackers[i]->TrackCamera(trackingState, view);
+		}
 
-			void TrackCamera(ITMTrackingState *trackingState, const ITMView *view)
-			{
-				for (int i = 0; i < noTrackers; i++) trackers[i]->TrackCamera(trackingState, view);
-			}
+		void UpdateInitialPose(ITMTrackingState *trackingState)
+		{
+			for (int i = 0; i < noTrackers; i++) trackers[i]->UpdateInitialPose(trackingState);
+		}
 
-			void UpdateInitialPose(ITMTrackingState *trackingState)
-			{
-				for (int i = 0; i < noTrackers; i++) trackers[i]->UpdateInitialPose(trackingState);
-			}
-
-			// Suppress the default copy constructor and assignment operator
-			ITMCompositeTracker(const ITMCompositeTracker&);
-			ITMCompositeTracker& operator=(const ITMCompositeTracker&);
-		};
-	}
+		// Suppress the default copy constructor and assignment operator
+		ITMCompositeTracker(const ITMCompositeTracker&);
+		ITMCompositeTracker& operator=(const ITMCompositeTracker&);
+	};
 }
+

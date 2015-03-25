@@ -14,7 +14,7 @@ namespace InfiniTAM
 			static const int BUF_SIZE = 2048;
 			char imuMask[BUF_SIZE];
 
-			ITMIMUMeasurement *cached_imu;
+			ITMLib::ITMIMUMeasurement *cached_imu;
 
 			void loadIMUIntoCache();
 			int cachedFrameNo;
@@ -25,7 +25,7 @@ namespace InfiniTAM
 			~IMUSourceEngine() { }
 
 			bool hasMoreMeasurements(void);
-			void getMeasurement(ITMIMUMeasurement *imu);
+			void getMeasurement(ITMLib::ITMIMUMeasurement *imu);
 		};
 	}
 }

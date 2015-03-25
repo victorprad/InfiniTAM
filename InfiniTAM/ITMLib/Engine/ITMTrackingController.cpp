@@ -6,7 +6,7 @@
 
 #include "../ITMLib.h"
 
-using namespace ITMLib::Engine;
+using namespace ITMLib;
 
 void ITMTrackingController::Track(ITMTrackingState *trackingState, const ITMView *view)
 {

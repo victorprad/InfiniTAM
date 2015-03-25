@@ -11,7 +11,7 @@ namespace InfiniTAM
 		class ImageSourceEngine
 		{
 		public:
-			ITMRGBDCalib calib;
+			ITMLib::ITMRGBDCalib calib;
 
 			ImageSourceEngine(const char *calibFilename);
 			virtual ~ImageSourceEngine() {}
@@ -50,7 +50,7 @@ namespace InfiniTAM
 		{
 		private:
 			Vector2i imgSize;
-			void ResizeIntrinsics(ITMIntrinsics &intrinsics, float ratio);
+			void ResizeIntrinsics(ITMLib::ITMIntrinsics &intrinsics, float ratio);
 
 		public:
 			CalibSource(const char *calibFilename, Vector2i setImageSize, float ratio);
@@ -77,7 +77,7 @@ namespace InfiniTAM
 			int currentFrameNo;
 
 			Vector2i imgSize;
-			void ResizeIntrinsics(ITMIntrinsics &intrinsics, float ratio);
+			void ResizeIntrinsics(ITMLib::ITMIntrinsics &intrinsics, float ratio);
 
 		public:
 			RawFileReader(const char *calibFilename, const char *rgbImageMask, const char *depthImageMask, Vector2i setImageSize, float ratio);

@@ -3,7 +3,7 @@
 #include "ITMDepthTracker_CPU.h"
 #include "../../DeviceAgnostic/ITMDepthTracker.h"
 
-using namespace ITMLib::Engine;
+using namespace ITMLib;
 
 ITMDepthTracker_CPU::ITMDepthTracker_CPU(Vector2i imgSize, TrackerIterationType *trackingRegime, int noHierarchyLevels, int noICPRunTillLevel,
 	float distThresh, float terminationThreshold, const ITMLowLevelEngine *lowLevelEngine) :ITMDepthTracker(imgSize, trackingRegime, noHierarchyLevels,

@@ -5,7 +5,7 @@
 #include "../../DeviceAgnostic/ITMViewBuilder.h"
 #include "../../../../ORUtils/MetalContext.h"
 
-using namespace ITMLib::Engine;
+using namespace ITMLib;
 using namespace ORUtils;
 
 ITMViewBuilder_CPU::ITMViewBuilder_CPU(const ITMRGBDCalib *calib):ITMViewBuilder(calib) { }

@@ -4,7 +4,7 @@
 
 #include "../../DeviceAgnostic/ITMLowLevelEngine.h"
 
-using namespace ITMLib::Engine;
+using namespace ITMLib;
 
 ITMLowLevelEngine_CPU::ITMLowLevelEngine_CPU(void) { }
 ITMLowLevelEngine_CPU::~ITMLowLevelEngine_CPU(void) { }

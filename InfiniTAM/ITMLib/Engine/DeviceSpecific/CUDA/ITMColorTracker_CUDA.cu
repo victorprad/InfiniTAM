@@ -5,7 +5,7 @@
 #include "../../DeviceAgnostic/ITMColorTracker.h"
 #include "../../DeviceAgnostic/ITMPixelUtils.h"
 
-using namespace ITMLib::Engine;
+using namespace ITMLib;
 
 __global__ void colorTrackerOneLevel_f_device(Vector2f *out, Vector4f *locations, Vector4f *colours, Vector4u *rgb, int noTotalPoints,
 	Matrix4f M, Vector4f projParams, Vector2i imgSize);

@@ -3,8 +3,7 @@
 
 #include <math.h>
 
-using namespace ITMLib::Engine;
-
+using namespace ITMLib;
 
 static inline void GetRotationMatrixFromMRP(float *outR, const float* r)
 {
@@ -301,5 +300,5 @@ static inline bool minimizeLM(const ITMRenTracker<TVoxel,TIndex> & tracker, ITMP
 	return true;
 }
 
-template class ITMLib::Engine::ITMRenTracker<ITMVoxel, ITMVoxelIndex>;
+template class ITMLib::ITMRenTracker<ITMVoxel, ITMVoxelIndex>;
 

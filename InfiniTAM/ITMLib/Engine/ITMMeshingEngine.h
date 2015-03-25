@@ -9,20 +9,15 @@
 #include "../Objects/ITMScene.h"
 #include "../Objects/ITMMesh.h"
 
-using namespace ITMLib::Objects;
-
 namespace ITMLib
 {
-	namespace Engine
+	template<class TVoxel, class TIndex>
+	class ITMMeshingEngine
 	{
-		template<class TVoxel, class TIndex>
-		class ITMMeshingEngine
-		{
-		public:
-			virtual void MeshScene(ITMMesh *mesh, const ITMScene<TVoxel,TIndex> *scene) = 0;
+	public:
+		virtual void MeshScene(ITMMesh *mesh, const ITMScene<TVoxel,TIndex> *scene) = 0;
 
-			ITMMeshingEngine(void) { }
-			virtual ~ITMMeshingEngine(void) { }
-		};
-	}
+		ITMMeshingEngine(void) { }
+		virtual ~ITMMeshingEngine(void) { }
+	};
 }

@@ -10,57 +10,50 @@
 #include "../Engine/ITMTracker.h"
 #include "../Engine/ITMLowLevelEngine.h"
 
-using namespace ITMLib::Objects;
-
 namespace ITMLib
 {
-	namespace Engine
+	/** Base class for engine performing SDF based depth tracking.
+	*/
+	template<class TVoxel, class TIndex>
+	class ITMRenTracker : public ITMTracker
 	{
-		/** Base class for engine performing SDF based depth tracking.
-		*/
-		template<class TVoxel, class TIndex>
-		class ITMRenTracker : public ITMTracker
-		{
-		private:
-			ITMTrackingState *trackingState; 
-			const ITMLowLevelEngine *lowLevelEngine;
-			
+	private:
+		ITMTrackingState *trackingState; 
+		const ITMLowLevelEngine *lowLevelEngine;
 
-			ITMFloatImage *tempImage1, *tempImage2;
+		ITMFloatImage *tempImage1, *tempImage2;
 
-			const ITMView *view;
+		const ITMView *view;
 
-			int *noIterationsPerLevel;
-			
-			void PrepareForEvaluation(const ITMView *view);
+		int *noIterationsPerLevel;
 
-		protected:
-			const ITMScene<TVoxel, TIndex> *scene;
-			ITMImageHierarchy<ITMTemplatedHierarchyLevel<ITMFloat4Image> > *viewHierarchy;
+		void PrepareForEvaluation(const ITMView *view);
 
-			int levelId;
-			bool rotationOnly;
+	protected:
+		const ITMScene<TVoxel, TIndex> *scene;
+		ITMImageHierarchy<ITMTemplatedHierarchyLevel<ITMFloat4Image> > *viewHierarchy;
 
-			float hessian[6 * 6];
-			float nabla[6];
+		int levelId;
+		bool rotationOnly;
 
-			virtual void F_oneLevel(float *f, Matrix4f invM) = 0;
-			virtual void G_oneLevel(float *gradient, float *hessian, Matrix4f invM) const = 0;
+		float hessian[6 * 6];
+		float nabla[6];
 
-			virtual void UnprojectDepthToCam(ITMFloatImage *depth, ITMFloat4Image *upPtCloud, const Vector4f &intrinsic) = 0;
+		virtual void F_oneLevel(float *f, Matrix4f invM) = 0;
+		virtual void G_oneLevel(float *gradient, float *hessian, Matrix4f invM) const = 0;
 
-		public:
+		virtual void UnprojectDepthToCam(ITMFloatImage *depth, ITMFloat4Image *upPtCloud, const Vector4f &intrinsic) = 0;
 
-			void applyDelta(const ITMPose & para_old, const float *delta, ITMPose & para_new) const;
-			int numParameters(void) const { return 6; }
+	public:
 
-			void TrackCamera(ITMTrackingState *trackingState, const ITMView *view);
+		void applyDelta(const ITMPose & para_old, const float *delta, ITMPose & para_new) const;
+		int numParameters(void) const { return 6; }
 
-			ITMRenTracker(Vector2i imgSize, TrackerIterationType *trackingRegime, int noHierarchyLevels, const ITMLowLevelEngine *lowLevelEngine, 
-				const ITMScene<TVoxel, TIndex> *scene, MemoryDeviceType memoryType);
+		void TrackCamera(ITMTrackingState *trackingState, const ITMView *view);
 
-			virtual ~ITMRenTracker(void);
-		};
+		ITMRenTracker(Vector2i imgSize, TrackerIterationType *trackingRegime, int noHierarchyLevels, const ITMLowLevelEngine *lowLevelEngine, 
+			const ITMScene<TVoxel, TIndex> *scene, MemoryDeviceType memoryType);
 
-	}
+		virtual ~ITMRenTracker(void);
+	};
 }

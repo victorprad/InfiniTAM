@@ -3,24 +3,22 @@
 #pragma once
 
 #include "../../ITMColorTracker.h"
+#include "../../ITMLowLevelEngine.h"
 
 namespace ITMLib
 {
-	namespace Engine
+	class ITMColorTracker_CUDA : public ITMColorTracker
 	{
-		class ITMColorTracker_CUDA : public ITMColorTracker
-		{
-		private:
-			Vector2f *f_device; float *g_device, *h_device;
-			Vector2f *f_host; float *g_host, *h_host;
+	private:
+		Vector2f *f_device; float *g_device, *h_device;
+		Vector2f *f_host; float *g_host, *h_host;
 
-		public:
-			void F_oneLevel(float *f, ITMPose *pose);
-			void G_oneLevel(float *gradient, float *hessian, ITMPose *pose) const;
+	public:
+		void F_oneLevel(float *f, ITMPose *pose);
+		void G_oneLevel(float *gradient, float *hessian, ITMPose *pose) const;
 
-			ITMColorTracker_CUDA(Vector2i imgSize, TrackerIterationType *trackingRegime, int noHierarchyLevels,
-				const ITMLowLevelEngine *lowLevelEngine);
-			~ITMColorTracker_CUDA(void);
-		};
-	}
+		ITMColorTracker_CUDA(Vector2i imgSize, TrackerIterationType *trackingRegime, int noHierarchyLevels,
+			const ITMLowLevelEngine *lowLevelEngine);
+		~ITMColorTracker_CUDA(void);
+	};
 }

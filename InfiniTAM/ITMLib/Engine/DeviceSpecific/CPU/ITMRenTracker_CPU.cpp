@@ -2,11 +2,10 @@
 #include "../../DeviceAgnostic/ITMRenTracker.h"
 #include "../../DeviceAgnostic/ITMRepresentationAccess.h" 
 
-using namespace ITMLib::Engine;
-
+using namespace ITMLib;
 
 template<class TVoxel, class TIndex>
-ITMLib::Engine::ITMRenTracker_CPU<TVoxel, TIndex>::ITMRenTracker_CPU(Vector2i imgSize, TrackerIterationType *trackingRegime, int noHierarchyLevels, const ITMLowLevelEngine *lowLevelEngine, const ITMScene<TVoxel, TIndex> *scene)
+ITMRenTracker_CPU<TVoxel, TIndex>::ITMRenTracker_CPU(Vector2i imgSize, TrackerIterationType *trackingRegime, int noHierarchyLevels, const ITMLowLevelEngine *lowLevelEngine, const ITMScene<TVoxel, TIndex> *scene)
 	: ITMRenTracker<TVoxel, TIndex>(imgSize, trackingRegime, noHierarchyLevels, lowLevelEngine, scene, MEMORYDEVICE_CPU){}
 
 template<class TVoxel, class TIndex>
@@ -99,4 +98,4 @@ void ITMRenTracker_CPU<TVoxel,TIndex>::UnprojectDepthToCam(ITMFloatImage *depth,
 	}
 }
 
-template class ITMLib::Engine::ITMRenTracker_CPU<ITMVoxel, ITMVoxelIndex>;
+template class ITMLib::ITMRenTracker_CPU<ITMVoxel, ITMVoxelIndex>;

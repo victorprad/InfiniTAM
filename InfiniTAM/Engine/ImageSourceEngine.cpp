@@ -7,6 +7,7 @@
 #include <stdio.h>
 
 using namespace InfiniTAM::Engine;
+using namespace ITMLib;
 
 ImageSourceEngine::ImageSourceEngine(const char *calibFilename)
 {

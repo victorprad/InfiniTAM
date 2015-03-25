@@ -6,23 +6,20 @@
 
 namespace ITMLib
 {
-	namespace Engine
+	template<class TVoxel, class TIndex>
+	class ITMRenTracker_CPU : public ITMRenTracker<TVoxel,TIndex>
 	{
-		template<class TVoxel, class TIndex>
-		class ITMRenTracker_CPU : public ITMRenTracker<TVoxel,TIndex>
-		{
-		protected:
-			void F_oneLevel(float *f, Matrix4f invM);
-			void G_oneLevel(float *gradient, float *hessian, Matrix4f invM) const;
+	protected:
+		void F_oneLevel(float *f, Matrix4f invM);
+		void G_oneLevel(float *gradient, float *hessian, Matrix4f invM) const;
 
-			void UnprojectDepthToCam(ITMFloatImage *depth, ITMFloat4Image *upPtCloud, const Vector4f &intrinsic);
+		void UnprojectDepthToCam(ITMFloatImage *depth, ITMFloat4Image *upPtCloud, const Vector4f &intrinsic);
 
-		public:
-			
-			ITMRenTracker_CPU(Vector2i imgSize, TrackerIterationType *trackingRegime, int noHierarchyLevels, const ITMLowLevelEngine *lowLevelEngine,
-				const ITMScene<TVoxel, TIndex> *scene);
+	public:
 
-			~ITMRenTracker_CPU(void);
-		};
-	}
+		ITMRenTracker_CPU(Vector2i imgSize, TrackerIterationType *trackingRegime, int noHierarchyLevels, const ITMLowLevelEngine *lowLevelEngine,
+			const ITMScene<TVoxel, TIndex> *scene);
+
+		~ITMRenTracker_CPU(void);
+	};
 }

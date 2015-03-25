@@ -7,79 +7,75 @@
 
 namespace ITMLib
 {
-	namespace Objects
+	class ITMIMUCalibrator
 	{
-		class ITMIMUCalibrator
+	public:
+		virtual void RegisterMeasurement(const Matrix3f & R) = 0;
+		virtual Matrix3f GetDifferentialRotationChange() = 0;
+
+		ITMIMUCalibrator() { }
+
+		virtual ~ITMIMUCalibrator(void) { }
+
+		// Suppress the default copy constructor and assignment operator
+		ITMIMUCalibrator(const ITMIMUCalibrator&);
+		ITMIMUCalibrator& operator=(const ITMIMUCalibrator&);
+	};
+
+	class ITMIMUCalibrator_iPad : public ITMIMUCalibrator
+	{
+	private:
+		ITMPose *imuPose_imucoords, *imuPose_cameracoords;
+		Vector3f t_imu, r_imu;
+		Matrix3f inv_oldR_imu;
+		Matrix3f newR_imu, oldR_imu;
+		bool hasTwoFrames;
+
+	public: 
+		void RegisterMeasurement(const Matrix3f & R)
 		{
-		public:
-			virtual void RegisterMeasurement(const Matrix3f & R) = 0;
-			virtual Matrix3f GetDifferentialRotationChange() = 0;
+			oldR_imu = imuPose_imucoords->GetR();
 
-			ITMIMUCalibrator() { }
+			imuPose_imucoords->SetR(R);
 
-			virtual ~ITMIMUCalibrator(void) { }
+			imuPose_imucoords->GetParams(t_imu, r_imu);
+			imuPose_imucoords->SetFrom(t_imu, -r_imu);
 
-			// Suppress the default copy constructor and assignment operator
-			ITMIMUCalibrator(const ITMIMUCalibrator&);
-			ITMIMUCalibrator& operator=(const ITMIMUCalibrator&);
-		};
+			newR_imu = imuPose_imucoords->GetR();
+		}
 
-		class ITMIMUCalibrator_iPad : public ITMIMUCalibrator
+		Matrix3f GetDifferentialRotationChange()
 		{
-		private:
-			ITMPose *imuPose_imucoords, *imuPose_cameracoords;
-			Vector3f t_imu, r_imu;
-			Matrix3f inv_oldR_imu;
-			Matrix3f newR_imu, oldR_imu;
-			bool hasTwoFrames;
-
-		public: 
-			void RegisterMeasurement(const Matrix3f & R)
+			if (hasTwoFrames)
 			{
-				oldR_imu = imuPose_imucoords->GetR();
+				oldR_imu.inv(inv_oldR_imu);
+				imuPose_cameracoords->SetR(imuPose_imucoords->GetR() * inv_oldR_imu);
 
-				imuPose_imucoords->SetR(R);
-
-				imuPose_imucoords->GetParams(t_imu, r_imu);
-				imuPose_imucoords->SetFrom(t_imu, -r_imu);
-
-				newR_imu = imuPose_imucoords->GetR();
+				imuPose_cameracoords->GetParams(t_imu, r_imu);
+				imuPose_cameracoords->SetFrom(t_imu.x, t_imu.y, t_imu.z, -r_imu.y, -r_imu.x, -r_imu.z);
 			}
+			
+			hasTwoFrames = true;
+			return imuPose_cameracoords->GetR();
+		}
 
-			Matrix3f GetDifferentialRotationChange()
-			{
-				if (hasTwoFrames)
-				{
-					oldR_imu.inv(inv_oldR_imu);
-					imuPose_cameracoords->SetR(imuPose_imucoords->GetR() * inv_oldR_imu);
+		ITMIMUCalibrator_iPad() : ITMIMUCalibrator() 
+		{ 
+			hasTwoFrames = false;
 
-					imuPose_cameracoords->GetParams(t_imu, r_imu);
-					imuPose_cameracoords->SetFrom(t_imu.x, t_imu.y, t_imu.z, -r_imu.y, -r_imu.x, -r_imu.z);
-				}
-				
-				hasTwoFrames = true;
-				return imuPose_cameracoords->GetR();
-			}
+			imuPose_imucoords = new ITMPose();
+			imuPose_imucoords->SetFrom(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
 
-			ITMIMUCalibrator_iPad() : ITMIMUCalibrator() 
-			{ 
-				hasTwoFrames = false;
+			imuPose_cameracoords = new ITMPose();
+			imuPose_cameracoords->SetFrom(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
 
-				imuPose_imucoords = new ITMPose();
-				imuPose_imucoords->SetFrom(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
+			oldR_imu.setIdentity();
+		}
 
-				imuPose_cameracoords = new ITMPose();
-				imuPose_cameracoords->SetFrom(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
-
-				oldR_imu.setIdentity();
-			}
-
-			~ITMIMUCalibrator_iPad(void) 
-			{
-				delete imuPose_imucoords;
-				delete imuPose_cameracoords;
-			}
-		};
-	}
+		~ITMIMUCalibrator_iPad(void) 
+		{
+			delete imuPose_imucoords;
+			delete imuPose_cameracoords;
+		}
+	};
 }
-

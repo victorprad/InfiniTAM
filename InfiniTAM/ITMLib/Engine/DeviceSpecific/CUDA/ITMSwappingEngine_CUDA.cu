@@ -5,7 +5,7 @@
 #include "../../DeviceAgnostic/ITMSwappingEngine.h"
 #include "../../../Objects/ITMRenderState_VH.h"
 
-using namespace ITMLib::Engine;
+using namespace ITMLib;
 
 __global__ void buildNeededListFromHost_device(int *neededEntryIDs, int *noNeededEntries, ITMHashCacheState *cacheStates, int noTotalEntries);
 
@@ -315,4 +315,4 @@ __global__ void cleanVBA(TVoxel *localVBA, int *voxelAllocationList, int baseAdd
 	}
 }
 
-template class ITMLib::Engine::ITMSwappingEngine_CUDA<ITMVoxel, ITMVoxelIndex>;
+template class ITMLib::ITMSwappingEngine_CUDA<ITMVoxel, ITMVoxelIndex>;

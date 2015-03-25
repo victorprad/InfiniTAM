@@ -14,49 +14,47 @@
 
 namespace ITMLib
 {
-	namespace Engine
+	/** \brief
+	*/
+	class ITMTrackingController
 	{
-		/** \brief
-		*/
-		class ITMTrackingController
+	private:
+		const ITMLibSettings *settings;
+		const IITMVisualisationEngine *visualisationEngine;
+		const ITMLowLevelEngine *lowLevelEngine;
+
+		ITMTracker *tracker;
+
+		MemoryDeviceType memoryType;
+
+	public:
+		void Track(ITMTrackingState *trackingState, const ITMView *view);
+		void Prepare(ITMTrackingState *trackingState, const ITMSceneBase *scene, const ITMView *view, ITMRenderState *renderState);
+
+		ITMTrackingController(ITMTracker *tracker, const IITMVisualisationEngine *visualisationEngine, const ITMLowLevelEngine *lowLevelEngine,
+			const ITMLibSettings *settings)
 		{
-		private:
-			const ITMLibSettings *settings;
-			const IITMVisualisationEngine *visualisationEngine;
-			const ITMLowLevelEngine *lowLevelEngine;
+			this->tracker = tracker;
+			this->settings = settings;
+			this->visualisationEngine = visualisationEngine;
+			this->lowLevelEngine = lowLevelEngine;
 
-			ITMTracker *tracker;
+			memoryType = settings->deviceType == ITMLibSettings::DEVICE_CUDA ? MEMORYDEVICE_CUDA : MEMORYDEVICE_CPU;
+		}
 
-			MemoryDeviceType memoryType;
+		ITMTrackingState *BuildTrackingState(const Vector2i & trackedImageSize) const
+		{
+			return new ITMTrackingState(trackedImageSize, memoryType);
+		}
 
-		public:
-			void Track(ITMTrackingState *trackingState, const ITMView *view);
-			void Prepare(ITMTrackingState *trackingState, const ITMSceneBase *scene, const ITMView *view, ITMRenderState *renderState);
+		static Vector2i GetTrackedImageSize(const ITMLibSettings *settings, const Vector2i& imgSize_rgb, const Vector2i& imgSize_d)
+		{
+			return settings->trackerType == ITMLibSettings::TRACKER_COLOR ? imgSize_rgb : imgSize_d;
+		}
 
-			ITMTrackingController(ITMTracker *tracker, const IITMVisualisationEngine *visualisationEngine, const ITMLowLevelEngine *lowLevelEngine,
-				const ITMLibSettings *settings)
-			{
-				this->tracker = tracker;
-				this->settings = settings;
-				this->visualisationEngine = visualisationEngine;
-				this->lowLevelEngine = lowLevelEngine;
-
-				memoryType = settings->deviceType == ITMLibSettings::DEVICE_CUDA ? MEMORYDEVICE_CUDA : MEMORYDEVICE_CPU;
-			}
-
-			ITMTrackingState *BuildTrackingState(const Vector2i & trackedImageSize) const
-			{
-				return new ITMTrackingState(trackedImageSize, memoryType);
-			}
-
-			static Vector2i GetTrackedImageSize(const ITMLibSettings *settings, const Vector2i& imgSize_rgb, const Vector2i& imgSize_d)
-			{
-				return settings->trackerType == ITMLibSettings::TRACKER_COLOR ? imgSize_rgb : imgSize_d;
-			}
-
-			// Suppress the default copy constructor and assignment operator
-			ITMTrackingController(const ITMTrackingController&);
-			ITMTrackingController& operator=(const ITMTrackingController&);
-		};
-	}
+		// Suppress the default copy constructor and assignment operator
+		ITMTrackingController(const ITMTrackingController&);
+		ITMTrackingController& operator=(const ITMTrackingController&);
+	};
 }
+

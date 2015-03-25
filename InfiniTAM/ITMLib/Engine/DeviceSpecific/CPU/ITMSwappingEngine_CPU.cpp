@@ -4,7 +4,7 @@
 #include "../../DeviceAgnostic/ITMSwappingEngine.h"
 #include "../../../Objects/ITMRenderState_VH.h"
 
-using namespace ITMLib::Engine;
+using namespace ITMLib;
 
 template<class TVoxel>
 ITMSwappingEngine_CPU<TVoxel,ITMVoxelBlockHash>::ITMSwappingEngine_CPU(void)
@@ -175,4 +175,4 @@ void ITMSwappingEngine_CPU<TVoxel, ITMVoxelBlockHash>::SaveToGlobalMemory(ITMSce
 	}
 }
 
-template class ITMLib::Engine::ITMSwappingEngine_CPU<ITMVoxel, ITMVoxelIndex>;
+template class ITMLib::ITMSwappingEngine_CPU<ITMVoxel, ITMVoxelIndex>;

@@ -6,26 +6,22 @@
 
 namespace ITMLib
 {
-	namespace Engine
+	template<class TVoxel, class TIndex>
+	class ITMRenTracker_CUDA : public ITMRenTracker<TVoxel,TIndex>
 	{
-		template<class TVoxel, class TIndex>
-		class ITMRenTracker_CUDA : public ITMRenTracker<TVoxel,TIndex>
-		{
-		private:
-			float *f_host, *g_host, *h_host;
-			float *f_device, *g_device, *h_device;
-		protected:
-			void F_oneLevel(float *f, Matrix4f invM);
-			void G_oneLevel(float *gradient, float *hessian, Matrix4f invM) const;
+	private:
+		float *f_host, *g_host, *h_host;
+		float *f_device, *g_device, *h_device;
+	protected:
+		void F_oneLevel(float *f, Matrix4f invM);
+		void G_oneLevel(float *gradient, float *hessian, Matrix4f invM) const;
 
-			void UnprojectDepthToCam(ITMFloatImage *depth, ITMFloat4Image *upPtCloud, const Vector4f &intrinsic);
+		void UnprojectDepthToCam(ITMFloatImage *depth, ITMFloat4Image *upPtCloud, const Vector4f &intrinsic);
 
-		public:
+	public:
+		ITMRenTracker_CUDA(Vector2i imgSize, TrackerIterationType *trackingRegime, int noHierarchyLevels, const ITMLowLevelEngine *lowLevelEngine,
+			const ITMScene<TVoxel, TIndex> *scene);
 
-			ITMRenTracker_CUDA(Vector2i imgSize, TrackerIterationType *trackingRegime, int noHierarchyLevels, const ITMLowLevelEngine *lowLevelEngine,
-				const ITMScene<TVoxel, TIndex> *scene);
-
-			~ITMRenTracker_CUDA(void);
-		};
-	}
+		~ITMRenTracker_CUDA(void);
+	};
 }

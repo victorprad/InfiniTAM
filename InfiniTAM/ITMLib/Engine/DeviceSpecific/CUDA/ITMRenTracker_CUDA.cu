@@ -5,7 +5,7 @@
 #include "../../DeviceAgnostic/ITMRenTracker.h"
 #include "../../DeviceAgnostic/ITMRepresentationAccess.h" 
 
-using namespace ITMLib::Engine;
+using namespace ITMLib;
 
 __global__ void unprojectDepthToCam_device(Vector4f *camPoints, float *depthMap, Vector2i imgSize, Vector4f ooIntrinsics);
 
@@ -275,4 +275,4 @@ __global__ void renTrackerOneLevel_g_device(float *g_device, float *h_device, Ve
 	//}
 }
 
-template class ITMLib::Engine::ITMRenTracker_CUDA<ITMVoxel, ITMVoxelIndex>;
+template class ITMLib::ITMRenTracker_CUDA<ITMVoxel, ITMVoxelIndex>;

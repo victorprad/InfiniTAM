@@ -6,17 +6,14 @@
 
 namespace ITMLib
 {
-	namespace Engine
+	class ITMColorTracker_CPU : public ITMColorTracker
 	{
-		class ITMColorTracker_CPU : public ITMColorTracker
-		{
-		public:
-			void F_oneLevel(float *f, ITMPose *pose);
-			void G_oneLevel(float *gradient, float *hessian, ITMPose *pose) const;
+	public:
+		void F_oneLevel(float *f, ITMPose *pose);
+		void G_oneLevel(float *gradient, float *hessian, ITMPose *pose) const;
 
-			ITMColorTracker_CPU(Vector2i imgSize, TrackerIterationType *trackingRegime, int noHierarchyLevels,
-				const ITMLowLevelEngine *lowLevelEngine);
-			~ITMColorTracker_CPU(void);
-		};
-	}
+		ITMColorTracker_CPU(Vector2i imgSize, TrackerIterationType *trackingRegime, int noHierarchyLevels,
+			const ITMLowLevelEngine *lowLevelEngine);
+		~ITMColorTracker_CPU(void);
+	};
 }

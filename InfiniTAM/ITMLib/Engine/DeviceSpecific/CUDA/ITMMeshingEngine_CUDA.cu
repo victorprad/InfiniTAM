@@ -6,13 +6,13 @@
 
 #include "../../../../ORUtils/CUDADefines.h"
 
+using namespace ITMLib;
+
 template<class TVoxel>
 __global__ void meshScene_device(ITMMesh::Triangle *triangles, unsigned int *noTriangles_device, float factor, int noTotalEntries,
 	int noMaxTriangles, const Vector4s *visibleBlockGlobalPos, const TVoxel *localVBA, const ITMHashEntry *hashTable);
 
 __global__ void findAllocateBlocks(Vector4s *visibleBlockGlobalPos, const ITMHashEntry *hashTable, int noTotalEntries);
-
-using namespace ITMLib::Engine;
 
 template<class TVoxel>
 ITMMeshingEngine_CUDA<TVoxel,ITMVoxelBlockHash>::ITMMeshingEngine_CUDA(void) 
@@ -110,4 +110,4 @@ __global__ void meshScene_device(ITMMesh::Triangle *triangles, unsigned int *noT
 	}
 }
 
-template class ITMLib::Engine::ITMMeshingEngine_CUDA<ITMVoxel, ITMVoxelIndex>;
+template class ITMLib::ITMMeshingEngine_CUDA<ITMVoxel, ITMVoxelIndex>;

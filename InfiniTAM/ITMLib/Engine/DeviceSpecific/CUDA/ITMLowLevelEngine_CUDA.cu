@@ -5,7 +5,7 @@
 
 #include "../../DeviceAgnostic/ITMLowLevelEngine.h"
 
-using namespace ITMLib::Engine;
+using namespace ITMLib;
 
 ITMLowLevelEngine_CUDA::ITMLowLevelEngine_CUDA(void) { }
 ITMLowLevelEngine_CUDA::~ITMLowLevelEngine_CUDA(void) { }

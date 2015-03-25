@@ -11,7 +11,7 @@ struct AllocationTempData {
 	int noVisibleEntries;
 };
 
-using namespace ITMLib::Engine;
+using namespace ITMLib;
 
 template<class TVoxel, bool stopMaxW, bool approximateIntegration>
 __global__ void integrateIntoScene_device(TVoxel *localVBA, const ITMHashEntry *hashTable, int *noVisibleEntryIDs,
@@ -452,5 +452,5 @@ __global__ void buildVisibleList_device(ITMHashEntry *hashTable, ITMHashCacheSta
 #endif
 }
 
-template class ITMLib::Engine::ITMSceneReconstructionEngine_CUDA<ITMVoxel, ITMVoxelIndex>;
+template class ITMLib::ITMSceneReconstructionEngine_CUDA<ITMVoxel, ITMVoxelIndex>;
 

@@ -7,6 +7,8 @@
 #include <android/log.h>
 #include <unistd.h>
 
+using namespace ITMLib;
+
 InfiniTAMApp* InfiniTAMApp::globalInstance = NULL;
 
 InfiniTAMApp::InfiniTAMApp(void)

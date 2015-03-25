@@ -7,29 +7,25 @@
 
 namespace ITMLib
 {
-	namespace Objects
+	/** \brief
+	    Represents a single "view", i.e. RGB and depth images along
+	    with all intrinsic and relative calibration information
+	*/
+	class ITMViewIMU : public ITMView
 	{
-		/** \brief
-		    Represents a single "view", i.e. RGB and depth images along
-		    with all intrinsic and relative calibration information
-		*/
-		class ITMViewIMU : public ITMView
+	public:
+		ITMIMUMeasurement *imu;
+
+		ITMViewIMU(const ITMRGBDCalib *calibration, Vector2i imgSize_rgb, Vector2i imgSize_d, bool useGPU)
+		 : ITMView(calibration, imgSize_rgb, imgSize_d, useGPU)
 		{
-		public:
-			ITMIMUMeasurement *imu;
+			imu = new ITMIMUMeasurement();
+		}
 
-			ITMViewIMU(const ITMRGBDCalib *calibration, Vector2i imgSize_rgb, Vector2i imgSize_d, bool useGPU)
-			 : ITMView(calibration, imgSize_rgb, imgSize_d, useGPU)
-			{
-				imu = new ITMIMUMeasurement();
-			}
+		~ITMViewIMU(void) { delete imu; }
 
-			~ITMViewIMU(void) { delete imu; }
-
-			// Suppress the default copy constructor and assignment operator
-			ITMViewIMU(const ITMViewIMU&);
-			ITMViewIMU& operator=(const ITMViewIMU&);
-		};
-	}
+		// Suppress the default copy constructor and assignment operator
+		ITMViewIMU(const ITMViewIMU&);
+		ITMViewIMU& operator=(const ITMViewIMU&);
+	};
 }
-

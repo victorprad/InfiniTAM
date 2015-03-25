@@ -20,6 +20,8 @@
 #include "../Utils/FileUtils.h"
 
 using namespace InfiniTAM::Engine;
+using namespace ITMLib;
+
 UIEngine* UIEngine::instance;
 
 static void safe_glutBitmapString(void *font, const char *str)

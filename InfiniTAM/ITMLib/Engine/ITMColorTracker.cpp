@@ -5,7 +5,7 @@
 
 #include <math.h>
 
-using namespace ITMLib::Engine;
+using namespace ITMLib;
 
 static inline bool minimizeLM(const ITMColorTracker & tracker, ITMPose & initialization);
 

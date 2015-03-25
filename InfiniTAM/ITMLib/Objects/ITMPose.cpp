@@ -5,7 +5,7 @@
 
 #include <stdio.h>
 
-using namespace ITMLib::Objects;
+using namespace ITMLib;
 
 ITMPose::ITMPose(void) { this->SetFrom(0, 0, 0, 0, 0, 0); }
 

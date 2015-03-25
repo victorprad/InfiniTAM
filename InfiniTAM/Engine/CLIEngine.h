@@ -18,17 +18,17 @@ namespace InfiniTAM
 		{
 			static CLIEngine* instance;
 
-			ITMLibSettings internalSettings;
 			ImageSourceEngine *imageSource;
 			IMUSourceEngine *imuSource;
-			ITMMainEngine *mainEngine;
+			ITMLib::ITMLibSettings internalSettings;
+			ITMLib::ITMMainEngine *mainEngine;
 
 			StopWatchInterface *timer_instant;
 			StopWatchInterface *timer_average;
 
 		private:
 			ITMUChar4Image *inputRGBImage; ITMShortImage *inputRawDepthImage;
-			ITMIMUMeasurement *inputIMUMeasurement;
+			ITMLib::ITMIMUMeasurement *inputIMUMeasurement;
 
 			int currentFrameNo;
 		public:
@@ -39,8 +39,8 @@ namespace InfiniTAM
 
 			float processedTime;
 
-			void Initialise(ImageSourceEngine *imageSource, IMUSourceEngine *imuSource, ITMMainEngine *mainEngine,
-				ITMLibSettings::DeviceType deviceType);
+			void Initialise(ImageSourceEngine *imageSource, IMUSourceEngine *imuSource, ITMLib::ITMMainEngine *mainEngine,
+				ITMLib::ITMLibSettings::DeviceType deviceType);
 			void Shutdown();
 
 			void Run();

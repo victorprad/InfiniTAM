@@ -8,7 +8,7 @@
 
 #include "../../../Objects/ITMRenderState_VH.h"
 
-using namespace ITMLib::Engine;
+using namespace ITMLib;
 
 inline dim3 getGridSize(dim3 taskSize, dim3 blockSize)
 {
@@ -747,4 +747,4 @@ __global__ void renderColour_device(Vector4u *outRendering, const Vector4f *ptsR
 	processPixelColour<TVoxel, TIndex>(outRendering[locId], ptRay.toVector3(), ptRay.w > 0, voxelData, voxelIndex, lightSource);
 }
 
-template class ITMLib::Engine::ITMVisualisationEngine_CUDA < ITMVoxel, ITMVoxelIndex > ;
+template class ITMLib::ITMVisualisationEngine_CUDA < ITMVoxel, ITMVoxelIndex > ;

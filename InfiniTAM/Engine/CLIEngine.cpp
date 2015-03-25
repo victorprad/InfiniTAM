@@ -7,6 +7,8 @@
 #include "../Utils/FileUtils.h"
 
 using namespace InfiniTAM::Engine;
+using namespace ITMLib;
+
 CLIEngine* CLIEngine::instance;
 
 void CLIEngine::Initialise(ImageSourceEngine *imageSource, IMUSourceEngine *imuSource, ITMMainEngine *mainEngine,

@@ -4,9 +4,9 @@
 
 #include <fstream>
 
-using namespace ITMLib::Objects;
+using namespace ITMLib;
 
-bool ITMLib::Objects::readIntrinsics(std::istream & src, ITMIntrinsics & dest)
+bool ITMLib::readIntrinsics(std::istream & src, ITMIntrinsics & dest)
 {
 	float sizeX, sizeY;
 	float focalLength[2], centerPoint[2];
@@ -20,13 +20,13 @@ bool ITMLib::Objects::readIntrinsics(std::istream & src, ITMIntrinsics & dest)
 	return true;
 }
 
-bool ITMLib::Objects::readIntrinsics(const char *fileName, ITMIntrinsics & dest)
+bool ITMLib::readIntrinsics(const char *fileName, ITMIntrinsics & dest)
 {
 	std::ifstream f(fileName);
-	return ITMLib::Objects::readIntrinsics(f, dest);
+	return ITMLib::readIntrinsics(f, dest);
 }
 
-bool ITMLib::Objects::readExtrinsics(std::istream & src, ITMExtrinsics & dest)
+bool ITMLib::readExtrinsics(std::istream & src, ITMExtrinsics & dest)
 {
 	Matrix4f calib;
 	src >> calib.m00 >> calib.m10 >> calib.m20 >> calib.m30;
@@ -39,13 +39,13 @@ bool ITMLib::Objects::readExtrinsics(std::istream & src, ITMExtrinsics & dest)
 	return true;
 }
 
-bool ITMLib::Objects::readExtrinsics(const char *fileName, ITMExtrinsics & dest)
+bool ITMLib::readExtrinsics(const char *fileName, ITMExtrinsics & dest)
 {
 	std::ifstream f(fileName);
-	return ITMLib::Objects::readExtrinsics(f, dest);
+	return ITMLib::readExtrinsics(f, dest);
 }
 
-bool ITMLib::Objects::readDisparityCalib(std::istream & src, ITMDisparityCalib & dest)
+bool ITMLib::readDisparityCalib(std::istream & src, ITMDisparityCalib & dest)
 {
 	float a,b;
 	src >> a >> b;
@@ -55,34 +55,34 @@ bool ITMLib::Objects::readDisparityCalib(std::istream & src, ITMDisparityCalib &
 	return true;
 }
 
-bool ITMLib::Objects::readDisparityCalib(const char *fileName, ITMDisparityCalib & dest)
+bool ITMLib::readDisparityCalib(const char *fileName, ITMDisparityCalib & dest)
 {
 	std::ifstream f(fileName);
-	return ITMLib::Objects::readDisparityCalib(f, dest);
+	return ITMLib::readDisparityCalib(f, dest);
 }
 
-bool ITMLib::Objects::readRGBDCalib(std::istream & src, ITMRGBDCalib & dest)
+bool ITMLib::readRGBDCalib(std::istream & src, ITMRGBDCalib & dest)
 {
-	if (!ITMLib::Objects::readIntrinsics(src, dest.intrinsics_rgb)) return false;
-	if (!ITMLib::Objects::readIntrinsics(src, dest.intrinsics_d)) return false;
-	if (!ITMLib::Objects::readExtrinsics(src, dest.trafo_rgb_to_depth)) return false;
-	if (!ITMLib::Objects::readDisparityCalib(src, dest.disparityCalib)) return false;
+	if (!ITMLib::readIntrinsics(src, dest.intrinsics_rgb)) return false;
+	if (!ITMLib::readIntrinsics(src, dest.intrinsics_d)) return false;
+	if (!ITMLib::readExtrinsics(src, dest.trafo_rgb_to_depth)) return false;
+	if (!ITMLib::readDisparityCalib(src, dest.disparityCalib)) return false;
 	return true;
 }
 
-bool ITMLib::Objects::readRGBDCalib(const char *fileName, ITMRGBDCalib & dest)
+bool ITMLib::readRGBDCalib(const char *fileName, ITMRGBDCalib & dest)
 {
 	std::ifstream f(fileName);
-	return ITMLib::Objects::readRGBDCalib(f, dest);
+	return ITMLib::readRGBDCalib(f, dest);
 }
 
-bool ITMLib::Objects::readRGBDCalib(const char *rgbIntrinsicsFile, const char *depthIntrinsicsFile, const char *disparityCalibFile, const char *extrinsicsFile, ITMRGBDCalib & dest)
+bool ITMLib::readRGBDCalib(const char *rgbIntrinsicsFile, const char *depthIntrinsicsFile, const char *disparityCalibFile, const char *extrinsicsFile, ITMRGBDCalib & dest)
 {
 	bool ret = true;
-	ret &= ITMLib::Objects::readIntrinsics(rgbIntrinsicsFile, dest.intrinsics_rgb);
-	ret &= ITMLib::Objects::readIntrinsics(depthIntrinsicsFile, dest.intrinsics_d);
-	ret &= ITMLib::Objects::readExtrinsics(extrinsicsFile, dest.trafo_rgb_to_depth);
-	ret &= ITMLib::Objects::readDisparityCalib(disparityCalibFile, dest.disparityCalib);
+	ret &= ITMLib::readIntrinsics(rgbIntrinsicsFile, dest.intrinsics_rgb);
+	ret &= ITMLib::readIntrinsics(depthIntrinsicsFile, dest.intrinsics_d);
+	ret &= ITMLib::readExtrinsics(extrinsicsFile, dest.trafo_rgb_to_depth);
+	ret &= ITMLib::readDisparityCalib(disparityCalibFile, dest.disparityCalib);
 	return ret;
 }
 

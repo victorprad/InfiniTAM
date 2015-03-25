@@ -4,7 +4,7 @@
 #include "../../DeviceAgnostic/ITMSceneReconstructionEngine.h"
 #include "../../../Objects/ITMRenderState_VH.h"
 
-using namespace ITMLib::Engine;
+using namespace ITMLib;
 
 template<class TVoxel>
 ITMSceneReconstructionEngine_CPU<TVoxel,ITMVoxelBlockHash>::ITMSceneReconstructionEngine_CPU(void) 
@@ -332,4 +332,4 @@ void ITMSceneReconstructionEngine_CPU<TVoxel, ITMPlainVoxelArray>::IntegrateInto
 	}
 }
 
-template class ITMLib::Engine::ITMSceneReconstructionEngine_CPU<ITMVoxel, ITMVoxelIndex>;
+template class ITMLib::ITMSceneReconstructionEngine_CPU<ITMVoxel, ITMVoxelIndex>;

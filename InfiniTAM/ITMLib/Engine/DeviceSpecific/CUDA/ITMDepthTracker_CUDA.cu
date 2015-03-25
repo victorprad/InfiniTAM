@@ -5,7 +5,7 @@
 #include "../../DeviceAgnostic/ITMDepthTracker.h"
 #include "../../../../ORUtils/CUDADefines.h"
 
-using namespace ITMLib::Engine;
+using namespace ITMLib;
 
 struct ITMDepthTracker_CUDA::AccuCell {
 	int numPoints;

@@ -27,18 +27,18 @@ namespace InfiniTAM
 
 			struct UIColourMode {
 				const char *name;
-				ITMMainEngine::GetImageType type;
-				UIColourMode(const char *_name, ITMMainEngine::GetImageType _type)
+				ITMLib::ITMMainEngine::GetImageType type;
+				UIColourMode(const char *_name, ITMLib::ITMMainEngine::GetImageType _type)
 				 : name(_name), type(_type)
 				{}
 			};
 			std::vector<UIColourMode> colourModes;
 			int currentColourMode;
 
-			ITMLibSettings internalSettings;
 			ImageSourceEngine *imageSource;
 			IMUSourceEngine *imuSource;
-			ITMMainEngine *mainEngine;
+			ITMLib::ITMLibSettings internalSettings;
+			ITMLib::ITMMainEngine *mainEngine;
 
 			StopWatchInterface *timer_instant;
 			StopWatchInterface *timer_average;
@@ -49,15 +49,15 @@ namespace InfiniTAM
 			Vector2i winSize;
 			uint textureId[NUM_WIN];
 			ITMUChar4Image *outImage[NUM_WIN];
-			ITMMainEngine::GetImageType outImageType[NUM_WIN];
+			ITMLib::ITMMainEngine::GetImageType outImageType[NUM_WIN];
 
 			ITMUChar4Image *inputRGBImage; ITMShortImage *inputRawDepthImage;
-			ITMIMUMeasurement *inputIMUMeasurement;
+			ITMLib::ITMIMUMeasurement *inputIMUMeasurement;
 
 			bool freeviewActive;
 			bool intergrationActive;
-			ITMPose freeviewPose;
-			ITMIntrinsics freeviewIntrinsics;
+			ITMLib::ITMPose freeviewPose;
+			ITMLib::ITMIntrinsics freeviewIntrinsics;
 
 			int mouseState;
 			Vector2i mouseLastClick;
@@ -85,8 +85,8 @@ namespace InfiniTAM
 			bool needsRefresh;
 			ITMUChar4Image *saveImage;
 
-			void Initialise(int & argc, char** argv, ImageSourceEngine *imageSource, IMUSourceEngine *imuSource, ITMMainEngine *mainEngine,
-				const char *outFolder, ITMLibSettings::DeviceType deviceType);
+			void Initialise(int & argc, char** argv, ImageSourceEngine *imageSource, IMUSourceEngine *imuSource, ITMLib::ITMMainEngine *mainEngine,
+				const char *outFolder, ITMLib::ITMLibSettings::DeviceType deviceType);
 			void Shutdown();
 
 			void Run();

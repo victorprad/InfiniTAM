@@ -2,7 +2,7 @@
 
 #include "ITMMainEngine.h"
 
-using namespace ITMLib::Engine;
+using namespace ITMLib;
 
 ITMMainEngine::ITMMainEngine(const ITMLibSettings *settings, const ITMRGBDCalib *calib, Vector2i imgSize_rgb, Vector2i imgSize_d)
 {

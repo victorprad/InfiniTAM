@@ -214,8 +214,8 @@ typedef ITMVoxel_s ITMVoxel;
 /** This chooses the way the voxels are addressed and indexed. At the moment,
     valid options are ITMVoxelBlockHash and ITMPlainVoxelArray.
 */
-typedef ITMLib::Objects::ITMVoxelBlockHash ITMVoxelIndex;
-//typedef ITMLib::Objects::ITMPlainVoxelArray ITMVoxelIndex;
+typedef ITMLib::ITMVoxelBlockHash ITMVoxelIndex;
+//typedef ITMLib::ITMPlainVoxelArray ITMVoxelIndex;
 
 #include "../../ORUtils/Image.h"
 

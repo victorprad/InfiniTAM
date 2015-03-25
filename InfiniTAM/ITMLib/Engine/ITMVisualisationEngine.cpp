@@ -2,7 +2,7 @@
 
 #include "ITMVisualisationEngine.h"
 
-using namespace ITMLib::Engine;
+using namespace ITMLib;
 
 inline float interpolate(float val, float y0, float x0, float y1, float x1) {
 	return (val - x0)*(y1 - y0) / (x1 - x0) + y0;
@@ -56,4 +56,4 @@ void IITMVisualisationEngine::DepthToUchar4(ITMUChar4Image *dst, ITMFloatImage *
 	}
 }
 
-template class ITMLib::Engine::ITMVisualisationEngine<ITMVoxel, ITMVoxelIndex>;
+template class ITMLib::ITMVisualisationEngine<ITMVoxel, ITMVoxelIndex>;

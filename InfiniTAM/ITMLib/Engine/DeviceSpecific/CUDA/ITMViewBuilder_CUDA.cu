@@ -6,7 +6,7 @@
 #include "../../DeviceAgnostic/ITMViewBuilder.h"
 #include "../../../../ORUtils/MemoryBlock.h"
 
-using namespace ITMLib::Engine;
+using namespace ITMLib;
 using namespace ORUtils;
 
 ITMViewBuilder_CUDA::ITMViewBuilder_CUDA(const ITMRGBDCalib *calib):ITMViewBuilder(calib) { }

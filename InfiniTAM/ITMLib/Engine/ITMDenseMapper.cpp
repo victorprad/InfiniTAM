@@ -6,7 +6,7 @@
 
 #include "../ITMLib.h"
 
-using namespace ITMLib::Engine;
+using namespace ITMLib;
 
 template<class TVoxel, class TIndex>
 ITMDenseMapper<TVoxel, TIndex>::ITMDenseMapper(const ITMLibSettings *settings)
@@ -64,4 +64,4 @@ void ITMDenseMapper<TVoxel,TIndex>::UpdateVisibleList(const ITMView *view, const
 	sceneRecoEngine->AllocateSceneFromDepth(scene, view, trackingState, renderState, true);
 }
 
-template class ITMLib::Engine::ITMDenseMapper<ITMVoxel, ITMVoxelIndex>;
+template class ITMLib::ITMDenseMapper<ITMVoxel, ITMVoxelIndex>;

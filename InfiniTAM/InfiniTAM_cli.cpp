@@ -8,6 +8,7 @@
 #include "Engine/Kinect2Engine.h"
 
 using namespace InfiniTAM::Engine;
+using namespace ITMLib;
 
 int main(int argc, char** argv)
 try

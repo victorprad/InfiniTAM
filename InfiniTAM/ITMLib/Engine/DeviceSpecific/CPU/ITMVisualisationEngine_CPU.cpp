@@ -8,7 +8,7 @@
 
 #include <vector>
 
-using namespace ITMLib::Engine;
+using namespace ITMLib;
 
 template<class TVoxel, class TIndex>
 static int RenderPointCloud(Vector4u *outRendering, Vector4f *locations, Vector4f *colours, const Vector4f *ptsRay, 
@@ -475,4 +475,4 @@ static int RenderPointCloud(Vector4u *outRendering, Vector4f *locations, Vector4
 	return noTotalPoints;
 }
 
-template class ITMLib::Engine::ITMVisualisationEngine_CPU<ITMVoxel, ITMVoxelIndex>;
+template class ITMLib::ITMVisualisationEngine_CPU<ITMVoxel, ITMVoxelIndex>;

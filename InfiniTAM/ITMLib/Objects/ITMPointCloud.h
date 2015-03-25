@@ -9,44 +9,41 @@
 
 namespace ITMLib
 {
-	namespace Objects
+	class ITMPointCloud
 	{
-		class ITMPointCloud
+	public:
+		uint noTotalPoints;
+
+		ORUtils::Image<Vector4f> *locations, *colours;
+
+		explicit ITMPointCloud(Vector2i imgSize, MemoryDeviceType memoryType)
 		{
-		public:
-			uint noTotalPoints;
+			this->noTotalPoints = 0;
 
-			ORUtils::Image<Vector4f> *locations, *colours;
+			locations = new ORUtils::Image<Vector4f>(imgSize, memoryType);
+			colours = new ORUtils::Image<Vector4f>(imgSize, memoryType);
+		}
 
-			explicit ITMPointCloud(Vector2i imgSize, MemoryDeviceType memoryType)
-			{
-				this->noTotalPoints = 0;
+		void UpdateHostFromDevice()
+		{
+			this->locations->UpdateHostFromDevice();
+			this->colours->UpdateHostFromDevice();
+		}
 
-				locations = new ORUtils::Image<Vector4f>(imgSize, memoryType);
-				colours = new ORUtils::Image<Vector4f>(imgSize, memoryType);
-			}
+		void UpdateDeviceFromHost()
+		{
+			this->locations->UpdateDeviceFromHost();
+			this->colours->UpdateDeviceFromHost();
+		}
 
-			void UpdateHostFromDevice()
-			{
-				this->locations->UpdateHostFromDevice();
-				this->colours->UpdateHostFromDevice();
-			}
+		~ITMPointCloud()
+		{
+			delete locations;
+			delete colours;
+		}
 
-			void UpdateDeviceFromHost()
-			{
-				this->locations->UpdateDeviceFromHost();
-				this->colours->UpdateDeviceFromHost();
-			}
-
-			~ITMPointCloud()
-			{
-				delete locations;
-				delete colours;
-			}
-
-			// Suppress the default copy constructor and assignment operator
-			ITMPointCloud(const ITMPointCloud&);
-			ITMPointCloud& operator=(const ITMPointCloud&);
-		};
-	}
+		// Suppress the default copy constructor and assignment operator
+		ITMPointCloud(const ITMPointCloud&);
+		ITMPointCloud& operator=(const ITMPointCloud&);
+	};
 }

@@ -4,7 +4,7 @@
 #include "../../DeviceAgnostic/ITMColorTracker.h"
 #include "../../DeviceAgnostic/ITMPixelUtils.h"
 
-using namespace ITMLib::Engine;
+using namespace ITMLib;
 
 ITMColorTracker_CPU::ITMColorTracker_CPU(Vector2i imgSize, TrackerIterationType *trackingRegime, int noHierarchyLevels, const ITMLowLevelEngine *lowLevelEngine)
 	: ITMColorTracker(imgSize, trackingRegime, noHierarchyLevels, lowLevelEngine, MEMORYDEVICE_CPU) {  }

@@ -31,11 +31,11 @@ class InfiniTAMApp {
 
 	InfiniTAM::Engine::ImageSourceEngine *mImageSource;
 	InfiniTAM::Engine::IMUSourceEngine *mImuSource;
-	ITMLib::Objects::ITMLibSettings *mInternalSettings;
-	ITMLib::Engine::ITMMainEngine *mMainEngine;
+	ITMLib::ITMLibSettings *mInternalSettings;
+	ITMLib::ITMMainEngine *mMainEngine;
 
 	ITMUChar4Image *inputRGBImage; ITMShortImage *inputRawDepthImage;
-	ITMIMUMeasurement *inputIMUMeasurement;
+	ITMLib::ITMIMUMeasurement *inputIMUMeasurement;
 
 	StopWatchInterface *timer_instant;
 	StopWatchInterface *timer_average;
@@ -43,7 +43,7 @@ class InfiniTAMApp {
 	static const int NUM_WIN = 3;
 	Vector4f winPos[NUM_WIN];
 	uint textureId[NUM_WIN];
-	ITMMainEngine::GetImageType winImageType[NUM_WIN];
+	ITMLib::ITMMainEngine::GetImageType winImageType[NUM_WIN];
 	ITMUChar4Image *outImage[NUM_WIN];
 
 	Vector2i mNewWindowSize;

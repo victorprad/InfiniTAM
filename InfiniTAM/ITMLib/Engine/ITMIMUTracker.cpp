@@ -3,7 +3,7 @@
 #include "ITMIMUTracker.h"
 #include "../Objects/ITMViewIMU.h"
 
-using namespace ITMLib::Engine;
+using namespace ITMLib;
 
 ITMIMUTracker::ITMIMUTracker(ITMIMUCalibrator *calibrator)
 {

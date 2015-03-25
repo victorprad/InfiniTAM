@@ -5,7 +5,7 @@
 
 #include <math.h>
 
-using namespace ITMLib::Engine;
+using namespace ITMLib;
 
 ITMDepthTracker::ITMDepthTracker(Vector2i imgSize, TrackerIterationType *trackingRegime, int noHierarchyLevels, int noICPRunTillLevel, float distThresh,
 	float terminationThreshold, const ITMLowLevelEngine *lowLevelEngine, MemoryDeviceType memoryType)
