@@ -87,24 +87,6 @@ ITMMainEngine::~ITMMainEngine()
 	delete mesh;
 }
 
-void ITMMainEngine::ProcessFrame(ITMUChar4Image *rgbImage, ITMShortImage *rawDepthImage)
-{
-	// prepare image and turn it into a depth image
-	viewBuilder->UpdateView(&view, rgbImage, rawDepthImage, settings->useBilateralFilter);
-	//viewBuilder->SmoothRawDepth(&view, trackingState->pose_d->GetInvM());
-
-	if (!mainProcessingActive) return;
-
-	// tracking
-	trackingController->Track(trackingState, view);
-
-	// fusion
-	if (fusionActive) denseMapper->ProcessFrame(view, trackingState, scene, renderState_live);
-
-	// raycast to renderState_live for tracking and free visualisation
-	trackingController->Prepare(trackingState, view, renderState_live);
-}
-
 void ITMMainEngine::SaveSceneToMesh(const char *objFileName)
 {
 	meshingEngine->MeshScene(mesh, scene);
@@ -114,7 +96,8 @@ void ITMMainEngine::SaveSceneToMesh(const char *objFileName)
 void ITMMainEngine::ProcessFrame(ITMUChar4Image *rgbImage, ITMShortImage *rawDepthImage, ITMIMUMeasurement *imuMeasurement)
 {
 	// prepare image and turn it into a depth image
-	viewBuilder->UpdateView(&view, rgbImage, rawDepthImage, settings->useBilateralFilter, imuMeasurement);
+	if (imuMeasurement==NULL) viewBuilder->UpdateView(&view, rgbImage, rawDepthImage, settings->useBilateralFilter);
+	else viewBuilder->UpdateView(&view, rgbImage, rawDepthImage, settings->useBilateralFilter, imuMeasurement);
 
 	if (!mainProcessingActive) return;
 
