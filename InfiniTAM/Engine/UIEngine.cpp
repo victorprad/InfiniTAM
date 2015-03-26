@@ -19,6 +19,8 @@
 
 #include "../Utils/FileUtils.h"
 
+#include "../ITMLib/Engine/ITMBasicEngine.h"
+
 using namespace InfiniTAM::Engine;
 using namespace ITMLib;
 
@@ -191,7 +193,7 @@ void UIEngine::glutKeyUpFunction(unsigned char key, int x, int y)
 			uiEngine->outImageType[0] = ITMMainEngine::InfiniTAM_IMAGE_FREECAMERA_SHADED;
 			uiEngine->outImageType[1] = ITMMainEngine::InfiniTAM_IMAGE_SCENERAYCAST;
 
-			uiEngine->freeviewPose.SetFrom(uiEngine->mainEngine->trackingState->pose_d);
+			uiEngine->freeviewPose.SetFrom(uiEngine->mainEngine->GetTrackingState()->pose_d);
 			if (uiEngine->mainEngine->GetView() != NULL) {
 				uiEngine->freeviewIntrinsics = uiEngine->mainEngine->GetView()->calib->intrinsics_d;
 				uiEngine->outImage[0]->ChangeDims(uiEngine->mainEngine->GetView()->depth->noDims);
@@ -205,14 +207,24 @@ void UIEngine::glutKeyUpFunction(unsigned char key, int x, int y)
 		uiEngine->needsRefresh = true;
 		break;
 	case 't':
+		{
 		uiEngine->intergrationActive = !uiEngine->intergrationActive;
-		if (uiEngine->intergrationActive) uiEngine->mainEngine->turnOnIntegration();
-		else uiEngine->mainEngine->turnOffIntegration();
+		ITMBasicEngine *basicEngine = dynamic_cast<ITMBasicEngine*>(uiEngine->mainEngine); 
+		if (basicEngine != NULL) {
+			if (uiEngine->intergrationActive) basicEngine->turnOnIntegration();
+			else basicEngine->turnOffIntegration();
+		}
+		}
 		break;
 	case 'w':
-		printf("saving mesh to disk ...");
-		uiEngine->SaveSceneToMesh("mesh.stl");
-		printf(" done\n");
+		{
+		ITMBasicEngine *basicEngine = dynamic_cast<ITMBasicEngine*>(uiEngine->mainEngine); 
+		if (basicEngine != NULL) {
+			printf("saving mesh to disk ...");
+			basicEngine->SaveSceneToMesh("mesh.stl");
+			printf(" done\n");
+		}
+		}
 		break;
 	default:
 		break;
@@ -423,11 +435,6 @@ void UIEngine::SaveScreenshot(const char *filename) const
 	ITMUChar4Image screenshot(getWindowSize(), true, false);
 	GetScreenshot(&screenshot);
 	SaveImageToFile(&screenshot, filename, true);
-}
-
-void UIEngine::SaveSceneToMesh(const char *filename) const
-{
-	mainEngine->SaveSceneToMesh(filename);
 }
 
 void UIEngine::GetScreenshot(ITMUChar4Image *dest) const

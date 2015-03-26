@@ -1,10 +1,10 @@
 // Copyright 2014 Isis Innovation Limited and the authors of InfiniTAM
 
-#include "ITMMainEngine.h"
+#include "ITMBasicEngine.h"
 
 using namespace ITMLib;
 
-ITMMainEngine::ITMMainEngine(const ITMLibSettings *settings, const ITMRGBDCalib *calib, Vector2i imgSize_rgb, Vector2i imgSize_d)
+ITMBasicEngine::ITMBasicEngine(const ITMLibSettings *settings, const ITMRGBDCalib *calib, Vector2i imgSize_rgb, Vector2i imgSize_d)
 {
 	if ((imgSize_d.x == -1) || (imgSize_d.y == -1)) imgSize_d = imgSize_rgb;
 
@@ -61,7 +61,7 @@ ITMMainEngine::ITMMainEngine(const ITMLibSettings *settings, const ITMRGBDCalib 
 	mainProcessingActive = true;
 }
 
-ITMMainEngine::~ITMMainEngine()
+ITMBasicEngine::~ITMBasicEngine()
 {
 	delete renderState_live;
 	if (renderState_freeview!=NULL) delete renderState_freeview;
@@ -87,13 +87,13 @@ ITMMainEngine::~ITMMainEngine()
 	delete mesh;
 }
 
-void ITMMainEngine::SaveSceneToMesh(const char *objFileName)
+void ITMBasicEngine::SaveSceneToMesh(const char *objFileName)
 {
 	meshingEngine->MeshScene(mesh, scene);
 	mesh->WriteSTL(objFileName);
 }
 
-void ITMMainEngine::ProcessFrame(ITMUChar4Image *rgbImage, ITMShortImage *rawDepthImage, ITMIMUMeasurement *imuMeasurement)
+void ITMBasicEngine::ProcessFrame(ITMUChar4Image *rgbImage, ITMShortImage *rawDepthImage, ITMIMUMeasurement *imuMeasurement)
 {
 	// prepare image and turn it into a depth image
 	if (imuMeasurement==NULL) viewBuilder->UpdateView(&view, rgbImage, rawDepthImage, settings->useBilateralFilter);
@@ -111,12 +111,12 @@ void ITMMainEngine::ProcessFrame(ITMUChar4Image *rgbImage, ITMShortImage *rawDep
 	trackingController->Prepare(trackingState, scene, view, renderState_live);
 }
 
-Vector2i ITMMainEngine::GetImageSize(void) const
+Vector2i ITMBasicEngine::GetImageSize(void) const
 {
 	return renderState_live->raycastImage->noDims;
 }
 
-void ITMMainEngine::GetImage(ITMUChar4Image *out, GetImageType getImageType, ITMPose *pose, ITMIntrinsics *intrinsics)
+void ITMBasicEngine::GetImage(ITMUChar4Image *out, GetImageType getImageType, ITMPose *pose, ITMIntrinsics *intrinsics)
 {
 	if (view == NULL) return;
 
@@ -124,18 +124,18 @@ void ITMMainEngine::GetImage(ITMUChar4Image *out, GetImageType getImageType, ITM
 
 	switch (getImageType)
 	{
-	case ITMMainEngine::InfiniTAM_IMAGE_ORIGINAL_RGB:
+	case ITMBasicEngine::InfiniTAM_IMAGE_ORIGINAL_RGB:
 		out->ChangeDims(view->rgb->noDims);
 		if (settings->deviceType == ITMLibSettings::DEVICE_CUDA) 
 			out->SetFrom(view->rgb, ORUtils::MemoryBlock<Vector4u>::CUDA_TO_CPU);
 		else out->SetFrom(view->rgb, ORUtils::MemoryBlock<Vector4u>::CPU_TO_CPU);
 		break;
-	case ITMMainEngine::InfiniTAM_IMAGE_ORIGINAL_DEPTH:
+	case ITMBasicEngine::InfiniTAM_IMAGE_ORIGINAL_DEPTH:
 		out->ChangeDims(view->depth->noDims);
 		if (settings->deviceType == ITMLibSettings::DEVICE_CUDA) view->depth->UpdateHostFromDevice();
 		ITMVisualisationEngine<ITMVoxel,ITMVoxelIndex>::DepthToUchar4(out, view->depth);
 		break;
-	case ITMMainEngine::InfiniTAM_IMAGE_SCENERAYCAST:
+	case ITMBasicEngine::InfiniTAM_IMAGE_SCENERAYCAST:
 	{
 		ORUtils::Image<Vector4u> *srcImage = renderState_live->raycastImage;
 		out->ChangeDims(srcImage->noDims);
@@ -144,12 +144,12 @@ void ITMMainEngine::GetImage(ITMUChar4Image *out, GetImageType getImageType, ITM
 		else out->SetFrom(srcImage, ORUtils::MemoryBlock<Vector4u>::CPU_TO_CPU);	
 		break;
 	}
-	case ITMMainEngine::InfiniTAM_IMAGE_FREECAMERA_SHADED:
-	case ITMMainEngine::InfiniTAM_IMAGE_FREECAMERA_COLOUR_FROM_VOLUME:
-	case ITMMainEngine::InfiniTAM_IMAGE_FREECAMERA_COLOUR_FROM_NORMAL:
+	case ITMBasicEngine::InfiniTAM_IMAGE_FREECAMERA_SHADED:
+	case ITMBasicEngine::InfiniTAM_IMAGE_FREECAMERA_COLOUR_FROM_VOLUME:
+	case ITMBasicEngine::InfiniTAM_IMAGE_FREECAMERA_COLOUR_FROM_NORMAL:
 		IITMVisualisationEngine::RenderImageType type = IITMVisualisationEngine::RENDER_SHADED_GREYSCALE;
-		if (getImageType == ITMMainEngine::InfiniTAM_IMAGE_FREECAMERA_COLOUR_FROM_VOLUME) type = IITMVisualisationEngine::RENDER_COLOUR_FROM_VOLUME;
-		else if (getImageType == ITMMainEngine::InfiniTAM_IMAGE_FREECAMERA_COLOUR_FROM_NORMAL) type = IITMVisualisationEngine::RENDER_COLOUR_FROM_NORMAL;
+		if (getImageType == ITMBasicEngine::InfiniTAM_IMAGE_FREECAMERA_COLOUR_FROM_VOLUME) type = IITMVisualisationEngine::RENDER_COLOUR_FROM_VOLUME;
+		else if (getImageType == ITMBasicEngine::InfiniTAM_IMAGE_FREECAMERA_COLOUR_FROM_NORMAL) type = IITMVisualisationEngine::RENDER_COLOUR_FROM_NORMAL;
 		if (renderState_freeview == NULL) renderState_freeview = visualisationEngine->CreateRenderState(scene, out->noDims);
 
 		visualisationEngine->FindVisibleBlocks(scene, pose, intrinsics, renderState_freeview);
@@ -163,7 +163,7 @@ void ITMMainEngine::GetImage(ITMUChar4Image *out, GetImageType getImageType, ITM
 	};
 }
 
-void ITMMainEngine::turnOnIntegration() { fusionActive = true; }
-void ITMMainEngine::turnOffIntegration() { fusionActive = false; }
-void ITMMainEngine::turnOnMainProcessing() { mainProcessingActive = true; }
-void ITMMainEngine::turnOffMainProcessing() { mainProcessingActive = false; }
+void ITMBasicEngine::turnOnIntegration() { fusionActive = true; }
+void ITMBasicEngine::turnOffIntegration() { fusionActive = false; }
+void ITMBasicEngine::turnOnMainProcessing() { mainProcessingActive = true; }
+void ITMBasicEngine::turnOffMainProcessing() { mainProcessingActive = false; }

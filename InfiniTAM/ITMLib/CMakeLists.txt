@@ -13,7 +13,8 @@ Engine/ITMColorTracker.cpp
 Engine/ITMDenseMapper.cpp
 Engine/ITMDepthTracker.cpp
 Engine/ITMIMUTracker.cpp
-Engine/ITMMainEngine.cpp
+Engine/ITMBasicEngine.cpp
+Engine/ITMMultiEngine.cpp
 Engine/ITMRenTracker.cpp
 Engine/ITMTrackerFactory.cpp
 Engine/ITMTrackingController.cpp
@@ -29,6 +30,8 @@ Engine/ITMIMUCalibrator.h
 Engine/ITMIMUTracker.h
 Engine/ITMLowLevelEngine.h
 Engine/ITMMainEngine.h
+Engine/ITMBasicEngine.h
+Engine/ITMMultiEngine.h
 Engine/ITMRenTracker.h
 Engine/ITMSceneReconstructionEngine.h
 Engine/ITMSwappingEngine.h

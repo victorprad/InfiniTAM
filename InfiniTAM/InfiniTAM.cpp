@@ -6,6 +6,8 @@
 #include "Engine/ImageSourceEngine.h"
 #include "Engine/OpenNIEngine.h"
 #include "Engine/Kinect2Engine.h"
+#include "ITMLib/Engine/ITMBasicEngine.h"
+#include "ITMLib/Engine/ITMMultiEngine.h"
 
 using namespace InfiniTAM::Engine;
 using namespace ITMLib;
@@ -71,7 +73,7 @@ try
 		}
 	}
 
-	ITMMainEngine *mainEngine = new ITMMainEngine(internalSettings, &imageSource->calib, imageSource->getRGBImageSize(), imageSource->getDepthImageSize());
+	ITMMainEngine *mainEngine = new ITMMultiEngine(internalSettings, &imageSource->calib, imageSource->getRGBImageSize(), imageSource->getDepthImageSize());
 
 	UIEngine::Instance()->Initialise(argc, argv, imageSource, imuSource, mainEngine, "./Files/Out", internalSettings->deviceType);
 	UIEngine::Instance()->Run();

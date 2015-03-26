@@ -6,6 +6,7 @@
 #include "Engine/ImageSourceEngine.h"
 #include "Engine/OpenNIEngine.h"
 #include "Engine/Kinect2Engine.h"
+#include "ITMLib/Engine/ITMBasicEngine.h"
 
 using namespace InfiniTAM::Engine;
 using namespace ITMLib;
@@ -71,7 +72,7 @@ try
 		}
 	}
 
-	ITMMainEngine *mainEngine = new ITMMainEngine(internalSettings, &imageSource->calib, imageSource->getRGBImageSize(), imageSource->getDepthImageSize());
+	ITMMainEngine *mainEngine = new ITMBasicEngine(internalSettings, &imageSource->calib, imageSource->getRGBImageSize(), imageSource->getDepthImageSize());
 
 	CLIEngine::Instance()->Initialise(imageSource, imuSource, mainEngine, internalSettings->deviceType);
 	CLIEngine::Instance()->Run();
