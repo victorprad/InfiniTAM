@@ -45,7 +45,7 @@ namespace ITMLib
 			ORUtils::MemoryBlock<int> *allocationList_host;
 
 			voxelBlocks_host = new ORUtils::MemoryBlock<TVoxel>(allocatedSize, MEMORYDEVICE_CPU);
-			allocationList_host = new ORUtils::MemoryBlock<int>(allocatedSize, MEMORYDEVICE_CPU);
+			allocationList_host = new ORUtils::MemoryBlock<int>(noBlocks, MEMORYDEVICE_CPU);
 
 			TVoxel* voxelBlocks_host_ptr = voxelBlocks_host->GetData(MEMORYDEVICE_CPU);
 			int* allocationList_host_ptr = allocationList_host->GetData(MEMORYDEVICE_CPU);
