@@ -337,9 +337,7 @@ static void ForwardRender_common(const ITMScene<TVoxel, TIndex> *scene, const IT
 		}
 	}
 
-	printf("%d\n", noMissingPoints);
-
-    renderState->noFwdProjMissingPoints = noMissingPoints;
+	renderState->noFwdProjMissingPoints = noMissingPoints;
     
 	for (int pointId = 0; pointId < noMissingPoints; pointId++)
 	{
