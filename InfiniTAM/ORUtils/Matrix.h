@@ -93,6 +93,18 @@ namespace ORUtils {
 			return mtrans;
 		}
 		
+		_CPU_AND_GPU_CODE_ inline friend Matrix4 operator * (const Matrix4 &lhs, const T &rhs)	{ 
+			Matrix4 r;
+			for (int i = 0; i < 16; i++) r.m[i] = lhs.m[i] * rhs;
+			return r;
+		}
+
+		_CPU_AND_GPU_CODE_ inline friend Matrix4 operator / (const Matrix4 &lhs, const T &rhs)	{ 
+			Matrix4 r;
+			for (int i = 0; i < 16; i++) r.m[i] = lhs.m[i] / rhs;
+			return r;
+		}
+
 		_CPU_AND_GPU_CODE_ inline friend Matrix4 operator * (const Matrix4 &lhs, const Matrix4 &rhs)	{ 
 			Matrix4 r;
 			r.setZeros();

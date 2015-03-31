@@ -3,39 +3,13 @@
 #pragma once
 
 #include "../ITMLib.h"
-#include "../Utils/ITMLibSettings.h"
 #include "ITMMainEngine.h"
+#include "../Objects/ITMLocalScene.h"
 
 #include <vector>
 
 namespace ITMLib
 {
-	template<class TVoxel,class TIndex>
-	class ITMLocalModelData
-	{
-	public:
-		ITMScene<TVoxel,TIndex> *scene;
-		ITMRenderState *renderState;
-		ITMTrackingState *trackingState;
-
-		ITMLocalModelData(const ITMLibSettings *settings, const IITMVisualisationEngine *visualisationEngine, const ITMTrackingController *trackingController, const Vector2i & trackedImageSize)
-		{
-			scene = new ITMScene<TVoxel,TIndex>(&(settings->sceneParams), settings->useSwapping, settings->deviceType == ITMLibSettings::DEVICE_CUDA ? MEMORYDEVICE_CUDA : MEMORYDEVICE_CPU);
-			renderState = visualisationEngine->CreateRenderState(scene, trackedImageSize);
-			trackingState = trackingController->BuildTrackingState(trackedImageSize);
-		}
-		~ITMLocalModelData(void)
-		{
-			delete scene;
-			delete renderState;
-			delete trackingState;
-		}
-
-	/*	ITMScene<TVoxel,TIndex>* getScene(void) { return scene; }
-		ITMRenderState* getRenderState(void) { return renderState; }
-		ITMTrackingState* getTrackingState(void) { return trackingState; }*/
-	};
-
 	/** \brief
 	*/
 	class ITMMultiEngine : public ITMMainEngine
@@ -52,7 +26,8 @@ namespace ITMLib
 		ITMIMUCalibrator *imuCalibrator;
 		ITMDenseMapper<ITMVoxel,ITMVoxelIndex> *denseMapper;
 
-		std::vector<ITMLocalModelData<ITMVoxel,ITMVoxelIndex>*> allData;
+		std::vector<ITMLocalScene<ITMVoxel,ITMVoxelIndex>*> allData;
+		std::vector<std::map<int,ITMPoseConstraint> > allRelations;
 		std::vector<int> activeDataIdx;
 		int primaryDataIdx;
 

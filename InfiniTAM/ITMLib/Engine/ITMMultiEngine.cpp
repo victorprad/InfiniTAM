@@ -44,7 +44,8 @@ ITMMultiEngine::ITMMultiEngine(const ITMLibSettings *settings, const ITMRGBDCali
 	trackingController = new ITMTrackingController(tracker, visualisationEngine, lowLevelEngine, settings);
 
 //	trackingState = trackingController->BuildTrackingState(trackedImageSize);
-	allData.push_back(new ITMLocalModelData<ITMVoxel,ITMVoxelIndex>(settings, visualisationEngine, trackingController, trackedImageSize));
+	allData.push_back(new ITMLocalScene<ITMVoxel,ITMVoxelIndex>(settings, visualisationEngine, trackingController, trackedImageSize));
+	allRelations.push_back(std::map<int, ITMPoseConstraint>());
 	activeDataIdx.push_back(0);
 	primaryDataIdx = 0;
 
@@ -95,7 +96,8 @@ void ITMMultiEngine::ProcessFrame(ITMUChar4Image *rgbImage, ITMShortImage *rawDe
 
 	if (shouldStartNewArea()) {
 		int newIdx = allData.size();
-		allData.push_back(new ITMLocalModelData<ITMVoxel,ITMVoxelIndex>(settings, visualisationEngine, trackingController, trackedImageSize));
+		allData.push_back(new ITMLocalScene<ITMVoxel,ITMVoxelIndex>(settings, visualisationEngine, trackingController, trackedImageSize));
+		allRelations.push_back(std::map<int, ITMPoseConstraint>());
 		if (activeDataIdx.size()<2) activeDataIdx.push_back(newIdx);
 		else {
 			for (int i = 1; (unsigned)i < activeDataIdx.size(); ++i) activeDataIdx[i-1] = activeDataIdx[i];
@@ -107,7 +109,7 @@ void ITMMultiEngine::ProcessFrame(ITMUChar4Image *rgbImage, ITMShortImage *rawDe
 	fprintf(stderr, "processing data block:");
 	for (int i = 0; (unsigned)i < activeDataIdx.size(); ++i)
 	{
-		ITMLocalModelData<ITMVoxel,ITMVoxelIndex> *activeData = allData[activeDataIdx[i]];
+		ITMLocalScene<ITMVoxel,ITMVoxelIndex> *activeData = allData[activeDataIdx[i]];
 		int blocksInUse = activeData->scene->index.getNumAllocatedVoxelBlocks()-activeData->scene->localVBA.lastFreeBlockId - 1;
 		fprintf(stderr, " %i%s (%i)", activeDataIdx[i], (activeDataIdx[i]==primaryDataIdx)?"*":"", blocksInUse);
 
@@ -121,6 +123,38 @@ void ITMMultiEngine::ProcessFrame(ITMUChar4Image *rgbImage, ITMShortImage *rawDe
 		trackingController->Prepare(activeData->trackingState, activeData->scene, view, activeData->renderState);
 	}
 fprintf(stderr, "...done!\n");
+
+	// compute relative pose information
+	for (int i = 0; (unsigned)i < activeDataIdx.size(); ++i) {
+		int iIdx = activeDataIdx[i];
+		Matrix4f Ti_inv = allData[iIdx]->trackingState->pose_d->GetInvM();
+		for (int j = 0; (unsigned)j < activeDataIdx.size(); ++j) {
+			int jIdx = activeDataIdx[j];
+			if (iIdx == jIdx) continue;
+
+			Matrix4f Tj = allData[jIdx]->trackingState->pose_d->GetM();
+			Matrix4f Tji = Tj * Ti_inv;
+
+			allRelations[iIdx][jIdx].AddObservation(Tji);
+		}
+	}
+	for (int i = 0; (unsigned)i < activeDataIdx.size(); ++i) {
+		int iIdx = activeDataIdx[i];
+		for (int j = 0; (unsigned)j < activeDataIdx.size(); ++j) {
+			int jIdx = activeDataIdx[j];
+			if (iIdx == jIdx) continue;
+
+			fprintf(stderr, "relative pose %i -> %i\n", iIdx,jIdx);
+			Matrix4f Tji = allRelations[iIdx][jIdx].GetAccumulatedInfo();
+			Matrix4f Tij;
+			Tji.inv(Tij);
+			for (int r = 0; r < 4; ++r) {
+			fprintf(stderr, "%f %f %f %f    %f %f %f %f\n",
+				Tji.at(0,r), Tji.at(1,r), Tji.at(2,r), Tji.at(3,r),
+				Tij.at(0,r), Tij.at(1,r), Tij.at(2,r), Tij.at(3,r));
+			}
+		}
+	}
 }
 
 Vector2i ITMMultiEngine::GetImageSize(void) const
@@ -149,7 +183,7 @@ void ITMMultiEngine::GetImage(ITMUChar4Image *out, GetImageType getImageType, IT
 		break;
 	case ITMMultiEngine::InfiniTAM_IMAGE_SCENERAYCAST:
 	{
-		ITMLocalModelData<ITMVoxel,ITMVoxelIndex> *activeData = allData[primaryDataIdx];
+		ITMLocalScene<ITMVoxel,ITMVoxelIndex> *activeData = allData[primaryDataIdx];
 		ORUtils::Image<Vector4u> *srcImage = activeData->renderState->raycastImage;
 		out->ChangeDims(srcImage->noDims);
 		if (settings->deviceType == ITMLibSettings::DEVICE_CUDA)
@@ -162,7 +196,7 @@ void ITMMultiEngine::GetImage(ITMUChar4Image *out, GetImageType getImageType, IT
 	case ITMMultiEngine::InfiniTAM_IMAGE_FREECAMERA_COLOUR_FROM_NORMAL:
 	{
 		IITMVisualisationEngine::RenderImageType type = IITMVisualisationEngine::RENDER_SHADED_GREYSCALE;
-		ITMLocalModelData<ITMVoxel,ITMVoxelIndex> *activeData = allData[primaryDataIdx];
+		ITMLocalScene<ITMVoxel,ITMVoxelIndex> *activeData = allData[primaryDataIdx];
 		if (getImageType == ITMMultiEngine::InfiniTAM_IMAGE_FREECAMERA_COLOUR_FROM_VOLUME) type = IITMVisualisationEngine::RENDER_COLOUR_FROM_VOLUME;
 		else if (getImageType == ITMMultiEngine::InfiniTAM_IMAGE_FREECAMERA_COLOUR_FROM_NORMAL) type = IITMVisualisationEngine::RENDER_COLOUR_FROM_NORMAL;
 		if (renderState_freeview == NULL) renderState_freeview = visualisationEngine->CreateRenderState(activeData->scene, out->noDims);
