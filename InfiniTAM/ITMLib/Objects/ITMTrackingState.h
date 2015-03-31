@@ -31,11 +31,33 @@ namespace ITMLib
 			/// The pose used to generate the point cloud.
 			ITMPose *pose_pointCloud;
 
+			int age_pointCloud;
+
 			/// Current pose of the depth camera.
 			ITMPose *pose_d;
 
-            bool requiresFullRendering;
-            
+			bool requiresFullRendering;
+
+			bool TrackerFarFromPointCloud(void) const
+			{
+				// if no point cloud exists, yet
+				if (age_pointCloud < 0) return true;
+				// if the point cloud is older than n frames
+				if (age_pointCloud > 5) return true;
+
+				Vector3f cameraCenter_pc = -1.0f * (pose_pointCloud->GetR().t() * pose_pointCloud->GetT());
+				Vector3f cameraCenter_live = -1.0f * (pose_d->GetR().t() * pose_d->GetT());
+
+				Vector3f diff3 = cameraCenter_pc - cameraCenter_live;
+
+				float diff = diff3.x * diff3.x + diff3.y * diff3.y + diff3.z * diff3.z;
+
+				// if the camera center has moved by more than a threshold
+				if (diff > 0.0005f) return true;
+
+				return false;
+			}
+
 			ITMTrackingState(Vector2i imgSize, MemoryDeviceType memoryType)
 			{
 				this->pointCloud = new ITMPointCloud(imgSize, memoryType);
@@ -43,6 +65,7 @@ namespace ITMLib
 				this->pose_d = new ITMPose();
 				this->pose_d->SetFrom(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
 
+				this->age_pointCloud = -1;
 				this->pose_pointCloud = new ITMPose();
 				this->pose_pointCloud->SetFrom(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
 

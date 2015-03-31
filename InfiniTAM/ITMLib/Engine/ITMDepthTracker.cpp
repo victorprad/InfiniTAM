@@ -100,10 +100,8 @@ void ITMDepthTracker::ComputeDelta(float *step, float *nabla, float *hessian, bo
 	}
 }
 
-bool ITMDepthTracker::HasConverged(float f_new, float f_old, float *step) const
+bool ITMDepthTracker::HasConverged(float *step) const
 {
-	if (f_new > f_old) return true;
-
 	float stepLength = 0.0f;
 	for (int i = 0; i < 6; i++) stepLength += step[i] * step[i];
 
@@ -162,16 +160,16 @@ void ITMDepthTracker::TrackCamera(ITMTrackingState *trackingState, const ITMView
 		{
 			int noValidPoints = this->ComputeGandH(f_new, nabla, hessian, approxInvPose);
 
-			if (noValidPoints > 0)
-			{
-				ComputeDelta(step, nabla, hessian, iterationType != TRACKER_ITERATION_BOTH);
-				if (HasConverged(f_new, f_old, step)) break;
-				ApplyDelta(approxInvPose, step, approxInvPose);
-			}
+			if (noValidPoints <= 0) break;
+			if (f_new > f_old) break;
+
+			ComputeDelta(step, nabla, hessian, iterationType != TRACKER_ITERATION_BOTH);
+			ApplyDelta(approxInvPose, step, approxInvPose);
+			trackingState->pose_d->SetInvM(approxInvPose);
+			trackingState->pose_d->Coerce();
+			approxInvPose = trackingState->pose_d->GetInvM();
+			if (HasConverged(step)) break;
 		}
 	}
-
-	trackingState->pose_d->SetInvM(approxInvPose);
-	trackingState->pose_d->Coerce();
 }
 

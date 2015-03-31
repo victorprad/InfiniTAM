@@ -49,10 +49,6 @@ namespace ITMLib
 		template<class TVoxel>
 		class ITMSceneReconstructionEngine_CPU<TVoxel, ITMPlainVoxelArray> : public ITMSceneReconstructionEngine < TVoxel, ITMPlainVoxelArray >
 		{
-		private:
-			unsigned char *entriesAllocType;
-			Vector4s *blockCoords;
-
 		public:
 			void AllocateSceneFromDepth(ITMScene<TVoxel, ITMPlainVoxelArray> *scene, const ITMView *view, const ITMTrackingState *trackingState,
 				const ITMRenderState *renderState, bool onlyUpdateVisibleList = false);

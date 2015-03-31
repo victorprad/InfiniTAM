@@ -44,7 +44,7 @@ namespace ITMLib
 
 			void ComputeDelta(float *delta, float *nabla, float *hessian, bool shortIteration) const;
 			void ApplyDelta(const Matrix4f & para_old, const float *delta, Matrix4f & para_new) const;
-			bool HasConverged(float f_new, float f_old, float *step) const;
+			bool HasConverged(float *step) const;
 
 			void SetEvaluationData(ITMTrackingState *trackingState, const ITMView *view);
 		protected:

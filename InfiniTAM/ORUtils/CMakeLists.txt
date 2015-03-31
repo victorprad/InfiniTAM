@@ -10,6 +10,7 @@ Cholesky.h
 MathUtils.h
 Image.h
 CUDADefines.h
+MemoryBlock.h
 )
 
 #################################################################

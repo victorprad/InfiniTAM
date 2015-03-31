@@ -50,7 +50,6 @@ namespace ITMLib
 		private:
 			const ITMLibSettings *settings;
 
-			bool hasStartedObjectReconstruction;
 			bool fusionActive, mainProcessingActive;
 
 			ITMLowLevelEngine *lowLevelEngine;
@@ -90,11 +89,8 @@ namespace ITMLib
 			/// Gives access to the current input frame
 			ITMView* GetView() { return view; }
 
-			/// Process a frame with an rgb and a depth image
-			void ProcessFrame(ITMUChar4Image *rgbImage, ITMShortImage *rawDepthImage);
-
-			/// Process a frame with rgb and depth images and a corresponding imu measurement
-			void ProcessFrame(ITMUChar4Image *rgbImage, ITMShortImage *rawDepthImage, ITMIMUMeasurement *imuMeasurement);
+			/// Process a frame with rgb and depth images and optionally a corresponding imu measurement
+			void ProcessFrame(ITMUChar4Image *rgbImage, ITMShortImage *rawDepthImage, ITMIMUMeasurement *imuMeasurement = NULL);
 
 			/// Extracts a mesh from the current scene and saves it to the obj file specified by the file name
 			void SaveSceneToMesh(const char *objFileName);

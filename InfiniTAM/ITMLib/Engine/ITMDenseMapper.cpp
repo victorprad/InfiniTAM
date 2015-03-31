@@ -9,12 +9,9 @@
 using namespace ITMLib::Engine;
 
 template<class TVoxel, class TIndex>
-ITMDenseMapper<TVoxel, TIndex>::ITMDenseMapper(const ITMLibSettings *settings, ITMScene<TVoxel, TIndex>* scene, ITMRenderState *renderState_live)
+ITMDenseMapper<TVoxel, TIndex>::ITMDenseMapper(const ITMLibSettings *settings)
 {
-	this->settings = settings;
-
-	this->scene = scene;
-	this->renderState_live = renderState_live;
+	swappingEngine = NULL;
 
 	switch (settings->deviceType)
 	{
@@ -46,29 +43,33 @@ ITMDenseMapper<TVoxel,TIndex>::~ITMDenseMapper()
 	delete sceneRecoEngine;
 	delete voxelBlockOpEngine;
 
-	if (settings->useSwapping) delete swappingEngine;
+	if (swappingEngine!=NULL) delete swappingEngine;
 }
 
 template<class TVoxel, class TIndex>
-void ITMDenseMapper<TVoxel,TIndex>::ProcessFrame(const ITMView *view, const ITMTrackingState *trackingState)
+void ITMDenseMapper<TVoxel,TIndex>::ProcessFrame(const ITMView *view, const ITMTrackingState *trackingState, ITMScene<TVoxel,TIndex> *scene, ITMRenderState *renderState)
 {
-	bool useSwapping = settings->useSwapping;
-
 	// split and merge voxel blocks according to their complexity
-	voxelBlockOpEngine->SplitAndMerge(scene, renderState_live);
+	voxelBlockOpEngine->SplitAndMerge(scene, renderState);
 
 	// allocation
-	sceneRecoEngine->AllocateSceneFromDepth(scene, view, trackingState, renderState_live);
+	sceneRecoEngine->AllocateSceneFromDepth(scene, view, trackingState, renderState);
 
 	// integration
-	sceneRecoEngine->IntegrateIntoScene(scene, view, trackingState, renderState_live);
+	sceneRecoEngine->IntegrateIntoScene(scene, view, trackingState, renderState);
 
-	if (useSwapping) {
+	if (swappingEngine != NULL) {
 		// swapping: CPU -> GPU
-		swappingEngine->IntegrateGlobalIntoLocal(scene, renderState_live);
+		swappingEngine->IntegrateGlobalIntoLocal(scene, renderState);
 		// swapping: GPU -> CPU
-		swappingEngine->SaveToGlobalMemory(scene, renderState_live);
+		swappingEngine->SaveToGlobalMemory(scene, renderState);
 	}
+}
+
+template<class TVoxel, class TIndex>
+void ITMDenseMapper<TVoxel,TIndex>::UpdateVisibleList(const ITMView *view, const ITMTrackingState *trackingState, ITMScene<TVoxel,TIndex> *scene, ITMRenderState *renderState)
+{
+	sceneRecoEngine->AllocateSceneFromDepth(scene, view, trackingState, renderState, true);
 }
 
 template class ITMLib::Engine::ITMDenseMapper<ITMVoxel, ITMVoxelIndex>;
