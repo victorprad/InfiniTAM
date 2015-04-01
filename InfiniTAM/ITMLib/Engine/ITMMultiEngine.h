@@ -33,6 +33,7 @@ namespace ITMLib
 
 		Vector2i trackedImageSize;
 		ITMRenderState *renderState_freeview;
+		int freeviewDataIdx;
 
 		/// Pointer for storing the current input frame
 		ITMView *view;
@@ -50,6 +51,15 @@ namespace ITMLib
 		void GetImage(ITMUChar4Image *out, GetImageType getImageType, ITMPose *pose = NULL, ITMIntrinsics *intrinsics = NULL);
 
 		bool shouldStartNewArea(void) const;
+		void AddNewLocalScene(void);
+
+		void ChangeFreeviewDataIdx(ITMPose *pose, int newIdx);
+		void SetFreeviewDataIdx(int newIdx)
+		{ freeviewDataIdx = newIdx; }
+		int GetFreeviewDataIdx(void) const
+		{ return freeviewDataIdx; }
+		int GetPrimaryDataIdx(void) const
+		{ return primaryDataIdx; }
 
 		/** \brief Constructor
 		    Ommitting a separate image size for the depth images

@@ -20,6 +20,7 @@
 #include "../Utils/FileUtils.h"
 
 #include "../ITMLib/Engine/ITMBasicEngine.h"
+#include "../ITMLib/Engine/ITMMultiEngine.h"
 
 using namespace InfiniTAM::Engine;
 using namespace ITMLib;
@@ -198,6 +199,10 @@ void UIEngine::glutKeyUpFunction(unsigned char key, int x, int y)
 				uiEngine->freeviewIntrinsics = uiEngine->mainEngine->GetView()->calib->intrinsics_d;
 				uiEngine->outImage[0]->ChangeDims(uiEngine->mainEngine->GetView()->depth->noDims);
 			}
+			ITMMultiEngine *multiEngine = dynamic_cast<ITMMultiEngine*>(uiEngine->mainEngine);
+			if (multiEngine != NULL) {
+				multiEngine->SetFreeviewDataIdx(multiEngine->GetPrimaryDataIdx());
+			}
 			uiEngine->freeviewActive = true;
 		}
 		uiEngine->needsRefresh = true;
@@ -226,6 +231,18 @@ void UIEngine::glutKeyUpFunction(unsigned char key, int x, int y)
 		}
 		}
 		break;
+	case '[':
+	case ']':
+		{
+		ITMMultiEngine *multiEngine = dynamic_cast<ITMMultiEngine*>(uiEngine->mainEngine);
+		if (multiEngine != NULL) {
+			int idx = multiEngine->GetFreeviewDataIdx();
+			if (key == '[') idx--;
+			else idx++;
+			multiEngine->ChangeFreeviewDataIdx(&(uiEngine->freeviewPose), idx);
+			uiEngine->needsRefresh = true;
+		}
+		}
 	default:
 		break;
 	}

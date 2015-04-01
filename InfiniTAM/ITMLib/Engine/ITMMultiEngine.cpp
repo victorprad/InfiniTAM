@@ -43,11 +43,9 @@ ITMMultiEngine::ITMMultiEngine(const ITMLibSettings *settings, const ITMRGBDCali
 	tracker = ITMTrackerFactory<ITMVoxel, ITMVoxelIndex>::Instance().Make(trackedImageSize, settings, lowLevelEngine, imuCalibrator, NULL/*scene TODO: this will fail for Ren Tracker*/);
 	trackingController = new ITMTrackingController(tracker, visualisationEngine, lowLevelEngine, settings);
 
-//	trackingState = trackingController->BuildTrackingState(trackedImageSize);
-	allData.push_back(new ITMLocalScene<ITMVoxel,ITMVoxelIndex>(settings, visualisationEngine, trackingController, trackedImageSize));
-	allRelations.push_back(std::map<int, ITMPoseConstraint>());
-	activeDataIdx.push_back(0);
+	AddNewLocalScene();
 	primaryDataIdx = 0;
+	freeviewDataIdx = 0;
 
 	tracker->UpdateInitialPose(allData[primaryDataIdx]->trackingState);
 
@@ -78,6 +76,33 @@ ITMMultiEngine::~ITMMultiEngine()
 	delete visualisationEngine;
 }
 
+void ITMMultiEngine::AddNewLocalScene(void)
+{
+	int newIdx = allData.size();
+	allData.push_back(new ITMLocalScene<ITMVoxel,ITMVoxelIndex>(settings, visualisationEngine, trackingController, trackedImageSize));
+	allRelations.push_back(std::map<int, ITMPoseConstraint>());
+
+	if (activeDataIdx.size()<2) activeDataIdx.push_back(newIdx);
+	else {
+		for (int i = 1; (unsigned)i < activeDataIdx.size(); ++i) activeDataIdx[i-1] = activeDataIdx[i];
+		activeDataIdx.back() = newIdx;
+	}
+}
+
+void ITMMultiEngine::ChangeFreeviewDataIdx(ITMPose *pose, int newIdx)
+{
+	if (allRelations[freeviewDataIdx].find(newIdx) == allRelations[freeviewDataIdx].end()) {
+		// cant jump... :(
+		return;
+	} else {
+		Matrix4f trafo = allRelations[freeviewDataIdx][newIdx].GetAccumulatedInfo(), inv;
+		trafo.inv(inv);
+		pose->SetM(pose->GetM()*inv);
+		pose->Coerce();
+		freeviewDataIdx = newIdx;
+	}
+}
+
 bool ITMMultiEngine::shouldStartNewArea(void) const
 {
 	ITMScene<ITMVoxel,ITMVoxelIndex> *scene = allData[primaryDataIdx]->scene;
@@ -95,14 +120,7 @@ void ITMMultiEngine::ProcessFrame(ITMUChar4Image *rgbImage, ITMShortImage *rawDe
 	else viewBuilder->UpdateView(&view, rgbImage, rawDepthImage, settings->useBilateralFilter, imuMeasurement);
 
 	if (shouldStartNewArea()) {
-		int newIdx = allData.size();
-		allData.push_back(new ITMLocalScene<ITMVoxel,ITMVoxelIndex>(settings, visualisationEngine, trackingController, trackedImageSize));
-		allRelations.push_back(std::map<int, ITMPoseConstraint>());
-		if (activeDataIdx.size()<2) activeDataIdx.push_back(newIdx);
-		else {
-			for (int i = 1; (unsigned)i < activeDataIdx.size(); ++i) activeDataIdx[i-1] = activeDataIdx[i];
-			activeDataIdx.back() = newIdx;
-		}
+		AddNewLocalScene();
 		primaryDataIdx = activeDataIdx[0];
 	}
 
@@ -125,15 +143,15 @@ void ITMMultiEngine::ProcessFrame(ITMUChar4Image *rgbImage, ITMShortImage *rawDe
 fprintf(stderr, "...done!\n");
 
 	// compute relative pose information
-	for (int i = 0; (unsigned)i < activeDataIdx.size(); ++i) {
-		int iIdx = activeDataIdx[i];
-		Matrix4f Ti_inv = allData[iIdx]->trackingState->pose_d->GetInvM();
-		for (int j = 0; (unsigned)j < activeDataIdx.size(); ++j) {
-			int jIdx = activeDataIdx[j];
+	for (int j = 0; (unsigned)j < activeDataIdx.size(); ++j) {
+		int jIdx = activeDataIdx[j];
+		Matrix4f Tj_inv = allData[jIdx]->trackingState->pose_d->GetInvM();
+		for (int i = 0; (unsigned)i < activeDataIdx.size(); ++i) {
+			int iIdx = activeDataIdx[i];
 			if (iIdx == jIdx) continue;
 
-			Matrix4f Tj = allData[jIdx]->trackingState->pose_d->GetM();
-			Matrix4f Tji = Tj * Ti_inv;
+			Matrix4f Ti = allData[iIdx]->trackingState->pose_d->GetM();
+			Matrix4f Tji = Tj_inv * Ti;
 
 			allRelations[iIdx][jIdx].AddObservation(Tji);
 		}
@@ -196,7 +214,7 @@ void ITMMultiEngine::GetImage(ITMUChar4Image *out, GetImageType getImageType, IT
 	case ITMMultiEngine::InfiniTAM_IMAGE_FREECAMERA_COLOUR_FROM_NORMAL:
 	{
 		IITMVisualisationEngine::RenderImageType type = IITMVisualisationEngine::RENDER_SHADED_GREYSCALE;
-		ITMLocalScene<ITMVoxel,ITMVoxelIndex> *activeData = allData[primaryDataIdx];
+		ITMLocalScene<ITMVoxel,ITMVoxelIndex> *activeData = allData[freeviewDataIdx];
 		if (getImageType == ITMMultiEngine::InfiniTAM_IMAGE_FREECAMERA_COLOUR_FROM_VOLUME) type = IITMVisualisationEngine::RENDER_COLOUR_FROM_VOLUME;
 		else if (getImageType == ITMMultiEngine::InfiniTAM_IMAGE_FREECAMERA_COLOUR_FROM_NORMAL) type = IITMVisualisationEngine::RENDER_COLOUR_FROM_NORMAL;
 		if (renderState_freeview == NULL) renderState_freeview = visualisationEngine->CreateRenderState(activeData->scene, out->noDims);
