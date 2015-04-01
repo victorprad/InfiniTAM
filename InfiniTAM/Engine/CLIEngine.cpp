@@ -52,7 +52,9 @@ bool CLIEngine::ProcessFrame()
 	if (imuSource != NULL) mainEngine->ProcessFrame(inputRGBImage, inputRawDepthImage, inputIMUMeasurement);
 	else mainEngine->ProcessFrame(inputRGBImage, inputRawDepthImage);
 
+#ifndef COMPILE_WITHOUT_CUDA
 	ITMSafeCall(cudaThreadSynchronize());
+#endif
 	sdkStopTimer(&timer_instant); sdkStopTimer(&timer_average);
 
 	float processedTime_inst = sdkGetTimerValue(&timer_instant);
