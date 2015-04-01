@@ -120,11 +120,13 @@ private:
   template <typename T>
   static void readBlockData(std::istream& is, ORUtils::MemoryBlock<T>& block, int blockSize)
   {
+    // Try and read the block's size.
     if(block.dataSize != blockSize)
     {
       throw std::runtime_error("Could not read data into a memory block of the wrong size");
     }
 
+    // Try and read the block's data.
     if(!is.read(reinterpret_cast<char*>(block.GetData(MEMORYDEVICE_CPU)), blockSize * sizeof(T)))
     {
       throw std::runtime_error("Could not read memory block data");
@@ -147,8 +149,10 @@ private:
     std::ifstream fs(filename.c_str(), std::ios::binary);
     if(!fs) throw std::runtime_error("Could not open " + filename + " for reading");
 
+    // Try and skip the block's size.
     if(!fs.seekg(sizeof(int))) throw std::runtime_error("Could not skip memory block size");
 
+    // Try and read the block's data.
     readBlockData(fs, block, blockSize);
   }
 
