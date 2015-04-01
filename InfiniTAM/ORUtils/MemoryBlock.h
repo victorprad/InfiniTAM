@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "PlatformIndependence.h"
+
 #ifndef COMPILE_WITHOUT_CUDA
 #include "CUDADefines.h"
 #endif

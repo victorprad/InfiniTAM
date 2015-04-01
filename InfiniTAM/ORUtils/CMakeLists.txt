@@ -11,6 +11,7 @@ MathUtils.h
 Image.h
 CUDADefines.h
 MemoryBlock.h
+PlatformIndependence.h
 )
 
 #################################################################
