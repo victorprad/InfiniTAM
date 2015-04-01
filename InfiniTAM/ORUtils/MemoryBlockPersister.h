@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <fstream>
 #include <string>
 
 #include "MemoryBlock.h"
@@ -70,20 +71,9 @@ public:
    */
   static int readBlockSize(const std::string& filename)
   {
-    FILE *file = fopen(filename.c_str(), "rb");
-    if(!file) throw std::runtime_error("Could not open " + filename + " for reading");
-
-    try
-    {
-      int blockSize = readBlockSize(file);
-      fclose(file);
-      return blockSize;
-    }
-    catch(std::runtime_error&)
-    {
-      fclose(file);
-      throw;
-    }
+    std::ifstream fs(filename.c_str(), std::ios::binary);
+    if(!fs) throw std::runtime_error("Could not open " + filename + " for reading");
+    return readBlockSize(fs);
   }
 
   /**
@@ -96,56 +86,46 @@ public:
   template <typename T>
   static void saveMemoryBlock(const std::string& filename, const ORUtils::MemoryBlock<T>& block, MemoryDeviceType memoryDeviceType)
   {
-    FILE *file = fopen(filename.c_str(), "wb");
-    if(!file) throw std::runtime_error("Could not open " + filename + " for writing");
+    std::ofstream fs(filename.c_str(), std::ios::binary);
+    if(!fs) throw std::runtime_error("Could not open " + filename + " for writing");
 
-    try
+    if(memoryDeviceType == MEMORYDEVICE_CUDA)
     {
-      if(memoryDeviceType == MEMORYDEVICE_CUDA)
-      {
-        // If we are saving the memory block from the GPU, first make a CPU copy of it.
-        ORUtils::MemoryBlock<T> cpuBlock(block.dataSize, MEMORYDEVICE_CPU);
-        cpuBlock.SetFrom(&block, ORUtils::MemoryBlock<T>::CUDA_TO_CPU);
+      // If we are saving the memory block from the GPU, first make a CPU copy of it.
+      ORUtils::MemoryBlock<T> cpuBlock(block.dataSize, MEMORYDEVICE_CPU);
+      cpuBlock.SetFrom(&block, ORUtils::MemoryBlock<T>::CUDA_TO_CPU);
 
-        // Then write the CPU copy to disk.
-        writeBlock(file, cpuBlock);
-      }
-      else
-      {
-        // If we are saving the memory block from the CPU, write it directly to disk.
-        writeBlock(file, block);
-      }
-
-      fclose(file);
+      // Then write the CPU copy to disk.
+      writeBlock(fs, cpuBlock);
     }
-    catch(std::runtime_error&)
+    else
     {
-      fclose(file);
-      throw;
+      // If we are saving the memory block from the CPU, write it directly to disk.
+      writeBlock(fs, block);
     }
   }
 
   //#################### PRIVATE STATIC MEMBER FUNCTIONS ####################
 private:
   /**
-   * \brief Attempts to read data into a memory block allocated on the CPU from an already-opened file.
+   * \brief Attempts to read data into a memory block allocated on the CPU from an input stream.
    *
    * The memory block must have the specified size (which should have been obtained by a call to readBlockSize).
    *
-   * \param file                The file pointer.
+   * \param is                  The input stream.
    * \param block               The memory block into which to read.
    * \param blockSize           The required size for the memory block.
    * \throws std::runtime_error If the read is unsuccessful.
    */
   template <typename T>
-  static void readBlockData(FILE *file, ORUtils::MemoryBlock<T>& block, int blockSize)
+  static void readBlockData(std::istream& is, ORUtils::MemoryBlock<T>& block, int blockSize)
   {
     if(block.dataSize != blockSize)
     {
       throw std::runtime_error("Could not read data into a memory block of the wrong size");
     }
 
-    if(fread(block.GetData(MEMORYDEVICE_CPU), sizeof(T), blockSize, file) != blockSize)
+    if(!is.read(reinterpret_cast<char*>(block.GetData(MEMORYDEVICE_CPU)), blockSize * sizeof(T)))
     {
       throw std::runtime_error("Could not read memory block data");
     }
@@ -164,63 +144,50 @@ private:
   template <typename T>
   static void readBlockData(const std::string& filename, ORUtils::MemoryBlock<T>& block, int blockSize)
   {
-    FILE *file = fopen(filename.c_str(), "rb");
-    if(!file) throw std::runtime_error("Could not open " + filename + " for reading");
+    std::ifstream fs(filename.c_str(), std::ios::binary);
+    if(!fs) throw std::runtime_error("Could not open " + filename + " for reading");
 
-    if(fseek(file, sizeof(int), SEEK_SET) != 0)
-    {
-      fclose(file);
-      throw std::runtime_error("Could not skip memory block size");
-    }
+    if(!fs.seekg(sizeof(int))) throw std::runtime_error("Could not skip memory block size");
 
-    try
-    {
-      readBlockData(file, block, blockSize);
-      fclose(file);
-    }
-    catch(std::runtime_error&)
-    {
-      fclose(file);
-      throw;
-    }
+    readBlockData(fs, block, blockSize);
   }
 
   /**
-   * \brief Attempts to read the size of a memory block from an already-opened file.
+   * \brief Attempts to read the size of a memory block from an input stream.
    *
    * The size is stored as a single integer and precedes the data for the block.
    *
-   * \param file                The file pointer.
+   * \param is                  The input stream.
    * \return                    The size of the memory block.
    * \throws std::runtime_error If the read is unsuccesssful.
    */
-  static int readBlockSize(FILE *file)
+  static int readBlockSize(std::istream& is)
   {
     int blockSize;
-    if(fread(&blockSize, sizeof(int), 1, file) == 1) return blockSize;
+    if(is.read(reinterpret_cast<char*>(&blockSize), sizeof(int))) return blockSize;
     else throw std::runtime_error("Could not read memory block size");
   }
 
   /**
-   * \brief Attempts to write a memory block allocated on the CPU to an already-opened file.
+   * \brief Attempts to write a memory block allocated on the CPU to an output stream.
    *
    * A single integer containing the number of elements in the block is written prior to the block itself.
    *
-   * \param file                The file pointer.
+   * \param os                  The output stream.
    * \param block               The memory block to write.
    * \throws std::runtime_error If the write is unsuccessful.
    */
   template <typename T>
-  static void writeBlock(FILE *file, const ORUtils::MemoryBlock<T>& block)
+  static void writeBlock(std::ostream& os, const ORUtils::MemoryBlock<T>& block)
   {
     // Try and write the block's size.
-    if(fwrite(&block.dataSize, sizeof(block.dataSize), 1, file) != 1)
+    if(!os.write(reinterpret_cast<const char *>(&block.dataSize), sizeof(block.dataSize)))
     {
       throw std::runtime_error("Could not write memory block size");
     }
 
     // Try and write the block's data.
-    if(fwrite(block.GetData(MEMORYDEVICE_CPU), sizeof(T), block.dataSize, file) != block.dataSize)
+    if(!os.write(reinterpret_cast<const char *>(block.GetData(MEMORYDEVICE_CPU)), block.dataSize * sizeof(T)))
     {
       throw std::runtime_error("Could not write memory block data");
     }
