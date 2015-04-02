@@ -8,28 +8,22 @@ namespace ORUtils
 {
 
 /**
- * \brief An instance of this struct can be used to indicate the failure of a lexical conversion.
- */
-struct bad_lexical_cast {};
-
-/**
  * \brief Performs a lexical conversion from the source type to the target type.
  *
  * This is a lightweight replacement for boost::lexical_cast. It's not as
- * sophisticated as that, but it works well enough.
+ * sophisticated as that, but it works well enough. Note that we can't use
+ * exceptions, since they're not well supported on Android.
  *
- * \param src               The source value to convert.
- * \return                  The converted value.
- * \throws bad_lexical_cast If the conversion failed.
+ * \param src     The source value to convert.
+ * \param target  A location into which to store the converted value.
+ * \return        true, if the conversion succeeded, or false otherwise.
  */
 template <typename Target, typename Source>
-Target lexical_cast(const Source& src)
+bool lexical_cast(const Source& src, Target& target)
 {
-	std::stringstream ss;
-	ss << src;
-	Target target;
-	if(!(ss >> target) || !ss.eof()) throw bad_lexical_cast();
-	return target;
+  std::stringstream ss;
+  ss << src;
+  return ss >> target && ss.eof();
 }
 
 }
