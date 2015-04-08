@@ -61,6 +61,7 @@ namespace ITMLib
 			virtual ~ITMViewBuilder()
 			{
 				if (this->shortImage != NULL) delete this->shortImage;
+				if (this->floatImage != NULL) delete this->floatImage;
 			}
 		};
 	}

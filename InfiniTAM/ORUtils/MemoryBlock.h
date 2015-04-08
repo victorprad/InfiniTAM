@@ -119,11 +119,11 @@ namespace ORUtils
 		}
 
 		/** Set all image data to the given @p defaultValue. */
-		void Clear(uchar defaultValue = 0)
+		void Clear(unsigned char defaultValue = 0)
 		{
 			if (isAllocated_CPU) memset(data_cpu, defaultValue, dataSize * sizeof(T));
 #ifndef COMPILE_WITHOUT_CUDA
-			if (isAllocated_CUDA) ITMSafeCall(cudaMemset(data_cuda, defaultValue, dataSize * sizeof(T)));
+			if (isAllocated_CUDA) ORcudaSafeCall(cudaMemset(data_cuda, defaultValue, dataSize * sizeof(T)));
 #endif
 		}
 
@@ -131,14 +131,14 @@ namespace ORUtils
 		void UpdateDeviceFromHost() {
 #ifndef COMPILE_WITHOUT_CUDA
 			if (isAllocated_CUDA && isAllocated_CPU)
-				ITMSafeCall(cudaMemcpy(data_cuda, data_cpu, dataSize * sizeof(T), cudaMemcpyHostToDevice));
+				ORcudaSafeCall(cudaMemcpy(data_cuda, data_cpu, dataSize * sizeof(T), cudaMemcpyHostToDevice));
 #endif
 		}
 		/** Transfer data from GPU to CPU, if possible. */
 		void UpdateHostFromDevice() {
 #ifndef COMPILE_WITHOUT_CUDA
 			if (isAllocated_CUDA && isAllocated_CPU)
-				ITMSafeCall(cudaMemcpy(data_cpu, data_cuda, dataSize * sizeof(T), cudaMemcpyDeviceToHost));
+				ORcudaSafeCall(cudaMemcpy(data_cpu, data_cuda, dataSize * sizeof(T), cudaMemcpyDeviceToHost));
 #endif
 		}
 
@@ -152,13 +152,13 @@ namespace ORUtils
 				break;
 #ifndef COMPILE_WITHOUT_CUDA
 			case CPU_TO_CUDA:
-				ITMSafeCall(cudaMemcpyAsync(this->data_cuda, source->data_cpu, source->dataSize * sizeof(T), cudaMemcpyHostToDevice));
+				ORcudaSafeCall(cudaMemcpyAsync(this->data_cuda, source->data_cpu, source->dataSize * sizeof(T), cudaMemcpyHostToDevice));
 				break;
 			case CUDA_TO_CPU:
-				ITMSafeCall(cudaMemcpy(this->data_cpu, source->data_cuda, source->dataSize * sizeof(T), cudaMemcpyDeviceToHost));
+				ORcudaSafeCall(cudaMemcpy(this->data_cpu, source->data_cuda, source->dataSize * sizeof(T), cudaMemcpyDeviceToHost));
 				break;
 			case CUDA_TO_CUDA:
-				ITMSafeCall(cudaMemcpyAsync(this->data_cuda, source->data_cuda, source->dataSize * sizeof(T), cudaMemcpyDeviceToDevice));
+				ORcudaSafeCall(cudaMemcpyAsync(this->data_cuda, source->data_cuda, source->dataSize * sizeof(T), cudaMemcpyDeviceToDevice));
 				break;
 #endif
 			default: break;
@@ -194,7 +194,7 @@ namespace ORUtils
 					break;
 				case 1:
 #ifndef COMPILE_WITHOUT_CUDA
-					ITMSafeCall(cudaMallocHost((void**)&data_cpu, dataSize * sizeof(T)));
+					ORcudaSafeCall(cudaMallocHost((void**)&data_cpu, dataSize * sizeof(T)));
 #endif
 					break;
 				case 2:
@@ -211,7 +211,7 @@ namespace ORUtils
 			if (allocate_CUDA)
 			{
 #ifndef COMPILE_WITHOUT_CUDA
-				ITMSafeCall(cudaMalloc((void**)&data_cuda, dataSize * sizeof(T)));
+				ORcudaSafeCall(cudaMalloc((void**)&data_cuda, dataSize * sizeof(T)));
 				this->isAllocated_CUDA = allocate_CUDA;
 #endif
 			}
@@ -236,7 +236,7 @@ namespace ORUtils
 					break;
 				case 1:
 #ifndef COMPILE_WITHOUT_CUDA
-					ITMSafeCall(cudaFreeHost(data_cpu));
+					ORcudaSafeCall(cudaFreeHost(data_cpu));
 #endif
 					break;
 				case 2:
@@ -253,7 +253,7 @@ namespace ORUtils
 			if (isAllocated_CUDA)
 			{
 #ifndef COMPILE_WITHOUT_CUDA
-				ITMSafeCall(cudaFree(data_cuda));
+				ORcudaSafeCall(cudaFree(data_cuda));
 #endif
 				isAllocated_CUDA = false;
 			}

@@ -16,12 +16,12 @@ namespace ORUtils
 	{
 	public:
 		/** Size of the image in pixels. */
-		Vector2i noDims;
+		Vector2<int> noDims;
 
 		/** Initialize an empty image of the given size, either
 		on CPU only or on both CPU and GPU.
 		*/
-		Image(Vector2i noDims, bool allocate_CPU, bool allocate_CUDA, bool metalCompatible = true)
+		Image(Vector2<int> noDims, bool allocate_CPU, bool allocate_CUDA, bool metalCompatible = true)
 			: MemoryBlock<T>(noDims.x * noDims.y, allocate_CPU, allocate_CUDA, metalCompatible)
 		{
 			this->noDims = noDims;
@@ -30,10 +30,10 @@ namespace ORUtils
 		Image(bool allocate_CPU, bool allocate_CUDA, bool metalCompatible = true)
 			: MemoryBlock<T>(1, allocate_CPU, allocate_CUDA, metalCompatible)
 		{
-			this->noDims = Vector2i(1, 1);  //TODO - make nicer
+			this->noDims = Vector2<int>(1, 1);  //TODO - make nicer
 		}
 
-		Image(Vector2i noDims, MemoryDeviceType memoryType)
+		Image(Vector2<int> noDims, MemoryDeviceType memoryType)
 			: MemoryBlock<T>(noDims.x * noDims.y, memoryType)
 		{
 			this->noDims = noDims;
@@ -43,7 +43,7 @@ namespace ORUtils
 		Essentially any previously allocated data is
 		released, new memory is allocated.
 		*/
-		void ChangeDims(Vector2i newDims)
+		void ChangeDims(Vector2<int> newDims)
 		{
 			if (newDims != noDims)
 			{
