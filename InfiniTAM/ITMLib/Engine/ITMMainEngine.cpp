@@ -78,7 +78,7 @@ ITMMainEngine::~ITMMainEngine()
 	delete viewBuilder;
 
 	delete trackingState;
-	delete view;
+	if (view != NULL) delete view;
 
 	delete visualisationEngine;
 

@@ -10,7 +10,10 @@ Cholesky.h
 MathUtils.h
 Image.h
 CUDADefines.h
+LexicalCast.h
 MemoryBlock.h
+MemoryBlockPersister.h
+PlatformIndependence.h
 )
 
 #################################################################
