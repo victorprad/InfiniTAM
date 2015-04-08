@@ -210,3 +210,4 @@ ELSE()
 ENDIF()
 
 target_link_libraries(ITMLib Utils)
+target_link_libraries(ITMLib LCDLib)

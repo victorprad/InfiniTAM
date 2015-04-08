@@ -50,6 +50,8 @@ ITMMultiEngine::ITMMultiEngine(const ITMLibSettings *settings, const ITMRGBDCali
 	tracker->UpdateInitialPose(allData[primaryDataIdx]->trackingState);
 
 	view = NULL; // will be allocated by the view builder
+
+	mLoopClosureDetector = new LCDLib::LoopClosureDetector(imgSize_d, Vector2f(0.5f,3.0f), 500);
 }
 
 ITMMultiEngine::~ITMMultiEngine()
@@ -71,9 +73,11 @@ ITMMultiEngine::~ITMMultiEngine()
 	delete lowLevelEngine;
 	delete viewBuilder;
 
-	delete view;
+	if (view != NULL) delete view;
 
 	delete visualisationEngine;
+
+	delete mLoopClosureDetector;
 }
 
 void ITMMultiEngine::AddNewLocalScene(void)
@@ -118,6 +122,12 @@ void ITMMultiEngine::ProcessFrame(ITMUChar4Image *rgbImage, ITMShortImage *rawDe
 	// prepare image and turn it into a depth image
 	if (imuMeasurement==NULL) viewBuilder->UpdateView(&view, rgbImage, rawDepthImage, settings->useBilateralFilter);
 	else viewBuilder->UpdateView(&view, rgbImage, rawDepthImage, settings->useBilateralFilter, imuMeasurement);
+
+	{
+	static const int k = 5;
+	int NN[k];
+	mLoopClosureDetector->ProcessFrame(view->depth, NN, k);
+	}
 
 	if (shouldStartNewArea()) {
 		AddNewLocalScene();

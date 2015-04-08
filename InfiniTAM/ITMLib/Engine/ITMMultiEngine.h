@@ -6,6 +6,8 @@
 #include "ITMMainEngine.h"
 #include "../Objects/ITMLocalScene.h"
 
+#include "../../LCDLib/LoopClosureDetectionEngine.h"
+
 #include <vector>
 
 namespace ITMLib
@@ -25,6 +27,8 @@ namespace ITMLib
 		ITMTracker *tracker;
 		ITMIMUCalibrator *imuCalibrator;
 		ITMDenseMapper<ITMVoxel,ITMVoxelIndex> *denseMapper;
+
+		LCDLib::LoopClosureDetector *mLoopClosureDetector;
 
 		std::vector<ITMLocalScene<ITMVoxel,ITMVoxelIndex>*> allData;
 		std::vector<std::map<int,ITMPoseConstraint> > allRelations;
