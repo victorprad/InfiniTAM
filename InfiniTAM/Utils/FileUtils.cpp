@@ -5,6 +5,10 @@
 #include <stdio.h>
 #include <fstream>
 
+#ifdef USE_LIBPNG
+#include <png.h>
+#endif
+
 using namespace std;
 
 static const char *pgm_ascii_id = "P2";
@@ -13,6 +17,107 @@ static const char *pgm_id = "P5";
 static const char *ppm_id = "P6";
 
 typedef enum { PNM_PGM, PNM_PPM, PNM_PGM_16u, PNM_PGM_16s, PNM_UNKNOWN = -1 } PNMtype;
+
+struct PNGReaderData {
+#ifdef USE_LIBPNG
+	png_structp png_ptr;
+	png_infop info_ptr;
+
+	PNGReaderData(void)
+	{ png_ptr = NULL; info_ptr = NULL; }
+	~PNGReaderData(void)
+	{ 
+		if (info_ptr != NULL) png_destroy_info_struct(png_ptr, &info_ptr);
+		if (png_ptr != NULL) png_destroy_read_struct(&png_ptr, (png_infopp)NULL, (png_infopp)NULL);
+	}
+#endif
+};
+
+static PNMtype png_readheader(FILE *fp, int & width, int & height, PNGReaderData & internal)
+{
+	PNMtype type = PNM_UNKNOWN;
+
+#ifdef USE_LIBPNG
+	png_byte color_type;
+	png_byte bit_depth;
+
+	unsigned char header[8];    // 8 is the maximum size that can be checked
+
+	fread(header, 1, 8, fp);
+	if (png_sig_cmp(header, 0, 8)) {
+		//"not a PNG file"
+		return type;
+	}
+
+	/* initialize stuff */
+	internal.png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+
+	if (!internal.png_ptr) {
+		//"png_create_read_struct failed"
+		return type;
+	}
+
+	internal.info_ptr = png_create_info_struct(internal.png_ptr);
+	if (!internal.info_ptr) {
+		//"png_create_info_struct failed"
+		return type;
+	}
+
+	if (setjmp(png_jmpbuf(internal.png_ptr))) {
+		//"setjmp failed"
+		return type;
+	}
+
+	png_init_io(internal.png_ptr, fp);
+	png_set_sig_bytes(internal.png_ptr, 8);
+
+	png_read_info(internal.png_ptr, internal.info_ptr);
+
+	width = png_get_image_width(internal.png_ptr, internal.info_ptr);
+	height = png_get_image_height(internal.png_ptr, internal.info_ptr);
+	color_type = png_get_color_type(internal.png_ptr, internal.info_ptr);
+	bit_depth = png_get_bit_depth(internal.png_ptr, internal.info_ptr);
+
+	if (color_type == PNG_COLOR_TYPE_GRAY) {
+		if (bit_depth == 8) type = PNM_PGM;
+		else if (bit_depth == 16) type = PNM_PGM_16u;
+		// bit depths 1, 2 and 4 are not accepted
+	} else if (color_type == PNG_COLOR_TYPE_RGB) {
+		if (bit_depth == 8) type = PNM_PPM;
+		// bit depth 16 is not accepted
+	}
+	// other color types are not accepted
+#endif
+
+	return type;
+}
+
+static bool png_readdata(FILE *f, int xsize, int ysize, PNGReaderData & internal, void *data_ext)
+{
+#ifdef USE_LIBPNG
+	if (setjmp(png_jmpbuf(internal.png_ptr))) return false;
+
+	png_read_update_info(internal.png_ptr, internal.info_ptr);
+
+	/* read file */
+	if (setjmp(png_jmpbuf(internal.png_ptr))) return false;
+
+	int bytesPerRow = png_get_rowbytes(internal.png_ptr, internal.info_ptr);
+
+	png_byte *data = (png_byte*)data_ext;
+	png_bytep *row_pointers = new png_bytep[ysize];
+	for (int y=0; y<ysize; y++) row_pointers[y] = &(data[bytesPerRow*y]);
+
+	png_read_image(internal.png_ptr, row_pointers);
+	png_read_end(internal.png_ptr, NULL);
+
+	delete[] row_pointers;
+
+	return true;
+#else
+	return false;
+#endif
+}
 
 static PNMtype pnm_readheader(FILE *f, int *xsize, int *ysize, bool *binary)
 {
@@ -211,17 +316,29 @@ void SaveImageToFile(const ITMFloatImage* image, const char* fileName)
 
 bool ReadImageFromFile(ITMUChar4Image* image, const char* fileName)
 {
+	PNGReaderData pngData;
+	bool usepng = false;
+
 	int xsize, ysize;
 	bool binary;
 	FILE *f = fopen(fileName, "rb");
 	if (f == NULL) return false;
-	if (pnm_readheader(f, &xsize, &ysize, &binary) != PNM_PPM) { fclose(f); return false; }
+	if (pnm_readheader(f, &xsize, &ysize, &binary) != PNM_PPM) {
+		fclose(f);
+		f = fopen(fileName, "rb");
+		if (png_readheader(f, xsize, ysize, pngData) != PNM_PPM) {
+			fclose(f);
+			return false;
+		}
+		usepng = true;
+	}
 
 	unsigned char *data = new unsigned char[xsize*ysize * 3];
-	if (binary) {
+	if (usepng) {
+		if (!png_readdata(f, xsize, ysize, pngData, data)) { fclose(f); delete[] data; return false; }
+	} else if (binary) {
 		if (!pnm_readdata_binary(f, xsize, ysize, PNM_PPM, data)) { fclose(f); delete[] data; return false; }
-	}
-	else {
+	} else {
 		if (!pnm_readdata_ascii(f, xsize, ysize, PNM_PPM, data)) { fclose(f); delete[] data; return false; }
 	}
 	fclose(f);
@@ -242,18 +359,32 @@ bool ReadImageFromFile(ITMUChar4Image* image, const char* fileName)
 
 bool ReadImageFromFile(ITMShortImage *image, const char *fileName)
 {
+	PNGReaderData pngData;
+	bool usepng = false;
+
 	int xsize, ysize;
 	bool binary;
 	FILE *f = fopen(fileName, "rb");
 	if (f == NULL) return false;
 	PNMtype type = pnm_readheader(f, &xsize, &ysize, &binary);
-	if ((type != PNM_PGM_16s) && (type != PNM_PGM_16u)) { fclose(f); return false; }
+	if ((type != PNM_PGM_16s) && (type != PNM_PGM_16u)) {
+		fclose(f);
+		f = fopen(fileName, "rb");
+		type = png_readheader(f, xsize, ysize, pngData);
+		if ((type != PNM_PGM_16s) && (type != PNM_PGM_16u)) {
+			fclose(f);
+			return false;
+		}
+		usepng = true;
+		binary = true;
+	}
 
 	short *data = new short[xsize*ysize];
-	if (binary) {
+	if (usepng) {
+		if (!png_readdata(f, xsize, ysize, pngData, data)) { fclose(f); delete[] data; return false; }
+	} else if (binary) {
 		if (!pnm_readdata_binary(f, xsize, ysize, type, data)) { fclose(f); delete[] data; return false; }
-	}
-	else {
+	} else {
 		if (!pnm_readdata_ascii(f, xsize, ysize, type, data)) { fclose(f); delete[] data; return false; }
 	}
 	fclose(f);
@@ -264,8 +395,7 @@ bool ReadImageFromFile(ITMShortImage *image, const char *fileName)
 		for (int i = 0; i < image->noDims.x*image->noDims.y; ++i) {
 			image->GetData(MEMORYDEVICE_CPU)[i] = (data[i] << 8) | ((data[i] >> 8) & 255);
 		}
-	}
-	else {
+	} else {
 		for (int i = 0; i < image->noDims.x*image->noDims.y; ++i) {
 			image->GetData(MEMORYDEVICE_CPU)[i] = data[i];
 		}
