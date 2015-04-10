@@ -37,14 +37,15 @@ ITMLibSettings::ITMLibSettings(void)
 	useApproximateRaycast = false;
 
 	/// enable or disable bilateral depth filtering;
-	useBilateralFilter = false;
+	useBilateralFilter = true;
 
 	//trackerType = TRACKER_COLOR;
-	trackerType = TRACKER_ICP;
+	//trackerType = TRACKER_ICP;
 	//trackerType = TRACKER_REN;
 	//trackerType = TRACKER_IMU;
-	//trackerType = TRACKER_WICP;
+	trackerType = TRACKER_WICP;
 
+	/// model the sensor noise as  the weight for weighted ICP
 	modelSensorNoise = false;
 	if (trackerType == TRACKER_WICP) modelSensorNoise = true;
 	

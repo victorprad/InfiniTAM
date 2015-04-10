@@ -96,9 +96,10 @@ void IITMVisualisationEngine::WeightToUchar4(ITMUChar4Image *dst, ITMFloatImage 
 			float sourceVal = source[idx];
 			if (sourceVal>0)
 			{
-				dest[idx].r = (uchar)(( 1 - mindepth / sourceVal)*255.0f);
+				sourceVal = mindepth / sourceVal * 0.8f + 0.2f;
+				dest[idx].r = (uchar)((1 - sourceVal)*255.0f);
 				dest[idx].b = 0;
-				dest[idx].g = (uchar)(mindepth / sourceVal*255.0f);
+				dest[idx].g = (uchar)(sourceVal*255.0f);
 			}
 
 		}
