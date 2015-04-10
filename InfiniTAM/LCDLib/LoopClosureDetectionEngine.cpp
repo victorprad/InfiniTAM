@@ -14,7 +14,7 @@ LoopClosureDetector::~LoopClosureDetector(void)
 	delete mDatabase;
 }
 
-int LoopClosureDetector::ProcessFrame(const ORUtils::Image<float> *img_d, int nearestNeighbours[], int k) const
+int LoopClosureDetector::ProcessFrame(const ORUtils::Image<float> *img_d, int k, int nearestNeighbours[], float *distances, bool harvestKeyframes) const
 {
 	// TODO: downsample image
 
@@ -26,20 +26,22 @@ int LoopClosureDetector::ProcessFrame(const ORUtils::Image<float> *img_d, int ne
 for (int i = 0; i < codeLength; ++i) fprintf(stderr, "%i ", code[i]);
 fprintf(stderr, "\n");
 
-	float *distances = new float[k];
-	int similarFound = mDatabase->findMostSimilar(code, nearestNeighbours, distances, k);
-fprintf(stderr, "fouind similar\n");
+	bool releaseDistances = (distances == NULL);
+	if (distances == NULL) distances = new float[k];
 
-	if (similarFound == 0) ret = mDatabase->addEntry(code);
-	else if (distances[0] > 0.2f) ret = mDatabase->addEntry(code);
-fprintf(stderr, "added\n");
+	int similarFound = mDatabase->findMostSimilar(code, nearestNeighbours, distances, k);
+
+	if (harvestKeyframes) {
+		if (similarFound == 0) ret = mDatabase->addEntry(code);
+		else if (distances[0] > 0.2f) ret = mDatabase->addEntry(code);
+	}
 
 	for (int i = 0; i < similarFound; ++i) {
 		fprintf(stderr, "found similar entry #%i: %i (%f)\n", i+1, nearestNeighbours[i], distances[i]);
 	}
 
 	delete[] code;
-	delete[] distances;
+	if (releaseDistances) delete[] distances;
 
 	return ret;
 }

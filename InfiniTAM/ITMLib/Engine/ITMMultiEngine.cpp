@@ -126,7 +126,7 @@ void ITMMultiEngine::ProcessFrame(ITMUChar4Image *rgbImage, ITMShortImage *rawDe
 	{
 	static const int k = 5;
 	int NN[k];
-	mLoopClosureDetector->ProcessFrame(view->depth, NN, k);
+	mLoopClosureDetector->ProcessFrame(view->depth, k, NN);
 	}
 
 	if (shouldStartNewArea()) {
