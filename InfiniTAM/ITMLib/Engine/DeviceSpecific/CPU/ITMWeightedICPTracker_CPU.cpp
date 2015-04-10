@@ -20,8 +20,8 @@ int ITMWeightedICPTracker_CPU::ComputeGandH(float &f, float *nabla, float *hessi
 
 	float *depth = viewHierarchyLevel->depth->GetData(MEMORYDEVICE_CPU);
 	float *weight = weightHierarchyLevel->depth->GetData(MEMORYDEVICE_CPU);
-	float mindepth = findMinDepth(viewHierarchyLevel->depth);
-	float minSigmaZ = 0.0012f + 0.0019f*(mindepth - 0.4f)*(mindepth - 0.4f);
+	//float mindepth = findMinDepth(viewHierarchyLevel->depth);
+	float minSigmaZ = 0.0012f;// + 0.0019f*(mindepth - 0.4f)*(mindepth - 0.4f);
 
 	Vector4f viewIntrinsics = viewHierarchyLevel->intrinsics;
 	Vector2i viewImageSize = viewHierarchyLevel->depth->noDims;

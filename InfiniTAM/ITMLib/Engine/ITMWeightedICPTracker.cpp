@@ -12,9 +12,9 @@ ITMWeightedICPTracker::ITMWeightedICPTracker(Vector2i imgSize, TrackerIterationT
 {
 	if (memoryType==MEMORYDEVICE_CUDA) 
 	{
-		weightHierarchy = new ITMImageHierarchy<ITMTemplatedHierarchyLevel<ITMFloatImage> >(imgSize, trackingRegime, noHierarchyLevels, MEMORYDEVICE_BOTH, true);
-		viewHierarchy = new ITMImageHierarchy<ITMTemplatedHierarchyLevel<ITMFloatImage> >(imgSize, trackingRegime, noHierarchyLevels, MEMORYDEVICE_BOTH, true);
-		sceneHierarchy = new ITMImageHierarchy<ITMSceneHierarchyLevel>(imgSize, trackingRegime, noHierarchyLevels, MEMORYDEVICE_BOTH, true);
+		weightHierarchy = new ITMImageHierarchy<ITMTemplatedHierarchyLevel<ITMFloatImage> >(imgSize, trackingRegime, noHierarchyLevels, memoryType, true);
+		viewHierarchy = new ITMImageHierarchy<ITMTemplatedHierarchyLevel<ITMFloatImage> >(imgSize, trackingRegime, noHierarchyLevels, memoryType, true);
+		sceneHierarchy = new ITMImageHierarchy<ITMSceneHierarchyLevel>(imgSize, trackingRegime, noHierarchyLevels, memoryType, true);
 	}
 	else
 	{

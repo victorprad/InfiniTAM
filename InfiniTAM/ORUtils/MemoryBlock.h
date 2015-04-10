@@ -21,7 +21,7 @@
 
 #ifndef MEMORY_DEVICE_TYPE
 #define MEMORY_DEVICE_TYPE
-enum MemoryDeviceType { MEMORYDEVICE_CPU, MEMORYDEVICE_CUDA, MEMORYDEVICE_BOTH };
+enum MemoryDeviceType { MEMORYDEVICE_CPU, MEMORYDEVICE_CUDA };
 #endif 
 
 namespace ORUtils
@@ -113,7 +113,6 @@ namespace ORUtils
 			{
 			case MEMORYDEVICE_CPU: Allocate(dataSize, true, false, true); break;
 			case MEMORYDEVICE_CUDA: Allocate(dataSize, false, true, true); break;
-			case MEMORYDEVICE_BOTH: Allocate(dataSize, true, true, true); break;
 			}
 
 			Clear();
