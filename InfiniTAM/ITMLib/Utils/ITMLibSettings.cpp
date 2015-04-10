@@ -28,7 +28,7 @@ ITMLibSettings::ITMLibSettings(void)
 #endif
 #endif
 
-	//deviceType = DEVICE_CUDA;
+	//deviceType = DEVICE_CPU;
 
 	/// enables or disables swapping. HERE BE DRAGONS: It should work, but requires more testing
 	useSwapping = false;
@@ -37,13 +37,13 @@ ITMLibSettings::ITMLibSettings(void)
 	useApproximateRaycast = false;
 
 	/// enable or disable bilateral depth filtering;
-	useBilateralFilter = true;
+	//useBilateralFilter = true;
 
 	//trackerType = TRACKER_COLOR;
-	//trackerType = TRACKER_ICP;
+	trackerType = TRACKER_ICP;
 	//trackerType = TRACKER_REN;
 	//trackerType = TRACKER_IMU;
-	trackerType = TRACKER_WICP;
+	//trackerType = TRACKER_WICP;
 
 	/// model the sensor noise as  the weight for weighted ICP
 	modelSensorNoise = false;
