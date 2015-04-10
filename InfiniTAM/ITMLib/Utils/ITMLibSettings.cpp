@@ -7,13 +7,13 @@
 using namespace ITMLib::Objects;
 
 ITMLibSettings::ITMLibSettings(void)
-	: sceneParams(0.02f, 100, 0.005f, 0.4f, 3.5f, false)
+	: sceneParams(0.02f, 100, 0.005f, 0.2f, 3.0f, false)
 {
 	/// depth threashold for the ICP tracker
 	depthTrackerICPThreshold = 0.1f * 0.1f;
 
 	/// For ITMDepthTracker: ICP iteration termination threshold
-	depthTrackerTerminationThreshold = 1e-4f;
+	depthTrackerTerminationThreshold = 1e-3f;
 
 	/// skips every other point when using the colour tracker
 	skipPoints = true;
@@ -37,7 +37,7 @@ ITMLibSettings::ITMLibSettings(void)
 	useApproximateRaycast = false;
 
 	/// enable or disable bilateral depth filtering;
-	//useBilateralFilter = true;
+	useBilateralFilter = false;
 
 	//trackerType = TRACKER_COLOR;
 	trackerType = TRACKER_ICP;
