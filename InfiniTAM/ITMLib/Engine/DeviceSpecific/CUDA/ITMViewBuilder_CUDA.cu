@@ -39,6 +39,12 @@ void ITMViewBuilder_CUDA::UpdateView(ITMView **view_ptr, ITMUChar4Image *rgbImag
 		this->shortImage = new ITMShortImage(rawDepthImage->noDims, true, true);
 		if (this->floatImage != NULL) delete this->floatImage;
 		this->floatImage = new ITMFloatImage(rawDepthImage->noDims, true, true);
+
+		if (modelSensorNoise)
+		{
+			(*view_ptr)->depthNormal = new ITMFloat4Image(rawDepthImage->noDims, true, true);
+			(*view_ptr)->depthUncertainty = new ITMFloatImage(rawDepthImage->noDims, true, true);
+		}
 	}
 
 	ITMView *view = *view_ptr;

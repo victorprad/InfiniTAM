@@ -110,15 +110,5 @@ _CPU_AND_GPU_CODE_ inline void computeNormalAndWeight(const float *depth_in, Vec
 	float theta = acosf(outNormal.z);
 	float theta_diff = theta / (PI*0.5f - theta);
 
-	sigmaZ_out[idx] = 1.0 / (0.0012f + 0.0019f*(z - 0.4f)*(z - 0.4f) + 0.0001 / sqrt(z) * theta_diff * theta_diff);
-}
-
-inline float findMinDepth(ITMFloatImage *depth)
-{
-	float mindepth = 1000.0f;
-	depth->UpdateHostFromDevice();
-	float *depth_ptr = depth->GetData(MEMORYDEVICE_CPU);
-	for (int i = 0; i < depth->dataSize; i++)
-		if (depth_ptr[i]>0) mindepth = MIN(mindepth, depth_ptr[i]);
-	return mindepth;
+	sigmaZ_out[idx] = (0.0012f + 0.0019f*(z - 0.4f)*(z - 0.4f) + 0.0001 / sqrt(z) * theta_diff * theta_diff);
 }

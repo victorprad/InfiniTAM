@@ -7,13 +7,13 @@
 using namespace ITMLib::Objects;
 
 ITMLibSettings::ITMLibSettings(void)
-	: sceneParams(0.02f, 100, 0.005f, 0.2f, 3.0f, false)
+	: sceneParams(0.02f, 100, 0.005f, 0.4f, 3.5f, false)
 {
 	/// depth threashold for the ICP tracker
 	depthTrackerICPThreshold = 0.1f * 0.1f;
 
 	/// For ITMDepthTracker: ICP iteration termination threshold
-	depthTrackerTerminationThreshold = 1e-3f;
+	depthTrackerTerminationThreshold = 1e-4f;
 
 	/// skips every other point when using the colour tracker
 	skipPoints = true;
@@ -28,7 +28,7 @@ ITMLibSettings::ITMLibSettings(void)
 #endif
 #endif
 
-	//deviceType = DEVICE_CPU;
+	//deviceType = DEVICE_CUDA;
 
 	/// enables or disables swapping. HERE BE DRAGONS: It should work, but requires more testing
 	useSwapping = false;
@@ -43,7 +43,7 @@ ITMLibSettings::ITMLibSettings(void)
 	trackerType = TRACKER_ICP;
 	//trackerType = TRACKER_REN;
 	//trackerType = TRACKER_IMU;
-	//trackerType = TRACKER_WICP
+	//trackerType = TRACKER_WICP;
 
 	modelSensorNoise = false;
 	if (trackerType == TRACKER_WICP) modelSensorNoise = true;
