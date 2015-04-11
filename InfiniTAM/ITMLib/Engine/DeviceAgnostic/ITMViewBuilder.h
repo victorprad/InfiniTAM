@@ -55,11 +55,10 @@ _CPU_AND_GPU_CODE_ inline void filterDepth(DEVICEPTR(float) *imageData_out, cons
 _CPU_AND_GPU_CODE_ inline void computeNormalAndWeight(const float *depth_in, Vector4f *normal_out, float *sigmaZ_out, int x, int y, Vector2i imgDims, Vector4f intrinparam)
 {
 	Vector3f outNormal;
-	float z, tmpz, dz, final_depth = 0.0f, w, w_sum = 0.0f;
 
 	int idx = x + y * imgDims.x;
 
-	z = depth_in[x + y * imgDims.x];
+	float z = depth_in[x + y * imgDims.x];
 	if (z < 0.0f)
 	{
 		normal_out[idx].w = -1.0f;
@@ -67,7 +66,7 @@ _CPU_AND_GPU_CODE_ inline void computeNormalAndWeight(const float *depth_in, Vec
 		return;
 	}
 
-	// fist compute the normal
+	// first compute the normal
 	Vector3f cpt(z * (x - intrinparam.z) * intrinparam.x, z * (y - intrinparam.w) * intrinparam.y, z);
 	Vector3f xp1_y, xm1_y, x_yp1, x_ym1;
 	Vector3f diff_x(0.0f, 0.0f, 0.0f), diff_y(0.0f, 0.0f, 0.0f);
