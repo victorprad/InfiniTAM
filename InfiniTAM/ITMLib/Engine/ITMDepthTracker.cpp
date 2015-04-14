@@ -147,28 +147,38 @@ void ITMDepthTracker::TrackCamera(ITMTrackingState *trackingState, const ITMView
 	this->SetEvaluationData(trackingState, view);
 	this->PrepareForEvaluation();
 
-	Matrix4f approxInvPose = trackingState->pose_d->GetInvM();
-
 	float f_old = 1e10, f_new;
 
 	for (int levelId = viewHierarchy->noLevels - 1; levelId >= noICPLevel; levelId--)
 	{
+		if (iterationType == TRACKER_ITERATION_NONE) continue;
 		this->SetEvaluationParams(levelId);
 
-		if (iterationType == TRACKER_ITERATION_NONE) continue;
+		Matrix4f approxInvPose = trackingState->pose_d->GetInvM();
+		ITMPose lastKnownGoodPose(*(trackingState->pose_d));
+		f_old = 1e10;
 
 		for (int iterNo = 0; iterNo < noIterationsPerLevel[levelId]; iterNo++)
 		{
+			// evaluate error function and gradients
 			int noValidPoints = this->ComputeGandH(f_new, nabla, hessian, approxInvPose);
 
-			if (noValidPoints <= 0) break;
-			if (f_new > f_old) break;
+			// check if error increased. If so, revert
+			if ((noValidPoints <= 0)||(f_new > f_old)) {
+				trackingState->pose_d->SetFrom(&lastKnownGoodPose);
+				break;
+			}
+			lastKnownGoodPose.SetFrom(trackingState->pose_d);
+			f_old = f_new;
 
+			// compute a new step and make sure we've got an SE3
 			ComputeDelta(step, nabla, hessian, iterationType != TRACKER_ITERATION_BOTH);
 			ApplyDelta(approxInvPose, step, approxInvPose);
 			trackingState->pose_d->SetInvM(approxInvPose);
 			trackingState->pose_d->Coerce();
 			approxInvPose = trackingState->pose_d->GetInvM();
+
+			// if step is small, assume it's going to decrease the error and finish
 			if (HasConverged(step)) break;
 		}
 	}
