@@ -14,6 +14,7 @@ ITMPose::ITMPose(float tx, float ty, float tz, float rx, float ry, float rz)
 ITMPose::ITMPose(const float pose[6]) { this->SetFrom(pose); }
 ITMPose::ITMPose(const Matrix4f & src) { this->SetM(src); }
 ITMPose::ITMPose(const Vector6f & tangent) { this->SetFrom(tangent); }
+ITMPose::ITMPose(const ITMPose & src) { this->SetFrom(&src); }
 
 #ifndef M_SQRT1_2
 #define M_SQRT1_2 0.707106781186547524401
