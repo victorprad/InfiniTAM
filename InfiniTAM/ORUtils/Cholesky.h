@@ -46,6 +46,15 @@ namespace ORUtils
 			rank = size;
 		}
 
+		float Determinant(void) const
+		{
+			float ret = 1.0f;
+			for (int i = 0; i < size; ++i) {
+				ret *= cholesky[i + i * size];
+			}
+			return ret * ret;
+		}
+
 		void Backsub(float *result, const float *v) const
 		{
 			std::vector<float> y(size);
