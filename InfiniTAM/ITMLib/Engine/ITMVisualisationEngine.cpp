@@ -16,10 +16,10 @@ inline float base(float val) {
 	else return 0.0;
 }
 
-void IITMVisualisationEngine::DepthToUchar4(ITMUChar4Image *dst, ITMFloatImage *src)
+void IITMVisualisationEngine::DepthToUchar4(ITMUChar4Image *dst, const ITMFloatImage *src)
 {
 	Vector4u *dest = dst->GetData(MEMORYDEVICE_CPU);
-	float *source = src->GetData(MEMORYDEVICE_CPU);
+	const float *source = src->GetData(MEMORYDEVICE_CPU);
 	int dataSize = dst->dataSize;
 
 	memset(dst->GetData(MEMORYDEVICE_CPU), 0, dataSize * 4);
