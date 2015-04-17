@@ -1,6 +1,7 @@
+// Copyright 2014 Isis Innovation Limited and the authors of InfiniTAM
+
 #include "LCDDatabase.h"
 
-#include <stdio.h>
 using namespace LCDLib;
 
 LCDDatabase::LCDDatabase(int codeLength, int codeFragmentDim)
@@ -24,14 +25,13 @@ int LCDDatabase::findMostSimilar(const char *codeFragments, int nearestNeighbour
 	int *similarities = new int[mTotalEntries];
 	for (int i = 0; i < mTotalEntries; ++i) similarities[i] = 0;
 
-fprintf(stderr, "a\n");
 	for (int f = 0; f < mCodeLength; f++) {
+		if (codeFragments[f] < 0) continue;
 		const std::vector<int> *sameCode = &(mIds[f * mCodeFragmentDim + codeFragments[f]]);
 
 		for (unsigned int i = 0; i < sameCode->size(); ++i) similarities[(*sameCode)[i]]++;
 	}
-fprintf(stderr, "b\n");
-for (int i = 0; i < mTotalEntries; ++i) fprintf(stderr, "%i\n", similarities[i]);
+//for (int i = 0; i < mTotalEntries; ++i) fprintf(stderr, "%i\n", similarities[i]);
 
 	int foundNN = 0;
 	for (int i = 0; i < mTotalEntries; ++i) {
@@ -49,7 +49,6 @@ for (int i = 0; i < mTotalEntries; ++i) fprintf(stderr, "%i\n", similarities[i])
 			if (foundNN < k) ++foundNN;
 		}
 	}
-fprintf(stderr, "c\n");
 
 	delete[] similarities;
 
@@ -59,9 +58,9 @@ fprintf(stderr, "c\n");
 // returns ID of newly added entry
 int LCDDatabase::addEntry(const char *codeFragments)
 {
-fprintf(stderr, "ADD NEW ENTRY\n");
 	int newId = mTotalEntries++;
 	for (int f = 0; f < mCodeLength; f++) {
+		if (codeFragments[f] < 0) continue;
 		std::vector<int> *sameCode = &(mIds[f * mCodeFragmentDim + codeFragments[f]]);
 
 		sameCode->push_back(newId);

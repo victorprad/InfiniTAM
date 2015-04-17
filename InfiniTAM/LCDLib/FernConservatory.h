@@ -1,3 +1,5 @@
+// Copyright 2014 Isis Innovation Limited and the authors of InfiniTAM
+
 #pragma once
 
 #include "../ORUtils/PlatformIndependence.h"
@@ -15,7 +17,7 @@ struct FernTester {
 
 class FernConservatory {
 	public:
-	FernConservatory(int numFerns, ORUtils::Vector2<int> imgSize, ORUtils::Vector2<float> bounds);
+	FernConservatory(int numFerns, ORUtils::Vector2<int> imgSize, ORUtils::Vector2<float> bounds, int decisionsPerFern = 1);
 	~FernConservatory(void);
 
 	// takes a (small) image, applies the binary tests in the ferns, creates
@@ -25,8 +27,12 @@ class FernConservatory {
 	int getNumFerns(void) const
 	{ return mNumFerns; }
 
+	int getNumCodes(void) const
+	{ return (1 << mNumDecisions); }
+
 	private:
 	int mNumFerns;
+	int mNumDecisions;
 	FernTester *mEncoders;
 };
 

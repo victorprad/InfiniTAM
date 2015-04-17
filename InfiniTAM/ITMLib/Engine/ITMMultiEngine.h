@@ -6,7 +6,7 @@
 #include "ITMMainEngine.h"
 #include "../Objects/ITMLocalScene.h"
 
-#include "../../LCDLib/LoopClosureDetectionEngine.h"
+#include "../../LCDLib/LoopClosureDetector.h"
 
 #include <vector>
 

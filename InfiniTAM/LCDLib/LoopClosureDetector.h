@@ -1,3 +1,5 @@
+// Copyright 2014 Isis Innovation Limited and the authors of InfiniTAM
+
 #pragma once
 
 #include "FernConservatory.h"
@@ -7,10 +9,8 @@ namespace LCDLib {
 
 class LoopClosureDetector {
 	public:
-	LoopClosureDetector(ORUtils::Vector2<int> imgSize, ORUtils::Vector2<float> range, int numFerns);
+	LoopClosureDetector(ORUtils::Vector2<int> imgSize, ORUtils::Vector2<float> range, float harvestingThreshold, int numFerns, int numDecisionsPerFern);
 	~LoopClosureDetector(void);
-
-//	static bool ProcessFrame(const ORUtils::Image<short> *img_d, const FernConservatory *encoding, LCDDatabase *database, int nearestNeighbours[], int k);
 
 	/** Process an image for loop closure detection. This will find nearby
 	    keyframes in the database and possibly add the image as a new
@@ -31,6 +31,8 @@ class LoopClosureDetector {
 	*/
 	int ProcessFrame(const ORUtils::Image<float> *img_d, int k, int nearestNeighbours[], float *distances = NULL, bool harvestKeyframes = true) const;
 
+	private:
+	float mKeyframeHarvestingThreshold;
 	FernConservatory *mEncoding;
 	LCDDatabase *mDatabase;
 };

@@ -5,7 +5,8 @@ ELSE()
 ENDIF()
 
 add_library(LCDLib
+PoseDatabase.h PoseDatabase.cpp
 LCDDatabase.h LCDDatabase.cpp
 FernConservatory.h FernConservatory.cpp
-LoopClosureDetectionEngine.h LoopClosureDetectionEngine.cpp
+LoopClosureDetector.h LoopClosureDetector.cpp
 )

@@ -51,7 +51,7 @@ ITMMultiEngine::ITMMultiEngine(const ITMLibSettings *settings, const ITMRGBDCali
 
 	view = NULL; // will be allocated by the view builder
 
-	mLoopClosureDetector = new LCDLib::LoopClosureDetector(imgSize_d, Vector2f(0.5f,3.0f), 500);
+	mLoopClosureDetector = new LCDLib::LoopClosureDetector(imgSize_d, Vector2f(0.5f,3.0f), 0.2f, 500, 4);
 }
 
 ITMMultiEngine::~ITMMultiEngine()
