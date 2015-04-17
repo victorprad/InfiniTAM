@@ -19,7 +19,7 @@ namespace ITMLib
 		int ComputeGandH(float &f, float *nabla, float *hessian, Matrix4f approxInvPose);
 
 	public:
-		ITMDepthTracker_CUDA(Vector2i imgSize, TrackerIterationType *trackingRegime, int noHierarchyLevels, int noICPRunTillLevel, float distThresh,
+		ITMDepthTracker_CUDA(Vector2i imgSize, TrackerIterationType *trackingRegime, int noHierarchyLevels, int noICPRunTillLevel,
 			float terminationThreshold, const ITMLowLevelEngine *lowLevelEngine);
 		~ITMDepthTracker_CUDA(void);
 	};

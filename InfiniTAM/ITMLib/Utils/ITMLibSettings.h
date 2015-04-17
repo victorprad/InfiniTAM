@@ -55,10 +55,15 @@ namespace ITMLib
 		bool skipPoints;
 
 		/// For ITMDepthTracker: ICP distance threshold
-		float depthTrackerICPThreshold;
+		float depthTrackerICPThresholdCoarse;
+		float depthTrackerICPThresholdFine;
 
 		/// For ITMDepthTracker: ICP iteration termination threshold
 		float depthTrackerTerminationThreshold;
+
+		/// For trackers: number of iterations
+		int numTrackerIterationsCoarse;
+		int numTrackerIterationsFine;
 
 		/// Further, scene specific parameters such as voxel size
 		ITMLib::ITMSceneParams sceneParams;

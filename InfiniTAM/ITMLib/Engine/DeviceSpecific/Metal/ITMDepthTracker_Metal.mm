@@ -12,8 +12,8 @@ id<MTLComputePipelineState> p_depthTrackerOneLevel_g_rg_device;
 id<MTLBuffer> paramsBuffer_depthTracker;
 
 ITMDepthTracker_Metal::ITMDepthTracker_Metal(Vector2i imgSize, TrackerIterationType *trackingRegime, int noHierarchyLevels,
-                                             int noICPRunTillLevel, float distThresh, float terminationThreshold, const ITMLowLevelEngine *lowLevelEngine)
-:ITMDepthTracker(imgSize, trackingRegime, noHierarchyLevels, noICPRunTillLevel, distThresh, terminationThreshold, lowLevelEngine, MEMORYDEVICE_CPU)
+                                             int noICPRunTillLevel, float terminationThreshold, const ITMLowLevelEngine *lowLevelEngine)
+:ITMDepthTracker(imgSize, trackingRegime, noHierarchyLevels, noICPRunTillLevel, terminationThreshold, lowLevelEngine, MEMORYDEVICE_CPU)
 {
     allocImgSize = imgSize;
 

@@ -31,10 +31,6 @@ namespace ITMLib
 
 		float terminationThreshold;
 
-		float hessian[6 * 6];
-		float nabla[6];
-		float step[6];
-
 		void PrepareForEvaluation();
 		void SetEvaluationParams(int levelId);
 
@@ -58,7 +54,9 @@ namespace ITMLib
 	public:
 		void TrackCamera(ITMTrackingState *trackingState, const ITMView *view);
 
-		ITMDepthTracker(Vector2i imgSize, TrackerIterationType *trackingRegime, int noHierarchyLevels, int noICPRunTillLevel, float distThresh,
+		void SetupLevels(int numIterCoarse, int numIterFine, float distThreshCoarse, float distThreshFine);
+
+		ITMDepthTracker(Vector2i imgSize, TrackerIterationType *trackingRegime, int noHierarchyLevels, int noICPRunTillLevel,
 			float terminationThreshold, const ITMLowLevelEngine *lowLevelEngine, MemoryDeviceType memoryType);
 		virtual ~ITMDepthTracker(void);
 	};

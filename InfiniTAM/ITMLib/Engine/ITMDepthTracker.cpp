@@ -7,7 +7,7 @@
 
 using namespace ITMLib;
 
-ITMDepthTracker::ITMDepthTracker(Vector2i imgSize, TrackerIterationType *trackingRegime, int noHierarchyLevels, int noICPRunTillLevel, float distThresh,
+ITMDepthTracker::ITMDepthTracker(Vector2i imgSize, TrackerIterationType *trackingRegime, int noHierarchyLevels, int noICPRunTillLevel,
 	float terminationThreshold, const ITMLowLevelEngine *lowLevelEngine, MemoryDeviceType memoryType)
 {
 	viewHierarchy = new ITMImageHierarchy<ITMTemplatedHierarchyLevel<ITMFloatImage> >(imgSize, trackingRegime, noHierarchyLevels, memoryType, true);
@@ -15,17 +15,8 @@ ITMDepthTracker::ITMDepthTracker(Vector2i imgSize, TrackerIterationType *trackin
 
 	this->noIterationsPerLevel = new int[noHierarchyLevels];
 	this->distThresh = new float[noHierarchyLevels];
-	
-	this->noIterationsPerLevel[0] = 2; //TODO -> make parameter
-	for (int levelId = 1; levelId < noHierarchyLevels; levelId++)
-	{
-		noIterationsPerLevel[levelId] = noIterationsPerLevel[levelId - 1] + 2;
-	}
 
-	float distThreshStep = distThresh / noHierarchyLevels;
-	this->distThresh[noHierarchyLevels - 1] = distThresh;
-	for (int levelId = noHierarchyLevels - 2; levelId >= 0; levelId--)
-		this->distThresh[levelId] = this->distThresh[levelId + 1] - distThreshStep;
+	SetupLevels(noHierarchyLevels*2, 2, 0.01f, 0.002f);
 
 	this->lowLevelEngine = lowLevelEngine;
 
@@ -41,6 +32,28 @@ ITMDepthTracker::~ITMDepthTracker(void)
 
 	delete[] this->noIterationsPerLevel;
 	delete[] this->distThresh;
+}
+
+void ITMDepthTracker::SetupLevels(int numIterCoarse, int numIterFine, float distThreshCoarse, float distThreshFine)
+{
+	int noHierarchyLevels = viewHierarchy->noLevels;
+
+	if ((numIterCoarse!=-1)&&(numIterFine!=-1)) {
+		float step = (numIterCoarse-numIterFine)/(noHierarchyLevels-1);
+		float val = numIterCoarse;
+		for (int levelId = noHierarchyLevels-1; levelId >= 0; levelId--) {
+			this->noIterationsPerLevel[levelId] = round(val);
+			val -= step;
+		}
+	}
+	if ((distThreshCoarse>=0.0f)&&(distThreshFine>=0.0f)) {
+		float step = (distThreshCoarse-distThreshFine) / (noHierarchyLevels-1);
+		float val = distThreshCoarse;
+		for (int levelId = noHierarchyLevels - 1; levelId >= 0; levelId--) {
+			this->distThresh[levelId] = val;
+			val -= step;
+		}
+	}
 }
 
 void ITMDepthTracker::SetEvaluationData(ITMTrackingState *trackingState, const ITMView *view)
@@ -147,30 +160,72 @@ void ITMDepthTracker::TrackCamera(ITMTrackingState *trackingState, const ITMView
 	this->SetEvaluationData(trackingState, view);
 	this->PrepareForEvaluation();
 
-	Matrix4f approxInvPose = trackingState->pose_d->GetInvM();
-
 	float f_old = 1e10, f_new;
+	int noValidPoints_old = 0, noValidPoints_new;
+	int noTotalPoints = 0;
+
+	float hessian_good[6 * 6], hessian_new[6 * 6], A[6 * 6];
+	float nabla_good[6], nabla_new[6];
+	float step[6];
+
+	for (int i = 0; i < 6*6; ++i) hessian_good[i] = 0.0f;
+	for (int i = 0; i < 6; ++i) nabla_good[i] = 0.0f;
 
 	for (int levelId = viewHierarchy->noLevels - 1; levelId >= noICPLevel; levelId--)
 	{
 		this->SetEvaluationParams(levelId);
-
 		if (iterationType == TRACKER_ITERATION_NONE) continue;
+
+		noTotalPoints = viewHierarchy->levels[levelId]->depth->noDims.x * viewHierarchy->levels[levelId]->depth->noDims.y;
+
+		Matrix4f approxInvPose = trackingState->pose_d->GetInvM();
+		ITMPose lastKnownGoodPose(*(trackingState->pose_d));
+		f_old = 1e20;
+		noValidPoints_old = 0;
+		float lambda = 1.0;
 
 		for (int iterNo = 0; iterNo < noIterationsPerLevel[levelId]; iterNo++)
 		{
-			int noValidPoints = this->ComputeGandH(f_new, nabla, hessian, approxInvPose);
+			// evaluate error function and gradients
+			noValidPoints_new = this->ComputeGandH(f_new, nabla_new, hessian_new, approxInvPose);
 
-			if (noValidPoints <= 0) break;
-			if (f_new > f_old) break;
+			// check if error increased. If so, revert
+			if ((noValidPoints_new <= 0)||(f_new > f_old)) {
+				trackingState->pose_d->SetFrom(&lastKnownGoodPose);
+				approxInvPose = trackingState->pose_d->GetInvM();
+				lambda *= 10.0f;
+			} else {
+				lastKnownGoodPose.SetFrom(trackingState->pose_d);
+				f_old = f_new;
+				noValidPoints_old = noValidPoints_new;
 
-			ComputeDelta(step, nabla, hessian, iterationType != TRACKER_ITERATION_BOTH);
+				for (int i = 0; i < 6*6; ++i) hessian_good[i] = hessian_new[i] / noValidPoints_new;
+				for (int i = 0; i < 6; ++i) nabla_good[i] = nabla_new[i] / noValidPoints_new;
+				lambda /= 10.0f;
+			}
+			for (int i = 0; i < 6*6; ++i) A[i] = hessian_good[i];
+			for (int i = 0; i < 6; ++i) A[i+i*6] *= 1.0f + lambda;
+
+			// compute a new step and make sure we've got an SE3
+			ComputeDelta(step, nabla_good, A, iterationType != TRACKER_ITERATION_BOTH);
 			ApplyDelta(approxInvPose, step, approxInvPose);
 			trackingState->pose_d->SetInvM(approxInvPose);
 			trackingState->pose_d->Coerce();
 			approxInvPose = trackingState->pose_d->GetInvM();
+
+			// if step is small, assume it's going to decrease the error and finish
 			if (HasConverged(step)) break;
 		}
 	}
+
+	float det = 0.0f;
+	if (iterationType == TRACKER_ITERATION_BOTH) {
+		ORUtils::Cholesky cholA(hessian_good, 6);
+		det = cholA.Determinant();
+	}
+
+	float finalResidual2 = ((float)noValidPoints_old * f_old + (float)(noTotalPoints - noValidPoints_old) * sqrt(distThresh[0])) / (float)noTotalPoints;
+	float finalResidual = sqrt(((float)noValidPoints_old * f_old * f_old + (float)(noTotalPoints - noValidPoints_old) * distThresh[0]) / (float)noTotalPoints);
+fprintf(stderr, "final ICP residual: det %e, r1 %f r2 %f (r %f, p %i/%i)%s\n", det, finalResidual, finalResidual2, f_old, noValidPoints_old, noTotalPoints, (finalResidual<0.03)?" !!!":"");
 }
 

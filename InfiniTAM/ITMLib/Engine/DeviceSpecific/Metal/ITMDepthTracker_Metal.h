@@ -29,7 +29,7 @@ namespace ITMLib
 
 		public:
             ITMDepthTracker_Metal(Vector2i imgSize, TrackerIterationType *trackingRegime, int noHierarchyLevels,
-                                  int noICPRunTillLevel, float distThresh, float terminationThreshold, const ITMLowLevelEngine *lowLevelEngine);
+                                  int noICPRunTillLevel, float terminationThreshold, const ITMLowLevelEngine *lowLevelEngine);
 			~ITMDepthTracker_Metal(void);
 		};
 	}

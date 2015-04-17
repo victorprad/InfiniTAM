@@ -22,8 +22,8 @@ __global__ void depthTrackerOneLevel_g_rt_device(ITMDepthTracker_CUDA::AccuCell 
 // host methods
 
 ITMDepthTracker_CUDA::ITMDepthTracker_CUDA(Vector2i imgSize, TrackerIterationType *trackingRegime, int noHierarchyLevels, int noICPRunTillLevel,
-	float distThresh, float terminationThreshold, const ITMLowLevelEngine *lowLevelEngine)
-	:ITMDepthTracker(imgSize, trackingRegime, noHierarchyLevels, noICPRunTillLevel, distThresh, terminationThreshold, lowLevelEngine, MEMORYDEVICE_CUDA)
+	float terminationThreshold, const ITMLowLevelEngine *lowLevelEngine)
+	:ITMDepthTracker(imgSize, trackingRegime, noHierarchyLevels, noICPRunTillLevel, terminationThreshold, lowLevelEngine, MEMORYDEVICE_CUDA)
 {
 	Vector2i gridSize((imgSize.x+15)/16, (imgSize.y+15)/16);
 
@@ -97,7 +97,7 @@ int ITMDepthTracker_CUDA::ComputeGandH(float &f, float *nabla, float *hessian, M
 	for (int r = 0; r < noPara; ++r) for (int c = r + 1; c < noPara; c++) hessian[r + c * 6] = hessian[c + r * 6];
 
 	memcpy(nabla, sumNabla, noPara * sizeof(float));
-	f = (noValidPoints > 100) ? sqrt(sumF) / noValidPoints : 1e5f;
+	f = (noValidPoints > 100) ? sqrt(sumF / noValidPoints) : 1e5f;
 
 	return noValidPoints;
 }

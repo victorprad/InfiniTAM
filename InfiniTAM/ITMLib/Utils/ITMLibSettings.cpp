@@ -10,10 +10,15 @@ ITMLibSettings::ITMLibSettings(void)
 	: sceneParams(0.02f, 100, 0.005f, 0.2f, 3.0f, false)
 {
 	/// depth threashold for the ICP tracker
-	depthTrackerICPThreshold = 0.1f * 0.1f;
+	depthTrackerICPThresholdFine = 0.002;//0.05f * 0.05f;
+	depthTrackerICPThresholdCoarse = 0.01f;//0.2f * 0.2f;
 
 	/// For ITMDepthTracker: ICP iteration termination threshold
 	depthTrackerTerminationThreshold = 1e-3f;
+
+	/// For trackers in general: specify number of iterations
+	numTrackerIterationsCoarse = 10;
+	numTrackerIterationsFine = 2;
 
 	/// skips every other point when using the colour tracker
 	skipPoints = true;
