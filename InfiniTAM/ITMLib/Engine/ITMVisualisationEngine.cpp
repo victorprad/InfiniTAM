@@ -56,4 +56,54 @@ void IITMVisualisationEngine::DepthToUchar4(ITMUChar4Image *dst, const ITMFloatI
 	}
 }
 
+void IITMVisualisationEngine::NormalToUchar4(ITMUChar4Image *dst, const ITMFloat4Image *src)
+{
+	Vector4u *dest = dst->GetData(MEMORYDEVICE_CPU);
+	const Vector4f *source = src->GetData(MEMORYDEVICE_CPU);
+	int dataSize = dst->dataSize;
+
+	memset(dst->GetData(MEMORYDEVICE_CPU), 0, dataSize * 4);
+	{
+		for (int idx = 0; idx < dataSize; idx++)
+		{
+			Vector4f sourceVal = source[idx];
+			if (sourceVal.w >= 0.0f)
+			{
+				dest[idx].r = (uchar)((0.3f + (sourceVal.r + 1.0f)*0.35f)*255.0f);
+				dest[idx].g = (uchar)((0.3f + (sourceVal.g + 1.0f)*0.35f)*255.0f);
+				dest[idx].b = (uchar)((0.3f + (sourceVal.b + 1.0f)*0.35f)*255.0f);
+
+			}
+		}
+	}
+}
+
+void IITMVisualisationEngine::WeightToUchar4(ITMUChar4Image *dst, const ITMFloatImage *src)
+{
+	Vector4u *dest = dst->GetData(MEMORYDEVICE_CPU);
+	const float *source = src->GetData(MEMORYDEVICE_CPU);
+	int dataSize = dst->dataSize;
+	
+	float mindepth = 1000;
+	for (int i = 0; i < src->dataSize; i++)
+		if (source[i]>0) mindepth = MIN(mindepth, source[i]);
+
+	memset(dst->GetData(MEMORYDEVICE_CPU), 0, dataSize * 4);
+	{
+		for (int idx = 0; idx < dataSize; idx++)
+		{
+			float sourceVal = source[idx];
+			if (sourceVal>0)
+			{
+				sourceVal = mindepth / sourceVal * 0.8f + 0.2f;
+				dest[idx].r = (uchar)((1 - sourceVal)*255.0f);
+				dest[idx].b = 0;
+				dest[idx].g = (uchar)(sourceVal*255.0f);
+			}
+
+		}
+	}
+}
+
 template class ITMLib::ITMVisualisationEngine<ITMVoxel, ITMVoxelIndex>;
+

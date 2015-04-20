@@ -261,9 +261,9 @@ _CPU_AND_GPU_CODE_ inline void drawPixelGrey(DEVICEPTR(Vector4u) & dest, const T
 
 _CPU_AND_GPU_CODE_ inline void drawPixelNormal(DEVICEPTR(Vector4u) & dest, const THREADPTR(Vector3f) & normal_obj)
 {
-	dest.r = (uchar)((0.3f + (normal_obj.r + 1.0f)*0.35f)*255.0f);
-	dest.g = (uchar)((0.3f + (normal_obj.g + 1.0f)*0.35f)*255.0f);
-	dest.b = (uchar)((0.3f + (normal_obj.b + 1.0f)*0.35f)*255.0f);
+	dest.r = (uchar)((0.3f + (-normal_obj.r + 1.0f)*0.35f)*255.0f);
+	dest.g = (uchar)((0.3f + (-normal_obj.g + 1.0f)*0.35f)*255.0f);
+	dest.b = (uchar)((0.3f + (-normal_obj.b + 1.0f)*0.35f)*255.0f);
 }
 
 template<class TVoxel, class TIndex>

@@ -24,6 +24,8 @@ namespace ITMLib
 		virtual ~IITMVisualisationEngine(void) {}
 
 		static void DepthToUchar4(ITMUChar4Image *dst, const ITMFloatImage *src);
+		static void NormalToUchar4(ITMUChar4Image* dst, const ITMFloat4Image *src);
+		static void WeightToUchar4(ITMUChar4Image *dst, const ITMFloatImage *src);
 
 		/** Given a scene, pose and intrinsics, compute the
 		visible subset of the scene and store it in an

@@ -26,6 +26,14 @@
 #include "Engine/DeviceSpecific/Metal/ITMDepthTracker_Metal.h"
 #endif
 
+#include "Engine/ITMWeightedICPTracker.h"
+#include "Engine/DeviceSpecific/CPU/ITMWeightedICPTracker_CPU.h"
+#ifndef COMPILE_WITHOUT_CUDA
+#include "Engine/DeviceSpecific/CUDA/ITMWeightedICPTracker_CUDA.h"
+#endif
+
+
+
 #include "Engine/ITMSceneReconstructionEngine.h"
 #include "Engine/DeviceSpecific/CPU/ITMSceneReconstructionEngine_CPU.h"
 #ifndef COMPILE_WITHOUT_CUDA
