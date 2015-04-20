@@ -29,6 +29,8 @@ namespace ITMLib
 
 			bool useBilateralFilter;
 
+			bool modelSensorNoise;
+
 			/// Tracker types
 			typedef enum {
 				//! Identifies a tracker based on colour image
@@ -38,7 +40,9 @@ namespace ITMLib
 				//! Identifies a tracker based on depth image (Ren et al, 2012)
 				TRACKER_REN,
 				//! Identifies a tracker based on depth image and IMU measurement
-				TRACKER_IMU
+				TRACKER_IMU,
+				//! Identifies a tracker that use weighted ICP only on depth image
+				TRACKER_WICP
 			} TrackerType;
 
 			/// Select the type of tracker to use

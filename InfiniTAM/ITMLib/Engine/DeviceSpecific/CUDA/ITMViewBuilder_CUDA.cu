@@ -12,13 +12,25 @@ using namespace ORUtils;
 ITMViewBuilder_CUDA::ITMViewBuilder_CUDA(const ITMRGBDCalib *calib):ITMViewBuilder(calib) { }
 ITMViewBuilder_CUDA::~ITMViewBuilder_CUDA(void) { }
 
+//---------------------------------------------------------------------------
+//
+// kernel function declaration 
+//
+//---------------------------------------------------------------------------
+
+
 __global__ void convertDisparityToDepth_device(float *depth_out, const short *depth_in, Vector2f disparityCalibParams, float fx_depth, Vector2i imgSize);
 __global__ void convertDepthMMToFloat_device(float *d_out, const short *d_in, Vector2i imgSize);
 __global__ void filterDepth_device(float *imageData_out, const float *imageData_in, Vector2i imgDims);
+__global__ void ComputeNormalAndWeight_device(const float* depth_in, Vector4f* normal_out, float *sigmaL_out, Vector2i imgDims, Vector4f intrinsic);
 
+//---------------------------------------------------------------------------
+//
 // host methods
+//
+//---------------------------------------------------------------------------
 
-void ITMViewBuilder_CUDA::UpdateView(ITMView **view_ptr, ITMUChar4Image *rgbImage, ITMShortImage *rawDepthImage, bool useBilateralFilter)
+void ITMViewBuilder_CUDA::UpdateView(ITMView **view_ptr, ITMUChar4Image *rgbImage, ITMShortImage *rawDepthImage, bool useBilateralFilter, bool modelSensorNoise)
 {
 	if (*view_ptr == NULL)
 	{
@@ -27,6 +39,12 @@ void ITMViewBuilder_CUDA::UpdateView(ITMView **view_ptr, ITMUChar4Image *rgbImag
 		this->shortImage = new ITMShortImage(rawDepthImage->noDims, true, true);
 		if (this->floatImage != NULL) delete this->floatImage;
 		this->floatImage = new ITMFloatImage(rawDepthImage->noDims, true, true);
+
+		if (modelSensorNoise)
+		{
+			(*view_ptr)->depthNormal = new ITMFloat4Image(rawDepthImage->noDims, true, true);
+			(*view_ptr)->depthUncertainty = new ITMFloatImage(rawDepthImage->noDims, true, true);
+		}
 	}
 
 	ITMView *view = *view_ptr;
@@ -55,6 +73,11 @@ void ITMViewBuilder_CUDA::UpdateView(ITMView **view_ptr, ITMUChar4Image *rgbImag
 		this->DepthFiltering(view->depth, this->floatImage);
 		this->DepthFiltering(this->floatImage, view->depth);
 		view->depth->SetFrom(this->floatImage, MemoryBlock<float>::CUDA_TO_CUDA);
+	}
+
+	if (modelSensorNoise)
+	{
+		this->ComputeNormalAndWeights(view->depthNormal, view->depthUncertainty, view->depth, view->calib->intrinsics_d.projectionParamsSimple.all);
 	}
 }
 
@@ -131,9 +154,27 @@ void ITMViewBuilder_CUDA::DepthFiltering(ITMFloatImage *image_out, const ITMFloa
 	filterDepth_device << <gridSize, blockSize >> >(imageData_out, imageData_in, imgDims);
 }
 
-//////////////////////////////////////////////////////////////////////////
-// device functions
-//////////////////////////////////////////////////////////////////////////
+void ITMLib::Engine::ITMViewBuilder_CUDA::ComputeNormalAndWeights(ITMFloat4Image *normal_out, ITMFloatImage *sigmaZ_out, const ITMFloatImage *depth_in, Vector4f intrinsic)
+{
+	Vector2i imgDims = depth_in->noDims;
+
+	const float *depthData_in = depth_in->GetData(MEMORYDEVICE_CUDA);
+
+	float *sigmaZData_out = sigmaZ_out->GetData(MEMORYDEVICE_CUDA);
+	Vector4f *normalData_out = normal_out->GetData(MEMORYDEVICE_CUDA);
+
+	dim3 blockSize(16, 16);
+	dim3 gridSize((int)ceil((float)imgDims.x / (float)blockSize.x), (int)ceil((float)imgDims.y / (float)blockSize.y));
+
+	ComputeNormalAndWeight_device << <gridSize, blockSize >> >(depthData_in, normalData_out, sigmaZData_out, imgDims, intrinsic);
+
+}
+
+//---------------------------------------------------------------------------
+//
+// kernel function implementation
+//
+//---------------------------------------------------------------------------
 
 __global__ void convertDisparityToDepth_device(float *d_out, const short *d_in, Vector2f disparityCalibParams, float fx_depth, Vector2i imgSize)
 {
@@ -159,7 +200,24 @@ __global__ void filterDepth_device(float *imageData_out, const float *imageData_
 {
 	int x = threadIdx.x + blockIdx.x * blockDim.x, y = threadIdx.y + blockIdx.y * blockDim.y;
 
-	if (x < 3 || x > imgDims.x - 3 || y < 3 || y > imgDims.y - 3) return;
+	if (x < 2 || x > imgDims.x - 2 || y < 2 || y > imgDims.y - 2) return;
 
 	filterDepth(imageData_out, imageData_in, x, y, imgDims);
+}
+
+__global__ void ComputeNormalAndWeight_device(const float* depth_in, Vector4f* normal_out, float *sigmaZ_out, Vector2i imgDims, Vector4f intrinsic)
+{
+	int x = threadIdx.x + blockIdx.x * blockDim.x, y = threadIdx.y + blockIdx.y * blockDim.y;
+	int idx = x + y * imgDims.x;
+
+	if (x < 2 || x > imgDims.x - 2 || y < 2 || y > imgDims.y - 2)
+	{
+		normal_out[idx].w = -1.0f;
+		sigmaZ_out[idx] = -1;
+		return;
+	}
+	else
+	{
+		computeNormalAndWeight(depth_in, normal_out, sigmaZ_out, x, y, imgDims, intrinsic);
+	}
 }
