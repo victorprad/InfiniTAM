@@ -11,7 +11,7 @@ namespace ITMLib
 	private:
 		const ITMLibSettings *settings;
 
-		bool fusionActive, mainProcessingActive;
+		bool trackingActive, fusionActive, mainProcessingActive;
 
 		ITMLowLevelEngine *lowLevelEngine;
 		IITMVisualisationEngine *visualisationEngine;
@@ -50,7 +50,11 @@ namespace ITMLib
 
 		void GetImage(ITMUChar4Image *out, GetImageType getImageType, ITMPose *pose = NULL, ITMIntrinsics *intrinsics = NULL);
 
-		/// switch for turning intergration on/off
+		/// switch for turning tracking on/off
+		void turnOnTracking();
+		void turnOffTracking();
+
+		/// switch for turning integration on/off
 		void turnOnIntegration();
 		void turnOffIntegration();
 

@@ -45,6 +45,17 @@ namespace ITMLib
 			for (int i = 0; i < noTrackers; i++) trackers[i]->UpdateInitialPose(trackingState);
 		}
 
+		bool requiresColourRendering(void) const
+		{
+			for (int i = 0; i < noTrackers; i++) if (trackers[i]->requiresColourRendering()) return true;
+			return false;
+		}
+		bool requiresDepthReliability(void) const
+		{
+			for (int i = 0; i < noTrackers; i++) if (trackers[i]->requiresDepthReliability()) return true;
+			return false;
+		}
+
 		// Suppress the default copy constructor and assignment operator
 		ITMCompositeTracker(const ITMCompositeTracker&);
 		ITMCompositeTracker& operator=(const ITMCompositeTracker&);

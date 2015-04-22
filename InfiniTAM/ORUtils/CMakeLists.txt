@@ -14,6 +14,7 @@ LexicalCast.h
 MemoryBlock.h
 MemoryBlockPersister.h
 PlatformIndependence.h
+KeyValueConfig.h
 )
 
 #################################################################
@@ -21,7 +22,7 @@ PlatformIndependence.h
 #################################################################
 
 set(ORUTILS_OBJECTS
-Dummy.cpp
+KeyValueConfig.cpp
 ${ORUTILS_HEADERS}
 )
 

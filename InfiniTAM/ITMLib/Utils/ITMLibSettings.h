@@ -27,53 +27,16 @@ namespace ITMLib
 
 		bool useBilateralFilter;
 
-		bool modelSensorNoise;
-
-		/// Tracker types
-		typedef enum {
-			//! Identifies a tracker based on colour image
-			TRACKER_COLOR,
-			//! Identifies a tracker based on depth image
-			TRACKER_ICP,
-			//! Identifies a tracker based on depth image (Ren et al, 2012)
-			TRACKER_REN,
-			//! Identifies a tracker based on depth image and IMU measurement
-			TRACKER_IMU,
-			//! Identifies a tracker that use weighted ICP only on depth image
-			TRACKER_WICP
-		} TrackerType;
-
-		/// Select the type of tracker to use
-		TrackerType trackerType;
-
-		/// The tracking regime used by the tracking controller
-		TrackerIterationType *trackingRegime;
-
-		/// The number of levels in the trackingRegime
-		int noHierarchyLevels;
-		
-		/// Run ICP till # Hierarchy level, then switch to ITMRenTracker for local refinement.
-		int noICPRunTillLevel;
-
 		/// For ITMColorTracker: skip every other point in energy function evaluation.
 		bool skipPoints;
 
-		/// For ITMDepthTracker: ICP distance threshold
-		float depthTrackerICPThresholdCoarse;
-		float depthTrackerICPThresholdFine;
-
-		/// For ITMDepthTracker: ICP iteration termination threshold
-		float depthTrackerTerminationThreshold;
-
-		/// For trackers: number of iterations
-		int numTrackerIterationsCoarse;
-		int numTrackerIterationsFine;
+		const char *trackerConfig;
 
 		/// Further, scene specific parameters such as voxel size
 		ITMLib::ITMSceneParams sceneParams;
 
 		ITMLibSettings(void);
-		~ITMLibSettings(void);
+		~ITMLibSettings(void) {}
 
 		// Suppress the default copy constructor and assignment operator
 		ITMLibSettings(const ITMLibSettings&);

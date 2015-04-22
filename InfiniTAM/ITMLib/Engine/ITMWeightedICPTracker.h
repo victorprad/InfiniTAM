@@ -60,6 +60,9 @@ namespace ITMLib
 	public:
 		void TrackCamera(ITMTrackingState *trackingState, const ITMView *view);
 
+		bool requiresColourRendering(void) const { return false; }
+		bool requiresDepthReliability(void) const { return true; }
+
 		ITMWeightedICPTracker(Vector2i imgSize, TrackerIterationType *trackingRegime, int noHierarchyLevels, int noICPRunTillLevel, float distThresh,
 			float terminationThreshold, const ITMLowLevelEngine *lowLevelEngine, MemoryDeviceType memoryType);
 		virtual ~ITMWeightedICPTracker(void);

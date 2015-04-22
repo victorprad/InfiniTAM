@@ -19,6 +19,8 @@ namespace ITMLib
 
 	public:
 		void TrackCamera(ITMTrackingState *trackingState, const ITMView *view);
+		bool requiresColourRendering(void) const { return false; }
+		bool requiresDepthReliability(void) const { return false; }
 
 		ITMIMUTracker(ITMIMUCalibrator *calibrator);
 		virtual ~ITMIMUTracker(void);

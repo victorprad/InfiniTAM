@@ -50,7 +50,7 @@ void ITMSceneReconstructionEngine_Metal<TVoxel,ITMVoxelBlockHash>::IntegrateInto
     params->others.y = scene->sceneParams->mu;
     params->others.z = scene->sceneParams->maxW;
 //    params->others.w = (float)scene->sceneParams->stopIntegratingAtMaxW;
-    params->others.w = trackingState->requiresFullRendering;
+//    params->others.w = trackingState->requiresFullRendering;
     params->M_d = trackingState->pose_d->GetM();
     if (TVoxel::hasColorInformation) params->M_rgb = view->calib->trafo_rgb_to_depth.calib_inv * trackingState->pose_d->GetM();
     

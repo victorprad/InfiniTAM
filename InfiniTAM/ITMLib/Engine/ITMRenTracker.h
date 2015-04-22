@@ -51,6 +51,9 @@ namespace ITMLib
 
 		void TrackCamera(ITMTrackingState *trackingState, const ITMView *view);
 
+		bool requiresColourRendering(void) const { return false; }
+		bool requiresDepthReliability(void) const { return false; }
+
 		ITMRenTracker(Vector2i imgSize, TrackerIterationType *trackingRegime, int noHierarchyLevels, const ITMLowLevelEngine *lowLevelEngine, 
 			const ITMScene<TVoxel, TIndex> *scene, MemoryDeviceType memoryType);
 

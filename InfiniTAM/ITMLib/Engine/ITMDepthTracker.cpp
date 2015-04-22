@@ -7,7 +7,7 @@
 
 using namespace ITMLib;
 
-ITMDepthTracker::ITMDepthTracker(Vector2i imgSize, TrackerIterationType *trackingRegime, int noHierarchyLevels, int noICPRunTillLevel,
+ITMDepthTracker::ITMDepthTracker(Vector2i imgSize, TrackerIterationType *trackingRegime, int noHierarchyLevels,
 	float terminationThreshold, const ITMLowLevelEngine *lowLevelEngine, MemoryDeviceType memoryType)
 {
 	viewHierarchy = new ITMImageHierarchy<ITMTemplatedHierarchyLevel<ITMFloatImage> >(imgSize, trackingRegime, noHierarchyLevels, memoryType, true);
@@ -19,8 +19,6 @@ ITMDepthTracker::ITMDepthTracker(Vector2i imgSize, TrackerIterationType *trackin
 	SetupLevels(noHierarchyLevels*2, 2, 0.01f, 0.002f);
 
 	this->lowLevelEngine = lowLevelEngine;
-
-	this->noICPLevel = noICPRunTillLevel;
 
 	this->terminationThreshold = terminationThreshold;
 }
@@ -171,7 +169,7 @@ void ITMDepthTracker::TrackCamera(ITMTrackingState *trackingState, const ITMView
 	for (int i = 0; i < 6*6; ++i) hessian_good[i] = 0.0f;
 	for (int i = 0; i < 6; ++i) nabla_good[i] = 0.0f;
 
-	for (int levelId = viewHierarchy->noLevels - 1; levelId >= noICPLevel; levelId--)
+	for (int levelId = viewHierarchy->noLevels - 1; levelId >= 0; levelId--)
 	{
 		this->SetEvaluationParams(levelId);
 		if (iterationType == TRACKER_ITERATION_NONE) continue;

@@ -41,22 +41,23 @@ ITMBasicEngine::ITMBasicEngine(const ITMLibSettings *settings, const ITMRGBDCali
 
 	mesh = new ITMMesh(settings->deviceType == ITMLibSettings::DEVICE_CUDA ? MEMORYDEVICE_CUDA : MEMORYDEVICE_CPU);
 
-	Vector2i trackedImageSize = ITMTrackingController::GetTrackedImageSize(settings, imgSize_rgb, imgSize_d);
-
-	renderState_live = visualisationEngine->CreateRenderState(scene, trackedImageSize);
-	renderState_freeview = NULL; //will be created by the visualisation engine
-
 	denseMapper = new ITMDenseMapper<ITMVoxel, ITMVoxelIndex>(settings);
 
 	imuCalibrator = new ITMIMUCalibrator_iPad();
-	tracker = ITMTrackerFactory<ITMVoxel, ITMVoxelIndex>::Instance().Make(trackedImageSize, settings, lowLevelEngine, imuCalibrator, scene);
+	tracker = ITMTrackerFactory<ITMVoxel, ITMVoxelIndex>::Instance().Make(imgSize_rgb, imgSize_d, settings, lowLevelEngine, imuCalibrator, scene);
 	trackingController = new ITMTrackingController(tracker, visualisationEngine, lowLevelEngine, settings);
+
+	Vector2i trackedImageSize = ITMTrackingController::GetTrackedImageSize(tracker, imgSize_rgb, imgSize_d);
+
+	renderState_live = visualisationEngine->CreateRenderState(scene, trackedImageSize);
+	renderState_freeview = NULL; //will be created by the visualisation engine
 
 	trackingState = trackingController->BuildTrackingState(trackedImageSize);
 	tracker->UpdateInitialPose(trackingState);
 
 	view = NULL; // will be allocated by the view builder
 
+	trackingActive = true;
 	fusionActive = true;
 	mainProcessingActive = true;
 }
@@ -96,13 +97,14 @@ void ITMBasicEngine::SaveSceneToMesh(const char *objFileName)
 void ITMBasicEngine::ProcessFrame(ITMUChar4Image *rgbImage, ITMShortImage *rawDepthImage, ITMIMUMeasurement *imuMeasurement)
 {
 	// prepare image and turn it into a depth image
-	if (imuMeasurement==NULL) viewBuilder->UpdateView(&view, rgbImage, rawDepthImage, settings->useBilateralFilter,settings->modelSensorNoise);
+	bool modelSensorNoise = tracker->requiresDepthReliability();
+	if (imuMeasurement==NULL) viewBuilder->UpdateView(&view, rgbImage, rawDepthImage, settings->useBilateralFilter, modelSensorNoise);
 	else viewBuilder->UpdateView(&view, rgbImage, rawDepthImage, settings->useBilateralFilter, imuMeasurement);
 
 	if (!mainProcessingActive) return;
 
 	// tracking
-	trackingController->Track(trackingState, view);
+	if (trackingActive) trackingController->Track(trackingState, view);
 
 	// fusion
 	if (fusionActive) denseMapper->ProcessFrame(view, trackingState, scene, renderState_live);
@@ -132,7 +134,7 @@ void ITMBasicEngine::GetImage(ITMUChar4Image *out, GetImageType getImageType, IT
 		break;
 	case ITMBasicEngine::InfiniTAM_IMAGE_ORIGINAL_DEPTH:
 		out->ChangeDims(view->depth->noDims);
-		if (settings->trackerType==ITMLib::ITMLibSettings::TRACKER_WICP)
+		if (tracker->requiresDepthReliability())
 		{
 			if (settings->deviceType == ITMLibSettings::DEVICE_CUDA) view->depthUncertainty->UpdateHostFromDevice();
 			ITMVisualisationEngine<ITMVoxel, ITMVoxelIndex>::WeightToUchar4(out, view->depthUncertainty);
@@ -172,6 +174,8 @@ void ITMBasicEngine::GetImage(ITMUChar4Image *out, GetImageType getImageType, IT
 	};
 }
 
+void ITMBasicEngine::turnOnTracking() { trackingActive = true; }
+void ITMBasicEngine::turnOffTracking() { trackingActive = false; }
 void ITMBasicEngine::turnOnIntegration() { fusionActive = true; }
 void ITMBasicEngine::turnOffIntegration() { fusionActive = false; }
 void ITMBasicEngine::turnOnMainProcessing() { mainProcessingActive = true; }

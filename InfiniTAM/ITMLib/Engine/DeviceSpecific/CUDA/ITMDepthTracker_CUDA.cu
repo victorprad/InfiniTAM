@@ -21,9 +21,9 @@ __global__ void depthTrackerOneLevel_g_rt_device(ITMDepthTracker_CUDA::AccuCell 
 
 // host methods
 
-ITMDepthTracker_CUDA::ITMDepthTracker_CUDA(Vector2i imgSize, TrackerIterationType *trackingRegime, int noHierarchyLevels, int noICPRunTillLevel,
+ITMDepthTracker_CUDA::ITMDepthTracker_CUDA(Vector2i imgSize, TrackerIterationType *trackingRegime, int noHierarchyLevels,
 	float terminationThreshold, const ITMLowLevelEngine *lowLevelEngine)
-	:ITMDepthTracker(imgSize, trackingRegime, noHierarchyLevels, noICPRunTillLevel, terminationThreshold, lowLevelEngine, MEMORYDEVICE_CUDA)
+ : ITMDepthTracker(imgSize, trackingRegime, noHierarchyLevels, terminationThreshold, lowLevelEngine, MEMORYDEVICE_CUDA)
 {
 	Vector2i gridSize((imgSize.x+15)/16, (imgSize.y+15)/16);
 

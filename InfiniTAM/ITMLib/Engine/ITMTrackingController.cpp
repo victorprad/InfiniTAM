@@ -11,15 +11,15 @@ using namespace ITMLib;
 void ITMTrackingController::Track(ITMTrackingState *trackingState, const ITMView *view)
 {
 	if (trackingState->age_pointCloud!=-1) tracker->TrackCamera(trackingState, view);
-
-	trackingState->requiresFullRendering = trackingState->TrackerFarFromPointCloud() || !settings->useApproximateRaycast;
 }
 
 void ITMTrackingController::Prepare(ITMTrackingState *trackingState, const ITMSceneBase *scene, const ITMView *view, ITMRenderState *renderState)
 {
 	//render for tracking
+	bool requiresColourRendering = tracker->requiresColourRendering();
+	bool requiresFullRendering = trackingState->TrackerFarFromPointCloud() || !settings->useApproximateRaycast;
 
-	if (settings->trackerType == ITMLibSettings::TRACKER_COLOR)
+	if (requiresColourRendering)
 	{
 		ITMPose pose_rgb(view->calib->trafo_rgb_to_depth.calib_inv * trackingState->pose_d->GetM());
 		visualisationEngine->CreateExpectedDepths(scene, &pose_rgb, &(view->calib->intrinsics_rgb), renderState);
@@ -30,7 +30,7 @@ void ITMTrackingController::Prepare(ITMTrackingState *trackingState, const ITMSc
 	{
 		visualisationEngine->CreateExpectedDepths(scene, trackingState->pose_d, &(view->calib->intrinsics_d), renderState);
 
-		if (trackingState->requiresFullRendering)
+		if (requiresFullRendering)
 		{
 			visualisationEngine->CreateICPMaps(scene, view, trackingState, renderState);
 			trackingState->pose_pointCloud->SetFrom(trackingState->pose_d);

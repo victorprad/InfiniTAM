@@ -37,6 +37,7 @@ CLIEngine.h
 target_link_libraries(Engine ${GLUT_LIBRARIES})
 target_link_libraries(Engine ${OPENGL_LIBRARIES})
 target_link_libraries(Engine ITMLib)
+target_link_libraries(Engine ORUtils)
 IF(WITH_CUDA)
   target_link_libraries(Engine ${CUDA_LIBRARY})
 ENDIF()

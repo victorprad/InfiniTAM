@@ -9,18 +9,7 @@ using namespace ITMLib;
 ITMLibSettings::ITMLibSettings(void)
 	: sceneParams(0.02f, 100, 0.005f, 0.2f, 3.0f, false)
 {
-	/// depth threashold for the ICP tracker
-	depthTrackerICPThresholdFine = 0.002;//0.05f * 0.05f;
-	depthTrackerICPThresholdCoarse = 0.01f;//0.2f * 0.2f;
-
-	/// For ITMDepthTracker: ICP iteration termination threshold
-	depthTrackerTerminationThreshold = 1e-3f;
-
-	/// For trackers in general: specify number of iterations
-	numTrackerIterationsCoarse = 10;
-	numTrackerIterationsFine = 2;
-
-	/// skips every other point when using the colour tracker
+	// skips every other point when using the colour renderer for creating a point cloud
 	skipPoints = true;
 
 #ifndef COMPILE_WITHOUT_CUDA
@@ -44,48 +33,10 @@ ITMLibSettings::ITMLibSettings(void)
 	/// enable or disable bilateral depth filtering;
 	useBilateralFilter = false;
 
-	//trackerType = TRACKER_COLOR;
-	trackerType = TRACKER_ICP;
-	//trackerType = TRACKER_REN;
-	//trackerType = TRACKER_IMU;
-	//trackerType = TRACKER_WICP;
-
-	/// model the sensor noise as  the weight for weighted ICP
-	modelSensorNoise = false;
-	if (trackerType == TRACKER_WICP) modelSensorNoise = true;
-	
-
-	// builds the tracking regime. level 0 is full resolution
-	if (trackerType == TRACKER_IMU)
-	{
-		noHierarchyLevels = 2;
-		trackingRegime = new TrackerIterationType[noHierarchyLevels];
-
-		trackingRegime[0] = TRACKER_ITERATION_BOTH;
-		trackingRegime[1] = TRACKER_ITERATION_TRANSLATION;
-	    //trackingRegime[2] = TRACKER_ITERATION_TRANSLATION;
-	}
-	else
-	{
-		noHierarchyLevels = 5;
-		trackingRegime = new TrackerIterationType[noHierarchyLevels];
-
-		trackingRegime[0] = TRACKER_ITERATION_BOTH;
-		trackingRegime[1] = TRACKER_ITERATION_BOTH;
-		trackingRegime[2] = TRACKER_ITERATION_ROTATION;
-		trackingRegime[3] = TRACKER_ITERATION_ROTATION;
-		trackingRegime[4] = TRACKER_ITERATION_ROTATION;
-	}
-
-	if (trackerType == TRACKER_REN) noICPRunTillLevel = 1;
-	else noICPRunTillLevel = 0;
-
-	if ((trackerType == TRACKER_COLOR) && (!ITMVoxel::hasColorInformation)) {
-		printf("Error: Color tracker requires a voxel type with color information!\n");
-	}
+	trackerConfig = "type=icp,levels=rrrbb,minstep=1e-3,outlierC=0.01,outlierF=0.002,numiterC=10,numiterF=2";
+	//trackerConfig = "type=rgb,levels=rrrbb";
+	//trackerConfig = "type=ren,levels=bb";
+	//trackerConfig = "type=wicp,levels=rrrbb,minstep=1e-3,outlier=0.01";
+	//trackerConfig = "type=imuicp,levels=tb,minstep=1e-3,outlierC=0.01,outlierF=0.005,numiterC=4,numiterF=2";
 }
 
-ITMLibSettings::~ITMLibSettings()
-{
-	delete[] trackingRegime;
-}

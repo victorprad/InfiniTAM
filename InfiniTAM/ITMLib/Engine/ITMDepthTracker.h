@@ -27,7 +27,6 @@ namespace ITMLib
 		ITMTrackingState *trackingState; const ITMView *view;
 
 		int *noIterationsPerLevel;
-		int noICPLevel;
 
 		float terminationThreshold;
 
@@ -54,9 +53,12 @@ namespace ITMLib
 	public:
 		void TrackCamera(ITMTrackingState *trackingState, const ITMView *view);
 
+		bool requiresColourRendering(void) const { return false; }
+		bool requiresDepthReliability(void) const { return false; }
+
 		void SetupLevels(int numIterCoarse, int numIterFine, float distThreshCoarse, float distThreshFine);
 
-		ITMDepthTracker(Vector2i imgSize, TrackerIterationType *trackingRegime, int noHierarchyLevels, int noICPRunTillLevel,
+		ITMDepthTracker(Vector2i imgSize, TrackerIterationType *trackingRegime, int noHierarchyLevels,
 			float terminationThreshold, const ITMLowLevelEngine *lowLevelEngine, MemoryDeviceType memoryType);
 		virtual ~ITMDepthTracker(void);
 	};
