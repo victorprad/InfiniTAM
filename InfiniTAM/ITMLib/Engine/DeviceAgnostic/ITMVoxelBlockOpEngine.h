@@ -106,7 +106,7 @@ _CPU_AND_GPU_CODE_ inline void createSplitOperations(ITMHashEntry *hashTablePare
 			if (newOffsetExcess < 0) {
 				// TODO: deallocate voxel block
 				// this is nasty, because someone else might try to allocate one at the same time
-				continue;
+				return;
 			}
 			newOffsetExcess = excessAllocationList[newOffsetExcess];
 
@@ -130,7 +130,7 @@ _CPU_AND_GPU_CODE_ inline void createSplitOperations(ITMHashEntry *hashTablePare
 			hashIdx = SDF_BUCKET_NUM + newOffsetExcess;
 		}
 		// make sure the allocation worked well
-		if (!allocated) continue;
+		if (!allocated) return;
 
 		// write data to new hash entry
 		hashTableChild[hashIdx].pos.x = blockPos_child.x;
@@ -151,6 +151,7 @@ _CPU_AND_GPU_CODE_ inline void createMergeOperations(ITMHashEntry *hashTablePare
 	// - find children
 	int childPredecessors[8];
 	int childPositions[8];
+	bool shouldMerge = true;
 	for (int child = 0; child < 8; ++child) {
 		// - compute hash
 		Vector3i blockPos_child = blockPos_parent * 2 + Vector3i(child&1, (child&2)?1:0, (child&4)?1:0);
@@ -166,14 +167,13 @@ _CPU_AND_GPU_CODE_ inline void createMergeOperations(ITMHashEntry *hashTablePare
 			}
 			predecessor = hashIdx;
 			int offsetExcess = hashEntry.offset - 1;
-			if (offsetExcess < 0) break;
+			if (offsetExcess < 0) { shouldMerge = false; break; }
 			hashIdx = SDF_BUCKET_NUM + offsetExcess;
 		}
 		childPredecessors[child] = predecessor;
 	}
 
 	// decide whether or not to merge
-	bool shouldMerge = true;
 	for (int child = 0; child < 8; ++child) {
 		const ITMHashEntry & hashEntry = hashTableChild[childPositions[child]];
 		if (hashEntry.ptr < 0) {
@@ -181,8 +181,8 @@ _CPU_AND_GPU_CODE_ inline void createMergeOperations(ITMHashEntry *hashTablePare
 			break;
 		}
 
-		if ((complexities[hashEntry.ptr] > threshold_merge)||
-		    (complexities[hashEntry.ptr] < 0.0f)) {
+		if ((complexities[childPositions[child]] > threshold_merge)||
+		    (complexities[childPositions[child]] < 0.0f)) {
 			shouldMerge = false;
 			break;
 		}
@@ -201,7 +201,7 @@ _CPU_AND_GPU_CODE_ inline void createMergeOperations(ITMHashEntry *hashTablePare
 	// - for each child
 	for (int child = 0; child < 8; ++child) {
 		ITMHashEntry & hashEntry = hashTableChild[childPositions[child]];
-		complexities[hashEntry.ptr] = -1;
+		complexities[childPositions[child]] = -1;
 
 		// - release voxel block
 		if (child > 0) voxelAllocationList[oldBlockListPtr++] = hashEntry.ptr;
@@ -212,8 +212,8 @@ _CPU_AND_GPU_CODE_ inline void createMergeOperations(ITMHashEntry *hashTablePare
 
 		// - (optional) clean up excess list...
 		if (childPredecessors[child] == -1) continue;
-		if (hashEntry.offset != 0) continue; // this will avoid race conditions! However, it will not clean up the whole excess list...
-		hashTableChild[childPredecessors[child]].offset = 0;
+		if (hashEntry.offset != EMPTY_LINKED_LIST) continue; // this will avoid race conditions! However, it will not clean up the whole excess list...
+		hashTableChild[childPredecessors[child]].offset = EMPTY_LINKED_LIST;
 		int place = myAtomicAdd(lastFreeExcessListId) + 1;
 		excessAllocationList[place] = childPositions[child] - SDF_BUCKET_NUM;
 	}

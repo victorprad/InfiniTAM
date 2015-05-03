@@ -49,7 +49,7 @@ void ITMVoxelBlockOpEngine_CPU<TVoxel,ITMVoxelBlockHHash>::ComputeComplexities(I
 			X_sum += X; XXT_sum += XXT;
 		}
 
-		complexities[blockId] = ComputeCovarianceDet(X_sum, XXT_sum);
+		complexities[htIdx] = ComputeCovarianceDet(X_sum, XXT_sum);
 	}
 }
 
@@ -123,10 +123,9 @@ void ITMVoxelBlockOpEngine_CPU<TVoxel,ITMVoxelBlockHHash>::SplitVoxelBlocks(ITMS
 		int parentLevel = ITMVoxelBlockHHash::GetLevelForEntry(htIdx);
 		// finest level doesn't need splitting...
 		if (parentLevel == 0) continue;
-		int blockId = allHashEntries[htIdx].ptr;
 
-		if (complexities[blockId] <= threshold_split) continue;
-		complexities[blockId] = -1;
+		if (complexities[htIdx] <= threshold_split) continue;
+		complexities[htIdx] = -1;
 
 		int childLevel = parentLevel-1;
 		ITMHHashEntry *childHashTable = &(allHashEntries[ITMVoxelBlockHHash::noTotalEntriesPerLevel * childLevel]);
@@ -203,6 +202,79 @@ void ITMVoxelBlockOpEngine_CPU<TVoxel,ITMVoxelBlockHHash>::MergeVoxelBlocks(ITMS
 		performMergeOperations(blocklist, b, voxelBlocks, tempBlockMemory);
 	}
 }
+
+#if 0
+static void checkHashTable(const ITMHHashEntry *allHashEntries)
+{
+	for (int htIdx = 0; htIdx < ITMVoxelBlockHHash::noTotalEntries; htIdx++) {
+		int blockId = allHashEntries[htIdx].ptr;
+		Vector3i blockPos_current(allHashEntries[htIdx].pos.x, allHashEntries[htIdx].pos.y, allHashEntries[htIdx].pos.z);
+
+		int currentLevel = ITMVoxelBlockHHash::GetLevelForEntry(htIdx);
+		int parentLevel = currentLevel+1;
+		int childLevel = currentLevel-1;
+		if (blockId == -2) {
+			const ITMHHashEntry *childHashTable = &(allHashEntries[ITMVoxelBlockHHash::noTotalEntriesPerLevel * childLevel]);
+
+			// check that all children exist
+			if (currentLevel == 0) {
+				fprintf(stderr, "split found on level 0\n");
+			}
+
+			for (int child = 0; child < 8; ++child) {
+				Vector3i blockPos_child = blockPos_current * 2 + Vector3i(child&1, (child&2)?1:0, (child&4)?1:0);
+				int hashIdx = hashIndex(blockPos_child);
+
+				bool found = false;
+				while (true) {
+					const ITMHashEntry & hashEntry = childHashTable[hashIdx];
+
+					if (hashEntry.pos == blockPos_child) {
+						if ((hashEntry.ptr < 0)&&(hashEntry.ptr != -2)) {
+							fprintf(stderr, "hash entry %i has child %i, but child has ptr %i\n", htIdx, hashIdx, hashEntry.ptr);
+						} else found = true;
+						break;
+					}
+
+					int offsetExcess = hashEntry.offset - 1;
+					if (offsetExcess < 0) break;
+					hashIdx = SDF_BUCKET_NUM + offsetExcess;
+				}
+
+				if (!found) {
+					fprintf(stderr, "hash entry %i is missing a child at %i\n", htIdx, hashIdx);
+				}
+			}
+		} else if ((blockId >= 0)&&(parentLevel < ITMVoxelBlockHHash::noLevels)) {
+			// check that a parent exists
+			const ITMHHashEntry *parentHashTable = &(allHashEntries[ITMVoxelBlockHHash::noTotalEntriesPerLevel * parentLevel]);
+
+			Vector3i blockPos_parent(floor((float)blockPos_current.x/2.0f), floor((float)blockPos_current.y/2.0f), floor((float)blockPos_current.z/2.0f));
+			int hashIdx = hashIndex(blockPos_parent);
+
+			bool found = false;
+			while (true) {
+				const ITMHashEntry & hashEntry = parentHashTable[hashIdx];
+
+				if (hashEntry.pos == blockPos_parent) {
+					if (hashEntry.ptr != -2) {
+						fprintf(stderr, "hash entry %i has parent %i, but parent has ptr %i\n", htIdx, hashIdx, hashEntry.ptr);
+					} else found = true;
+					break;
+				}
+
+				int offsetExcess = hashEntry.offset - 1;
+				if (offsetExcess < 0) break;
+				hashIdx = SDF_BUCKET_NUM + offsetExcess;
+			}
+
+			if (!found) {
+				fprintf(stderr, "hash entry %i is missing a parent at %i\n", htIdx, hashIdx);
+			}
+		}
+	}
+}
+#endif
 
 template<class TVoxel>
 void ITMVoxelBlockOpEngine_CPU<TVoxel,ITMVoxelBlockHHash>::SplitAndMerge(ITMScene<TVoxel,ITMVoxelBlockHHash> *scene, const ITMRenderState *renderState)

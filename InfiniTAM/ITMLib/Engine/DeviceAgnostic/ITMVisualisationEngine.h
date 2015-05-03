@@ -132,7 +132,7 @@ _CPU_AND_GPU_CODE_ inline bool castRay(DEVICEPTR(Vector4f) &pt_out, int x, int y
 			if ((sdfValue <= 0.1f) && (sdfValue >= -0.5f)) {
 				sdfValue = readFromSDF_float_interpolated(voxelData, voxelIndex, pt_result, hash_found, cache);
 			}
-			if (sdfValue <= 0.0f) break;
+			if (!(sdfValue > 0.0f)) break;
 			stepLength = MAX(sdfValue * stepScale, 1.0f);
 		}
 

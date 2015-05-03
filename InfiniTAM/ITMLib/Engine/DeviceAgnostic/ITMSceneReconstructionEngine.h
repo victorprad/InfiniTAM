@@ -165,7 +165,10 @@ _CPU_AND_GPU_CODE_ inline void buildHashAllocAndVisibleTypePP(DEVICEPTR(uchar) *
 		if (!isFound)
 		{
 			bool isExcess = false;
-			if (hashEntry.ptr >= 1) //seach excess list only if there is no room in ordered part
+			if (hashEntry.ptr >= 0) //search excess list only if the ordered part is full
+				// TODO: This causes a bug in case blocks ever get deleted by setting ptr to -1
+				// as there might be an excess list further back
+				// also, in the actual allocation the offset might get reset to 0 in such cases
 			{
 				while (hashEntry.offset >= 1)
 				{
@@ -234,7 +237,7 @@ _CPU_AND_GPU_CODE_ inline void buildHHashAllocAndVisibleTypePP(DEVICEPTR(uchar) 
 			uchar *entriesVisibleType = globalEntriesVisibleType + level * ITMVoxelBlockHHash::noTotalEntriesPerLevel;
 			Vector4s *blockCoords = globalBlockCoords + level * ITMVoxelBlockHHash::noTotalEntriesPerLevel;
 
-			blockPos = TO_SHORT_FLOOR3(point/hierBlockSize);
+			blockPos = TO_SHORT_FLOOR3(point/(float)hierBlockSize);
 
 			//compute index in hash table
 			hashIdx = hashIndex(blockPos);
@@ -243,6 +246,7 @@ _CPU_AND_GPU_CODE_ inline void buildHHashAllocAndVisibleTypePP(DEVICEPTR(uchar) 
 			bool shouldContinueDown = false;
 			bool foundValue = false;
 			char allocType = 1;
+			int reactivateIdx = -1;
 			do
 			{
 				const ITMHHashEntry &hashEntry = hashTable[hashIdx];
@@ -261,7 +265,7 @@ _CPU_AND_GPU_CODE_ inline void buildHHashAllocAndVisibleTypePP(DEVICEPTR(uchar) 
 					foundValue = true;
 					break;
 				}
-				if (hashEntry.ptr < -2) break;
+				if (hashEntry.ptr < -2) reactivateIdx = hashIdx;
 
 				allocType = 2;
 				int offsetExcess = hashEntry.offset - 1;
@@ -273,6 +277,10 @@ _CPU_AND_GPU_CODE_ inline void buildHHashAllocAndVisibleTypePP(DEVICEPTR(uchar) 
 			if (shouldContinueDown) continue;
 			if (foundValue) break;
 
+			if (reactivateIdx != -1) {
+				hashIdx = reactivateIdx;
+				allocType = 3;
+			}
 			entriesAllocType[hashIdx] = allocType;
 			Vector4s tempVector(blockPos.x, blockPos.y, blockPos.z, 1);
 			blockCoords[hashIdx] = tempVector;

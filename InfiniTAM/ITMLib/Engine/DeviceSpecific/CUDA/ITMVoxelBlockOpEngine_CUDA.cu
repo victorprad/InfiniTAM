@@ -108,7 +108,7 @@ __global__ void computeComplexity_device(const int *liveEntryIDs, const ITMHashE
 		__syncthreads();
 	}
 
-	if (locId_local == 0) complexities[blockId] = ComputeCovarianceDet(X_sum, XXT_sum);
+	if (locId_local == 0) complexities[htIdx] = ComputeCovarianceDet(X_sum, XXT_sum);
 }
 
 template<class TVoxel>
@@ -140,10 +140,9 @@ __global__ void createSplits_device(const int *liveList, int liveListSize, float
 
 	// finest level doesn't need splitting...
 	if (parentLevel == 0) return;
-	int blockId = allHashEntries[htIdx].ptr;
 
-	if (complexities[blockId] <= threshold_split) return;
-	complexities[blockId] = -1;
+	if (complexities[htIdx] <= threshold_split) return;
+	complexities[htIdx] = -1;
 
 	int childLevel = parentLevel-1;
 

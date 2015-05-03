@@ -622,6 +622,7 @@ __global__ void allocateVoxelBlocksListHHash_device(int *voxelAllocationList, in
 	switch (entriesAllocType[targetIdx])
 	{
 	case 1: //needs allocation, fits in the ordered list
+	case 3: //needs allocation, reactivate old entry
 		vbaIdx = atomicSub(&allocData->noAllocatedVoxelEntries, 1);
 
 		if (vbaIdx >= 0) //there is room in the voxel block array
@@ -630,7 +631,8 @@ __global__ void allocateVoxelBlocksListHHash_device(int *voxelAllocationList, in
 
 			hashEntry.pos.x = pt_block_all.x; hashEntry.pos.y = pt_block_all.y; hashEntry.pos.z = pt_block_all.z;
 			hashEntry.ptr = voxelAllocationList[vbaIdx];
-			hashEntry.offset = 0;
+			if (entriesAllocType[targetIdx] == 1) hashEntry.offset = 0;
+			else hashEntry.offset = hashTable[targetIdx].offset;
 
 			hashTable[targetIdx] = hashEntry;
 			entriesVisibleType[targetIdx] = 1; //make entry visible
