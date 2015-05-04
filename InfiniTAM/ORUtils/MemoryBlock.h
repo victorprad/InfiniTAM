@@ -53,7 +53,7 @@ namespace ORUtils
 		enum MemoryCopyDirection { CPU_TO_CPU, CPU_TO_CUDA, CUDA_TO_CPU, CUDA_TO_CUDA };
 
 		/** Total number of allocated entries in the data array. */
-		int dataSize;
+		size_t dataSize;
 
 		/** Get the data pointer on CPU or GPU. */
 		inline DEVICEPTR(T)* GetData(MemoryDeviceType memoryType)
@@ -89,7 +89,7 @@ namespace ORUtils
 		on CPU only or GPU only or on both. CPU might also use the
 		Metal compatible allocator (i.e. with 16384 alignment).
 		*/
-		MemoryBlock(int dataSize, bool allocate_CPU, bool allocate_CUDA, bool metalCompatible = true)
+		MemoryBlock(size_t dataSize, bool allocate_CPU, bool allocate_CUDA, bool metalCompatible = true)
 		{
 			this->isAllocated_CPU = false;
 			this->isAllocated_CUDA = false;
@@ -103,7 +103,7 @@ namespace ORUtils
 		on CPU only or on GPU only. CPU will be Metal compatible if Metal
 		is enabled.
 		*/
-		MemoryBlock(int dataSize, MemoryDeviceType memoryType)
+		MemoryBlock(size_t dataSize, MemoryDeviceType memoryType)
 		{
 			this->isAllocated_CPU = false;
 			this->isAllocated_CUDA = false;
@@ -170,12 +170,11 @@ namespace ORUtils
 		/** Allocate image data of the specified size. If the
 		data has been allocated before, the data is freed.
 		*/
-		void Allocate(int dataSize, bool allocate_CPU, bool allocate_CUDA, bool metalCompatible)
+		void Allocate(size_t dataSize, bool allocate_CPU, bool allocate_CUDA, bool metalCompatible)
 		{
 			Free();
 
 			this->dataSize = dataSize;
-			if (dataSize <=0) return;
 
 			if (allocate_CPU)
 			{
