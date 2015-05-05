@@ -4,7 +4,7 @@
 
 #include "../../Utils/ITMLibDefines.h"
 
-_CPU_AND_GPU_CODE_ inline void convertDisparityToDepth(DEVICEPTR(float) *d_out, int x, int y, const CONSTANT(short) *d_in,
+_CPU_AND_GPU_CODE_ inline void convertDisparityToDepth(DEVICEPTR(float) *d_out, int x, int y, const CONSTPTR(short) *d_in,
 	Vector2f disparityCalibParams, float fx_depth, Vector2i imgSize)
 {
 	int locId = x + y * imgSize.x;
@@ -19,7 +19,7 @@ _CPU_AND_GPU_CODE_ inline void convertDisparityToDepth(DEVICEPTR(float) *d_out, 
 	d_out[locId] = (depth > 0) ? depth : -1.0f;
 }
 
-_CPU_AND_GPU_CODE_ inline void convertDepthMMToFloat(DEVICEPTR(float) *d_out, int x, int y, const CONSTANT(short) *d_in, Vector2i imgSize)
+_CPU_AND_GPU_CODE_ inline void convertDepthMMToFloat(DEVICEPTR(float) *d_out, int x, int y, const CONSTPTR(short) *d_in, Vector2i imgSize)
 {
 	int locId = x + y * imgSize.x;
 
@@ -28,7 +28,7 @@ _CPU_AND_GPU_CODE_ inline void convertDepthMMToFloat(DEVICEPTR(float) *d_out, in
 }
 
 #define MEAN_SIGMA_L 1.2232f
-_CPU_AND_GPU_CODE_ inline void filterDepth(DEVICEPTR(float) *imageData_out, const CONSTANT(float) *imageData_in, int x, int y, Vector2i imgDims)
+_CPU_AND_GPU_CODE_ inline void filterDepth(DEVICEPTR(float) *imageData_out, const CONSTPTR(float) *imageData_in, int x, int y, Vector2i imgDims)
 {
 	float z, tmpz, dz, final_depth = 0.0f, w, w_sum = 0.0f;
 

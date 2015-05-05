@@ -21,12 +21,12 @@
 #define THREADPTR(x) thread x
 #define DEVICEPTR(x) device x
 #define THREADGRPPTR(x) threadgroup x
-#define CONSTANT(x) constant x
+#define CONSTPTR(x) constant x
 #else
 #define THREADPTR(x) x
 #define DEVICEPTR(x) x
 #define THREADGROUPPTR(x) x
-#define CONSTANT(x) x
+#define CONSTPTR(x) x
 #endif
 
 #ifdef ANDROID
