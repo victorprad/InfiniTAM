@@ -113,7 +113,7 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_wICP(THREADPTR(float) *localNab
 		float mindepth = 1000.0f;
 		depth->UpdateHostFromDevice();
 		float *depth_ptr = depth->GetData(MEMORYDEVICE_CPU);
-		for (int i = 0; i < depth->dataSize; i++)
+		for (size_t i = 0; i < depth->dataSize; i++)
 			if (depth_ptr[i]>0) mindepth = MIN(mindepth, depth_ptr[i]);
 		return mindepth;
 	}

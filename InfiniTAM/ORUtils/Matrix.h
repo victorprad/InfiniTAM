@@ -364,9 +364,9 @@ namespace ORUtils {
 	class MatrixSQX : public MatrixSQX_ < T, s >
 	{
 	public:
-		_CPU_AND_GPU_CODE_ MatrixSQX() { dim = s; sq = s*s; }
-		_CPU_AND_GPU_CODE_ MatrixSQX(T t) { dim = s; sq = s*s; setValues(t); }
-		_CPU_AND_GPU_CODE_ MatrixSQX(const T *m)	{ dim = s; sq = s*s; setValues(m); }
+		_CPU_AND_GPU_CODE_ MatrixSQX() { this->dim = s; this->sq = s*s; }
+		_CPU_AND_GPU_CODE_ MatrixSQX(T t) { this->dim = s; this->sq = s*s; setValues(t); }
+		_CPU_AND_GPU_CODE_ MatrixSQX(const T *m)	{ this->dim = s; this->sq = s*s; setValues(m); }
 
 		_CPU_AND_GPU_CODE_ inline void getValues(T *mp) const	{ memcpy(mp, this->m, sizeof(T) * 16); }
 		_CPU_AND_GPU_CODE_ inline const T *getValues() const { return this->m; }

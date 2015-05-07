@@ -86,7 +86,7 @@ void IITMVisualisationEngine::WeightToUchar4(ITMUChar4Image *dst, ITMFloatImage 
 	int dataSize = static_cast<int>(dst->dataSize);
 	
 	float mindepth = 1000;
-	for (int i = 0; i < src->dataSize; i++)
+	for (size_t i = 0; i < src->dataSize; i++)
 		if (source[i]>0) mindepth = MIN(mindepth, source[i]);
 
 	memset(dst->GetData(MEMORYDEVICE_CPU), 0, dataSize * 4);

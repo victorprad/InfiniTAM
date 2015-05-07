@@ -691,7 +691,7 @@ namespace ORUtils {
 		}
 
 		_CPU_AND_GPU_CODE_ const T *getValues() const { return this->v; }
-		_CPU_AND_GPU_CODE_ VectorX<T, s> &setValues(const T *rhs) { for (int i = 0; i < s; i++) this->v[i] = rhs[i]; }
+		_CPU_AND_GPU_CODE_ VectorX<T, s> &setValues(const T *rhs) { for (int i = 0; i < s; i++) this->v[i] = rhs[i]; return *this; }
 		_CPU_AND_GPU_CODE_ void Clear(T v){
 			for (int i = 0; i < s; i++)
 				this->v[i] = v;
