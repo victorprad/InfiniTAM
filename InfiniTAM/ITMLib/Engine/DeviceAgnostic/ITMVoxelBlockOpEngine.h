@@ -19,14 +19,19 @@ _CPU_AND_GPU_CODE_ inline void ComputePerVoxelSumAndCovariance(Vector3i loc, con
 {
 	int locId = loc.x + loc.y * SDF_BLOCK_SIZE + loc.z * SDF_BLOCK_SIZE * SDF_BLOCK_SIZE;
 
+	bool validData = true;
 	float sdfLocId = TVoxel::SDF_valueToFloat(voxelBlock[locId].sdf);
-
+	if (voxelBlock[locId].w_depth == 0) validData = false;
 	X.x = sdfLocId - TVoxel::SDF_valueToFloat(voxelBlock[locId + 1].sdf);
+	if (voxelBlock[locId+1].w_depth == 0) validData = false;
 	X.y = sdfLocId - TVoxel::SDF_valueToFloat(voxelBlock[locId + SDF_BLOCK_SIZE].sdf);
+	if (voxelBlock[locId+SDF_BLOCK_SIZE].w_depth == 0) validData = false;
 	X.z = sdfLocId - TVoxel::SDF_valueToFloat(voxelBlock[locId + SDF_BLOCK_SIZE * SDF_BLOCK_SIZE].sdf);
+	if (voxelBlock[locId+SDF_BLOCK_SIZE*SDF_BLOCK_SIZE].w_depth == 0) validData = false;
 
 	float Xnorm = sqrtf((float)(X.x * X.x + X.y * X.y + X.z * X.z));
-	X = (fabsf(Xnorm) > 0) ? (X / Xnorm) : X;
+	if (validData && fabsf(Xnorm) > 0) X = X / Xnorm;
+	else X = 0.0f;
 
 	XXT.m00 = X.x * X.x; XXT.m01 = X.x * X.y; XXT.m02 = X.x * X.z;
 	XXT.m10 = X.y * X.x; XXT.m11 = X.y * X.y; XXT.m12 = X.y * X.z;
