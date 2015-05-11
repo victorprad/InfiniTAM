@@ -35,7 +35,7 @@ _CPU_AND_GPU_CODE_ inline void filterDepth(DEVICEPTR(float) *imageData_out, cons
 	z = imageData_in[x + y * imgDims.x];
 	if (z < 0.0f) { imageData_out[x + y * imgDims.x] = -1.0f; return; }
 
-	float sigma_z = 1.0 / (0.0012f + 0.0019f*(z - 0.4f)*(z - 0.4f) + 0.0001f / sqrt(z) * 0.25f);
+	float sigma_z = 1.0f / (0.0012f + 0.0019f*(z - 0.4f)*(z - 0.4f) + 0.0001f / sqrt(z) * 0.25f);
 
 	for (int i = -2, count = 0; i <= 2; i++) for (int j = -2; j <= 2; j++, count++)
 	{
@@ -109,5 +109,5 @@ _CPU_AND_GPU_CODE_ inline void computeNormalAndWeight(const float *depth_in, Vec
 	float theta = acosf(outNormal.z);
 	float theta_diff = theta / (PI*0.5f - theta);
 
-	sigmaZ_out[idx] = (0.0012f + 0.0019f*(z - 0.4f)*(z - 0.4f) + 0.0001 / sqrt(z) * theta_diff * theta_diff);
+	sigmaZ_out[idx] = (0.0012f + 0.0019f * (z - 0.4f) * (z - 0.4f) + 0.0001f / sqrt(z) * theta_diff * theta_diff);
 }
