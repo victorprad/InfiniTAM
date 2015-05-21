@@ -262,7 +262,7 @@ __global__ void integrateIntoScene_device(TVoxel *voxelArray, const ITMPlainVoxe
 	locId = x + y * arrayInfo->size.x + z * arrayInfo->size.x * arrayInfo->size.y;
 	
 	if (stopMaxW) if (voxelArray[locId].w_depth == maxW) return;
-	if (approximateIntegration) if (voxelArray[locId].w_depth != 0) return;
+//	if (approximateIntegration) if (voxelArray[locId].w_depth != 0) return;
 
 	pt_model.x = (float)(x + arrayInfo->offset.x) * _voxelSize;
 	pt_model.y = (float)(y + arrayInfo->offset.y) * _voxelSize;

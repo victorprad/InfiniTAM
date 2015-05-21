@@ -151,8 +151,8 @@ void ITMDepthTracker::TrackCamera(ITMTrackingState *trackingState, const ITMView
 
 	for (int levelId = viewHierarchy->noLevels - 1; levelId >= noICPLevel; levelId--)
 	{
-		if (iterationType == TRACKER_ITERATION_NONE) continue;
 		this->SetEvaluationParams(levelId);
+		if (iterationType == TRACKER_ITERATION_NONE) continue;
 
 		Matrix4f approxInvPose = trackingState->pose_d->GetInvM();
 		ITMPose lastKnownGoodPose(*(trackingState->pose_d));
