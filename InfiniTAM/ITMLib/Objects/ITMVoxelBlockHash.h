@@ -22,7 +22,7 @@ namespace ITMLib
 		class ITMVoxelBlockHash
 		{
 		public:
-			static const CONSTANT(bool) hasColorCoding = false;
+			static const CONSTPTR(bool) hasColorCoding = false;
 
 			typedef ITMHashEntry IndexData;
 
@@ -33,8 +33,8 @@ namespace ITMLib
 			};
 
 			/** Maximum number of total entries. */
-			static const CONSTANT(int) noTotalEntries = SDF_BUCKET_NUM + SDF_EXCESS_LIST_SIZE;
-			static const CONSTANT(int) voxelBlockSize = SDF_BLOCK_SIZE * SDF_BLOCK_SIZE * SDF_BLOCK_SIZE;
+			static const CONSTPTR(int) noTotalEntries = SDF_BUCKET_NUM + SDF_EXCESS_LIST_SIZE;
+			static const CONSTPTR(int) voxelBlockSize = SDF_BLOCK_SIZE * SDF_BLOCK_SIZE * SDF_BLOCK_SIZE;
 
 #ifndef __METALC__
 		private:

@@ -18,8 +18,8 @@ _CPU_AND_GPU_CODE_ inline void unprojectPtWithIntrinsic(const THREADPTR(Vector4f
 }
 
 template<class TVoxel, class TIndex>
-_CPU_AND_GPU_CODE_ inline float computePerPixelEnergy(const THREADPTR(Vector4f) &inpt, const CONSTANT(TVoxel) *voxelBlocks,
-	const CONSTANT(typename TIndex::IndexData) *index, float oneOverVoxelSize, Matrix4f invM)
+_CPU_AND_GPU_CODE_ inline float computePerPixelEnergy(const THREADPTR(Vector4f) &inpt, const CONSTPTR(TVoxel) *voxelBlocks,
+	const CONSTPTR(typename TIndex::IndexData) *index, float oneOverVoxelSize, Matrix4f invM)
 {
 	Vector3f pt; bool dtIsFound;
 	pt = TO_VECTOR3(invM * inpt) * oneOverVoxelSize;
@@ -37,7 +37,7 @@ _CPU_AND_GPU_CODE_ inline float computePerPixelEnergy(const THREADPTR(Vector4f) 
 }
 
 template<class TVoxel, class TIndex>
-_CPU_AND_GPU_CODE_ inline Vector3f computeDDT(const CONSTANT(Vector3f) &pt_f, const THREADPTR(TVoxel) *voxelBlocks,
+_CPU_AND_GPU_CODE_ inline Vector3f computeDDT(const CONSTPTR(Vector3f) &pt_f, const THREADPTR(TVoxel) *voxelBlocks,
 	const THREADPTR(typename TIndex::IndexData) *index, float oneOverVoxelSize, DEVICEPTR(bool) &ddtFound)
 {
 	Vector3f ddt;
@@ -72,7 +72,7 @@ _CPU_AND_GPU_CODE_ inline Vector3f computeDDT(const CONSTANT(Vector3f) &pt_f, co
 
 template<class TVoxel, class TIndex>
 _CPU_AND_GPU_CODE_ inline bool computePerPixelJacobian(THREADPTR(float) *jacobian, const THREADPTR(Vector4f) &inpt, 
-	const CONSTANT(TVoxel) *voxelBlocks, const CONSTANT(typename TIndex::IndexData) *index, float oneOverVoxelSize, Matrix4f invM)
+	const CONSTPTR(TVoxel) *voxelBlocks, const CONSTPTR(typename TIndex::IndexData) *index, float oneOverVoxelSize, Matrix4f invM)
 {
 
 	bool isFound;

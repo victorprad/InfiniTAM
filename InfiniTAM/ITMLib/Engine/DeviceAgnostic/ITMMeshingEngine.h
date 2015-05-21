@@ -151,8 +151,8 @@ static const _CPU_AND_GPU_CONSTANT_ int triangleTable[256][16] = { { -1, -1, -1,
 { -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 } };
 
 template<class TVoxel>
-_CPU_AND_GPU_CODE_ inline bool findPointNeighbors(THREADPTR(Vector3f) *p, THREADPTR(float) *sdf, Vector3i blockLocation, const CONSTANT(TVoxel) *localVBA, 
-	const CONSTANT(ITMHashEntry) *hashTable)
+_CPU_AND_GPU_CODE_ inline bool findPointNeighbors(THREADPTR(Vector3f) *p, THREADPTR(float) *sdf, Vector3i blockLocation, const CONSTPTR(TVoxel) *localVBA, 
+	const CONSTPTR(ITMHashEntry) *hashTable)
 {
 	bool isFound; Vector3i localBlockLocation;
 
@@ -201,7 +201,7 @@ _CPU_AND_GPU_CODE_ inline Vector3f sdfInterp(const THREADPTR(Vector3f) &p1, cons
 }
 
 template<class TVoxel>
-_CPU_AND_GPU_CODE_ inline int buildVertList(THREADPTR(Vector3f) *vertList, Vector3i globalPos, Vector3i localPos, const CONSTANT(TVoxel) *localVBA, const CONSTANT(ITMHashEntry) *hashTable)
+_CPU_AND_GPU_CODE_ inline int buildVertList(THREADPTR(Vector3f) *vertList, Vector3i globalPos, Vector3i localPos, const CONSTPTR(TVoxel) *localVBA, const CONSTPTR(ITMHashEntry) *hashTable)
 {
 	Vector3f points[8]; float sdfVals[8];
 

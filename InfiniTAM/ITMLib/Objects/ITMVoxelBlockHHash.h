@@ -20,7 +20,7 @@ namespace ITMLib
 		class ITMVoxelBlockHHash
 		{
 			public:
-			static const CONSTANT(bool) hasColorCoding = true;
+			static const CONSTPTR(bool) hasColorCoding = true;
 
 			typedef ITMHHashEntry IndexData;
 
@@ -31,10 +31,10 @@ namespace ITMLib
 			};
 
 			/** Maximum number of total entries. */
-			static const CONSTANT(int) noTotalEntriesPerLevel = SDF_BUCKET_NUM + SDF_EXCESS_LIST_SIZE;
-			static const CONSTANT(int) noLevels = SDF_HASH_NO_H_LEVELS;
-			static const CONSTANT(int) noTotalEntries = (SDF_BUCKET_NUM + SDF_EXCESS_LIST_SIZE) * SDF_HASH_NO_H_LEVELS;
-			static const CONSTANT(int) voxelBlockSize = SDF_BLOCK_SIZE * SDF_BLOCK_SIZE * SDF_BLOCK_SIZE;
+			static const CONSTPTR(int) noTotalEntriesPerLevel = SDF_BUCKET_NUM + SDF_EXCESS_LIST_SIZE;
+			static const CONSTPTR(int) noLevels = SDF_HASH_NO_H_LEVELS;
+			static const CONSTPTR(int) noTotalEntries = (SDF_BUCKET_NUM + SDF_EXCESS_LIST_SIZE) * SDF_HASH_NO_H_LEVELS;
+			static const CONSTPTR(int) voxelBlockSize = SDF_BLOCK_SIZE * SDF_BLOCK_SIZE * SDF_BLOCK_SIZE;
 
 			_CPU_AND_GPU_CODE_ static int GetLevelForEntry(int entryId)
 			{

@@ -28,7 +28,7 @@ namespace ORUtils {
 		};
 	};
 
-	template <class T> struct Vector4_ { 
+	template <class T> struct Vector4_ {
 		union {
 			struct { T x, y, z, w; }; // standard names for components
 			struct { T r, g, b, a; }; // standard names for components
@@ -39,14 +39,20 @@ namespace ORUtils {
 
 	template <class T> struct Vector6_ {
 		//union {
-			T v[6];
+		T v[6];
 		//};
+	};
+
+	template<class T, int s> struct VectorX_
+	{
+		int vsize;
+		T v[s];
 	};
 
 	//////////////////////////////////////////////////////////////////////////
 	// Vector class with math operators: +, -, *, /, +=, -=, /=, [], ==, !=, T*(), etc.
 	//////////////////////////////////////////////////////////////////////////
-	template <class T> class Vector2 : public Vector2_ <T>
+	template <class T> class Vector2 : public Vector2_ < T >
 	{
 	public:
 		typedef T value_type;
@@ -63,7 +69,7 @@ namespace ORUtils {
 
 		_CPU_AND_GPU_CODE_ explicit Vector2(const Vector3_<T> &u)  { this->x = u.x; this->y = u.y; }
 		_CPU_AND_GPU_CODE_ explicit Vector2(const Vector4_<T> &u)  { this->x = u.x; this->y = u.y; }
-		
+
 		_CPU_AND_GPU_CODE_ inline Vector2<int> toInt() const {
 			return Vector2<int>((int)ROUND(this->x), (int)ROUND(this->y));
 		}
@@ -214,7 +220,7 @@ namespace ORUtils {
 			residual = Vector3<float>(this->x - intRound.x, this->y - intRound.y, this->z - intRound.z);
 			return intRound;
 		}
-		
+
 		_CPU_AND_GPU_CODE_ inline Vector3<short> toShortRound() const {
 			return Vector3<short>((short)ROUND(this->x), (short)ROUND(this->y), (short)ROUND(this->z));
 		}
@@ -396,7 +402,7 @@ namespace ORUtils {
 		_CPU_AND_GPU_CODE_ inline Vector4<float> toFloat() const {
 			return Vector4<float>((float)this->x, (float)this->y, (float)this->z, (float)this->w);
 		}
-		
+
 		_CPU_AND_GPU_CODE_ inline Vector4<T> homogeneousCoordinatesNormalize() const {
 			return (this->w <= 0) ? *this : Vector4<T>(this->x / this->w, this->y / this->w, this->z / this->w, 1);
 		}
@@ -489,7 +495,7 @@ namespace ORUtils {
 		_CPU_AND_GPU_CODE_ friend Vector4<T> operator / (const Vector4<T> &lhs, const Vector4<T> &rhs) {
 			Vector4<T> rv(lhs); return rv /= rhs;
 		}
-		
+
 		////////////////////////////////////////////////////////
 		//  Comparison operators
 		////////////////////////////////////////////////////////
@@ -645,12 +651,159 @@ namespace ORUtils {
 		}
 	};
 
+
+	template <class T, int s> class VectorX : public VectorX_ < T, s >
+	{
+	public:
+		typedef T value_type;
+		_CPU_AND_GPU_CODE_ inline int size() const { return this->vsize; }
+
+		////////////////////////////////////////////////////////
+		//  Constructors
+		////////////////////////////////////////////////////////
+
+		_CPU_AND_GPU_CODE_ VectorX() { this->vsize = s; } // Default constructor
+		_CPU_AND_GPU_CODE_ VectorX(const T &t) { for (int i = 0; i < s; i++) this->v[i] = t; } //Scalar constructor
+		_CPU_AND_GPU_CODE_ VectorX(const T *tp) { for (int i = 0; i < s; i++) this->v[i] = tp[i]; } // Construct from array
+
+		// indexing operators
+		_CPU_AND_GPU_CODE_ T &operator [](int i) { return this->v[i]; }
+		_CPU_AND_GPU_CODE_ const T &operator [](int i) const { return this->v[i]; }
+
+
+		_CPU_AND_GPU_CODE_ inline VectorX<int, s> toIntRound() const {
+			VectorX<int, s> retv;
+			for (int i = 0; i < s; i++) retv[i] = (int)ROUND(this->v[i]);
+			return retv;
+		}
+
+		_CPU_AND_GPU_CODE_ inline VectorX<unsigned char, s> toUChar() const {
+			VectorX<int, s> vi = toIntRound();
+			VectorX<unsigned char, s> retv;
+			for (int i = 0; i < s; i++) retv[i] = (unsigned char)CLAMP(vi[0], 0, 255);
+			return retv;
+		}
+
+		_CPU_AND_GPU_CODE_ inline VectorX<float, s> toFloat() const {
+			VectorX<float, s> retv;
+			for (int i = 0; i < s; i++) retv[i] = (float) this->v[i];
+			return retv;
+		}
+
+		_CPU_AND_GPU_CODE_ const T *getValues() const { return this->v; }
+		_CPU_AND_GPU_CODE_ VectorX<T, s> &setValues(const T *rhs) { for (int i = 0; i < s; i++) this->v[i] = rhs[i]; return *this; }
+		_CPU_AND_GPU_CODE_ void Clear(T v){
+			for (int i = 0; i < s; i++)
+				this->v[i] = v;
+		}
+
+
+		// type-cast operators
+		_CPU_AND_GPU_CODE_ operator T *() { return this->v; }
+		_CPU_AND_GPU_CODE_ operator const T *() const { return this->v; }
+
+		////////////////////////////////////////////////////////
+		//  Math operators
+		////////////////////////////////////////////////////////
+
+		// scalar multiply assign
+		_CPU_AND_GPU_CODE_ friend VectorX<T, s> &operator *= (VectorX<T, s> &lhs, T d) {
+			for (int i = 0; i < s; i++) lhs[i] *= d; return lhs;
+		}
+
+		// component-wise vector multiply assign
+		_CPU_AND_GPU_CODE_ friend VectorX<T, s> &operator *= (VectorX<T, s> &lhs, const VectorX<T, s> &rhs) {
+			for (int i = 0; i < s; i++) lhs[i] *= rhs[i]; return lhs;
+		}
+
+		// scalar divide assign
+		_CPU_AND_GPU_CODE_ friend VectorX<T, s> &operator /= (VectorX<T, s> &lhs, T d){
+			for (int i = 0; i < s; i++) lhs[i] /= d; return lhs;
+		}
+
+		// component-wise vector divide assign
+		_CPU_AND_GPU_CODE_ friend VectorX<T, s> &operator /= (VectorX<T, s> &lhs, const VectorX<T, s> &rhs) {
+			for (int i = 0; i < s; i++) lhs[i] /= rhs[i]; return lhs;
+		}
+
+		// component-wise vector add assign
+		_CPU_AND_GPU_CODE_ friend VectorX<T, s> &operator += (VectorX<T, s> &lhs, const VectorX<T, s> &rhs)	{
+			for (int i = 0; i < s; i++) lhs[i] += rhs[i]; return lhs;
+		}
+
+		// component-wise vector subtract assign
+		_CPU_AND_GPU_CODE_ friend VectorX<T, s> &operator -= (VectorX<T, s> &lhs, const VectorX<T, s> &rhs)	{
+			for (int i = 0; i < s; i++) lhs[i] -= rhs[i]; return lhs;
+		}
+
+		// unary negate
+		_CPU_AND_GPU_CODE_ friend VectorX<T, s> operator - (const VectorX<T, s> &rhs)	{
+			VectorX<T, s> rv; for (int i = 0; i < s; i++) rv[i] = -rhs[i]; return rv;
+		}
+
+		// vector add
+		_CPU_AND_GPU_CODE_ friend VectorX<T, s> operator + (const VectorX<T, s> &lhs, const VectorX<T, s> &rhs) {
+			VectorX<T, s> rv(lhs); return rv += rhs;
+		}
+
+		// vector subtract
+		_CPU_AND_GPU_CODE_ friend VectorX<T, s> operator - (const VectorX<T, s> &lhs, const VectorX<T, s> &rhs) {
+			VectorX<T, s> rv(lhs); return rv -= rhs;
+		}
+
+		// scalar multiply
+		_CPU_AND_GPU_CODE_ friend VectorX<T, s> operator * (const VectorX<T, s> &lhs, T rhs) {
+			VectorX<T, s> rv(lhs); return rv *= rhs;
+		}
+
+		// scalar multiply
+		_CPU_AND_GPU_CODE_ friend VectorX<T, s> operator * (T lhs, const VectorX<T, s> &rhs) {
+			VectorX<T, s> rv(lhs); return rv *= rhs;
+		}
+
+		// vector component-wise multiply
+		_CPU_AND_GPU_CODE_ friend VectorX<T, s> operator * (const VectorX<T, s> &lhs, const VectorX<T, s> &rhs) {
+			VectorX<T, s> rv(lhs); return rv *= rhs;
+		}
+
+		// scalar divide
+		_CPU_AND_GPU_CODE_ friend VectorX<T, s> operator / (const VectorX<T, s> &lhs, T rhs) {
+			VectorX<T, s> rv(lhs); return rv /= rhs;
+		}
+
+		// vector component-wise divide
+		_CPU_AND_GPU_CODE_ friend VectorX<T, s> operator / (const VectorX<T, s> &lhs, const VectorX<T, s> &rhs) {
+			VectorX<T, s> rv(lhs); return rv /= rhs;
+		}
+
+		////////////////////////////////////////////////////////
+		//  Comparison operators
+		////////////////////////////////////////////////////////
+
+		// equality
+		_CPU_AND_GPU_CODE_ friend bool operator == (const VectorX<T, s> &lhs, const VectorX<T, s> &rhs) {
+			for (int i = 0; i < s; i++) if (lhs[i] != rhs[i]) return false;
+			return true;
+		}
+
+		// inequality
+		_CPU_AND_GPU_CODE_ friend bool operator != (const VectorX<T, s> &lhs, const Vector6<T> &rhs) {
+			for (int i = 0; i < s; i++) if (lhs[i] != rhs[i]) return true;
+			return false;
+		}
+
+		friend std::ostream& operator<<(std::ostream& os, const VectorX<T, s>& dt){
+			for (int i = 0; i < s; i++) os << dt[i] << "\n";
+			return os;
+		}
+	};
+
 	////////////////////////////////////////////////////////////////////////////////
 	// Generic vector operations
 	////////////////////////////////////////////////////////////////////////////////
 
 	template< class T> _CPU_AND_GPU_CODE_ inline T sqr(const T &v) { return v*v; }
-	
+
 	// compute the dot product of two vectors
 	template<class T> _CPU_AND_GPU_CODE_ inline typename T::value_type dot(const T &lhs, const T &rhs) {
 		typename T::value_type r = 0;
@@ -658,7 +811,7 @@ namespace ORUtils {
 			r += lhs[i] * rhs[i];
 		return r;
 	}
-	
+
 	// return the length of the provided vector
 	template< class T> _CPU_AND_GPU_CODE_ inline typename T::value_type length(const T &vec) {
 		return sqrt(dot(vec, vec));
@@ -670,13 +823,13 @@ namespace ORUtils {
 		return sum == 0 ? T(typename T::value_type(0)) : vec / sum;
 	}
 
-	template< class T> _CPU_AND_GPU_CODE_ inline T min(const T &lhs, const T &rhs) {
-		return lhs <= rhs ? lhs : rhs;
-	}
+	//template< class T> _CPU_AND_GPU_CODE_ inline T min(const T &lhs, const T &rhs) {
+	//	return lhs <= rhs ? lhs : rhs;
+	//}
 
-	template< class T> _CPU_AND_GPU_CODE_ inline T max(const T &lhs, const T &rhs) {
-		return lhs >= rhs ? lhs : rhs;
-	}
+	//template< class T> _CPU_AND_GPU_CODE_ inline T max(const T &lhs, const T &rhs) {
+	//	return lhs >= rhs ? lhs : rhs;
+	//}
 
 	//component wise min
 	template< class T> _CPU_AND_GPU_CODE_ inline T minV(const T &lhs, const T &rhs) {

@@ -79,6 +79,7 @@ namespace ITMLib
 			*/
 			void Coerce(void);
 
+			ITMPose(const ITMPose & src);
 			ITMPose(const Matrix4f & src);
 			ITMPose(float tx, float ty, float tz, float rx, float ry, float rz);
 			ITMPose(const Vector6f & tangent);

@@ -178,7 +178,7 @@ void SaveImageToFile(const ITMShortImage* image, const char* fileName)
 {
 	short *data = (short*)malloc(sizeof(short) * image->dataSize);
 	const short *dataSource = image->GetData(MEMORYDEVICE_CPU);
-	for (int i = 0; i < image->dataSize; i++) data[i] = (dataSource[i] << 8) | ((dataSource[i] >> 8) & 255);
+	for (size_t i = 0; i < image->dataSize; i++) data[i] = (dataSource[i] << 8) | ((dataSource[i] >> 8) & 255);
 
 	FILE *f = fopen(fileName, "wb");
 	if (!pnm_writeheader(f, image->noDims.x, image->noDims.y, PNM_PGM_16u)) {
@@ -193,7 +193,7 @@ void SaveImageToFile(const ITMShortImage* image, const char* fileName)
 void SaveImageToFile(const ITMFloatImage* image, const char* fileName)
 {
 	unsigned short *data = new unsigned short[image->dataSize];
-	for (int i = 0; i < image->dataSize; i++)
+	for (size_t i = 0; i < image->dataSize; i++)
 	{
 		float localData = image->GetData(MEMORYDEVICE_CPU)[i];
 		data[i] = localData >= 0 ? (unsigned short)(localData * 1000.0f) : 0;

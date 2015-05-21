@@ -86,7 +86,7 @@ struct ITMVoxel_f_rgb
 	_CPU_AND_GPU_CODE_ static float SDF_valueToFloat(float x) { return x; }
 	_CPU_AND_GPU_CODE_ static float SDF_floatToValue(float x) { return x; }
 
-	static const CONSTANT(bool) hasColorInformation = true;
+	static const CONSTPTR(bool) hasColorInformation = true;
 
 	/** Value of the truncated signed distance transformation. */
 	float sdf;
@@ -115,7 +115,7 @@ struct ITMVoxel_s_rgb
 	_CPU_AND_GPU_CODE_ static float SDF_valueToFloat(float x) { return (float)(x) / 32767.0f; }
 	_CPU_AND_GPU_CODE_ static short SDF_floatToValue(float x) { return (short)((x) * 32767.0f); }
 
-	static const CONSTANT(bool) hasColorInformation = true;
+	static const CONSTPTR(bool) hasColorInformation = true;
 
 	/** Value of the truncated signed distance transformation. */
 	short sdf;
@@ -143,7 +143,7 @@ struct ITMVoxel_s
 	_CPU_AND_GPU_CODE_ static float SDF_valueToFloat(float x) { return (float)(x) / 32767.0f; }
 	_CPU_AND_GPU_CODE_ static short SDF_floatToValue(float x) { return (short)((x) * 32767.0f); }
 
-	static const CONSTANT(bool) hasColorInformation = false;
+	static const CONSTPTR(bool) hasColorInformation = false;
 
 	/** Value of the truncated signed distance transformation. */
 	short sdf;
@@ -165,7 +165,7 @@ struct ITMVoxel_f
 	_CPU_AND_GPU_CODE_ static float SDF_valueToFloat(float x) { return x; }
 	_CPU_AND_GPU_CODE_ static float SDF_floatToValue(float x) { return x; }
 
-	static const CONSTANT(bool) hasColorInformation = false;
+	static const CONSTPTR(bool) hasColorInformation = false;
 
 	/** Value of the truncated signed distance transformation. */
 	float sdf;
