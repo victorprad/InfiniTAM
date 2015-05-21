@@ -51,7 +51,7 @@ ITMRenTracker_CUDA<TVoxel,TIndex>::~ITMRenTracker_CUDA(void)
 template<class TVoxel, class TIndex>
 void ITMRenTracker_CUDA<TVoxel,TIndex>::F_oneLevel(float *f, Matrix4f invM)
 {
-	int count = this->viewHierarchy->levels[this->levelId]->depth->dataSize;
+	int count = static_cast<int>(this->viewHierarchy->levels[this->levelId]->depth->dataSize);
 
 	dim3 blockSize(256, 1);
 	dim3 gridSize((int)ceil((float)count / (float)blockSize.x), 1);
@@ -63,7 +63,7 @@ void ITMRenTracker_CUDA<TVoxel,TIndex>::F_oneLevel(float *f, Matrix4f invM)
 	ITMSafeCall(cudaMemset(f_device, 0, sizeof(float) * gridSize.x));
 
 	renTrackerOneLevel_f_device<TVoxel,TIndex> << <gridSize, blockSize >> >(f_device, this->viewHierarchy->levels[this->levelId]->depth->GetData(MEMORYDEVICE_CUDA), 
-		this->viewHierarchy->levels[this->levelId]->depth->dataSize, voxelBlocks, index, oneOverVoxelSize, invM);
+		count, voxelBlocks, index, oneOverVoxelSize, invM);
 
 	ITMSafeCall(cudaMemcpy(f_host, f_device, sizeof(float)* gridSize.x, cudaMemcpyDeviceToHost));
 
@@ -76,7 +76,7 @@ void ITMRenTracker_CUDA<TVoxel,TIndex>::F_oneLevel(float *f, Matrix4f invM)
 template<class TVoxel, class TIndex>
 void ITMRenTracker_CUDA<TVoxel,TIndex>::G_oneLevel(float *gradient, float *hessian, Matrix4f invM) const
 {
-	int count = this->viewHierarchy->levels[this->levelId]->depth->dataSize;
+	int count = static_cast<int>(this->viewHierarchy->levels[this->levelId]->depth->dataSize);
 	Vector4f *ptList = this->viewHierarchy->levels[this->levelId]->depth->GetData(MEMORYDEVICE_CUDA);
 
 	const TVoxel *voxelBlocks = this->scene->localVBA.GetVoxelBlocks();

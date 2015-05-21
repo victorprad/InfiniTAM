@@ -4,7 +4,7 @@
 
 #include "../../Utils/ITMLibDefines.h"
 
-_CPU_AND_GPU_CODE_ inline void convertDisparityToDepth(DEVICEPTR(float) *d_out, int x, int y, const CONSTANT(short) *d_in,
+_CPU_AND_GPU_CODE_ inline void convertDisparityToDepth(DEVICEPTR(float) *d_out, int x, int y, const CONSTPTR(short) *d_in,
 	Vector2f disparityCalibParams, float fx_depth, Vector2i imgSize)
 {
 	int locId = x + y * imgSize.x;
@@ -19,7 +19,7 @@ _CPU_AND_GPU_CODE_ inline void convertDisparityToDepth(DEVICEPTR(float) *d_out, 
 	d_out[locId] = (depth > 0) ? depth : -1.0f;
 }
 
-_CPU_AND_GPU_CODE_ inline void convertDepthMMToFloat(DEVICEPTR(float) *d_out, int x, int y, const CONSTANT(short) *d_in, Vector2i imgSize)
+_CPU_AND_GPU_CODE_ inline void convertDepthMMToFloat(DEVICEPTR(float) *d_out, int x, int y, const CONSTPTR(short) *d_in, Vector2i imgSize)
 {
 	int locId = x + y * imgSize.x;
 
@@ -28,14 +28,14 @@ _CPU_AND_GPU_CODE_ inline void convertDepthMMToFloat(DEVICEPTR(float) *d_out, in
 }
 
 #define MEAN_SIGMA_L 1.2232f
-_CPU_AND_GPU_CODE_ inline void filterDepth(DEVICEPTR(float) *imageData_out, const CONSTANT(float) *imageData_in, int x, int y, Vector2i imgDims)
+_CPU_AND_GPU_CODE_ inline void filterDepth(DEVICEPTR(float) *imageData_out, const CONSTPTR(float) *imageData_in, int x, int y, Vector2i imgDims)
 {
 	float z, tmpz, dz, final_depth = 0.0f, w, w_sum = 0.0f;
 
 	z = imageData_in[x + y * imgDims.x];
 	if (z < 0.0f) { imageData_out[x + y * imgDims.x] = -1.0f; return; }
 
-	float sigma_z = 1.0 / (0.0012f + 0.0019f*(z - 0.4f)*(z - 0.4f) + 0.0001f / sqrt(z) * 0.25f);
+	float sigma_z = 1.0f / (0.0012f + 0.0019f*(z - 0.4f)*(z - 0.4f) + 0.0001f / sqrt(z) * 0.25f);
 
 	for (int i = -2, count = 0; i <= 2; i++) for (int j = -2; j <= 2; j++, count++)
 	{
@@ -109,5 +109,5 @@ _CPU_AND_GPU_CODE_ inline void computeNormalAndWeight(const float *depth_in, Vec
 	float theta = acosf(outNormal.z);
 	float theta_diff = theta / (PI*0.5f - theta);
 
-	sigmaZ_out[idx] = (0.0012f + 0.0019f*(z - 0.4f)*(z - 0.4f) + 0.0001 / sqrt(z) * theta_diff * theta_diff);
+	sigmaZ_out[idx] = (0.0012f + 0.0019f * (z - 0.4f) * (z - 0.4f) + 0.0001f / sqrt(z) * theta_diff * theta_diff);
 }
