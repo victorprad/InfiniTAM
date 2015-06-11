@@ -1,5 +1,6 @@
 #include "InfiniTAMApp.h"
 
+#include <unistd.h>
 #include <jni.h>
 
 extern "C" {
