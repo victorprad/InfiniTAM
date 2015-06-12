@@ -128,14 +128,14 @@ namespace ORUtils
 		}
 
 		/** Transfer data from CPU to GPU, if possible. */
-		void UpdateDeviceFromHost() {
+		void UpdateDeviceFromHost() const {
 #ifndef COMPILE_WITHOUT_CUDA
 			if (isAllocated_CUDA && isAllocated_CPU)
 				ORcudaSafeCall(cudaMemcpy(data_cuda, data_cpu, dataSize * sizeof(T), cudaMemcpyHostToDevice));
 #endif
 		}
 		/** Transfer data from GPU to CPU, if possible. */
-		void UpdateHostFromDevice() {
+		void UpdateHostFromDevice() const {
 #ifndef COMPILE_WITHOUT_CUDA
 			if (isAllocated_CUDA && isAllocated_CPU)
 				ORcudaSafeCall(cudaMemcpy(data_cpu, data_cuda, dataSize * sizeof(T), cudaMemcpyDeviceToHost));
