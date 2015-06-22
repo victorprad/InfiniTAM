@@ -16,7 +16,7 @@ static const char *ppm_ascii_id = "P3";
 static const char *pgm_id = "P5";
 static const char *ppm_id = "P6";
 
-typedef enum { PNM_PGM, PNM_PPM, PNM_PGM_16u, PNM_PGM_16s, PNM_UNKNOWN = -1 } PNMtype;
+typedef enum { MONO_8u, RGB_8u, MONO_16u, MONO_16s, RGBA_8u, FORMAT_UNKNOWN = -1 } FormatType;
 
 struct PNGReaderData {
 #ifdef USE_LIBPNG
@@ -33,9 +33,9 @@ struct PNGReaderData {
 #endif
 };
 
-static PNMtype png_readheader(FILE *fp, int & width, int & height, PNGReaderData & internal)
+static FormatType png_readheader(FILE *fp, int & width, int & height, PNGReaderData & internal)
 {
-	PNMtype type = PNM_UNKNOWN;
+	FormatType type = FORMAT_UNKNOWN;
 
 #ifdef USE_LIBPNG
 	png_byte color_type;
@@ -79,11 +79,14 @@ static PNMtype png_readheader(FILE *fp, int & width, int & height, PNGReaderData
 	bit_depth = png_get_bit_depth(internal.png_ptr, internal.info_ptr);
 
 	if (color_type == PNG_COLOR_TYPE_GRAY) {
-		if (bit_depth == 8) type = PNM_PGM;
-		else if (bit_depth == 16) type = PNM_PGM_16u;
+		if (bit_depth == 8) type = MONO_8u;
+		else if (bit_depth == 16) type = MONO_16u;
 		// bit depths 1, 2 and 4 are not accepted
 	} else if (color_type == PNG_COLOR_TYPE_RGB) {
-		if (bit_depth == 8) type = PNM_PPM;
+		if (bit_depth == 8) type = RGB_8u;
+		// bit depth 16 is not accepted
+	} else if (color_type == PNG_COLOR_TYPE_RGBA) {
+		if (bit_depth == 8) type = RGBA_8u;
 		// bit depth 16 is not accepted
 	}
 	// other color types are not accepted
@@ -119,31 +122,31 @@ static bool png_readdata(FILE *f, int xsize, int ysize, PNGReaderData & internal
 #endif
 }
 
-static PNMtype pnm_readheader(FILE *f, int *xsize, int *ysize, bool *binary)
+static FormatType pnm_readheader(FILE *f, int *xsize, int *ysize, bool *binary)
 {
 	char tmp[1024];
-	PNMtype type = PNM_UNKNOWN;
+	FormatType type = FORMAT_UNKNOWN;
 	int xs = 0, ys = 0, max_i = 0;
 	bool isBinary = true;
 
 	/* read identifier */
 	if (fscanf(f, "%[^ \n\t]", tmp) != 1) return type;
-	if (!strcmp(tmp, pgm_id)) type = PNM_PGM;
-	else if (!strcmp(tmp, pgm_ascii_id)) { type = PNM_PGM; isBinary = false; }
-	else if (!strcmp(tmp, ppm_id)) type = PNM_PPM;
-	else if (!strcmp(tmp, ppm_ascii_id)) { type = PNM_PPM; isBinary = false; }
+	if (!strcmp(tmp, pgm_id)) type = MONO_8u;
+	else if (!strcmp(tmp, pgm_ascii_id)) { type = MONO_8u; isBinary = false; }
+	else if (!strcmp(tmp, ppm_id)) type = RGB_8u;
+	else if (!strcmp(tmp, ppm_ascii_id)) { type = RGB_8u; isBinary = false; }
 	else return type;
 
 	/* read size */
-	if (!fscanf(f, "%i", &xs)) return PNM_UNKNOWN;
-	if (!fscanf(f, "%i", &ys)) return PNM_UNKNOWN;
+	if (!fscanf(f, "%i", &xs)) return FORMAT_UNKNOWN;
+	if (!fscanf(f, "%i", &ys)) return FORMAT_UNKNOWN;
 
-	if (!fscanf(f, "%i", &max_i)) return PNM_UNKNOWN;
-	if (max_i < 0) return PNM_UNKNOWN;
+	if (!fscanf(f, "%i", &max_i)) return FORMAT_UNKNOWN;
+	if (max_i < 0) return FORMAT_UNKNOWN;
 	else if (max_i <= (1 << 8)) {}
-	else if ((max_i <= (1 << 15)) && (type == PNM_PGM)) type = PNM_PGM_16s;
-	else if ((max_i <= (1 << 16)) && (type == PNM_PGM)) type = PNM_PGM_16u;
-	else return PNM_UNKNOWN;
+	else if ((max_i <= (1 << 15)) && (type == MONO_8u)) type = MONO_16s;
+	else if ((max_i <= (1 << 16)) && (type == MONO_8u)) type = MONO_16u;
+	else return FORMAT_UNKNOWN;
 	fgetc(f);
 
 	if (xsize) *xsize = xs;
@@ -164,39 +167,41 @@ static bool pnm_readdata_ascii_helper(FILE *f, int xsize, int ysize, int channel
 	return true;
 }
 
-static bool pnm_readdata_ascii(FILE *f, int xsize, int ysize, PNMtype type, void *data)
+static bool pnm_readdata_ascii(FILE *f, int xsize, int ysize, FormatType type, void *data)
 {
 	int channels = 0;
 	switch (type)
 	{
-	case PNM_PGM:
+	case MONO_8u:
 		channels = 1;
 		return pnm_readdata_ascii_helper(f, xsize, ysize, channels, (unsigned char*)data);
-	case PNM_PPM:
+	case RGB_8u:
 		channels = 3;
 		return pnm_readdata_ascii_helper(f, xsize, ysize, channels, (unsigned char*)data);
-	case PNM_PGM_16s:
+	case MONO_16s:
 		channels = 1;
 		return pnm_readdata_ascii_helper(f, xsize, ysize, channels, (short*)data);
-	case PNM_PGM_16u:
+	case MONO_16u:
 		channels = 1;
 		return pnm_readdata_ascii_helper(f, xsize, ysize, channels, (unsigned short*)data);
-	case PNM_UNKNOWN: break;
+	case FORMAT_UNKNOWN:
+	default: break;
 	}
 	return false;
 }
 
-static bool pnm_readdata_binary(FILE *f, int xsize, int ysize, PNMtype type, void *data)
+static bool pnm_readdata_binary(FILE *f, int xsize, int ysize, FormatType type, void *data)
 {
 	int channels = 0;
 	int bytesPerSample = 0;
 	switch (type)
 	{
-	case PNM_PGM: bytesPerSample = sizeof(unsigned char); channels = 1; break;
-	case PNM_PPM: bytesPerSample = sizeof(unsigned char); channels = 3; break;
-	case PNM_PGM_16s: bytesPerSample = sizeof(short); channels = 1; break;
-	case PNM_PGM_16u: bytesPerSample = sizeof(unsigned short); channels = 1; break;
-	case PNM_UNKNOWN: break;
+	case MONO_8u: bytesPerSample = sizeof(unsigned char); channels = 1; break;
+	case RGB_8u: bytesPerSample = sizeof(unsigned char); channels = 3; break;
+	case MONO_16s: bytesPerSample = sizeof(short); channels = 1; break;
+	case MONO_16u: bytesPerSample = sizeof(unsigned short); channels = 1; break;
+	case FORMAT_UNKNOWN:
+	default: break;
 	}
 	if (bytesPerSample == 0) return false;
 
@@ -205,16 +210,17 @@ static bool pnm_readdata_binary(FILE *f, int xsize, int ysize, PNMtype type, voi
 	return (data != NULL);
 }
 
-static bool pnm_writeheader(FILE *f, int xsize, int ysize, PNMtype type)
+static bool pnm_writeheader(FILE *f, int xsize, int ysize, FormatType type)
 {
 	const char *pnmid = NULL;
 	int max = 0;
 	switch (type) {
-	case PNM_PGM: pnmid = pgm_id; max = 256; break;
-	case PNM_PPM: pnmid = ppm_id; max = 255; break;
-	case PNM_PGM_16s: pnmid = pgm_id; max = 32767; break;
-	case PNM_PGM_16u: pnmid = pgm_id; max = 65535; break;
-	case PNM_UNKNOWN: return false;
+	case MONO_8u: pnmid = pgm_id; max = 256; break;
+	case RGB_8u: pnmid = ppm_id; max = 255; break;
+	case MONO_16s: pnmid = pgm_id; max = 32767; break;
+	case MONO_16u: pnmid = pgm_id; max = 65535; break;
+	case FORMAT_UNKNOWN:
+	default: return false;
 	}
 	if (pnmid == NULL) return false;
 
@@ -225,17 +231,18 @@ static bool pnm_writeheader(FILE *f, int xsize, int ysize, PNMtype type)
 	return true;
 }
 
-static bool pnm_writedata(FILE *f, int xsize, int ysize, PNMtype type, const void *data)
+static bool pnm_writedata(FILE *f, int xsize, int ysize, FormatType type, const void *data)
 {
 	int channels = 0;
 	int bytesPerSample = 0;
 	switch (type)
 	{
-	case PNM_PGM: bytesPerSample = sizeof(unsigned char); channels = 1; break;
-	case PNM_PPM: bytesPerSample = sizeof(unsigned char); channels = 3; break;
-	case PNM_PGM_16s: bytesPerSample = sizeof(short); channels = 1; break;
-	case PNM_PGM_16u: bytesPerSample = sizeof(unsigned short); channels = 1; break;
-	case PNM_UNKNOWN: break;
+	case MONO_8u: bytesPerSample = sizeof(unsigned char); channels = 1; break;
+	case RGB_8u: bytesPerSample = sizeof(unsigned char); channels = 3; break;
+	case MONO_16s: bytesPerSample = sizeof(short); channels = 1; break;
+	case MONO_16u: bytesPerSample = sizeof(unsigned short); channels = 1; break;
+	case FORMAT_UNKNOWN:
+	default: break;
 	}
 	fwrite(data, bytesPerSample, channels*xsize*ysize, f);
 	return true;
@@ -244,7 +251,7 @@ static bool pnm_writedata(FILE *f, int xsize, int ysize, PNMtype type, const voi
 void SaveImageToFile(const ITMUChar4Image* image, const char* fileName, bool flipVertical)
 {
 	FILE *f = fopen(fileName, "wb");
-	if (!pnm_writeheader(f, image->noDims.x, image->noDims.y, PNM_PPM)) {
+	if (!pnm_writeheader(f, image->noDims.x, image->noDims.y, RGB_8u)) {
 		fclose(f); return;
 	}
 
@@ -274,7 +281,7 @@ void SaveImageToFile(const ITMUChar4Image* image, const char* fileName, bool fli
 		}
 	}
 
-	pnm_writedata(f, image->noDims.x, image->noDims.y, PNM_PPM, data);
+	pnm_writedata(f, image->noDims.x, image->noDims.y, RGB_8u, data);
 	delete[] data;
 	fclose(f);
 }
@@ -286,10 +293,10 @@ void SaveImageToFile(const ITMShortImage* image, const char* fileName)
 	for (size_t i = 0; i < image->dataSize; i++) data[i] = (dataSource[i] << 8) | ((dataSource[i] >> 8) & 255);
 
 	FILE *f = fopen(fileName, "wb");
-	if (!pnm_writeheader(f, image->noDims.x, image->noDims.y, PNM_PGM_16u)) {
+	if (!pnm_writeheader(f, image->noDims.x, image->noDims.y, MONO_16u)) {
 		fclose(f); return;
 	}
-	pnm_writedata(f, image->noDims.x, image->noDims.y, PNM_PGM_16u, data);
+	pnm_writedata(f, image->noDims.x, image->noDims.y, MONO_16u, data);
 	fclose(f);
 
 	delete data;
@@ -305,10 +312,10 @@ void SaveImageToFile(const ITMFloatImage* image, const char* fileName)
 	}
 
 	FILE *f = fopen(fileName, "wb");
-	if (!pnm_writeheader(f, image->noDims.x, image->noDims.y, PNM_PGM_16u)) {
+	if (!pnm_writeheader(f, image->noDims.x, image->noDims.y, MONO_16u)) {
 		fclose(f); return;
 	}
-	pnm_writedata(f, image->noDims.x, image->noDims.y, PNM_PGM_16u, data);
+	pnm_writedata(f, image->noDims.x, image->noDims.y, MONO_16u, data);
 	fclose(f);
 
 	delete[] data;
@@ -320,39 +327,49 @@ bool ReadImageFromFile(ITMUChar4Image* image, const char* fileName)
 	bool usepng = false;
 
 	int xsize, ysize;
+	FormatType type;
 	bool binary;
 	FILE *f = fopen(fileName, "rb");
 	if (f == NULL) return false;
-	if (pnm_readheader(f, &xsize, &ysize, &binary) != PNM_PPM) {
+	type = pnm_readheader(f, &xsize, &ysize, &binary);
+	if ((type != RGB_8u)&&(type != RGBA_8u)) {
 		fclose(f);
 		f = fopen(fileName, "rb");
-		if (png_readheader(f, xsize, ysize, pngData) != PNM_PPM) {
+		type = png_readheader(f, xsize, ysize, pngData);
+		if ((type != RGB_8u)&&(type != RGBA_8u)) {
 			fclose(f);
 			return false;
 		}
 		usepng = true;
 	}
 
-	unsigned char *data = new unsigned char[xsize*ysize * 3];
-	if (usepng) {
-		if (!png_readdata(f, xsize, ysize, pngData, data)) { fclose(f); delete[] data; return false; }
-	} else if (binary) {
-		if (!pnm_readdata_binary(f, xsize, ysize, PNM_PPM, data)) { fclose(f); delete[] data; return false; }
-	} else {
-		if (!pnm_readdata_ascii(f, xsize, ysize, PNM_PPM, data)) { fclose(f); delete[] data; return false; }
-	}
-	fclose(f);
-
 	Vector2i newSize(xsize, ysize);
 	image->ChangeDims(newSize);
 	Vector4u *dataPtr = image->GetData(MEMORYDEVICE_CPU);
-	for (int i = 0; i < image->noDims.x*image->noDims.y; ++i)
-	{
-		dataPtr[i].x = data[i * 3 + 0]; dataPtr[i].y = data[i * 3 + 1];
-		dataPtr[i].z = data[i * 3 + 2]; dataPtr[i].w = 255;
-	}
 
-	delete[] data;
+	unsigned char *data;
+	if (type != RGBA_8u) data = new unsigned char[xsize*ysize * 3];
+	else data = (unsigned char*)image->GetData(MEMORYDEVICE_CPU);
+
+	if (usepng) {
+		if (!png_readdata(f, xsize, ysize, pngData, data)) { fclose(f); delete[] data; return false; }
+	} else if (binary) {
+		if (!pnm_readdata_binary(f, xsize, ysize, RGB_8u, data)) { fclose(f); delete[] data; return false; }
+	} else {
+		if (!pnm_readdata_ascii(f, xsize, ysize, RGB_8u, data)) { fclose(f); delete[] data; return false; }
+	}
+	fclose(f);
+
+	if (type != RGBA_8u)
+	{
+		for (int i = 0; i < image->noDims.x*image->noDims.y; ++i)
+		{
+			dataPtr[i].x = data[i * 3 + 0]; dataPtr[i].y = data[i * 3 + 1];
+			dataPtr[i].z = data[i * 3 + 2]; dataPtr[i].w = 255;
+		}
+
+		delete[] data;
+	}
 
 	return true;
 }
@@ -366,12 +383,12 @@ bool ReadImageFromFile(ITMShortImage *image, const char *fileName)
 	bool binary;
 	FILE *f = fopen(fileName, "rb");
 	if (f == NULL) return false;
-	PNMtype type = pnm_readheader(f, &xsize, &ysize, &binary);
-	if ((type != PNM_PGM_16s) && (type != PNM_PGM_16u)) {
+	FormatType type = pnm_readheader(f, &xsize, &ysize, &binary);
+	if ((type != MONO_16s) && (type != MONO_16u)) {
 		fclose(f);
 		f = fopen(fileName, "rb");
 		type = png_readheader(f, xsize, ysize, pngData);
-		if ((type != PNM_PGM_16s) && (type != PNM_PGM_16u)) {
+		if ((type != MONO_16s) && (type != MONO_16u)) {
 			fclose(f);
 			return false;
 		}
