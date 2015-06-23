@@ -62,7 +62,9 @@ void callback_depth(uvc_frame_t *frame, void *_data)
 LibUVCEngine::LibUVCEngine(const char *calibFilename/*, Vector2i requested_imageSize_rgb, Vector2i requested_imageSize_d*/)
 	: ImageSourceEngine(calibFilename)
 {
-	this->calib.disparityCalib.params = Vector2f(0.0f, 0.0f);
+	// images from libuvc always seem come in 1/10th-millimeters...
+	this->calib.disparityCalib.type = ITMDisparityCalib::TRAFO_AFFINE;
+	this->calib.disparityCalib.params = Vector2f(1.0f/10000.0f, 0.0f);
 
 	this->imageSize_d = Vector2i(640,480);
 	this->imageSize_rgb = Vector2i(640,480);
@@ -198,9 +200,6 @@ void LibUVCEngine::getImages(ITMUChar4Image *rgbImage, ITMShortImage *rawDepthIm
 
 	short *depth = rawDepthImage->GetData(MEMORYDEVICE_CPU);
 	memcpy(depth, data->framebuffer_depth->data, rawDepthImage->dataSize * sizeof(short));
-	for (int y = 0; y < 480; y++) for (int x = 0; x < 640; x++) {
-		depth[y*640+x] = depth[y*640+x]/10;
-	}
 
 	data->got_color = data->got_depth = 0;
 }

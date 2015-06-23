@@ -71,6 +71,13 @@ static void CreateDefaultImageSource(ImageSourceEngine* & imageSource, IMUSource
 			imageSource = NULL;
 		}
 	}
+
+	// this is a hack to ensure backwards compatibility in certain configurations
+	if (imageSource->calib.disparityCalib.params == Vector2f(0.0f, 0.0f))
+	{
+		imageSource->calib.disparityCalib.type = ITMDisparityCalib::TRAFO_AFFINE;
+		imageSource->calib.disparityCalib.params = Vector2f(1.0f/1000.0f, 0.0f);
+	}
 }
 
 int main(int argc, char** argv)

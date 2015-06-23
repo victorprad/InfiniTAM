@@ -19,12 +19,12 @@ _CPU_AND_GPU_CODE_ inline void convertDisparityToDepth(DEVICEPTR(float) *d_out, 
 	d_out[locId] = (depth > 0) ? depth : -1.0f;
 }
 
-_CPU_AND_GPU_CODE_ inline void convertDepthMMToFloat(DEVICEPTR(float) *d_out, int x, int y, const CONSTPTR(short) *d_in, Vector2i imgSize)
+_CPU_AND_GPU_CODE_ inline void convertDepthAffineToFloat(DEVICEPTR(float) *d_out, int x, int y, const CONSTPTR(short) *d_in, Vector2i imgSize, Vector2f depthCalibParams)
 {
 	int locId = x + y * imgSize.x;
 
 	short depth_in = d_in[locId];
-	d_out[locId] = ((depth_in <= 0)||(depth_in > 32000)) ? -1.0f : (float)depth_in / 1000.0f;
+	d_out[locId] = ((depth_in <= 0)||(depth_in > 32000)) ? -1.0f : (float)depth_in * depthCalibParams.x + depthCalibParams.y;
 }
 
 #define MEAN_SIGMA_L 1.2232f

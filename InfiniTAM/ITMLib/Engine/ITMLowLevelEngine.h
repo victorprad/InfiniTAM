@@ -3,9 +3,6 @@
 #pragma once
 
 #include "../Utils/ITMLibDefines.h"
-#include "../Objects/ITMDisparityCalib.h"
-#include "../Objects/ITMIntrinsics.h"
-#include "../Objects/ITMExtrinsics.h"
 
 using namespace ITMLib::Objects;
 

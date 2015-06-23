@@ -25,20 +25,9 @@ namespace ITMLib
 			ITMFloatImage *floatImage;
 
 		public:
-			enum InputImageType
-			{
-				//! Raw disparity images as received from the
-				//! Kinect
-				InfiniTAM_DISPARITY_IMAGE,
-				//! Short valued depth image in millimetres
-				InfiniTAM_SHORT_DEPTH_IMAGE,
-				//! Floating point valued depth images in meters
-				InfiniTAM_FLOAT_DEPTH_IMAGE
-			}inputImageType;
-
 			virtual void ConvertDisparityToDepth(ITMFloatImage *depth_out, const ITMShortImage *disp_in, const ITMIntrinsics *depthIntrinsics,
-				const ITMDisparityCalib *disparityCalib) = 0;
-			virtual void ConvertDepthMMToFloat(ITMFloatImage *depth_out, const ITMShortImage *depth_in) = 0;
+				Vector2f disparityCalibParams) = 0;
+			virtual void ConvertDepthAffineToFloat(ITMFloatImage *depth_out, const ITMShortImage *depth_in, Vector2f depthCalibParams) = 0;
 
 			virtual void DepthFiltering(ITMFloatImage *image_out, const ITMFloatImage *image_in) = 0;
 			virtual void ComputeNormalAndWeights(ITMFloat4Image *normal_out, ITMFloatImage *sigmaZ_out, const ITMFloatImage *depth_in, Vector4f intrinsic) = 0;
@@ -54,9 +43,6 @@ namespace ITMLib
 				this->calib = calib;
 				this->shortImage = NULL;
 				this->floatImage = NULL;
-
-				if (calib->disparityCalib.params == Vector2f(0.0f, 0.0f)) inputImageType = InfiniTAM_SHORT_DEPTH_IMAGE;
-				else inputImageType = InfiniTAM_DISPARITY_IMAGE;
 			}
 
 			virtual ~ITMViewBuilder()
