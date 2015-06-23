@@ -175,7 +175,6 @@ namespace ORUtils
 			Free();
 
 			this->dataSize = dataSize;
-			if (dataSize == 0) return;
 
 			if (allocate_CPU)
 			{
@@ -190,16 +189,19 @@ namespace ORUtils
 				switch (allocType)
 				{
 				case 0:
-					data_cpu = new T[dataSize];
+					if (dataSize == 0) data_cpu = NULL;
+					else data_cpu = new T[dataSize];
 					break;
 				case 1:
 #ifndef COMPILE_WITHOUT_CUDA
-					ORcudaSafeCall(cudaMallocHost((void**)&data_cpu, dataSize * sizeof(T)));
+					if (dataSize == 0) data_cpu = NULL;
+					else ORcudaSafeCall(cudaMallocHost((void**)&data_cpu, dataSize * sizeof(T)));
 #endif
 					break;
 				case 2:
 #ifdef COMPILE_WITH_METAL
-					allocateMetalData((void**)&data_cpu, (void**)&data_metalBuffer, dataSize * sizeof(T), true);
+					if (dataSize == 0) data_cpu = NULL;
+					else allocateMetalData((void**)&data_cpu, (void**)&data_metalBuffer, dataSize * sizeof(T), true);
 #endif
 					break;
 				}
@@ -211,7 +213,8 @@ namespace ORUtils
 			if (allocate_CUDA)
 			{
 #ifndef COMPILE_WITHOUT_CUDA
-				ORcudaSafeCall(cudaMalloc((void**)&data_cuda, dataSize * sizeof(T)));
+				if (dataSize == 0) data_cuda = NULL;
+				else ORcudaSafeCall(cudaMalloc((void**)&data_cuda, dataSize * sizeof(T)));
 				this->isAllocated_CUDA = allocate_CUDA;
 #endif
 			}
@@ -232,16 +235,16 @@ namespace ORUtils
 				switch (allocType)
 				{
 				case 0:
-					delete[] data_cpu;
+					if (data_cpu != NULL) delete[] data_cpu;
 					break;
 				case 1:
 #ifndef COMPILE_WITHOUT_CUDA
-					ORcudaSafeCall(cudaFreeHost(data_cpu));
+					if (data_cpu != NULL) ORcudaSafeCall(cudaFreeHost(data_cpu));
 #endif
 					break;
 				case 2:
 #ifdef COMPILE_WITH_METAL
-					freeMetalData((void**)&data_cpu, (void**)&data_metalBuffer, dataSize * sizeof(T), true);
+					if (data_cpu != NULL) freeMetalData((void**)&data_cpu, (void**)&data_metalBuffer, dataSize * sizeof(T), true);
 #endif
 					break;
 				}
@@ -253,7 +256,7 @@ namespace ORUtils
 			if (isAllocated_CUDA)
 			{
 #ifndef COMPILE_WITHOUT_CUDA
-				ORcudaSafeCall(cudaFree(data_cuda));
+				if (data_cuda != NULL) ORcudaSafeCall(cudaFree(data_cuda));
 #endif
 				isAllocated_CUDA = false;
 			}
