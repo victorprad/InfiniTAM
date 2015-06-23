@@ -8,6 +8,7 @@ find_package(OpenGL REQUIRED)
 find_package(CUDA)
 find_package(OpenNI)
 find_package(libuvc)
+find_package(PNG)
 
 OPTION(WITH_CUDA "Build with CUDA support?" ${CUDA_FOUND})
 INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseOpenMP.cmake)

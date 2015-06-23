@@ -1,3 +1,5 @@
+// Copyright 2014-2015 Isis Innovation Limited and the authors of InfiniTAM
+
 package uk.ac.ox.robots.InfiniTAM;
 
 import android.hardware.Sensor;
