@@ -91,7 +91,9 @@ OpenNIEngine::OpenNIEngine(const char *calibFilename, const char *deviceURI, con
 		message += openni::OpenNI::getExtendedError();
 		openni::OpenNI::shutdown();
 		delete data;
-		DIEWITHEXCEPTION(message.c_str());
+		data = NULL;
+		std::cout << message;
+		return;
 	}
 
 	openni::PlaybackControl *control = data->device.getPlaybackControl();
@@ -169,7 +171,9 @@ OpenNIEngine::OpenNIEngine(const char *calibFilename, const char *deviceURI, con
 	{
 		openni::OpenNI::shutdown();
 		delete data;
-		DIEWITHEXCEPTION("OpenNI: No valid streams. Exiting.");
+		data = NULL;
+		std::cout << "OpenNI: No valid streams. Exiting." << std::endl;
+		return;
 	}
 	
 	data->streams = new openni::VideoStream*[2];
@@ -179,20 +183,23 @@ OpenNIEngine::OpenNIEngine(const char *calibFilename, const char *deviceURI, con
 
 OpenNIEngine::~OpenNIEngine()
 {
-	if (depthAvailable)
+	if (data != NULL)
 	{
-		data->depthStream.stop();
-		data->depthStream.destroy();
-	}
-	if (colorAvailable)
-	{
-		data->colorStream.stop();
-		data->colorStream.destroy();
-	}
-	data->device.close();
+		if (depthAvailable)
+		{
+			data->depthStream.stop();
+			data->depthStream.destroy();
+		}
+		if (colorAvailable)
+		{
+			data->colorStream.stop();
+			data->colorStream.destroy();
+		}
+		data->device.close();
 
-	delete[] data->streams;
-	delete data;
+		delete[] data->streams;
+		delete data;
+	}
 
 	openni::OpenNI::shutdown();
 }
@@ -236,9 +243,9 @@ void OpenNIEngine::getImages(ITMUChar4Image *rgbImage, ITMShortImage *rawDepthIm
 	return /*true*/;
 }
 
-bool OpenNIEngine::hasMoreImages(void) { return true; }
-Vector2i OpenNIEngine::getDepthImageSize(void) { return imageSize_d; }
-Vector2i OpenNIEngine::getRGBImageSize(void) { return imageSize_rgb; }
+bool OpenNIEngine::hasMoreImages(void) { return (data!=NULL); }
+Vector2i OpenNIEngine::getDepthImageSize(void) { return (data!=NULL)?imageSize_d:Vector2i(0,0); }
+Vector2i OpenNIEngine::getRGBImageSize(void) { return (data!=NULL)?imageSize_rgb:Vector2i(0,0); }
 
 #else
 

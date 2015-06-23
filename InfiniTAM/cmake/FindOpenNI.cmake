@@ -6,6 +6,7 @@
 # also defined, but not for general use are
 #  OpenNI_LIBRARY, where to find the OpenNI library.
 
+set(OPEN_NI_ROOT "/usr/local" CACHE FILEPATH "Root directory of OpenNI2")
 
 # Finally the library itself
 find_library(OpenNI_LIBRARY
