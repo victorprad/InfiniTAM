@@ -1,4 +1,4 @@
-// Copyright 2014 Isis Innovation Limited and the authors of InfiniTAM
+// Copyright 2014-2015 Isis Innovation Limited and the authors of InfiniTAM
 
 #include "ITMViewBuilder_CUDA.h"
 #include "../../../../ORUtils/CUDADefines.h"
@@ -20,7 +20,7 @@ ITMViewBuilder_CUDA::~ITMViewBuilder_CUDA(void) { }
 
 
 __global__ void convertDisparityToDepth_device(float *depth_out, const short *depth_in, Vector2f disparityCalibParams, float fx_depth, Vector2i imgSize);
-__global__ void convertDepthMMToFloat_device(float *d_out, const short *d_in, Vector2i imgSize);
+__global__ void convertDepthAffineToFloat_device(float *d_out, const short *d_in, Vector2i imgSize, Vector2f depthCalibParams);
 __global__ void filterDepth_device(float *imageData_out, const float *imageData_in, Vector2i imgDims);
 __global__ void ComputeNormalAndWeight_device(const float* depth_in, Vector4f* normal_out, float *sigmaL_out, Vector2i imgDims, Vector4f intrinsic);
 
@@ -52,13 +52,13 @@ void ITMViewBuilder_CUDA::UpdateView(ITMView **view_ptr, ITMUChar4Image *rgbImag
 	view->rgb->SetFrom(rgbImage, MemoryBlock<Vector4u>::CPU_TO_CUDA);
 	this->shortImage->SetFrom(rawDepthImage, MemoryBlock<short>::CPU_TO_CUDA);
 
-	switch (inputImageType)
+	switch (view->calib->disparityCalib.type)
 	{
-	case InfiniTAM_DISPARITY_IMAGE:
-		this->ConvertDisparityToDepth(view->depth, this->shortImage, &(view->calib->intrinsics_d), &(view->calib->disparityCalib));
+	case ITMDisparityCalib::TRAFO_KINECT:
+		this->ConvertDisparityToDepth(view->depth, this->shortImage, &(view->calib->intrinsics_d), view->calib->disparityCalib.params);
 		break;
-	case InfiniTAM_SHORT_DEPTH_IMAGE:
-		this->ConvertDepthMMToFloat(view->depth, this->shortImage);
+	case ITMDisparityCalib::TRAFO_AFFINE:
+		this->ConvertDepthAffineToFloat(view->depth, this->shortImage, view->calib->disparityCalib.params);
 		break;
 	default:
 		break;
@@ -110,17 +110,14 @@ void ITMViewBuilder_CUDA::UpdateView(ITMView **view_ptr, ITMUChar4Image *rgbImag
 }
 
 void ITMViewBuilder_CUDA::ConvertDisparityToDepth(ITMFloatImage *depth_out, const ITMShortImage *depth_in, const ITMIntrinsics *depthIntrinsics,
-	const ITMDisparityCalib *disparityCalib)
+	Vector2f disparityCalibParams)
 {
 	Vector2i imgSize = depth_in->noDims;
 
 	const short *d_in = depth_in->GetData(MEMORYDEVICE_CUDA);
 	float *d_out = depth_out->GetData(MEMORYDEVICE_CUDA);
 
-	Vector2f disparityCalibParams; float fx_depth;
-	disparityCalibParams.x = disparityCalib->params.x;
-	disparityCalibParams.y = disparityCalib->params.y;
-	fx_depth = depthIntrinsics->projectionParamsSimple.fx;
+	float fx_depth = depthIntrinsics->projectionParamsSimple.fx;
 
 	dim3 blockSize(16, 16);
 	dim3 gridSize((int)ceil((float)imgSize.x / (float)blockSize.x), (int)ceil((float)imgSize.y / (float)blockSize.y));
@@ -128,7 +125,7 @@ void ITMViewBuilder_CUDA::ConvertDisparityToDepth(ITMFloatImage *depth_out, cons
 	convertDisparityToDepth_device << <gridSize, blockSize >> >(d_out, d_in, disparityCalibParams, fx_depth, imgSize);
 }
 
-void ITMViewBuilder_CUDA::ConvertDepthMMToFloat(ITMFloatImage *depth_out, const ITMShortImage *depth_in)
+void ITMViewBuilder_CUDA::ConvertDepthAffineToFloat(ITMFloatImage *depth_out, const ITMShortImage *depth_in, Vector2f depthCalibParams)
 {
 	Vector2i imgSize = depth_in->noDims;
 
@@ -138,7 +135,7 @@ void ITMViewBuilder_CUDA::ConvertDepthMMToFloat(ITMFloatImage *depth_out, const 
 	dim3 blockSize(16, 16);
 	dim3 gridSize((int)ceil((float)imgSize.x / (float)blockSize.x), (int)ceil((float)imgSize.y / (float)blockSize.y));
 
-	convertDepthMMToFloat_device << <gridSize, blockSize >> >(d_out, d_in, imgSize);
+	convertDepthAffineToFloat_device << <gridSize, blockSize >> >(d_out, d_in, imgSize, depthCalibParams);
 }
 
 void ITMViewBuilder_CUDA::DepthFiltering(ITMFloatImage *image_out, const ITMFloatImage *image_in)
@@ -186,14 +183,14 @@ __global__ void convertDisparityToDepth_device(float *d_out, const short *d_in, 
 	convertDisparityToDepth(d_out, x, y, d_in, disparityCalibParams, fx_depth, imgSize);
 }
 
-__global__ void convertDepthMMToFloat_device(float *d_out, const short *d_in, Vector2i imgSize)
+__global__ void convertDepthAffineToFloat_device(float *d_out, const short *d_in, Vector2i imgSize, Vector2f depthCalibParams)
 {
 	int x = threadIdx.x + blockIdx.x * blockDim.x;
 	int y = threadIdx.y + blockIdx.y * blockDim.y;
 
 	if ((x >= imgSize.x) || (y >= imgSize.y)) return;
 
-	convertDepthMMToFloat(d_out, x, y, d_in, imgSize);
+	convertDepthAffineToFloat(d_out, x, y, d_in, imgSize, depthCalibParams);
 }
 
 __global__ void filterDepth_device(float *imageData_out, const float *imageData_in, Vector2i imgDims)

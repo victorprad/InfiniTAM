@@ -1,4 +1,4 @@
-// Copyright 2014 Isis Innovation Limited and the authors of InfiniTAM
+// Copyright 2014-2015 Isis Innovation Limited and the authors of InfiniTAM
 
 #include "ITMViewBuilder_CPU.h"
 
@@ -34,13 +34,13 @@ void ITMViewBuilder_CPU::UpdateView(ITMView **view_ptr, ITMUChar4Image *rgbImage
 	view->rgb->SetFrom(rgbImage, MemoryBlock<Vector4u>::CPU_TO_CPU);
 	this->shortImage->SetFrom(rawDepthImage, MemoryBlock<short>::CPU_TO_CPU);
 
-	switch (inputImageType)
+	switch (view->calib->disparityCalib.type)
 	{
-	case InfiniTAM_DISPARITY_IMAGE:
-		this->ConvertDisparityToDepth(view->depth, this->shortImage, &(view->calib->intrinsics_d), &(view->calib->disparityCalib));
+	case ITMDisparityCalib::TRAFO_KINECT:
+		this->ConvertDisparityToDepth(view->depth, this->shortImage, &(view->calib->intrinsics_d), view->calib->disparityCalib.params);
 		break;
-	case InfiniTAM_SHORT_DEPTH_IMAGE:
-		this->ConvertDepthMMToFloat(view->depth, this->shortImage);
+	case ITMDisparityCalib::TRAFO_AFFINE:
+		this->ConvertDepthAffineToFloat(view->depth, this->shortImage, view->calib->disparityCalib.params);
 		break;
 	default:
 		break;
@@ -92,23 +92,20 @@ void ITMViewBuilder_CPU::UpdateView(ITMView **view_ptr, ITMUChar4Image *rgbImage
 }
 
 void ITMViewBuilder_CPU::ConvertDisparityToDepth(ITMFloatImage *depth_out, const ITMShortImage *depth_in, const ITMIntrinsics *depthIntrinsics,
-	const ITMDisparityCalib *disparityCalib)
+	Vector2f disparityCalibParams)
 {
 	Vector2i imgSize = depth_in->noDims;
 
 	const short *d_in = depth_in->GetData(MEMORYDEVICE_CPU);
 	float *d_out = depth_out->GetData(MEMORYDEVICE_CPU);
 
-	Vector2f disparityCalibParams; float fx_depth;
-	disparityCalibParams.x = disparityCalib->params.x;
-	disparityCalibParams.y = disparityCalib->params.y;
-	fx_depth = depthIntrinsics->projectionParamsSimple.fx;
+	float fx_depth = depthIntrinsics->projectionParamsSimple.fx;
 
 	for (int y = 0; y < imgSize.y; y++) for (int x = 0; x < imgSize.x; x++)
 		convertDisparityToDepth(d_out, x, y, d_in, disparityCalibParams, fx_depth, imgSize);
 }
 
-void ITMViewBuilder_CPU::ConvertDepthMMToFloat(ITMFloatImage *depth_out, const ITMShortImage *depth_in)
+void ITMViewBuilder_CPU::ConvertDepthAffineToFloat(ITMFloatImage *depth_out, const ITMShortImage *depth_in, const Vector2f depthCalibParams)
 {
 	Vector2i imgSize = depth_in->noDims;
 
@@ -116,7 +113,7 @@ void ITMViewBuilder_CPU::ConvertDepthMMToFloat(ITMFloatImage *depth_out, const I
 	float *d_out = depth_out->GetData(MEMORYDEVICE_CPU);
 
 	for (int y = 0; y < imgSize.y; y++) for (int x = 0; x < imgSize.x; x++)
-		convertDepthMMToFloat(d_out, x, y, d_in, imgSize);
+		convertDepthAffineToFloat(d_out, x, y, d_in, imgSize, depthCalibParams);
 }
 
 void ITMViewBuilder_CPU::DepthFiltering(ITMFloatImage *image_out, const ITMFloatImage *image_in)

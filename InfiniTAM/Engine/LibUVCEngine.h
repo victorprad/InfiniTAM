@@ -4,25 +4,25 @@
 
 #include "ImageSourceEngine.h"
 
-#if (!defined USING_CMAKE) && (defined _MSC_VER)
+/*#if (!defined USING_CMAKE) && (defined _MSC_VER)
 #pragma comment(lib, "OpenNI2")
-#endif
+#endif*/
 
 namespace InfiniTAM
 {
 	namespace Engine
 	{
-		class OpenNIEngine : public ImageSourceEngine
+		class LibUVCEngine : public ImageSourceEngine
 		{
-		private:
+		public:
 			class PrivateData;
+		private:
 			PrivateData *data;
 			Vector2i imageSize_rgb, imageSize_d;
 			bool colorAvailable, depthAvailable;
 		public:
-			OpenNIEngine(const char *calibFilename, const char *deviceURI = NULL, const bool useInternalCalibration = false,
-				Vector2i imageSize_rgb = Vector2i(640, 480), Vector2i imageSize_d = Vector2i(640, 480));
-			~OpenNIEngine();
+			LibUVCEngine(const char *calibFilename /*, Vector2i imageSize_rgb = Vector2i(640, 480), Vector2i imageSize_d = Vector2i(640, 480)*/);
+			~LibUVCEngine();
 
 			bool hasMoreImages(void);
 			void getImages(ITMUChar4Image *rgb, ITMShortImage *rawDepth);

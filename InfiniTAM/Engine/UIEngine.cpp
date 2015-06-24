@@ -1,4 +1,4 @@
-// Copyright 2014 Isis Innovation Limited and the authors of InfiniTAM
+// Copyright 2014-2015 Isis Innovation Limited and the authors of InfiniTAM
 
 #include "UIEngine.h"
 
@@ -57,6 +57,7 @@ void UIEngine::glutDisplayFunction()
 		{
 			glEnable(GL_TEXTURE_2D);
 			for (int w = 0; w < NUM_WIN; w++)	{// Draw each sub window
+				if (uiEngine->outImageType[w] == ITMMainEngine::InfiniTAM_IMAGE_UNKNOWN) continue;
 				glBindTexture(GL_TEXTURE_2D, uiEngine->textureId[w]);
 				glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, showImgs[w]->noDims.x, showImgs[w]->noDims.y, 0, GL_RGBA, GL_UNSIGNED_BYTE, showImgs[w]->GetData(MEMORYDEVICE_CPU));
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -400,6 +401,7 @@ void UIEngine::Initialise(int & argc, char** argv, ImageSourceEngine *imageSourc
 	outImageType[0] = ITMMainEngine::InfiniTAM_IMAGE_SCENERAYCAST;
 	outImageType[1] = ITMMainEngine::InfiniTAM_IMAGE_ORIGINAL_DEPTH;
 	outImageType[2] = ITMMainEngine::InfiniTAM_IMAGE_ORIGINAL_RGB;
+	if (inputRGBImage->noDims == Vector2i(0,0)) outImageType[2] = ITMMainEngine::InfiniTAM_IMAGE_UNKNOWN;
 	//outImageType[3] = ITMMainEngine::InfiniTAM_IMAGE_SCENERAYCAST;
 	//outImageType[4] = ITMMainEngine::InfiniTAM_IMAGE_SCENERAYCAST;
 
@@ -451,8 +453,10 @@ void UIEngine::ProcessFrame()
 		sprintf(str, "%s/%04d.pgm", outFolder, currentFrameNo);
 		SaveImageToFile(inputRawDepthImage, str);
 
-		sprintf(str, "%s/%04d.ppm", outFolder, currentFrameNo);
-		SaveImageToFile(inputRGBImage, str);
+		if (inputRGBImage->noDims != Vector2i(0,0)) {
+			sprintf(str, "%s/%04d.ppm", outFolder, currentFrameNo);
+			SaveImageToFile(inputRGBImage, str);
+		}
 	}
 
 	sdkResetTimer(&timer_instant);

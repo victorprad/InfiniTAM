@@ -1,11 +1,8 @@
-// Copyright 2014 Isis Innovation Limited and the authors of InfiniTAM
+// Copyright 2014-2015 Isis Innovation Limited and the authors of InfiniTAM
 
 #pragma once
 
 #include "../Utils/ITMLibDefines.h"
-#include "../Objects/ITMDisparityCalib.h"
-#include "../Objects/ITMIntrinsics.h"
-#include "../Objects/ITMExtrinsics.h"
 
 using namespace ITMLib::Objects;
 

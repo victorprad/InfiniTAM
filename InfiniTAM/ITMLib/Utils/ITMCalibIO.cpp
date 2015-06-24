@@ -1,8 +1,9 @@
-// Copyright 2014 Isis Innovation Limited and the authors of InfiniTAM
+// Copyright 2014-2015 Isis Innovation Limited and the authors of InfiniTAM
 
 #include "ITMCalibIO.h"
 
 #include <fstream>
+#include <sstream>
 
 using namespace ITMLib::Objects;
 
@@ -47,11 +48,34 @@ bool ITMLib::Objects::readExtrinsics(const char *fileName, ITMExtrinsics & dest)
 
 bool ITMLib::Objects::readDisparityCalib(std::istream & src, ITMDisparityCalib & dest)
 {
-	float a,b;
-	src >> a >> b;
+	std::string word;
+	src >> word;
 	if (src.fail()) return false;
 
-	dest.SetFrom(a,b);
+	ITMDisparityCalib::TrafoType type = ITMDisparityCalib::TRAFO_KINECT;
+	float a,b;
+
+	if (word.compare("kinect") == 0) {
+		type = ITMDisparityCalib::TRAFO_KINECT;
+		src >> a;
+	} else if (word.compare("affine") == 0) {
+		type = ITMDisparityCalib::TRAFO_AFFINE;
+		src >> a;
+	} else {
+		std::stringstream wordstream(word);
+		wordstream >> a;
+		if (wordstream.fail()) return false;
+	}
+
+	src >> b;
+	if (src.fail()) return false;
+
+	if ((a == 0.0f) && (b == 0.0f)) {
+		type = ITMDisparityCalib::TRAFO_AFFINE;
+		a = 1.0f/1000.0f; b = 0.0f;
+	}
+
+	dest.SetFrom(a, b, type);
 	return true;
 }
 

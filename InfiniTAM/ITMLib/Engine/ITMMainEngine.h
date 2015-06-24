@@ -1,4 +1,4 @@
-// Copyright 2014 Isis Innovation Limited and the authors of InfiniTAM
+// Copyright 2014-2015 Isis Innovation Limited and the authors of InfiniTAM
 
 #pragma once
 
@@ -77,7 +77,8 @@ namespace ITMLib
 				InfiniTAM_IMAGE_FREECAMERA_SHADED,
 				InfiniTAM_IMAGE_FREECAMERA_COLOUR_FROM_VOLUME,
 				InfiniTAM_IMAGE_FREECAMERA_COLOUR_FROM_NORMAL,
-				InfiniTAM_IMAGE_FREECAMERA_COLOURCODED
+				InfiniTAM_IMAGE_FREECAMERA_COLOURCODED,
+				InfiniTAM_IMAGE_UNKNOWN
 			};
 
 			/// Pointer for storing the current input frame
