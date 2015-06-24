@@ -3,12 +3,32 @@ project(InfiniTAM)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
 
+macro(CANONIFY_BOOL var)
+  if (${var})
+    set(${var} TRUE)
+  else()
+    set(${var} FALSE)
+  endif()
+endmacro()
+
 find_package(GLUT REQUIRED)
 find_package(OpenGL REQUIRED)
-find_package(CUDA)
-find_package(OpenNI)
-find_package(libuvc)
-find_package(PNG)
+
+find_package(CUDA QUIET)
+CANONIFY_BOOL(CUDA_FOUND)
+message(STATUS "CUDA found: " ${CUDA_FOUND})
+
+find_package(OpenNI QUIET)
+CANONIFY_BOOL(OpenNI_FOUND)
+message(STATUS "OpenNI found: " ${OpenNI_FOUND})
+
+find_package(libuvc QUIET)
+CANONIFY_BOOL(libuvc_FOUND)
+message(STATUS "libuvc found: ${libuvc_FOUND}")
+
+find_package(PNG QUIET)
+CANONIFY_BOOL(PNG_FOUND)
+message(STATUS "libpng found: ${PNG_FOUND}")
 
 OPTION(WITH_CUDA "Build with CUDA support?" ${CUDA_FOUND})
 INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseOpenMP.cmake)
