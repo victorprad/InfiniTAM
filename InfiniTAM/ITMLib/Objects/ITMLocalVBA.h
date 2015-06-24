@@ -47,7 +47,7 @@ namespace ITMLib
 				ORUtils::MemoryBlock<int> *allocationList_host;
 
 				voxelBlocks_host = new ORUtils::MemoryBlock<TVoxel>(allocatedSize, MEMORYDEVICE_CPU);
-				allocationList_host = new ORUtils::MemoryBlock<int>(allocatedSize, MEMORYDEVICE_CPU);
+				allocationList_host = new ORUtils::MemoryBlock<int>(noBlocks, MEMORYDEVICE_CPU);
 
 				TVoxel* voxelBlocks_host_ptr = voxelBlocks_host->GetData(MEMORYDEVICE_CPU);
 				int* allocationList_host_ptr = allocationList_host->GetData(MEMORYDEVICE_CPU);
@@ -61,7 +61,7 @@ namespace ITMLib
 				{
 #ifndef COMPILE_WITHOUT_CUDA
 					voxelBlocks = new ORUtils::MemoryBlock<TVoxel>(allocatedSize, MEMORYDEVICE_CUDA);
-					allocationList = new ORUtils::MemoryBlock<int>(allocatedSize, MEMORYDEVICE_CUDA);
+					allocationList = new ORUtils::MemoryBlock<int>(noBlocks, MEMORYDEVICE_CUDA);
 
 					voxelBlocks->SetFrom(voxelBlocks_host, ORUtils::MemoryBlock<TVoxel>::CPU_TO_CUDA);
 					allocationList->SetFrom(allocationList_host, ORUtils::MemoryBlock<int>::CPU_TO_CUDA);
