@@ -29,6 +29,11 @@ namespace ITMLib
 		class ITMSceneReconstructionEngine
 		{
 		public:
+			/** Clear and reset a scene to set up a new empty
+			    one.
+			*/
+			virtual void ResetScene(ITMScene<TVoxel, TIndex> *scene) = 0;
+
 			/** Given a view with a new depth image, compute the
 			    visible blocks, allocate them and update the hash
 			    table so that the new image data can be integrated.

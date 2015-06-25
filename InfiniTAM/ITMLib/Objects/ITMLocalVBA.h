@@ -43,37 +43,8 @@ namespace ITMLib
 
 				allocatedSize = noBlocks * blockSize;
 
-				ORUtils::MemoryBlock<TVoxel> *voxelBlocks_host;
-				ORUtils::MemoryBlock<int> *allocationList_host;
-
-				voxelBlocks_host = new ORUtils::MemoryBlock<TVoxel>(allocatedSize, MEMORYDEVICE_CPU);
-				allocationList_host = new ORUtils::MemoryBlock<int>(noBlocks, MEMORYDEVICE_CPU);
-
-				TVoxel* voxelBlocks_host_ptr = voxelBlocks_host->GetData(MEMORYDEVICE_CPU);
-				int* allocationList_host_ptr = allocationList_host->GetData(MEMORYDEVICE_CPU);
-
-				for (int i = 0; i < noBlocks; i++) allocationList_host_ptr[i] = i;
-				for (int i = 0; i < allocatedSize; i++) voxelBlocks_host_ptr[i] = TVoxel();
-
-				lastFreeBlockId = noBlocks - 1;
-
-				if (memoryType == MEMORYDEVICE_CUDA)
-				{
-#ifndef COMPILE_WITHOUT_CUDA
-					voxelBlocks = new ORUtils::MemoryBlock<TVoxel>(allocatedSize, MEMORYDEVICE_CUDA);
-					allocationList = new ORUtils::MemoryBlock<int>(noBlocks, MEMORYDEVICE_CUDA);
-
-					voxelBlocks->SetFrom(voxelBlocks_host, ORUtils::MemoryBlock<TVoxel>::CPU_TO_CUDA);
-					allocationList->SetFrom(allocationList_host, ORUtils::MemoryBlock<int>::CPU_TO_CUDA);
-#endif
-					delete voxelBlocks_host;
-					delete allocationList_host;
-				}
-				else
-				{
-					voxelBlocks = voxelBlocks_host;
-					allocationList = allocationList_host;
-				}
+				voxelBlocks = new ORUtils::MemoryBlock<TVoxel>(allocatedSize, memoryType);
+				allocationList = new ORUtils::MemoryBlock<int>(noBlocks, memoryType);
 			}
 
 			~ITMLocalVBA(void)

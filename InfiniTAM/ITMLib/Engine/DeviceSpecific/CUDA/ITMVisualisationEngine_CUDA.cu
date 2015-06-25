@@ -22,9 +22,6 @@ inline dim3 getGridSize(Vector2i taskSize, dim3 blockSize) { return getGridSize(
 __global__ void buildVisibleList_device(const ITMHashEntry *hashTable, /*ITMHashCacheState *cacheStates, bool useSwapping,*/ int noTotalEntries,
 	int *visibleEntryIDs, int *noVisibleEntries, uchar *entriesVisibleType, Matrix4f M, Vector4f projParams, Vector2i imgSize, float voxelSize);
 
-template<typename T>
-__global__ void memsetKernel_device(T *devPtr, const T val, size_t nwords);
-
 __global__ void projectAndSplitBlocks_device(const ITMHashEntry *hashEntries, const int *visibleEntryIDs, int noVisibleEntries,
 	const Matrix4f pose_M, const Vector4f intrinsics, const Vector2i imgSize, float voxelSize, RenderingBlock *renderingBlocks,
 	uint *noTotalBlocks);
@@ -159,14 +156,10 @@ void ITMVisualisationEngine_CUDA<TVoxel, TIndex>::CreateExpectedDepths(const ITM
 {
 	Vector2f *minmaxData = renderState->renderingRangeImage->GetData(MEMORYDEVICE_CUDA);
 
-	{
-		dim3 blockSize(256);
-		dim3 gridSize((int)ceil((float)renderState->renderingRangeImage->dataSize / (float)blockSize.x));
-		Vector2f init;
-		//TODO : this could be improved a bit...
-		init.x = 0.2f; init.y = 3.0f;
-		memsetKernel_device<Vector2f> << <gridSize, blockSize >> >(minmaxData, init, renderState->renderingRangeImage->dataSize);
-	}
+	Vector2f init;
+	//TODO : this could be improved a bit...
+	init.x = 0.2f; init.y = 3.0f;
+	memsetKernel<Vector2f>(minmaxData, init, renderState->renderingRangeImage->dataSize);
 }
 
 template<class TVoxel>
@@ -178,13 +171,9 @@ void ITMVisualisationEngine_CUDA<TVoxel, ITMVoxelBlockHash>::CreateExpectedDepth
 	Vector2i imgSize = renderState->renderingRangeImage->noDims;
 	Vector2f *minmaxData = renderState->renderingRangeImage->GetData(MEMORYDEVICE_CUDA);
 
-	{
-		dim3 blockSize(256);
-		dim3 gridSize((int)ceil((float)renderState->renderingRangeImage->dataSize / (float)blockSize.x));
-		Vector2f init;
-		init.x = FAR_AWAY; init.y = VERY_CLOSE;
-		memsetKernel_device<Vector2f> << <gridSize, blockSize >> >(minmaxData, init, renderState->renderingRangeImage->dataSize);
-	}
+	Vector2f init;
+	init.x = FAR_AWAY; init.y = VERY_CLOSE;
+	memsetKernel<Vector2f>(minmaxData, init, renderState->renderingRangeImage->dataSize);
 
 	ITMRenderState_VH* renderState_vh = (ITMRenderState_VH*)renderState;
 
@@ -488,13 +477,6 @@ __global__ void buildVisibleList_device(const ITMHashEntry *hashTable, /*ITMHash
 		int offset = computePrefixSum_device<int>(hashVisibleType > 0, noVisibleEntries, blockDim.x * blockDim.y, threadIdx.x);
 		if (offset != -1) visibleEntryIDs[offset] = targetIdx;
 	}
-}
-
-template<typename T> __global__ void memsetKernel_device(T *devPtr, const T val, size_t nwords)
-{
-	size_t offset = threadIdx.x + blockDim.x * blockIdx.x;
-	if (offset >= nwords) return;
-	devPtr[offset] = val;
 }
 
 __global__ void projectAndSplitBlocks_device(const ITMHashEntry *hashEntries, const int *visibleEntryIDs, int noVisibleEntries,

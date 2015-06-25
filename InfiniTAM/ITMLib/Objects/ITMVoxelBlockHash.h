@@ -54,36 +54,8 @@ namespace ITMLib
 			ITMVoxelBlockHash(MemoryDeviceType memoryType)
 			{
 				this->memoryType = memoryType;
-
-				ORUtils::MemoryBlock<ITMHashEntry> *hashEntries_host = new ORUtils::MemoryBlock<ITMHashEntry>(noTotalEntries, MEMORYDEVICE_CPU);
-				ORUtils::MemoryBlock<int> *excessAllocationList_host = new ORUtils::MemoryBlock<int>(SDF_EXCESS_LIST_SIZE, MEMORYDEVICE_CPU);
-
-				{
-					ITMHashEntry *data = hashEntries_host->GetData(MEMORYDEVICE_CPU);
-					memset(data, 0, noTotalEntries * sizeof(ITMHashEntry));
-					for (int i = 0; i < noTotalEntries; i++) data[i].ptr = -2;
-
-					int *data_i = excessAllocationList_host->GetData(MEMORYDEVICE_CPU);
-					for (int i = 0; i < SDF_EXCESS_LIST_SIZE; i++) data_i[i] = i;
-				}
-
-				if (memoryType == MEMORYDEVICE_CUDA)
-				{
-#ifndef COMPILE_WITHOUT_CUDA
-					hashEntries = new ORUtils::MemoryBlock<ITMHashEntry>(noTotalEntries, memoryType);
-					excessAllocationList = new ORUtils::MemoryBlock<int>(SDF_EXCESS_LIST_SIZE, memoryType);
-					hashEntries->SetFrom(hashEntries_host, ORUtils::MemoryBlock<ITMHashEntry>::CPU_TO_CUDA);
-					excessAllocationList->SetFrom(excessAllocationList_host, ORUtils::MemoryBlock<int>::CPU_TO_CUDA);
-#endif
-					delete hashEntries_host;
-					delete excessAllocationList_host;
-				}
-				else
-				{
-					hashEntries = hashEntries_host;
-					excessAllocationList = excessAllocationList_host;
-				}
-				lastFreeExcessListId = SDF_EXCESS_LIST_SIZE - 1;
+				hashEntries = new ORUtils::MemoryBlock<ITMHashEntry>(noTotalEntries, memoryType);
+				excessAllocationList = new ORUtils::MemoryBlock<int>(SDF_EXCESS_LIST_SIZE, memoryType);
 			}
 
 			~ITMVoxelBlockHash(void)

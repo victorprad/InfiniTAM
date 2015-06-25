@@ -42,6 +42,12 @@ ITMDenseMapper<TVoxel,TIndex>::~ITMDenseMapper()
 }
 
 template<class TVoxel, class TIndex>
+void ITMDenseMapper<TVoxel,TIndex>::ResetScene(ITMScene<TVoxel,TIndex> *scene)
+{
+	sceneRecoEngine->ResetScene(scene);
+}
+
+template<class TVoxel, class TIndex>
 void ITMDenseMapper<TVoxel,TIndex>::ProcessFrame(const ITMView *view, const ITMTrackingState *trackingState, ITMScene<TVoxel,TIndex> *scene, ITMRenderState *renderState)
 {
 	// allocation
