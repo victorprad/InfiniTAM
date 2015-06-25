@@ -410,6 +410,10 @@ void UIEngine::Initialise(int & argc, char** argv, ImageSourceEngine *imageSourc
 	processedFrameNo = 0;
 	processedTime = 0.0f;
 
+#ifndef COMPILE_WITHOUT_CUDA
+	ITMSafeCall(cudaThreadSynchronize());
+#endif
+
 	sdkCreateTimer(&timer_instant);
 	sdkCreateTimer(&timer_average);
 

@@ -25,6 +25,10 @@ void CLIEngine::Initialise(ImageSourceEngine *imageSource, IMUSourceEngine *imuS
 	inputRawDepthImage = new ITMShortImage(imageSource->getDepthImageSize(), true, allocateGPU);
 	inputIMUMeasurement = new ITMIMUMeasurement();
 
+#ifndef COMPILE_WITHOUT_CUDA
+	ITMSafeCall(cudaThreadSynchronize());
+#endif
+
 	sdkCreateTimer(&timer_instant);
 	sdkCreateTimer(&timer_average);
 
