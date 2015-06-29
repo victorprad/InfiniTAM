@@ -138,6 +138,10 @@ void InfiniTAMApp::StartProcessing(int useLiveCamera)
 	inputRawDepthImage = new ITMShortImage(mImageSource->getDepthImageSize(), true, allocateGPU);
 	inputIMUMeasurement = new ITMIMUMeasurement();
 
+#ifndef COMPILE_WITHOUT_CUDA
+	ITMSafeCall(cudaThreadSynchronize());
+#endif
+
 	sdkCreateTimer(&timer_instant);
 	sdkCreateTimer(&timer_average);
 	sdkResetTimer(&timer_average);

@@ -72,6 +72,29 @@ ITMSceneReconstructionEngine_CUDA<TVoxel,ITMVoxelBlockHash>::~ITMSceneReconstruc
 }
 
 template<class TVoxel>
+void ITMSceneReconstructionEngine_CUDA<TVoxel,ITMVoxelBlockHash>::ResetScene(ITMScene<TVoxel, ITMVoxelBlockHash> *scene)
+{
+	int numBlocks = scene->index.getNumAllocatedVoxelBlocks();
+	int blockSize = scene->index.getVoxelBlockSize();
+
+	TVoxel *voxelBlocks_ptr = scene->localVBA.GetVoxelBlocks();
+	memsetKernel<TVoxel>(voxelBlocks_ptr, TVoxel(), numBlocks * blockSize);
+	int *vbaAllocationList_ptr = scene->localVBA.GetAllocationList();
+	fillArrayKernel<int>(vbaAllocationList_ptr, numBlocks);
+	scene->localVBA.lastFreeBlockId = numBlocks - 1;
+
+	ITMHashEntry tmpEntry;
+	memset(&tmpEntry, 0, sizeof(ITMHashEntry));
+	tmpEntry.ptr = -2;
+	ITMHashEntry *hashEntry_ptr = scene->index.GetEntries();
+	memsetKernel<ITMHashEntry>(hashEntry_ptr, tmpEntry, scene->index.noTotalEntries);
+	int *excessList_ptr = scene->index.GetExcessAllocationList();
+	fillArrayKernel<int>(excessList_ptr, SDF_EXCESS_LIST_SIZE);
+
+	scene->index.SetLastFreeExcessListId(SDF_EXCESS_LIST_SIZE - 1);
+}
+
+template<class TVoxel>
 void ITMSceneReconstructionEngine_CUDA<TVoxel, ITMVoxelBlockHash>::AllocateSceneFromDepth(ITMScene<TVoxel, ITMVoxelBlockHash> *scene, const ITMView *view, 
 	const ITMTrackingState *trackingState, const ITMRenderState *renderState, bool onlyUpdateVisibleList)
 {
@@ -206,6 +229,19 @@ void ITMSceneReconstructionEngine_CUDA<TVoxel, ITMVoxelBlockHash>::IntegrateInto
 // plain voxel array
 
 template<class TVoxel>
+void ITMSceneReconstructionEngine_CUDA<TVoxel,ITMPlainVoxelArray>::ResetScene(ITMScene<TVoxel, ITMPlainVoxelArray> *scene)
+{
+	int numBlocks = scene->index.getNumAllocatedVoxelBlocks();
+	int blockSize = scene->index.getVoxelBlockSize();
+
+	TVoxel *voxelBlocks_ptr = scene->localVBA.GetVoxelBlocks();
+	memsetKernel<TVoxel>(voxelBlocks_ptr, TVoxel(), numBlocks * blockSize);
+	int *vbaAllocationList_ptr = scene->localVBA.GetAllocationList();
+	fillArrayKernel<int>(vbaAllocationList_ptr, numBlocks);
+	scene->localVBA.lastFreeBlockId = numBlocks - 1;
+}
+
+template<class TVoxel>
 void ITMSceneReconstructionEngine_CUDA<TVoxel, ITMPlainVoxelArray>::AllocateSceneFromDepth(ITMScene<TVoxel, ITMPlainVoxelArray> *scene, const ITMView *view,
 	const ITMTrackingState *trackingState, const ITMRenderState *renderState, bool onlyUpdateVisibleList)
 {
@@ -279,6 +315,34 @@ ITMSceneReconstructionEngine_CUDA<TVoxel, ITMVoxelBlockHHash>::~ITMSceneReconstr
 
 	ITMSafeCall(cudaFree(entriesAllocType_device));
 	ITMSafeCall(cudaFree(blockCoords_device));
+}
+
+template<class TVoxel>
+void ITMSceneReconstructionEngine_CUDA<TVoxel,ITMVoxelBlockHHash>::ResetScene(ITMScene<TVoxel, ITMVoxelBlockHHash> *scene)
+{
+	int numBlocks = scene->index.getNumAllocatedVoxelBlocks();
+	int blockSize = scene->index.getVoxelBlockSize();
+
+	TVoxel *voxelBlocks_ptr = scene->localVBA.GetVoxelBlocks();
+	memsetKernel<TVoxel>(voxelBlocks_ptr, TVoxel(), numBlocks * blockSize);
+	int *vbaAllocationList_ptr = scene->localVBA.GetAllocationList();
+	fillArrayKernel<int>(vbaAllocationList_ptr, numBlocks);
+	scene->localVBA.lastFreeBlockId = numBlocks - 1;
+
+	ITMHHashEntry tmpEntry;
+	memset(&tmpEntry, 0, sizeof(ITMHHashEntry));
+	tmpEntry.ptr = -3;
+	ITMHHashEntry *hashEntry_ptr = scene->index.GetEntries();
+	memsetKernel<ITMHHashEntry>(hashEntry_ptr, tmpEntry, scene->index.noTotalEntries);
+	int *excessList_ptr = scene->index.GetExcessAllocationList();
+	for (int listId = 0; listId < SDF_HASH_NO_H_LEVELS; listId++)
+	{
+		int startPoint = listId * SDF_EXCESS_LIST_SIZE;
+		fillArrayKernel<int>(excessList_ptr + startPoint, SDF_EXCESS_LIST_SIZE);
+	}
+
+	//scene->index.SetLastFreeExcessListId(SDF_EXCESS_LIST_SIZE - 1);
+	for (int i = 0; i < SDF_HASH_NO_H_LEVELS; i++) scene->index.SetLastFreeExcessListId(i, SDF_EXCESS_LIST_SIZE - 1);
 }
 
 template<class TVoxel>

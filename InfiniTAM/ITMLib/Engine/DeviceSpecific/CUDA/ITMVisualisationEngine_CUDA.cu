@@ -163,14 +163,10 @@ void ITMVisualisationEngine_CUDA<TVoxel, TIndex>::CreateExpectedDepths(const ITM
 {
 	Vector2f *minmaxData = renderState->renderingRangeImage->GetData(MEMORYDEVICE_CUDA);
 
-	{
-		dim3 blockSize(256);
-		dim3 gridSize((int)ceil((float)renderState->renderingRangeImage->dataSize / (float)blockSize.x));
-		Vector2f init;
-		//TODO : this could be improved a bit...
-		init.x = 0.2f; init.y = 3.0f;
-		memsetKernel_device<Vector2f> << <gridSize, blockSize >> >(minmaxData, init, renderState->renderingRangeImage->dataSize);
-	}
+	Vector2f init;
+	//TODO : this could be improved a bit...
+	init.x = 0.2f; init.y = 3.0f;
+	memsetKernel<Vector2f>(minmaxData, init, renderState->renderingRangeImage->dataSize);
 }
 
 template<class TVoxel>
@@ -182,13 +178,9 @@ void ITMVisualisationEngine_CUDA<TVoxel, ITMVoxelBlockHash>::CreateExpectedDepth
 	Vector2i imgSize = renderState->renderingRangeImage->noDims;
 	Vector2f *minmaxData = renderState->renderingRangeImage->GetData(MEMORYDEVICE_CUDA);
 
-	{
-		dim3 blockSize(256);
-		dim3 gridSize((int)ceil((float)renderState->renderingRangeImage->dataSize / (float)blockSize.x));
-		Vector2f init;
-		init.x = FAR_AWAY; init.y = VERY_CLOSE;
-		memsetKernel_device<Vector2f> << <gridSize, blockSize >> >(minmaxData, init, renderState->renderingRangeImage->dataSize);
-	}
+	Vector2f init;
+	init.x = FAR_AWAY; init.y = VERY_CLOSE;
+	memsetKernel<Vector2f>(minmaxData, init, renderState->renderingRangeImage->dataSize);
 
 	ITMRenderState_VH* renderState_vh = (ITMRenderState_VH*)renderState;
 

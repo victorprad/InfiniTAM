@@ -56,40 +56,8 @@ namespace ITMLib
 			{
 				this->memoryType = memoryType;
 
-				ORUtils::MemoryBlock<ITMHHashEntry> *hashEntries_host = new ORUtils::MemoryBlock<ITMHHashEntry>(noTotalEntries, MEMORYDEVICE_CPU);
-				ORUtils::MemoryBlock<int> *excessAllocationList_host = new ORUtils::MemoryBlock<int>(SDF_EXCESS_LIST_SIZE * SDF_HASH_NO_H_LEVELS, MEMORYDEVICE_CPU);
-
-				{
-					ITMHHashEntry *data = hashEntries_host->GetData(MEMORYDEVICE_CPU);
-					memset(data, 0, noTotalEntries * sizeof(ITMHHashEntry));
-					for (int i = 0; i < noTotalEntries; i++) data[i].ptr = -3;
-
-					int *data_i = excessAllocationList_host->GetData(MEMORYDEVICE_CPU);
-					for (int listId = 0; listId < SDF_HASH_NO_H_LEVELS; listId++)
-					{
-						int startPoint = listId * SDF_EXCESS_LIST_SIZE;
-						for (int i = 0; i < SDF_EXCESS_LIST_SIZE; i++) data_i[startPoint + i] = i;
-					}
-				}
-
-				if (memoryType == MEMORYDEVICE_CUDA)
-				{
-#ifndef COMPILE_WITHOUT_CUDA
-					hashEntries = new ORUtils::MemoryBlock<ITMHHashEntry>(noTotalEntries, memoryType);
-					excessAllocationList = new ORUtils::MemoryBlock<int>(SDF_EXCESS_LIST_SIZE * SDF_HASH_NO_H_LEVELS, memoryType);
-					hashEntries->SetFrom(hashEntries_host, ORUtils::MemoryBlock<ITMHHashEntry>::CPU_TO_CUDA);
-					excessAllocationList->SetFrom(excessAllocationList_host, ORUtils::MemoryBlock<int>::CPU_TO_CUDA);
-#endif
-					delete hashEntries_host;
-					delete excessAllocationList_host;
-				}
-				else
-				{
-					hashEntries = hashEntries_host;
-					excessAllocationList = excessAllocationList_host;
-				}
-
-				for (int i = 0; i < SDF_HASH_NO_H_LEVELS; i++) lastFreeExcessListId[i] = SDF_EXCESS_LIST_SIZE - 1;
+				hashEntries = new ORUtils::MemoryBlock<ITMHHashEntry>(noTotalEntries, memoryType);
+				excessAllocationList = new ORUtils::MemoryBlock<int>(SDF_EXCESS_LIST_SIZE * SDF_HASH_NO_H_LEVELS, memoryType);
 			}
 
 			~ITMVoxelBlockHHash(void)	
@@ -115,7 +83,7 @@ namespace ITMLib
 			int* GetLastFreeExcessListIds(void) { return lastFreeExcessListId; }
 			int GetLastFreeExcessListId(int htIndex) { return lastFreeExcessListId[htIndex]; }
 			void SetLastFreeExcessListIds(const int *_lastFreeExcessListIds) { for (int l = 0; l < noLevels; ++l) this->lastFreeExcessListId[l] = _lastFreeExcessListIds[l]; }
-			void SetLastFreeExcessListId(int lastFreeExcessListId, int htIndex) { this->lastFreeExcessListId[htIndex] = lastFreeExcessListId; }
+			void SetLastFreeExcessListId(int lastFreeExcessListId, int htIndex) { this->lastFreeExcessListId[lastFreeExcessListId] = htIndex; }
 
 			/** Maximum number of total entries. */
 			int getNumAllocatedVoxelBlocks(void) { return SDF_LOCAL_BLOCK_NUM; }

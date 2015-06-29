@@ -105,3 +105,41 @@ __global__ void memsetKernel_device(T *devPtr, const T val, size_t nwords)
 	devPtr[offset] = val;
 }
 
+template<typename T>
+__global__ void memsetKernelLarge_device(T *devPtr, const T val, size_t nwords)
+{
+	size_t offset = threadIdx.x + blockDim.x * (blockIdx.x + blockIdx.y * gridDim.x);
+	if (offset >= nwords) return;
+	devPtr[offset] = val;
+}
+
+template<typename T>
+inline void memsetKernel(T *devPtr, const T val, size_t nwords)
+{
+	dim3 blockSize(256);
+	dim3 gridSize((int)ceil((float)nwords / (float)blockSize.x));
+	if (gridSize.x <= 65535) {
+		memsetKernel_device<T> <<<gridSize,blockSize>>>(devPtr, val, nwords);
+	} else {
+		gridSize.x = (int)ceil(sqrt((float)gridSize.x));
+		gridSize.y = (int)ceil((float)nwords / (float)(blockSize.x * gridSize.x));
+		memsetKernelLarge_device<T> <<<gridSize,blockSize>>>(devPtr, val, nwords);
+	}
+}
+
+template<typename T>
+__global__ void fillArrayKernel_device(T *devPtr, size_t nwords)
+{
+	size_t offset = threadIdx.x + blockDim.x * blockIdx.x;
+	if (offset >= nwords) return;
+	devPtr[offset] = offset;
+}
+
+template<typename T>
+inline void fillArrayKernel(T *devPtr, size_t nwords)
+{
+	dim3 blockSize(256);
+	dim3 gridSize((int)ceil((float)nwords / (float)blockSize.x));
+	fillArrayKernel_device<T> <<<gridSize,blockSize>>>(devPtr, nwords);
+}
+
