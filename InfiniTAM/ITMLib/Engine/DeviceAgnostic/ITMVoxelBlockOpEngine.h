@@ -15,7 +15,7 @@ static const int EMPTY_BLOCK_PTR = -3;
 static const int EMPTY_LINKED_LIST = 0;
 
 template<class TVoxel>
-_CPU_AND_GPU_CODE_ inline void ComputePerVoxelSumAndCovariance(Vector3i loc, const TVoxel* voxelBlock, Vector3f &X, Matrix3f &XXT)
+_CPU_AND_GPU_CODE_ inline void ComputePerVoxelSumAndCovariance(Vector3i loc, const TVoxel* voxelBlock, Vector3f &X, float *XXT_triangle)
 {
 	int locId = loc.x + loc.y * SDF_BLOCK_SIZE + loc.z * SDF_BLOCK_SIZE * SDF_BLOCK_SIZE;
 
@@ -32,23 +32,29 @@ _CPU_AND_GPU_CODE_ inline void ComputePerVoxelSumAndCovariance(Vector3i loc, con
 	float Xnorm2 = fabs(X.x * X.x + X.y * X.y + X.z * X.z);
 	if ((!validData) || (Xnorm2 < 1e-6)) { X = 0.0f; Xnorm2 = 1.0f; }
 
-	XXT.m00 = X.x * X.x / Xnorm2; XXT.m01 = X.x * X.y / Xnorm2; XXT.m02 = X.x * X.z / Xnorm2;
-	XXT.m10 = XXT.m01; XXT.m11 = X.y * X.y / Xnorm2; XXT.m12 = X.y * X.z / Xnorm2;
-	XXT.m20 = XXT.m02; XXT.m21 = XXT.m12; XXT.m22 = X.z * X.z / Xnorm2;
+	XXT_triangle[0] = X.x * X.x / Xnorm2; XXT_triangle[1] = X.x * X.y / Xnorm2; XXT_triangle[2] = X.x * X.z / Xnorm2;
+	XXT_triangle[3] = X.y * X.y / Xnorm2; XXT_triangle[4] = X.y * X.z / Xnorm2;
+	XXT_triangle[5] = X.z * X.z / Xnorm2;
 
 	X *= 1.0f/sqrtf(Xnorm2);
 }
 
-_CPU_AND_GPU_CODE_ inline float ComputeCovarianceDet(Vector3f X_sum, Matrix3f XXT_sum)
+_CPU_AND_GPU_CODE_ inline float ComputeCovarianceDet(Vector3f X_sum, float *XXT_triangle)
 {
 	X_sum *= 1.0f / (float)SDF_BLOCK_SIZE3;
-	XXT_sum *= 1.0f / (float)SDF_BLOCK_SIZE3;
 
-	XXT_sum.m00 -= X_sum.x * X_sum.x; XXT_sum.m01 -= X_sum.x * X_sum.y; XXT_sum.m02 -= X_sum.x * X_sum.z;
-	XXT_sum.m10 -= X_sum.y * X_sum.x; XXT_sum.m11 -= X_sum.y * X_sum.y; XXT_sum.m12 -= X_sum.y * X_sum.z;
-	XXT_sum.m20 -= X_sum.z * X_sum.x; XXT_sum.m21 -= X_sum.z * X_sum.y; XXT_sum.m22 -= X_sum.z * X_sum.z;
+	Matrix3f S;
+	S.m00 = XXT_triangle[0] / (float)SDF_BLOCK_SIZE3 - X_sum.x * X_sum.x;
+	S.m01 = XXT_triangle[1] / (float)SDF_BLOCK_SIZE3 - X_sum.x * X_sum.y;
+	S.m02 = XXT_triangle[2] / (float)SDF_BLOCK_SIZE3 - X_sum.x * X_sum.z;
+	S.m10 = S.m01;
+	S.m11 = XXT_triangle[3] / (float)SDF_BLOCK_SIZE3 - X_sum.y * X_sum.y;
+	S.m12 = XXT_triangle[4] / (float)SDF_BLOCK_SIZE3 - X_sum.y * X_sum.z;
+	S.m20 = S.m02;
+	S.m21 = S.m12;
+	S.m22 = XXT_triangle[5] / (float)SDF_BLOCK_SIZE3 - X_sum.z * X_sum.z;
 
-	return XXT_sum.det();
+	return S.det();
 }
 
 /** This function updates the hash table to perform a block split. It 

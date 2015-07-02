@@ -44,11 +44,11 @@ __global__ void computeComplexity_device(const int *liveEntryIDs, const ITMHashE
 
 	__shared__ float dim_shared[3*SDF_BLOCK_SIZE3];
 	Vector3f X_sum;
-	Matrix3f XXT_sum;
+	float XXT_triangle_sum[3+2+1];
 
-	Vector3f X; Matrix3f XXT;
+	Vector3f X; float XXT_triangle[3+2+1];
 	Vector3i loc(threadIdx.x, threadIdx.y, threadIdx.z);
-	ComputePerVoxelSumAndCovariance(loc, voxelBlock, X, XXT);
+	ComputePerVoxelSumAndCovariance(loc, voxelBlock, X, XXT_triangle);
 
 	int locId_local = loc.x + loc.y * blockDim.x + loc.z * blockDim.x * blockDim.y;
 
@@ -80,10 +80,10 @@ __global__ void computeComplexity_device(const int *liveEntryIDs, const ITMHashE
 		__syncthreads();
 	}
 
-	for (int paraId = 0; paraId < 9; paraId+=3) {
-		dim_shared[locId_local*3+0] = XXT.m[paraId+0];
-		dim_shared[locId_local*3+1] = XXT.m[paraId+1];
-		dim_shared[locId_local*3+2] = XXT.m[paraId+2];
+	for (int paraId = 0; paraId < 6; paraId+=3) {
+		dim_shared[locId_local*3+0] = XXT_triangle[paraId+0];
+		dim_shared[locId_local*3+1] = XXT_triangle[paraId+1];
+		dim_shared[locId_local*3+2] = XXT_triangle[paraId+2];
 		__syncthreads();
 
 		int sdataTargetOffset;
@@ -101,14 +101,14 @@ __global__ void computeComplexity_device(const int *liveEntryIDs, const ITMHashE
 		if (locId_local < 32) warpReduce3(dim_shared, locId_local);
 
 		if (locId_local == 0) {
-			XXT_sum.m[paraId+0] = dim_shared[0];
-			XXT_sum.m[paraId+1] = dim_shared[1];
-			XXT_sum.m[paraId+2] = dim_shared[2];
+			XXT_triangle_sum[paraId+0] = dim_shared[0];
+			XXT_triangle_sum[paraId+1] = dim_shared[1];
+			XXT_triangle_sum[paraId+2] = dim_shared[2];
 		}
 		__syncthreads();
 	}
 
-	if (locId_local == 0) complexities[htIdx] = ComputeCovarianceDet(X_sum, XXT_sum);
+	if (locId_local == 0) complexities[htIdx] = ComputeCovarianceDet(X_sum, XXT_triangle_sum);
 }
 
 template<class TVoxel>

@@ -40,13 +40,14 @@ void ITMVoxelBlockOpEngine_CPU<TVoxel,ITMVoxelBlockHHash>::ComputeComplexities(I
 
 		const TVoxel *voxelBlock = &voxelBlocks[blockId * SDF_BLOCK_SIZE3];
 
-		Vector3f X_sum(0.0f); Matrix3f XXT_sum(0.0f);
+		Vector3f X_sum(0.0f); float XXT_sum[3+2+1];
+		for (int i = 0; i < 3+2+1; ++i) XXT_sum[i] = 0.0f;
 
 		for (int z = 0; z < SDF_BLOCK_SIZE - 1; z++) for (int y = 0; y < SDF_BLOCK_SIZE - 1; y++) for (int x = 0; x < SDF_BLOCK_SIZE - 1; x++)
 		{
-			Vector3f X(0.0f); Matrix3f XXT(0.0f);
+			Vector3f X(0.0f); float XXT[3+2+1];
 			ComputePerVoxelSumAndCovariance(Vector3i(x, y, z), voxelBlock, X, XXT);
-			X_sum += X; XXT_sum += XXT;
+			X_sum += X; for (int i = 0; i < 6; ++i) XXT_sum[i] += XXT[i];
 		}
 
 		complexities[htIdx] = ComputeCovarianceDet(X_sum, XXT_sum);
