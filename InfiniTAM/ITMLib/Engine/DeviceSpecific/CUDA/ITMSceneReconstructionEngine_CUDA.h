@@ -17,6 +17,7 @@ namespace ITMLib
 		{
 		private:
 			void *allocationTempData_device;
+			void *allocationTempData_host;
 			unsigned char *entriesAllocType_device;
 			Vector4s *blockCoords_device;
 
