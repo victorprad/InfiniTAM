@@ -29,13 +29,14 @@ _CPU_AND_GPU_CODE_ inline void ComputePerVoxelSumAndCovariance(Vector3i loc, con
 	X.z = sdfLocId - TVoxel::SDF_valueToFloat(voxelBlock[locId + SDF_BLOCK_SIZE * SDF_BLOCK_SIZE].sdf);
 	if (voxelBlock[locId+SDF_BLOCK_SIZE*SDF_BLOCK_SIZE].w_depth == 0) validData = false;
 
-	float Xnorm = sqrtf((float)(X.x * X.x + X.y * X.y + X.z * X.z));
-	if (validData && fabsf(Xnorm) > 0) X = X / Xnorm;
-	else X = 0.0f;
+	float Xnorm2 = fabs(X.x * X.x + X.y * X.y + X.z * X.z);
+	if ((!validData) || (Xnorm2 < 1e-6)) { X = 0.0f; Xnorm2 = 1.0f; }
 
-	XXT.m00 = X.x * X.x; XXT.m01 = X.x * X.y; XXT.m02 = X.x * X.z;
-	XXT.m10 = X.y * X.x; XXT.m11 = X.y * X.y; XXT.m12 = X.y * X.z;
-	XXT.m20 = X.z * X.x; XXT.m21 = X.z * X.y; XXT.m22 = X.z * X.z;
+	XXT.m00 = X.x * X.x / Xnorm2; XXT.m01 = X.x * X.y / Xnorm2; XXT.m02 = X.x * X.z / Xnorm2;
+	XXT.m10 = XXT.m01; XXT.m11 = X.y * X.y / Xnorm2; XXT.m12 = X.y * X.z / Xnorm2;
+	XXT.m20 = XXT.m02; XXT.m21 = XXT.m12; XXT.m22 = X.z * X.z / Xnorm2;
+
+	X *= 1.0f/sqrtf(Xnorm2);
 }
 
 _CPU_AND_GPU_CODE_ inline float ComputeCovarianceDet(Vector3f X_sum, Matrix3f XXT_sum)
