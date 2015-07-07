@@ -1,4 +1,4 @@
-// Copyright 2014 Isis Innovation Limited and the authors of InfiniTAM
+// Copyright 2014-2015 Isis Innovation Limited and the authors of InfiniTAM
 
 #include "ITMVisualisationEngine.h"
 
@@ -20,7 +20,7 @@ void IITMVisualisationEngine::DepthToUchar4(ITMUChar4Image *dst, const ITMFloatI
 {
 	Vector4u *dest = dst->GetData(MEMORYDEVICE_CPU);
 	const float *source = src->GetData(MEMORYDEVICE_CPU);
-	int dataSize = dst->dataSize;
+	int dataSize = static_cast<int>(dst->dataSize);
 
 	memset(dst->GetData(MEMORYDEVICE_CPU), 0, dataSize * 4);
 
@@ -60,7 +60,7 @@ void IITMVisualisationEngine::NormalToUchar4(ITMUChar4Image *dst, const ITMFloat
 {
 	Vector4u *dest = dst->GetData(MEMORYDEVICE_CPU);
 	const Vector4f *source = src->GetData(MEMORYDEVICE_CPU);
-	int dataSize = dst->dataSize;
+	int dataSize = static_cast<int>(dst->dataSize);
 
 	memset(dst->GetData(MEMORYDEVICE_CPU), 0, dataSize * 4);
 	{
@@ -82,10 +82,10 @@ void IITMVisualisationEngine::WeightToUchar4(ITMUChar4Image *dst, const ITMFloat
 {
 	Vector4u *dest = dst->GetData(MEMORYDEVICE_CPU);
 	const float *source = src->GetData(MEMORYDEVICE_CPU);
-	int dataSize = dst->dataSize;
-	
+	int dataSize = static_cast<int>(dst->dataSize);
+
 	float mindepth = 1000;
-	for (int i = 0; i < src->dataSize; i++)
+	for (size_t i = 0; i < src->dataSize; i++)
 		if (source[i]>0) mindepth = MIN(mindepth, source[i]);
 
 	memset(dst->GetData(MEMORYDEVICE_CPU), 0, dataSize * 4);

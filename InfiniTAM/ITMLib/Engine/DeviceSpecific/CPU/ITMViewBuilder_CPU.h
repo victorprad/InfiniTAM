@@ -1,4 +1,4 @@
-// Copyright 2014 Isis Innovation Limited and the authors of InfiniTAM
+// Copyright 2014-2015 Isis Innovation Limited and the authors of InfiniTAM
 
 #pragma once
 
@@ -10,8 +10,8 @@ namespace ITMLib
 	{
 	public:
 		void ConvertDisparityToDepth(ITMFloatImage *depth_out, const ITMShortImage *disp_in, const ITMIntrinsics *depthIntrinsics, 
-			const ITMDisparityCalib *disparityCalib);
-		void ConvertDepthMMToFloat(ITMFloatImage *depth_out, const ITMShortImage *depth_in);
+			Vector2f disparityCalibParams);
+		void ConvertDepthAffineToFloat(ITMFloatImage *depth_out, const ITMShortImage *depth_in, Vector2f depthCalibParams);
 
 		void DepthFiltering(ITMFloatImage *image_out, const ITMFloatImage *image_in);
 		void ComputeNormalAndWeights(ITMFloat4Image *normal_out, ITMFloatImage *sigmaZ_out, const ITMFloatImage *depth_in, Vector4f intrinsic);

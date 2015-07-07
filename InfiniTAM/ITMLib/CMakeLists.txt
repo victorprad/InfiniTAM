@@ -204,12 +204,17 @@ SOURCE_GROUP(Utils FILES ${ITMLIB_UTILS_SOURCES} ${ITMLIB_UTILS_HEADERS})
 ##############################################################
 
 IF(WITH_CUDA)
+  set(CUDA_ARCH "20 30" CACHE STRING "CUDA architectures to compile for")
+  string(REPLACE " " ";" CUDA_ARCH_LIST ${CUDA_ARCH})
+  foreach(a ${CUDA_ARCH_LIST})
+    set(CUDA_ARCH_OPTIONS "${CUDA_ARCH_OPTIONS} -gencode arch=compute_${a},code=compute_${a}")
+  endforeach()
   include_directories(${CUDA_INCLUDE_DIRS})
   cuda_add_library(ITMLib
 	${ITMLIB_CPU_OBJECTS}
 	${ITMLIB_CUDA_OBJECTS}
 	${ITMLIB_COMMON_OBJECTS}
-	OPTIONS -gencode arch=compute_11,code=compute_11 -gencode arch=compute_30,code=compute_30)
+	OPTIONS "${CUDA_ARCH_OPTIONS} --use_fast_math")
   target_link_libraries(ITMLib ${CUDA_LIBRARY})
 ELSE()
   add_definitions(-DCOMPILE_WITHOUT_CUDA)

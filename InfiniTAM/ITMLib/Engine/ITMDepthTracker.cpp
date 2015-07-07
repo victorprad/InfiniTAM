@@ -1,4 +1,4 @@
-// Copyright 2014 Isis Innovation Limited and the authors of InfiniTAM
+// Copyright 2014-2015 Isis Innovation Limited and the authors of InfiniTAM
 
 #include "ITMDepthTracker.h"
 #include "../../ORUtils/Cholesky.h"
@@ -159,8 +159,8 @@ void ITMDepthTracker::TrackCamera(ITMTrackingState *trackingState, const ITMView
 	this->PrepareForEvaluation();
 
 	float f_old = 1e10, f_new;
-	int noValidPoints_old = 0, noValidPoints_new;
-	int noTotalPoints = 0;
+	int noValidPoints_new;
+//	int noValidPoints_old = 0, noTotalPoints = 0;
 
 	float hessian_good[6 * 6], hessian_new[6 * 6], A[6 * 6];
 	float nabla_good[6], nabla_new[6];
@@ -174,12 +174,12 @@ void ITMDepthTracker::TrackCamera(ITMTrackingState *trackingState, const ITMView
 		this->SetEvaluationParams(levelId);
 		if (iterationType == TRACKER_ITERATION_NONE) continue;
 
-		noTotalPoints = viewHierarchy->levels[levelId]->depth->noDims.x * viewHierarchy->levels[levelId]->depth->noDims.y;
+//		noTotalPoints = viewHierarchy->levels[levelId]->depth->noDims.x * viewHierarchy->levels[levelId]->depth->noDims.y;
 
 		Matrix4f approxInvPose = trackingState->pose_d->GetInvM();
 		ITMPose lastKnownGoodPose(*(trackingState->pose_d));
 		f_old = 1e20;
-		noValidPoints_old = 0;
+//		noValidPoints_old = 0;
 		float lambda = 1.0;
 
 		for (int iterNo = 0; iterNo < noIterationsPerLevel[levelId]; iterNo++)
@@ -195,7 +195,7 @@ void ITMDepthTracker::TrackCamera(ITMTrackingState *trackingState, const ITMView
 			} else {
 				lastKnownGoodPose.SetFrom(trackingState->pose_d);
 				f_old = f_new;
-				noValidPoints_old = noValidPoints_new;
+//				noValidPoints_old = noValidPoints_new;
 
 				for (int i = 0; i < 6*6; ++i) hessian_good[i] = hessian_new[i] / noValidPoints_new;
 				for (int i = 0; i < 6; ++i) nabla_good[i] = nabla_new[i] / noValidPoints_new;
@@ -215,7 +215,7 @@ void ITMDepthTracker::TrackCamera(ITMTrackingState *trackingState, const ITMView
 			if (HasConverged(step)) break;
 		}
 	}
-
+#if 0
 	float det = 0.0f;
 	if (iterationType == TRACKER_ITERATION_BOTH) {
 		ORUtils::Cholesky cholA(hessian_good, 6);
@@ -225,5 +225,6 @@ void ITMDepthTracker::TrackCamera(ITMTrackingState *trackingState, const ITMView
 	float finalResidual2 = ((float)noValidPoints_old * f_old + (float)(noTotalPoints - noValidPoints_old) * sqrt(distThresh[0])) / (float)noTotalPoints;
 	float finalResidual = sqrt(((float)noValidPoints_old * f_old * f_old + (float)(noTotalPoints - noValidPoints_old) * distThresh[0]) / (float)noTotalPoints);
 fprintf(stderr, "final ICP residual: det %e, r1 %f r2 %f (r %f, p %i/%i)%s\n", det, finalResidual, finalResidual2, f_old, noValidPoints_old, noTotalPoints, (finalResidual<0.03)?" !!!":"");
+#endif
 }
 

@@ -1,11 +1,11 @@
-// Copyright 2014 Isis Innovation Limited and the authors of InfiniTAM
+// Copyright 2014-2015 Isis Innovation Limited and the authors of InfiniTAM
 
 #pragma once
 
 #include "../../Utils/ITMLibDefines.h"
 
 _CPU_AND_GPU_CODE_ inline void filterSubsample(DEVICEPTR(Vector4u) *imageData_out, int x, int y, Vector2i newDims, 
-	const CONSTANT(Vector4u) *imageData_in, Vector2i oldDims)
+	const CONSTPTR(Vector4u) *imageData_in, Vector2i oldDims)
 {
 	int src_pos_x = x * 2, src_pos_y = y * 2;
 	Vector4u pixel_out, pixels_in[4];
@@ -24,7 +24,7 @@ _CPU_AND_GPU_CODE_ inline void filterSubsample(DEVICEPTR(Vector4u) *imageData_ou
 }
 
 _CPU_AND_GPU_CODE_ inline void filterSubsampleWithHoles(DEVICEPTR(float) *imageData_out, int x, int y, Vector2i newDims, 
-	const CONSTANT(float) *imageData_in, Vector2i oldDims)
+	const CONSTPTR(float) *imageData_in, Vector2i oldDims)
 {
 	int src_pos_x = x * 2, src_pos_y = y * 2;
 	float pixel_out = 0.0f, pixel_in, no_good_pixels = 0.0f;
@@ -47,7 +47,7 @@ _CPU_AND_GPU_CODE_ inline void filterSubsampleWithHoles(DEVICEPTR(float) *imageD
 }
 
 _CPU_AND_GPU_CODE_ inline void filterSubsampleWithHoles(DEVICEPTR(Vector4f) *imageData_out, int x, int y, Vector2i newDims, 
-	const CONSTANT(Vector4f) *imageData_in, Vector2i oldDims)
+	const CONSTPTR(Vector4f) *imageData_in, Vector2i oldDims)
 {
 	int src_pos_x = x * 2, src_pos_y = y * 2;
 	Vector4f pixel_out = 0.0f, pixel_in; float no_good_pixels = 0.0f;
@@ -70,7 +70,7 @@ _CPU_AND_GPU_CODE_ inline void filterSubsampleWithHoles(DEVICEPTR(Vector4f) *ima
 	imageData_out[x + y * newDims.x] = pixel_out;
 }
 
-_CPU_AND_GPU_CODE_ inline void gradientX(DEVICEPTR(Vector4s) *grad, int x, int y, const CONSTANT(Vector4u) *image, Vector2i imgSize)
+_CPU_AND_GPU_CODE_ inline void gradientX(DEVICEPTR(Vector4s) *grad, int x, int y, const CONSTPTR(Vector4u) *image, Vector2i imgSize)
 {
 	Vector4s d1, d2, d3, d_out;
 
@@ -96,7 +96,7 @@ _CPU_AND_GPU_CODE_ inline void gradientX(DEVICEPTR(Vector4s) *grad, int x, int y
 	grad[x + y * imgSize.x] = d_out;
 }
 
-_CPU_AND_GPU_CODE_ inline void gradientY(DEVICEPTR(Vector4s) *grad, int x, int y, const CONSTANT(Vector4u) *image, Vector2i imgSize)
+_CPU_AND_GPU_CODE_ inline void gradientY(DEVICEPTR(Vector4s) *grad, int x, int y, const CONSTPTR(Vector4u) *image, Vector2i imgSize)
 {
 	Vector4s d1, d2, d3, d_out;
 

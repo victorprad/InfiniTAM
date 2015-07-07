@@ -1,4 +1,4 @@
-// Copyright 2014 Isis Innovation Limited and the authors of InfiniTAM
+// Copyright 2014-2015 Isis Innovation Limited and the authors of InfiniTAM
 
 #pragma once
 
@@ -33,7 +33,7 @@ namespace ITMLib
 
 		/** This will update the minimal parameterisation from
 		    the current modelview matrix.
-		*/
+			*/
 		void SetParamsFromModelView();
 
 		/** This will update the "modelview matrix" M from the
@@ -90,3 +90,4 @@ namespace ITMLib
 		static ITMPose exp(const Vector6f& tangent);
 	};
 }
+

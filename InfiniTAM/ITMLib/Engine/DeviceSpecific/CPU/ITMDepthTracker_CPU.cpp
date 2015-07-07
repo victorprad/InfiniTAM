@@ -1,4 +1,4 @@
-// Copyright 2014 Isis Innovation Limited and the authors of InfiniTAM
+// Copyright 2014-2015 Isis Innovation Limited and the authors of InfiniTAM
 
 #include "ITMDepthTracker_CPU.h"
 #include "../../DeviceAgnostic/ITMDepthTracker.h"
@@ -74,7 +74,7 @@ int ITMDepthTracker_CPU::ComputeGandH(float &f, float *nabla, float *hessian, Ma
 	for (int r = 0; r < noPara; ++r) for (int c = r + 1; c < noPara; c++) hessian[r + c * 6] = hessian[c + r * 6];
 	
 	memcpy(nabla, sumNabla, noPara * sizeof(float));
-	f = (noValidPoints > 100) ? sqrt(sumF / noValidPoints) : 1e5f;
+	f = (noValidPoints > 100) ? sqrt(sumF) / noValidPoints : 1e5f;
 
 	return noValidPoints;
 }

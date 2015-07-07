@@ -1,3 +1,5 @@
+// Copyright 2014-2015 Isis Innovation Limited and the authors of InfiniTAM
+
 #include "InfiniTAMApp.h"
 #include "../../Engine/OpenNIEngine.h"
 #include "../../Engine/IMUSourceEngine.h"
@@ -137,6 +139,10 @@ void InfiniTAMApp::StartProcessing(int useLiveCamera)
 	inputRGBImage = new ITMUChar4Image(mImageSource->getRGBImageSize(), true, allocateGPU);
 	inputRawDepthImage = new ITMShortImage(mImageSource->getDepthImageSize(), true, allocateGPU);
 	inputIMUMeasurement = new ITMIMUMeasurement();
+
+#ifndef COMPILE_WITHOUT_CUDA
+	ITMSafeCall(cudaThreadSynchronize());
+#endif
 
 	sdkCreateTimer(&timer_instant);
 	sdkCreateTimer(&timer_average);

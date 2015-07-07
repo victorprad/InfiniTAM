@@ -1,4 +1,4 @@
-// Copyright 2014 Isis Innovation Limited and the authors of InfiniTAM
+// Copyright 2014-2015 Isis Innovation Limited and the authors of InfiniTAM
 
 #include "ITMBasicEngine.h"
 
@@ -6,6 +6,10 @@ using namespace ITMLib;
 
 ITMBasicEngine::ITMBasicEngine(const ITMLibSettings *settings, const ITMRGBDCalib *calib, Vector2i imgSize_rgb, Vector2i imgSize_d)
 {
+	// create all the things required for marching cubes and mesh extraction
+	// - uses additional memory (lots!)
+	static const bool createMeshingEngine = true;
+
 	if ((imgSize_d.x == -1) || (imgSize_d.y == -1)) imgSize_d = imgSize_rgb;
 
 	this->settings = settings;
@@ -13,20 +17,21 @@ ITMBasicEngine::ITMBasicEngine(const ITMLibSettings *settings, const ITMRGBDCali
 	this->scene = new ITMScene<ITMVoxel, ITMVoxelIndex>(&(settings->sceneParams), settings->useSwapping, 
 		settings->deviceType == ITMLibSettings::DEVICE_CUDA ? MEMORYDEVICE_CUDA : MEMORYDEVICE_CPU);
 
+	meshingEngine = NULL;
 	switch (settings->deviceType)
 	{
 	case ITMLibSettings::DEVICE_CPU:
 		lowLevelEngine = new ITMLowLevelEngine_CPU();
 		viewBuilder = new ITMViewBuilder_CPU(calib);
 		visualisationEngine = new ITMVisualisationEngine_CPU<ITMVoxel, ITMVoxelIndex>();
-		meshingEngine = new ITMMeshingEngine_CPU<ITMVoxel, ITMVoxelIndex>();
+		if (createMeshingEngine) meshingEngine = new ITMMeshingEngine_CPU<ITMVoxel, ITMVoxelIndex>();
 		break;
 	case ITMLibSettings::DEVICE_CUDA:
 #ifndef COMPILE_WITHOUT_CUDA
 		lowLevelEngine = new ITMLowLevelEngine_CUDA();
 		viewBuilder = new ITMViewBuilder_CUDA(calib);
 		visualisationEngine = new ITMVisualisationEngine_CUDA<ITMVoxel, ITMVoxelIndex>();
-		meshingEngine = new ITMMeshingEngine_CUDA<ITMVoxel, ITMVoxelIndex>();
+		if (createMeshingEngine) meshingEngine = new ITMMeshingEngine_CUDA<ITMVoxel, ITMVoxelIndex>();
 #endif
 		break;
 	case ITMLibSettings::DEVICE_METAL:
@@ -34,14 +39,16 @@ ITMBasicEngine::ITMBasicEngine(const ITMLibSettings *settings, const ITMRGBDCali
 		lowLevelEngine = new ITMLowLevelEngine_Metal();
 		viewBuilder = new ITMViewBuilder_Metal(calib);
 		visualisationEngine = new ITMVisualisationEngine_Metal<ITMVoxel, ITMVoxelIndex>();
-		meshingEngine = new ITMMeshingEngine_CPU<ITMVoxel, ITMVoxelIndex>();
+		if (createMeshingEngine) meshingEngine = new ITMMeshingEngine_CPU<ITMVoxel, ITMVoxelIndex>();
 #endif
 		break;
 	}
 
-	mesh = new ITMMesh(settings->deviceType == ITMLibSettings::DEVICE_CUDA ? MEMORYDEVICE_CUDA : MEMORYDEVICE_CPU);
+	mesh = NULL;
+	if (createMeshingEngine) mesh = new ITMMesh(settings->deviceType == ITMLibSettings::DEVICE_CUDA ? MEMORYDEVICE_CUDA : MEMORYDEVICE_CPU);
 
 	denseMapper = new ITMDenseMapper<ITMVoxel, ITMVoxelIndex>(settings);
+	denseMapper->ResetScene(scene);
 
 	imuCalibrator = new ITMIMUCalibrator_iPad();
 	tracker = ITMTrackerFactory<ITMVoxel, ITMVoxelIndex>::Instance().Make(imgSize_rgb, imgSize_d, settings, lowLevelEngine, imuCalibrator, scene);
@@ -83,13 +90,14 @@ ITMBasicEngine::~ITMBasicEngine()
 
 	delete visualisationEngine;
 
-	delete meshingEngine;
+	if (meshingEngine != NULL) delete meshingEngine;
 
-	delete mesh;
+	if (mesh != NULL) delete mesh;
 }
 
 void ITMBasicEngine::SaveSceneToMesh(const char *objFileName)
 {
+	if (mesh == NULL) return;
 	meshingEngine->MeshScene(mesh, scene);
 	mesh->WriteSTL(objFileName);
 }
@@ -158,6 +166,7 @@ void ITMBasicEngine::GetImage(ITMUChar4Image *out, GetImageType getImageType, IT
 	case ITMBasicEngine::InfiniTAM_IMAGE_FREECAMERA_SHADED:
 	case ITMBasicEngine::InfiniTAM_IMAGE_FREECAMERA_COLOUR_FROM_VOLUME:
 	case ITMBasicEngine::InfiniTAM_IMAGE_FREECAMERA_COLOUR_FROM_NORMAL:
+	{
 		IITMVisualisationEngine::RenderImageType type = IITMVisualisationEngine::RENDER_SHADED_GREYSCALE;
 		if (getImageType == ITMBasicEngine::InfiniTAM_IMAGE_FREECAMERA_COLOUR_FROM_VOLUME) type = IITMVisualisationEngine::RENDER_COLOUR_FROM_VOLUME;
 		else if (getImageType == ITMBasicEngine::InfiniTAM_IMAGE_FREECAMERA_COLOUR_FROM_NORMAL) type = IITMVisualisationEngine::RENDER_COLOUR_FROM_NORMAL;
@@ -170,6 +179,9 @@ void ITMBasicEngine::GetImage(ITMUChar4Image *out, GetImageType getImageType, IT
 		if (settings->deviceType == ITMLibSettings::DEVICE_CUDA)
 			out->SetFrom(renderState_freeview->raycastImage, ORUtils::MemoryBlock<Vector4u>::CUDA_TO_CPU);
 		else out->SetFrom(renderState_freeview->raycastImage, ORUtils::MemoryBlock<Vector4u>::CPU_TO_CPU);
+		break;
+	}
+	case ITMMainEngine::InfiniTAM_IMAGE_UNKNOWN:
 		break;
 	};
 }

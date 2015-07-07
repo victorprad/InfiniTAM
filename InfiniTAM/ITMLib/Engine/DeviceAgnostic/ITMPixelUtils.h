@@ -1,4 +1,4 @@
-// Copyright 2014 Isis Innovation Limited and the authors of InfiniTAM
+// Copyright 2014-2015 Isis Innovation Limited and the authors of InfiniTAM
 
 #pragma once
 #ifndef __METALC__
@@ -8,8 +8,8 @@
 
 #include "../../Utils/ITMLibDefines.h"
 
-template<typename T> _CPU_AND_GPU_CODE_ inline Vector4f interpolateBilinear(const CONSTANT(T) *source,
-	const THREADPTR(Vector2f) & position, const CONSTANT(Vector2i) & imgSize)
+template<typename T> _CPU_AND_GPU_CODE_ inline Vector4f interpolateBilinear(const CONSTPTR(T) *source,
+	const THREADPTR(Vector2f) & position, const CONSTPTR(Vector2i) & imgSize)
 {
 	T a, b, c, d; Vector4f result;
 	Vector2i p; Vector2f delta;
@@ -38,8 +38,8 @@ template<typename T> _CPU_AND_GPU_CODE_ inline Vector4f interpolateBilinear(cons
 	return result;
 }
 
-template<typename T> _CPU_AND_GPU_CODE_ inline Vector4f interpolateBilinear_withHoles(const CONSTANT(T) *source,
-	const THREADPTR(Vector2f) & position, const CONSTANT(Vector2i) & imgSize)
+template<typename T> _CPU_AND_GPU_CODE_ inline Vector4f interpolateBilinear_withHoles(const CONSTPTR(T) *source,
+	const THREADPTR(Vector2f) & position, const CONSTPTR(Vector2i) & imgSize)
 {
 	T a, b, c, d; Vector4f result;
 	Vector2s p; Vector2f delta;
@@ -70,8 +70,8 @@ template<typename T> _CPU_AND_GPU_CODE_ inline Vector4f interpolateBilinear_with
 	return result;
 }
 
-template<typename T> _CPU_AND_GPU_CODE_ inline float interpolateBilinear_withHoles_single(const CONSTANT(T) *source,
-	const THREADPTR(Vector2f) & position, const CONSTANT(Vector2i) & imgSize)
+template<typename T> _CPU_AND_GPU_CODE_ inline float interpolateBilinear_withHoles_single(const CONSTPTR(T) *source,
+	const THREADPTR(Vector2f) & position, const CONSTPTR(Vector2i) & imgSize)
 {
 	T a = 0, b = 0, c = 0, d = 0; float result;
 	Vector2i p; Vector2f delta;

@@ -1,34 +1,107 @@
-// Copyright 2014 Isis Innovation Limited and the authors of InfiniTAM
+// Copyright 2014-2015 Isis Innovation Limited and the authors of InfiniTAM
 
 #include <cstdlib>
 
 #include "Engine/UIEngine.h"
 #include "Engine/ImageSourceEngine.h"
+
 #include "Engine/OpenNIEngine.h"
 #include "Engine/Kinect2Engine.h"
+#include "Engine/LibUVCEngine.h"
+
 #include "ITMLib/Engine/ITMBasicEngine.h"
 #include "ITMLib/Engine/ITMMultiEngine.h"
 
 using namespace InfiniTAM::Engine;
 using namespace ITMLib;
 
+/** Create a default source of depth images from a list of command line
+    arguments. Typically, @para arg1 would identify the calibration file to
+    use, @para arg2 the colour images, @para arg3 the depth images and
+    @para arg4 the IMU images. If images are omitted, some live sources will
+    be tried.
+*/
+static void CreateDefaultImageSource(ImageSourceEngine* & imageSource, IMUSourceEngine* & imuSource, const char *arg1, const char *arg2, const char *arg3, const char *arg4)
+{
+	const char *calibFile = arg1;
+	const char *filename1 = arg2;
+	const char *filename2 = arg3;
+	const char *filename_imu = arg4;
+
+	printf("using calibration file: %s\n", calibFile);
+
+	if (filename2 != NULL)
+	{
+		printf("using rgb images: %s\nusing depth images: %s\n", filename1, filename2);
+		if (filename_imu == NULL)
+		{
+			imageSource = new ImageFileReader(calibFile, filename1, filename2);
+		}
+		else
+		{
+			printf("using imu data: %s\n", filename_imu);
+			imageSource = new RawFileReader(calibFile, filename1, filename2, Vector2i(320, 240), 0.5f);
+			imuSource = new IMUSourceEngine(filename_imu);
+		}
+	}
+
+	if (imageSource == NULL)
+	{
+		printf("trying OpenNI device: %s\n", (filename1==NULL)?"<OpenNI default device>":filename1);
+		imageSource = new OpenNIEngine(calibFile, filename1);
+		if (imageSource->getDepthImageSize().x == 0)
+		{
+			delete imageSource;
+			imageSource = NULL;
+		}
+	}
+	if (imageSource == NULL)
+	{
+		printf("trying UVC device\n");
+		imageSource = new LibUVCEngine(calibFile);
+		if (imageSource->getDepthImageSize().x == 0)
+		{
+			delete imageSource;
+			imageSource = NULL;
+		}
+	}
+	if (imageSource == NULL)
+	{
+		printf("trying MS Kinect 2 device\n");
+		imageSource = new Kinect2Engine(calibFile);
+		if (imageSource->getDepthImageSize().x == 0)
+		{
+			delete imageSource;
+			imageSource = NULL;
+		}
+	}
+
+	// this is a hack to ensure backwards compatibility in certain configurations
+	if (imageSource == NULL) return;
+	if (imageSource->calib.disparityCalib.params == Vector2f(0.0f, 0.0f))
+	{
+		imageSource->calib.disparityCalib.type = ITMDisparityCalib::TRAFO_AFFINE;
+		imageSource->calib.disparityCalib.params = Vector2f(1.0f/1000.0f, 0.0f);
+	}
+}
+
 int main(int argc, char** argv)
 try
 {
-	const char *calibFile = "";
-	const char *imagesource_part1 = NULL;
-	const char *imagesource_part2 = NULL;
-	const char *imagesource_part3 = NULL;
+	const char *arg1 = "";
+	const char *arg2 = NULL;
+	const char *arg3 = NULL;
+	const char *arg4 = NULL;
 
 	int arg = 1;
 	do {
-		if (argv[arg] != NULL) calibFile = argv[arg]; else break;
+		if (argv[arg] != NULL) arg1 = argv[arg]; else break;
 		++arg;
-		if (argv[arg] != NULL) imagesource_part1 = argv[arg]; else break;
+		if (argv[arg] != NULL) arg2 = argv[arg]; else break;
 		++arg;
-		if (argv[arg] != NULL) imagesource_part2 = argv[arg]; else break;
+		if (argv[arg] != NULL) arg3 = argv[arg]; else break;
 		++arg;
-		if (argv[arg] != NULL) imagesource_part3 = argv[arg]; else break;
+		if (argv[arg] != NULL) arg4 = argv[arg]; else break;
 	} while (false);
 
 	if (arg == 1) {
@@ -43,36 +116,17 @@ try
 	}
 
 	printf("initialising ...\n");
-	ITMLibSettings *internalSettings = new ITMLibSettings();
-
-	ImageSourceEngine *imageSource;
+	ImageSourceEngine *imageSource = NULL;
 	IMUSourceEngine *imuSource = NULL;
-	printf("using calibration file: %s\n", calibFile);
-	if (imagesource_part2 == NULL) 
+
+	CreateDefaultImageSource(imageSource, imuSource, arg1, arg2, arg3, arg4);
+	if (imageSource==NULL)
 	{
-		printf("using OpenNI device: %s\n", (imagesource_part1==NULL)?"<OpenNI default device>":imagesource_part1);
-		imageSource = new OpenNIEngine(calibFile, imagesource_part1);
-		if (imageSource->getDepthImageSize().x == 0) {
-			delete imageSource;
-			printf("trying MS Kinect device\n");
-			imageSource = new Kinect2Engine(calibFile);
-		}
-	} 
-	else
-	{
-		if (imagesource_part3 == NULL)
-		{
-			printf("using rgb images: %s\nusing depth images: %s\n", imagesource_part1, imagesource_part2);
-			imageSource = new ImageFileReader(calibFile, imagesource_part1, imagesource_part2);
-		}
-		else
-		{
-			printf("using rgb images: %s\nusing depth images: %s\nusing imu data: %s\n", imagesource_part1, imagesource_part2, imagesource_part3);
-			imageSource = new RawFileReader(calibFile, imagesource_part1, imagesource_part2, Vector2i(320, 240), 0.5f);
-			imuSource = new IMUSourceEngine(imagesource_part3);
-		}
+		std::cout << "failed to open any image stream" << std::endl;
+		return -1;
 	}
 
+	ITMLibSettings *internalSettings = new ITMLibSettings();
 	//ITMMainEngine *mainEngine = new ITMMultiEngine(internalSettings, &imageSource->calib, imageSource->getRGBImageSize(), imageSource->getDepthImageSize());
 	ITMMainEngine *mainEngine = new ITMBasicEngine(internalSettings, &imageSource->calib, imageSource->getRGBImageSize(), imageSource->getDepthImageSize());
 
@@ -83,6 +137,7 @@ try
 	delete mainEngine;
 	delete internalSettings;
 	delete imageSource;
+	if (imuSource != NULL) delete imuSource;
 	return 0;
 }
 catch(std::exception& e)

@@ -1,4 +1,4 @@
-// Copyright 2014 Isis Innovation Limited and the authors of InfiniTAM
+// Copyright 2014-2015 Isis Innovation Limited and the authors of InfiniTAM
 
 #pragma once
 
@@ -7,8 +7,8 @@
 #include "ITMRepresentationAccess.h"
 
 template<class TVoxel>
-_CPU_AND_GPU_CODE_ inline float computeUpdatedVoxelDepthInfo(DEVICEPTR(TVoxel) &voxel, const THREADPTR(Vector4f) & pt_model, const CONSTANT(Matrix4f) & M_d,
-	const CONSTANT(Vector4f) & projParams_d, float mu, int maxW, const CONSTANT(float) *depth, const CONSTANT(Vector2i) & imgSize)
+_CPU_AND_GPU_CODE_ inline float computeUpdatedVoxelDepthInfo(DEVICEPTR(TVoxel) &voxel, const THREADPTR(Vector4f) & pt_model, const CONSTPTR(Matrix4f) & M_d,
+	const CONSTPTR(Vector4f) & projParams_d, float mu, int maxW, const CONSTPTR(float) *depth, const CONSTPTR(Vector2i) & imgSize)
 {
 	Vector4f pt_camera; Vector2f pt_image;
 	float depth_measure, eta, oldF, newF;
@@ -50,8 +50,8 @@ _CPU_AND_GPU_CODE_ inline float computeUpdatedVoxelDepthInfo(DEVICEPTR(TVoxel) &
 
 
 template<class TVoxel>
-_CPU_AND_GPU_CODE_ inline void computeUpdatedVoxelColorInfo(DEVICEPTR(TVoxel) &voxel, const THREADPTR(Vector4f) & pt_model, const CONSTANT(Matrix4f) & M_rgb,
-	const CONSTANT(Vector4f) & projParams_rgb, float mu, uchar maxW, float eta, const CONSTANT(Vector4u) *rgb, const CONSTANT(Vector2i) & imgSize)
+_CPU_AND_GPU_CODE_ inline void computeUpdatedVoxelColorInfo(DEVICEPTR(TVoxel) &voxel, const THREADPTR(Vector4f) & pt_model, const CONSTPTR(Matrix4f) & M_rgb,
+	const CONSTPTR(Vector4f) & projParams_rgb, float mu, uchar maxW, float eta, const CONSTPTR(Vector4u) *rgb, const CONSTPTR(Vector2i) & imgSize)
 {
 	Vector4f pt_camera; Vector2f pt_image;
 	Vector3f rgb_measure, oldC, newC; Vector3u buffV3u;
@@ -90,11 +90,11 @@ template<bool hasColor, class TVoxel> struct ComputeUpdatedVoxelInfo;
 template<class TVoxel>
 struct ComputeUpdatedVoxelInfo<false, TVoxel> {
 	_CPU_AND_GPU_CODE_ static void compute(DEVICEPTR(TVoxel) & voxel, const THREADPTR(Vector4f) & pt_model,
-		const CONSTANT(Matrix4f) & M_d, const CONSTANT(Vector4f) & projParams_d,
-		const CONSTANT(Matrix4f) & M_rgb, const CONSTANT(Vector4f) & projParams_rgb,
+		const CONSTPTR(Matrix4f) & M_d, const CONSTPTR(Vector4f) & projParams_d,
+		const CONSTPTR(Matrix4f) & M_rgb, const CONSTPTR(Vector4f) & projParams_rgb,
 		float mu, int maxW,
-		const CONSTANT(float) *depth, const CONSTANT(Vector2i) & imgSize_d,
-		const CONSTANT(Vector4u) *rgb, const CONSTANT(Vector2i) & imgSize_rgb)
+		const CONSTPTR(float) *depth, const CONSTPTR(Vector2i) & imgSize_d,
+		const CONSTPTR(Vector4u) *rgb, const CONSTPTR(Vector2i) & imgSize_rgb)
 	{
 		computeUpdatedVoxelDepthInfo(voxel, pt_model, M_d, projParams_d, mu, maxW, depth, imgSize_d);
 	}
@@ -106,8 +106,8 @@ struct ComputeUpdatedVoxelInfo<true, TVoxel> {
 		const THREADPTR(Matrix4f) & M_d, const THREADPTR(Vector4f) & projParams_d,
 		const THREADPTR(Matrix4f) & M_rgb, const THREADPTR(Vector4f) & projParams_rgb,
 		float mu, int maxW,
-		const CONSTANT(float) *depth, const CONSTANT(Vector2i) & imgSize_d,
-		const CONSTANT(Vector4u) *rgb, const THREADPTR(Vector2i) & imgSize_rgb)
+		const CONSTPTR(float) *depth, const CONSTPTR(Vector2i) & imgSize_d,
+		const CONSTPTR(Vector4u) *rgb, const THREADPTR(Vector2i) & imgSize_rgb)
 	{
 		float eta = computeUpdatedVoxelDepthInfo(voxel, pt_model, M_d, projParams_d, mu, maxW, depth, imgSize_d);
 		if ((eta > mu) || (fabs(eta / mu) > 0.25f)) return;
@@ -116,8 +116,8 @@ struct ComputeUpdatedVoxelInfo<true, TVoxel> {
 };
 
 _CPU_AND_GPU_CODE_ inline void buildHashAllocAndVisibleTypePP(DEVICEPTR(uchar) *entriesAllocType, DEVICEPTR(uchar) *entriesVisibleType, int x, int y,
-	DEVICEPTR(Vector4s) *blockCoords, const CONSTANT(float) *depth, Matrix4f invM_d, Vector4f projParams_d, float mu, Vector2i imgSize,
-	float oneOverVoxelSize, const CONSTANT(ITMHashEntry) *hashTable, float viewFrustum_min, float viewFrustum_max)
+	DEVICEPTR(Vector4s) *blockCoords, const CONSTPTR(float) *depth, Matrix4f invM_d, Vector4f projParams_d, float mu, Vector2i imgSize,
+	float oneOverVoxelSize, const CONSTPTR(ITMHashEntry) *hashTable, float viewFrustum_min, float viewFrustum_max)
 {
 	float depth_measure; unsigned int hashIdx; int noSteps;
 	Vector4f pt_camera_f; Vector3f point_e, point, direction; Vector3s blockPos;
@@ -200,8 +200,8 @@ _CPU_AND_GPU_CODE_ inline void buildHashAllocAndVisibleTypePP(DEVICEPTR(uchar) *
 
 template<bool useSwapping>
 _CPU_AND_GPU_CODE_ inline void checkPointVisibility(THREADPTR(bool) &isVisible, THREADPTR(bool) &isVisibleEnlarged,
-	const THREADPTR(Vector4f) &pt_image, const CONSTANT(Matrix4f) & M_d, const CONSTANT(Vector4f) &projParams_d,
-	const CONSTANT(Vector2i) &imgSize)
+	const THREADPTR(Vector4f) &pt_image, const CONSTPTR(Matrix4f) & M_d, const CONSTPTR(Vector4f) &projParams_d,
+	const CONSTPTR(Vector2i) &imgSize)
 {
 	Vector4f pt_buff;
 
@@ -225,8 +225,8 @@ _CPU_AND_GPU_CODE_ inline void checkPointVisibility(THREADPTR(bool) &isVisible, 
 
 template<bool useSwapping>
 _CPU_AND_GPU_CODE_ inline void checkBlockVisibility(THREADPTR(bool) &isVisible, THREADPTR(bool) &isVisibleEnlarged,
-	const THREADPTR(Vector3s) &hashPos, const CONSTANT(Matrix4f) & M_d, const CONSTANT(Vector4f) &projParams_d,
-	const CONSTANT(float) &voxelSize, const CONSTANT(Vector2i) &imgSize)
+	const THREADPTR(Vector3s) &hashPos, const CONSTPTR(Matrix4f) & M_d, const CONSTPTR(Vector4f) &projParams_d,
+	const CONSTPTR(float) &voxelSize, const CONSTPTR(Vector2i) &imgSize)
 {
 	Vector4f pt_image;
 	float factor = (float)SDF_BLOCK_SIZE * voxelSize;

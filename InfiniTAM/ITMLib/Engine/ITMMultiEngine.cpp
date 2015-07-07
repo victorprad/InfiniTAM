@@ -85,6 +85,8 @@ void ITMMultiEngine::AddNewLocalScene(void)
 	allData.push_back(new ITMLocalScene<ITMVoxel,ITMVoxelIndex>(settings, visualisationEngine, trackingController, trackedImageSize));
 	allRelations.push_back(std::map<int, ITMPoseConstraint>());
 
+	denseMapper->ResetScene(allData.back()->scene);
+
 	if (activeDataIdx.size()<2) activeDataIdx.push_back(newIdx);
 	else {
 		for (int i = 1; (unsigned)i < activeDataIdx.size(); ++i) activeDataIdx[i-1] = activeDataIdx[i];
@@ -237,6 +239,8 @@ void ITMMultiEngine::GetImage(ITMUChar4Image *out, GetImageType getImageType, IT
 		else out->SetFrom(renderState_freeview->raycastImage, ORUtils::MemoryBlock<Vector4u>::CPU_TO_CPU);
 		break;
 	}
+	case ITMMultiEngine::InfiniTAM_IMAGE_UNKNOWN:
+		break;
 	};
 }
 

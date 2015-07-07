@@ -1,3 +1,5 @@
+// Copyright 2014-2015 Isis Innovation Limited and the authors of InfiniTAM
+
 package uk.ac.ox.robots.InfiniTAM;
 
 import android.app.Activity;
@@ -11,6 +13,10 @@ public class InfiniTAMMainScreen extends Activity
 {
 	private InfiniTAMView view;
 
+	private Thread processingThread;
+	private InfiniTAMProcessor processor;
+	private IMUReceiver imuReceiver;
+
 	/** Called when the activity is first created. */
 	@Override
 	public void onCreate(Bundle savedInstanceState)
@@ -18,7 +24,7 @@ public class InfiniTAMMainScreen extends Activity
 		super.onCreate(savedInstanceState);
 
 		view = new InfiniTAMView(this);
-		InfiniTAMApplication.getApplication().getProcessor().attachVisualisation(view);
+		processor = new InfiniTAMProcessor();
 
 		// Tell EGL to use a ES 2.0 Context
 //		view.setupEGLContextClientVersion(2);
@@ -26,16 +32,9 @@ public class InfiniTAMMainScreen extends Activity
 		// Set the renderer
 //		view.setRenderer(new InfiniTAM_Renderer());
 
+		processingThread = new Thread(processor);
+		processingThread.start();
 		setContentView(view);
-	}
-
-	@Override
-	protected void onPause() 
-	{
-		InfiniTAMApplication.getApplication().getProcessor().detachVisualisation(view);
-		super.onPause();
-		view.onPause();
-//		processor.pause();
 	}
 
 	@Override
@@ -43,15 +42,23 @@ public class InfiniTAMMainScreen extends Activity
 	{
 		super.onResume();
 		view.onResume();
-		InfiniTAMApplication.getApplication().getProcessor().attachVisualisation(view);
+		processor.attachVisualisation(view);
 //		processor.resume();
 	}
 
 	@Override
-	protected void onStop()
+	protected void onPause() 
 	{
-		InfiniTAMApplication.getApplication().getProcessor().detachVisualisation(view);
-		super.onStop();
+		processor.detachVisualisation(view);
+		super.onPause();
+		view.onPause();
+//		processor.pause();
+	}
+
+	@Override
+	protected void onDestroy()
+	{
+		super.onDestroy();
 	}
 
 }

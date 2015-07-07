@@ -1,4 +1,4 @@
-// Copyright 2014 Isis Innovation Limited and the authors of InfiniTAM
+// Copyright 2014-2015 Isis Innovation Limited and the authors of InfiniTAM
 
 #include "CLIEngine.h"
 
@@ -26,6 +26,10 @@ void CLIEngine::Initialise(ImageSourceEngine *imageSource, IMUSourceEngine *imuS
 	inputRGBImage = new ITMUChar4Image(imageSource->getRGBImageSize(), true, allocateGPU);
 	inputRawDepthImage = new ITMShortImage(imageSource->getDepthImageSize(), true, allocateGPU);
 	inputIMUMeasurement = new ITMIMUMeasurement();
+
+#ifndef COMPILE_WITHOUT_CUDA
+	ITMSafeCall(cudaThreadSynchronize());
+#endif
 
 	sdkCreateTimer(&timer_instant);
 	sdkCreateTimer(&timer_average);

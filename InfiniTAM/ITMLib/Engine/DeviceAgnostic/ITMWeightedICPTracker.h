@@ -1,4 +1,4 @@
-// Copyright 2014 Isis Innovation Limited and the authors of InfiniTAM
+// Copyright 2014-2015 Isis Innovation Limited and the authors of InfiniTAM
 
 #pragma once
 
@@ -9,9 +9,9 @@
 template<bool shortIteration, bool rotationOnly>
 _CPU_AND_GPU_CODE_ inline bool computePerPointGH_wICP(THREADPTR(float) *localNabla, THREADPTR(float) *localHessian, THREADPTR(float) &localF, THREADPTR(float) &localWeight,
 	const THREADPTR(int) & x, const THREADPTR(int) & y,
-	const CONSTANT(float) &depth, const CONSTANT(Vector2i) & viewImageSize, const CONSTANT(Vector4f) & viewIntrinsics, const CONSTANT(Vector2i) & sceneImageSize,
-	const CONSTANT(Vector4f) & sceneIntrinsics, const CONSTANT(Matrix4f) & approxInvPose, const CONSTANT(Matrix4f) & scenePose, const CONSTANT(Vector4f) *pointsMap,
-	const CONSTANT(Vector4f) *normalsMap, float distThresh)
+	const CONSTPTR(float) &depth, const CONSTPTR(Vector2i) & viewImageSize, const CONSTPTR(Vector4f) & viewIntrinsics, const CONSTPTR(Vector2i) & sceneImageSize,
+	const CONSTPTR(Vector4f) & sceneIntrinsics, const CONSTPTR(Matrix4f) & approxInvPose, const CONSTPTR(Matrix4f) & scenePose, const CONSTPTR(Vector4f) *pointsMap,
+	const CONSTPTR(Vector4f) *normalsMap, float distThresh)
 {
 	const int noPara = shortIteration ? 3 : 6;
 
@@ -113,7 +113,7 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_wICP(THREADPTR(float) *localNab
 		float mindepth = 1000.0f;
 		depth->UpdateHostFromDevice();
 		float *depth_ptr = depth->GetData(MEMORYDEVICE_CPU);
-		for (int i = 0; i < depth->dataSize; i++)
+		for (size_t i = 0; i < depth->dataSize; i++)
 			if (depth_ptr[i]>0) mindepth = MIN(mindepth, depth_ptr[i]);
 		return mindepth;
 	}

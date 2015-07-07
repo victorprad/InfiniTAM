@@ -1,4 +1,4 @@
-// Copyright 2014 Isis Innovation Limited and the authors of InfiniTAM
+// Copyright 2014-2015 Isis Innovation Limited and the authors of InfiniTAM
 
 #pragma once
 
@@ -25,6 +25,8 @@ namespace ITMLib
 		ITMSwappingEngine<TVoxel,TIndex> *swappingEngine;
 
 	public:
+		void ResetScene(ITMScene<TVoxel,TIndex> *scene);
+
 		/// Process a single frame
 		void ProcessFrame(const ITMView *view, const ITMTrackingState *trackingState, ITMScene<TVoxel,TIndex> *scene, ITMRenderState *renderState_live);
 

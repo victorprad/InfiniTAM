@@ -1,4 +1,4 @@
-// Copyright 2014 Isis Innovation Limited and the authors of InfiniTAM
+// Copyright 2014-2015 Isis Innovation Limited and the authors of InfiniTAM
 
 #include "ITMSceneReconstructionEngine_CPU.h"
 #include "../../DeviceAgnostic/ITMSceneReconstructionEngine.h"
@@ -19,6 +19,29 @@ ITMSceneReconstructionEngine_CPU<TVoxel,ITMVoxelBlockHash>::~ITMSceneReconstruct
 {
 	delete entriesAllocType;
 	delete blockCoords;
+}
+
+template<class TVoxel>
+void ITMSceneReconstructionEngine_CPU<TVoxel,ITMVoxelBlockHash>::ResetScene(ITMScene<TVoxel, ITMVoxelBlockHash> *scene)
+{
+	int numBlocks = scene->index.getNumAllocatedVoxelBlocks();
+	int blockSize = scene->index.getVoxelBlockSize();
+
+	TVoxel *voxelBlocks_ptr = scene->localVBA.GetVoxelBlocks();
+	for (int i = 0; i < numBlocks * blockSize; ++i) voxelBlocks_ptr[i] = TVoxel();
+	int *vbaAllocationList_ptr = scene->localVBA.GetAllocationList();
+	for (int i = 0; i < numBlocks; ++i) vbaAllocationList_ptr[i] = i;
+	scene->localVBA.lastFreeBlockId = numBlocks - 1;
+
+	ITMHashEntry tmpEntry;
+	memset(&tmpEntry, 0, sizeof(ITMHashEntry));
+	tmpEntry.ptr = -2;
+	ITMHashEntry *hashEntry_ptr = scene->index.GetEntries();
+	for (int i = 0; i < scene->index.noTotalEntries; ++i) hashEntry_ptr[i] = tmpEntry;
+	int *excessList_ptr = scene->index.GetExcessAllocationList();
+	for (int i = 0; i < SDF_EXCESS_LIST_SIZE; ++i) excessList_ptr[i] = i;
+
+	scene->index.SetLastFreeExcessListId(SDF_EXCESS_LIST_SIZE - 1);
 }
 
 template<class TVoxel>
@@ -274,6 +297,19 @@ ITMSceneReconstructionEngine_CPU<TVoxel,ITMPlainVoxelArray>::ITMSceneReconstruct
 template<class TVoxel>
 ITMSceneReconstructionEngine_CPU<TVoxel,ITMPlainVoxelArray>::~ITMSceneReconstructionEngine_CPU(void) 
 {}
+
+template<class TVoxel>
+void ITMSceneReconstructionEngine_CPU<TVoxel,ITMPlainVoxelArray>::ResetScene(ITMScene<TVoxel, ITMPlainVoxelArray> *scene)
+{
+	int numBlocks = scene->index.getNumAllocatedVoxelBlocks();
+	int blockSize = scene->index.getVoxelBlockSize();
+
+	TVoxel *voxelBlocks_ptr = scene->localVBA.GetVoxelBlocks();
+	for (int i = 0; i < numBlocks * blockSize; ++i) voxelBlocks_ptr[i] = TVoxel();
+	int *vbaAllocationList_ptr = scene->localVBA.GetAllocationList();
+	for (int i = 0; i < numBlocks; ++i) vbaAllocationList_ptr[i] = i;
+	scene->localVBA.lastFreeBlockId = numBlocks - 1;
+}
 
 template<class TVoxel>
 void ITMSceneReconstructionEngine_CPU<TVoxel, ITMPlainVoxelArray>::AllocateSceneFromDepth(ITMScene<TVoxel, ITMPlainVoxelArray> *scene, const ITMView *view,

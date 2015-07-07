@@ -1,4 +1,4 @@
-// Copyright 2014 Isis Innovation Limited and the authors of InfiniTAM
+// Copyright 2014-2015 Isis Innovation Limited and the authors of InfiniTAM
 
 #pragma once
 
@@ -35,14 +35,14 @@
 
 #define SDF_BLOCK_SIZE 8				// SDF block size
 #define SDF_BLOCK_SIZE3 512				// SDF_BLOCK_SIZE3 = SDF_BLOCK_SIZE * SDF_BLOCK_SIZE * SDF_BLOCK_SIZE
-#define SDF_LOCAL_BLOCK_NUM 0x10000		// Number of locally stored blocks, currently 2^17
+#define SDF_LOCAL_BLOCK_NUM 0x40000		// Number of locally stored blocks, currently 2^17
 
 #define SDF_GLOBAL_BLOCK_NUM 0x120000	// Number of globally stored blocks: SDF_BUCKET_NUM + SDF_EXCESS_LIST_SIZE
 #define SDF_TRANSFER_BLOCK_NUM 0x1000	// Maximum number of blocks transfered in one swap operation
 
-#define SDF_BUCKET_NUM 0x10000			// Number of Hash Bucket, should be 2^n and bigger than SDF_LOCAL_BLOCK_NUM, SDF_HASH_MASK = SDF_BUCKET_NUM - 1
-#define SDF_HASH_MASK 0xffff			// Used for get hashing value of the bucket index,  SDF_HASH_MASK = SDF_BUCKET_NUM - 1
-#define SDF_EXCESS_LIST_SIZE 0x4000	// 0x20000 Size of excess list, used to handle collisions. Also max offset (unsigned short) value.
+#define SDF_BUCKET_NUM 0x100000			// Number of Hash Bucket, should be 2^n and bigger than SDF_LOCAL_BLOCK_NUM, SDF_HASH_MASK = SDF_BUCKET_NUM - 1
+#define SDF_HASH_MASK 0xfffff			// Used for get hashing value of the bucket index,  SDF_HASH_MASK = SDF_BUCKET_NUM - 1
+#define SDF_EXCESS_LIST_SIZE 0x20000	// 0x20000 Size of excess list, used to handle collisions. Also max offset (unsigned short) value.
 
 //////////////////////////////////////////////////////////////////////////
 // Voxel Hashing data structures
@@ -56,7 +56,7 @@ struct ITMHashEntry
 	/** Position of the corner of the 8x8x8 volume, that identifies the entry. */
 	Vector3s pos;
 	/** Offset in the excess list. */
-	short offset;
+	int offset;
 	/** Pointer to the voxel block array.
 	    - >= 0 identifies an actual allocated entry in the voxel block array
 	    - -1 identifies an entry that has been removed (swapped out)
@@ -82,7 +82,7 @@ struct ITMVoxel_f_rgb
 	_CPU_AND_GPU_CODE_ static float SDF_valueToFloat(float x) { return x; }
 	_CPU_AND_GPU_CODE_ static float SDF_floatToValue(float x) { return x; }
 
-	static const CONSTANT(bool) hasColorInformation = true;
+	static const CONSTPTR(bool) hasColorInformation = true;
 
 	/** Value of the truncated signed distance transformation. */
 	float sdf;
@@ -111,7 +111,7 @@ struct ITMVoxel_s_rgb
 	_CPU_AND_GPU_CODE_ static float SDF_valueToFloat(float x) { return (float)(x) / 32767.0f; }
 	_CPU_AND_GPU_CODE_ static short SDF_floatToValue(float x) { return (short)((x) * 32767.0f); }
 
-	static const CONSTANT(bool) hasColorInformation = true;
+	static const CONSTPTR(bool) hasColorInformation = true;
 
 	/** Value of the truncated signed distance transformation. */
 	short sdf;
@@ -139,7 +139,7 @@ struct ITMVoxel_s
 	_CPU_AND_GPU_CODE_ static float SDF_valueToFloat(float x) { return (float)(x) / 32767.0f; }
 	_CPU_AND_GPU_CODE_ static short SDF_floatToValue(float x) { return (short)((x) * 32767.0f); }
 
-	static const CONSTANT(bool) hasColorInformation = false;
+	static const CONSTPTR(bool) hasColorInformation = false;
 
 	/** Value of the truncated signed distance transformation. */
 	short sdf;
@@ -161,7 +161,7 @@ struct ITMVoxel_f
 	_CPU_AND_GPU_CODE_ static float SDF_valueToFloat(float x) { return x; }
 	_CPU_AND_GPU_CODE_ static float SDF_floatToValue(float x) { return x; }
 
-	static const CONSTANT(bool) hasColorInformation = false;
+	static const CONSTPTR(bool) hasColorInformation = false;
 
 	/** Value of the truncated signed distance transformation. */
 	float sdf;

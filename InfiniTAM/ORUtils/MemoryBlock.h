@@ -1,4 +1,4 @@
-// Copyright 2014 Isis Innovation Limited and the authors of InfiniTAM
+// Copyright 2014-2015 Isis Innovation Limited and the authors of InfiniTAM
 
 #pragma once
 
@@ -53,7 +53,7 @@ namespace ORUtils
 		enum MemoryCopyDirection { CPU_TO_CPU, CPU_TO_CUDA, CUDA_TO_CPU, CUDA_TO_CUDA };
 
 		/** Total number of allocated entries in the data array. */
-		int dataSize;
+		size_t dataSize;
 
 		/** Get the data pointer on CPU or GPU. */
 		inline DEVICEPTR(T)* GetData(MemoryDeviceType memoryType)
@@ -89,7 +89,7 @@ namespace ORUtils
 		on CPU only or GPU only or on both. CPU might also use the
 		Metal compatible allocator (i.e. with 16384 alignment).
 		*/
-		MemoryBlock(int dataSize, bool allocate_CPU, bool allocate_CUDA, bool metalCompatible = true)
+		MemoryBlock(size_t dataSize, bool allocate_CPU, bool allocate_CUDA, bool metalCompatible = true)
 		{
 			this->isAllocated_CPU = false;
 			this->isAllocated_CUDA = false;
@@ -103,7 +103,7 @@ namespace ORUtils
 		on CPU only or on GPU only. CPU will be Metal compatible if Metal
 		is enabled.
 		*/
-		MemoryBlock(int dataSize, MemoryDeviceType memoryType)
+		MemoryBlock(size_t dataSize, MemoryDeviceType memoryType)
 		{
 			this->isAllocated_CPU = false;
 			this->isAllocated_CUDA = false;
@@ -128,14 +128,14 @@ namespace ORUtils
 		}
 
 		/** Transfer data from CPU to GPU, if possible. */
-		void UpdateDeviceFromHost() {
+		void UpdateDeviceFromHost() const {
 #ifndef COMPILE_WITHOUT_CUDA
 			if (isAllocated_CUDA && isAllocated_CPU)
 				ORcudaSafeCall(cudaMemcpy(data_cuda, data_cpu, dataSize * sizeof(T), cudaMemcpyHostToDevice));
 #endif
 		}
 		/** Transfer data from GPU to CPU, if possible. */
-		void UpdateHostFromDevice() {
+		void UpdateHostFromDevice() const {
 #ifndef COMPILE_WITHOUT_CUDA
 			if (isAllocated_CUDA && isAllocated_CPU)
 				ORcudaSafeCall(cudaMemcpy(data_cpu, data_cuda, dataSize * sizeof(T), cudaMemcpyDeviceToHost));
@@ -170,12 +170,11 @@ namespace ORUtils
 		/** Allocate image data of the specified size. If the
 		data has been allocated before, the data is freed.
 		*/
-		void Allocate(int dataSize, bool allocate_CPU, bool allocate_CUDA, bool metalCompatible)
+		void Allocate(size_t dataSize, bool allocate_CPU, bool allocate_CUDA, bool metalCompatible)
 		{
 			Free();
 
 			this->dataSize = dataSize;
-			if (dataSize <=0) return;
 
 			if (allocate_CPU)
 			{
@@ -190,16 +189,19 @@ namespace ORUtils
 				switch (allocType)
 				{
 				case 0:
-					data_cpu = new T[dataSize];
+					if (dataSize == 0) data_cpu = NULL;
+					else data_cpu = new T[dataSize];
 					break;
 				case 1:
 #ifndef COMPILE_WITHOUT_CUDA
-					ORcudaSafeCall(cudaMallocHost((void**)&data_cpu, dataSize * sizeof(T)));
+					if (dataSize == 0) data_cpu = NULL;
+					else ORcudaSafeCall(cudaMallocHost((void**)&data_cpu, dataSize * sizeof(T)));
 #endif
 					break;
 				case 2:
 #ifdef COMPILE_WITH_METAL
-					allocateMetalData((void**)&data_cpu, (void**)&data_metalBuffer, dataSize * sizeof(T), true);
+					if (dataSize == 0) data_cpu = NULL;
+					else allocateMetalData((void**)&data_cpu, (void**)&data_metalBuffer, dataSize * sizeof(T), true);
 #endif
 					break;
 				}
@@ -211,7 +213,8 @@ namespace ORUtils
 			if (allocate_CUDA)
 			{
 #ifndef COMPILE_WITHOUT_CUDA
-				ORcudaSafeCall(cudaMalloc((void**)&data_cuda, dataSize * sizeof(T)));
+				if (dataSize == 0) data_cuda = NULL;
+				else ORcudaSafeCall(cudaMalloc((void**)&data_cuda, dataSize * sizeof(T)));
 				this->isAllocated_CUDA = allocate_CUDA;
 #endif
 			}
@@ -232,16 +235,16 @@ namespace ORUtils
 				switch (allocType)
 				{
 				case 0:
-					delete[] data_cpu;
+					if (data_cpu != NULL) delete[] data_cpu;
 					break;
 				case 1:
 #ifndef COMPILE_WITHOUT_CUDA
-					ORcudaSafeCall(cudaFreeHost(data_cpu));
+					if (data_cpu != NULL) ORcudaSafeCall(cudaFreeHost(data_cpu));
 #endif
 					break;
 				case 2:
 #ifdef COMPILE_WITH_METAL
-					freeMetalData((void**)&data_cpu, (void**)&data_metalBuffer, dataSize * sizeof(T), true);
+					if (data_cpu != NULL) freeMetalData((void**)&data_cpu, (void**)&data_metalBuffer, dataSize * sizeof(T), true);
 #endif
 					break;
 				}
@@ -253,7 +256,7 @@ namespace ORUtils
 			if (isAllocated_CUDA)
 			{
 #ifndef COMPILE_WITHOUT_CUDA
-				ORcudaSafeCall(cudaFree(data_cuda));
+				if (data_cuda != NULL) ORcudaSafeCall(cudaFree(data_cuda));
 #endif
 				isAllocated_CUDA = false;
 			}

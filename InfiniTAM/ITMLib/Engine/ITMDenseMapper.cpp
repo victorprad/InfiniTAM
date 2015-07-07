@@ -1,4 +1,4 @@
-// Copyright 2014 Isis Innovation Limited and the authors of InfiniTAM
+// Copyright 2014-2015 Isis Innovation Limited and the authors of InfiniTAM
 
 #include "ITMDenseMapper.h"
 
@@ -39,6 +39,12 @@ ITMDenseMapper<TVoxel,TIndex>::~ITMDenseMapper()
 {
 	delete sceneRecoEngine;
 	if (swappingEngine!=NULL) delete swappingEngine;
+}
+
+template<class TVoxel, class TIndex>
+void ITMDenseMapper<TVoxel,TIndex>::ResetScene(ITMScene<TVoxel,TIndex> *scene)
+{
+	sceneRecoEngine->ResetScene(scene);
 }
 
 template<class TVoxel, class TIndex>
