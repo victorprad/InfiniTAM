@@ -148,6 +148,11 @@ void ITMDepthTracker::TrackCamera(ITMTrackingState *trackingState, const ITMView
 	this->PrepareForEvaluation();
 
 	float f_old = 1e10, f_new;
+	int noValidPoints_new;
+
+	float hessian_good[6 * 6], hessian_new[6 * 6], A[6 * 6];
+	float nabla_good[6], nabla_new[6];
+	float step[6];
 
 	for (int levelId = viewHierarchy->noLevels - 1; levelId >= noICPLevel; levelId--)
 	{
@@ -156,23 +161,32 @@ void ITMDepthTracker::TrackCamera(ITMTrackingState *trackingState, const ITMView
 
 		Matrix4f approxInvPose = trackingState->pose_d->GetInvM();
 		ITMPose lastKnownGoodPose(*(trackingState->pose_d));
-		f_old = 1e10;
+		f_old = 1e20;
+		float lambda = 1.0;
 
 		for (int iterNo = 0; iterNo < noIterationsPerLevel[levelId]; iterNo++)
 		{
 			// evaluate error function and gradients
-			int noValidPoints = this->ComputeGandH(f_new, nabla, hessian, approxInvPose);
+			noValidPoints_new = this->ComputeGandH(f_new, nabla_new, hessian_new, approxInvPose);
 
 			// check if error increased. If so, revert
-			if ((noValidPoints <= 0)||(f_new > f_old)) {
+			if ((noValidPoints_new <= 0)||(f_new > f_old)) {
 				trackingState->pose_d->SetFrom(&lastKnownGoodPose);
-				break;
+				approxInvPose = trackingState->pose_d->GetInvM();
+				lambda *= 10.0f;
+			} else {
+				lastKnownGoodPose.SetFrom(trackingState->pose_d);
+				f_old = f_new;
+
+				for (int i = 0; i < 6*6; ++i) hessian_good[i] = hessian_new[i] / noValidPoints_new;
+				for (int i = 0; i < 6; ++i) nabla_good[i] = nabla_new[i] / noValidPoints_new;
+				lambda /= 10.0f;
 			}
-			lastKnownGoodPose.SetFrom(trackingState->pose_d);
-			f_old = f_new;
+			for (int i = 0; i < 6*6; ++i) A[i] = hessian_good[i];
+			for (int i = 0; i < 6; ++i) A[i+i*6] *= 1.0f + lambda;
 
 			// compute a new step and make sure we've got an SE3
-			ComputeDelta(step, nabla, hessian, iterationType != TRACKER_ITERATION_BOTH);
+			ComputeDelta(step, nabla_good, A, iterationType != TRACKER_ITERATION_BOTH);
 			ApplyDelta(approxInvPose, step, approxInvPose);
 			trackingState->pose_d->SetInvM(approxInvPose);
 			trackingState->pose_d->Coerce();
