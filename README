@@ -15,30 +15,39 @@ This is the software bundle "InfiniTAM", created and maintained by:
 
 1.1 Requirements
 
-Several 3rd party libraries are needed for compiling InfninTAM. The given
+Several 3rd party libraries are needed for compiling InfiniTAM. The given
 version numbers are checked and working, but different versions might be
 fine as well. Some of the libraries are optional, and skipping them will
 reduce functionality.
 
-  - cmake (e.g. version 2.8.10.2)
+  - cmake (e.g. version 2.8.10.2 or 3.2.3)
     REQUIRED for Linux, unless you write your own build system
     OPTIONAL for MS Windows, if you use MSVC instead
     available at http://www.cmake.org/
 
-  - OpenGL / GLUT (e.g. freeglut 2.8.0)
+  - OpenGL / GLUT (e.g. freeglut 2.8.0 or 3.0.0)
     REQUIRED for the visualisation
     the library should run without
     available at http://freeglut.sourceforge.net/
 
-  - CUDA (e.g. version 6.0)
+  - CUDA (e.g. version 6.0 or 7.0)
     OPTIONAL but REQUIRED for all GPU accelerated code
     at least with cmake it is still possible to compile the CPU part without
     available at https://developer.nvidia.com/cuda-downloads
 
   - OpenNI (e.g. version 2.2.0.33)
-    OPTIONAL but REQUIRED to get live images from the suitable hardware
+    OPTIONAL but REQUIRED to get live images from suitable hardware
     also make sure you have freenect/OpenNI2-FreenectDriver if you need it
     available at http://structure.io/openni
+
+  - libpng (e.g. version 1.6)
+    OPTIONAL, allows to read PNG input files
+    available at http://libpng.org
+
+  - libuvc (e.g. github version from 2015-JUL-10)
+    OPTIONAL, allows to get live images from Intel Realsense cameras
+    currently this is only in branch mcguire-steve/master
+    available at https://github.com/mcguire-steve/libuvc
 
   - doxygen (e.g. version 1.8.2)
     OPTIONAL, builds a nice reference manual
@@ -91,10 +100,10 @@ experience any problems.
 ------------------
 
   The build process should result in an executable InfiniTAM, which is the
-main and only sample program. If compiled with OpenNI support, it should run
-out-of-the-box without problems for live reconstruction. If you have
-calibration information for your specific device, you can pass it as the first
-argument to the program, e.g.:
+main sample program. For a version without visualisation, try InfiniTAM_cli.
+If compiled with OpenNI support, both should run out-of-the-box without
+problems for live reconstruction. If you have calibration information for your
+specific device, you can pass it as the first argument to the program, e.g.:
 
   $ ./InfiniTAM Teddy/calib.txt
 
@@ -110,12 +119,20 @@ by a running number, accordingly.
 3. Additional Documentation
 ---------------------------
 
-  Apart from the doxygen documentation there should be a technical report
+  Apart from the doxygen documentation there should also be a technical report
 shipped along with this package. It is also available from the official project
-website.
+website. Further technical information is to be found in:
+
+Olaf Kaehler, Victor Adrian Prisacariu, Carl Yuheng Ren, Xin Sun, Philip Torr,
+David Murray. Very High Frame Rate Volumetric Integration of Depth Images on
+Mobile Devices. IEEE Transactions on Visualization and Computer Graphics
+(Proceedings International Symposium on Mixed and Augmented Reality 2015),
+22(11), 2015.
+
 
 
 History:
 
 2014-OCT-06: initial public release
+2015-JUL-10: updated dependencies, added reference to ISMAR paper
 
