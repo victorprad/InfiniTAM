@@ -94,6 +94,12 @@ ITMMainEngine::~ITMMainEngine()
 	if (mesh != NULL) delete mesh;
 }
 
+ITMMesh* ITMMainEngine::UpdateMesh(void)
+{
+	if (mesh != NULL) meshingEngine->MeshScene(mesh, scene);
+	return mesh;
+}
+
 void ITMMainEngine::SaveSceneToMesh(const char *objFileName)
 {
 	if (mesh == NULL) return;
