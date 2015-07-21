@@ -1,19 +1,21 @@
-This is the software bundle "InfiniTAM", created and maintained by:
+#InfiniTAM
+
+This is the software bundle "InfiniTAM",  the current version is maintained by:
 
   Victor Adrian Prisacariu <victor@robots.ox.ac.uk>
   Olaf Kaehler <olaf@robots.ox.ac.uk>
-  Ming Ming Cheng <cmm.thu@gmail.com>
   Carl Yuheng Ren <carl@robots.ox.ac.uk>
-  Julien Valentin <julien.valentin@eng.ox.ac.uk>
+  Ming Ming Cheng <cmm.thu@gmail.com>
+  Xin Sun <xin.sun@st-hughs.ox.ac.uk>
   Philip H.S. Torr <philip.torr@eng.ox.ac.uk>
   Ian D Reid <ian.reid@adelaide.edu.au>
   David W Murray <dwm@robots.ox.ac.uk>
 
+----------
 
-1. Building the System
-----------------------
+#1. Building the System
 
-1.1 Requirements
+###1.1 Requirements
 
 Several 3rd party libraries are needed for compiling InfiniTAM. The given
 version numbers are checked and working, but different versions might be
@@ -53,23 +55,23 @@ reduce functionality.
     OPTIONAL, builds a nice reference manual
     available at http://www.doxygen.org/
 
-1.2 Build Process
+###1.2 Build Process
 
   To compile the system, use the standard cmake approach:
-
+```
   $ mkdir build
   $ cd build
   $ cmake /path/to/InfiniTAM -DOPEN_NI_ROOT=/path/to/OpenNI2/
   $ make
-
+```
   To create a doxygen documentation, just run doxygen:
-
+```
   $ doxygen Doxyfile
-
+```
   This will create a new directory doxygen-html/ containing all the
 documentation.
 
-1.3 Odds and Ends
+###1.3 Odds and Ends
 
   Padding the data structure ITMVoxel in ITMLibDefines.h with one extra byte
 may or may not improve the overall performance on certain GPUs. On a NVidia
@@ -78,17 +80,17 @@ need the speed.
 
   On Mac OS X 10.9 there are currently some issues with libc++ vs. libstdc++ in
 conjunction with CUDA. They eventually manifest in error messages like:
-"
+```
 Undefined symbols for architecture x86_64:
   "std::ios_base::Init::Init()", referenced from:
       __GLOBAL__I_a in libITMLib.a(ITMLib_generated_ITMColorTracker_CUDA.cu.o)
       __GLOBAL__I_a in libITMLib.a(ITMLib_generated_ITMDepthTracker_CUDA.cu.o)
      [...]
-"
+```
 In the current version of InfiniTAM these errors are avoided by specifying
-CMAKE_CXX_FLAGS=-stdlib=libstdc++ whenever clang is detected as complier.
+```CMAKE_CXX_FLAGS=-stdlib=libstdc++``` whenever clang is detected as complier.
 However, future versions of CUDA might not require this anymore or even get
-confused and/or require CUDA_HOST_COMPILER=/usr/bin/clang instead.
+confused and/or require ```CUDA_HOST_COMPILER=/usr/bin/clang``` instead.
 
   If a version of GLUT other than freeglut is used, the InfiniTAM sample
 application has problems on exit, as it is currently not explicitly cleaning
@@ -96,43 +98,71 @@ up CUDA memory or closing the OpenNI device. Use freeglut to avoid this if you
 experience any problems.
 
 
-2. Sample Programs
-------------------
+#2. Sample Programs
+
 
   The build process should result in an executable InfiniTAM, which is the
 main sample program. For a version without visualisation, try InfiniTAM_cli.
 If compiled with OpenNI support, both should run out-of-the-box without
 problems for live reconstruction. If you have calibration information for your
 specific device, you can pass it as the first argument to the program, e.g.:
-
+```
   $ ./InfiniTAM Teddy/calib.txt
-
+```
   If no OpenNI support has been compiled in, the program can be used for
 offline processing:
-
+```
   $ ./InfiniTAM Teddy/calib.txt Teddy/Frames/%04i.ppm Teddy/Frames/%04i.pgm
-
+```
   The arguments are essentially masks for sprintf and the %04i will be replaced
 by a running number, accordingly.
 
 
-3. Additional Documentation
----------------------------
+#3. Additional Documentation
+
 
   Apart from the doxygen documentation there should also be a technical report
 shipped along with this package. It is also available from the official project
 website. Further technical information is to be found in:
+```
+@article{InfiniTAM_ISMAR_2015,
+author = {{K{\"a}hler}, O. and
+		  {Prisacariu}, V.~A. and
+		  {Ren}, C.~Y. and
+		  {Sun}, X. and
+		  {Torr}, P.~H.~S and
+		  {Murray}, D.~W.},
+title = "{Very High Frame Rate Volumetric Integration of Depth Images on
+Mobile Device}",
+journal = "{IEEE Transactions on Visualization and Computer Graphics
+(Proceedings International Symposium on Mixed and Augmented Reality 2015}",
+volume = {22},
+number = {11},
+year = 2015
+```
 
-Olaf Kaehler, Victor Adrian Prisacariu, Carl Yuheng Ren, Xin Sun, Philip Torr,
-David Murray. Very High Frame Rate Volumetric Integration of Depth Images on
-Mobile Devices. IEEE Transactions on Visualization and Computer Graphics
-(Proceedings International Symposium on Mixed and Augmented Reality 2015),
-22(11), 2015.
+and
 
+```
+@article{2014arXiv1410.0925P,
+author = {{Prisacariu}, V.~A. and
+		  {K{\"a}hler}, O. and
+		  {Cheng}, M.~M. and
+		  {Ren}, C.~Y. and
+		  {Valentin}, J. and
+		  {Reid}, I.~D. and
+		  {Murray}, D.~W.},
+title = "{A Framework for the Volumetric Integration of Depth Images}",
+journal = {ArXiv e-prints},
+archivePrefix = "arXiv",
+eprint = {1410.0925},
+year = 2014
+}
+```
 
+------
 
-History:
+###History:
 
 2014-OCT-06: initial public release
 2015-JUL-10: updated dependencies, added reference to ISMAR paper
-
