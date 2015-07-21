@@ -3,12 +3,19 @@
 This is the software bundle "InfiniTAM",  the current version is maintained by:
 
   Victor Adrian Prisacariu <victor@robots.ox.ac.uk>
+
   Olaf Kaehler <olaf@robots.ox.ac.uk>
+
   Carl Yuheng Ren <carl@robots.ox.ac.uk>
+
   Ming Ming Cheng <cmm.thu@gmail.com>
+
   Xin Sun <xin.sun@st-hughs.ox.ac.uk>
+
   Philip H.S. Torr <philip.torr@eng.ox.ac.uk>
+
   Ian D Reid <ian.reid@adelaide.edu.au>
+  
   David W Murray <dwm@robots.ox.ac.uk>
 
 ----------
