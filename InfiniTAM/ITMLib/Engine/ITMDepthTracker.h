@@ -35,10 +35,6 @@ namespace ITMLib
 
 			float terminationThreshold;
 
-			float hessian[6 * 6];
-			float nabla[6];
-			float step[6];
-
 			void PrepareForEvaluation();
 			void SetEvaluationParams(int levelId);
 
