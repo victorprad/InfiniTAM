@@ -420,7 +420,7 @@ void ITMSceneReconstructionEngine_CPU<TVoxel,ITMVoxelBlockHHash>::AllocateSceneF
 	int *voxelAllocationList = scene->localVBA.GetAllocationList();
 	int *excessAllocationList = scene->index.GetExcessAllocationList();
 	ITMHHashEntry *hashTable = scene->index.GetEntries();
-	ITMHashCacheState *cacheStates = scene->useSwapping ? scene->globalCache->GetCacheStates(false) : 0;
+	ITMHashSwapState *swapStates = scene->useSwapping ? scene->globalCache->GetSwapStates(false) : 0;
 	int *visibleEntryIDs = renderState_vh->GetVisibleEntryIDs();
 	uchar *entriesVisibleType = renderState_vh->GetEntriesVisibleType();
 	int noTotalEntries = scene->index.noTotalEntries;
@@ -539,7 +539,7 @@ void ITMSceneReconstructionEngine_CPU<TVoxel,ITMVoxelBlockHHash>::AllocateSceneF
 
 		if (useSwapping)
 		{
-			if (entriesVisibleType[targetIdx] > 0 && cacheStates[targetIdx].cacheFromHost != 2) cacheStates[targetIdx].cacheFromHost = 1;
+			if (entriesVisibleType[targetIdx] > 0 && swapStates[targetIdx].state != 2) swapStates[targetIdx].state = 1;
 		}
 
 		if (hashVisibleType > 0)

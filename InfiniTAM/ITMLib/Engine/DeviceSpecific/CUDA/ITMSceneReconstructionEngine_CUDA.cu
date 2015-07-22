@@ -371,7 +371,7 @@ void ITMSceneReconstructionEngine_CUDA<TVoxel, ITMVoxelBlockHHash>::AllocateScen
 	int *voxelAllocationList = scene->localVBA.GetAllocationList();
 	int *excessAllocationList = scene->index.GetExcessAllocationList();
 	ITMHHashEntry *hashTable = scene->index.GetEntries();
-	ITMHashCacheState *cacheStates = scene->useSwapping ? scene->globalCache->GetCacheStates(true) : 0;
+	ITMHashSwapState *swapStates = scene->useSwapping ? scene->globalCache->GetSwapStates(true) : 0;
 
 	int noTotalEntries = scene->index.noTotalEntries;
 	int *lastFreeExcessListIds = scene->index.GetLastFreeExcessListIds();
@@ -426,9 +426,9 @@ void ITMSceneReconstructionEngine_CUDA<TVoxel, ITMVoxelBlockHHash>::AllocateScen
 		int levelOffset = level * noTotalEntriesPerLevel;
 
 		if (useSwapping)
-			buildVisibleList_device<true> << <gridSizeAL, cudaBlockSizeAL >> >(hashTable + levelOffset, cacheStates + levelOffset, noTotalEntriesPerLevel, visibleEntryIDs, (AllocationTempData*)allocationTempData_device, entriesVisibleType + levelOffset, M_d, projParams_d, depthImgSize, voxelSize, levelOffset);
+			buildVisibleList_device<true> << <gridSizeAL, cudaBlockSizeAL >> >(hashTable + levelOffset, swapStates + levelOffset, noTotalEntriesPerLevel, visibleEntryIDs, (AllocationTempData*)allocationTempData_device, entriesVisibleType + levelOffset, M_d, projParams_d, depthImgSize, voxelSize, levelOffset);
 		else
-			buildVisibleList_device<false> << <gridSizeAL, cudaBlockSizeAL >> >(hashTable + levelOffset, cacheStates + levelOffset, noTotalEntriesPerLevel, visibleEntryIDs, (AllocationTempData*)allocationTempData_device, entriesVisibleType + levelOffset, M_d, projParams_d, depthImgSize, voxelSize, levelOffset);
+			buildVisibleList_device<false> << <gridSizeAL, cudaBlockSizeAL >> >(hashTable + levelOffset, swapStates + levelOffset, noTotalEntriesPerLevel, visibleEntryIDs, (AllocationTempData*)allocationTempData_device, entriesVisibleType + levelOffset, M_d, projParams_d, depthImgSize, voxelSize, levelOffset);
 	}
 
 	if (useSwapping)

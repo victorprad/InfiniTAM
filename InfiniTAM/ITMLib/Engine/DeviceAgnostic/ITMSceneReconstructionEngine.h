@@ -165,14 +165,10 @@ _CPU_AND_GPU_CODE_ inline void buildHashAllocAndVisibleTypePP(DEVICEPTR(uchar) *
 		if (!isFound)
 		{
 			bool isExcess = false;
-<<<<<<< HEAD
-			if (hashEntry.ptr >= 0) //search excess list only if the ordered part is full
+			if (hashEntry.ptr >= -1) //seach excess list only if there is no room in ordered part
 				// TODO: This causes a bug in case blocks ever get deleted by setting ptr to -1
 				// as there might be an excess list further back
 				// also, in the actual allocation the offset might get reset to 0 in such cases
-=======
-			if (hashEntry.ptr >= -1) //seach excess list only if there is no room in ordered part
->>>>>>> master
 			{
 				while (hashEntry.offset >= 1)
 				{
