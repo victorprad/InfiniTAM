@@ -190,7 +190,7 @@ void UIEngine::glutKeyUpFunction(unsigned char key, int x, int y)
 			uiEngine->outImageType[0] = ITMMainEngine::InfiniTAM_IMAGE_FREECAMERA_SHADED;
 			uiEngine->outImageType[1] = ITMMainEngine::InfiniTAM_IMAGE_SCENERAYCAST;
 
-			uiEngine->freeviewPose.SetFrom(uiEngine->mainEngine->trackingState->pose_d);
+			uiEngine->freeviewPose.SetFrom(uiEngine->mainEngine->GetTrackingState()->pose_d);
 			if (uiEngine->mainEngine->GetView() != NULL) {
 				uiEngine->freeviewIntrinsics = uiEngine->mainEngine->GetView()->calib->intrinsics_d;
 				uiEngine->outImage[0]->ChangeDims(uiEngine->mainEngine->GetView()->depth->noDims);

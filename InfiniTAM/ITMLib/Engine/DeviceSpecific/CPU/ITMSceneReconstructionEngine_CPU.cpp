@@ -138,7 +138,7 @@ void ITMSceneReconstructionEngine_CPU<TVoxel, ITMVoxelBlockHash>::AllocateSceneF
 	int *voxelAllocationList = scene->localVBA.GetAllocationList();
 	int *excessAllocationList = scene->index.GetExcessAllocationList();
 	ITMHashEntry *hashTable = scene->index.GetEntries();
-	ITMHashCacheState *cacheStates = scene->useSwapping ? scene->globalCache->GetCacheStates(false) : 0;
+	ITMHashSwapState *swapStates = scene->useSwapping ? scene->globalCache->GetSwapStates(false) : 0;
 	int *visibleEntryIDs = renderState_vh->GetVisibleEntryIDs();
 	uchar *entriesVisibleType = renderState_vh->GetEntriesVisibleType();
 	uchar *entriesAllocType = this->entriesAllocType->GetData(MEMORYDEVICE_CPU);
@@ -232,25 +232,25 @@ void ITMSceneReconstructionEngine_CPU<TVoxel, ITMVoxelBlockHash>::AllocateSceneF
 		unsigned char hashVisibleType = entriesVisibleType[targetIdx];
 		const ITMHashEntry &hashEntry = hashTable[targetIdx];
 		
-		if (hashVisibleType >= 2)
+		if (hashVisibleType == 3)
 		{
 			bool isVisibleEnlarged, isVisible;
 
-			if (hashVisibleType == 3)
-			{
-				checkBlockVisibility<false>(isVisible, isVisibleEnlarged, hashEntry.pos, M_d, projParams_d, voxelSize, depthImgSize);
-				if (!isVisible) { entriesVisibleType[targetIdx] = 0; hashVisibleType = 0; }
-			}
-
-			if (useSwapping && hashVisibleType == 2)
+			if (useSwapping)
 			{
 				checkBlockVisibility<true>(isVisible, isVisibleEnlarged, hashEntry.pos, M_d, projParams_d, voxelSize, depthImgSize);
-				entriesVisibleType[targetIdx] = isVisibleEnlarged; hashVisibleType = isVisibleEnlarged;
+				if (!isVisibleEnlarged) hashVisibleType = 0;
+			} else {
+				checkBlockVisibility<false>(isVisible, isVisibleEnlarged, hashEntry.pos, M_d, projParams_d, voxelSize, depthImgSize);
+				if (!isVisible) { hashVisibleType = 0; }
 			}
+			entriesVisibleType[targetIdx] = hashVisibleType;
 		}
 
 		if (useSwapping)
-			if (entriesVisibleType[targetIdx] > 0 && cacheStates[targetIdx].cacheFromHost != 2) cacheStates[targetIdx].cacheFromHost = 1;
+		{
+			if (hashVisibleType > 0 && swapStates[targetIdx].state != 2) swapStates[targetIdx].state = 1;
+		}
 
 		if (hashVisibleType > 0)
 		{	

@@ -62,12 +62,16 @@ namespace ITMLib
 			ITMDenseMapper<ITMVoxel,ITMVoxelIndex> *denseMapper;
 			ITMTrackingController *trackingController;
 
+			ITMTracker *tracker;
+			ITMIMUCalibrator *imuCalibrator;
+
+			ITMView *view;
+			ITMTrackingState *trackingState;
+
 			ITMScene<ITMVoxel, ITMVoxelIndex> *scene;
 			ITMRenderState *renderState_live;
 			ITMRenderState *renderState_freeview;
 
-			ITMTracker *tracker;
-			ITMIMUCalibrator *imuCalibrator;
 		public:
 			enum GetImageType
 			{
@@ -81,17 +85,23 @@ namespace ITMLib
 				InfiniTAM_IMAGE_UNKNOWN
 			};
 
-			/// Pointer for storing the current input frame
-			ITMView *view;
-			
-			/// Pointer to the current camera pose and additional tracking information
-			ITMTrackingState *trackingState;
-
 			/// Gives access to the current input frame
 			ITMView* GetView() { return view; }
 
+			/// Gives access to the current camera pose and additional tracking information
+			ITMTrackingState* GetTrackingState(void) { return trackingState; }
+
+			/// Gives access to the internal world representation
+			ITMScene<ITMVoxel, ITMVoxelIndex>* GetScene(void) { return scene; }
+
 			/// Process a frame with rgb and depth images and optionally a corresponding imu measurement
 			void ProcessFrame(ITMUChar4Image *rgbImage, ITMShortImage *rawDepthImage, ITMIMUMeasurement *imuMeasurement = NULL);
+
+			// Gives access to the data structure used internally to store any created meshes
+			ITMMesh* GetMesh(void) { return mesh; }
+
+			/// Update the internally stored mesh data structure and return a pointer to it
+			ITMMesh* UpdateMesh(void);
 
 			/// Extracts a mesh from the current scene and saves it to the obj file specified by the file name
 			void SaveSceneToMesh(const char *objFileName);

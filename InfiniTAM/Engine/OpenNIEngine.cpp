@@ -71,6 +71,10 @@ OpenNIEngine::OpenNIEngine(const char *calibFilename, const char *deviceURI, con
 	// images from openni always come in millimeters...
 	this->calib.disparityCalib.type = ITMDisparityCalib::TRAFO_AFFINE;
 	this->calib.disparityCalib.params = Vector2f(1.0f/1000.0f, 0.0f);
+	if (useInternalCalibration) {
+		this->calib.trafo_rgb_to_depth = ITMExtrinsics();
+		this->calib.intrinsics_d = this->calib.intrinsics_rgb;
+	}
 
 	this->imageSize_d = Vector2i(0,0);
 	this->imageSize_rgb = Vector2i(0,0);

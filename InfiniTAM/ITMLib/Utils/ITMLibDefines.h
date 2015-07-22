@@ -68,9 +68,15 @@ struct ITMHashEntry
 	int ptr;
 };
 
-struct ITMHashCacheState
+struct ITMHashSwapState
 {
-	uchar cacheFromHost;	// 0 - don't do anything, 1 - should cache from host, 2 - has cached from host
+	/// 0 - most recent data is on host, data not currently in active
+	///     memory
+	/// 1 - data both on host and in active memory, information has not
+	///     yet been combined
+	/// 2 - most recent data is in active memory, should save this data
+	///     back to host at some point
+	uchar state;
 };
 
 #include "../Objects/ITMVoxelBlockHash.h"
