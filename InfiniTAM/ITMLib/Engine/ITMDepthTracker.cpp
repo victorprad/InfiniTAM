@@ -161,7 +161,7 @@ void ITMDepthTracker::TrackCamera(ITMTrackingState *trackingState, const ITMView
 
 		Matrix4f approxInvPose = trackingState->pose_d->GetInvM();
 		ITMPose lastKnownGoodPose(*(trackingState->pose_d));
-		f_old = 1e20;
+		f_old = 1e20f;
 		float lambda = 1.0;
 
 		for (int iterNo = 0; iterNo < noIterationsPerLevel[levelId]; iterNo++)
