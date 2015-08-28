@@ -148,6 +148,9 @@
     <ClCompile Include="ITMLib\Engine\DeviceSpecific\CPU\ITMWeightedICPTracker_CPU.cpp">
       <Filter>ITMLib\Engine\DeviceSpecific\CPU</Filter>
     </ClCompile>
+    <ClCompile Include="Engine\LibUVCEngine.cpp">
+      <Filter>Engine\Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\OpenNIEngine.h">
@@ -445,6 +448,9 @@
     </ClInclude>
     <ClInclude Include="ITMLib\Engine\DeviceSpecific\CUDA\ITMWeightedICPTracker_CUDA.h">
       <Filter>ITMLib\Engine\DeviceSpecific\CUDA</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\LibUVCEngine.h">
+      <Filter>Engine\Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

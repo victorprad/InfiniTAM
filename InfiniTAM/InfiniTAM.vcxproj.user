@@ -6,7 +6,8 @@
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <LocalDebuggerCommandArguments>../../Files/CAsmall/calib.txt  ../../Files/CAsmall/Frames/img_"%"08i.mis ../../Files/CAsmall/Frames/img_"%"08i.irw ../../Files/CAsmall/Frames/imu_"%"08i.txt</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>
+    </LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup>
