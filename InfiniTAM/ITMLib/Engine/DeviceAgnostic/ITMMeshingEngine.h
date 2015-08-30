@@ -230,3 +230,78 @@ _CPU_AND_GPU_CODE_ inline int buildVertList(THREADPTR(Vector3f) *vertList, Vecto
 
 	return cubeIndex;
 }
+
+template<class TVoxel>
+_CPU_AND_GPU_CODE_ inline bool findPointNeighbors(THREADPTR(Vector3f) *p, THREADPTR(float) *sdf, Vector3i blockLocation, const CONSTPTR(TVoxel) *localVBA,
+	const CONSTPTR(ITMHHashEntry) *hashTable, int sf /*scale factor*/)
+{
+	bool isFound; Vector3i localBlockLocation;
+
+	ITMVoxelBlockHHash::IndexCache cache;
+
+	localBlockLocation = blockLocation + Vector3i(0, 0, 0); p[0] = localBlockLocation.toFloat();
+	sdf[0] = readFromSDF_float_interpolated(localVBA, hashTable, p[0], isFound, cache);
+	if (!isFound || sdf[0] == 1.0f) return false;
+
+	localBlockLocation = blockLocation + Vector3i(sf, 0, 0); p[1] = localBlockLocation.toFloat();
+	sdf[1] = readFromSDF_float_interpolated(localVBA, hashTable, p[1], isFound, cache);
+	if (!isFound || sdf[1] == 1.0f) return false;
+
+	localBlockLocation = blockLocation + Vector3i(sf, sf, 0); p[2] = localBlockLocation.toFloat();
+	sdf[2] = readFromSDF_float_interpolated(localVBA, hashTable, p[2], isFound, cache);
+	if (!isFound || sdf[2] == 1.0f) return false;
+
+	localBlockLocation = blockLocation + Vector3i(0, sf, 0); p[3] = localBlockLocation.toFloat();
+	sdf[3] = readFromSDF_float_interpolated(localVBA, hashTable, p[3], isFound, cache);
+	if (!isFound || sdf[3] == 1.0f) return false;
+
+	localBlockLocation = blockLocation + Vector3i(0, 0, sf); p[4] = localBlockLocation.toFloat();
+	sdf[4] = readFromSDF_float_interpolated(localVBA, hashTable, p[4], isFound, cache);
+	if (!isFound || sdf[4] == 1.0f) return false;
+
+	localBlockLocation = blockLocation + Vector3i(sf, 0, sf); p[5] = localBlockLocation.toFloat();
+	sdf[5] = readFromSDF_float_interpolated(localVBA, hashTable, p[5], isFound, cache);
+	if (!isFound || sdf[5] == 1.0f) return false;
+
+	localBlockLocation = blockLocation + Vector3i(sf, sf, sf); p[6] = localBlockLocation.toFloat();
+	sdf[6] = readFromSDF_float_interpolated(localVBA, hashTable, p[6], isFound, cache);
+	if (!isFound || sdf[6] == 1.0f) return false;
+
+	localBlockLocation = blockLocation + Vector3i(0, sf, sf); p[7] = localBlockLocation.toFloat();
+	sdf[7] = readFromSDF_float_interpolated(localVBA, hashTable, p[7], isFound, cache);
+	if (!isFound || sdf[7] == 1.0f) return false;
+
+	return true;
+}
+
+template<class TVoxel>
+_CPU_AND_GPU_CODE_ inline int buildVertList(THREADPTR(Vector3f) *vertList, Vector3i globalPos, Vector3i localPos, const CONSTPTR(TVoxel) *localVBA, const CONSTPTR(ITMHHashEntry) *hashTable, int level)
+{
+	Vector3f points[8]; float sdfVals[8];
+	int scalefactor = (1 << level);
+
+	if (!findPointNeighbors(points, sdfVals, (globalPos * SDF_BLOCK_SIZE + localPos) * scalefactor, localVBA, hashTable, scalefactor)) return -1;
+
+	int cubeIndex = 0;
+	if (sdfVals[0] < 0) cubeIndex |= 1; if (sdfVals[1] < 0) cubeIndex |= 2;
+	if (sdfVals[2] < 0) cubeIndex |= 4; if (sdfVals[3] < 0) cubeIndex |= 8;
+	if (sdfVals[4] < 0) cubeIndex |= 16; if (sdfVals[5] < 0) cubeIndex |= 32;
+	if (sdfVals[6] < 0) cubeIndex |= 64; if (sdfVals[7] < 0) cubeIndex |= 128;
+
+	if (edgeTable[cubeIndex] == 0) return -1;
+
+	if (edgeTable[cubeIndex] & 1) vertList[0] = sdfInterp(points[0], points[1], sdfVals[0], sdfVals[1]);
+	if (edgeTable[cubeIndex] & 2) vertList[1] = sdfInterp(points[1], points[2], sdfVals[1], sdfVals[2]);
+	if (edgeTable[cubeIndex] & 4) vertList[2] = sdfInterp(points[2], points[3], sdfVals[2], sdfVals[3]);
+	if (edgeTable[cubeIndex] & 8) vertList[3] = sdfInterp(points[3], points[0], sdfVals[3], sdfVals[0]);
+	if (edgeTable[cubeIndex] & 16) vertList[4] = sdfInterp(points[4], points[5], sdfVals[4], sdfVals[5]);
+	if (edgeTable[cubeIndex] & 32) vertList[5] = sdfInterp(points[5], points[6], sdfVals[5], sdfVals[6]);
+	if (edgeTable[cubeIndex] & 64) vertList[6] = sdfInterp(points[6], points[7], sdfVals[6], sdfVals[7]);
+	if (edgeTable[cubeIndex] & 128) vertList[7] = sdfInterp(points[7], points[4], sdfVals[7], sdfVals[4]);
+	if (edgeTable[cubeIndex] & 256) vertList[8] = sdfInterp(points[0], points[4], sdfVals[0], sdfVals[4]);
+	if (edgeTable[cubeIndex] & 512) vertList[9] = sdfInterp(points[1], points[5], sdfVals[1], sdfVals[5]);
+	if (edgeTable[cubeIndex] & 1024) vertList[10] = sdfInterp(points[2], points[6], sdfVals[2], sdfVals[6]);
+	if (edgeTable[cubeIndex] & 2048) vertList[11] = sdfInterp(points[3], points[7], sdfVals[3], sdfVals[7]);
+
+	return cubeIndex;
+}
