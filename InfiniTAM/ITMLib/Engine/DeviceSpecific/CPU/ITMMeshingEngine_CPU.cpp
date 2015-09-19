@@ -43,15 +43,15 @@ void ITMMeshingEngine_CPU<TVoxel, ITMVoxelBlockHash>::MeshScene(ITMMesh *mesh, c
 			
 			if (cubeIndex < 0) continue;
 
-            Vector3f clr = VoxelColorReader<TVoxel::hasColorInformation, TVoxel, ITMVoxelBlockHash>::
-                uninterpolate(localVBA, hashTable, globalPos + Vector3i(x, y, z));
+			Vector3f clr = VoxelColorReader<TVoxel::hasColorInformation, TVoxel, ITMVoxelBlockHash>::
+				uninterpolate(localVBA, hashTable, globalPos + Vector3i(x, y, z));
 
 			for (int i = 0; triangleTable[cubeIndex][i] != -1; i += 3)
 			{
 				triangles[noTriangles].p0 = vertList[triangleTable[cubeIndex][i]] * factor;
 				triangles[noTriangles].p1 = vertList[triangleTable[cubeIndex][i + 1]] * factor;
 				triangles[noTriangles].p2 = vertList[triangleTable[cubeIndex][i + 2]] * factor;
-                triangles[noTriangles].clr = clr;
+				triangles[noTriangles].clr = clr;
 
 				if (noTriangles < noMaxTriangles - 1) noTriangles++;
 			}
