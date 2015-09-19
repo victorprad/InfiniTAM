@@ -44,7 +44,9 @@ static void CreateDefaultImageSource(ImageSourceEngine* & imageSource, IMUSource
 	if (imageSource == NULL)
 	{
 		printf("trying OpenNI device: %s\n", (filename1==NULL)?"<OpenNI default device>":filename1);
-		imageSource = new OpenNIEngine(calibFile, filename1);
+
+        // Set useInternalCalibration to true if ITMVoxel::hasColorInformation is true
+        imageSource = new OpenNIEngine(calibFile, filename1, ITMVoxel::hasColorInformation);
 		if (imageSource->getDepthImageSize().x == 0)
 		{
 			delete imageSource;

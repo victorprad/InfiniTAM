@@ -209,8 +209,8 @@ void UIEngine::glutKeyUpFunction(unsigned char key, int x, int y)
 		else uiEngine->mainEngine->turnOffIntegration();
 		break;
 	case 'w':
-		printf("saving mesh to disk ...");
-		uiEngine->SaveSceneToMesh("mesh.stl");
+		printf("saving colorful mesh to disk ...");
+		uiEngine->SaveSceneToMesh("mesh.obj");
 		printf(" done\n");
 		break;
 	default:

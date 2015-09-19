@@ -14,7 +14,7 @@ namespace ITMLib
 		class ITMMesh
 		{
 		public:
-			struct Triangle { Vector3f p0, p1, p2; };
+			struct Triangle { Vector3f p0, p1, p2, clr; };
 		
 			MemoryDeviceType memoryType;
 
@@ -49,10 +49,11 @@ namespace ITMLib
 				{
 					for (uint i = 0; i < noTotalTriangles; i++)
 					{
-						fprintf(f, "v %f %f %f\n", triangleArray[i].p0.x, triangleArray[i].p0.y, triangleArray[i].p0.z);
-						fprintf(f, "v %f %f %f\n", triangleArray[i].p1.x, triangleArray[i].p1.y, triangleArray[i].p1.z);
-						fprintf(f, "v %f %f %f\n", triangleArray[i].p2.x, triangleArray[i].p2.y, triangleArray[i].p2.z);
-					}
+                        const auto& clr = triangleArray[i].clr;
+                        fprintf(f, "v %f %f %f %f %f %f\n", triangleArray[i].p0.x, triangleArray[i].p0.y, triangleArray[i].p0.z, clr.r, clr.g, clr.b);
+                        fprintf(f, "v %f %f %f %f %f %f\n", triangleArray[i].p1.x, triangleArray[i].p1.y, triangleArray[i].p1.z, clr.r, clr.g, clr.b);
+                        fprintf(f, "v %f %f %f %f %f %f\n", triangleArray[i].p2.x, triangleArray[i].p2.y, triangleArray[i].p2.z, clr.r, clr.g, clr.b);
+                    }
 
 					for (uint i = 0; i<noTotalTriangles; i++) fprintf(f, "f %d %d %d\n", i * 3 + 2 + 1, i * 3 + 1 + 1, i * 3 + 0 + 1);
 					fclose(f);
