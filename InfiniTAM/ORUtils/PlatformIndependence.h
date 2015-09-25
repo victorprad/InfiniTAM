@@ -2,8 +2,10 @@
 
 #pragma once
 
+#if !defined(__METALC__)
 #include <cstdio>
 #include <stdexcept>
+#endif
 
 #if defined(__CUDACC__) && defined(__CUDA_ARCH__)
 #define _CPU_AND_GPU_CODE_ __device__	// for CUDA device code
