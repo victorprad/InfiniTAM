@@ -30,7 +30,7 @@ int main() {
             if (major > properties.major) {
                 major = properties.major;
                 minor = properties.minor;
-            } else if (minor > properties.minor) {
+            } else if ((major == properties.major) && (minor > properties.minor)) {
                 minor = properties.minor;
             }
         }
