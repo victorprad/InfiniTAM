@@ -199,8 +199,11 @@ SOURCE_GROUP(Utils FILES ${ITMLIB_UTILS_SOURCES} ${ITMLIB_UTILS_HEADERS})
 # Specify the include directories, target and link libraries #
 ##############################################################
 
-IF(WITH_CUDA)
-  set(CUDA_ARCH "20 30" CACHE STRING "CUDA architectures to compile for")
+if(WITH_CUDA)
+  if(NOT DEFINED CUDA_COMPUTE_CAPABILITY)
+    include(${PROJECT_SOURCE_DIR}/cmake/CUDACheckCompute.cmake)
+  endif()
+  set(CUDA_ARCH ${CUDA_COMPUTE_CAPABILITY} CACHE STRING "CUDA architectures to compile for")
   string(REPLACE " " ";" CUDA_ARCH_LIST ${CUDA_ARCH})
   foreach(a ${CUDA_ARCH_LIST})
     set(CUDA_ARCH_OPTIONS "${CUDA_ARCH_OPTIONS} -gencode arch=compute_${a},code=compute_${a}")
@@ -212,9 +215,9 @@ IF(WITH_CUDA)
 	${ITMLIB_COMMON_OBJECTS}
 	OPTIONS "${CUDA_ARCH_OPTIONS} --use_fast_math")
   target_link_libraries(ITMLib ${CUDA_LIBRARY})
-ELSE()
+else()
   add_definitions(-DCOMPILE_WITHOUT_CUDA)
   add_library(ITMLib ${ITMLIB_CPU_OBJECTS} ${ITMLIB_COMMON_OBJECTS})
-ENDIF()
+endif()
 
 target_link_libraries(ITMLib Utils)
