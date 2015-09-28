@@ -148,6 +148,9 @@
     <ClCompile Include="Engine\LibUVCEngine.cpp">
       <Filter>Engine\Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Engine\RealSenseEngine.cpp">
+      <Filter>Engine\Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\OpenNIEngine.h">
@@ -427,6 +430,9 @@
       <Filter>ITMLib\Engine\DeviceSpecific\CUDA</Filter>
     </ClInclude>
     <ClInclude Include="Engine\LibUVCEngine.h">
+      <Filter>Engine\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\RealSenseEngine.h">
       <Filter>Engine\Header Files</Filter>
     </ClInclude>
   </ItemGroup>
