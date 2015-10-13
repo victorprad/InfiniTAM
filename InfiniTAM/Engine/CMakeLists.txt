@@ -39,6 +39,8 @@ UIEngine.cpp
 UIEngine.h
 CLIEngine.cpp
 CLIEngine.h
+RealSenseEngine.cpp
+RealSenseEngine.h
 )
 
 target_link_libraries(Engine ${GLUT_LIBRARIES})
