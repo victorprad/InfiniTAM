@@ -70,5 +70,3 @@ add_executable(InfiniTAM InfiniTAM.cpp)
 target_link_libraries(InfiniTAM Engine)
 target_link_libraries(InfiniTAM Utils)
 
-SET(targetname InfiniTAM)
-INCLUDE(${PROJECT_SOURCE_DIR}/cmake/LinkRealSense.cmake)

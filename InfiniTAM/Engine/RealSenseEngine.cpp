@@ -7,8 +7,6 @@
 #include <cstdio>
 #include <stdexcept>
 
-#define COMPILE_WITH_RealSenseWindows
-
 #ifdef COMPILE_WITH_RealSenseWindows
 
 #include <pxcsensemanager.h>
