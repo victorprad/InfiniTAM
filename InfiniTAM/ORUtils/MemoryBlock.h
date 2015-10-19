@@ -201,7 +201,7 @@ namespace ORUtils
 				case 2:
 #ifdef COMPILE_WITH_METAL
 					if (dataSize == 0) data_cpu = NULL;
-					else allocateMetalData((void**)&data_cpu, (void**)&data_metalBuffer, dataSize * sizeof(T), true);
+					else allocateMetalData((void**)&data_cpu, (void**)&data_metalBuffer, (int)(dataSize * sizeof(T)), true);
 #endif
 					break;
 				}
@@ -244,7 +244,7 @@ namespace ORUtils
 					break;
 				case 2:
 #ifdef COMPILE_WITH_METAL
-					if (data_cpu != NULL) freeMetalData((void**)&data_cpu, (void**)&data_metalBuffer, dataSize * sizeof(T), true);
+					if (data_cpu != NULL) freeMetalData((void**)&data_cpu, (void**)&data_metalBuffer, (int)(dataSize * sizeof(T)), true);
 #endif
 					break;
 				}
@@ -267,4 +267,4 @@ namespace ORUtils
 		MemoryBlock& operator=(const MemoryBlock&);
 #endif
 	};
-}
+} 

@@ -19,7 +19,7 @@ namespace ITMLib
 	{
 	private:
 		int *noNeededEntries_device, *noAllocatedVoxelEntries_device;
-		int DownloadFromGlobalMemory(ITMScene<TVoxel, ITMVoxelBlockHash> *scene);
+		int LoadFromGlobalMemory(ITMScene<TVoxel, ITMVoxelBlockHash> *scene);
 
 	public:
 		void IntegrateGlobalIntoLocal(ITMScene<TVoxel, ITMVoxelBlockHash> *scene, ITMRenderState *renderState);

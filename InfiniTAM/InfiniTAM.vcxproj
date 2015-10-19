@@ -32,7 +32,7 @@
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
-    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 6.5.props" />
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 7.0.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
@@ -105,7 +105,9 @@
     <ClCompile Include="Engine\ImageSourceEngine.cpp" />
     <ClCompile Include="Engine\IMUSourceEngine.cpp" />
     <ClCompile Include="Engine\Kinect2Engine.cpp" />
+    <ClCompile Include="Engine\LibUVCEngine.cpp" />
     <ClCompile Include="Engine\OpenNIEngine.cpp" />
+    <ClCompile Include="Engine\RealSenseEngine.cpp" />
     <ClCompile Include="Engine\UIEngine.cpp" />
     <ClCompile Include="ITMLib\Engine\DeviceSpecific\CPU\ITMColorTracker_CPU.cpp" />
     <ClCompile Include="ITMLib\Engine\DeviceSpecific\CPU\ITMDepthTracker_CPU.cpp" />
@@ -137,7 +139,9 @@
     <ClInclude Include="Engine\ImageSourceEngine.h" />
     <ClInclude Include="Engine\IMUSourceEngine.h" />
     <ClInclude Include="Engine\Kinect2Engine.h" />
+    <ClInclude Include="Engine\LibUVCEngine.h" />
     <ClInclude Include="Engine\OpenNIEngine.h" />
+    <ClInclude Include="Engine\RealSenseEngine.h" />
     <ClInclude Include="Engine\UIEngine.h" />
     <ClInclude Include="ITMLib\Engine\DeviceAgnostic\ITMColorTracker.h" />
     <ClInclude Include="ITMLib\Engine\DeviceAgnostic\ITMDepthTracker.h" />
@@ -241,6 +245,6 @@
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
-    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 6.5.targets" />
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 7.0.targets" />
   </ImportGroup>
 </Project>

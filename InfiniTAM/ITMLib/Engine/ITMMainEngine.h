@@ -63,6 +63,9 @@ namespace ITMLib
 		/// Gives access to the current camera pose and additional tracking information
 		virtual ITMTrackingState* GetTrackingState(void) = 0;
 
+		/// Gives access to the internal world representation
+		virtual ITMScene<ITMVoxel, ITMVoxelIndex>* GetScene(void) = 0;
+
 		/// Process a frame with rgb and depth images and optionally a corresponding imu measurement
 		virtual void ProcessFrame(ITMUChar4Image *rgbImage, ITMShortImage *rawDepthImage, ITMIMUMeasurement *imuMeasurement = NULL) = 0;
 

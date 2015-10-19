@@ -17,8 +17,8 @@ namespace ITMLib
 	template<class TVoxel>
 	class ITMSwappingEngine_CPU<TVoxel, ITMVoxelBlockHash> : public ITMSwappingEngine < TVoxel, ITMVoxelBlockHash >
 	{
-	protected:
-		int DownloadFromGlobalMemory(ITMScene<TVoxel, ITMVoxelBlockHash> *scene);
+	private:
+		int LoadFromGlobalMemory(ITMScene<TVoxel, ITMVoxelBlockHash> *scene);
 
 	public:
 		// This class is currently just for debugging purposes -- swaps CPU memory to CPU memory.

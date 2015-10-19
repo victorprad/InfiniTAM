@@ -63,8 +63,8 @@ public class InfiniTAMApplication extends Application
 		while (deviceIterator.hasNext()) {
 			UsbDevice device = deviceIterator.next();
 
-			if ((device.getVendorId() == 0x1d27) &&
-			    (device.getProductId() == 0x0600)) {
+			if (((device.getVendorId() == 0x1d27)&&(device.getProductId() == 0x0600))||
+			    ((device.getVendorId() == 0x1d27)&&(device.getProductId() == 0x0601))) {
 				depthCamera = device;
 			}
 		}

@@ -42,7 +42,7 @@ _CPU_AND_GPU_CODE_ inline void filterDepth(DEVICEPTR(float) *imageData_out, cons
 		tmpz = imageData_in[(x + j) + (y + i) * imgDims.x];
 		if (tmpz < 0.0f) continue;
 		dz = (tmpz - z); dz *= dz;
-		w = expf(-0.5f * ((abs(i) + abs(j))*MEAN_SIGMA_L*MEAN_SIGMA_L + dz * sigma_z * sigma_z));
+		w = exp(-0.5f * ((abs(i) + abs(j))*MEAN_SIGMA_L*MEAN_SIGMA_L + dz * sigma_z * sigma_z));
 		w_sum += w;
 		final_depth += w*tmpz;
 	}
@@ -52,7 +52,7 @@ _CPU_AND_GPU_CODE_ inline void filterDepth(DEVICEPTR(float) *imageData_out, cons
 }
 
 
-_CPU_AND_GPU_CODE_ inline void computeNormalAndWeight(const float *depth_in, Vector4f *normal_out, float *sigmaZ_out, int x, int y, Vector2i imgDims, Vector4f intrinparam)
+_CPU_AND_GPU_CODE_ inline void computeNormalAndWeight(const CONSTPTR(float) *depth_in, DEVICEPTR(Vector4f) *normal_out, DEVICEPTR(float) *sigmaZ_out, int x, int y, Vector2i imgDims, Vector4f intrinparam)
 {
 	Vector3f outNormal;
 
@@ -67,7 +67,6 @@ _CPU_AND_GPU_CODE_ inline void computeNormalAndWeight(const float *depth_in, Vec
 	}
 
 	// first compute the normal
-	Vector3f cpt(z * (x - intrinparam.z) * intrinparam.x, z * (y - intrinparam.w) * intrinparam.y, z);
 	Vector3f xp1_y, xm1_y, x_yp1, x_ym1;
 	Vector3f diff_x(0.0f, 0.0f, 0.0f), diff_y(0.0f, 0.0f, 0.0f);
 
@@ -101,12 +100,14 @@ _CPU_AND_GPU_CODE_ inline void computeNormalAndWeight(const float *depth_in, Vec
 		sigmaZ_out[idx] = -1;
 		return;
 	}
-	outNormal = outNormal.normalised();	
-	
+
+    float norm = 1.0f / sqrt(outNormal.x * outNormal.x + outNormal.y * outNormal.y + outNormal.z * outNormal.z);
+    outNormal *= norm;
+    
 	normal_out[idx].x = outNormal.x; normal_out[idx].y = outNormal.y; normal_out[idx].z = outNormal.z; normal_out[idx].w = 1.0f;
 
 	// now compute weight
-	float theta = acosf(outNormal.z);
+	float theta = acos(outNormal.z);
 	float theta_diff = theta / (PI*0.5f - theta);
 
 	sigmaZ_out[idx] = (0.0012f + 0.0019f * (z - 0.4f) * (z - 0.4f) + 0.0001f / sqrt(z) * theta_diff * theta_diff);

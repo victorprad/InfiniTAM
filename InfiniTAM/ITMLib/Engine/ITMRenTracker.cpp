@@ -143,7 +143,7 @@ void ITMRenTracker<TVoxel,TIndex>::TrackCamera(ITMTrackingState *trackingState, 
 				if (currentEnergy < lastEnergy)
 				{
 					// check if energy decrease is too small, if so, converge.
-					if (abs(currentEnergy - lastEnergy) / abs(lastEnergy) < MIN_DECREASE) { converged = true; }
+					if (fabs(currentEnergy - lastEnergy) / fabs(lastEnergy) < MIN_DECREASE) { converged = true; }
 					lastEnergy = currentEnergy;
 					lambda *= TR_REGION_INCREASE;
 					invM = tmpM * invM;

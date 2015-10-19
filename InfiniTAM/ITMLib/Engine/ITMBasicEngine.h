@@ -39,8 +39,15 @@ namespace ITMLib
 	public:
 		ITMView* GetView(void) { return view; }
 		ITMTrackingState* GetTrackingState(void) { return trackingState; }
+		ITMScene<ITMVoxel, ITMVoxelIndex>* GetScene(void) { return scene; }
 
 		void ProcessFrame(ITMUChar4Image *rgbImage, ITMShortImage *rawDepthImage, ITMIMUMeasurement *imuMeasurement = NULL);
+
+		/// Gives access to the data structure used internally to store any created meshes
+		ITMMesh* GetMesh(void) { return mesh; }
+
+		/// Update the internally stored mesh data structure and return a pointer to it
+		ITMMesh* UpdateMesh(void);
 
 		/// Extracts a mesh from the current scene and saves it to the obj file specified by the file name
 		void SaveSceneToMesh(const char *objFileName);

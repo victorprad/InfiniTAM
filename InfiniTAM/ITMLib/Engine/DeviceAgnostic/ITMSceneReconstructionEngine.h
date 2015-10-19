@@ -165,7 +165,7 @@ _CPU_AND_GPU_CODE_ inline void buildHashAllocAndVisibleTypePP(DEVICEPTR(uchar) *
 		if (!isFound)
 		{
 			bool isExcess = false;
-			if (hashEntry.ptr >= 1) //seach excess list only if there is no room in ordered part
+			if (hashEntry.ptr >= -1) //seach excess list only if there is no room in ordered part
 			{
 				while (hashEntry.offset >= 1)
 				{

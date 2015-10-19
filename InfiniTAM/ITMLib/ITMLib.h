@@ -32,8 +32,6 @@
 #include "Engine/DeviceSpecific/CUDA/ITMWeightedICPTracker_CUDA.h"
 #endif
 
-
-
 #include "Engine/ITMSceneReconstructionEngine.h"
 #include "Engine/DeviceSpecific/CPU/ITMSceneReconstructionEngine_CPU.h"
 #ifndef COMPILE_WITHOUT_CUDA
@@ -98,7 +96,7 @@
 #include "Engine/DeviceSpecific/CUDA/ITMMeshingEngine_CUDA.h"
 #endif
 #ifdef COMPILE_WITH_METAL
-#include "Engine/DeviceSpecific/Metal/ITMMeshingEngine_CPU.h"
+#include "Engine/DeviceSpecific/CPU/ITMMeshingEngine_CPU.h"
 #endif
 
 #include "Engine/ITMDenseMapper.h"

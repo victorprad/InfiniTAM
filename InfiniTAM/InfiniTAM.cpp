@@ -8,6 +8,7 @@
 #include "Engine/OpenNIEngine.h"
 #include "Engine/Kinect2Engine.h"
 #include "Engine/LibUVCEngine.h"
+#include "Engine/RealSenseEngine.h"
 
 #include "ITMLib/Engine/ITMBasicEngine.h"
 #include "ITMLib/Engine/ITMMultiEngine.h"
@@ -59,6 +60,16 @@ static void CreateDefaultImageSource(ImageSourceEngine* & imageSource, IMUSource
 	{
 		printf("trying UVC device\n");
 		imageSource = new LibUVCEngine(calibFile);
+		if (imageSource->getDepthImageSize().x == 0)
+		{
+			delete imageSource;
+			imageSource = NULL;
+		}
+	}
+	if (imageSource == NULL)
+	{
+		printf("trying RealSense device\n");
+		imageSource = new RealSenseEngine(calibFile);
 		if (imageSource->getDepthImageSize().x == 0)
 		{
 			delete imageSource;

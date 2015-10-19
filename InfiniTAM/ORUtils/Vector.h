@@ -5,6 +5,8 @@
 #include <math.h>
 #include <ostream>
 
+#include "PlatformIndependence.h"
+
 namespace ORUtils {
 	//////////////////////////////////////////////////////////////////////////
 	//						Basic Vector Structure

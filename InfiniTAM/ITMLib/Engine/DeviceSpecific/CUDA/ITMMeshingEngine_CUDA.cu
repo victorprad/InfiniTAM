@@ -36,7 +36,7 @@ void ITMMeshingEngine_CUDA<TVoxel, ITMVoxelBlockHash>::MeshScene(ITMMesh *mesh, 
 	const ITMHashEntry *hashTable = scene->index.GetEntries();
 
 	int noMaxTriangles = mesh->noMaxTriangles, noTotalEntries = scene->index.noTotalEntries;
-	float factor = scene->sceneParams->voxelSize / (float)SDF_BLOCK_SIZE;
+	float factor = scene->sceneParams->voxelSize;
 
 	ITMSafeCall(cudaMemset(noTriangles_device, 0, sizeof(unsigned int)));
 	ITMSafeCall(cudaMemset(visibleBlockGlobalPos_device, 0, sizeof(Vector4s) * SDF_LOCAL_BLOCK_NUM));
