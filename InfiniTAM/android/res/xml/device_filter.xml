@@ -3,4 +3,5 @@
 <resources>
     <!--<usb-device vendor-id="0x1d27" product-id="0x0600" />-->
     <usb-device vendor-id="7463" product-id="1536" />
+    <usb-device vendor-id="7463" product-id="1537" />
 </resources>
