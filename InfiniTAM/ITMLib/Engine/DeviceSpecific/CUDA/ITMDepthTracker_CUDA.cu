@@ -102,7 +102,7 @@ int ITMDepthTracker_CUDA::ComputeGandH(float &f, float *nabla, float *hessian, M
 	for (int r = 0; r < noPara; ++r) for (int c = r + 1; c < noPara; c++) hessian[r + c * 6] = hessian[c + r * 6];
 
 	memcpy(nabla, accu_host->g, noPara * sizeof(float));
-	f = (accu_host->numPoints > 100) ? sqrt(accu_host->f) / accu_host->numPoints : 1e5f;
+	f = (accu_host->numPoints > 100) ? accu_host->f / accu_host->numPoints : 1e5f;
 
 	return accu_host->numPoints;
 }

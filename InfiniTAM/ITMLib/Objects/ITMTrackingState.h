@@ -34,6 +34,9 @@ namespace ITMLib
 		/// Current pose of the depth camera.
 		ITMPose *pose_d;
 
+		/// Tracking quality: 1.0: success, 0.0: failure
+		float poseQuality;
+
 		bool TrackerFarFromPointCloud(void) const
 		{
 			// if no point cloud exists, yet
@@ -60,6 +63,7 @@ namespace ITMLib
 
 			this->pose_d = new ITMPose();
 			this->pose_d->SetFrom(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
+			this->poseQuality = 1.0f;
 
 			this->age_pointCloud = -1;
 			this->pose_pointCloud = new ITMPose();

@@ -160,7 +160,8 @@ void ITMDepthTracker::TrackCamera(ITMTrackingState *trackingState, const ITMView
 
 	float f_old = 1e10, f_new;
 	int noValidPoints_new;
-//	int noValidPoints_old = 0, noTotalPoints = 0;
+	int noValidPoints_old = 0;
+	//int noTotalPoints = 0;
 
 	float hessian_good[6 * 6], hessian_new[6 * 6], A[6 * 6];
 	float nabla_good[6], nabla_new[6];
@@ -174,12 +175,12 @@ void ITMDepthTracker::TrackCamera(ITMTrackingState *trackingState, const ITMView
 		this->SetEvaluationParams(levelId);
 		if (iterationType == TRACKER_ITERATION_NONE) continue;
 
-//		noTotalPoints = viewHierarchy->levels[levelId]->depth->noDims.x * viewHierarchy->levels[levelId]->depth->noDims.y;
+		//noTotalPoints = viewHierarchy->levels[levelId]->depth->noDims.x * viewHierarchy->levels[levelId]->depth->noDims.y;
 
 		Matrix4f approxInvPose = trackingState->pose_d->GetInvM();
 		ITMPose lastKnownGoodPose(*(trackingState->pose_d));
 		f_old = 1e20f;
-//		noValidPoints_old = 0;
+		noValidPoints_old = 0;
 		float lambda = 1.0;
 
 		for (int iterNo = 0; iterNo < noIterationsPerLevel[levelId]; iterNo++)
@@ -195,7 +196,7 @@ void ITMDepthTracker::TrackCamera(ITMTrackingState *trackingState, const ITMView
 			} else {
 				lastKnownGoodPose.SetFrom(trackingState->pose_d);
 				f_old = f_new;
-//				noValidPoints_old = noValidPoints_new;
+				noValidPoints_old = noValidPoints_new;
 
 				for (int i = 0; i < 6*6; ++i) hessian_good[i] = hessian_new[i] / noValidPoints_new;
 				for (int i = 0; i < 6; ++i) nabla_good[i] = nabla_new[i] / noValidPoints_new;
@@ -215,16 +216,70 @@ void ITMDepthTracker::TrackCamera(ITMTrackingState *trackingState, const ITMView
 			if (HasConverged(step)) break;
 		}
 	}
+#if 1
+
+	int noValidPointsMax = lowLevelEngine->CountValidDepths(view->depth);
+
 #if 0
-	float det = 0.0f;
+	float det_ref, det_ref_norm;
+	{
+		float h_ref[6*6];
+		int noPoints_ref = this->ComputeHessianAtMinimum(h_ref);
+//		float f_ref, g_ref[6], h_ref[6*6];
+//		int noPoints_ref = this->ComputeGandH(f_ref, g_ref, h_ref, /*trackingState->pose_pointCloud->GetInvM()*/scenePose);
+for (int i = 0; i < 6*6; ++i) h_ref[i] /= (float)noPoints_ref;
+{		ORUtils::Cholesky cholRef(h_ref, 6);
+		det_ref = cholRef.Determinant();}
+for (int i = 0; i < 6*6; ++i) h_ref[i] *= (float)noPoints_ref/(float)noTotalPoints;
+{		ORUtils::Cholesky cholRef(h_ref, 6);
+		det_ref_norm = cholRef.Determinant();}
+		//fprintf(stderr, "reference: %e %i, g %e %e %e %e %e %e det %e\n", f_ref, noPoints_ref, g_ref[0], g_ref[1], g_ref[2], g_ref[3], g_ref[4], g_ref[5], det_ref);
+/*for (int r = 0; r < 6; r++) { for (int c = 0; c < 6; c++) fprintf(stderr, "%f ", hessian_good[r*6+c]); fprintf(stderr, "\n"); }
+for (int r = 0; r < 6; r++) { for (int c = 0; c < 6; c++) fprintf(stderr, "%f ", h_ref[r*6+c]); fprintf(stderr, "\n"); }
+		fprintf(stderr, "reference: %i, det %e\n", noPoints_ref, det_ref);*/
+	}
+
+	float det = 0.0f, det_norm;
 	if (iterationType == TRACKER_ITERATION_BOTH) {
 		ORUtils::Cholesky cholA(hessian_good, 6);
 		det = cholA.Determinant();
 	}
+//for (int i = 0; i < 6*6; ++i) hessian_good[i] *= (float)noValidPoints_old/(float)noTotalPoints;
+#endif
+	float det_norm = 0.0f;
+	if (iterationType == TRACKER_ITERATION_BOTH) {
+		for (int i = 0; i < 6*6; ++i) hessian_good[i] *= (float)noValidPoints_old/(float)noValidPointsMax;
+		ORUtils::Cholesky cholA(hessian_good, 6);
+		det_norm = cholA.Determinant();
+	}
 
-	float finalResidual2 = ((float)noValidPoints_old * f_old + (float)(noTotalPoints - noValidPoints_old) * sqrt(distThresh[0])) / (float)noTotalPoints;
-	float finalResidual = sqrt(((float)noValidPoints_old * f_old * f_old + (float)(noTotalPoints - noValidPoints_old) * distThresh[0]) / (float)noTotalPoints);
-fprintf(stderr, "final ICP residual: det %e, r1 %f r2 %f (r %f, p %i/%i)%s\n", det, finalResidual, finalResidual2, f_old, noValidPoints_old, noTotalPoints, (finalResidual<0.03)?" !!!":"");
+	//float finalResidual = sqrt(((float)noValidPoints_old * f_old + (float)(noTotalPoints - noValidPoints_old) * distThresh[0]) / (float)noTotalPoints);
+	float finalResidual = sqrt(((float)noValidPoints_old * f_old + (float)(noValidPointsMax - noValidPoints_old) * distThresh[0]) / (float)noValidPointsMax);
+	//float percentageInliers = (float)noValidPoints_old/(float)noTotalPoints;
+	float percentageInliers = (float)noValidPoints_old/(float)noValidPointsMax;
+//fprintf(stderr, "final ICP residual: det %e, r %f i %f (r %e, p %i/%i)\n", det, finalResidual, percentageInliers, f_old, noValidPoints_old, noValidPointsMax);
+//fprintf(stderr, " final ICP det ratio: raw %f %f (%e/%e) norm %f %f (%e %e)\n", det/det_ref, log(det)/log(det_ref), det, det_ref, det_norm/det_ref_norm, log(det_norm)/log(det_ref_norm), det_norm, det_ref_norm);
+//fprintf(stderr, "residual %f inliers %f\n", finalResidual, percentageInliers);
+/*	trackingState->poseQuality = 1.0f;
+	if (finalResidual > 0.2f) trackingState->poseQuality *= 0.5f;
+	if (percentageInliers < 0.8f) trackingState->poseQuality *= 0.5f;
+	if (det_norm < exp(-35.0f)) trackingState->poseQuality *= 0.5f;
+
+	if (percentageInliers < 0.3f) trackingState->poseQuality = 0.0f;*/
+	static const float thresholdResidual = 0.25f; // 0.2f
+	static const float thresholdInliers = 0.7f; // 0.8f
+	static const float thresholdDet = exp(-36.0f); //exp(-35.0f)
+	if ((finalResidual < thresholdResidual)&&(percentageInliers > thresholdInliers)) {
+		trackingState->poseQuality = 1.0f;
+	} else if ((finalResidual < thresholdResidual)||(percentageInliers > thresholdInliers)) {
+		trackingState->poseQuality = 0.5f;
+	} else {
+		trackingState->poseQuality = 0.0f;
+	}
+	if (percentageInliers < 0.3f) trackingState->poseQuality = 0.0f;
+	if (det_norm<thresholdDet) if (trackingState->poseQuality > 0.5f) trackingState->poseQuality = 0.5f;
+//if (det_norm<exp(-35.0f)) fprintf(stderr, "determinant poor! %f, %e %e\n", log(det_norm), det_norm, exp(-35.0f));*/
+//fprintf(stderr, "tracking quality: %f\n", trackingState->poseQuality);
 #endif
 }
 

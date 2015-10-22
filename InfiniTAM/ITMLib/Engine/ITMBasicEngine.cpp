@@ -118,13 +118,36 @@ void ITMBasicEngine::ProcessFrame(ITMUChar4Image *rgbImage, ITMShortImage *rawDe
 	if (!mainProcessingActive) return;
 
 	// tracking
+	ITMPose oldPose(*(trackingState->pose_d));
 	if (trackingActive) trackingController->Track(trackingState, view);
 
-	// fusion
-	if (fusionActive) denseMapper->ProcessFrame(view, trackingState, scene, renderState_live);
+	int trackingSuccess = 0;
+	if (trackingState->poseQuality>0.8f) trackingSuccess = 2;
+	else if (trackingState->poseQuality>0.4f) trackingSuccess = 1;
 
-	// raycast to renderState_live for tracking and free visualisation
-	trackingController->Prepare(trackingState, scene, view, renderState_live);
+	static int trackingSuccess_prev = -1;
+	if (trackingSuccess != trackingSuccess_prev) {
+		if (trackingSuccess == 2) fprintf(stderr, "tracking good\n");
+		if (trackingSuccess == 1) fprintf(stderr, "tracking poor\n");
+		if (trackingSuccess == 0) fprintf(stderr, "tracking LOST\n");
+		trackingSuccess_prev = trackingSuccess;
+	}
+
+	bool didFusion = false;
+	if ((trackingSuccess >= 2)&&(fusionActive)) {
+		// fusion
+		denseMapper->ProcessFrame(view, trackingState, scene, renderState_live);
+		didFusion = true;
+	}
+
+	if (trackingSuccess >= 1) {
+		if (!didFusion) denseMapper->UpdateVisibleList(view, trackingState, scene, renderState_live);
+
+		// raycast to renderState_live for tracking and free visualisation
+		trackingController->Prepare(trackingState, scene, view, renderState_live);
+	} else {
+		*trackingState->pose_d = oldPose;
+	}
 }
 
 Vector2i ITMBasicEngine::GetImageSize(void) const
