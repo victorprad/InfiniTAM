@@ -39,7 +39,7 @@ ITMMultiEngine::ITMMultiEngine(const ITMLibSettings *settings, const ITMRGBDCali
 
 	imuCalibrator = new ITMIMUCalibrator_iPad();
 	tracker = ITMTrackerFactory<ITMVoxel, ITMVoxelIndex>::Instance().Make(imgSize_rgb, imgSize_d, settings, lowLevelEngine, imuCalibrator, NULL/*scene TODO: this will fail for Ren Tracker*/);
-	trackingController = new ITMTrackingController(tracker, visualisationEngine, lowLevelEngine, settings);
+	trackingController = new ITMTrackingController(tracker, visualisationEngine, settings);
 	trackedImageSize = ITMTrackingController::GetTrackedImageSize(tracker, imgSize_rgb, imgSize_d);
 
 	AddNewLocalScene();

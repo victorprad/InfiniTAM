@@ -8,7 +8,6 @@
 #include "../Objects/ITMRenderState.h"
 
 #include "../Engine/ITMVisualisationEngine.h"
-#include "../Engine/ITMLowLevelEngine.h"
 
 #include "ITMTrackerFactory.h"
 
@@ -21,7 +20,6 @@ namespace ITMLib
 	private:
 		const ITMLibSettings *settings;
 		const IITMVisualisationEngine *visualisationEngine;
-		const ITMLowLevelEngine *lowLevelEngine;
 
 		ITMTracker *tracker;
 
@@ -31,13 +29,11 @@ namespace ITMLib
 		void Track(ITMTrackingState *trackingState, const ITMView *view);
 		void Prepare(ITMTrackingState *trackingState, const ITMSceneBase *scene, const ITMView *view, ITMRenderState *renderState);
 
-		ITMTrackingController(ITMTracker *tracker, const IITMVisualisationEngine *visualisationEngine, const ITMLowLevelEngine *lowLevelEngine,
-			const ITMLibSettings *settings)
+		ITMTrackingController(ITMTracker *tracker, const IITMVisualisationEngine *visualisationEngine, const ITMLibSettings *settings)
 		{
 			this->tracker = tracker;
 			this->settings = settings;
 			this->visualisationEngine = visualisationEngine;
-			this->lowLevelEngine = lowLevelEngine;
 
 			memoryType = settings->deviceType == ITMLibSettings::DEVICE_CUDA ? MEMORYDEVICE_CUDA : MEMORYDEVICE_CPU;
 		}

@@ -11,11 +11,12 @@ class LCDDatabase {
 	LCDDatabase(int codeLength, int codeFragmentDim);
 	~LCDDatabase(void);
 
-	// returns number of validly found similar entries (think of an empty
-	// database here!)
+	/** @return Number of valid similar entries that were found. Mostly
+	    relevant in case of an empty database.
+	*/
 	int findMostSimilar(const char *codeFragments, int nearestNeighbours[], float distances[], int k);
 
-	// returns ID of newly added entry
+	/** @return ID of newly added entry */
 	int addEntry(const char *codeFragments);
 
 	private:
