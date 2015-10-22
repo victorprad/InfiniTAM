@@ -2,7 +2,8 @@
 
 #pragma once
 
-inline __device__ void warpReduce(volatile float* sdata, int tid) {
+template<class T>
+inline __device__ void warpReduce(volatile T* sdata, int tid) {
 	sdata[tid] += sdata[tid + 32];
 	sdata[tid] += sdata[tid + 16];
 	sdata[tid] += sdata[tid + 8];

@@ -2,13 +2,23 @@
 
 #include "ITMLowLevelEngine_CUDA.h"
 #include "../../../../ORUtils/CUDADefines.h"
+#include "ITMCUDAUtils.h"
 
 #include "../../DeviceAgnostic/ITMLowLevelEngine.h"
 
 using namespace ITMLib;
 
-ITMLowLevelEngine_CUDA::ITMLowLevelEngine_CUDA(void) { }
-ITMLowLevelEngine_CUDA::~ITMLowLevelEngine_CUDA(void) { }
+ITMLowLevelEngine_CUDA::ITMLowLevelEngine_CUDA(void)
+{
+	ITMSafeCall(cudaMalloc((void**)&counterTempData_device, sizeof(int)));
+	ITMSafeCall(cudaMallocHost((void**)&counterTempData_host, sizeof(int)));
+}
+
+ITMLowLevelEngine_CUDA::~ITMLowLevelEngine_CUDA(void)
+{
+	ITMSafeCall(cudaFree(counterTempData_device));
+	ITMSafeCall(cudaFreeHost(counterTempData_host));
+}
 
 __global__ void filterSubsample_device(Vector4u *imageData_out, Vector2i newDims, const Vector4u *imageData_in, Vector2i oldDims);
 
@@ -17,6 +27,8 @@ __global__ void filterSubsampleWithHoles_device(Vector4f *imageData_out, Vector2
 
 __global__ void gradientX_device(Vector4s *grad, const Vector4u *image, Vector2i imgSize);
 __global__ void gradientY_device(Vector4s *grad, const Vector4u *image, Vector2i imgSize);
+
+__global__ void countValidDepths_device(const float *imageData_in, int imgSizeTotal, int *counterTempData_device);
 
 // host methods
 
@@ -124,6 +136,21 @@ void ITMLowLevelEngine_CUDA::GradientY(ITMShort4Image *grad_out, const ITMUChar4
 	gradientY_device << <gridSize, blockSize >> >(grad, image, imgSize);
 }
 
+int ITMLowLevelEngine_CUDA::CountValidDepths(const ITMFloatImage *image_in) const
+{
+	const float *imageData_in = image_in->GetData(MEMORYDEVICE_CUDA);
+	Vector2i imgSize = image_in->noDims;
+
+	dim3 blockSize(256);
+	dim3 gridSize((int)ceil((float)imgSize.x*imgSize.y / (float)blockSize.x));
+
+	ITMSafeCall(cudaMemset(counterTempData_device, 0, sizeof(int)));
+	countValidDepths_device <<<gridSize, blockSize>>>(imageData_in, imgSize.x*imgSize.y, counterTempData_device);
+	ITMSafeCall(cudaMemcpy(counterTempData_host, counterTempData_device, sizeof(int), cudaMemcpyDeviceToHost));
+
+	return *counterTempData_host;
+}
+
 // device functions
 
 __global__ void filterSubsample_device(Vector4u *imageData_out, Vector2i newDims, const Vector4u *imageData_in, Vector2i oldDims)
@@ -170,3 +197,38 @@ __global__ void gradientY_device(Vector4s *grad, const Vector4u *image, Vector2i
 
 	gradientY(grad, x, y, image, imgSize);
 }
+
+__global__ void countValidDepths_device(const float *imageData_in, int imgSizeTotal, int *counterTempData_device)
+{
+	int i = threadIdx.x + blockIdx.x * blockDim.x;
+	int locId_local = threadIdx.x;
+
+	__shared__ int dim_shared[256];
+	//__shared__ bool should_prefix;
+
+	//should_prefix = false;
+	//__syncthreads();
+
+	bool isValidPoint = false;
+
+	if (i < imgSizeTotal)
+	{
+		if (imageData_in[i] > 0.0f) isValidPoint = true;
+	}
+
+	//__syncthreads();
+	//if (!should_prefix) return;
+
+	dim_shared[locId_local] = isValidPoint;
+	__syncthreads();
+
+	if (locId_local < 128) dim_shared[locId_local] += dim_shared[locId_local + 128];
+	__syncthreads();
+	if (locId_local < 64) dim_shared[locId_local] += dim_shared[locId_local + 64];
+	__syncthreads();
+
+	if (locId_local < 32) warpReduce(dim_shared, locId_local);
+
+	if (locId_local == 0) atomicAdd(counterTempData_device, dim_shared[locId_local]);
+}
+

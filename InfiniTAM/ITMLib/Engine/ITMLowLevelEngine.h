@@ -21,6 +21,8 @@ namespace ITMLib
 		virtual void GradientX(ITMShort4Image *grad_out, const ITMUChar4Image *image_in) const = 0;
 		virtual void GradientY(ITMShort4Image *grad_out, const ITMUChar4Image *image_in) const = 0;
 
+		virtual int CountValidDepths(const ITMFloatImage *image_in) const = 0;
+
 		ITMLowLevelEngine(void) { }
 		virtual ~ITMLowLevelEngine(void) { }
 	};
