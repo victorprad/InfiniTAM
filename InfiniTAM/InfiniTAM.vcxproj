@@ -107,6 +107,7 @@
     <ClCompile Include="Engine\Kinect2Engine.cpp" />
     <ClCompile Include="Engine\LibUVCEngine.cpp" />
     <ClCompile Include="Engine\OpenNIEngine.cpp" />
+    <ClCompile Include="Engine\RealSenseEngine.cpp" />
     <ClCompile Include="Engine\UIEngine.cpp" />
     <ClCompile Include="ITMLib\Engine\DeviceSpecific\CPU\ITMColorTracker_CPU.cpp" />
     <ClCompile Include="ITMLib\Engine\DeviceSpecific\CPU\ITMDepthTracker_CPU.cpp" />
@@ -140,6 +141,7 @@
     <ClInclude Include="Engine\Kinect2Engine.h" />
     <ClInclude Include="Engine\LibUVCEngine.h" />
     <ClInclude Include="Engine\OpenNIEngine.h" />
+    <ClInclude Include="Engine\RealSenseEngine.h" />
     <ClInclude Include="Engine\UIEngine.h" />
     <ClInclude Include="ITMLib\Engine\DeviceAgnostic\ITMColorTracker.h" />
     <ClInclude Include="ITMLib\Engine\DeviceAgnostic\ITMDepthTracker.h" />

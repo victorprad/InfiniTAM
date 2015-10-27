@@ -9,10 +9,10 @@
 using namespace metal;
 
 kernel void genericRaycastVH_device(DEVICEPTR(Vector4f) *pointsRay                                  [[ buffer(0) ]],
-                                    const CONSTANT(ITMVoxel) *voxelData                             [[ buffer(1) ]],
-                                    const CONSTANT(typename ITMVoxelIndex::IndexData) *voxelIndex   [[ buffer(2) ]],
-                                    const CONSTANT(Vector2f) *minmaxdata                            [[ buffer(3) ]],
-                                    const CONSTANT(CreateICPMaps_Params) *params                    [[ buffer(4) ]],
+                                    const CONSTPTR(ITMVoxel) *voxelData                             [[ buffer(1) ]],
+                                    const CONSTPTR(typename ITMVoxelIndex::IndexData) *voxelIndex   [[ buffer(2) ]],
+                                    const CONSTPTR(Vector2f) *minmaxdata                            [[ buffer(3) ]],
+                                    const CONSTPTR(CreateICPMaps_Params) *params                    [[ buffer(4) ]],
                                     uint2 threadIdx                                                 [[ thread_position_in_threadgroup ]],
                                     uint2 blockIdx                                                  [[ threadgroup_position_in_grid ]],
                                     uint2 blockDim                                                  [[ threads_per_threadgroup ]])
@@ -29,11 +29,11 @@ kernel void genericRaycastVH_device(DEVICEPTR(Vector4f) *pointsRay              
 }
 
 kernel void genericRaycastVGMissingPoints_device(DEVICEPTR(Vector4f) *forwardProjection                         [[ buffer(0) ]],
-                                                 const CONSTANT(int) *fwdProjMissingPoints                      [[ buffer(1) ]],
-                                                 const CONSTANT(ITMVoxel) *voxelData                            [[ buffer(2) ]],
-                                                 const CONSTANT(typename ITMVoxelIndex::IndexData) *voxelIndex  [[ buffer(3) ]],
-                                                 const CONSTANT(Vector2f) *minmaxdata                           [[ buffer(4) ]],
-                                                 const CONSTANT(CreateICPMaps_Params) *params                   [[ buffer(5) ]],
+                                                 const CONSTPTR(int) *fwdProjMissingPoints                      [[ buffer(1) ]],
+                                                 const CONSTPTR(ITMVoxel) *voxelData                            [[ buffer(2) ]],
+                                                 const CONSTPTR(typename ITMVoxelIndex::IndexData) *voxelIndex  [[ buffer(3) ]],
+                                                 const CONSTPTR(Vector2f) *minmaxdata                           [[ buffer(4) ]],
+                                                 const CONSTPTR(CreateICPMaps_Params) *params                   [[ buffer(5) ]],
                                                  uint2 threadIdx                                                [[ thread_position_in_threadgroup ]],
                                                  uint2 blockIdx                                                 [[ threadgroup_position_in_grid ]],
                                                  uint2 blockDim                                                 [[ threads_per_threadgroup ]])
@@ -50,11 +50,11 @@ kernel void genericRaycastVGMissingPoints_device(DEVICEPTR(Vector4f) *forwardPro
                                      params->voxelSizes.y, params->lightSource.w, minmaxdata[locId2]);
 }
 
-kernel void renderICP_device(const CONSTANT(Vector4f) *pointsRay            [[ buffer(0) ]],
+kernel void renderICP_device(const CONSTPTR(Vector4f) *pointsRay            [[ buffer(0) ]],
                              DEVICEPTR(Vector4f) *pointsMap                 [[ buffer(1) ]],
                              DEVICEPTR(Vector4f) *normalsMap                [[ buffer(2) ]],
                              DEVICEPTR(Vector4u) *outRendering              [[ buffer(3) ]],
-                             const CONSTANT(CreateICPMaps_Params) *params   [[ buffer(4) ]],
+                             const CONSTPTR(CreateICPMaps_Params) *params   [[ buffer(4) ]],
                              uint2 threadIdx                                [[ thread_position_in_threadgroup ]],
                              uint2 blockIdx                                 [[ threadgroup_position_in_grid ]],
                              uint2 blockDim                                 [[ threads_per_threadgroup ]])
@@ -67,8 +67,8 @@ kernel void renderICP_device(const CONSTANT(Vector4f) *pointsRay            [[ b
 }
 
 kernel void renderForward_device(DEVICEPTR(Vector4u) *outRendering              [[ buffer(0) ]],
-                                 const CONSTANT(Vector4f) *pointsRay            [[ buffer(1) ]],
-                                 const CONSTANT(CreateICPMaps_Params) *params   [[ buffer(2) ]],
+                                 const CONSTPTR(Vector4f) *pointsRay            [[ buffer(1) ]],
+                                 const CONSTPTR(CreateICPMaps_Params) *params   [[ buffer(2) ]],
                                  uint2 threadIdx                                [[ thread_position_in_threadgroup ]],
                                  uint2 blockIdx                                 [[ threadgroup_position_in_grid ]],
                                  uint2 blockDim                                 [[ threads_per_threadgroup ]])
@@ -81,8 +81,8 @@ kernel void renderForward_device(DEVICEPTR(Vector4u) *outRendering              
 }
 
 kernel void forwardProject_device(DEVICEPTR(Vector4f) *forwardProjection         [[ buffer(0) ]],
-                                  const CONSTANT(Vector4f) *pointsRay            [[ buffer(1) ]],
-                                  const CONSTANT(CreateICPMaps_Params) *params   [[ buffer(2) ]],
+                                  const CONSTPTR(Vector4f) *pointsRay            [[ buffer(1) ]],
+                                  const CONSTPTR(CreateICPMaps_Params) *params   [[ buffer(2) ]],
                                   uint2 threadIdx                                [[ thread_position_in_threadgroup ]],
                                   uint2 blockIdx                                 [[ threadgroup_position_in_grid ]],
                                   uint2 blockDim                                 [[ threads_per_threadgroup ]])

@@ -24,6 +24,10 @@ IF(DEFINED libuvc_INCLUDE_DIRS)
   add_definitions(-DCOMPILE_WITH_LibUVC)
 ENDIF()
 
+IF(WITH_REALSENSE)
+  add_definitions(-DCOMPILE_WITH_RealSenseWindows)
+ENDIF()
+
 add_library(Engine
 ImageSourceEngine.cpp
 ImageSourceEngine.h
@@ -39,6 +43,8 @@ UIEngine.cpp
 UIEngine.h
 CLIEngine.cpp
 CLIEngine.h
+RealSenseEngine.cpp
+RealSenseEngine.h
 )
 
 target_link_libraries(Engine ${GLUT_LIBRARIES})
@@ -52,5 +58,8 @@ IF(OPENNI_FOUND)
 ENDIF(OPENNI_FOUND)
 IF(DEFINED libuvc_LIBRARIES)
   target_link_libraries(Engine ${libuvc_LIBRARIES})
+ENDIF()
+IF(WITH_REALSENSE)
+  TARGET_LINK_LIBRARIES(Engine ${RealSense_LIBRARY})
 ENDIF()
 

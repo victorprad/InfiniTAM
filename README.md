@@ -11,6 +11,9 @@ This is the software bundle "InfiniTAM",  the current version is maintained by:
   Ian D Reid <ian.reid@adelaide.edu.au>  
   David W Murray <dwm@robots.ox.ac.uk>
 
+For more information about InfiniTAM please visit the project website <http://www.infinitam.org>. 
+
+Other related projects can be found in the Oxford Active Vision Library <http://www.oxvisionlib.org>.
 
 #1. Building the System
 

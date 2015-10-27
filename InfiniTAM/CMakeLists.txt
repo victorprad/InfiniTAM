@@ -32,6 +32,7 @@ message(STATUS "libpng found: ${PNG_FOUND}")
 
 OPTION(WITH_CUDA "Build with CUDA support?" ${CUDA_FOUND})
 INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseOpenMP.cmake)
+INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseRealSense.cmake)
 
 IF(MSVC_IDE)
   add_definitions(-D_CRT_SECURE_NO_WARNINGS)
@@ -68,3 +69,4 @@ target_link_libraries(InfiniTAM_cli Utils)
 add_executable(InfiniTAM InfiniTAM.cpp)
 target_link_libraries(InfiniTAM Engine)
 target_link_libraries(InfiniTAM Utils)
+
