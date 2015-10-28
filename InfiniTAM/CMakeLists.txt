@@ -25,15 +25,10 @@ macro(CANONIFY_BOOL var)
 endmacro()
 
 find_package(GLUT REQUIRED)
-#find_package(OpenGL REQUIRED)
 
 find_package(CUDA QUIET)
 CANONIFY_BOOL(CUDA_FOUND)
 message(STATUS "CUDA found: " ${CUDA_FOUND})
-
-find_package(OpenNI QUIET)
-CANONIFY_BOOL(OPENNI_FOUND)
-message(STATUS "OpenNI found: " ${OPENNI_FOUND})
 
 find_package(libuvc QUIET)
 CANONIFY_BOOL(libuvc_FOUND)

@@ -13,6 +13,7 @@ SET(targetname Engine)
 ################################
 
 INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseOpenGL.cmake)
+INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseOpenNI.cmake)
 INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseRealSense.cmake)
 
 #############################
@@ -59,12 +60,6 @@ ELSE()
   add_definitions(-DCOMPILE_WITHOUT_CUDA)
 ENDIF()
 
-IF(OPENNI_FOUND)
-  include_directories(${OpenNI_INCLUDE_DIR})
-ELSE(OPENNI_FOUND)
-  add_definitions(-DCOMPILE_WITHOUT_OpenNI)
-ENDIF(OPENNI_FOUND)
-
 IF(MSKINECTAPI_FOUND)
   include_directories(${MSKINECTAPI_INCLUDE_DIR})
 ELSE(MSKINECTAPI_FOUND)
@@ -87,15 +82,14 @@ ADD_LIBRARY(${targetname} ${sources} ${headers})
 #################################
 
 INCLUDE(${PROJECT_SOURCE_DIR}/cmake/LinkOpenGL.cmake)
+INCLUDE(${PROJECT_SOURCE_DIR}/cmake/LinkOpenNI.cmake)
 INCLUDE(${PROJECT_SOURCE_DIR}/cmake/LinkRealSense.cmake)
 
 TARGET_LINK_LIBRARIES(${targetname} ${GLUT_LIBRARIES})
 IF(WITH_CUDA)
   TARGET_LINK_LIBRARIES(${targetname} ${CUDA_LIBRARY})
 ENDIF()
-IF(OPENNI_FOUND)
-  TARGET_LINK_LIBRARIES(${targetname} ${OpenNI_LIBRARY})
-ENDIF(OPENNI_FOUND)
+
 IF(DEFINED libuvc_LIBRARIES)
   TARGET_LINK_LIBRARIES(${targetname} ${libuvc_LIBRARIES})
 ENDIF()
