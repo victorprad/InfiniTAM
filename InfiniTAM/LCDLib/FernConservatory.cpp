@@ -6,7 +6,7 @@ using namespace LCDLib;
 
 static float random_uniform01(void)
 {
-	return (float)random() / (float)RAND_MAX;
+	return (float)rand() / (float)RAND_MAX;
 }
 
 FernConservatory::FernConservatory(int numFerns, ORUtils::Vector2<int> imgSize, ORUtils::Vector2<float> bounds, int decisionsPerFern)
