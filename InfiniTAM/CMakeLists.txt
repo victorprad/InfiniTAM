@@ -1,7 +1,20 @@
+##########################################
+# Top-level CMakeLists.txt for InfiniTAM #
+##########################################
+
 cmake_minimum_required(VERSION 2.8)
+
 project(InfiniTAM)
 
+#################################
+# Specify the CMake module path #
+#################################
+
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
+
+########################
+# Define useful macros #
+########################
 
 macro(CANONIFY_BOOL var)
   if (${var})
@@ -12,7 +25,7 @@ macro(CANONIFY_BOOL var)
 endmacro()
 
 find_package(GLUT REQUIRED)
-find_package(OpenGL REQUIRED)
+#find_package(OpenGL REQUIRED)
 
 find_package(CUDA QUIET)
 CANONIFY_BOOL(CUDA_FOUND)
@@ -32,7 +45,6 @@ message(STATUS "libpng found: ${PNG_FOUND}")
 
 OPTION(WITH_CUDA "Build with CUDA support?" ${CUDA_FOUND})
 INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseOpenMP.cmake)
-INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseRealSense.cmake)
 
 IF(MSVC_IDE)
   add_definitions(-D_CRT_SECURE_NO_WARNINGS)
@@ -52,6 +64,10 @@ IF(${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
   set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -stdlib=libstdc++")
 ENDIF()
 
+##########################
+# Specify subdirectories #
+##########################
+
 add_subdirectory(ORUtils)
 add_subdirectory(ITMLib)
 add_subdirectory(LCDLib)
@@ -70,4 +86,3 @@ target_link_libraries(InfiniTAM_cli Utils)
 add_executable(InfiniTAM InfiniTAM.cpp)
 target_link_libraries(InfiniTAM Engine)
 target_link_libraries(InfiniTAM Utils)
-

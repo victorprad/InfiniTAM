@@ -1,4 +1,56 @@
-include_directories(${OPENGL_INCLUDE_DIR})
+#############################
+# CMakeLists.txt for Engine #
+#############################
+
+###########################
+# Specify the target name #
+###########################
+
+SET(targetname Engine)
+
+################################
+# Specify the libraries to use #
+################################
+
+INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseOpenGL.cmake)
+INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseRealSense.cmake)
+
+#############################
+# Specify the project files #
+#############################
+
+SET(sources
+CLIEngine.cpp
+ImageSourceEngine.cpp
+IMUSourceEngine.cpp
+Kinect2Engine.cpp
+LibUVCEngine.cpp
+OpenNIEngine.cpp
+RealSenseEngine.cpp
+UIEngine.cpp
+)
+
+SET(headers
+CLIEngine.h
+ImageSourceEngine.h
+IMUSourceEngine.h
+Kinect2Engine.h
+LibUVCEngine.h
+OpenNIEngine.h
+RealSenseEngine.h
+UIEngine.h
+)
+
+#############################
+# Specify the source groups #
+#############################
+
+SOURCE_GROUP("" FILES ${sources} ${headers})
+
+##########################################
+# Specify additional include directories #
+##########################################
+
 include_directories(${GLUT_INCLUDE_DIR})
 
 IF(WITH_CUDA)
@@ -24,43 +76,28 @@ IF(DEFINED libuvc_INCLUDE_DIRS)
   add_definitions(-DCOMPILE_WITH_LibUVC)
 ENDIF()
 
-IF(WITH_REALSENSE)
-  add_definitions(-DCOMPILE_WITH_RealSenseWindows)
-ENDIF()
+##########################################
+# Specify the target and where to put it #
+##########################################
 
-add_library(Engine
-ImageSourceEngine.cpp
-ImageSourceEngine.h
-IMUSourceEngine.cpp
-IMUSourceEngine.h
-Kinect2Engine.cpp
-Kinect2Engine.h
-OpenNIEngine.cpp
-OpenNIEngine.h
-LibUVCEngine.cpp
-LibUVCEngine.h
-UIEngine.cpp
-UIEngine.h
-CLIEngine.cpp
-CLIEngine.h
-RealSenseEngine.cpp
-RealSenseEngine.h
-)
+ADD_LIBRARY(${targetname} ${sources} ${headers})
 
-target_link_libraries(Engine ${GLUT_LIBRARIES})
-target_link_libraries(Engine ${OPENGL_LIBRARIES})
-target_link_libraries(Engine ITMLib)
-target_link_libraries(Engine ORUtils)
+#################################
+# Specify the link dependencies #
+#################################
+
+INCLUDE(${PROJECT_SOURCE_DIR}/cmake/LinkOpenGL.cmake)
+INCLUDE(${PROJECT_SOURCE_DIR}/cmake/LinkRealSense.cmake)
+
+TARGET_LINK_LIBRARIES(${targetname} ${GLUT_LIBRARIES})
 IF(WITH_CUDA)
-  target_link_libraries(Engine ${CUDA_LIBRARY})
+  TARGET_LINK_LIBRARIES(${targetname} ${CUDA_LIBRARY})
 ENDIF()
 IF(OPENNI_FOUND)
-  target_link_libraries(Engine ${OpenNI_LIBRARY})
+  TARGET_LINK_LIBRARIES(${targetname} ${OpenNI_LIBRARY})
 ENDIF(OPENNI_FOUND)
 IF(DEFINED libuvc_LIBRARIES)
-  target_link_libraries(Engine ${libuvc_LIBRARIES})
-ENDIF()
-IF(WITH_REALSENSE)
-  TARGET_LINK_LIBRARIES(Engine ${RealSense_LIBRARY})
+  TARGET_LINK_LIBRARIES(${targetname} ${libuvc_LIBRARIES})
 ENDIF()
 
+TARGET_LINK_LIBRARIES(${targetname} ITMLib ORUtils)
