@@ -12,18 +12,6 @@ PROJECT(InfiniTAM)
 
 SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
 
-########################
-# Define useful macros #
-########################
-
-MACRO(CANONIFY_BOOL var)
-  IF(${var})
-    SET(${var} TRUE)
-  ELSE()
-    SET(${var} FALSE)
-  ENDIF()
-ENDMACRO()
-
 #################################
 # Add additional compiler flags #
 #################################
