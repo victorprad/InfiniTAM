@@ -2,6 +2,6 @@
 # LinkPNG.cmake #
 #################
 
-IF(PNG_FOUND)
+IF(WITH_PNG)
   TARGET_LINK_LIBRARIES(${targetname} ${PNG_LIBRARIES})
 ENDIF()

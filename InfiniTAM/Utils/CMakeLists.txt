@@ -33,9 +33,3 @@ NVTimer.h
 ##########################################
 
 INCLUDE(${PROJECT_SOURCE_DIR}/cmake/SetCUDALibTarget.cmake)
-
-#################################
-# Specify the link dependencies #
-#################################
-
-INCLUDE(${PROJECT_SOURCE_DIR}/cmake/LinkPNG.cmake)
