@@ -44,24 +44,40 @@ ADD_SUBDIRECTORY(LCDLib)
 ADD_SUBDIRECTORY(ORUtils)
 ADD_SUBDIRECTORY(Utils)
 
-###############################
-# Specify application targets #
-###############################
+#########################
+# Specify InfiniTAM_cli #
+#########################
 
 SET(targetname InfiniTAM_cli)
+
 INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseCUDA.cmake)
+
 SET(sources InfiniTAM_cli.cpp)
+
+SOURCE_GROUP("" FILES ${sources})
+
 INCLUDE(${PROJECT_SOURCE_DIR}/cmake/SetCUDAAppTarget.cmake)
+
 TARGET_LINK_LIBRARIES(${targetname} Engine ITMLib LCDLib ORUtils Utils)
 INCLUDE(${PROJECT_SOURCE_DIR}/cmake/LinkOpenNI.cmake)
 INCLUDE(${PROJECT_SOURCE_DIR}/cmake/LinkPNG.cmake)
 INCLUDE(${PROJECT_SOURCE_DIR}/cmake/LinkRealSense.cmake)
 INCLUDE(${PROJECT_SOURCE_DIR}/cmake/LinkUVC.cmake)
 
+#####################
+# Specify InfiniTAM #
+#####################
+
 SET(targetname InfiniTAM)
+
 INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseCUDA.cmake)
+
 SET(sources InfiniTAM.cpp)
+
+SOURCE_GROUP("" FILES ${sources})
+
 INCLUDE(${PROJECT_SOURCE_DIR}/cmake/SetCUDAAppTarget.cmake)
+
 TARGET_LINK_LIBRARIES(${targetname} Engine ITMLib LCDLib ORUtils Utils)
 INCLUDE(${PROJECT_SOURCE_DIR}/cmake/LinkGLUT.cmake)
 INCLUDE(${PROJECT_SOURCE_DIR}/cmake/LinkOpenGL.cmake)
