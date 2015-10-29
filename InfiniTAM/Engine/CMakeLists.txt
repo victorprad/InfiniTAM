@@ -13,6 +13,7 @@ SET(targetname Engine)
 ################################
 
 INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseCUDA.cmake)
+INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseGLUT.cmake)
 INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseOpenGL.cmake)
 INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseOpenMP.cmake)
 INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseOpenNI.cmake)
@@ -54,8 +55,6 @@ SOURCE_GROUP("" FILES ${sources} ${headers})
 # Specify additional include directories #
 ##########################################
 
-include_directories(${GLUT_INCLUDE_DIR})
-
 IF(MSKINECTAPI_FOUND)
   include_directories(${MSKINECTAPI_INCLUDE_DIR})
 ELSE(MSKINECTAPI_FOUND)
@@ -77,11 +76,10 @@ CUDA_ADD_LIBRARY(${targetname} ${sources} ${headers})
 # Specify the link dependencies #
 #################################
 
+INCLUDE(${PROJECT_SOURCE_DIR}/cmake/LinkGLUT.cmake)
 INCLUDE(${PROJECT_SOURCE_DIR}/cmake/LinkOpenGL.cmake)
 INCLUDE(${PROJECT_SOURCE_DIR}/cmake/LinkOpenNI.cmake)
 INCLUDE(${PROJECT_SOURCE_DIR}/cmake/LinkRealSense.cmake)
-
-TARGET_LINK_LIBRARIES(${targetname} ${GLUT_LIBRARIES})
 
 IF(DEFINED libuvc_LIBRARIES)
   TARGET_LINK_LIBRARIES(${targetname} ${libuvc_LIBRARIES})
