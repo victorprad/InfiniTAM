@@ -14,6 +14,7 @@ SET(targetname Engine)
 
 INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseCUDA.cmake)
 INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseGLUT.cmake)
+INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseKinect2.cmake)
 INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseOpenGL.cmake)
 INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseOpenMP.cmake)
 INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseOpenNI.cmake)
@@ -51,16 +52,6 @@ UIEngine.h
 #############################
 
 SOURCE_GROUP("" FILES ${sources} ${headers})
-
-##########################################
-# Specify additional include directories #
-##########################################
-
-IF(MSKINECTAPI_FOUND)
-  include_directories(${MSKINECTAPI_INCLUDE_DIR})
-ELSE(MSKINECTAPI_FOUND)
-  add_definitions(-DCOMPILE_WITHOUT_Kinect2)
-ENDIF(MSKINECTAPI_FOUND)
 
 ##########################################
 # Specify the target and where to put it #
