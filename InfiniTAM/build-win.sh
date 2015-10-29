@@ -10,6 +10,24 @@ fi
 # Check that msbuild is on the system path.
 ./require-msbuild.sh
 
+# Download and extract freeglut if it's not already present.
+if [ ! -d freeglut ]
+then
+  /bin/rm -fR tmp
+  mkdir tmp
+  cd tmp
+
+  echo "[InfiniTAM] Downloading freeglut..."
+  curl http://files.transmissionzero.co.uk/software/development/GLUT/older/freeglut-MSVC-2.8.1-1.mp.zip > freeglut-MSVC-2.8.1-1.mp.zip
+
+  echo "[InfiniTAM] Extracting freeglut..."
+  unzip freeglut-MSVC-2.8.1-1.mp.zip
+
+  mv freeglut ..
+  cd ..
+  /bin/rm -fR tmp
+fi
+
 #cd libraries
 #./build-boost_1_56_0-win.sh "msvc-$1.0"
 #./build-glew-1.12.0-win.sh
