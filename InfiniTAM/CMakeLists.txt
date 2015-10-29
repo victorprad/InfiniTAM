@@ -74,11 +74,17 @@ SET(targetname InfiniTAM_cli)
 
 INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseCUDA.cmake)
 
+#############################
+# Specify the project files #
+#############################
+
+SET(sources InfiniTAM_cli.cpp)
+
 ##########################################
 # Specify the target and where to put it #
 ##########################################
 
-CUDA_ADD_EXECUTABLE(${targetname} InfiniTAM_cli.cpp)
+INCLUDE(${PROJECT_SOURCE_DIR}/cmake/SetCUDAAppTarget.cmake)
 
 #################################
 # Specify the libraries to link #
@@ -92,11 +98,23 @@ TARGET_LINK_LIBRARIES(${targetname} Engine Utils)
 
 SET(targetname InfiniTAM)
 
+################################
+# Specify the libraries to use #
+################################
+
+INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseCUDA.cmake)
+
+#############################
+# Specify the project files #
+#############################
+
+SET(sources InfiniTAM.cpp)
+
 ##########################################
 # Specify the target and where to put it #
 ##########################################
 
-CUDA_ADD_EXECUTABLE(${targetname} InfiniTAM.cpp)
+INCLUDE(${PROJECT_SOURCE_DIR}/cmake/SetCUDAAppTarget.cmake)
 
 #################################
 # Specify the libraries to link #

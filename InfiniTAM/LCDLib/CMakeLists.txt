@@ -14,13 +14,26 @@ SET(targetname LCDLib)
 
 INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseCUDA.cmake)
 
+#############################
+# Specify the project files #
+#############################
+
+SET(sources
+FernConservatory.cpp
+LCDDatabase.cpp
+LoopClosureDetector.h
+PoseDatabase.cpp
+)
+
+SET(headers
+FernConservatory.h
+LCDDatabase.h
+LoopClosureDetector.cpp
+PoseDatabase.h
+)
+
 ##########################################
 # Specify the target and where to put it #
 ##########################################
 
-CUDA_ADD_LIBRARY(${targetname}
-PoseDatabase.h PoseDatabase.cpp
-LCDDatabase.h LCDDatabase.cpp
-FernConservatory.h FernConservatory.cpp
-LoopClosureDetector.h LoopClosureDetector.cpp
-)
+INCLUDE(${PROJECT_SOURCE_DIR}/cmake/SetCUDALibTarget.cmake)
