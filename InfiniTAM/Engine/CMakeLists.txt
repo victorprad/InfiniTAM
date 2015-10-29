@@ -12,7 +12,9 @@ SET(targetname Engine)
 # Specify the libraries to use #
 ################################
 
+INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseCUDA.cmake)
 INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseOpenGL.cmake)
+INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseOpenMP.cmake)
 INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseOpenNI.cmake)
 INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseRealSense.cmake)
 
@@ -54,12 +56,6 @@ SOURCE_GROUP("" FILES ${sources} ${headers})
 
 include_directories(${GLUT_INCLUDE_DIR})
 
-IF(WITH_CUDA)
-  include_directories(${CUDA_INCLUDE_DIRS})
-ELSE()
-  add_definitions(-DCOMPILE_WITHOUT_CUDA)
-ENDIF()
-
 IF(MSKINECTAPI_FOUND)
   include_directories(${MSKINECTAPI_INCLUDE_DIR})
 ELSE(MSKINECTAPI_FOUND)
@@ -75,7 +71,7 @@ ENDIF()
 # Specify the target and where to put it #
 ##########################################
 
-ADD_LIBRARY(${targetname} ${sources} ${headers})
+CUDA_ADD_LIBRARY(${targetname} ${sources} ${headers})
 
 #################################
 # Specify the link dependencies #
@@ -86,9 +82,6 @@ INCLUDE(${PROJECT_SOURCE_DIR}/cmake/LinkOpenNI.cmake)
 INCLUDE(${PROJECT_SOURCE_DIR}/cmake/LinkRealSense.cmake)
 
 TARGET_LINK_LIBRARIES(${targetname} ${GLUT_LIBRARIES})
-IF(WITH_CUDA)
-  TARGET_LINK_LIBRARIES(${targetname} ${CUDA_LIBRARY})
-ENDIF()
 
 IF(DEFINED libuvc_LIBRARIES)
   TARGET_LINK_LIBRARIES(${targetname} ${libuvc_LIBRARIES})

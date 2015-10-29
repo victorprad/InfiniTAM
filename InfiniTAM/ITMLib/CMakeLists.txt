@@ -1,4 +1,20 @@
 #############################
+# CMakeLists.txt for ITMLib #
+#############################
+
+###########################
+# Specify the target name #
+###########################
+
+SET(targetname ITMLib)
+
+################################
+# Specify the libraries to use #
+################################
+
+INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseCUDA.cmake)
+
+#############################
 # Specify the project files #
 #############################
 
@@ -209,26 +225,11 @@ SOURCE_GROUP(Utils FILES ${ITMLIB_UTILS_SOURCES} ${ITMLIB_UTILS_HEADERS})
 # Specify the include directories, target and link libraries #
 ##############################################################
 
-if(WITH_CUDA)
-  if(NOT DEFINED CUDA_COMPUTE_CAPABILITY)
-    include(${PROJECT_SOURCE_DIR}/cmake/CUDACheckCompute.cmake)
-  endif()
-  set(CUDA_ARCH ${CUDA_COMPUTE_CAPABILITY} CACHE STRING "CUDA architectures to compile for")
-  string(REPLACE " " ";" CUDA_ARCH_LIST ${CUDA_ARCH})
-  foreach(a ${CUDA_ARCH_LIST})
-    set(CUDA_ARCH_OPTIONS "${CUDA_ARCH_OPTIONS} -gencode arch=compute_${a},code=compute_${a}")
-  endforeach()
-  include_directories(${CUDA_INCLUDE_DIRS})
-  cuda_add_library(ITMLib
-	${ITMLIB_CPU_OBJECTS}
-	${ITMLIB_CUDA_OBJECTS}
-	${ITMLIB_COMMON_OBJECTS}
-	OPTIONS "${CUDA_ARCH_OPTIONS} --use_fast_math")
-  target_link_libraries(ITMLib ${CUDA_LIBRARY})
-else()
-  add_definitions(-DCOMPILE_WITHOUT_CUDA)
-  add_library(ITMLib ${ITMLIB_CPU_OBJECTS} ${ITMLIB_COMMON_OBJECTS})
-endif()
+IF(WITH_CUDA)
+  CUDA_ADD_LIBRARY(${targetname} ${ITMLIB_CPU_OBJECTS} ${ITMLIB_CUDA_OBJECTS} ${ITMLIB_COMMON_OBJECTS})
+ELSE()
+  ADD_LIBRARY(${targetname} ${ITMLIB_CPU_OBJECTS} ${ITMLIB_COMMON_OBJECTS})
+ENDIF()
 
-target_link_libraries(ITMLib Utils)
-target_link_libraries(ITMLib LCDLib)
+TARGET_LINK_LIBRARIES(${targetname} Utils)
+TARGET_LINK_LIBRARIES(${targetname} LCDLib)

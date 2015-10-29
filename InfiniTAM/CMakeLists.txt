@@ -24,11 +24,16 @@ macro(CANONIFY_BOOL var)
   endif()
 endmacro()
 
-find_package(GLUT REQUIRED)
+#################################
+# Add additional compiler flags #
+#################################
 
-find_package(CUDA QUIET)
-CANONIFY_BOOL(CUDA_FOUND)
-message(STATUS "CUDA found: " ${CUDA_FOUND})
+IF(${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libstdc++ -Wno-deprecated-declarations -Wno-unused-function")
+  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -stdlib=libstdc++")
+ENDIF()
+
+find_package(GLUT REQUIRED)
 
 find_package(libuvc QUIET)
 CANONIFY_BOOL(libuvc_FOUND)
@@ -38,9 +43,6 @@ find_package(PNG QUIET)
 CANONIFY_BOOL(PNG_FOUND)
 message(STATUS "libpng found: ${PNG_FOUND}")
 
-OPTION(WITH_CUDA "Build with CUDA support?" ${CUDA_FOUND})
-INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseOpenMP.cmake)
-
 IF(MSVC_IDE)
   add_definitions(-D_CRT_SECURE_NO_WARNINGS)
   add_definitions(-DUSING_CMAKE=1)
@@ -49,15 +51,6 @@ ELSE(MSVC_IDE)
   set(CMAKE_CXX_FLAGS "-fPIC -O3 -march=native ${CFLAGS_WARN} ${CMAKE_CXX_FLAGS}")
   #set(CMAKE_CXX_FLAGS "-fPIC -g ${CFLAGS_WARN} ${CMAKE_CXX_FLAGS}")
 ENDIF(MSVC_IDE)
-
-if(APPLE)
-  set(CUDA_HOST_COMPILER /usr/bin/clang)
-endif(APPLE)
-
-IF(${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libstdc++ -Wno-deprecated-declarations -Wno-unused-function")
-  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -stdlib=libstdc++")
-ENDIF()
 
 ##########################
 # Specify subdirectories #
@@ -69,15 +62,44 @@ add_subdirectory(LCDLib)
 add_subdirectory(Utils)
 add_subdirectory(Engine)
 
-IF(WITH_CUDA)
-  include_directories(${CUDA_INCLUDE_DIRS})
-ELSE()
-  add_definitions(-DCOMPILE_WITHOUT_CUDA)
-ENDIF()
+#################################
+# Specify the first target name #
+#################################
 
-add_executable(InfiniTAM_cli InfiniTAM_cli.cpp)
-target_link_libraries(InfiniTAM_cli Engine)
-target_link_libraries(InfiniTAM_cli Utils)
-add_executable(InfiniTAM InfiniTAM.cpp)
-target_link_libraries(InfiniTAM Engine)
-target_link_libraries(InfiniTAM Utils)
+SET(targetname InfiniTAM_cli)
+
+################################
+# Specify the libraries to use #
+################################
+
+INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseCUDA.cmake)
+
+##########################################
+# Specify the target and where to put it #
+##########################################
+
+CUDA_ADD_EXECUTABLE(${targetname} InfiniTAM_cli.cpp)
+
+#################################
+# Specify the libraries to link #
+#################################
+
+TARGET_LINK_LIBRARIES(${targetname} Engine Utils)
+
+##################################
+# Specify the second target name #
+##################################
+
+SET(targetname InfiniTAM)
+
+##########################################
+# Specify the target and where to put it #
+##########################################
+
+CUDA_ADD_EXECUTABLE(${targetname} InfiniTAM.cpp)
+
+#################################
+# Specify the libraries to link #
+#################################
+
+TARGET_LINK_LIBRARIES(${targetname} Engine Utils)

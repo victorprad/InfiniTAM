@@ -1,10 +1,24 @@
-IF(WITH_CUDA)
-  include_directories(${CUDA_INCLUDE_DIRS})
-ELSE()
-  add_definitions(-DCOMPILE_WITHOUT_CUDA)
-ENDIF()
+#############################
+# CMakeLists.txt for LCDLib #
+#############################
 
-add_library(LCDLib
+###########################
+# Specify the target name #
+###########################
+
+SET(targetname LCDLib)
+
+################################
+# Specify the libraries to use #
+################################
+
+INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseCUDA.cmake)
+
+##########################################
+# Specify the target and where to put it #
+##########################################
+
+CUDA_ADD_LIBRARY(${targetname}
 PoseDatabase.h PoseDatabase.cpp
 LCDDatabase.h LCDDatabase.cpp
 FernConservatory.h FernConservatory.cpp
