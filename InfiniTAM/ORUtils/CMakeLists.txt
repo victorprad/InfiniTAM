@@ -1,39 +1,49 @@
+##############################
+# CMakeLists.txt for ORUtils #
+##############################
+
+###########################
+# Specify the target name #
+###########################
+
+SET(targetname ORUtils)
+
+################################
+# Specify the libraries to use #
+################################
+
+INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseCUDA.cmake)
+
 #############################
 # Specify the project files #
 #############################
 
-##
-SET(ORUTILS_HEADERS
-Vector.h
-Matrix.h
+SET(sources
+KeyValueConfig.cpp
+)
+
+SET(headers
 Cholesky.h
-MathUtils.h
-Image.h
 CUDADefines.h
+Image.h
+KeyValueConfig.h
 LexicalCast.h
+MathUtils.h
+Matrix.h
 MemoryBlock.h
 MemoryBlockPersister.h
 PlatformIndependence.h
-KeyValueConfig.h
-)
-
-#################################################################
-# Collect the project files into common, CPU-only and CUDA-only #
-#################################################################
-
-set(ORUTILS_OBJECTS
-KeyValueConfig.cpp
-${ORUTILS_HEADERS}
+Vector.h
 )
 
 #############################
 # Specify the source groups #
 #############################
 
-SOURCE_GROUP("" FILES ${ORUTILS_OBJECTS} ${ORUTILS_HEADERS})
+SOURCE_GROUP("" FILES ${sources} ${headers})
 
-##############################################################
-# Specify the include directories, target and link libraries #
-##############################################################
+##########################################
+# Specify the target and where to put it #
+##########################################
 
-add_library(ORUtils ${ORUTILS_OBJECTS})
+INCLUDE(${PROJECT_SOURCE_DIR}/cmake/SetCUDALibTarget.cmake)

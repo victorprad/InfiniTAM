@@ -70,7 +70,7 @@ ENDIF()
 # Specify the target and where to put it #
 ##########################################
 
-CUDA_ADD_LIBRARY(${targetname} ${sources} ${headers})
+INCLUDE(${PROJECT_SOURCE_DIR}/cmake/SetCUDALibTarget.cmake)
 
 #################################
 # Specify the link dependencies #

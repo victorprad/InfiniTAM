@@ -15,17 +15,34 @@ SET(targetname Utils)
 INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseCUDA.cmake)
 
 IF(PNG_FOUND)
-  include_directories(${PNG_INCLUDE_DIRS})
-  add_definitions(${PNG_DEFINITIONS})
-  add_definitions(-DUSE_LIBPNG)
+  INCLUDE_DIRECTORIES(${PNG_INCLUDE_DIRS})
+  ADD_DEFINITIONS(${PNG_DEFINITIONS})
+  ADD_DEFINITIONS(-DUSE_LIBPNG)
 ENDIF()
 
-CUDA_ADD_LIBRARY(Utils
+#############################
+# Specify the project files #
+#############################
+
+SET(sources
 FileUtils.cpp
+)
+
+SET(headers
 FileUtils.h
 NVTimer.h
 )
 
+##########################################
+# Specify the target and where to put it #
+##########################################
+
+INCLUDE(${PROJECT_SOURCE_DIR}/cmake/SetCUDALibTarget.cmake)
+
+#################################
+# Specify the link dependencies #
+#################################
+
 IF(PNG_FOUND)
-  target_link_libraries(Utils ${PNG_LIBRARIES})
+  TARGET_LINK_LIBRARIES(${targetname} ${PNG_LIBRARIES})
 ENDIF()
