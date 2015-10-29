@@ -13,12 +13,7 @@ SET(targetname Utils)
 ################################
 
 INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseCUDA.cmake)
-
-IF(PNG_FOUND)
-  INCLUDE_DIRECTORIES(${PNG_INCLUDE_DIRS})
-  ADD_DEFINITIONS(${PNG_DEFINITIONS})
-  ADD_DEFINITIONS(-DUSE_LIBPNG)
-ENDIF()
+INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UsePNG.cmake)
 
 #############################
 # Specify the project files #
@@ -43,6 +38,4 @@ INCLUDE(${PROJECT_SOURCE_DIR}/cmake/SetCUDALibTarget.cmake)
 # Specify the link dependencies #
 #################################
 
-IF(PNG_FOUND)
-  TARGET_LINK_LIBRARIES(${targetname} ${PNG_LIBRARIES})
-ENDIF()
+INCLUDE(${PROJECT_SOURCE_DIR}/cmake/LinkPNG.cmake)

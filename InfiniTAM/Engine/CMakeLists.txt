@@ -18,6 +18,7 @@ INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseOpenGL.cmake)
 INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseOpenMP.cmake)
 INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseOpenNI.cmake)
 INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseRealSense.cmake)
+INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseUVC.cmake)
 
 #############################
 # Specify the project files #
@@ -61,11 +62,6 @@ ELSE(MSKINECTAPI_FOUND)
   add_definitions(-DCOMPILE_WITHOUT_Kinect2)
 ENDIF(MSKINECTAPI_FOUND)
 
-IF(DEFINED libuvc_INCLUDE_DIRS)
-  include_directories(${libuvc_INCLUDE_DIRS})
-  add_definitions(-DCOMPILE_WITH_LibUVC)
-ENDIF()
-
 ##########################################
 # Specify the target and where to put it #
 ##########################################
@@ -76,13 +72,9 @@ INCLUDE(${PROJECT_SOURCE_DIR}/cmake/SetCUDALibTarget.cmake)
 # Specify the link dependencies #
 #################################
 
+TARGET_LINK_LIBRARIES(${targetname} ITMLib ORUtils)
 INCLUDE(${PROJECT_SOURCE_DIR}/cmake/LinkGLUT.cmake)
 INCLUDE(${PROJECT_SOURCE_DIR}/cmake/LinkOpenGL.cmake)
 INCLUDE(${PROJECT_SOURCE_DIR}/cmake/LinkOpenNI.cmake)
 INCLUDE(${PROJECT_SOURCE_DIR}/cmake/LinkRealSense.cmake)
-
-IF(DEFINED libuvc_LIBRARIES)
-  TARGET_LINK_LIBRARIES(${targetname} ${libuvc_LIBRARIES})
-ENDIF()
-
-TARGET_LINK_LIBRARIES(${targetname} ITMLib ORUtils)
+INCLUDE(${PROJECT_SOURCE_DIR}/cmake/LinkUVC.cmake)
