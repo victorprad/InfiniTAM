@@ -2,11 +2,11 @@
 # UseUVC.cmake #
 ################
 
-FIND_PACKAGE(libuvc QUIET)
-CANONIFY_BOOL(libuvc_FOUND)
-MESSAGE(STATUS "libuvc found: ${libuvc_FOUND}")
+OPTION(WITH_UVC "Build with libuvc support?" OFF)
 
-IF(libuvc_FOUND)
+IF(WITH_UVC)
+  FIND_PACKAGE(libuvc REQUIRED)
+
   INCLUDE_DIRECTORIES(${libuvc_INCLUDE_DIRS})
   ADD_DEFINITIONS(-DCOMPILE_WITH_LibUVC)
 ENDIF()
