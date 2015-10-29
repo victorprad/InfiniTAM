@@ -185,28 +185,25 @@ Utils/ITMVoxelTypes.h
 )
 
 #################################################################
-# Collect the project files into common, CPU-only and CUDA-only #
+# Collect the project files into sources, headers and templates #
 #################################################################
 
-set(ITMLIB_COMMON_OBJECTS
-${ITMLIB_TOPLEVEL_HEADERS}
+SET(sources
 ${ITMLIB_ENGINE_SOURCES}
+${ITMLIB_ENGINE_DEVICESPECIFIC_CPU_SOURCES}
+${ITMLIB_ENGINE_DEVICESPECIFIC_CUDA_SOURCES}
+${ITMLIB_OBJECTS_SOURCES}
+${ITMLIB_UTILS_SOURCES}
+)
+
+SET(headers
+${ITMLIB_TOPLEVEL_HEADERS}
 ${ITMLIB_ENGINE_HEADERS}
 ${ITMLIB_ENGINE_DEVICEAGNOSTIC_HEADERS}
-${ITMLIB_OBJECTS_SOURCES}
-${ITMLIB_OBJECTS_HEADERS}
-${ITMLIB_UTILS_SOURCES}
-${ITMLIB_UTILS_HEADERS}
-)
-
-set(ITMLIB_CPU_OBJECTS
-${ITMLIB_ENGINE_DEVICESPECIFIC_CPU_SOURCES}
 ${ITMLIB_ENGINE_DEVICESPECIFIC_CPU_HEADERS}
-)
-
-set(ITMLIB_CUDA_OBJECTS
-${ITMLIB_ENGINE_DEVICESPECIFIC_CUDA_SOURCES}
 ${ITMLIB_ENGINE_DEVICESPECIFIC_CUDA_HEADERS}
+${ITMLIB_OBJECTS_HEADERS}
+${ITMLIB_UTILS_HEADERS}
 )
 
 #############################
@@ -221,15 +218,14 @@ SOURCE_GROUP(Engine\\DeviceSpecific\\CUDA FILES ${ITMLIB_ENGINE_DEVICESPECIFIC_C
 SOURCE_GROUP(Objects FILES ${ITMLIB_OBJECTS_SOURCES} ${ITMLIB_OBJECTS_HEADERS})
 SOURCE_GROUP(Utils FILES ${ITMLIB_UTILS_SOURCES} ${ITMLIB_UTILS_HEADERS})
 
-##############################################################
-# Specify the include directories, target and link libraries #
-##############################################################
+##########################################
+# Specify the target and where to put it #
+##########################################
 
-IF(WITH_CUDA)
-  CUDA_ADD_LIBRARY(${targetname} ${ITMLIB_CPU_OBJECTS} ${ITMLIB_CUDA_OBJECTS} ${ITMLIB_COMMON_OBJECTS})
-ELSE()
-  ADD_LIBRARY(${targetname} ${ITMLIB_CPU_OBJECTS} ${ITMLIB_COMMON_OBJECTS})
-ENDIF()
+INCLUDE(${PROJECT_SOURCE_DIR}/cmake/SetCUDALibTarget.cmake)
 
-TARGET_LINK_LIBRARIES(${targetname} Utils)
-TARGET_LINK_LIBRARIES(${targetname} LCDLib)
+#################################
+# Specify the link dependencies #
+#################################
+
+TARGET_LINK_LIBRARIES(${targetname} Utils LCDLib)
