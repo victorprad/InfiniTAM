@@ -58,14 +58,3 @@ SOURCE_GROUP("" FILES ${sources} ${headers})
 ##########################################
 
 INCLUDE(${PROJECT_SOURCE_DIR}/cmake/SetCUDALibTarget.cmake)
-
-#################################
-# Specify the link dependencies #
-#################################
-
-TARGET_LINK_LIBRARIES(${targetname} ITMLib ORUtils)
-INCLUDE(${PROJECT_SOURCE_DIR}/cmake/LinkGLUT.cmake)
-INCLUDE(${PROJECT_SOURCE_DIR}/cmake/LinkOpenGL.cmake)
-INCLUDE(${PROJECT_SOURCE_DIR}/cmake/LinkOpenNI.cmake)
-INCLUDE(${PROJECT_SOURCE_DIR}/cmake/LinkRealSense.cmake)
-INCLUDE(${PROJECT_SOURCE_DIR}/cmake/LinkUVC.cmake)

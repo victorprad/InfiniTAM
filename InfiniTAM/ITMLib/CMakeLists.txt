@@ -223,9 +223,3 @@ SOURCE_GROUP(Utils FILES ${ITMLIB_UTILS_SOURCES} ${ITMLIB_UTILS_HEADERS})
 ##########################################
 
 INCLUDE(${PROJECT_SOURCE_DIR}/cmake/SetCUDALibTarget.cmake)
-
-#################################
-# Specify the link dependencies #
-#################################
-
-TARGET_LINK_LIBRARIES(${targetname} Utils LCDLib)
