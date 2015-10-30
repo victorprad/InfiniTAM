@@ -55,6 +55,7 @@ Engine/ITMMultiEngine.h
 Engine/ITMActiveSceneManager.h
 Engine/ITMRenTracker.h
 Engine/ITMSceneReconstructionEngine.h
+Engine/ITMSurfelSceneReconstructionEngine.h
 Engine/ITMSwappingEngine.h
 Engine/ITMTracker.h
 Engine/ITMTrackerFactory.h
@@ -159,6 +160,7 @@ Objects/ITMRGBDCalib.h
 Objects/ITMScene.h
 Objects/ITMSceneHierarchyLevel.h
 Objects/ITMSceneParams.h
+Objects/ITMSurfelScene.h
 Objects/ITMTemplatedHierarchyLevel.h
 Objects/ITMTrackingState.h
 Objects/ITMView.h
