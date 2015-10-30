@@ -90,6 +90,7 @@ Engine/DeviceSpecific/CPU/ITMWeightedICPTracker_CPU.cpp
 Engine/DeviceSpecific/CPU/ITMLowLevelEngine_CPU.cpp
 Engine/DeviceSpecific/CPU/ITMRenTracker_CPU.cpp
 Engine/DeviceSpecific/CPU/ITMSceneReconstructionEngine_CPU.cpp
+Engine/DeviceSpecific/CPU/ITMSurfelSceneReconstructionEngine_CPU.cpp
 Engine/DeviceSpecific/CPU/ITMSwappingEngine_CPU.cpp
 Engine/DeviceSpecific/CPU/ITMViewBuilder_CPU.cpp
 Engine/DeviceSpecific/CPU/ITMVisualisationEngine_CPU.cpp
@@ -103,6 +104,7 @@ Engine/DeviceSpecific/CPU/ITMWeightedICPTracker_CPU.h
 Engine/DeviceSpecific/CPU/ITMLowLevelEngine_CPU.h
 Engine/DeviceSpecific/CPU/ITMRenTracker_CPU.h
 Engine/DeviceSpecific/CPU/ITMSceneReconstructionEngine_CPU.h
+Engine/DeviceSpecific/CPU/ITMSurfelSceneReconstructionEngine_CPU.h
 Engine/DeviceSpecific/CPU/ITMSwappingEngine_CPU.h
 Engine/DeviceSpecific/CPU/ITMViewBuilder_CPU.h
 Engine/DeviceSpecific/CPU/ITMVisualisationEngine_CPU.h
@@ -117,6 +119,7 @@ Engine/DeviceSpecific/CUDA/ITMWeightedICPTracker_CUDA.cu
 Engine/DeviceSpecific/CUDA/ITMLowLevelEngine_CUDA.cu
 Engine/DeviceSpecific/CUDA/ITMRenTracker_CUDA.cu
 Engine/DeviceSpecific/CUDA/ITMSceneReconstructionEngine_CUDA.cu
+Engine/DeviceSpecific/CUDA/ITMSurfelSceneReconstructionEngine_CUDA.cu
 Engine/DeviceSpecific/CUDA/ITMSwappingEngine_CUDA.cu
 Engine/DeviceSpecific/CUDA/ITMViewBuilder_CUDA.cu
 Engine/DeviceSpecific/CUDA/ITMVisualisationEngine_CUDA.cu
@@ -131,6 +134,7 @@ Engine/DeviceSpecific/CUDA/ITMWeightedICPTracker_CUDA.h
 Engine/DeviceSpecific/CUDA/ITMLowLevelEngine_CUDA.h
 Engine/DeviceSpecific/CUDA/ITMRenTracker_CUDA.h
 Engine/DeviceSpecific/CUDA/ITMSceneReconstructionEngine_CUDA.h
+Engine/DeviceSpecific/CUDA/ITMSurfelSceneReconstructionEngine_CUDA.h
 Engine/DeviceSpecific/CUDA/ITMSwappingEngine_CUDA.h
 Engine/DeviceSpecific/CUDA/ITMViewBuilder_CUDA.h
 Engine/DeviceSpecific/CUDA/ITMVisualisationEngine_CUDA.h
