@@ -28,6 +28,7 @@ then
   /bin/rm -fR tmp
 fi
 
+# Build InfiniTAM itself.
 echo "[InfiniTAM] Building InfiniTAM"
 
 if [ ! -d build ]
