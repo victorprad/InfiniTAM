@@ -129,6 +129,7 @@ Objects/ITMExtrinsics.h
 Objects/ITMGlobalCache.h
 Objects/ITMImageHierarchy.h
 Objects/ITMIntrinsics.h
+Objects/ITMLocalScene.h
 Objects/ITMLocalVBA.h
 Objects/ITMPlainVoxelArray.h
 Objects/ITMPointCloud.h
