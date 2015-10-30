@@ -51,6 +51,10 @@ ADD_SUBDIRECTORY(Utils)
 SET(targetname InfiniTAM_cli)
 
 INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseCUDA.cmake)
+INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseOpenNI.cmake)
+INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UsePNG.cmake)
+INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseRealSense.cmake)
+INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseUVC.cmake)
 
 SET(sources InfiniTAM_cli.cpp)
 
@@ -71,6 +75,12 @@ INCLUDE(${PROJECT_SOURCE_DIR}/cmake/LinkUVC.cmake)
 SET(targetname InfiniTAM)
 
 INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseCUDA.cmake)
+INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseGLUT.cmake)
+INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseOpenGL.cmake)
+INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseOpenNI.cmake)
+INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UsePNG.cmake)
+INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseRealSense.cmake)
+INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseUVC.cmake)
 
 SET(sources InfiniTAM.cpp)
 
