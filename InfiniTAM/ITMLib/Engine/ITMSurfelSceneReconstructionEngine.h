@@ -14,7 +14,49 @@ namespace ITMLib
   template <typename TSurfel>
   class ITMSurfelSceneReconstructionEngine
   {
-    //#################### PUBLIC MEMBER FUNCTIONS ####################
+    //#################### PROTECTED VARIABLES ####################
+  protected:
+    /** The normal map corresponding to the live depth image. */
+    ORUtils::MemoryBlock<Vector3f> *m_normalMap;
+
+    /** The radius map corresponding to the live depth image. */
+    ORUtils::MemoryBlock<float> *m_radiusMap;
+
+    /** The vertex map corresponding to the live depth image (obtained by unprojecting the points in the depth image). */
+    ORUtils::MemoryBlock<Vector3f> *m_vertexMap;
+
+    //#################### CONSTRUCTORS ####################
+  protected:
+    /**
+     * \brief TODO
+     */
+    ITMSurfelSceneReconstructionEngine(const Vector2i& depthImageSize, MemoryDeviceType memoryType)
+    {
+      size_t pixelCount = depthImageSize.x * depthImageSize.y;
+      m_normalMap = new ORUtils::MemoryBlock<Vector3f>(pixelCount, memoryType);
+      m_radiusMap = new ORUtils::MemoryBlock<float>(pixelCount, memoryType);
+      m_vertexMap =  new ORUtils::MemoryBlock<Vector3f>(pixelCount, memoryType);
+    }
+
+    //#################### COPY CONSTRUCTOR & ASSIGNMENT OPERATOR ####################
+  private:
+    // Deliberately private and unimplemented
+    ITMSurfelSceneReconstructionEngine(const ITMSurfelSceneReconstructionEngine&);
+    ITMSurfelSceneReconstructionEngine& operator=(const ITMSurfelSceneReconstructionEngine);
+
+    //#################### DESTRUCTOR ####################
+  public:
+    /**
+     * \brief Destroys the reconstruction engine.
+     */
+    virtual ~ITMSurfelSceneReconstructionEngine()
+    {
+      delete m_normalMap;
+      delete m_radiusMap;
+      delete m_vertexMap;
+    }
+
+    //#################### PUBLIC ABSTRACT MEMBER FUNCTIONS ####################
   public:
     /**
      * \brief TODO
@@ -36,5 +78,12 @@ namespace ITMLib
      * \param scene The scene to reset.
      */
     virtual void ResetScene(ITMSurfelScene<TSurfel> *scene) const = 0;
+
+    //#################### PRIVATE ABSTRACT MEMBER FUNCTIONS ####################
+  private:
+    /**
+     * \brief TODO
+     */
+    virtual void PreprocessDepthMap(const ITMFloatImage *depthMap) const = 0;
   };
 }
