@@ -22,5 +22,10 @@ namespace ITMLib
 
     /** Override */
     virtual void ResetScene(ITMSurfelScene<TSurfel> *scene) const;
+
+    //#################### PRIVATE MEMBER FUNCTIONS ####################
+  private:
+    /** Override */
+    virtual void PreprocessDepthMap(const ITMFloatImage *depthMap) const;
   };
 }
