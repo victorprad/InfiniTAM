@@ -3,6 +3,8 @@
 #pragma once
 
 #include "../Objects/ITMSurfelScene.h"
+#include "../Objects/ITMTrackingState.h"
+#include "../Objects/ITMView.h"
 
 namespace ITMLib
 {

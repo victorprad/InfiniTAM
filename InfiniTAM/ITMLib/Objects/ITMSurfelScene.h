@@ -2,16 +2,27 @@
 
 #pragma once
 
+#include "../../ORUtils/MemoryBlock.h"
 #include "../Utils/ITMMath.h"
 
 namespace ITMLib
 {
+  //#################### CONSTANTS ####################
+
+  /** The maximum number of surfels that we can store in a scene. */
+  const size_t MAX_SURFEL_COUNT = 67108864; // 2^26
+
+  //#################### TYPES ####################
+
   /**
    * \brief An instance of this struct represents a surface element, or "surfel", in a 3D scene.
    */
   struct ITMSurfel
   {
     //#################### PUBLIC VARIABLES ####################
+
+    /** The RGB colour of the surfel. */
+    Vector3u colour;
 
     /** The confidence counter for the surfel. */
     float confidence;
@@ -37,11 +48,32 @@ namespace ITMLib
   {
     //#################### PRIVATE VARIABLES ####################
   private:
-    // TODO
+    /** The number of surfels currently in the scene. */
+    size_t m_surfelCount;
+
+    /** The surfels in the scene. */
+    ORUtils::MemoryBlock<TSurfel> *m_surfels;
 
     //#################### CONSTRUCTORS ####################
   public:
-    // TODO
+    /**
+     * \brief Constructs a surfel-based scene.
+     *
+     * \param memoryType  The type of memory in which to store the scene.
+     */
+    explicit ITMSurfelScene(MemoryDeviceType memoryType)
+      : m_surfelCount(0), m_surfels(new ORUtils::MemoryBlock<TSurfel>(MAX_SURFEL_COUNT, memoryType))
+    {}
+
+    //#################### DESTRUCTOR ####################
+  public:
+    /**
+     * \brief Destroys the scene.
+     */
+    ~ITMSurfelScene()
+    {
+      delete m_surfels;
+    }
 
     //#################### COPY CONSTRUCTOR & ASSIGNMENT OPERATOR ####################
   private:
