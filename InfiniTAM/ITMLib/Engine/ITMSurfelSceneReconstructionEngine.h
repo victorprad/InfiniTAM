@@ -84,6 +84,6 @@ namespace ITMLib
     /**
      * \brief TODO
      */
-    virtual void PreprocessDepthMap(const ITMFloatImage *depthMap) const = 0;
+    virtual void PreprocessDepthMap(const ITMView *view) const = 0;
   };
 }

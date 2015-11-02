@@ -28,9 +28,10 @@ void ITMSurfelSceneReconstructionEngine_CPU<TSurfel>::ResetScene(ITMSurfelScene<
 //#################### PRIVATE MEMBER FUNCTIONS ####################
 
 template <typename TSurfel>
-void ITMSurfelSceneReconstructionEngine_CPU<TSurfel>::PreprocessDepthMap(const ITMFloatImage *depthMap) const
+void ITMSurfelSceneReconstructionEngine_CPU<TSurfel>::PreprocessDepthMap(const ITMView *view) const
 {
-  int pixelCount = static_cast<int>(depthMap->dataSize);
+  const ITMIntrinsics& intrinsics = view->calib->intrinsics_d;
+  int pixelCount = static_cast<int>(view->depth->dataSize);
 
   // Calculate the vertex map.
 #ifdef WITH_OPENMP
