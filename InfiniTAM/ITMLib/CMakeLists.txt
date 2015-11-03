@@ -28,6 +28,7 @@ ITMLib.h
 SET(ITMLIB_ENGINE_SOURCES
 Engine/ITMColorTracker.cpp
 Engine/ITMDenseMapper.cpp
+Engine/ITMDenseSurfelMapper.cpp
 Engine/ITMDepthTracker.cpp
 Engine/ITMWeightedICPTracker.cpp
 Engine/ITMIMUTracker.cpp
@@ -44,6 +45,7 @@ SET(ITMLIB_ENGINE_HEADERS
 Engine/ITMColorTracker.h
 Engine/ITMCompositeTracker.h
 Engine/ITMDenseMapper.h
+Engine/ITMDenseSurfelMapper.h
 Engine/ITMDepthTracker.h
 Engine/ITMWeightedICPTracker.h
 Engine/ITMIMUCalibrator.h
