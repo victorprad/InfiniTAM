@@ -42,7 +42,7 @@ namespace ITMLib
   private:
     // Deliberately private and unimplemented
     ITMSurfelSceneReconstructionEngine(const ITMSurfelSceneReconstructionEngine&);
-    ITMSurfelSceneReconstructionEngine& operator=(const ITMSurfelSceneReconstructionEngine);
+    ITMSurfelSceneReconstructionEngine& operator=(const ITMSurfelSceneReconstructionEngine&);
 
     //#################### DESTRUCTOR ####################
   public:

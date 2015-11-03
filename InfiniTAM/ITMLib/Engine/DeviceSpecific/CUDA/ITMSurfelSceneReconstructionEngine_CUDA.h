@@ -26,6 +26,6 @@ namespace ITMLib
     //#################### PRIVATE MEMBER FUNCTIONS ####################
   private:
     /** Override */
-    virtual void PreprocessDepthMap(const ITMFloatImage *depthMap) const;
+    virtual void PreprocessDepthMap(const ITMView *view) const;
   };
 }
