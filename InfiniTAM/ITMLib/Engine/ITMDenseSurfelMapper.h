@@ -4,6 +4,7 @@
 
 #include "ITMSurfelSceneReconstructionEngine.h"
 #include "../Objects/ITMRenderState.h"
+#include "../Utils/ITMLibSettings.h"
 
 namespace ITMLib
 {
@@ -23,7 +24,7 @@ namespace ITMLib
     /**
      * \brief TODO
      */
-    ITMDenseSurfelMapper();
+    explicit ITMDenseSurfelMapper(ITMLibSettings::DeviceType deviceType);
 
     //#################### DESTRUCTOR ####################
   public:

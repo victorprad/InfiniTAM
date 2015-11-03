@@ -2,23 +2,24 @@
 
 #include "ITMDenseSurfelMapper.h"
 
+#include "ITMSurfelSceneReconstructionEngineFactory.h"
+
 namespace ITMLib
 {
 
 //#################### CONSTRUCTORS ####################
 
 template <typename TSurfel>
-ITMDenseSurfelMapper<TSurfel>::ITMDenseSurfelMapper()
-{
-  // TODO
-}
+ITMDenseSurfelMapper<TSurfel>::ITMDenseSurfelMapper(ITMLibSettings::DeviceType deviceType)
+: m_reconstructionEngine(ITMSurfelSceneReconstructionEngineFactory<TSurfel>::make_surfel_scene_reconstruction_engine(deviceType))
+{}
 
 //#################### DESTRUCTOR ####################
 
 template <typename TSurfel>
 ITMDenseSurfelMapper<TSurfel>::~ITMDenseSurfelMapper()
 {
-  // TODO
+  delete m_reconstructionEngine;
 }
 
 //#################### PUBLIC MEMBER FUNCTIONS ####################
@@ -26,7 +27,8 @@ ITMDenseSurfelMapper<TSurfel>::~ITMDenseSurfelMapper()
 template <typename TSurfel>
 void ITMDenseSurfelMapper<TSurfel>::ProcessFrame(const ITMView *view, const ITMTrackingState *trackingState, ITMSurfelScene<TSurfel> *scene, ITMRenderState *liveRenderState) const
 {
-  // TODO
+  // TEMPORARY
+  m_reconstructionEngine->IntegrateIntoScene(scene, view, trackingState);
 }
 
 //#################### EXPLICIT INSTANTIATIONS ####################
