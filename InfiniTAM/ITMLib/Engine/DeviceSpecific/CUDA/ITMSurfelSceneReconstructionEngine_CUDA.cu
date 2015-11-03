@@ -20,6 +20,13 @@ __global__ void ck_calculate_vertex_map(int pixelCount, int width, const ITMIntr
   }
 }
 
+//#################### CONSTRUCTORS ####################
+
+template <typename TSurfel>
+ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::ITMSurfelSceneReconstructionEngine_CUDA(const Vector2i& depthImageSize, MemoryDeviceType memoryType)
+: ITMSurfelSceneReconstructionEngine<TSurfel>(depthImageSize, memoryType)
+{}
+
 //#################### PUBLIC MEMBER FUNCTIONS ####################
 
 template <typename TSurfel>

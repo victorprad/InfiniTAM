@@ -21,6 +21,6 @@ namespace ITMLib
      * \param deviceType  TODO
      * \return            TODO
      */
-    static ITMSurfelSceneReconstructionEngine<TSurfel> *make_surfel_scene_reconstruction_engine(ITMLib::ITMLibSettings::DeviceType deviceType);
+    static ITMSurfelSceneReconstructionEngine<TSurfel> *make_surfel_scene_reconstruction_engine(const Vector2i& depthImageSize, ITMLib::ITMLibSettings::DeviceType deviceType);
   };
 }

@@ -14,21 +14,22 @@ namespace ITMLib
 //#################### PUBLIC STATIC MEMBER FUNCTIONS ####################
 
 template <typename TSurfel>
-ITMSurfelSceneReconstructionEngine<TSurfel> *ITMSurfelSceneReconstructionEngineFactory<TSurfel>::make_surfel_scene_reconstruction_engine(ITMLib::ITMLibSettings::DeviceType deviceType)
+ITMSurfelSceneReconstructionEngine<TSurfel> *
+ITMSurfelSceneReconstructionEngineFactory<TSurfel>::make_surfel_scene_reconstruction_engine(const Vector2i& depthImageSize, ITMLibSettings::DeviceType deviceType)
 {
   ITMSurfelSceneReconstructionEngine<TSurfel> *reconstructionEngine = NULL;
 
   if(deviceType == ITMLibSettings::DEVICE_CUDA)
   {
 #ifndef COMPILE_WITHOUT_CUDA
-    reconstructionEngine = new ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>;
+    reconstructionEngine = new ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>(depthImageSize, MEMORYDEVICE_CUDA);
 #else
     throw std::runtime_error("Error: CUDA support not currently available. Reconfigure in CMake with the WITH_CUDA option set to on.");
 #endif
   }
   else
   {
-    reconstructionEngine = new ITMSurfelSceneReconstructionEngine_CPU<TSurfel>;
+    reconstructionEngine = new ITMSurfelSceneReconstructionEngine_CPU<TSurfel>(depthImageSize, MEMORYDEVICE_CPU);
   }
 
   return reconstructionEngine;
@@ -36,6 +37,6 @@ ITMSurfelSceneReconstructionEngine<TSurfel> *ITMSurfelSceneReconstructionEngineF
 
 //#################### EXPLICIT INSTANTIATIONS ####################
 
-template class ITMSurfelSceneReconstructionEngine<ITMSurfel>;
+template struct ITMSurfelSceneReconstructionEngineFactory<ITMSurfel>;
 
 }

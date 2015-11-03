@@ -12,6 +12,13 @@ namespace ITMLib
   template <typename TSurfel>
   class ITMSurfelSceneReconstructionEngine_CUDA : public ITMSurfelSceneReconstructionEngine<TSurfel>
   {
+    //#################### CONSTRUCTORS ####################
+  public:
+    /**
+     * \brief TODO
+     */
+    ITMSurfelSceneReconstructionEngine_CUDA(const Vector2i& depthImageSize, MemoryDeviceType memoryType);
+
     //#################### PUBLIC MEMBER FUNCTIONS ####################
   public:
     /** Override */

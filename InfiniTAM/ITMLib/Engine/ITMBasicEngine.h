@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "ITMDenseSurfelMapper.h"
 #include "ITMMainEngine.h"
 
 namespace ITMLib
@@ -21,9 +22,11 @@ namespace ITMLib
 
 		ITMViewBuilder *viewBuilder;		
 		ITMDenseMapper<ITMVoxel,ITMVoxelIndex> *denseMapper;
+		ITMDenseSurfelMapper<ITMSurfel> *denseSurfelMapper;
 		ITMTrackingController *trackingController;
 
 		ITMScene<ITMVoxel, ITMVoxelIndex> *scene;
+		ITMSurfelScene<ITMSurfel> *surfelScene;
 		ITMRenderState *renderState_live;
 		ITMRenderState *renderState_freeview;
 

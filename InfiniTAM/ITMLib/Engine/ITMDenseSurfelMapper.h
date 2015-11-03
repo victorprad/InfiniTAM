@@ -24,7 +24,7 @@ namespace ITMLib
     /**
      * \brief TODO
      */
-    explicit ITMDenseSurfelMapper(ITMLibSettings::DeviceType deviceType);
+    ITMDenseSurfelMapper(const Vector2i& depthImageSize, ITMLibSettings::DeviceType deviceType);
 
     //#################### DESTRUCTOR ####################
   public:

@@ -17,6 +17,9 @@ ITMBasicEngine::ITMBasicEngine(const ITMLibSettings *settings, const ITMRGBDCali
 	MemoryDeviceType memoryType = settings->deviceType == ITMLibSettings::DEVICE_CUDA ? MEMORYDEVICE_CUDA : MEMORYDEVICE_CPU;
 	this->scene = new ITMScene<ITMVoxel, ITMVoxelIndex>(&settings->sceneParams, settings->useSwapping, memoryType);
 
+	this->surfelScene = new ITMSurfelScene<ITMSurfel>(
+		settings->deviceType == ITMLibSettings::DEVICE_CUDA ? MEMORYDEVICE_CUDA : MEMORYDEVICE_CPU);
+
 	meshingEngine = NULL;
 	switch (settings->deviceType)
 	{
@@ -50,6 +53,8 @@ ITMBasicEngine::ITMBasicEngine(const ITMLibSettings *settings, const ITMRGBDCali
 	denseMapper = new ITMDenseMapper<ITMVoxel, ITMVoxelIndex>(settings);
 	denseMapper->ResetScene(scene);
 
+	denseSurfelMapper = new ITMDenseSurfelMapper<ITMSurfel>(imgSize_d, settings->deviceType);
+
 	imuCalibrator = new ITMIMUCalibrator_iPad();
 	tracker = ITMTrackerFactory<ITMVoxel, ITMVoxelIndex>::Instance().Make(imgSize_rgb, imgSize_d, settings, lowLevelEngine, imuCalibrator, scene);
 	trackingController = new ITMTrackingController(tracker, settings);
@@ -76,8 +81,10 @@ ITMBasicEngine::~ITMBasicEngine()
 	if (renderState_freeview!=NULL) delete renderState_freeview;
 
 	delete scene;
+	delete surfelScene;
 
 	delete denseMapper;
+	delete denseSurfelMapper;
 	delete trackingController;
 
 	delete tracker;
@@ -138,6 +145,7 @@ void ITMBasicEngine::ProcessFrame(ITMUChar4Image *rgbImage, ITMShortImage *rawDe
 	if ((trackingSuccess >= 2 || !trackingInitialised) && (fusionActive)) {
 		// fusion
 		denseMapper->ProcessFrame(view, trackingState, scene, renderState_live);
+		denseSurfelMapper->ProcessFrame(view, trackingState, surfelScene, renderState_live);
 		didFusion = true;
 		trackingInitialised = true;
 	}
