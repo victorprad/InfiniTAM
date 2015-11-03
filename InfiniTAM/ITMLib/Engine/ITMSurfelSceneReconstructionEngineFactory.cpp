@@ -22,14 +22,14 @@ ITMSurfelSceneReconstructionEngineFactory<TSurfel>::make_surfel_scene_reconstruc
   if(deviceType == ITMLibSettings::DEVICE_CUDA)
   {
 #ifndef COMPILE_WITHOUT_CUDA
-    reconstructionEngine = new ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>(depthImageSize, MEMORYDEVICE_CUDA);
+    reconstructionEngine = new ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>(depthImageSize);
 #else
     throw std::runtime_error("Error: CUDA support not currently available. Reconfigure in CMake with the WITH_CUDA option set to on.");
 #endif
   }
   else
   {
-    reconstructionEngine = new ITMSurfelSceneReconstructionEngine_CPU<TSurfel>(depthImageSize, MEMORYDEVICE_CPU);
+    reconstructionEngine = new ITMSurfelSceneReconstructionEngine_CPU<TSurfel>(depthImageSize);
   }
 
   return reconstructionEngine;

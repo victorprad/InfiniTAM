@@ -17,7 +17,7 @@ namespace ITMLib
     /**
      * \brief TODO
      */
-    ITMSurfelSceneReconstructionEngine_CPU(const Vector2i& depthImageSize, MemoryDeviceType memoryType);
+    explicit ITMSurfelSceneReconstructionEngine_CPU(const Vector2i& depthImageSize);
 
     //#################### PUBLIC MEMBER FUNCTIONS ####################
   public:

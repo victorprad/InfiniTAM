@@ -10,8 +10,8 @@ namespace ITMLib
 //#################### CONSTRUCTORS ####################
 
 template <typename TSurfel>
-ITMSurfelSceneReconstructionEngine_CPU<TSurfel>::ITMSurfelSceneReconstructionEngine_CPU(const Vector2i& depthImageSize, MemoryDeviceType memoryType)
-: ITMSurfelSceneReconstructionEngine<TSurfel>(depthImageSize, memoryType)
+ITMSurfelSceneReconstructionEngine_CPU<TSurfel>::ITMSurfelSceneReconstructionEngine_CPU(const Vector2i& depthImageSize)
+: ITMSurfelSceneReconstructionEngine<TSurfel>(depthImageSize)
 {}
 
 //#################### PUBLIC MEMBER FUNCTIONS ####################

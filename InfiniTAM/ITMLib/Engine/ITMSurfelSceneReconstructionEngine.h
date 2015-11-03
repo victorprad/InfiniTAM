@@ -30,12 +30,12 @@ namespace ITMLib
     /**
      * \brief TODO
      */
-    ITMSurfelSceneReconstructionEngine(const Vector2i& depthImageSize, MemoryDeviceType memoryType)
+    explicit ITMSurfelSceneReconstructionEngine(const Vector2i& depthImageSize)
     {
       size_t pixelCount = depthImageSize.x * depthImageSize.y;
-      m_normalMap = new ORUtils::MemoryBlock<Vector3f>(pixelCount, memoryType);
-      m_radiusMap = new ORUtils::MemoryBlock<float>(pixelCount, memoryType);
-      m_vertexMap =  new ORUtils::MemoryBlock<Vector3f>(pixelCount, memoryType);
+      m_normalMap = new ORUtils::MemoryBlock<Vector3f>(pixelCount, true, true);
+      m_radiusMap = new ORUtils::MemoryBlock<float>(pixelCount, true, true);
+      m_vertexMap =  new ORUtils::MemoryBlock<Vector3f>(pixelCount, true, true);
     }
 
     //#################### COPY CONSTRUCTOR & ASSIGNMENT OPERATOR ####################

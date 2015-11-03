@@ -11,7 +11,7 @@ namespace ITMLib
 
 //#################### CUDA KERNELS ####################
 
-__global__ void ck_calculate_vertex_map(int pixelCount, int width, const ITMIntrinsics& intrinsics, const float *depthMap, Vector3f *vertexMap)
+__global__ void ck_calculate_vertex_map(int pixelCount, int width, ITMIntrinsics intrinsics, const float *depthMap, Vector3f *vertexMap)
 {
   int locId = threadIdx.x + blockDim.x * blockIdx.x;
   if(locId < pixelCount)
@@ -23,8 +23,8 @@ __global__ void ck_calculate_vertex_map(int pixelCount, int width, const ITMIntr
 //#################### CONSTRUCTORS ####################
 
 template <typename TSurfel>
-ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::ITMSurfelSceneReconstructionEngine_CUDA(const Vector2i& depthImageSize, MemoryDeviceType memoryType)
-: ITMSurfelSceneReconstructionEngine<TSurfel>(depthImageSize, memoryType)
+ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::ITMSurfelSceneReconstructionEngine_CUDA(const Vector2i& depthImageSize)
+: ITMSurfelSceneReconstructionEngine<TSurfel>(depthImageSize)
 {}
 
 //#################### PUBLIC MEMBER FUNCTIONS ####################
@@ -38,6 +38,9 @@ void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::AllocateSceneFromDepth(IT
 template <typename TSurfel>
 void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::IntegrateIntoScene(ITMSurfelScene<TSurfel> *scene, const ITMView *view, const ITMTrackingState *trackingState) const
 {
+  // TEMPORARY
+  PreprocessDepthMap(view);
+
   // TODO
 }
 
