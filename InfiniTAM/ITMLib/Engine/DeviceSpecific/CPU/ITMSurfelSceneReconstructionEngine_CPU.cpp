@@ -2,6 +2,8 @@
 
 #include "ITMSurfelSceneReconstructionEngine_CPU.h"
 
+#include "../../DeviceAgnostic/ITMSurfelSceneReconstructionEngine.h"
+
 namespace ITMLib
 {
 
@@ -30,8 +32,11 @@ void ITMSurfelSceneReconstructionEngine_CPU<TSurfel>::ResetScene(ITMSurfelScene<
 template <typename TSurfel>
 void ITMSurfelSceneReconstructionEngine_CPU<TSurfel>::PreprocessDepthMap(const ITMView *view) const
 {
+  const float *depthMap = view->depth->GetData(MEMORYDEVICE_CPU);
   const ITMIntrinsics& intrinsics = view->calib->intrinsics_d;
   int pixelCount = static_cast<int>(view->depth->dataSize);
+  Vector3f *vertexMap = m_vertexMap->GetData(MEMORYDEVICE_CPU);
+  int width = view->depth->noDims.x;
 
   // Calculate the vertex map.
 #ifdef WITH_OPENMP
@@ -39,7 +44,7 @@ void ITMSurfelSceneReconstructionEngine_CPU<TSurfel>::PreprocessDepthMap(const I
 #endif
   for(int locId = 0; locId < pixelCount; ++locId)
   {
-    // TODO
+    calculate_vertex_position(locId, width, intrinsics, depthMap, vertexMap);
   }
 
   // Calculate the normal map.
