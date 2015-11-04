@@ -98,5 +98,13 @@ namespace ITMLib
     {
       return m_surfels;
     }
+
+    /**
+     * \brief Resets the scene.
+     */
+    void Reset()
+    {
+      m_surfelCount = 0;
+    }
   };
 }

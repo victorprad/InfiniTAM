@@ -55,12 +55,6 @@ void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::IntegrateIntoScene(ITMSur
   // TODO
 }
 
-template <typename TSurfel>
-void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::ResetScene(ITMSurfelScene<TSurfel> *scene) const
-{
-  // TODO
-}
-
 //#################### PRIVATE MEMBER FUNCTIONS ####################
 
 template <typename TSurfel>

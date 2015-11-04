@@ -27,9 +27,6 @@ namespace ITMLib
     /** Override */
     virtual void IntegrateIntoScene(ITMSurfelScene<TSurfel> *scene, const ITMView *view, const ITMTrackingState *trackingState) const;
 
-    /** Override */
-    virtual void ResetScene(ITMSurfelScene<TSurfel> *scene) const;
-
     //#################### PRIVATE MEMBER FUNCTIONS ####################
   private:
     /** Override */

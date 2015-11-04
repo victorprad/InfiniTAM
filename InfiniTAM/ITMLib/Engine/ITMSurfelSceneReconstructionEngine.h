@@ -77,13 +77,6 @@ namespace ITMLib
      */
     virtual void IntegrateIntoScene(ITMSurfelScene<TSurfel> *scene, const ITMView *view, const ITMTrackingState *trackingState) const = 0;
 
-    /**
-     * \brief Resets the specified surfel-based scene.
-     *
-     * \param scene The scene to reset.
-     */
-    virtual void ResetScene(ITMSurfelScene<TSurfel> *scene) const = 0;
-
     //#################### PRIVATE ABSTRACT MEMBER FUNCTIONS ####################
   private:
     /**
@@ -95,5 +88,17 @@ namespace ITMLib
      * \brief TODO
      */
     virtual void PreprocessDepthMap(const ITMView *view) const = 0;
+
+    //#################### PUBLIC MEMBER FUNCTIONS ####################
+  public:
+    /**
+     * \brief Resets the specified surfel-based scene.
+     *
+     * \param scene The scene to reset.
+     */
+    void ResetScene(ITMSurfelScene<TSurfel> *scene) const
+    {
+      scene->Reset();
+    }
   };
 }
