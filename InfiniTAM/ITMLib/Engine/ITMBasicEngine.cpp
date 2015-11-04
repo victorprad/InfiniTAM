@@ -120,6 +120,7 @@ void ITMBasicEngine::ProcessFrame(ITMUChar4Image *rgbImage, ITMShortImage *rawDe
 {
 	// prepare image and turn it into a depth image
 	bool modelSensorNoise = tracker->requiresDepthReliability();
+	modelSensorNoise = true; // we always need a normal map for surfel-based fusion
 	if (imuMeasurement == NULL) viewBuilder->UpdateView(&view, rgbImage, rawDepthImage, settings->useBilateralFilter, modelSensorNoise);
 	else viewBuilder->UpdateView(&view, rgbImage, rawDepthImage, settings->useBilateralFilter, imuMeasurement);
 
@@ -194,6 +195,18 @@ void ITMBasicEngine::GetImage(ITMUChar4Image *out, GetImageType getImageType, IT
 		}
 
 		break;
+	case ITMBasicEngine::InfiniTAM_IMAGE_COLOUR_FROM_NORMAL:
+	{
+		visualisationEngine->FindVisibleBlocks(scene, trackingState->pose_d, &view->calib->intrinsics_d, renderState_live);
+		visualisationEngine->CreateExpectedDepths(scene, trackingState->pose_d, &view->calib->intrinsics_d, renderState_live);
+		visualisationEngine->RenderImage(scene, trackingState->pose_d, &view->calib->intrinsics_d, renderState_live, renderState_live->raycastImage, IITMVisualisationEngine::RENDER_COLOUR_FROM_NORMAL);
+
+		if (settings->deviceType == ITMLibSettings::DEVICE_CUDA)
+			out->SetFrom(renderState_live->raycastImage, ORUtils::MemoryBlock<Vector4u>::CUDA_TO_CPU);
+		else out->SetFrom(renderState_live->raycastImage, ORUtils::MemoryBlock<Vector4u>::CPU_TO_CPU);
+
+		break;
+	}
 	case ITMBasicEngine::InfiniTAM_IMAGE_SCENERAYCAST:
 	{
 		ORUtils::Image<Vector4u> *srcImage = renderState_live->raycastImage;

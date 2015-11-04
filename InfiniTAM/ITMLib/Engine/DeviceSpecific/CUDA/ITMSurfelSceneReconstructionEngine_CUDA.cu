@@ -74,6 +74,13 @@ void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::PreprocessDepthMap(const 
 #endif
 
   // Calculate the normal map.
+  // FIXME: We don't need to store two copies of it.
+  m_normalMap->SetFrom(view->depthNormal, ORUtils::MemoryBlock<Vector4f>::CUDA_TO_CUDA);
+
+#if DEBUGGING
+  m_normalMap->UpdateHostFromDevice();
+#endif
+
   // TODO
 }
 

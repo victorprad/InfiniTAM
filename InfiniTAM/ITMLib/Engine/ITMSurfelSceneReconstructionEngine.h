@@ -17,7 +17,7 @@ namespace ITMLib
     //#################### PROTECTED VARIABLES ####################
   protected:
     /** The normal map corresponding to the live depth image. */
-    ORUtils::MemoryBlock<Vector3f> *m_normalMap;
+    ORUtils::MemoryBlock<Vector4f> *m_normalMap;
 
     /** The radius map corresponding to the live depth image. */
     ORUtils::MemoryBlock<float> *m_radiusMap;
@@ -33,7 +33,7 @@ namespace ITMLib
     explicit ITMSurfelSceneReconstructionEngine(const Vector2i& depthImageSize)
     {
       size_t pixelCount = depthImageSize.x * depthImageSize.y;
-      m_normalMap = new ORUtils::MemoryBlock<Vector3f>(pixelCount, true, true);
+      m_normalMap = new ORUtils::MemoryBlock<Vector4f>(pixelCount, true, true);
       m_radiusMap = new ORUtils::MemoryBlock<float>(pixelCount, true, true);
       m_vertexMap =  new ORUtils::MemoryBlock<Vector3f>(pixelCount, true, true);
     }
