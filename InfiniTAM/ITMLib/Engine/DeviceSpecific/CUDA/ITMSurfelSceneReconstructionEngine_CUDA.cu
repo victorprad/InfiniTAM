@@ -11,7 +11,17 @@ namespace ITMLib
 
 //#################### CUDA KERNELS ####################
 
-__global__ void ck_calculate_vertex_map(int pixelCount, int width, ITMIntrinsics intrinsics, const float *depthMap, Vector3f *vertexMap)
+template <typename TSurfel>
+__global__ void ck_project_to_index_map(int surfelCount, const TSurfel *surfels, ITMPose pose, ITMIntrinsics intrinsics, unsigned int *indexMap)
+{
+  int surfelId = threadIdx.x + blockDim.x * blockIdx.x;
+  if(surfelId < surfelCount)
+  {
+    project_to_index_map(surfelId, surfels, pose, intrinsics, indexMap);
+  }
+}
+
+__global__ void ck_calculate_vertex_position(int pixelCount, int width, ITMIntrinsics intrinsics, const float *depthMap, Vector3f *vertexMap)
 {
   int locId = threadIdx.x + blockDim.x * blockIdx.x;
   if(locId < pixelCount)
@@ -40,6 +50,7 @@ void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::IntegrateIntoScene(ITMSur
 {
   // TEMPORARY
   PreprocessDepthMap(view);
+  GenerateIndexMap(scene, *trackingState->pose_d, view->calib->intrinsics_d);
 
   // TODO
 }
@@ -53,6 +64,27 @@ void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::ResetScene(ITMSurfelScene
 //#################### PRIVATE MEMBER FUNCTIONS ####################
 
 template <typename TSurfel>
+void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::GenerateIndexMap(const ITMSurfelScene<TSurfel> *scene, const ITMPose& pose, const ITMIntrinsics& intrinsics) const
+{
+  const int surfelCount = static_cast<int>(scene->GetSurfelCount());
+
+  int threadsPerBlock = 256;
+  int numBlocks = (surfelCount + threadsPerBlock - 1) / threadsPerBlock;
+
+  ck_project_to_index_map<<<numBlocks,threadsPerBlock>>>(
+    surfelCount,
+    scene->GetSurfels()->GetData(MEMORYDEVICE_CUDA),
+    pose,
+    intrinsics,
+    m_indexMap->GetData(MEMORYDEVICE_CUDA)
+  );
+
+#if DEBUGGING
+  m_indexMap->UpdateHostFromDevice();
+#endif
+}
+
+template <typename TSurfel>
 void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::PreprocessDepthMap(const ITMView *view) const
 {
   const int pixelCount = static_cast<int>(view->depth->dataSize);
@@ -61,7 +93,7 @@ void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::PreprocessDepthMap(const 
   int threadsPerBlock = 256;
   int numBlocks = (pixelCount + threadsPerBlock - 1) / threadsPerBlock;
 
-  ck_calculate_vertex_map<<<numBlocks,threadsPerBlock>>>(
+  ck_calculate_vertex_position<<<numBlocks,threadsPerBlock>>>(
     pixelCount,
     view->depth->noDims.x,
     view->calib->intrinsics_d,
@@ -81,7 +113,7 @@ void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::PreprocessDepthMap(const 
   m_normalMap->UpdateHostFromDevice();
 #endif
 
-  // TODO
+  // TODO: Calculate the radius map.
 }
 
 //#################### EXPLICIT INSTANTIATIONS ####################

@@ -28,4 +28,17 @@ inline void calculate_vertex_position(int locId, int width, const ITMIntrinsics&
   );
 }
 
+/**
+ * \brief TODO
+ */
+template <typename TSurfel>
+_CPU_AND_GPU_CODE_
+inline void project_to_index_map(int surfelId, const TSurfel *surfels, const ITMPose& pose, const ITMIntrinsics& intrinsics, unsigned int *indexMap)
+{
+  /*
+  TODO
+  */
+  // TODO
+}
+
 }

@@ -27,6 +27,7 @@ void ITMSurfelSceneReconstructionEngine_CPU<TSurfel>::IntegrateIntoScene(ITMSurf
 {
   // TEMPORARY
   PreprocessDepthMap(view);
+  GenerateIndexMap(scene, *trackingState->pose_d, view->calib->intrinsics_d);
 
   // TODO
 }
@@ -38,6 +39,22 @@ void ITMSurfelSceneReconstructionEngine_CPU<TSurfel>::ResetScene(ITMSurfelScene<
 }
 
 //#################### PRIVATE MEMBER FUNCTIONS ####################
+
+template <typename TSurfel>
+void ITMSurfelSceneReconstructionEngine_CPU<TSurfel>::GenerateIndexMap(const ITMSurfelScene<TSurfel> *scene, const ITMPose& pose, const ITMIntrinsics& intrinsics) const
+{
+  unsigned int *indexMap = m_indexMap->GetData(MEMORYDEVICE_CPU);
+  const int surfelCount = static_cast<int>(scene->GetSurfelCount());
+  const TSurfel *surfels = scene->GetSurfels()->GetData(MEMORYDEVICE_CPU);
+
+#ifdef WITH_OPENMP
+  #pragma omp parallel for
+#endif
+  for(int surfelId = 0; surfelId < surfelCount; ++surfelId)
+  {
+    project_to_index_map(surfelId, surfels, pose, intrinsics, indexMap);
+  }
+}
 
 template <typename TSurfel>
 void ITMSurfelSceneReconstructionEngine_CPU<TSurfel>::PreprocessDepthMap(const ITMView *view) const
@@ -61,7 +78,7 @@ void ITMSurfelSceneReconstructionEngine_CPU<TSurfel>::PreprocessDepthMap(const I
   // FIXME: We don't need to store two copies of it.
   m_normalMap->SetFrom(view->depthNormal, ORUtils::MemoryBlock<Vector4f>::CUDA_TO_CPU);
 
-  // TODO
+  // TODO: Calculate the radius map.
 }
 
 //#################### EXPLICIT INSTANTIATIONS ####################

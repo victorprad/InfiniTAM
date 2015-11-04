@@ -83,6 +83,20 @@ namespace ITMLib
 
     //#################### PUBLIC MEMBER FUNCTIONS ####################
   public:
-    // TODO
+    /**
+     * \brief TODO
+     */
+    size_t GetSurfelCount() const
+    {
+      return m_surfelCount;
+    }
+
+    /**
+     * \brief TODO
+     */
+    const ORUtils::MemoryBlock<TSurfel> *GetSurfels() const
+    {
+      return m_surfels;
+    }
   };
 }

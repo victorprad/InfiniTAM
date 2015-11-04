@@ -16,6 +16,9 @@ namespace ITMLib
   {
     //#################### PROTECTED VARIABLES ####################
   protected:
+    /** TODO */
+    ORUtils::MemoryBlock<unsigned int> *m_indexMap;
+
     /** The normal map corresponding to the live depth image. */
     ORUtils::MemoryBlock<Vector4f> *m_normalMap;
 
@@ -33,6 +36,7 @@ namespace ITMLib
     explicit ITMSurfelSceneReconstructionEngine(const Vector2i& depthImageSize)
     {
       size_t pixelCount = depthImageSize.x * depthImageSize.y;
+      m_indexMap = new ORUtils::MemoryBlock<unsigned int>(pixelCount * 16, true, true);
       m_normalMap = new ORUtils::MemoryBlock<Vector4f>(pixelCount, true, true);
       m_radiusMap = new ORUtils::MemoryBlock<float>(pixelCount, true, true);
       m_vertexMap =  new ORUtils::MemoryBlock<Vector3f>(pixelCount, true, true);
@@ -51,6 +55,7 @@ namespace ITMLib
      */
     virtual ~ITMSurfelSceneReconstructionEngine()
     {
+      delete m_indexMap;
       delete m_normalMap;
       delete m_radiusMap;
       delete m_vertexMap;
@@ -81,6 +86,11 @@ namespace ITMLib
 
     //#################### PRIVATE ABSTRACT MEMBER FUNCTIONS ####################
   private:
+    /**
+     * \brief TODO
+     */
+    virtual void GenerateIndexMap(const ITMSurfelScene<TSurfel> *scene, const ITMPose& pose, const ITMIntrinsics& intrinsics) const = 0;
+
     /**
      * \brief TODO
      */
