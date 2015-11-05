@@ -27,7 +27,7 @@ void ITMSurfelSceneReconstructionEngine_CPU<TSurfel>::IntegrateIntoScene(ITMSurf
 {
   // TEMPORARY
   PreprocessDepthMap(view);
-  GenerateIndexMap(scene, *trackingState->pose_d, view->calib->intrinsics_d);
+  GenerateIndexMap(scene, view, *trackingState->pose_d);
 
   // TODO
 }
@@ -35,9 +35,13 @@ void ITMSurfelSceneReconstructionEngine_CPU<TSurfel>::IntegrateIntoScene(ITMSurf
 //#################### PRIVATE MEMBER FUNCTIONS ####################
 
 template <typename TSurfel>
-void ITMSurfelSceneReconstructionEngine_CPU<TSurfel>::GenerateIndexMap(const ITMSurfelScene<TSurfel> *scene, const ITMPose& pose, const ITMIntrinsics& intrinsics) const
+void ITMSurfelSceneReconstructionEngine_CPU<TSurfel>::GenerateIndexMap(const ITMSurfelScene<TSurfel> *scene, const ITMView *view, const ITMPose& pose) const
 {
+  int depthMapHeight = view->depth->noDims.y;
+  int depthMapWidth = view->depth->noDims.x;
   unsigned int *indexMap = m_indexMap->GetData(MEMORYDEVICE_CPU);
+  const ITMIntrinsics& intrinsics = view->calib->intrinsics_d;
+  const Matrix4f invT = pose.GetInvM();
   const int surfelCount = static_cast<int>(scene->GetSurfelCount());
   const TSurfel *surfels = scene->GetSurfels()->GetData(MEMORYDEVICE_CPU);
 
@@ -46,7 +50,7 @@ void ITMSurfelSceneReconstructionEngine_CPU<TSurfel>::GenerateIndexMap(const ITM
 #endif
   for(int surfelId = 0; surfelId < surfelCount; ++surfelId)
   {
-    project_to_index_map(surfelId, surfels, pose, intrinsics, indexMap);
+    project_to_index_map(surfelId, surfels, invT, intrinsics, depthMapWidth, depthMapHeight, indexMap);
   }
 }
 

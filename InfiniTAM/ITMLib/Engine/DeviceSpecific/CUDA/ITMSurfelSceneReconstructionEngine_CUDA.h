@@ -30,7 +30,7 @@ namespace ITMLib
     //#################### PRIVATE MEMBER FUNCTIONS ####################
   private:
     /** Override */
-    virtual void GenerateIndexMap(const ITMSurfelScene<TSurfel> *scene, const ITMPose& pose, const ITMIntrinsics& intrinsics) const;
+    virtual void GenerateIndexMap(const ITMSurfelScene<TSurfel> *scene, const ITMView *view, const ITMPose& pose) const;
 
     /** Override */
     virtual void PreprocessDepthMap(const ITMView *view) const;

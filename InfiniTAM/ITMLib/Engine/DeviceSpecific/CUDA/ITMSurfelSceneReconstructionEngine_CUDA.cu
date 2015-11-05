@@ -12,12 +12,13 @@ namespace ITMLib
 //#################### CUDA KERNELS ####################
 
 template <typename TSurfel>
-__global__ void ck_project_to_index_map(int surfelCount, const TSurfel *surfels, ITMPose pose, ITMIntrinsics intrinsics, unsigned int *indexMap)
+__global__ void ck_project_to_index_map(int surfelCount, const TSurfel *surfels, Matrix4f invT, ITMIntrinsics intrinsics, int depthMapWidth, int depthMapHeight,
+                                        unsigned int *indexMap)
 {
   int surfelId = threadIdx.x + blockDim.x * blockIdx.x;
   if(surfelId < surfelCount)
   {
-    project_to_index_map(surfelId, surfels, pose, intrinsics, indexMap);
+    project_to_index_map(surfelId, surfels, invT, intrinsics, depthMapWidth, depthMapHeight, indexMap);
   }
 }
 
@@ -50,7 +51,7 @@ void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::IntegrateIntoScene(ITMSur
 {
   // TEMPORARY
   PreprocessDepthMap(view);
-  GenerateIndexMap(scene, *trackingState->pose_d, view->calib->intrinsics_d);
+  GenerateIndexMap(scene, view, *trackingState->pose_d);
 
   // TODO
 }
@@ -58,7 +59,7 @@ void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::IntegrateIntoScene(ITMSur
 //#################### PRIVATE MEMBER FUNCTIONS ####################
 
 template <typename TSurfel>
-void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::GenerateIndexMap(const ITMSurfelScene<TSurfel> *scene, const ITMPose& pose, const ITMIntrinsics& intrinsics) const
+void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::GenerateIndexMap(const ITMSurfelScene<TSurfel> *scene, const ITMView *view, const ITMPose& pose) const
 {
   const int surfelCount = static_cast<int>(scene->GetSurfelCount());
 
@@ -68,8 +69,10 @@ void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::GenerateIndexMap(const IT
   ck_project_to_index_map<<<numBlocks,threadsPerBlock>>>(
     surfelCount,
     scene->GetSurfels()->GetData(MEMORYDEVICE_CUDA),
-    pose,
-    intrinsics,
+    pose.GetInvM(),
+    view->calib->intrinsics_d,
+    view->depth->noDims.x,
+    view->depth->noDims.y,
     m_indexMap->GetData(MEMORYDEVICE_CUDA)
   );
 
