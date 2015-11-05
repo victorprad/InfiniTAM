@@ -51,7 +51,7 @@ void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::IntegrateIntoScene(ITMSur
 {
   // TEMPORARY
   PreprocessDepthMap(view);
-  GenerateIndexMap(scene, view, *trackingState->pose_d);
+  //GenerateIndexMap(scene, view, *trackingState->pose_d);
 
   // TODO
 }

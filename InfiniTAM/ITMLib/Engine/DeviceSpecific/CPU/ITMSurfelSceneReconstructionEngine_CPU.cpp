@@ -27,7 +27,7 @@ void ITMSurfelSceneReconstructionEngine_CPU<TSurfel>::IntegrateIntoScene(ITMSurf
 {
   // TEMPORARY
   PreprocessDepthMap(view);
-  GenerateIndexMap(scene, view, *trackingState->pose_d);
+  //GenerateIndexMap(scene, view, *trackingState->pose_d);
 
   // TODO
 }
@@ -74,7 +74,7 @@ void ITMSurfelSceneReconstructionEngine_CPU<TSurfel>::PreprocessDepthMap(const I
 
   // Calculate the normal map.
   // FIXME: We don't need to store two copies of it.
-  m_normalMap->SetFrom(view->depthNormal, ORUtils::MemoryBlock<Vector4f>::CUDA_TO_CPU);
+  m_normalMap->SetFrom(view->depthNormal, ORUtils::MemoryBlock<Vector4f>::CPU_TO_CPU);
 
   // TODO: Calculate the radius map.
 }
