@@ -11,6 +11,16 @@ namespace ITMLib
 
 //#################### CUDA KERNELS ####################
 
+__global__ void ck_find_corresponding_surfel(int pixelCount, const unsigned int *indexMap, unsigned char *newPointsMask)
+{
+  int locId = threadIdx.x + blockDim.x * blockIdx.x;
+  if(locId < pixelCount)
+  {
+    // TEMPORARY
+    find_corresponding_surfel(locId, indexMap, newPointsMask);
+  }
+}
+
 template <typename TSurfel>
 __global__ void ck_project_to_index_map(int surfelCount, const TSurfel *surfels, Matrix4f invT, ITMIntrinsics intrinsics, int depthMapWidth, int depthMapHeight,
                                         unsigned int *indexMap)
@@ -51,8 +61,10 @@ void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::IntegrateIntoScene(ITMSur
 {
   // TEMPORARY
   PreprocessDepthMap(view);
-  //GenerateIndexMap(scene, view, *trackingState->pose_d);
-
+  GenerateIndexMap(scene, view, *trackingState->pose_d);
+  FindCorrespondingSurfels(scene, view);
+  //FuseMatchedPoints();
+  AddNewSurfels(scene);
   // TODO
 }
 
@@ -67,7 +79,20 @@ void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::AddNewSurfels(ITMSurfelSc
 template <typename TSurfel>
 void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::FindCorrespondingSurfels(const ITMSurfelScene<TSurfel> *scene, const ITMView *view) const
 {
-  // TODO
+  const int pixelCount = static_cast<int>(view->depth->dataSize);
+
+  int threadsPerBlock = 256;
+  int numBlocks = (pixelCount + threadsPerBlock - 1) / threadsPerBlock;
+
+  ck_find_corresponding_surfel<<<numBlocks,threadsPerBlock>>>(
+    pixelCount,
+    m_indexMapMB->GetData(MEMORYDEVICE_CUDA),
+    m_newPointsMaskMB->GetData(MEMORYDEVICE_CUDA)
+  );
+
+#if DEBUGGING
+  m_newPointsMaskMB->UpdateHostFromDevice();
+#endif
 }
 
 template <typename TSurfel>

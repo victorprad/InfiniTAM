@@ -19,7 +19,7 @@ inline void add_new_surfel(int locId, const unsigned char *newPointsMask, const 
   if(newPointsMask[locId])
   {
     ITMSurfel surfel;
-    surfel.position = vertexMap[locId];
+    surfel.position = /* TODO: Convert to the global frame */ vertexMap[locId];
     surfel.normal = normalMap[locId].toVector3();
     surfel.radius = radiusMap[locId];
     surfel.colour = Vector3u(0, 0, 0); // TEMPORARY
