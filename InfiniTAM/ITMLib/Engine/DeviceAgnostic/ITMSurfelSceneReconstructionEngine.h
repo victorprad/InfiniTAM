@@ -11,6 +11,17 @@ namespace ITMLib
 /**
  * \brief TODO
  */
+template <typename TSurfel>
+_CPU_AND_GPU_CODE_
+inline void add_new_surfel(int locId, const unsigned char *newPointsMask, const unsigned int *newPointsPrefixSum,
+                           const Vector3f *vertexMap, const Vector4f *normalMap, const float *radiusMap, TSurfel *newSurfels)
+{
+  // TODO
+}
+
+/**
+ * \brief TODO
+ */
 _CPU_AND_GPU_CODE_
 inline void calculate_vertex_position(int locId, int width, const ITMIntrinsics& intrinsics, const float *depthMap, Vector3f *vertexMap)
 {

@@ -59,6 +59,12 @@ void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::IntegrateIntoScene(ITMSur
 //#################### PRIVATE MEMBER FUNCTIONS ####################
 
 template <typename TSurfel>
+void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::AddNewSurfels(ITMSurfelScene<TSurfel> *scene) const
+{
+  // TODO
+}
+
+template <typename TSurfel>
 void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::FindCorrespondingSurfels(const ITMSurfelScene<TSurfel> *scene, const ITMView *view) const
 {
   // TODO

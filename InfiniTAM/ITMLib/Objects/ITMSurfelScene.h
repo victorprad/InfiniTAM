@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include <cassert>
+
 #include "../../ORUtils/MemoryBlock.h"
 #include "../Utils/ITMMath.h"
 
@@ -48,6 +50,9 @@ namespace ITMLib
   {
     //#################### PRIVATE VARIABLES ####################
   private:
+    /** The type of memory in which the scene is stored. */
+    MemoryDeviceType m_memoryType;
+
     /** The number of surfels currently in the scene. */
     size_t m_surfelCount;
 
@@ -62,7 +67,9 @@ namespace ITMLib
      * \param memoryType  The type of memory in which to store the scene.
      */
     explicit ITMSurfelScene(MemoryDeviceType memoryType)
-      : m_surfelCount(0), m_surfelsMB(new ORUtils::MemoryBlock<TSurfel>(MAX_SURFEL_COUNT, memoryType))
+      : m_memoryType(memoryType),
+        m_surfelCount(0),
+        m_surfelsMB(new ORUtils::MemoryBlock<TSurfel>(MAX_SURFEL_COUNT, memoryType))
     {}
 
     //#################### DESTRUCTOR ####################
@@ -83,6 +90,17 @@ namespace ITMLib
 
     //#################### PUBLIC MEMBER FUNCTIONS ####################
   public:
+    /**
+     * \brief TODO
+     */
+    TSurfel *AllocateSurfels(size_t newSurfelCount)
+    {
+      if(m_surfelCount + newSurfelCount > m_surfelsMB->dataSize) return NULL;
+      TSurfel *newSurfels = m_surfelsMB->GetData(m_memoryType) + m_surfelCount;
+      m_surfelCount += newSurfelCount;
+      return newSurfels;
+    }
+
     /**
      * \brief TODO
      */

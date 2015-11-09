@@ -22,6 +22,9 @@ namespace ITMLib
     /** A mask whose values denote whether the corresponding points in the vertex map need to be added to the scene as new points. */
     ORUtils::MemoryBlock<unsigned char> *m_newPointsMaskMB;
 
+    /** TODO */
+    ORUtils::MemoryBlock<unsigned int> *m_newPointsPrefixSumMB;
+
     /** The normal map corresponding to the live depth image. */
     ORUtils::MemoryBlock<Vector4f> *m_normalMapMB;
 
@@ -40,10 +43,15 @@ namespace ITMLib
     {
       size_t pixelCount = depthImageSize.x * depthImageSize.y;
       m_indexMapMB = new ORUtils::MemoryBlock<unsigned int>(pixelCount * 16, true, true);
-      m_newPointsMaskMB = new ORUtils::MemoryBlock<unsigned char>(pixelCount, true, true);
+      m_newPointsMaskMB = new ORUtils::MemoryBlock<unsigned char>(pixelCount + 1, true, true);
+      m_newPointsPrefixSumMB = new ORUtils::MemoryBlock<unsigned int>(pixelCount + 1, true, true);
       m_normalMapMB = new ORUtils::MemoryBlock<Vector4f>(pixelCount, true, true);
       m_radiusMapMB = new ORUtils::MemoryBlock<float>(pixelCount, true, true);
       m_vertexMapMB =  new ORUtils::MemoryBlock<Vector3f>(pixelCount, true, true);
+
+      // Make sure that the dummy element at the end of the new points mask is initialised properly.
+      m_newPointsMaskMB->GetData(MEMORYDEVICE_CPU)[pixelCount] = 0;
+      m_newPointsMaskMB->UpdateDeviceFromHost();
     }
 
     //#################### COPY CONSTRUCTOR & ASSIGNMENT OPERATOR ####################
@@ -83,6 +91,11 @@ namespace ITMLib
 
     //#################### PRIVATE ABSTRACT MEMBER FUNCTIONS ####################
   private:
+    /**
+     * \brief TODO
+     */
+    virtual void AddNewSurfels(ITMSurfelScene<TSurfel> *scene) const = 0;
+
     /**
      * \brief TODO
      */

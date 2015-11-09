@@ -29,11 +29,43 @@ void ITMSurfelSceneReconstructionEngine_CPU<TSurfel>::IntegrateIntoScene(ITMSurf
   PreprocessDepthMap(view);
   GenerateIndexMap(scene, view, *trackingState->pose_d);
   FindCorrespondingSurfels(scene, view);
-
+  //FuseMatchedPoints();
+  AddNewSurfels(scene);
   // TODO
 }
 
 //#################### PRIVATE MEMBER FUNCTIONS ####################
+
+template <typename TSurfel>
+void ITMSurfelSceneReconstructionEngine_CPU<TSurfel>::AddNewSurfels(ITMSurfelScene<TSurfel> *scene) const
+{
+  // Calculate the prefix sum of the new points mask.
+  const unsigned char *newPointsMask = m_newPointsMaskMB->GetData(MEMORYDEVICE_CPU);
+  unsigned int *newPointsPrefixSum = m_newPointsPrefixSumMB->GetData(MEMORYDEVICE_CPU);
+  const int pixelCount = static_cast<int>(m_newPointsMaskMB->dataSize - 1);
+
+  newPointsPrefixSum[0] = 0;
+  for(int i = 1; i <= pixelCount; ++i)
+  {
+    newPointsPrefixSum[i] = newPointsPrefixSum[i-1] + newPointsMask[i-1];
+  }
+
+  // Add the new surfels to the scene.
+  const size_t newSurfelCount = static_cast<size_t>(newPointsPrefixSum[pixelCount]);
+  TSurfel *newSurfels = scene->AllocateSurfels(newSurfelCount);
+
+  const Vector4f *normalMap = m_normalMapMB->GetData(MEMORYDEVICE_CPU);
+  const float *radiusMap = m_radiusMapMB->GetData(MEMORYDEVICE_CPU);
+  const Vector3f *vertexMap = m_vertexMapMB->GetData(MEMORYDEVICE_CPU);
+
+#ifdef WITH_OPENMP
+  //#pragma omp parallel for
+#endif
+  for(int locId = 0; locId < pixelCount; ++locId)
+  {
+    add_new_surfel(locId, newPointsMask, newPointsPrefixSum, vertexMap, normalMap, radiusMap, newSurfels);
+  }
+}
 
 template <typename TSurfel>
 void ITMSurfelSceneReconstructionEngine_CPU<TSurfel>::FindCorrespondingSurfels(const ITMSurfelScene<TSurfel> *scene, const ITMView *view) const
