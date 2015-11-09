@@ -165,7 +165,7 @@ namespace ORUtils
 			}
 		}
 
-    /** Get an individual element of the memory block from either the CPU or GPU. */
+		/** Get an individual element of the memory block from either the CPU or GPU. */
 		T GetElement(int n, MemoryDeviceType memoryType) const
 		{
 			switch(memoryType)
