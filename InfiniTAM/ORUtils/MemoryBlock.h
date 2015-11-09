@@ -165,6 +165,27 @@ namespace ORUtils
 			}
 		}
 
+    /** Get an individual element of the memory block from either the CPU or GPU. */
+		T GetElement(int n, MemoryDeviceType memoryType) const
+		{
+			switch(memoryType)
+			{
+				case MEMORYDEVICE_CPU:
+				{
+					return this->data_cpu[n];
+				}
+#ifndef COMPILE_WITHOUT_CUDA
+				case MEMORYDEVICE_CUDA:
+				{
+					T result;
+					ORcudaSafeCall(cudaMemcpy(&result, this->data_cuda + n, sizeof(T), cudaMemcpyDeviceToHost));
+					return result;
+				}
+#endif
+				default: throw std::runtime_error("Invalid memory type");
+			}
+		}
+
 		virtual ~MemoryBlock() { this->Free(); }
 
 		/** Allocate image data of the specified size. If the

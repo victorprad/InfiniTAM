@@ -2,6 +2,19 @@
 
 #include "ITMSurfelSceneReconstructionEngine_CUDA.h"
 
+#ifdef _MSC_VER
+  // Suppress some VC++ warnings that are produced when including the Thrust headers.
+  #pragma warning(disable:4267)
+#endif
+
+#include <thrust/device_ptr.h>
+#include <thrust/scan.h>
+
+#ifdef _MSC_VER
+  // Reenable the suppressed warnings for the rest of the translation unit.
+  #pragma warning(default:4267)
+#endif
+
 #include "../../DeviceAgnostic/ITMSurfelSceneReconstructionEngine.h"
 
 #define DEBUGGING 1
@@ -10,6 +23,17 @@ namespace ITMLib
 {
 
 //#################### CUDA KERNELS ####################
+
+template <typename TSurfel>
+__global__ void ck_add_new_surfel(int pixelCount, const unsigned char *newPointsMask, const unsigned int *newPointsPrefixSum,
+                                  const Vector3f *vertexMap, const Vector4f *normalMap, const float *radiusMap, TSurfel *newSurfels)
+{
+  int locId = threadIdx.x + blockDim.x * blockIdx.x;
+  if(locId < pixelCount)
+  {
+    add_new_surfel(locId, newPointsMask, newPointsPrefixSum, vertexMap, normalMap, radiusMap, newSurfels);
+  }
+}
 
 __global__ void ck_find_corresponding_surfel(int pixelCount, const unsigned int *indexMap, unsigned char *newPointsMask)
 {
@@ -73,7 +97,42 @@ void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::IntegrateIntoScene(ITMSur
 template <typename TSurfel>
 void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::AddNewSurfels(ITMSurfelScene<TSurfel> *scene) const
 {
+  // Calculate the prefix sum of the new points mask.
+  const unsigned char *newPointsMask = m_newPointsMaskMB->GetData(MEMORYDEVICE_CUDA);
+  unsigned int *newPointsPrefixSum = m_newPointsPrefixSumMB->GetData(MEMORYDEVICE_CUDA);
+  const int pixelCount = static_cast<int>(m_newPointsMaskMB->dataSize - 1);
+  thrust::exclusive_scan(
+    thrust::device_ptr<const unsigned char>(newPointsMask),
+    thrust::device_ptr<const unsigned char>(newPointsMask + pixelCount + 1),
+    thrust::device_ptr<unsigned int>(newPointsPrefixSum)
+  );
+
+#if DEBUGGING
+  m_newPointsMaskMB->UpdateHostFromDevice();
+  m_newPointsPrefixSumMB->UpdateHostFromDevice();
+#endif
+
+  // Add the new surfels to the scene.
+  const size_t newSurfelCount = static_cast<size_t>(m_newPointsPrefixSumMB->GetElement(pixelCount, MEMORYDEVICE_CUDA));
+  TSurfel *newSurfels = scene->AllocateSurfels(newSurfelCount);
+  if(newSurfels == NULL) return;
+
+  int threadsPerBlock = 256;
+  int numBlocks = (pixelCount + threadsPerBlock - 1) / threadsPerBlock;
+
+  ck_add_new_surfel<<<numBlocks,threadsPerBlock>>>(
+    pixelCount,
+    newPointsMask,
+    newPointsPrefixSum,
+    m_vertexMapMB->GetData(MEMORYDEVICE_CUDA),
+    m_normalMapMB->GetData(MEMORYDEVICE_CUDA),
+    m_radiusMapMB->GetData(MEMORYDEVICE_CUDA),
+    newSurfels
+  );
+
+#if DEBUGGING
   // TODO
+#endif
 }
 
 template <typename TSurfel>

@@ -53,6 +53,7 @@ void ITMSurfelSceneReconstructionEngine_CPU<TSurfel>::AddNewSurfels(ITMSurfelSce
   // Add the new surfels to the scene.
   const size_t newSurfelCount = static_cast<size_t>(newPointsPrefixSum[pixelCount]);
   TSurfel *newSurfels = scene->AllocateSurfels(newSurfelCount);
+  if(newSurfels == NULL) return;
 
   const Vector4f *normalMap = m_normalMapMB->GetData(MEMORYDEVICE_CPU);
   const float *radiusMap = m_radiusMapMB->GetData(MEMORYDEVICE_CPU);
