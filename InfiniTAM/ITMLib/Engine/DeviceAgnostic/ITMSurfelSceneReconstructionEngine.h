@@ -16,7 +16,18 @@ _CPU_AND_GPU_CODE_
 inline void add_new_surfel(int locId, const unsigned char *newPointsMask, const unsigned int *newPointsPrefixSum,
                            const Vector3f *vertexMap, const Vector4f *normalMap, const float *radiusMap, TSurfel *newSurfels)
 {
-  // TODO
+  if(newPointsMask[locId])
+  {
+    ITMSurfel surfel;
+    surfel.position = vertexMap[locId];
+    surfel.normal = normalMap[locId].toVector3();
+    surfel.radius = radiusMap[locId];
+    surfel.colour = Vector3u(0, 0, 0); // TEMPORARY
+    surfel.confidence = 1.0f;          // TEMPORARY
+    surfel.timestamp = 1;              // TEMPORARY
+
+    newSurfels[newPointsPrefixSum[locId]] = surfel;
+  }
 }
 
 /**
