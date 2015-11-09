@@ -139,7 +139,7 @@ try
 	}
 
 	ITMLibSettings *internalSettings = new ITMLibSettings();
-	//internalSettings->deviceType = ITMLibSettings::DEVICE_CPU;
+	internalSettings->deviceType = ITMLibSettings::DEVICE_CPU;
 	//ITMMainEngine *mainEngine = new ITMMultiEngine(internalSettings, &imageSource->calib, imageSource->getRGBImageSize(), imageSource->getDepthImageSize());
 	ITMMainEngine *mainEngine = new ITMBasicEngine(internalSettings, &imageSource->calib, imageSource->getRGBImageSize(), imageSource->getDepthImageSize());
 

@@ -59,6 +59,12 @@ void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::IntegrateIntoScene(ITMSur
 //#################### PRIVATE MEMBER FUNCTIONS ####################
 
 template <typename TSurfel>
+void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::FindCorrespondingSurfels(const ITMSurfelScene<TSurfel> *scene, const ITMView *view) const
+{
+  // TODO
+}
+
+template <typename TSurfel>
 void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::GenerateIndexMap(const ITMSurfelScene<TSurfel> *scene, const ITMView *view, const ITMPose& pose) const
 {
   const int surfelCount = static_cast<int>(scene->GetSurfelCount());
@@ -73,11 +79,11 @@ void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::GenerateIndexMap(const IT
     view->calib->intrinsics_d,
     view->depth->noDims.x,
     view->depth->noDims.y,
-    m_indexMap->GetData(MEMORYDEVICE_CUDA)
+    m_indexMapMB->GetData(MEMORYDEVICE_CUDA)
   );
 
 #if DEBUGGING
-  m_indexMap->UpdateHostFromDevice();
+  m_indexMapMB->UpdateHostFromDevice();
 #endif
 }
 
@@ -95,19 +101,19 @@ void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::PreprocessDepthMap(const 
     view->depth->noDims.x,
     view->calib->intrinsics_d,
     view->depth->GetData(MEMORYDEVICE_CUDA),
-    m_vertexMap->GetData(MEMORYDEVICE_CUDA)
+    m_vertexMapMB->GetData(MEMORYDEVICE_CUDA)
   );
 
 #if DEBUGGING
-  m_vertexMap->UpdateHostFromDevice();
+  m_vertexMapMB->UpdateHostFromDevice();
 #endif
 
   // Calculate the normal map.
   // FIXME: We don't need to store two copies of it.
-  m_normalMap->SetFrom(view->depthNormal, ORUtils::MemoryBlock<Vector4f>::CUDA_TO_CUDA);
+  m_normalMapMB->SetFrom(view->depthNormal, ORUtils::MemoryBlock<Vector4f>::CUDA_TO_CUDA);
 
 #if DEBUGGING
-  m_normalMap->UpdateHostFromDevice();
+  m_normalMapMB->UpdateHostFromDevice();
 #endif
 
   // TODO: Calculate the radius map.

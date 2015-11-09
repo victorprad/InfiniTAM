@@ -17,16 +17,19 @@ namespace ITMLib
     //#################### PROTECTED VARIABLES ####################
   protected:
     /** TODO */
-    ORUtils::MemoryBlock<unsigned int> *m_indexMap;
+    ORUtils::MemoryBlock<unsigned int> *m_indexMapMB;
+
+    /** A mask whose values denote whether the corresponding points in the vertex map need to be added to the scene as new points. */
+    ORUtils::MemoryBlock<unsigned char> *m_newPointsMaskMB;
 
     /** The normal map corresponding to the live depth image. */
-    ORUtils::MemoryBlock<Vector4f> *m_normalMap;
+    ORUtils::MemoryBlock<Vector4f> *m_normalMapMB;
 
     /** The radius map corresponding to the live depth image. */
-    ORUtils::MemoryBlock<float> *m_radiusMap;
+    ORUtils::MemoryBlock<float> *m_radiusMapMB;
 
     /** The vertex map corresponding to the live depth image (obtained by unprojecting the points in the depth image). */
-    ORUtils::MemoryBlock<Vector3f> *m_vertexMap;
+    ORUtils::MemoryBlock<Vector3f> *m_vertexMapMB;
 
     //#################### CONSTRUCTORS ####################
   protected:
@@ -36,10 +39,11 @@ namespace ITMLib
     explicit ITMSurfelSceneReconstructionEngine(const Vector2i& depthImageSize)
     {
       size_t pixelCount = depthImageSize.x * depthImageSize.y;
-      m_indexMap = new ORUtils::MemoryBlock<unsigned int>(pixelCount * 16, true, true);
-      m_normalMap = new ORUtils::MemoryBlock<Vector4f>(pixelCount, true, true);
-      m_radiusMap = new ORUtils::MemoryBlock<float>(pixelCount, true, true);
-      m_vertexMap =  new ORUtils::MemoryBlock<Vector3f>(pixelCount, true, true);
+      m_indexMapMB = new ORUtils::MemoryBlock<unsigned int>(pixelCount * 16, true, true);
+      m_newPointsMaskMB = new ORUtils::MemoryBlock<unsigned char>(pixelCount, true, true);
+      m_normalMapMB = new ORUtils::MemoryBlock<Vector4f>(pixelCount, true, true);
+      m_radiusMapMB = new ORUtils::MemoryBlock<float>(pixelCount, true, true);
+      m_vertexMapMB =  new ORUtils::MemoryBlock<Vector3f>(pixelCount, true, true);
     }
 
     //#################### COPY CONSTRUCTOR & ASSIGNMENT OPERATOR ####################
@@ -55,10 +59,10 @@ namespace ITMLib
      */
     virtual ~ITMSurfelSceneReconstructionEngine()
     {
-      delete m_indexMap;
-      delete m_normalMap;
-      delete m_radiusMap;
-      delete m_vertexMap;
+      delete m_indexMapMB;
+      delete m_normalMapMB;
+      delete m_radiusMapMB;
+      delete m_vertexMapMB;
     }
 
     //#################### PUBLIC ABSTRACT MEMBER FUNCTIONS ####################
@@ -79,6 +83,11 @@ namespace ITMLib
 
     //#################### PRIVATE ABSTRACT MEMBER FUNCTIONS ####################
   private:
+    /**
+     * \brief TODO
+     */
+    virtual void FindCorrespondingSurfels(const ITMSurfelScene<TSurfel> *scene, const ITMView *view) const = 0;
+
     /**
      * \brief TODO
      */

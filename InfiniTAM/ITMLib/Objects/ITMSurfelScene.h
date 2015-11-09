@@ -52,7 +52,7 @@ namespace ITMLib
     size_t m_surfelCount;
 
     /** The surfels in the scene. */
-    ORUtils::MemoryBlock<TSurfel> *m_surfels;
+    ORUtils::MemoryBlock<TSurfel> *m_surfelsMB;
 
     //#################### CONSTRUCTORS ####################
   public:
@@ -62,7 +62,7 @@ namespace ITMLib
      * \param memoryType  The type of memory in which to store the scene.
      */
     explicit ITMSurfelScene(MemoryDeviceType memoryType)
-      : m_surfelCount(0), m_surfels(new ORUtils::MemoryBlock<TSurfel>(MAX_SURFEL_COUNT, memoryType))
+      : m_surfelCount(0), m_surfelsMB(new ORUtils::MemoryBlock<TSurfel>(MAX_SURFEL_COUNT, memoryType))
     {}
 
     //#################### DESTRUCTOR ####################
@@ -72,7 +72,7 @@ namespace ITMLib
      */
     ~ITMSurfelScene()
     {
-      delete m_surfels;
+      delete m_surfelsMB;
     }
 
     //#################### COPY CONSTRUCTOR & ASSIGNMENT OPERATOR ####################
@@ -96,7 +96,7 @@ namespace ITMLib
      */
     const ORUtils::MemoryBlock<TSurfel> *GetSurfels() const
     {
-      return m_surfels;
+      return m_surfelsMB;
     }
 
     /**

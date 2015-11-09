@@ -31,6 +31,16 @@ inline void calculate_vertex_position(int locId, int width, const ITMIntrinsics&
 /**
  * \brief TODO
  */
+_CPU_AND_GPU_CODE_
+inline void find_corresponding_surfel(int locId, const unsigned int *indexMap, unsigned char *newPointsMask)
+{
+  // TEMPORARY
+  newPointsMask[locId] = 1;
+}
+
+/**
+ * \brief TODO
+ */
 template <typename TSurfel>
 _CPU_AND_GPU_CODE_
 inline void project_to_index_map(int surfelId, const TSurfel *surfels, const Matrix4f& invT, const ITMIntrinsics& intrinsics,

@@ -27,7 +27,8 @@ void ITMSurfelSceneReconstructionEngine_CPU<TSurfel>::IntegrateIntoScene(ITMSurf
 {
   // TEMPORARY
   PreprocessDepthMap(view);
-  //GenerateIndexMap(scene, view, *trackingState->pose_d);
+  GenerateIndexMap(scene, view, *trackingState->pose_d);
+  FindCorrespondingSurfels(scene, view);
 
   // TODO
 }
@@ -35,11 +36,28 @@ void ITMSurfelSceneReconstructionEngine_CPU<TSurfel>::IntegrateIntoScene(ITMSurf
 //#################### PRIVATE MEMBER FUNCTIONS ####################
 
 template <typename TSurfel>
+void ITMSurfelSceneReconstructionEngine_CPU<TSurfel>::FindCorrespondingSurfels(const ITMSurfelScene<TSurfel> *scene, const ITMView *view) const
+{
+  const unsigned int *indexMap = m_indexMapMB->GetData(MEMORYDEVICE_CPU);
+  unsigned char *newPointsMask = m_newPointsMaskMB->GetData(MEMORYDEVICE_CPU);
+  const int pixelCount = static_cast<int>(view->depth->dataSize);
+
+#ifdef WITH_OPENMP
+  #pragma omp parallel for
+#endif
+  for(int locId = 0; locId < pixelCount; ++locId)
+  {
+    // TEMPORARY
+    find_corresponding_surfel(locId, indexMap, newPointsMask);
+  }
+}
+
+template <typename TSurfel>
 void ITMSurfelSceneReconstructionEngine_CPU<TSurfel>::GenerateIndexMap(const ITMSurfelScene<TSurfel> *scene, const ITMView *view, const ITMPose& pose) const
 {
   int depthMapHeight = view->depth->noDims.y;
   int depthMapWidth = view->depth->noDims.x;
-  unsigned int *indexMap = m_indexMap->GetData(MEMORYDEVICE_CPU);
+  unsigned int *indexMap = m_indexMapMB->GetData(MEMORYDEVICE_CPU);
   const ITMIntrinsics& intrinsics = view->calib->intrinsics_d;
   const Matrix4f invT = pose.GetInvM();
   const int surfelCount = static_cast<int>(scene->GetSurfelCount());
@@ -59,9 +77,9 @@ void ITMSurfelSceneReconstructionEngine_CPU<TSurfel>::PreprocessDepthMap(const I
 {
   const float *depthMap = view->depth->GetData(MEMORYDEVICE_CPU);
   const ITMIntrinsics& intrinsics = view->calib->intrinsics_d;
-  int pixelCount = static_cast<int>(view->depth->dataSize);
-  Vector3f *vertexMap = m_vertexMap->GetData(MEMORYDEVICE_CPU);
-  int width = view->depth->noDims.x;
+  const int pixelCount = static_cast<int>(view->depth->dataSize);
+  Vector3f *vertexMap = m_vertexMapMB->GetData(MEMORYDEVICE_CPU);
+  const int width = view->depth->noDims.x;
 
   // Calculate the vertex map.
 #ifdef WITH_OPENMP
@@ -74,7 +92,7 @@ void ITMSurfelSceneReconstructionEngine_CPU<TSurfel>::PreprocessDepthMap(const I
 
   // Calculate the normal map.
   // FIXME: We don't need to store two copies of it.
-  m_normalMap->SetFrom(view->depthNormal, ORUtils::MemoryBlock<Vector4f>::CPU_TO_CPU);
+  m_normalMapMB->SetFrom(view->depthNormal, ORUtils::MemoryBlock<Vector4f>::CPU_TO_CPU);
 
   // TODO: Calculate the radius map.
 }
