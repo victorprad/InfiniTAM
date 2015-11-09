@@ -188,7 +188,7 @@ _CPU_AND_GPU_CODE_ inline void buildHashAllocAndVisibleTypePP(DEVICEPTR(uchar) *
 			if (!isFound) //still not found
 			{
 				entriesAllocType[hashIdx] = isExcess ? 2 : 1; //needs allocation 
-				entriesVisibleType[hashIdx] = 1; //new entry is visible
+				if (!isExcess) entriesVisibleType[hashIdx] = 1; //new entry is visible
 
 				blockCoords[hashIdx] = Vector4s(blockPos.x, blockPos.y, blockPos.z, 1);
 			}
