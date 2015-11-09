@@ -131,7 +131,7 @@ void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::AddNewSurfels(ITMSurfelSc
   );
 
 #if DEBUGGING
-  // TODO
+  scene->GetSurfels()->UpdateHostFromDevice();
 #endif
 }
 

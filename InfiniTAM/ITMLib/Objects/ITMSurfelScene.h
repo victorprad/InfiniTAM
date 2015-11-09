@@ -69,7 +69,7 @@ namespace ITMLib
     explicit ITMSurfelScene(MemoryDeviceType memoryType)
       : m_memoryType(memoryType),
         m_surfelCount(0),
-        m_surfelsMB(new ORUtils::MemoryBlock<TSurfel>(MAX_SURFEL_COUNT, memoryType))
+        m_surfelsMB(new ORUtils::MemoryBlock<TSurfel>(MAX_SURFEL_COUNT, true, true))
     {}
 
     //#################### DESTRUCTOR ####################
