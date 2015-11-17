@@ -81,15 +81,15 @@ ITMMultiEngine::~ITMMultiEngine()
 
 void ITMMultiEngine::AddNewLocalScene(void)
 {
-	int newIdx = allData.size();
-	allData.push_back(new ITMLocalScene<ITMVoxel,ITMVoxelIndex>(settings, visualisationEngine, trackingController, trackedImageSize));
+	int newIdx = (int)allData.size();
+	allData.push_back(new ITMLocalScene<ITMVoxel, ITMVoxelIndex>(settings, visualisationEngine, trackingController, trackedImageSize));
 	allRelations.push_back(std::map<int, ITMPoseConstraint>());
 
 	denseMapper->ResetScene(allData.back()->scene);
 
-	if (activeDataIdx.size()<2) activeDataIdx.push_back(newIdx);
+	if (activeDataIdx.size() < 2) activeDataIdx.push_back(newIdx);
 	else {
-		for (int i = 1; (unsigned)i < activeDataIdx.size(); ++i) activeDataIdx[i-1] = activeDataIdx[i];
+		for (int i = 1; (unsigned)i < activeDataIdx.size(); ++i) activeDataIdx[i - 1] = activeDataIdx[i];
 		activeDataIdx.back() = newIdx;
 	}
 }

@@ -85,8 +85,8 @@ void filterSeparable_y(const ORUtils::Image<float> *input, ORUtils::Image<float>
 
 void filterGaussian(const ORUtils::Image<float> *input, ORUtils::Image<float> *output, float sigma)
 {
-	int filtersize = 2.0f*3.5f*sigma;
-	if ((filtersize&1)==0) filtersize+=1;
+	int filtersize = (int)(2.0f*3.5f*sigma);
+	if ((filtersize & 1) == 0) filtersize += 1;
 	float *coeff = new float[filtersize];
 	ORUtils::Image<float> tmpimg(input->noDims, MEMORYDEVICE_CPU);
 

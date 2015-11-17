@@ -67,6 +67,7 @@ ITMBasicEngine::ITMBasicEngine(const ITMLibSettings *settings, const ITMRGBDCali
 	trackingActive = true;
 	fusionActive = true;
 	mainProcessingActive = true;
+	trackingInitialised = false;
 }
 
 ITMBasicEngine::~ITMBasicEngine()
@@ -112,7 +113,7 @@ void ITMBasicEngine::ProcessFrame(ITMUChar4Image *rgbImage, ITMShortImage *rawDe
 {
 	// prepare image and turn it into a depth image
 	bool modelSensorNoise = tracker->requiresDepthReliability();
-	if (imuMeasurement==NULL) viewBuilder->UpdateView(&view, rgbImage, rawDepthImage, settings->useBilateralFilter, modelSensorNoise);
+	if (imuMeasurement == NULL) viewBuilder->UpdateView(&view, rgbImage, rawDepthImage, settings->useBilateralFilter, modelSensorNoise);
 	else viewBuilder->UpdateView(&view, rgbImage, rawDepthImage, settings->useBilateralFilter, imuMeasurement);
 
 	if (!mainProcessingActive) return;
@@ -122,8 +123,8 @@ void ITMBasicEngine::ProcessFrame(ITMUChar4Image *rgbImage, ITMShortImage *rawDe
 	if (trackingActive) trackingController->Track(trackingState, view);
 
 	int trackingSuccess = 0;
-	if (trackingState->poseQuality>0.8f) trackingSuccess = 2;
-	else if (trackingState->poseQuality>0.4f) trackingSuccess = 1;
+	if (trackingState->poseQuality > 0.8f) trackingSuccess = 2;
+	else if (trackingState->poseQuality > 0.4f) trackingSuccess = 1;
 
 	static int trackingSuccess_prev = -1;
 	if (trackingSuccess != trackingSuccess_prev) {
@@ -134,10 +135,11 @@ void ITMBasicEngine::ProcessFrame(ITMUChar4Image *rgbImage, ITMShortImage *rawDe
 	}
 
 	bool didFusion = false;
-	if ((trackingSuccess >= 2)&&(fusionActive)) {
+	if ((trackingSuccess >= 2 || !trackingInitialised) && (fusionActive)) {
 		// fusion
 		denseMapper->ProcessFrame(view, trackingState, scene, renderState_live);
 		didFusion = true;
+		trackingInitialised = true;
 	}
 
 	if (trackingSuccess >= 1) {
@@ -145,7 +147,8 @@ void ITMBasicEngine::ProcessFrame(ITMUChar4Image *rgbImage, ITMShortImage *rawDe
 
 		// raycast to renderState_live for tracking and free visualisation
 		trackingController->Prepare(trackingState, scene, view, renderState_live);
-	} else {
+	}
+	else {
 		*trackingState->pose_d = oldPose;
 	}
 }

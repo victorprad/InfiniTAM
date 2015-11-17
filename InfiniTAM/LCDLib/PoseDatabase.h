@@ -14,7 +14,7 @@ class PoseDatabase {
 	~PoseDatabase(void);
 
 	void storePose(int id, const ITMLib::ITMPose & pose);
-	int numPoses(void) const { return mPoses.size(); }
+	int numPoses(void) const { return (int)mPoses.size(); }
 
 	const ITMLib::ITMPose & retrievePose(int id) const;
 	ITMLib::ITMPose retrieveWAPose(int k, int ids[], float weights[]) const;
