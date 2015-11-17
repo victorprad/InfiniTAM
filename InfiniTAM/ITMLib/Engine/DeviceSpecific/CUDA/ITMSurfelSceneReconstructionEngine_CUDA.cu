@@ -98,9 +98,9 @@ template <typename TSurfel>
 void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::AddNewSurfels(ITMSurfelScene<TSurfel> *scene) const
 {
   // Calculate the prefix sum of the new points mask.
-  const unsigned char *newPointsMask = m_newPointsMaskMB->GetData(MEMORYDEVICE_CUDA);
-  unsigned int *newPointsPrefixSum = m_newPointsPrefixSumMB->GetData(MEMORYDEVICE_CUDA);
-  const int pixelCount = static_cast<int>(m_newPointsMaskMB->dataSize - 1);
+  const unsigned char *newPointsMask = this->m_newPointsMaskMB->GetData(MEMORYDEVICE_CUDA);
+  unsigned int *newPointsPrefixSum = this->m_newPointsPrefixSumMB->GetData(MEMORYDEVICE_CUDA);
+  const int pixelCount = static_cast<int>(this->m_newPointsMaskMB->dataSize - 1);
   thrust::exclusive_scan(
     thrust::device_ptr<const unsigned char>(newPointsMask),
     thrust::device_ptr<const unsigned char>(newPointsMask + pixelCount + 1),
@@ -108,12 +108,12 @@ void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::AddNewSurfels(ITMSurfelSc
   );
 
 #if DEBUGGING
-  m_newPointsMaskMB->UpdateHostFromDevice();
-  m_newPointsPrefixSumMB->UpdateHostFromDevice();
+  this->m_newPointsMaskMB->UpdateHostFromDevice();
+  this->m_newPointsPrefixSumMB->UpdateHostFromDevice();
 #endif
 
   // Add the new surfels to the scene.
-  const size_t newSurfelCount = static_cast<size_t>(m_newPointsPrefixSumMB->GetElement(pixelCount, MEMORYDEVICE_CUDA));
+  const size_t newSurfelCount = static_cast<size_t>(this->m_newPointsPrefixSumMB->GetElement(pixelCount, MEMORYDEVICE_CUDA));
   TSurfel *newSurfels = scene->AllocateSurfels(newSurfelCount);
   if(newSurfels == NULL) return;
 
@@ -124,9 +124,9 @@ void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::AddNewSurfels(ITMSurfelSc
     pixelCount,
     newPointsMask,
     newPointsPrefixSum,
-    m_vertexMapMB->GetData(MEMORYDEVICE_CUDA),
-    m_normalMapMB->GetData(MEMORYDEVICE_CUDA),
-    m_radiusMapMB->GetData(MEMORYDEVICE_CUDA),
+    this->m_vertexMapMB->GetData(MEMORYDEVICE_CUDA),
+    this->m_normalMapMB->GetData(MEMORYDEVICE_CUDA),
+    this->m_radiusMapMB->GetData(MEMORYDEVICE_CUDA),
     newSurfels
   );
 
@@ -145,12 +145,12 @@ void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::FindCorrespondingSurfels(
 
   ck_find_corresponding_surfel<<<numBlocks,threadsPerBlock>>>(
     pixelCount,
-    m_indexMapMB->GetData(MEMORYDEVICE_CUDA),
-    m_newPointsMaskMB->GetData(MEMORYDEVICE_CUDA)
+    this->m_indexMapMB->GetData(MEMORYDEVICE_CUDA),
+    this->m_newPointsMaskMB->GetData(MEMORYDEVICE_CUDA)
   );
 
 #if DEBUGGING
-  m_newPointsMaskMB->UpdateHostFromDevice();
+  this->m_newPointsMaskMB->UpdateHostFromDevice();
 #endif
 }
 
@@ -169,11 +169,11 @@ void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::GenerateIndexMap(const IT
     view->calib->intrinsics_d,
     view->depth->noDims.x,
     view->depth->noDims.y,
-    m_indexMapMB->GetData(MEMORYDEVICE_CUDA)
+    this->m_indexMapMB->GetData(MEMORYDEVICE_CUDA)
   );
 
 #if DEBUGGING
-  m_indexMapMB->UpdateHostFromDevice();
+  this->m_indexMapMB->UpdateHostFromDevice();
 #endif
 }
 
@@ -191,19 +191,19 @@ void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::PreprocessDepthMap(const 
     view->depth->noDims.x,
     view->calib->intrinsics_d,
     view->depth->GetData(MEMORYDEVICE_CUDA),
-    m_vertexMapMB->GetData(MEMORYDEVICE_CUDA)
+    this->m_vertexMapMB->GetData(MEMORYDEVICE_CUDA)
   );
 
 #if DEBUGGING
-  m_vertexMapMB->UpdateHostFromDevice();
+  this->m_vertexMapMB->UpdateHostFromDevice();
 #endif
 
   // Calculate the normal map.
   // FIXME: We don't need to store two copies of it.
-  m_normalMapMB->SetFrom(view->depthNormal, ORUtils::MemoryBlock<Vector4f>::CUDA_TO_CUDA);
+  this->m_normalMapMB->SetFrom(view->depthNormal, ORUtils::MemoryBlock<Vector4f>::CUDA_TO_CUDA);
 
 #if DEBUGGING
-  m_normalMapMB->UpdateHostFromDevice();
+  this->m_normalMapMB->UpdateHostFromDevice();
 #endif
 
   // TODO: Calculate the radius map.
