@@ -295,7 +295,7 @@ namespace ORUtils {
 			return r;
 		}
 
-		_CPU_AND_GPU_CODE_ inline Matrix3& operator *(const T &r) const {
+		_CPU_AND_GPU_CODE_ inline Matrix3 operator *(const T &r) const {
 			Matrix3 res(this->m);
 			return res *= r;
 		}
