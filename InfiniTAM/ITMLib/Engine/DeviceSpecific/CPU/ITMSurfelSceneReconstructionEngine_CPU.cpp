@@ -56,7 +56,7 @@ void ITMSurfelSceneReconstructionEngine_CPU<TSurfel>::AddNewSurfels(ITMSurfelSce
   TSurfel *newSurfels = scene->AllocateSurfels(newSurfelCount);
   if(newSurfels == NULL) return;
 
-  const Matrix4f& T = pose.GetInvM();
+  const Matrix4f T = pose.GetInvM();
   const Vector4f *normalMap = this->m_normalMapMB->GetData(MEMORYDEVICE_CPU);
   const float *radiusMap = this->m_radiusMapMB->GetData(MEMORYDEVICE_CPU);
   const Vector3f *vertexMap = this->m_vertexMapMB->GetData(MEMORYDEVICE_CPU);
@@ -94,7 +94,7 @@ void ITMSurfelSceneReconstructionEngine_CPU<TSurfel>::GenerateIndexMap(const ITM
   int depthMapWidth = view->depth->noDims.x;
   unsigned int *indexMap = this->m_indexMapMB->GetData(MEMORYDEVICE_CPU);
   const ITMIntrinsics& intrinsics = view->calib->intrinsics_d;
-  const Matrix4f invT = pose.GetM();
+  const Matrix4f& invT = pose.GetM();
   const int surfelCount = static_cast<int>(scene->GetSurfelCount());
   const TSurfel *surfels = scene->GetSurfels()->GetData(MEMORYDEVICE_CPU);
 

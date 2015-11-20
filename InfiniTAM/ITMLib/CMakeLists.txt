@@ -183,6 +183,7 @@ Objects/ITMViewIMU.h
 Objects/ITMViewHierarchyLevel.h
 Objects/ITMRenderState.h
 Objects/ITMRenderState_VH.h
+Objects/ITMSurfelRenderState.h
 Objects/ITMVoxelBlockHash.h
 Objects/ITMIMUMeasurement.h
 Objects/ITMMesh.h
