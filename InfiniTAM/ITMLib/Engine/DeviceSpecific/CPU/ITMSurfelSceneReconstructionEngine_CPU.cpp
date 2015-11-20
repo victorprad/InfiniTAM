@@ -26,18 +26,19 @@ template <typename TSurfel>
 void ITMSurfelSceneReconstructionEngine_CPU<TSurfel>::IntegrateIntoScene(ITMSurfelScene<TSurfel> *scene, const ITMView *view, const ITMTrackingState *trackingState) const
 {
   // TEMPORARY
+  const ITMPose& pose = *trackingState->pose_d;
   PreprocessDepthMap(view);
-  GenerateIndexMap(scene, view, *trackingState->pose_d);
+  GenerateIndexMap(scene, view, pose);
   FindCorrespondingSurfels(scene, view);
   //FuseMatchedPoints();
-  AddNewSurfels(scene);
+  AddNewSurfels(scene, pose);
   // TODO
 }
 
 //#################### PRIVATE MEMBER FUNCTIONS ####################
 
 template <typename TSurfel>
-void ITMSurfelSceneReconstructionEngine_CPU<TSurfel>::AddNewSurfels(ITMSurfelScene<TSurfel> *scene) const
+void ITMSurfelSceneReconstructionEngine_CPU<TSurfel>::AddNewSurfels(ITMSurfelScene<TSurfel> *scene, const ITMPose& pose) const
 {
   // Calculate the prefix sum of the new points mask.
   const unsigned char *newPointsMask = this->m_newPointsMaskMB->GetData(MEMORYDEVICE_CPU);
@@ -55,6 +56,7 @@ void ITMSurfelSceneReconstructionEngine_CPU<TSurfel>::AddNewSurfels(ITMSurfelSce
   TSurfel *newSurfels = scene->AllocateSurfels(newSurfelCount);
   if(newSurfels == NULL) return;
 
+  const Matrix4f& T = pose.GetInvM();
   const Vector4f *normalMap = this->m_normalMapMB->GetData(MEMORYDEVICE_CPU);
   const float *radiusMap = this->m_radiusMapMB->GetData(MEMORYDEVICE_CPU);
   const Vector3f *vertexMap = this->m_vertexMapMB->GetData(MEMORYDEVICE_CPU);
@@ -64,7 +66,7 @@ void ITMSurfelSceneReconstructionEngine_CPU<TSurfel>::AddNewSurfels(ITMSurfelSce
 #endif
   for(int locId = 0; locId < pixelCount; ++locId)
   {
-    add_new_surfel(locId, newPointsMask, newPointsPrefixSum, vertexMap, normalMap, radiusMap, newSurfels);
+    add_new_surfel(locId, T, newPointsMask, newPointsPrefixSum, vertexMap, normalMap, radiusMap, newSurfels);
   }
 }
 
@@ -92,7 +94,7 @@ void ITMSurfelSceneReconstructionEngine_CPU<TSurfel>::GenerateIndexMap(const ITM
   int depthMapWidth = view->depth->noDims.x;
   unsigned int *indexMap = this->m_indexMapMB->GetData(MEMORYDEVICE_CPU);
   const ITMIntrinsics& intrinsics = view->calib->intrinsics_d;
-  const Matrix4f invT = pose.GetInvM();
+  const Matrix4f invT = pose.GetM();
   const int surfelCount = static_cast<int>(scene->GetSurfelCount());
   const TSurfel *surfels = scene->GetSurfels()->GetData(MEMORYDEVICE_CPU);
 

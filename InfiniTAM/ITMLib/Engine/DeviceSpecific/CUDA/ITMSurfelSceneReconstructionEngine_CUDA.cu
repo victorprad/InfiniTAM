@@ -25,13 +25,13 @@ namespace ITMLib
 //#################### CUDA KERNELS ####################
 
 template <typename TSurfel>
-__global__ void ck_add_new_surfel(int pixelCount, const unsigned char *newPointsMask, const unsigned int *newPointsPrefixSum,
+__global__ void ck_add_new_surfel(int pixelCount, Matrix4f T, const unsigned char *newPointsMask, const unsigned int *newPointsPrefixSum,
                                   const Vector3f *vertexMap, const Vector4f *normalMap, const float *radiusMap, TSurfel *newSurfels)
 {
   int locId = threadIdx.x + blockDim.x * blockIdx.x;
   if(locId < pixelCount)
   {
-    add_new_surfel(locId, newPointsMask, newPointsPrefixSum, vertexMap, normalMap, radiusMap, newSurfels);
+    add_new_surfel(locId, T, newPointsMask, newPointsPrefixSum, vertexMap, normalMap, radiusMap, newSurfels);
   }
 }
 
@@ -84,18 +84,19 @@ template <typename TSurfel>
 void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::IntegrateIntoScene(ITMSurfelScene<TSurfel> *scene, const ITMView *view, const ITMTrackingState *trackingState) const
 {
   // TEMPORARY
+  const ITMPose& pose = *trackingState->pose_d;
   PreprocessDepthMap(view);
-  GenerateIndexMap(scene, view, *trackingState->pose_d);
+  GenerateIndexMap(scene, view, pose);
   FindCorrespondingSurfels(scene, view);
   //FuseMatchedPoints();
-  AddNewSurfels(scene);
+  AddNewSurfels(scene, pose);
   // TODO
 }
 
 //#################### PRIVATE MEMBER FUNCTIONS ####################
 
 template <typename TSurfel>
-void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::AddNewSurfels(ITMSurfelScene<TSurfel> *scene) const
+void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::AddNewSurfels(ITMSurfelScene<TSurfel> *scene, const ITMPose& pose) const
 {
   // Calculate the prefix sum of the new points mask.
   const unsigned char *newPointsMask = this->m_newPointsMaskMB->GetData(MEMORYDEVICE_CUDA);
@@ -122,6 +123,7 @@ void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::AddNewSurfels(ITMSurfelSc
 
   ck_add_new_surfel<<<numBlocks,threadsPerBlock>>>(
     pixelCount,
+    pose.GetInvM(),
     newPointsMask,
     newPointsPrefixSum,
     this->m_vertexMapMB->GetData(MEMORYDEVICE_CUDA),
@@ -165,7 +167,7 @@ void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::GenerateIndexMap(const IT
   ck_project_to_index_map<<<numBlocks,threadsPerBlock>>>(
     surfelCount,
     scene->GetSurfels()->GetData(MEMORYDEVICE_CUDA),
-    pose.GetInvM(),
+    pose.GetM(),
     view->calib->intrinsics_d,
     view->depth->noDims.x,
     view->depth->noDims.y,

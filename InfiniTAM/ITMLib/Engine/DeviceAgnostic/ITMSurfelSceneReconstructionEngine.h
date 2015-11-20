@@ -13,13 +13,13 @@ namespace ITMLib
  */
 template <typename TSurfel>
 _CPU_AND_GPU_CODE_
-inline void add_new_surfel(int locId, const unsigned char *newPointsMask, const unsigned int *newPointsPrefixSum,
+inline void add_new_surfel(int locId, const Matrix4f& T, const unsigned char *newPointsMask, const unsigned int *newPointsPrefixSum,
                            const Vector3f *vertexMap, const Vector4f *normalMap, const float *radiusMap, TSurfel *newSurfels)
 {
   if(newPointsMask[locId])
   {
     ITMSurfel surfel;
-    surfel.position = /* TODO: Convert to the global frame */ vertexMap[locId];
+    surfel.position = (T * Vector4f(vertexMap[locId])).toVector3();
     surfel.normal = normalMap[locId].toVector3();
     surfel.radius = radiusMap[locId];
     surfel.colour = Vector3u(0, 0, 0); // TEMPORARY

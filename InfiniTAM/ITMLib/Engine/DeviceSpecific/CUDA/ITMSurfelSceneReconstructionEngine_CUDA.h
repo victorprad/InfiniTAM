@@ -30,7 +30,7 @@ namespace ITMLib
     //#################### PRIVATE MEMBER FUNCTIONS ####################
   private:
     /** Override */
-    virtual void AddNewSurfels(ITMSurfelScene<TSurfel> *scene) const;
+    virtual void AddNewSurfels(ITMSurfelScene<TSurfel> *scene, const ITMPose& pose) const;
 
     /** Override */
     virtual void FindCorrespondingSurfels(const ITMSurfelScene<TSurfel> *scene, const ITMView *view) const;
