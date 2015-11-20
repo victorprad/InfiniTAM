@@ -17,7 +17,7 @@
 
 #include "../../DeviceAgnostic/ITMSurfelSceneReconstructionEngine.h"
 
-#define DEBUGGING 1
+#define DEBUGGING 0
 
 namespace ITMLib
 {
