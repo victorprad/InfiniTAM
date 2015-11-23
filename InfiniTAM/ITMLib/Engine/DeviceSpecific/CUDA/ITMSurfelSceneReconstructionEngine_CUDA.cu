@@ -25,7 +25,7 @@ namespace ITMLib
 //#################### CUDA KERNELS ####################
 
 template <typename TSurfel>
-__global__ void ck_add_new_surfel(int pixelCount, Matrix4f T, const unsigned char *newPointsMask, const unsigned int *newPointsPrefixSum,
+__global__ void ck_add_new_surfel(int pixelCount, Matrix4f T, const unsigned int *newPointsMask, const unsigned int *newPointsPrefixSum,
                                   const Vector3f *vertexMap, const Vector4f *normalMap, const float *radiusMap, TSurfel *newSurfels)
 {
   int locId = threadIdx.x + blockDim.x * blockIdx.x;
@@ -35,7 +35,7 @@ __global__ void ck_add_new_surfel(int pixelCount, Matrix4f T, const unsigned cha
   }
 }
 
-__global__ void ck_find_corresponding_surfel(int pixelCount, const unsigned int *indexMap, unsigned char *newPointsMask)
+__global__ void ck_find_corresponding_surfel(int pixelCount, const unsigned int *indexMap, unsigned int *newPointsMask)
 {
   int locId = threadIdx.x + blockDim.x * blockIdx.x;
   if(locId < pixelCount)
@@ -99,17 +99,14 @@ template <typename TSurfel>
 void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::AddNewSurfels(ITMSurfelScene<TSurfel> *scene, const ITMPose& pose) const
 {
   // Calculate the prefix sum of the new points mask.
-  const unsigned char *newPointsMask = this->m_newPointsMaskMB->GetData(MEMORYDEVICE_CUDA);
+  const unsigned int *newPointsMask = this->m_newPointsMaskMB->GetData(MEMORYDEVICE_CUDA);
   unsigned int *newPointsPrefixSum = this->m_newPointsPrefixSumMB->GetData(MEMORYDEVICE_CUDA);
   const int pixelCount = static_cast<int>(this->m_newPointsMaskMB->dataSize - 1);
-  thrust::exclusive_scan(
-    thrust::device_ptr<const unsigned char>(newPointsMask),
-    thrust::device_ptr<const unsigned char>(newPointsMask + pixelCount + 1),
-    thrust::device_ptr<unsigned int>(newPointsPrefixSum)
-  );
+  thrust::device_ptr<const unsigned int> newPointsMaskBegin(newPointsMask);
+  thrust::device_ptr<unsigned int> newPointsPrefixSumBegin(newPointsPrefixSum);
+  thrust::exclusive_scan(newPointsMaskBegin, newPointsMaskBegin + (pixelCount + 1), newPointsPrefixSumBegin);
 
 #if DEBUGGING
-  this->m_newPointsMaskMB->UpdateHostFromDevice();
   this->m_newPointsPrefixSumMB->UpdateHostFromDevice();
 #endif
 

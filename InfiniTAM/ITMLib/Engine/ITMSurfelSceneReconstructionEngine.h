@@ -20,7 +20,7 @@ namespace ITMLib
     ORUtils::MemoryBlock<unsigned int> *m_indexMapMB;
 
     /** A mask whose values denote whether the corresponding points in the vertex map need to be added to the scene as new points. */
-    ORUtils::MemoryBlock<unsigned char> *m_newPointsMaskMB;
+    ORUtils::MemoryBlock<unsigned int> *m_newPointsMaskMB;
 
     /** TODO */
     ORUtils::MemoryBlock<unsigned int> *m_newPointsPrefixSumMB;
@@ -43,7 +43,7 @@ namespace ITMLib
     {
       size_t pixelCount = depthImageSize.x * depthImageSize.y;
       m_indexMapMB = new ORUtils::MemoryBlock<unsigned int>(pixelCount * 16, true, true);
-      m_newPointsMaskMB = new ORUtils::MemoryBlock<unsigned char>(pixelCount + 1, true, true);
+      m_newPointsMaskMB = new ORUtils::MemoryBlock<unsigned int>(pixelCount + 1, true, true);
       m_newPointsPrefixSumMB = new ORUtils::MemoryBlock<unsigned int>(pixelCount + 1, true, true);
       m_normalMapMB = new ORUtils::MemoryBlock<Vector4f>(pixelCount, true, true);
       m_radiusMapMB = new ORUtils::MemoryBlock<float>(pixelCount, true, true);

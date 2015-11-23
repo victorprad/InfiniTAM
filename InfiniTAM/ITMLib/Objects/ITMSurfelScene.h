@@ -12,7 +12,7 @@ namespace ITMLib
   //#################### CONSTANTS ####################
 
   /** The maximum number of surfels that we can store in a scene. */
-  const size_t MAX_SURFEL_COUNT = 67108864; // 2^26
+  const size_t MAX_SURFEL_COUNT = 3000000;//67108864; // 2^26
 
   //#################### TYPES ####################
 

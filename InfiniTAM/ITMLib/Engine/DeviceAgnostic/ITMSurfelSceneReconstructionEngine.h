@@ -13,13 +13,14 @@ namespace ITMLib
  */
 template <typename TSurfel>
 _CPU_AND_GPU_CODE_
-inline void add_new_surfel(int locId, const Matrix4f& T, const unsigned char *newPointsMask, const unsigned int *newPointsPrefixSum,
+inline void add_new_surfel(int locId, const Matrix4f& T, const unsigned int *newPointsMask, const unsigned int *newPointsPrefixSum,
                            const Vector3f *vertexMap, const Vector4f *normalMap, const float *radiusMap, TSurfel *newSurfels)
 {
   if(newPointsMask[locId])
   {
     ITMSurfel surfel;
-    surfel.position = (T * Vector4f(vertexMap[locId])).toVector3();
+    //surfel.position = (T * Vector4f(vertexMap[locId])).toVector3();
+    surfel.position = vertexMap[locId];
     surfel.normal = normalMap[locId].toVector3();
     surfel.radius = radiusMap[locId];
     surfel.colour = Vector3u(0, 0, 0); // TEMPORARY
@@ -54,7 +55,7 @@ inline void calculate_vertex_position(int locId, int width, const ITMIntrinsics&
  * \brief TODO
  */
 _CPU_AND_GPU_CODE_
-inline void find_corresponding_surfel(int locId, const unsigned int *indexMap, unsigned char *newPointsMask)
+inline void find_corresponding_surfel(int locId, const unsigned int *indexMap, unsigned int *newPointsMask)
 {
   // TEMPORARY
   newPointsMask[locId] = 1;
