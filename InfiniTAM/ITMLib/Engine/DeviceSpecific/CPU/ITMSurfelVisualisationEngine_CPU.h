@@ -10,8 +10,12 @@ namespace ITMLib
    * \brief TODO
    */
   template <typename TSurfel>
-  class ITMSurfelVisualisationEngine_CPU : public ITMSurfelVisualisationEngine < TSurfel >
+  class ITMSurfelVisualisationEngine_CPU : public ITMSurfelVisualisationEngine<TSurfel>
   {
+    //#################### USINGS ####################
+  private:
+    using typename ITMSurfelVisualisationEngine<TSurfel>::RenderImageType;
+
     //#################### PUBLIC MEMBER FUNCTIONS ####################
   public:
     /** Override */
