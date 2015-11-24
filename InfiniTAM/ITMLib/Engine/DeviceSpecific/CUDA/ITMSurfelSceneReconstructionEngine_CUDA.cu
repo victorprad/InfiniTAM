@@ -26,12 +26,13 @@ namespace ITMLib
 
 template <typename TSurfel>
 __global__ void ck_add_new_surfel(int pixelCount, Matrix4f T, const unsigned int *newPointsMask, const unsigned int *newPointsPrefixSum,
-                                  const Vector3f *vertexMap, const Vector4f *normalMap, const float *radiusMap, TSurfel *newSurfels)
+                                  const Vector3f *vertexMap, const Vector4f *normalMap, const float *radiusMap, const Vector4u *colourMap,
+                                  TSurfel *newSurfels)
 {
   int locId = threadIdx.x + blockDim.x * blockIdx.x;
   if(locId < pixelCount)
   {
-    add_new_surfel(locId, T, newPointsMask, newPointsPrefixSum, vertexMap, normalMap, radiusMap, newSurfels);
+    add_new_surfel(locId, T, newPointsMask, newPointsPrefixSum, vertexMap, normalMap, radiusMap, colourMap, newSurfels);
   }
 }
 
@@ -126,6 +127,7 @@ void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::AddNewSurfels(ITMSurfelSc
     this->m_vertexMapMB->GetData(MEMORYDEVICE_CUDA),
     this->m_normalMapMB->GetData(MEMORYDEVICE_CUDA),
     this->m_radiusMapMB->GetData(MEMORYDEVICE_CUDA),
+    view->rgb->GetData(MEMORYDEVICE_CUDA),
     newSurfels
   );
 

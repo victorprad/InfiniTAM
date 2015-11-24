@@ -57,6 +57,7 @@ void ITMSurfelSceneReconstructionEngine_CPU<TSurfel>::AddNewSurfels(ITMSurfelSce
   if(newSurfels == NULL) return;
 
   const Matrix4f T = trackingState->pose_d->GetInvM();
+  const Vector4u *colourMap = view->rgb->GetData(MEMORYDEVICE_CPU);
   const Vector4f *normalMap = this->m_normalMapMB->GetData(MEMORYDEVICE_CPU);
   const float *radiusMap = this->m_radiusMapMB->GetData(MEMORYDEVICE_CPU);
   const Vector3f *vertexMap = this->m_vertexMapMB->GetData(MEMORYDEVICE_CPU);
@@ -66,7 +67,7 @@ void ITMSurfelSceneReconstructionEngine_CPU<TSurfel>::AddNewSurfels(ITMSurfelSce
 #endif
   for(int locId = 0; locId < pixelCount; ++locId)
   {
-    add_new_surfel(locId, T, newPointsMask, newPointsPrefixSum, vertexMap, normalMap, radiusMap, newSurfels);
+    add_new_surfel(locId, T, newPointsMask, newPointsPrefixSum, vertexMap, normalMap, radiusMap, colourMap, newSurfels);
   }
 }
 
