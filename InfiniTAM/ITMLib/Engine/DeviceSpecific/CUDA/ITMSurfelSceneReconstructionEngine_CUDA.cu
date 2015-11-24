@@ -89,14 +89,14 @@ void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::IntegrateIntoScene(ITMSur
   GenerateIndexMap(scene, view, pose);
   FindCorrespondingSurfels(scene, view);
   //FuseMatchedPoints();
-  AddNewSurfels(scene, pose);
+  AddNewSurfels(scene, view, trackingState);
   // TODO
 }
 
 //#################### PRIVATE MEMBER FUNCTIONS ####################
 
 template <typename TSurfel>
-void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::AddNewSurfels(ITMSurfelScene<TSurfel> *scene, const ITMPose& pose) const
+void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::AddNewSurfels(ITMSurfelScene<TSurfel> *scene, const ITMView *view, const ITMTrackingState *trackingState) const
 {
   // Calculate the prefix sum of the new points mask.
   const unsigned int *newPointsMask = this->m_newPointsMaskMB->GetData(MEMORYDEVICE_CUDA);
@@ -120,7 +120,7 @@ void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::AddNewSurfels(ITMSurfelSc
 
   ck_add_new_surfel<<<numBlocks,threadsPerBlock>>>(
     pixelCount,
-    pose.GetInvM(),
+    trackingState->pose_d->GetInvM(),
     newPointsMask,
     newPointsPrefixSum,
     this->m_vertexMapMB->GetData(MEMORYDEVICE_CUDA),

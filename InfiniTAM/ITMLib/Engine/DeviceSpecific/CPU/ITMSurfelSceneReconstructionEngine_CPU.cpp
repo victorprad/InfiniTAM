@@ -31,14 +31,14 @@ void ITMSurfelSceneReconstructionEngine_CPU<TSurfel>::IntegrateIntoScene(ITMSurf
   GenerateIndexMap(scene, view, pose);
   FindCorrespondingSurfels(scene, view);
   //FuseMatchedPoints();
-  AddNewSurfels(scene, pose);
+  AddNewSurfels(scene, view, trackingState);
   // TODO
 }
 
 //#################### PRIVATE MEMBER FUNCTIONS ####################
 
 template <typename TSurfel>
-void ITMSurfelSceneReconstructionEngine_CPU<TSurfel>::AddNewSurfels(ITMSurfelScene<TSurfel> *scene, const ITMPose& pose) const
+void ITMSurfelSceneReconstructionEngine_CPU<TSurfel>::AddNewSurfels(ITMSurfelScene<TSurfel> *scene, const ITMView *view, const ITMTrackingState *trackingState) const
 {
   // Calculate the prefix sum of the new points mask.
   const unsigned int *newPointsMask = this->m_newPointsMaskMB->GetData(MEMORYDEVICE_CPU);
@@ -56,7 +56,7 @@ void ITMSurfelSceneReconstructionEngine_CPU<TSurfel>::AddNewSurfels(ITMSurfelSce
   TSurfel *newSurfels = scene->AllocateSurfels(newSurfelCount);
   if(newSurfels == NULL) return;
 
-  const Matrix4f T = pose.GetInvM();
+  const Matrix4f T = trackingState->pose_d->GetInvM();
   const Vector4f *normalMap = this->m_normalMapMB->GetData(MEMORYDEVICE_CPU);
   const float *radiusMap = this->m_radiusMapMB->GetData(MEMORYDEVICE_CPU);
   const Vector3f *vertexMap = this->m_vertexMapMB->GetData(MEMORYDEVICE_CPU);

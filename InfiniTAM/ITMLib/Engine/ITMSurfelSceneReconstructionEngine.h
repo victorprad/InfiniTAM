@@ -94,7 +94,7 @@ namespace ITMLib
     /**
      * \brief TODO
      */
-    virtual void AddNewSurfels(ITMSurfelScene<TSurfel> *scene, const ITMPose& pose) const = 0;
+    virtual void AddNewSurfels(ITMSurfelScene<TSurfel> *scene, const ITMView *view, const ITMTrackingState *trackingState) const = 0;
 
     /**
      * \brief TODO
