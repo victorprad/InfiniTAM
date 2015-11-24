@@ -10,6 +10,21 @@ namespace ITMLib
 //#################### PUBLIC MEMBER FUNCTIONS ####################
 
 template <typename TSurfel>
+void ITMSurfelVisualisationEngine_CPU<TSurfel>::CopySceneToBuffers(const ITMSurfelScene<TSurfel> *scene, float *positions) const
+{
+  const int surfelCount = static_cast<int>(scene->GetSurfelCount());
+  const TSurfel *surfels = scene->GetSurfels()->GetData(MEMORYDEVICE_CPU);
+
+#ifdef WITH_OPENMP
+  #pragma omp parallel for
+#endif
+  for(int surfelId = 0; surfelId < surfelCount; ++surfelId)
+  {
+    copy_surfel_to_buffers(surfelId, surfels, positions);
+  }
+}
+
+template <typename TSurfel>
 void ITMSurfelVisualisationEngine_CPU<TSurfel>::FindSurface(const ITMSurfelScene<TSurfel> *scene, const ITMPose *pose, const ITMIntrinsics *intrinsics,
                                                             const ITMSurfelRenderState *renderState) const
 {

@@ -37,6 +37,7 @@ Engine/ITMMultiEngine.cpp
 Engine/ITMActiveSceneManager.cpp
 Engine/ITMRenTracker.cpp
 Engine/ITMSurfelSceneReconstructionEngineFactory.cpp
+Engine/ITMSurfelVisualisationEngineFactory.cpp
 Engine/ITMTrackerFactory.cpp
 Engine/ITMTrackingController.cpp
 Engine/ITMVisualisationEngine.cpp
@@ -61,6 +62,7 @@ Engine/ITMSceneReconstructionEngine.h
 Engine/ITMSurfelSceneReconstructionEngine.h
 Engine/ITMSurfelSceneReconstructionEngineFactory.h
 Engine/ITMSurfelVisualisationEngine.h
+Engine/ITMSurfelVisualisationEngineFactory.h
 Engine/ITMSwappingEngine.h
 Engine/ITMTracker.h
 Engine/ITMTrackerFactory.h

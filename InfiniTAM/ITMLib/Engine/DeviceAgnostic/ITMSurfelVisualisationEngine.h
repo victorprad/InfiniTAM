@@ -12,6 +12,20 @@ namespace ITMLib
  */
 template <typename TSurfel>
 _CPU_AND_GPU_CODE_
+inline void copy_surfel_to_buffers(int surfelId, const TSurfel *surfels, float *positions)
+{
+  Vector3f p = surfels[surfelId].position;
+  int offset = surfelId * 3;
+  positions[offset] = p.x;
+  positions[offset+1] = p.y;
+  positions[offset+2] = p.z;
+}
+
+/**
+ * \brief TODO
+ */
+template <typename TSurfel>
+_CPU_AND_GPU_CODE_
 inline void project_to_surfel_index_image(int surfelId, const TSurfel *surfels, const Matrix4f& invT, const ITMIntrinsics& intrinsics, int width, int height,
                                           unsigned long *surfelIndexImage, float *depthBuffer)
 {
