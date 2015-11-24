@@ -73,6 +73,7 @@ void ITMSurfelSceneReconstructionEngine_CPU<TSurfel>::AddNewSurfels(ITMSurfelSce
 template <typename TSurfel>
 void ITMSurfelSceneReconstructionEngine_CPU<TSurfel>::FindCorrespondingSurfels(const ITMSurfelScene<TSurfel> *scene, const ITMView *view) const
 {
+  const float *depthMap = view->depth->GetData(MEMORYDEVICE_CPU);
   const unsigned int *indexMap = this->m_indexMapMB->GetData(MEMORYDEVICE_CPU);
   unsigned int *newPointsMask = this->m_newPointsMaskMB->GetData(MEMORYDEVICE_CPU);
   const int pixelCount = static_cast<int>(view->depth->dataSize);
@@ -83,7 +84,7 @@ void ITMSurfelSceneReconstructionEngine_CPU<TSurfel>::FindCorrespondingSurfels(c
   for(int locId = 0; locId < pixelCount; ++locId)
   {
     // TEMPORARY
-    find_corresponding_surfel(locId, indexMap, newPointsMask);
+    find_corresponding_surfel(locId, depthMap, indexMap, newPointsMask);
   }
 }
 

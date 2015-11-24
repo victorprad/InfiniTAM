@@ -55,10 +55,10 @@ inline void calculate_vertex_position(int locId, int width, const ITMIntrinsics&
  * \brief TODO
  */
 _CPU_AND_GPU_CODE_
-inline void find_corresponding_surfel(int locId, const unsigned int *indexMap, unsigned int *newPointsMask)
+inline void find_corresponding_surfel(int locId, const float *depthMap, const unsigned int *indexMap, unsigned int *newPointsMask)
 {
   // TEMPORARY
-  newPointsMask[locId] = 1;
+  newPointsMask[locId] = fabs(depthMap[locId] + 1) > 0.0001f ? 1 : 0;
 }
 
 /**

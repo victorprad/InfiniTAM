@@ -35,13 +35,13 @@ __global__ void ck_add_new_surfel(int pixelCount, Matrix4f T, const unsigned int
   }
 }
 
-__global__ void ck_find_corresponding_surfel(int pixelCount, const unsigned int *indexMap, unsigned int *newPointsMask)
+__global__ void ck_find_corresponding_surfel(int pixelCount, const float *depthMap, const unsigned int *indexMap, unsigned int *newPointsMask)
 {
   int locId = threadIdx.x + blockDim.x * blockIdx.x;
   if(locId < pixelCount)
   {
     // TEMPORARY
-    find_corresponding_surfel(locId, indexMap, newPointsMask);
+    find_corresponding_surfel(locId, depthMap, indexMap, newPointsMask);
   }
 }
 
@@ -144,6 +144,7 @@ void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::FindCorrespondingSurfels(
 
   ck_find_corresponding_surfel<<<numBlocks,threadsPerBlock>>>(
     pixelCount,
+    view->depth->GetData(MEMORYDEVICE_CUDA),
     this->m_indexMapMB->GetData(MEMORYDEVICE_CUDA),
     this->m_newPointsMaskMB->GetData(MEMORYDEVICE_CUDA)
   );
