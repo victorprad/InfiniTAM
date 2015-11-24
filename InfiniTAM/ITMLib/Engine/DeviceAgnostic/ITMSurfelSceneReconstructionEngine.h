@@ -19,8 +19,7 @@ inline void add_new_surfel(int locId, const Matrix4f& T, const unsigned int *new
   if(newPointsMask[locId])
   {
     ITMSurfel surfel;
-    //surfel.position = (T * Vector4f(vertexMap[locId])).toVector3();
-    surfel.position = vertexMap[locId];
+    surfel.position = (T * Vector4f(vertexMap[locId])).toVector3();
     surfel.normal = normalMap[locId].toVector3();
     surfel.radius = radiusMap[locId];
     surfel.colour = Vector3u(0, 0, 0); // TEMPORARY
