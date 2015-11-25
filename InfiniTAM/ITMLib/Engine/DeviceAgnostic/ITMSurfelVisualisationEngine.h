@@ -12,13 +12,23 @@ namespace ITMLib
  */
 template <typename TSurfel>
 _CPU_AND_GPU_CODE_
-inline void copy_surfel_to_buffers(int surfelId, const TSurfel *surfels, float *positions)
+inline void copy_surfel_to_buffers(int surfelId, const TSurfel *surfels, float *positions, unsigned char *colours)
 {
-  Vector3f p = surfels[surfelId].position;
+  TSurfel surfel = surfels[surfelId];
   int offset = surfelId * 3;
+
+  Vector3f p = surfel.position;
   positions[offset] = p.x;
   positions[offset+1] = p.y;
   positions[offset+2] = p.z;
+
+  if(colours != NULL)
+  {
+    Vector3u c = SurfelColourManipulator<TSurfel::hasColourInformation>::read(surfel);
+    colours[offset] = c.r;
+    colours[offset+1] = c.g;
+    colours[offset+2] = c.b;
+  }
 }
 
 /**

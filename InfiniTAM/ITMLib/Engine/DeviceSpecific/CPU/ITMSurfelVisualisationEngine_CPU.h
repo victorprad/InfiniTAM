@@ -19,7 +19,7 @@ namespace ITMLib
     //#################### PUBLIC MEMBER FUNCTIONS ####################
   public:
     /** Override */
-    virtual void CopySceneToBuffers(const ITMSurfelScene<TSurfel> *scene, float *positions) const;
+    virtual void CopySceneToBuffers(const ITMSurfelScene<TSurfel> *scene, float *positions, unsigned char *colours) const;
 
     /** Override */
     virtual void FindSurface(const ITMSurfelScene<TSurfel> *scene, const ITMPose *pose, const ITMIntrinsics *intrinsics,

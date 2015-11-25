@@ -10,19 +10,19 @@ namespace ITMLib
 //#################### CUDA KERNELS ####################
 
 template <typename TSurfel>
-__global__ void ck_copy_scene_to_buffers(int surfelCount, const TSurfel *surfels, float *positions)
+__global__ void ck_copy_scene_to_buffers(int surfelCount, const TSurfel *surfels, float *positions, unsigned char *colours)
 {
   int surfelId = threadIdx.x + blockDim.x * blockIdx.x;
   if(surfelId < surfelCount)
   {
-    copy_surfel_to_buffers(surfelId, surfels, positions);
+    copy_surfel_to_buffers(surfelId, surfels, positions, colours);
   }
 }
 
 //#################### PUBLIC MEMBER FUNCTIONS ####################
 
 template <typename TSurfel>
-void ITMSurfelVisualisationEngine_CUDA<TSurfel>::CopySceneToBuffers(const ITMSurfelScene<TSurfel> *scene, float *positions) const
+void ITMSurfelVisualisationEngine_CUDA<TSurfel>::CopySceneToBuffers(const ITMSurfelScene<TSurfel> *scene, float *positions, unsigned char *colours) const
 {
   const int surfelCount = static_cast<int>(scene->GetSurfelCount());
 
@@ -32,7 +32,8 @@ void ITMSurfelVisualisationEngine_CUDA<TSurfel>::CopySceneToBuffers(const ITMSur
   ck_copy_scene_to_buffers<<<numBlocks,threadsPerBlock>>>(
     surfelCount,
     scene->GetSurfels()->GetData(MEMORYDEVICE_CUDA),
-    positions
+    positions,
+    colours
   );
 }
 
