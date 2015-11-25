@@ -178,6 +178,7 @@ Objects/ITMRGBDCalib.h
 Objects/ITMScene.h
 Objects/ITMSceneHierarchyLevel.h
 Objects/ITMSceneParams.h
+Objects/ITMSurfel.h
 Objects/ITMSurfelScene.h
 Objects/ITMTemplatedHierarchyLevel.h
 Objects/ITMTrackingState.h
