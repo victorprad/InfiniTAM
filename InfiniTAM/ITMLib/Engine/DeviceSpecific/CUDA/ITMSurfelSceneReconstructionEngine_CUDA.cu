@@ -214,5 +214,6 @@ void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::PreprocessDepthMap(const 
 //#################### EXPLICIT INSTANTIATIONS ####################
 
 template class ITMSurfelSceneReconstructionEngine_CUDA<ITMSurfel>;
+template class ITMSurfelSceneReconstructionEngine_CUDA<ITMSurfel_rgb>;
 
 }

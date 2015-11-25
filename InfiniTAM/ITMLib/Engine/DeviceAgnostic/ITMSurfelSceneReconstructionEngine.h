@@ -19,13 +19,15 @@ inline void add_new_surfel(int locId, const Matrix4f& T, const unsigned int *new
 {
   if(newPointsMask[locId])
   {
-    ITMSurfel surfel;
+    TSurfel surfel;
     surfel.position = (T * Vector4f(vertexMap[locId])).toVector3();
     surfel.normal = normalMap[locId].toVector3();
     surfel.radius = radiusMap[locId];
-    surfel.colour = colourMap[locId].toVector3(); // TEMPORARY
     surfel.confidence = 1.0f;                     // TEMPORARY
     surfel.timestamp = 1;                         // TEMPORARY
+
+    // Store a colour if the surfel type can support it.
+    SurfelColourManipulator<TSurfel::hasColourInformation>::write(surfel, colourMap[locId].toVector3());  // TEMPORARY
 
     newSurfels[newPointsPrefixSum[locId]] = surfel;
   }

@@ -38,5 +38,6 @@ ITMSurfelVisualisationEngineFactory<TSurfel>::make_surfel_visualisation_engine(I
 //#################### EXPLICIT INSTANTIATIONS ####################
 
 template struct ITMSurfelVisualisationEngineFactory<ITMSurfel>;
+template struct ITMSurfelVisualisationEngineFactory<ITMSurfel_rgb>;
 
 }

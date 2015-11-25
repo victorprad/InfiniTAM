@@ -34,5 +34,6 @@ void ITMDenseSurfelMapper<TSurfel>::ProcessFrame(const ITMView *view, const ITMT
 //#################### EXPLICIT INSTANTIATIONS ####################
 
 template class ITMDenseSurfelMapper<ITMSurfel>;
+template class ITMDenseSurfelMapper<ITMSurfel_rgb>;
 
 }

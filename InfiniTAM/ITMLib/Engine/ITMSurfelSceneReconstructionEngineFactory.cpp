@@ -38,5 +38,6 @@ ITMSurfelSceneReconstructionEngineFactory<TSurfel>::make_surfel_scene_reconstruc
 //#################### EXPLICIT INSTANTIATIONS ####################
 
 template struct ITMSurfelSceneReconstructionEngineFactory<ITMSurfel>;
+template struct ITMSurfelSceneReconstructionEngineFactory<ITMSurfel_rgb>;
 
 }

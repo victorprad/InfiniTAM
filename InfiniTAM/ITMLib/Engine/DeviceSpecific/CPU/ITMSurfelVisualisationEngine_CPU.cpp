@@ -55,5 +55,6 @@ void ITMSurfelVisualisationEngine_CPU<TSurfel>::RenderImage(const ITMSurfelScene
 //#################### EXPLICIT INSTANTIATIONS ####################
 
 template class ITMSurfelVisualisationEngine_CPU<ITMSurfel>;
+template class ITMSurfelVisualisationEngine_CPU<ITMSurfel_rgb>;
 
 }

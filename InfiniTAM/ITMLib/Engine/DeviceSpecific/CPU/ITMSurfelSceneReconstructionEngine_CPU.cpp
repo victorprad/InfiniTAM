@@ -137,5 +137,6 @@ void ITMSurfelSceneReconstructionEngine_CPU<TSurfel>::PreprocessDepthMap(const I
 //#################### EXPLICIT INSTANTIATIONS ####################
 
 template class ITMSurfelSceneReconstructionEngine_CPU<ITMSurfel>;
+template class ITMSurfelSceneReconstructionEngine_CPU<ITMSurfel_rgb>;
 
 }
