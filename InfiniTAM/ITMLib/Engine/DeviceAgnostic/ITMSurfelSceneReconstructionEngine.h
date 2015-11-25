@@ -20,9 +20,9 @@ inline void add_new_surfel(int locId, const Matrix4f& T, const unsigned int *new
   if(newPointsMask[locId])
   {
     TSurfel surfel;
-    Vector3f v3 = vertexMap[locId];
-    Vector4f v4(v3.x, v3.y, v3.z, 1.0f);
-    surfel.position = (T * v4).toVector3();
+    Vector3f p = vertexMap[locId];
+    Vector4f v(p.x, p.y, p.z, 1.0f);
+    surfel.position = (T * v).toVector3();
     surfel.normal = normalMap[locId].toVector3();
     surfel.radius = radiusMap[locId];
     surfel.confidence = 1.0f;                     // TEMPORARY
@@ -74,7 +74,7 @@ inline void project_to_index_map(int surfelId, const TSurfel *surfels, const Mat
                                  int depthMapWidth, int depthMapHeight, unsigned int *indexMap)
 {
   // Convert the surfel point into the coordinates of the current frame using v_i = T_i^{-1} v_i^g.
-  const Vector3f& p = surfels[surfelId].position;
+  Vector3f p = surfels[surfelId].position;
   Vector4f vg(p.x, p.y, p.z, 1.0f);
   Vector4f v = invT * vg;
 
