@@ -36,13 +36,21 @@ __global__ void ck_add_new_surfel(int pixelCount, Matrix4f T, const unsigned int
   }
 }
 
-__global__ void ck_find_corresponding_surfel(int pixelCount, const float *depthMap, const unsigned int *indexMap, unsigned int *newPointsMask)
+__global__ void ck_calculate_vertex_position(int pixelCount, int width, ITMIntrinsics intrinsics, const float *depthMap, Vector3f *vertexMap)
 {
   int locId = threadIdx.x + blockDim.x * blockIdx.x;
   if(locId < pixelCount)
   {
-    // TEMPORARY
-    find_corresponding_surfel(locId, depthMap, indexMap, newPointsMask);
+    calculate_vertex_position(locId, width, intrinsics, depthMap, vertexMap);
+  }
+}
+
+__global__ void ck_find_corresponding_surfel(int pixelCount, const float *depthMap, int depthMapWidth, const unsigned int *indexMap, unsigned int *newPointsMask)
+{
+  int locId = threadIdx.x + blockDim.x * blockIdx.x;
+  if(locId < pixelCount)
+  {
+    find_corresponding_surfel(locId, depthMap, depthMapWidth, indexMap, newPointsMask);
   }
 }
 
@@ -57,12 +65,12 @@ __global__ void ck_project_to_index_map(int surfelCount, const TSurfel *surfels,
   }
 }
 
-__global__ void ck_calculate_vertex_position(int pixelCount, int width, ITMIntrinsics intrinsics, const float *depthMap, Vector3f *vertexMap)
+__global__ void ck_reset_index_map(int indexPixelCount, unsigned int *indexMap)
 {
-  int locId = threadIdx.x + blockDim.x * blockIdx.x;
-  if(locId < pixelCount)
+  int indexLocId = threadIdx.x + blockDim.x * blockIdx.x;
+  if(indexLocId < indexPixelCount)
   {
-    calculate_vertex_position(locId, width, intrinsics, depthMap, vertexMap);
+    reset_index_map_pixel(indexLocId, indexMap);
   }
 }
 
@@ -127,6 +135,7 @@ void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::FindCorrespondingSurfels(
   ck_find_corresponding_surfel<<<numBlocks,threadsPerBlock>>>(
     pixelCount,
     view->depth->GetData(MEMORYDEVICE_CUDA),
+    view->depth->noDims.x,
     this->m_indexMapMB->GetData(MEMORYDEVICE_CUDA),
     this->m_newPointsMaskMB->GetData(MEMORYDEVICE_CUDA)
   );
@@ -139,10 +148,18 @@ void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::FindCorrespondingSurfels(
 template <typename TSurfel>
 void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::GenerateIndexMap(const ITMSurfelScene<TSurfel> *scene, const ITMView *view, const ITMPose& pose) const
 {
-  const int surfelCount = static_cast<int>(scene->GetSurfelCount());
-
+  const int indexPixelCount = static_cast<int>(this->m_indexMapMB->dataSize);
+  unsigned int *indexMap = this->m_indexMapMB->GetData(MEMORYDEVICE_CUDA);
   int threadsPerBlock = 256;
-  int numBlocks = (surfelCount + threadsPerBlock - 1) / threadsPerBlock;
+  int numBlocks = (indexPixelCount + threadsPerBlock - 1) / threadsPerBlock;
+
+  ck_reset_index_map<<<numBlocks,threadsPerBlock>>>(
+    indexPixelCount,
+    indexMap
+  );
+
+  const int surfelCount = static_cast<int>(scene->GetSurfelCount());
+  numBlocks = (surfelCount + threadsPerBlock - 1) / threadsPerBlock;
 
   ck_project_to_index_map<<<numBlocks,threadsPerBlock>>>(
     surfelCount,
@@ -151,7 +168,7 @@ void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::GenerateIndexMap(const IT
     view->calib->intrinsics_d,
     view->depth->noDims.x,
     view->depth->noDims.y,
-    this->m_indexMapMB->GetData(MEMORYDEVICE_CUDA)
+    indexMap
   );
 
 #if DEBUGGING

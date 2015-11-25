@@ -54,6 +54,7 @@ template <typename TSurfel>
 void ITMSurfelSceneReconstructionEngine_CPU<TSurfel>::FindCorrespondingSurfels(const ITMSurfelScene<TSurfel> *scene, const ITMView *view) const
 {
   const float *depthMap = view->depth->GetData(MEMORYDEVICE_CPU);
+  const int depthMapWidth = view->depth->noDims.x;
   const unsigned int *indexMap = this->m_indexMapMB->GetData(MEMORYDEVICE_CPU);
   unsigned int *newPointsMask = this->m_newPointsMaskMB->GetData(MEMORYDEVICE_CPU);
   const int pixelCount = static_cast<int>(view->depth->dataSize);
@@ -63,17 +64,26 @@ void ITMSurfelSceneReconstructionEngine_CPU<TSurfel>::FindCorrespondingSurfels(c
 #endif
   for(int locId = 0; locId < pixelCount; ++locId)
   {
-    // TEMPORARY
-    find_corresponding_surfel(locId, depthMap, indexMap, newPointsMask);
+    find_corresponding_surfel(locId, depthMap, depthMapWidth, indexMap, newPointsMask);
   }
 }
 
 template <typename TSurfel>
 void ITMSurfelSceneReconstructionEngine_CPU<TSurfel>::GenerateIndexMap(const ITMSurfelScene<TSurfel> *scene, const ITMView *view, const ITMPose& pose) const
 {
-  int depthMapHeight = view->depth->noDims.y;
-  int depthMapWidth = view->depth->noDims.x;
   unsigned int *indexMap = this->m_indexMapMB->GetData(MEMORYDEVICE_CPU);
+  const int indexPixelCount = static_cast<int>(this->m_indexMapMB->dataSize);
+
+#ifdef WITH_OPENMP
+  #pragma omp parallel for
+#endif
+  for(int indexLocId = 0; indexLocId < indexPixelCount; ++indexLocId)
+  {
+    reset_index_map_pixel(indexLocId, indexMap);
+  }
+
+  const int depthMapHeight = view->depth->noDims.y;
+  const int depthMapWidth = view->depth->noDims.x;
   const ITMIntrinsics& intrinsics = view->calib->intrinsics_d;
   const Matrix4f& invT = pose.GetM();
   const int surfelCount = static_cast<int>(scene->GetSurfelCount());

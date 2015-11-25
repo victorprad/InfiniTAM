@@ -59,10 +59,26 @@ inline void calculate_vertex_position(int locId, int width, const ITMIntrinsics&
  * \brief TODO
  */
 _CPU_AND_GPU_CODE_
-inline void find_corresponding_surfel(int locId, const float *depthMap, const unsigned int *indexMap, unsigned int *newPointsMask)
+inline void find_corresponding_surfel(int locId, const float *depthMap, int depthMapWidth, const unsigned int *indexMap, unsigned int *newPointsMask)
 {
-  // TEMPORARY
-  newPointsMask[locId] = fabs(depthMap[locId] + 1) > 0.0001f ? 1 : 0;
+  if(fabs(depthMap[locId] + 1) > 0.0001f)
+  {
+    bool foundPoint = false;
+    int ux = locId % depthMapWidth, uy = locId / depthMapWidth;
+    for(int dy = 0; dy < 4; ++dy)
+    {
+      for(int dx = 0; dx < 4; ++dx)
+      {
+        int x = ux * 4 + dx;
+        int y = uy * 4 + dy;
+        int offset = y * depthMapWidth * 4 + x;
+        if(indexMap[offset] > 0) foundPoint = true;
+      }
+    }
+
+    newPointsMask[locId] = foundPoint ? 0 : 1;
+  }
+  else newPointsMask[locId] = 0;
 }
 
 /**
@@ -94,6 +110,15 @@ inline void project_to_index_map(int surfelId, const TSurfel *surfels, const Mat
     // Write the surfel ID into the index map.
     indexMap[y * indexMapWidth + x] = static_cast<unsigned int>(surfelId);
   }
+}
+
+/**
+ * \brief TODO
+ */
+_CPU_AND_GPU_CODE_
+inline void reset_index_map_pixel(int indexLocId, unsigned int *indexMap)
+{
+  indexMap[indexLocId] = 0;
 }
 
 }
