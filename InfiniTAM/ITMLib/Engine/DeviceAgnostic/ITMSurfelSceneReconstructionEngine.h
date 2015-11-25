@@ -20,7 +20,9 @@ inline void add_new_surfel(int locId, const Matrix4f& T, const unsigned int *new
   if(newPointsMask[locId])
   {
     TSurfel surfel;
-    surfel.position = (T * Vector4f(vertexMap[locId])).toVector3();
+    Vector3f v3 = vertexMap[locId];
+    Vector4f v4(v3.x, v3.y, v3.z, 1.0f);
+    surfel.position = (T * v4).toVector3();
     surfel.normal = normalMap[locId].toVector3();
     surfel.radius = radiusMap[locId];
     surfel.confidence = 1.0f;                     // TEMPORARY
