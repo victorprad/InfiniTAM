@@ -31,6 +31,9 @@ namespace ITMLib
     /** The radius map corresponding to the live depth image. */
     ORUtils::MemoryBlock<float> *m_radiusMapMB;
 
+    /** TODO */
+    int m_timestamp;
+
     /** The vertex map corresponding to the live depth image (obtained by unprojecting the points in the depth image). */
     ORUtils::MemoryBlock<Vector3f> *m_vertexMapMB;
 
@@ -39,20 +42,7 @@ namespace ITMLib
     /**
      * \brief TODO
      */
-    explicit ITMSurfelSceneReconstructionEngine(const Vector2i& depthImageSize)
-    {
-      size_t pixelCount = depthImageSize.x * depthImageSize.y;
-      m_indexMapMB = new ORUtils::MemoryBlock<unsigned int>(pixelCount * 16, true, true);
-      m_newPointsMaskMB = new ORUtils::MemoryBlock<unsigned int>(pixelCount + 1, true, true);
-      m_newPointsPrefixSumMB = new ORUtils::MemoryBlock<unsigned int>(pixelCount + 1, true, true);
-      m_normalMapMB = new ORUtils::MemoryBlock<Vector4f>(pixelCount, true, true);
-      m_radiusMapMB = new ORUtils::MemoryBlock<float>(pixelCount, true, true);
-      m_vertexMapMB =  new ORUtils::MemoryBlock<Vector3f>(pixelCount, true, true);
-
-      // Make sure that the dummy element at the end of the new points mask is initialised properly.
-      m_newPointsMaskMB->GetData(MEMORYDEVICE_CPU)[pixelCount] = 0;
-      m_newPointsMaskMB->UpdateDeviceFromHost();
-    }
+    explicit ITMSurfelSceneReconstructionEngine(const Vector2i& depthImageSize);
 
     //#################### COPY CONSTRUCTOR & ASSIGNMENT OPERATOR ####################
   private:
@@ -65,29 +55,7 @@ namespace ITMLib
     /**
      * \brief Destroys the reconstruction engine.
      */
-    virtual ~ITMSurfelSceneReconstructionEngine()
-    {
-      delete m_indexMapMB;
-      delete m_normalMapMB;
-      delete m_radiusMapMB;
-      delete m_vertexMapMB;
-    }
-
-    //#################### PUBLIC ABSTRACT MEMBER FUNCTIONS ####################
-  public:
-    /**
-     * \brief TODO
-     */
-    virtual void AllocateSceneFromDepth(ITMSurfelScene<TSurfel> *scene, const ITMView *view, const ITMTrackingState *trackingState) const = 0;
-
-    /**
-     * \brief Updates the specified surfel-based scene by integrating depth and possibly colour information from the given view.
-     *
-     * \param scene         The scene to update.
-     * \param view          The current view (containing the live input images from the current image source).
-     * \param trackingState The current tracking state.
-     */
-    virtual void IntegrateIntoScene(ITMSurfelScene<TSurfel> *scene, const ITMView *view, const ITMTrackingState *trackingState) const = 0;
+    virtual ~ITMSurfelSceneReconstructionEngine();
 
     //#################### PRIVATE ABSTRACT MEMBER FUNCTIONS ####################
   private:
@@ -114,13 +82,19 @@ namespace ITMLib
     //#################### PUBLIC MEMBER FUNCTIONS ####################
   public:
     /**
+     * \brief Updates the specified surfel-based scene by integrating depth and possibly colour information from the given view.
+     *
+     * \param scene         The scene to update.
+     * \param view          The current view (containing the live input images from the current image source).
+     * \param trackingState The current tracking state.
+     */
+    void IntegrateIntoScene(ITMSurfelScene<TSurfel> *scene, const ITMView *view, const ITMTrackingState *trackingState);
+
+    /**
      * \brief Resets the specified surfel-based scene.
      *
      * \param scene The scene to reset.
      */
-    void ResetScene(ITMSurfelScene<TSurfel> *scene) const
-    {
-      scene->Reset();
-    }
+    void ResetScene(ITMSurfelScene<TSurfel> *scene) const;
   };
 }

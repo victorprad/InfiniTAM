@@ -14,27 +14,6 @@ ITMSurfelSceneReconstructionEngine_CPU<TSurfel>::ITMSurfelSceneReconstructionEng
 : ITMSurfelSceneReconstructionEngine<TSurfel>(depthImageSize)
 {}
 
-//#################### PUBLIC MEMBER FUNCTIONS ####################
-
-template <typename TSurfel>
-void ITMSurfelSceneReconstructionEngine_CPU<TSurfel>::AllocateSceneFromDepth(ITMSurfelScene<TSurfel> *scene, const ITMView *view, const ITMTrackingState *trackingState) const
-{
-  // TODO
-}
-
-template <typename TSurfel>
-void ITMSurfelSceneReconstructionEngine_CPU<TSurfel>::IntegrateIntoScene(ITMSurfelScene<TSurfel> *scene, const ITMView *view, const ITMTrackingState *trackingState) const
-{
-  // TEMPORARY
-  const ITMPose& pose = *trackingState->pose_d;
-  PreprocessDepthMap(view);
-  GenerateIndexMap(scene, view, pose);
-  FindCorrespondingSurfels(scene, view);
-  //FuseMatchedPoints();
-  AddNewSurfels(scene, view, trackingState);
-  // TODO
-}
-
 //#################### PRIVATE MEMBER FUNCTIONS ####################
 
 template <typename TSurfel>
@@ -67,7 +46,7 @@ void ITMSurfelSceneReconstructionEngine_CPU<TSurfel>::AddNewSurfels(ITMSurfelSce
 #endif
   for(int locId = 0; locId < pixelCount; ++locId)
   {
-    add_new_surfel(locId, T, newPointsMask, newPointsPrefixSum, vertexMap, normalMap, radiusMap, colourMap, newSurfels);
+    add_new_surfel(locId, T, newPointsMask, newPointsPrefixSum, vertexMap, normalMap, radiusMap, colourMap, m_timestamp, newSurfels);
   }
 }
 

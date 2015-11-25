@@ -15,7 +15,7 @@ template <typename TSurfel>
 _CPU_AND_GPU_CODE_
 inline void add_new_surfel(int locId, const Matrix4f& T, const unsigned int *newPointsMask, const unsigned int *newPointsPrefixSum,
                            const Vector3f *vertexMap, const Vector4f *normalMap, const float *radiusMap, const Vector4u *colourMap,
-                           TSurfel *newSurfels)
+                           int timestamp, TSurfel *newSurfels)
 {
   if(newPointsMask[locId])
   {
@@ -26,7 +26,7 @@ inline void add_new_surfel(int locId, const Matrix4f& T, const unsigned int *new
     surfel.normal = normalMap[locId].toVector3();
     surfel.radius = radiusMap[locId];
     surfel.confidence = 1.0f;                     // TEMPORARY
-    surfel.timestamp = 1;                         // TEMPORARY
+    surfel.timestamp = timestamp;
 
     // Store a colour if the surfel type can support it.
     SurfelColourManipulator<TSurfel::hasColourInformation>::write(surfel, colourMap[locId].toVector3());  // TEMPORARY

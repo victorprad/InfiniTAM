@@ -27,12 +27,12 @@ namespace ITMLib
 template <typename TSurfel>
 __global__ void ck_add_new_surfel(int pixelCount, Matrix4f T, const unsigned int *newPointsMask, const unsigned int *newPointsPrefixSum,
                                   const Vector3f *vertexMap, const Vector4f *normalMap, const float *radiusMap, const Vector4u *colourMap,
-                                  TSurfel *newSurfels)
+                                  int timestamp, TSurfel *newSurfels)
 {
   int locId = threadIdx.x + blockDim.x * blockIdx.x;
   if(locId < pixelCount)
   {
-    add_new_surfel(locId, T, newPointsMask, newPointsPrefixSum, vertexMap, normalMap, radiusMap, colourMap, newSurfels);
+    add_new_surfel(locId, T, newPointsMask, newPointsPrefixSum, vertexMap, normalMap, radiusMap, colourMap, timestamp, newSurfels);
   }
 }
 
@@ -73,27 +73,6 @@ ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::ITMSurfelSceneReconstructionEn
 : ITMSurfelSceneReconstructionEngine<TSurfel>(depthImageSize)
 {}
 
-//#################### PUBLIC MEMBER FUNCTIONS ####################
-
-template <typename TSurfel>
-void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::AllocateSceneFromDepth(ITMSurfelScene<TSurfel> *scene, const ITMView *view, const ITMTrackingState *trackingState) const
-{
-  // TODO
-}
-
-template <typename TSurfel>
-void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::IntegrateIntoScene(ITMSurfelScene<TSurfel> *scene, const ITMView *view, const ITMTrackingState *trackingState) const
-{
-  // TEMPORARY
-  const ITMPose& pose = *trackingState->pose_d;
-  PreprocessDepthMap(view);
-  GenerateIndexMap(scene, view, pose);
-  FindCorrespondingSurfels(scene, view);
-  //FuseMatchedPoints();
-  AddNewSurfels(scene, view, trackingState);
-  // TODO
-}
-
 //#################### PRIVATE MEMBER FUNCTIONS ####################
 
 template <typename TSurfel>
@@ -128,6 +107,7 @@ void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::AddNewSurfels(ITMSurfelSc
     this->m_normalMapMB->GetData(MEMORYDEVICE_CUDA),
     this->m_radiusMapMB->GetData(MEMORYDEVICE_CUDA),
     view->rgb->GetData(MEMORYDEVICE_CUDA),
+    m_timestamp,
     newSurfels
   );
 
