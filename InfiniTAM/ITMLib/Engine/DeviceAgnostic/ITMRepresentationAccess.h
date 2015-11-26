@@ -428,8 +428,8 @@ _CPU_AND_GPU_CODE_ inline float readFromSDF_float_uninterpolated(DEVICEPTR(const
 	return readFromSDF_float_uninterpolated(voxelData, voxelIndex, point, isFound, cache);
 }
 
-template<class TVoxel>
-_CPU_AND_GPU_CODE_ inline float readFromSDF_float_interpolated(DEVICEPTR(const TVoxel) *voxelData, DEVICEPTR(const ITMVoxelBlockHHash::IndexData) *voxelIndex, Vector3f point, THREADPTR(bool) &isFound,
+template<class TVoxel, bool checkW>
+_CPU_AND_GPU_CODE_ inline float readFromSDF_float_interpolated_hhash_internal(DEVICEPTR(const TVoxel) *voxelData, DEVICEPTR(const ITMVoxelBlockHHash::IndexData) *voxelIndex, Vector3f point, THREADPTR(bool) &isFound,
 	THREADPTR(ITMVoxelBlockHHash::IndexCache) & cache)
 {
 	// horrendous case: ceilf==floorf...
@@ -442,51 +442,83 @@ _CPU_AND_GPU_CODE_ inline float readFromSDF_float_interpolated(DEVICEPTR(const T
 	char level;
 	bool complicatedCase = false;
 	points[0] = point;
-	v[0] = readVoxel<TVoxel,PointPosParser<floorf,floorf,floorf> >(voxelData, voxelIndex, points[0], isFound, cache).sdf;
+	{
+		const TVoxel & tmpVoxel = readVoxel<TVoxel,PointPosParser<floorf,floorf,floorf> >(voxelData, voxelIndex, points[0], isFound, cache);
+		v[0] = tmpVoxel.sdf;
+		if (checkW) if (tmpVoxel.w_depth < 1) isFound = false;
+	}
 	if (!isFound) v[0] = TVoxel::SDF_valueToFloat(TVoxel::SDF_initialValue());
 	bool tmpFound = isFound;
 	level = cache.blockSize;
 
 	points[1] = point;
-	v[1] = readVoxel<TVoxel,PointPosParser<ceilf,floorf,floorf> >(voxelData, voxelIndex, points[1], isFound, cache).sdf;
+	{
+		const TVoxel & tmpVoxel = readVoxel<TVoxel,PointPosParser<ceilf,floorf,floorf> >(voxelData, voxelIndex, points[1], isFound, cache);
+		v[1] = tmpVoxel.sdf;
+		if (checkW) if (tmpVoxel.w_depth < 1) isFound = false;
+	}
 	if (!isFound) v[1] = TVoxel::SDF_valueToFloat(TVoxel::SDF_initialValue());
-	tmpFound |= isFound;
+	tmpFound &= isFound;
 	if (level != cache.blockSize) complicatedCase = true;
 
 	points[2] = point;
-	v[2] = readVoxel<TVoxel,PointPosParser<floorf,ceilf,floorf> >(voxelData, voxelIndex, points[2], isFound, cache).sdf;
+	{
+		const TVoxel & tmpVoxel = readVoxel<TVoxel,PointPosParser<floorf,ceilf,floorf> >(voxelData, voxelIndex, points[2], isFound, cache);
+		v[2] = tmpVoxel.sdf;
+		if (checkW) if (tmpVoxel.w_depth < 1) isFound = false;
+	}
 	if (!isFound) v[2] = TVoxel::SDF_valueToFloat(TVoxel::SDF_initialValue());
-	tmpFound |= isFound;
+	tmpFound &= isFound;
 	if (level != cache.blockSize) complicatedCase = true;
 
 	points[3] = point;
-	v[3] = readVoxel<TVoxel,PointPosParser<ceilf,ceilf,floorf> >(voxelData, voxelIndex, points[3], isFound, cache).sdf;
+	{
+		const TVoxel & tmpVoxel = readVoxel<TVoxel,PointPosParser<ceilf,ceilf,floorf> >(voxelData, voxelIndex, points[3], isFound, cache);
+		v[3] = tmpVoxel.sdf;
+		if (checkW) if (tmpVoxel.w_depth < 1) isFound = false;
+	}
 	if (!isFound) v[3] = TVoxel::SDF_valueToFloat(TVoxel::SDF_initialValue());
-	tmpFound |= isFound;
+	tmpFound &= isFound;
 	if (level != cache.blockSize) complicatedCase = true;
 
 	points[4] = point;
-	v[4] = readVoxel<TVoxel,PointPosParser<floorf,floorf,ceilf> >(voxelData, voxelIndex, points[4], isFound, cache).sdf;
+	{
+		const TVoxel & tmpVoxel = readVoxel<TVoxel,PointPosParser<floorf,floorf,ceilf> >(voxelData, voxelIndex, points[4], isFound, cache);
+		v[4] = tmpVoxel.sdf;
+		if (checkW) if (tmpVoxel.w_depth < 1) isFound = false;
+	}
 	if (!isFound) v[4] = TVoxel::SDF_valueToFloat(TVoxel::SDF_initialValue());
-	tmpFound |= isFound;
+	tmpFound &= isFound;
 	if (level != cache.blockSize) complicatedCase = true;
 
 	points[5] = point;
-	v[5] = readVoxel<TVoxel,PointPosParser<ceilf,floorf,ceilf> >(voxelData, voxelIndex, points[5], isFound, cache).sdf;
+	{
+		const TVoxel & tmpVoxel = readVoxel<TVoxel,PointPosParser<ceilf,floorf,ceilf> >(voxelData, voxelIndex, points[5], isFound, cache);
+		v[5] = tmpVoxel.sdf;
+		if (checkW) if (tmpVoxel.w_depth < 1) isFound = false;
+	}
 	if (!isFound) v[5] = TVoxel::SDF_valueToFloat(TVoxel::SDF_initialValue());
-	tmpFound |= isFound;
+	tmpFound &= isFound;
 	if (level != cache.blockSize) complicatedCase = true;
 
 	points[6] = point;
-	v[6] = readVoxel<TVoxel,PointPosParser<floorf,ceilf,ceilf> >(voxelData, voxelIndex, points[6], isFound, cache).sdf;
+	{
+		const TVoxel & tmpVoxel = readVoxel<TVoxel,PointPosParser<floorf,ceilf,ceilf> >(voxelData, voxelIndex, points[6], isFound, cache);
+		v[6] = tmpVoxel.sdf;
+		if (checkW) if (tmpVoxel.w_depth < 1) isFound = false;
+	}
 	if (!isFound) v[6] = TVoxel::SDF_valueToFloat(TVoxel::SDF_initialValue());
-	tmpFound |= isFound;
+	tmpFound &= isFound;
 	if (level != cache.blockSize) complicatedCase = true;
 
 	points[7] = point;
-	v[7] = readVoxel<TVoxel,PointPosParser<ceilf,ceilf,ceilf> >(voxelData, voxelIndex, points[7], isFound, cache).sdf;
+	{
+		const TVoxel & tmpVoxel = readVoxel<TVoxel,PointPosParser<ceilf,ceilf,ceilf> >(voxelData, voxelIndex, points[7], isFound, cache);
+		v[7] = tmpVoxel.sdf;
+		if (checkW) if (tmpVoxel.w_depth < 1) isFound = false;
+	}
 	if (!isFound) v[7] = TVoxel::SDF_valueToFloat(TVoxel::SDF_initialValue());
-	isFound |= tmpFound;
+	isFound &= tmpFound;
 	if (level != cache.blockSize) complicatedCase = true;
 
 	float ret;
@@ -557,7 +589,17 @@ _CPU_AND_GPU_CODE_ inline float readFromSDF_float_interpolated(DEVICEPTR(const T
 		      tmp.x * tmp.y * coeff[4] + tmp.y * coeff[5] + tmp.x * coeff[6] + v[0];
 	}
 
-	return TVoxel::SDF_valueToFloat(ret);
+	ret = TVoxel::SDF_valueToFloat(ret);
+	if (!((ret <= 1.0f)&&(ret >= -1.0f))) isFound = false;
+
+	return ret;
+}
+
+template<class TVoxel>
+_CPU_AND_GPU_CODE_ inline float readFromSDF_float_interpolated(DEVICEPTR(const TVoxel) *voxelData, DEVICEPTR(const ITMVoxelBlockHHash::IndexData) *voxelIndex, Vector3f point, THREADPTR(bool) &isFound,
+	THREADPTR(ITMVoxelBlockHHash::IndexCache) & cache)
+{
+	return readFromSDF_float_interpolated_hhash_internal<TVoxel, false>(voxelData, voxelIndex, point, isFound, cache);
 }
 
 template<class TVoxel>

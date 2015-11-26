@@ -240,35 +240,35 @@ _CPU_AND_GPU_CODE_ inline bool findPointNeighbors(THREADPTR(Vector3f) *p, THREAD
 	ITMVoxelBlockHHash::IndexCache cache;
 
 	localBlockLocation = blockLocation + Vector3i(0, 0, 0); p[0] = localBlockLocation.toFloat();
-	sdf[0] = readFromSDF_float_interpolated(localVBA, hashTable, p[0], isFound, cache);
+	sdf[0] = readFromSDF_float_interpolated_hhash_internal<TVoxel,true>(localVBA, hashTable, p[0], isFound, cache);
 	if (!isFound || sdf[0] == 1.0f) return false;
 
 	localBlockLocation = blockLocation + Vector3i(sf, 0, 0); p[1] = localBlockLocation.toFloat();
-	sdf[1] = readFromSDF_float_interpolated(localVBA, hashTable, p[1], isFound, cache);
+	sdf[1] = readFromSDF_float_interpolated_hhash_internal<TVoxel,true>(localVBA, hashTable, p[1], isFound, cache);
 	if (!isFound || sdf[1] == 1.0f) return false;
 
 	localBlockLocation = blockLocation + Vector3i(sf, sf, 0); p[2] = localBlockLocation.toFloat();
-	sdf[2] = readFromSDF_float_interpolated(localVBA, hashTable, p[2], isFound, cache);
+	sdf[2] = readFromSDF_float_interpolated_hhash_internal<TVoxel,true>(localVBA, hashTable, p[2], isFound, cache);
 	if (!isFound || sdf[2] == 1.0f) return false;
 
 	localBlockLocation = blockLocation + Vector3i(0, sf, 0); p[3] = localBlockLocation.toFloat();
-	sdf[3] = readFromSDF_float_interpolated(localVBA, hashTable, p[3], isFound, cache);
+	sdf[3] = readFromSDF_float_interpolated_hhash_internal<TVoxel,true>(localVBA, hashTable, p[3], isFound, cache);
 	if (!isFound || sdf[3] == 1.0f) return false;
 
 	localBlockLocation = blockLocation + Vector3i(0, 0, sf); p[4] = localBlockLocation.toFloat();
-	sdf[4] = readFromSDF_float_interpolated(localVBA, hashTable, p[4], isFound, cache);
+	sdf[4] = readFromSDF_float_interpolated_hhash_internal<TVoxel,true>(localVBA, hashTable, p[4], isFound, cache);
 	if (!isFound || sdf[4] == 1.0f) return false;
 
 	localBlockLocation = blockLocation + Vector3i(sf, 0, sf); p[5] = localBlockLocation.toFloat();
-	sdf[5] = readFromSDF_float_interpolated(localVBA, hashTable, p[5], isFound, cache);
+	sdf[5] = readFromSDF_float_interpolated_hhash_internal<TVoxel,true>(localVBA, hashTable, p[5], isFound, cache);
 	if (!isFound || sdf[5] == 1.0f) return false;
 
 	localBlockLocation = blockLocation + Vector3i(sf, sf, sf); p[6] = localBlockLocation.toFloat();
-	sdf[6] = readFromSDF_float_interpolated(localVBA, hashTable, p[6], isFound, cache);
+	sdf[6] = readFromSDF_float_interpolated_hhash_internal<TVoxel,true>(localVBA, hashTable, p[6], isFound, cache);
 	if (!isFound || sdf[6] == 1.0f) return false;
 
 	localBlockLocation = blockLocation + Vector3i(0, sf, sf); p[7] = localBlockLocation.toFloat();
-	sdf[7] = readFromSDF_float_interpolated(localVBA, hashTable, p[7], isFound, cache);
+	sdf[7] = readFromSDF_float_interpolated_hhash_internal<TVoxel,true>(localVBA, hashTable, p[7], isFound, cache);
 	if (!isFound || sdf[7] == 1.0f) return false;
 
 	return true;
