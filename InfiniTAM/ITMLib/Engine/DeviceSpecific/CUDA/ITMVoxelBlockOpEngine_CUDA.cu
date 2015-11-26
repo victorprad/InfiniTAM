@@ -180,24 +180,46 @@ __global__ void performSplitOperations_device(const int *blocklist, TVoxel *voxe
 		int locId_parent = loc_parent.x + loc_parent.y * SDF_BLOCK_SIZE + loc_parent.z * SDF_BLOCK_SIZE * SDF_BLOCK_SIZE;
 
 		TVoxel res = localCopy[locId_parent];
-		float sdf = res.sdf;
+		float sdf = TVoxel::SDF_valueToFloat(res.sdf)*(float)res.w_depth;
+		int w_sum = res.w_depth;
 
-		if (doInterpolate.x) sdf += localCopy[locId_parent + 1].sdf;
-		if (doInterpolate.y) sdf += localCopy[locId_parent + SDF_BLOCK_SIZE].sdf;
-		if (doInterpolate.x&&doInterpolate.y) sdf += localCopy[locId_parent + SDF_BLOCK_SIZE + 1].sdf;
+		if (doInterpolate.x) {
+			sdf += TVoxel::SDF_valueToFloat(localCopy[locId_parent + 1].sdf)*(float)localCopy[locId_parent + 1].w_depth;
+			w_sum += localCopy[locId_parent + 1].w_depth;
+		}
+		if (doInterpolate.y) {
+			sdf += TVoxel::SDF_valueToFloat(localCopy[locId_parent + SDF_BLOCK_SIZE].sdf)*(float)localCopy[locId_parent + SDF_BLOCK_SIZE].w_depth;
+			w_sum += localCopy[locId_parent + SDF_BLOCK_SIZE].w_depth;
+		}
+		if (doInterpolate.x&&doInterpolate.y) {
+			sdf += TVoxel::SDF_valueToFloat(localCopy[locId_parent + SDF_BLOCK_SIZE + 1].sdf)*(float)localCopy[locId_parent + SDF_BLOCK_SIZE + 1].w_depth;
+			w_sum += localCopy[locId_parent + SDF_BLOCK_SIZE + 1].w_depth;
+		}
 		if (doInterpolate.z) {
 			locId_parent += SDF_BLOCK_SIZE*SDF_BLOCK_SIZE;
-			sdf += localCopy[locId_parent].sdf;
-			if (doInterpolate.x) sdf += localCopy[locId_parent + 1].sdf;
-			if (doInterpolate.y) sdf += localCopy[locId_parent + SDF_BLOCK_SIZE].sdf;
-			if (doInterpolate.x&&doInterpolate.y) sdf += localCopy[locId_parent + SDF_BLOCK_SIZE + 1].sdf;
+			sdf += TVoxel::SDF_valueToFloat(localCopy[locId_parent].sdf)*(float)localCopy[locId_parent].w_depth;
+			w_sum += localCopy[locId_parent].w_depth;
+			if (doInterpolate.x) {
+				sdf += TVoxel::SDF_valueToFloat(localCopy[locId_parent + 1].sdf)*(float)localCopy[locId_parent + 1].w_depth;
+				w_sum += localCopy[locId_parent + 1].w_depth;
+			}
+			if (doInterpolate.y) {
+				sdf += TVoxel::SDF_valueToFloat(localCopy[locId_parent + SDF_BLOCK_SIZE].sdf)*(float)localCopy[locId_parent + SDF_BLOCK_SIZE].w_depth;
+				w_sum += localCopy[locId_parent + SDF_BLOCK_SIZE].w_depth;
+			}
+			if (doInterpolate.x&&doInterpolate.y) {
+				sdf += TVoxel::SDF_valueToFloat(localCopy[locId_parent + SDF_BLOCK_SIZE + 1].sdf)*(float)localCopy[locId_parent + SDF_BLOCK_SIZE + 1].w_depth;
+				w_sum += localCopy[locId_parent + SDF_BLOCK_SIZE + 1].w_depth;
+			}
 		}
 		int fac = 1;
 		if (doInterpolate.x) fac <<= 1;
 		if (doInterpolate.y) fac <<= 1;
 		if (doInterpolate.z) fac <<= 1;
-		res.sdf = sdf / (float) fac;
-		res.w_depth /= 2;
+		if (w_sum == 0) res.sdf = TVoxel::SDF_floatToValue(1.0f);
+		else
+		res.sdf = TVoxel::SDF_floatToValue(sdf / (float) (w_sum));
+		res.w_depth = w_sum/fac;
 
 		voxelBlock_child[locId] = res;
 	}
