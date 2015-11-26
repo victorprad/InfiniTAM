@@ -17,6 +17,9 @@ namespace ITMLib
     //#################### PROTECTED VARIABLES ####################
   protected:
     /** TODO */
+    ORUtils::MemoryBlock<unsigned int> *m_correspondenceMapMB;
+
+    /** TODO */
     ORUtils::MemoryBlock<unsigned int> *m_indexMapMB;
 
     /** A mask whose values denote whether the corresponding points in the vertex map need to be added to the scene as new points. */

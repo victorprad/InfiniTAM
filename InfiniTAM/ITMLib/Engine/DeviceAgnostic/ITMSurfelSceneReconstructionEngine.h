@@ -58,27 +58,46 @@ inline void calculate_vertex_position(int locId, int width, const ITMIntrinsics&
 /**
  * \brief TODO
  */
+template <typename TSurfel>
 _CPU_AND_GPU_CODE_
-inline void find_corresponding_surfel(int locId, const float *depthMap, int depthMapWidth, const unsigned int *indexMap, unsigned int *newPointsMask)
+inline void find_corresponding_surfel(int locId, const float *depthMap, int depthMapWidth, const unsigned int *indexMap, const TSurfel *surfels,
+                                      unsigned int *correspondenceMap, unsigned int *newPointsMask)
 {
-  if(fabs(depthMap[locId] + 1) > 0.0001f)
+  // If the depth pixel is invalid, early out.
+  if(fabs(depthMap[locId] + 1) <= 0.0001f)
   {
-    bool foundPoint = false;
-    int ux = locId % depthMapWidth, uy = locId / depthMapWidth;
-    for(int dy = 0; dy < 4; ++dy)
+    correspondenceMap[locId] = 0;
+    newPointsMask[locId] = 0;
+    return;
+  }
+
+  // Otherwise, find corresponding surfels in the scene and pick the best one (if any).
+  int bestSurfelIndex = -1;
+  float bestSurfelConfidence = 0.0f;
+  int ux = locId % depthMapWidth, uy = locId / depthMapWidth;
+  for(int dy = 0; dy < 4; ++dy)
+  {
+    for(int dx = 0; dx < 4; ++dx)
     {
-      for(int dx = 0; dx < 4; ++dx)
+      int x = ux * 4 + dx;
+      int y = uy * 4 + dy;
+      int surfelIndex = indexMap[y * depthMapWidth * 4 + x] - 1;
+      if(surfelIndex >= 0)
       {
-        int x = ux * 4 + dx;
-        int y = uy * 4 + dy;
-        int offset = y * depthMapWidth * 4 + x;
-        if(indexMap[offset] > 0) foundPoint = true;
+        // TODO: Make this slightly more sophisticated, as per the paper.
+        TSurfel surfel = surfels[surfelIndex];
+        if(surfel.confidence > bestSurfelConfidence)
+        {
+          bestSurfelIndex = surfelIndex;
+          bestSurfelConfidence = surfel.confidence;
+        }
       }
     }
-
-    newPointsMask[locId] = foundPoint ? 0 : 1;
   }
-  else newPointsMask[locId] = 0;
+
+  // Record any corresponding surfel found, together with a flag indicating whether or not we need to add a new surfel.
+  correspondenceMap[locId] = bestSurfelIndex >= 0 ? bestSurfelIndex + 1 : 0;
+  newPointsMask[locId] = bestSurfelIndex >= 0 ? 0 : 1;
 }
 
 /**
@@ -107,8 +126,8 @@ inline void project_to_index_map(int surfelId, const TSurfel *surfels, const Mat
   int indexMapHeight = depthMapHeight * 4;
   if(0 <= x && x < indexMapWidth && 0 <= y && y < indexMapHeight)
   {
-    // Write the surfel ID into the index map.
-    indexMap[y * indexMapWidth + x] = static_cast<unsigned int>(surfelId);
+    // Write the surfel ID + 1 into the index map.
+    indexMap[y * indexMapWidth + x] = static_cast<unsigned int>(surfelId + 1);
   }
 }
 

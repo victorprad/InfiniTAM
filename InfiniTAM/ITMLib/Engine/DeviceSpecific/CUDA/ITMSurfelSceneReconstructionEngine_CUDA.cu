@@ -45,12 +45,14 @@ __global__ void ck_calculate_vertex_position(int pixelCount, int width, ITMIntri
   }
 }
 
-__global__ void ck_find_corresponding_surfel(int pixelCount, const float *depthMap, int depthMapWidth, const unsigned int *indexMap, unsigned int *newPointsMask)
+template <typename TSurfel>
+__global__ void ck_find_corresponding_surfel(int pixelCount, const float *depthMap, int depthMapWidth, const unsigned int *indexMap, const TSurfel *surfels,
+                                             unsigned int *correspondenceMap, unsigned int *newPointsMask)
 {
   int locId = threadIdx.x + blockDim.x * blockIdx.x;
   if(locId < pixelCount)
   {
-    find_corresponding_surfel(locId, depthMap, depthMapWidth, indexMap, newPointsMask);
+    find_corresponding_surfel(locId, depthMap, depthMapWidth, indexMap, surfels, correspondenceMap, newPointsMask);
   }
 }
 
@@ -137,10 +139,13 @@ void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::FindCorrespondingSurfels(
     view->depth->GetData(MEMORYDEVICE_CUDA),
     view->depth->noDims.x,
     this->m_indexMapMB->GetData(MEMORYDEVICE_CUDA),
+    scene->GetSurfels()->GetData(MEMORYDEVICE_CUDA),
+    this->m_correspondenceMapMB->GetData(MEMORYDEVICE_CUDA),
     this->m_newPointsMaskMB->GetData(MEMORYDEVICE_CUDA)
   );
 
 #if DEBUGGING
+  this->m_correspondenceMapMB->UpdateHostFromDevice();
   this->m_newPointsMaskMB->UpdateHostFromDevice();
 #endif
 }
