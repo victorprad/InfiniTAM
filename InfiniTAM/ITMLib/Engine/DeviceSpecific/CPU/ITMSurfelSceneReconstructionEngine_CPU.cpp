@@ -46,7 +46,7 @@ void ITMSurfelSceneReconstructionEngine_CPU<TSurfel>::AddNewSurfels(ITMSurfelSce
 #endif
   for(int locId = 0; locId < pixelCount; ++locId)
   {
-    add_new_surfel(locId, T, newPointsMask, newPointsPrefixSum, vertexMap, normalMap, radiusMap, colourMap, m_timestamp, newSurfels);
+    add_new_surfel(locId, T, newPointsMask, newPointsPrefixSum, vertexMap, normalMap, radiusMap, colourMap, this->m_timestamp, newSurfels);
   }
 }
 
@@ -87,7 +87,7 @@ void ITMSurfelSceneReconstructionEngine_CPU<TSurfel>::FuseMatchedPoints(ITMSurfe
 #endif
   for(int locId = 0; locId < pixelCount; ++locId)
   {
-    fuse_matched_point(locId, correspondenceMap, T, vertexMap, normalMap, radiusMap, colourMap, m_timestamp, surfels);
+    fuse_matched_point(locId, correspondenceMap, T, vertexMap, normalMap, radiusMap, colourMap, this->m_timestamp, surfels);
   }
 }
 

@@ -128,7 +128,7 @@ void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::AddNewSurfels(ITMSurfelSc
     this->m_normalMapMB->GetData(MEMORYDEVICE_CUDA),
     this->m_radiusMapMB->GetData(MEMORYDEVICE_CUDA),
     view->rgb->GetData(MEMORYDEVICE_CUDA),
-    m_timestamp,
+    this->m_timestamp,
     newSurfels
   );
 
@@ -177,7 +177,7 @@ void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::FuseMatchedPoints(ITMSurf
     this->m_normalMapMB->GetData(MEMORYDEVICE_CUDA),
     this->m_radiusMapMB->GetData(MEMORYDEVICE_CUDA),
     view->rgb->GetData(MEMORYDEVICE_CUDA),
-    m_timestamp,
+    this->m_timestamp,
     scene->GetSurfels()->GetData(MEMORYDEVICE_CUDA)
   );
 }
