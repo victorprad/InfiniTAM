@@ -35,14 +35,14 @@ void ITMSurfelSceneReconstructionEngine_CPU<TSurfel>::AddNewSurfels(ITMSurfelSce
   TSurfel *newSurfels = scene->AllocateSurfels(newSurfelCount);
   if(newSurfels == NULL) return;
 
-  const Matrix4f T = trackingState->pose_d->GetInvM();
   const Vector4u *colourMap = view->rgb->GetData(MEMORYDEVICE_CPU);
   const Vector4f *normalMap = this->m_normalMapMB->GetData(MEMORYDEVICE_CPU);
   const float *radiusMap = this->m_radiusMapMB->GetData(MEMORYDEVICE_CPU);
+  const Matrix4f T = trackingState->pose_d->GetInvM();
   const Vector3f *vertexMap = this->m_vertexMapMB->GetData(MEMORYDEVICE_CPU);
 
 #ifdef WITH_OPENMP
-  //#pragma omp parallel for
+  #pragma omp parallel for
 #endif
   for(int locId = 0; locId < pixelCount; ++locId)
   {
@@ -67,6 +67,27 @@ void ITMSurfelSceneReconstructionEngine_CPU<TSurfel>::FindCorrespondingSurfels(c
   for(int locId = 0; locId < pixelCount; ++locId)
   {
     find_corresponding_surfel(locId, depthMap, depthMapWidth, indexMap, surfels, correspondenceMap, newPointsMask);
+  }
+}
+
+template <typename TSurfel>
+void ITMSurfelSceneReconstructionEngine_CPU<TSurfel>::FuseMatchedPoints(ITMSurfelScene<TSurfel> *scene, const ITMView *view, const ITMTrackingState *trackingState) const
+{
+  const Vector4u *colourMap = view->rgb->GetData(MEMORYDEVICE_CPU);
+  const unsigned int *correspondenceMap = this->m_correspondenceMapMB->GetData(MEMORYDEVICE_CPU);
+  const Vector4f *normalMap = this->m_normalMapMB->GetData(MEMORYDEVICE_CPU);
+  const int pixelCount = static_cast<int>(view->depth->dataSize);
+  const TSurfel *surfels = scene->GetSurfels()->GetData(MEMORYDEVICE_CPU);
+  const float *radiusMap = this->m_radiusMapMB->GetData(MEMORYDEVICE_CPU);
+  const Matrix4f T = trackingState->pose_d->GetInvM();
+  const Vector3f *vertexMap = this->m_vertexMapMB->GetData(MEMORYDEVICE_CPU);
+
+#ifdef WITH_OPENMP
+  #pragma omp parallel for
+#endif
+  for(int locId = 0; locId < pixelCount; ++locId)
+  {
+    fuse_matched_point(locId, correspondenceMap, T, vertexMap, normalMap, radiusMap, colourMap, m_timestamp, surfels);
   }
 }
 

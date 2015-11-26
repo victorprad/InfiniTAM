@@ -57,6 +57,17 @@ __global__ void ck_find_corresponding_surfel(int pixelCount, const float *depthM
 }
 
 template <typename TSurfel>
+__global__ void ck_fuse_matched_point(int pixelCount, const unsigned int *correspondenceMap, Matrix4f T, const Vector3f *vertexMap, const Vector4f *normalMap,
+                                      const float *radiusMap, const Vector4u *colourMap, int timestamp, TSurfel *surfels)
+{
+  int locId = threadIdx.x + blockDim.x * blockIdx.x;
+  if(locId < pixelCount)
+  {
+    fuse_matched_point(locId, correspondenceMap, T, vertexMap, normalMap, radiusMap, colourMap, timestamp, surfels);
+  }
+}
+
+template <typename TSurfel>
 __global__ void ck_project_to_index_map(int surfelCount, const TSurfel *surfels, Matrix4f invT, ITMIntrinsics intrinsics, int depthMapWidth, int depthMapHeight,
                                         unsigned int *indexMap)
 {
@@ -148,6 +159,27 @@ void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::FindCorrespondingSurfels(
   this->m_correspondenceMapMB->UpdateHostFromDevice();
   this->m_newPointsMaskMB->UpdateHostFromDevice();
 #endif
+}
+
+template <typename TSurfel>
+void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::FuseMatchedPoints(ITMSurfelScene<TSurfel> *scene, const ITMView *view, const ITMTrackingState *trackingState) const
+{
+  const int pixelCount = static_cast<int>(view->depth->dataSize);
+
+  int threadsPerBlock = 256;
+  int numBlocks = (pixelCount + threadsPerBlock - 1) / threadsPerBlock;
+
+  ck_fuse_matched_point<<<numBlocks,threadsPerBlock>>>(
+    pixelCount,
+    this->m_correspondenceMapMB->GetData(MEMORYDEVICE_CUDA),
+    trackingState->pose_d->GetInvM(),
+    this->m_vertexMapMB->GetData(MEMORYDEVICE_CUDA),
+    this->m_normalMapMB->GetData(MEMORYDEVICE_CUDA),
+    this->m_radiusMapMB->GetData(MEMORYDEVICE_CUDA),
+    view->rgb->GetData(MEMORYDEVICE_CUDA),
+    m_timestamp,
+    scene->GetSurfels()->GetData(MEMORYDEVICE_CUDA)
+  );
 }
 
 template <typename TSurfel>

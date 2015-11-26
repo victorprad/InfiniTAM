@@ -47,7 +47,7 @@ void ITMSurfelSceneReconstructionEngine<TSurfel>::IntegrateIntoScene(ITMSurfelSc
   PreprocessDepthMap(view);
   GenerateIndexMap(scene, view, pose);
   FindCorrespondingSurfels(scene, view);
-  //FuseMatchedPoints();
+  FuseMatchedPoints(scene, view, trackingState);
   AddNewSurfels(scene, view, trackingState);
   // TODO
 

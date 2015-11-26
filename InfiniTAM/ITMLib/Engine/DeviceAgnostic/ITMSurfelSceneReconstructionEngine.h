@@ -105,6 +105,18 @@ inline void find_corresponding_surfel(int locId, const float *depthMap, int dept
  */
 template <typename TSurfel>
 _CPU_AND_GPU_CODE_
+inline void fuse_matched_point(int locId, const unsigned int *correspondenceMap, const Matrix4f& T, const Vector3f *vertexMap,
+                               const Vector4f *normalMap, const float *radiusMap, const Vector4u *colourMap, int timestamp,
+                               TSurfel *surfels)
+{
+  // TODO
+}
+
+/**
+ * \brief TODO
+ */
+template <typename TSurfel>
+_CPU_AND_GPU_CODE_
 inline void project_to_index_map(int surfelId, const TSurfel *surfels, const Matrix4f& invT, const ITMIntrinsics& intrinsics,
                                  int depthMapWidth, int depthMapHeight, unsigned int *indexMap)
 {

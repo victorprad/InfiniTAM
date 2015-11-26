@@ -75,6 +75,11 @@ namespace ITMLib
     /**
      * \brief TODO
      */
+    virtual void FuseMatchedPoints(ITMSurfelScene<TSurfel> *scene, const ITMView *view, const ITMTrackingState *trackingState) const = 0;
+
+    /**
+     * \brief TODO
+     */
     virtual void GenerateIndexMap(const ITMSurfelScene<TSurfel> *scene, const ITMView *view, const ITMPose& pose) const = 0;
 
     /**
