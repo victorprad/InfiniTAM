@@ -144,11 +144,9 @@ _CPU_AND_GPU_CODE_ inline bool castRay(DEVICEPTR(Vector4f) &pt_out, int x, int y
 		stepLength = sdfValue * stepScale;
 		pt_result += stepLength * rayDirection;
 
-		sdfValue = readFromSDF_float_interpolated(voxelData, voxelIndex, pt_result, hash_found, cache);
+		sdfValue = readFromSDF_float_interpolated(voxelData, voxelIndex, pt_result, pt_found, cache);
 		stepLength = sdfValue * stepScale;
 		pt_result += stepLength * rayDirection;
-
-		pt_found = true;
 	} else pt_found = false;
 
 	pt_out.x = pt_result.x; pt_out.y = pt_result.y; pt_out.z = pt_result.z;
