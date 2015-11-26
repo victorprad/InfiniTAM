@@ -86,6 +86,14 @@ namespace ITMLib
     /**
      * \brief TODO
      */
+    ORUtils::MemoryBlock<TSurfel> *GetSurfels()
+    {
+      return m_surfelsMB;
+    }
+
+    /**
+     * \brief TODO
+     */
     const ORUtils::MemoryBlock<TSurfel> *GetSurfels() const
     {
       return m_surfelsMB;

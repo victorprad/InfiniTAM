@@ -11,6 +11,16 @@ namespace ITMLib
 /**
  * \brief TODO
  */
+_CPU_AND_GPU_CODE_
+inline Vector3f transform_point(const Matrix4f& T, const Vector3f& p)
+{
+  Vector4f v(p.x, p.y, p.z, 1.0f);
+  return (T * v).toVector3();
+}
+
+/**
+ * \brief TODO
+ */
 template <typename TSurfel>
 _CPU_AND_GPU_CODE_
 inline void add_new_surfel(int locId, const Matrix4f& T, const unsigned int *newPointsMask, const unsigned int *newPointsPrefixSum,
@@ -20,9 +30,7 @@ inline void add_new_surfel(int locId, const Matrix4f& T, const unsigned int *new
   if(newPointsMask[locId])
   {
     TSurfel surfel;
-    Vector3f p = vertexMap[locId];
-    Vector4f v(p.x, p.y, p.z, 1.0f);
-    surfel.position = (T * v).toVector3();
+    surfel.position = transform_point(T, vertexMap[locId]);
     surfel.normal = normalMap[locId].toVector3();
     surfel.radius = radiusMap[locId];
     surfel.confidence = 1.0f;                     // TEMPORARY
@@ -109,7 +117,15 @@ inline void fuse_matched_point(int locId, const unsigned int *correspondenceMap,
                                const Vector4f *normalMap, const float *radiusMap, const Vector4u *colourMap, int timestamp,
                                TSurfel *surfels)
 {
-  // TODO
+  int surfelIndex = correspondenceMap[locId] - 1;
+  if(surfelIndex >= 0)
+  {
+    TSurfel surfel = surfels[surfelIndex];
+    //surfel.position = 0.5f * surfel.position + 0.5f * transform_point(T, vertexMap[locId]); // TEMPORARY
+    surfel.timestamp = timestamp;
+    //SurfelColourManipulator<TSurfel::hasColourInformation>::write(surfels[surfelIndex], Vector3u(255, 0, 0));
+    surfels[surfelIndex] = surfel;
+  }
 }
 
 /**

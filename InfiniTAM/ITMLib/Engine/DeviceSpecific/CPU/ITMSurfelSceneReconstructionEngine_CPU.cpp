@@ -77,7 +77,7 @@ void ITMSurfelSceneReconstructionEngine_CPU<TSurfel>::FuseMatchedPoints(ITMSurfe
   const unsigned int *correspondenceMap = this->m_correspondenceMapMB->GetData(MEMORYDEVICE_CPU);
   const Vector4f *normalMap = this->m_normalMapMB->GetData(MEMORYDEVICE_CPU);
   const int pixelCount = static_cast<int>(view->depth->dataSize);
-  const TSurfel *surfels = scene->GetSurfels()->GetData(MEMORYDEVICE_CPU);
+  TSurfel *surfels = scene->GetSurfels()->GetData(MEMORYDEVICE_CPU);
   const float *radiusMap = this->m_radiusMapMB->GetData(MEMORYDEVICE_CPU);
   const Matrix4f T = trackingState->pose_d->GetInvM();
   const Vector3f *vertexMap = this->m_vertexMapMB->GetData(MEMORYDEVICE_CPU);
