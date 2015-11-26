@@ -23,7 +23,7 @@ namespace ITMLib
     ORUtils::MemoryBlock<unsigned int> *m_indexMapMB;
 
     /** A mask whose values denote whether the corresponding points in the vertex map need to be added to the scene as new points. */
-    ORUtils::MemoryBlock<unsigned int> *m_newPointsMaskMB;
+    ORUtils::MemoryBlock<unsigned short> *m_newPointsMaskMB;
 
     /** TODO */
     ORUtils::MemoryBlock<unsigned int> *m_newPointsPrefixSumMB;

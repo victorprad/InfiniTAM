@@ -23,7 +23,7 @@ inline Vector3f transform_point(const Matrix4f& T, const Vector3f& p)
  */
 template <typename TSurfel>
 _CPU_AND_GPU_CODE_
-inline void add_new_surfel(int locId, const Matrix4f& T, const unsigned int *newPointsMask, const unsigned int *newPointsPrefixSum,
+inline void add_new_surfel(int locId, const Matrix4f& T, const unsigned short *newPointsMask, const unsigned int *newPointsPrefixSum,
                            const Vector3f *vertexMap, const Vector4f *normalMap, const float *radiusMap, const Vector4u *colourMap,
                            int timestamp, TSurfel *newSurfels)
 {
@@ -69,7 +69,7 @@ inline void calculate_vertex_position(int locId, int width, const ITMIntrinsics&
 template <typename TSurfel>
 _CPU_AND_GPU_CODE_
 inline void find_corresponding_surfel(int locId, const float *depthMap, int depthMapWidth, const unsigned int *indexMap, const TSurfel *surfels,
-                                      unsigned int *correspondenceMap, unsigned int *newPointsMask)
+                                      unsigned int *correspondenceMap, unsigned short *newPointsMask)
 {
   // If the depth pixel is invalid, early out.
   if(fabs(depthMap[locId] + 1) <= 0.0001f)

@@ -14,7 +14,7 @@ ITMSurfelSceneReconstructionEngine<TSurfel>::ITMSurfelSceneReconstructionEngine(
   size_t pixelCount = depthImageSize.x * depthImageSize.y;
   m_correspondenceMapMB = new ORUtils::MemoryBlock<unsigned int>(pixelCount, true, true);
   m_indexMapMB = new ORUtils::MemoryBlock<unsigned int>(pixelCount * 16, true, true);
-  m_newPointsMaskMB = new ORUtils::MemoryBlock<unsigned int>(pixelCount + 1, true, true);
+  m_newPointsMaskMB = new ORUtils::MemoryBlock<unsigned short>(pixelCount + 1, true, true);
   m_newPointsPrefixSumMB = new ORUtils::MemoryBlock<unsigned int>(pixelCount + 1, true, true);
   m_normalMapMB = new ORUtils::MemoryBlock<Vector4f>(pixelCount, true, true);
   m_radiusMapMB = new ORUtils::MemoryBlock<float>(pixelCount, true, true);

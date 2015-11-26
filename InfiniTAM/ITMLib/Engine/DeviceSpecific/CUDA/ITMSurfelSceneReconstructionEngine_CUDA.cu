@@ -25,7 +25,7 @@ namespace ITMLib
 //#################### CUDA KERNELS ####################
 
 template <typename TSurfel>
-__global__ void ck_add_new_surfel(int pixelCount, Matrix4f T, const unsigned int *newPointsMask, const unsigned int *newPointsPrefixSum,
+__global__ void ck_add_new_surfel(int pixelCount, Matrix4f T, const unsigned short *newPointsMask, const unsigned int *newPointsPrefixSum,
                                   const Vector3f *vertexMap, const Vector4f *normalMap, const float *radiusMap, const Vector4u *colourMap,
                                   int timestamp, TSurfel *newSurfels)
 {
@@ -47,7 +47,7 @@ __global__ void ck_calculate_vertex_position(int pixelCount, int width, ITMIntri
 
 template <typename TSurfel>
 __global__ void ck_find_corresponding_surfel(int pixelCount, const float *depthMap, int depthMapWidth, const unsigned int *indexMap, const TSurfel *surfels,
-                                             unsigned int *correspondenceMap, unsigned int *newPointsMask)
+                                             unsigned int *correspondenceMap, unsigned short *newPointsMask)
 {
   int locId = threadIdx.x + blockDim.x * blockIdx.x;
   if(locId < pixelCount)
@@ -100,10 +100,10 @@ template <typename TSurfel>
 void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::AddNewSurfels(ITMSurfelScene<TSurfel> *scene, const ITMView *view, const ITMTrackingState *trackingState) const
 {
   // Calculate the prefix sum of the new points mask.
-  const unsigned int *newPointsMask = this->m_newPointsMaskMB->GetData(MEMORYDEVICE_CUDA);
+  const unsigned short *newPointsMask = this->m_newPointsMaskMB->GetData(MEMORYDEVICE_CUDA);
   unsigned int *newPointsPrefixSum = this->m_newPointsPrefixSumMB->GetData(MEMORYDEVICE_CUDA);
   const int pixelCount = static_cast<int>(this->m_newPointsMaskMB->dataSize - 1);
-  thrust::device_ptr<const unsigned int> newPointsMaskBegin(newPointsMask);
+  thrust::device_ptr<const unsigned short> newPointsMaskBegin(newPointsMask);
   thrust::device_ptr<unsigned int> newPointsPrefixSumBegin(newPointsPrefixSum);
   thrust::exclusive_scan(newPointsMaskBegin, newPointsMaskBegin + (pixelCount + 1), newPointsPrefixSumBegin);
 
