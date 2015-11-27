@@ -27,7 +27,6 @@ ITMDenseSurfelMapper<TSurfel>::~ITMDenseSurfelMapper()
 template <typename TSurfel>
 void ITMDenseSurfelMapper<TSurfel>::ProcessFrame(const ITMView *view, const ITMTrackingState *trackingState, ITMSurfelScene<TSurfel> *scene, ITMRenderState *liveRenderState) const
 {
-  // TEMPORARY
   m_reconstructionEngine->IntegrateIntoScene(scene, view, trackingState);
 }
 

@@ -131,6 +131,7 @@ inline void fuse_matched_point(int locId, const unsigned int *correspondenceMap,
   {
     TSurfel surfel = surfels[surfelIndex];
     //surfel.position = 0.5f * surfel.position + 0.5f * transform_point(T, vertexMap[locId]); // TEMPORARY
+    ++surfel.confidence;
     surfel.timestamp = timestamp;
     //SurfelColourManipulator<TSurfel::hasColourInformation>::write(surfels[surfelIndex], Vector3u(255, 0, 0));
     surfels[surfelIndex] = surfel;
@@ -178,7 +179,7 @@ inline void mark_for_removal_if_unstable(int surfelId, const TSurfel *surfels, i
   // TEMPORARY
   const float stableConfidence = 10.0f;
   TSurfel surfel = surfels[surfelId];
-  if(surfel.confidence < stableConfidence && timestamp - surfel.timestamp >= 1)
+  if(surfel.confidence < stableConfidence && timestamp - surfel.timestamp >= 50)
   {
     surfelRemovalMask[surfelId] = 1;
   }
