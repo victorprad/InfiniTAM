@@ -9,6 +9,7 @@
 
 #include <thrust/device_ptr.h>
 #include <thrust/scan.h>
+#include <thrust/sort.h>
 
 #ifdef _MSC_VER
   // Reenable the suppressed warnings for the rest of the translation unit.
@@ -45,6 +46,15 @@ __global__ void ck_calculate_vertex_position(int pixelCount, int width, ITMIntri
   }
 }
 
+__global__ void ck_clear_removal_mask(int surfelCount, unsigned int *surfelRemovalMask)
+{
+  int surfelId = threadIdx.x + blockDim.x * blockIdx.x;
+  if(surfelId < surfelCount)
+  {
+    clear_removal_mask(surfelId, surfelRemovalMask);
+  }
+}
+
 template <typename TSurfel>
 __global__ void ck_find_corresponding_surfel(int pixelCount, const float *depthMap, int depthMapWidth, const unsigned int *indexMap, const TSurfel *surfels,
                                              unsigned int *correspondenceMap, unsigned short *newPointsMask)
@@ -64,6 +74,16 @@ __global__ void ck_fuse_matched_point(int pixelCount, const unsigned int *corres
   if(locId < pixelCount)
   {
     fuse_matched_point(locId, correspondenceMap, T, vertexMap, normalMap, radiusMap, colourMap, timestamp, surfels);
+  }
+}
+
+template <typename TSurfel>
+__global__ void ck_mark_for_removal_if_unstable(int surfelCount, const TSurfel *surfels, int timestamp, unsigned int *surfelRemovalMask)
+{
+  int surfelId = threadIdx.x + blockDim.x * blockIdx.x;
+  if(surfelId < surfelCount)
+  {
+    mark_for_removal_if_unstable(surfelId, surfels, timestamp, surfelRemovalMask);
   }
 }
 
@@ -196,17 +216,19 @@ void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::GenerateIndexMap(const IT
   );
 
   const int surfelCount = static_cast<int>(scene->GetSurfelCount());
-  numBlocks = (surfelCount + threadsPerBlock - 1) / threadsPerBlock;
-
-  ck_project_to_index_map<<<numBlocks,threadsPerBlock>>>(
-    surfelCount,
-    scene->GetSurfels()->GetData(MEMORYDEVICE_CUDA),
-    pose.GetM(),
-    view->calib->intrinsics_d,
-    view->depth->noDims.x,
-    view->depth->noDims.y,
-    indexMap
-  );
+  if(surfelCount > 0)
+  {
+    numBlocks = (surfelCount + threadsPerBlock - 1) / threadsPerBlock;
+    ck_project_to_index_map<<<numBlocks,threadsPerBlock>>>(
+      surfelCount,
+      scene->GetSurfels()->GetData(MEMORYDEVICE_CUDA),
+      pose.GetM(),
+      view->calib->intrinsics_d,
+      view->depth->noDims.x,
+      view->depth->noDims.y,
+      indexMap
+    );
+  }
 
 #if DEBUGGING
   this->m_indexMapMB->UpdateHostFromDevice();
@@ -243,6 +265,43 @@ void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::PreprocessDepthMap(const 
 #endif
 
   // TODO: Calculate the radius map.
+}
+
+template <typename TSurfel>
+void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::RemoveBadSurfels(ITMSurfelScene<TSurfel> *scene) const
+{
+  const int surfelCount = static_cast<int>(scene->GetSurfelCount());
+  unsigned int *surfelRemovalMask = this->m_surfelRemovalMaskMB->GetData(MEMORYDEVICE_CUDA);
+  TSurfel *surfels = scene->GetSurfels()->GetData(MEMORYDEVICE_CUDA);
+
+  int threadsPerBlock = 256;
+  int numBlocks = (surfelCount + threadsPerBlock - 1) / threadsPerBlock;
+
+  // Clear the surfel removal mask.
+  ck_clear_removal_mask<<<numBlocks,threadsPerBlock>>>(
+    surfelCount,
+    surfelRemovalMask
+  );
+
+  // Mark long-term unstable surfels for removal.
+  ck_mark_for_removal_if_unstable<<<numBlocks,threadsPerBlock>>>(
+    surfelCount,
+    surfels,
+    this->m_timestamp,
+    surfelRemovalMask
+  );
+
+#if DEBUGGING
+  scene->GetSurfels()->UpdateHostFromDevice();
+  this->m_surfelRemovalMaskMB->UpdateHostFromDevice();
+#endif
+
+  // Remove marked surfels from the scene.
+  thrust::device_ptr<unsigned int> surfelRemovalMaskBegin(surfelRemovalMask);
+  thrust::device_ptr<unsigned int> surfelRemovalMaskEnd = surfelRemovalMaskBegin + surfelCount;
+  thrust::device_ptr<TSurfel> surfelsBegin(surfels);
+  thrust::sort_by_key(surfelRemovalMaskBegin, surfelRemovalMaskEnd, surfelsBegin);
+  scene->DeallocateRemovedSurfels(thrust::reduce(surfelRemovalMaskBegin, surfelRemovalMaskEnd));
 }
 
 //#################### EXPLICIT INSTANTIATIONS ####################

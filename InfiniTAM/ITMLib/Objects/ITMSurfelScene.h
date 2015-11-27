@@ -78,6 +78,14 @@ namespace ITMLib
     /**
      * \brief TODO
      */
+    void DeallocateRemovedSurfels(size_t removedSurfelCount)
+    {
+      m_surfelCount -= removedSurfelCount;
+    }
+
+    /**
+     * \brief TODO
+     */
     size_t GetSurfelCount() const
     {
       return m_surfelCount;

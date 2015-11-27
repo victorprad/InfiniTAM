@@ -18,6 +18,7 @@ ITMSurfelSceneReconstructionEngine<TSurfel>::ITMSurfelSceneReconstructionEngine(
   m_newPointsPrefixSumMB = new ORUtils::MemoryBlock<unsigned int>(pixelCount + 1, true, true);
   m_normalMapMB = new ORUtils::MemoryBlock<Vector4f>(pixelCount, true, true);
   m_radiusMapMB = new ORUtils::MemoryBlock<float>(pixelCount, true, true);
+  m_surfelRemovalMaskMB = new ORUtils::MemoryBlock<unsigned int>(MAX_SURFEL_COUNT, true, true);
   m_vertexMapMB =  new ORUtils::MemoryBlock<Vector3f>(pixelCount, true, true);
 
   // Make sure that the dummy element at the end of the new points mask is initialised properly.
@@ -34,6 +35,7 @@ ITMSurfelSceneReconstructionEngine<TSurfel>::~ITMSurfelSceneReconstructionEngine
   delete m_indexMapMB;
   delete m_normalMapMB;
   delete m_radiusMapMB;
+  delete m_surfelRemovalMaskMB;
   delete m_vertexMapMB;
 }
 
@@ -42,14 +44,13 @@ ITMSurfelSceneReconstructionEngine<TSurfel>::~ITMSurfelSceneReconstructionEngine
 template <typename TSurfel>
 void ITMSurfelSceneReconstructionEngine<TSurfel>::IntegrateIntoScene(ITMSurfelScene<TSurfel> *scene, const ITMView *view, const ITMTrackingState *trackingState)
 {
-  // TEMPORARY
   const ITMPose& pose = *trackingState->pose_d;
   PreprocessDepthMap(view);
   GenerateIndexMap(scene, view, pose);
   FindCorrespondingSurfels(scene, view);
   FuseMatchedPoints(scene, view, trackingState);
   AddNewSurfels(scene, view, trackingState);
-  // TODO
+  RemoveBadSurfels(scene);
 
   ++m_timestamp;
 }

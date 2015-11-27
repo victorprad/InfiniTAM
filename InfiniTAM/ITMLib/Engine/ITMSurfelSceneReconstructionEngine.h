@@ -35,6 +35,9 @@ namespace ITMLib
     ORUtils::MemoryBlock<float> *m_radiusMapMB;
 
     /** TODO */
+    ORUtils::MemoryBlock<unsigned int> *m_surfelRemovalMaskMB;
+
+    /** TODO */
     int m_timestamp;
 
     /** The vertex map corresponding to the live depth image (obtained by unprojecting the points in the depth image). */
@@ -86,6 +89,11 @@ namespace ITMLib
      * \brief TODO
      */
     virtual void PreprocessDepthMap(const ITMView *view) const = 0;
+
+    /**
+     * \brief TODO
+     */
+    virtual void RemoveBadSurfels(ITMSurfelScene<TSurfel> *scene) const = 0;
 
     //#################### PUBLIC MEMBER FUNCTIONS ####################
   public:

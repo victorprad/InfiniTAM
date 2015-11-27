@@ -66,6 +66,15 @@ inline void calculate_vertex_position(int locId, int width, const ITMIntrinsics&
 /**
  * \brief TODO
  */
+_CPU_AND_GPU_CODE_
+inline void clear_removal_mask(int surfelId, unsigned int *surfelRemovalMask)
+{
+  surfelRemovalMask[surfelId] = 0;
+}
+
+/**
+ * \brief TODO
+ */
 template <typename TSurfel>
 _CPU_AND_GPU_CODE_
 inline void find_corresponding_surfel(int locId, const float *depthMap, int depthMapWidth, const unsigned int *indexMap, const TSurfel *surfels,
@@ -156,6 +165,22 @@ inline void project_to_index_map(int surfelId, const TSurfel *surfels, const Mat
   {
     // Write the surfel ID + 1 into the index map.
     indexMap[y * indexMapWidth + x] = static_cast<unsigned int>(surfelId + 1);
+  }
+}
+
+/**
+ * \brief TODO
+ */
+template <typename TSurfel>
+_CPU_AND_GPU_CODE_
+inline void mark_for_removal_if_unstable(int surfelId, const TSurfel *surfels, int timestamp, unsigned int *surfelRemovalMask)
+{
+  // TEMPORARY
+  const float stableConfidence = 10.0f;
+  TSurfel surfel = surfels[surfelId];
+  if(surfel.confidence < stableConfidence && timestamp - surfel.timestamp >= 1)
+  {
+    surfelRemovalMask[surfelId] = 1;
   }
 }
 

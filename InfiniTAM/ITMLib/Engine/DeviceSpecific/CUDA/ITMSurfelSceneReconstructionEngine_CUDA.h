@@ -35,5 +35,8 @@ namespace ITMLib
 
     /** Override */
     virtual void PreprocessDepthMap(const ITMView *view) const;
+
+    /** Override */
+    virtual void RemoveBadSurfels(ITMSurfelScene<TSurfel> *scene) const;
   };
 }
