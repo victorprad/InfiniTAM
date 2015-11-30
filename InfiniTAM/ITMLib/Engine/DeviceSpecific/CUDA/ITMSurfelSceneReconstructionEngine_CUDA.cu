@@ -56,13 +56,13 @@ __global__ void ck_clear_removal_mask(int surfelCount, unsigned int *surfelRemov
 }
 
 template <typename TSurfel>
-__global__ void ck_find_corresponding_surfel(int pixelCount, const float *depthMap, int depthMapWidth, const unsigned int *indexMap, const TSurfel *surfels,
+__global__ void ck_find_corresponding_surfel(int pixelCount, Matrix4f invT, const float *depthMap, int depthMapWidth, const unsigned int *indexMap, const TSurfel *surfels,
                                              unsigned int *correspondenceMap, unsigned short *newPointsMask)
 {
   int locId = threadIdx.x + blockDim.x * blockIdx.x;
   if(locId < pixelCount)
   {
-    find_corresponding_surfel(locId, depthMap, depthMapWidth, indexMap, surfels, correspondenceMap, newPointsMask);
+    find_corresponding_surfel(locId, invT, depthMap, depthMapWidth, indexMap, surfels, correspondenceMap, newPointsMask);
   }
 }
 
@@ -160,7 +160,7 @@ void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::AddNewSurfels(ITMSurfelSc
 }
 
 template <typename TSurfel>
-void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::FindCorrespondingSurfels(const ITMSurfelScene<TSurfel> *scene, const ITMView *view) const
+void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::FindCorrespondingSurfels(const ITMSurfelScene<TSurfel> *scene, const ITMView *view, const ITMTrackingState *trackingState) const
 {
   const int pixelCount = static_cast<int>(view->depth->dataSize);
 
@@ -169,6 +169,7 @@ void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::FindCorrespondingSurfels(
 
   ck_find_corresponding_surfel<<<numBlocks,threadsPerBlock>>>(
     pixelCount,
+    trackingState->pose_d->GetM(),
     view->depth->GetData(MEMORYDEVICE_CUDA),
     view->depth->noDims.x,
     this->m_indexMapMB->GetData(MEMORYDEVICE_CUDA),

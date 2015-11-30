@@ -8,6 +8,22 @@
 namespace ITMLib
 {
 
+//#################### HELPERS ####################
+
+/**
+ * \brief TODO
+ *
+ * \param invT  A transformation from global coordinates to pose coordinates.
+ * \param p     The point whose depth we want to calculate.
+ */
+_CPU_AND_GPU_CODE_
+inline float calculate_depth_from_pose(const Matrix4f& invT, const Vector3f& p)
+{
+  Vector4f vg(p.x, p.y, p.z, 1.0f);
+  Vector4f v = invT * vg;
+  return v.z;
+}
+
 /**
  * \brief TODO
  */
@@ -17,6 +33,8 @@ inline Vector3f transform_point(const Matrix4f& T, const Vector3f& p)
   Vector4f v(p.x, p.y, p.z, 1.0f);
   return (T * v).toVector3();
 }
+
+//#################### MAIN FUNCTIONS ####################
 
 /**
  * \brief TODO
@@ -83,11 +101,12 @@ inline void clear_removal_mask(int surfelId, unsigned int *surfelRemovalMask)
  */
 template <typename TSurfel>
 _CPU_AND_GPU_CODE_
-inline void find_corresponding_surfel(int locId, const float *depthMap, int depthMapWidth, const unsigned int *indexMap, const TSurfel *surfels,
+inline void find_corresponding_surfel(int locId, const Matrix4f& invT, const float *depthMap, int depthMapWidth, const unsigned int *indexMap, const TSurfel *surfels,
                                       unsigned int *correspondenceMap, unsigned short *newPointsMask)
 {
   // If the depth pixel is invalid, early out.
-  if(fabs(depthMap[locId] + 1) <= 0.0001f)
+  float depth = depthMap[locId];
+  if(fabs(depth + 1) <= 0.0001f)
   {
     correspondenceMap[locId] = 0;
     newPointsMask[locId] = 0;
@@ -109,7 +128,10 @@ inline void find_corresponding_surfel(int locId, const float *depthMap, int dept
       {
         // TODO: Make this slightly more sophisticated, as per the paper.
         TSurfel surfel = surfels[surfelIndex];
-        if(surfel.confidence > bestSurfelConfidence)
+        float surfelDepth = calculate_depth_from_pose(invT, surfel.position);
+
+        const float deltaDepth = 0.01f;
+        if(surfel.confidence > bestSurfelConfidence && fabs(surfelDepth - depth) <= deltaDepth)
         {
           bestSurfelIndex = surfelIndex;
           bestSurfelConfidence = surfel.confidence;

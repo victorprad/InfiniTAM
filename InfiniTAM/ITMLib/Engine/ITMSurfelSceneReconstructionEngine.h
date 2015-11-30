@@ -73,7 +73,7 @@ namespace ITMLib
     /**
      * \brief TODO
      */
-    virtual void FindCorrespondingSurfels(const ITMSurfelScene<TSurfel> *scene, const ITMView *view) const = 0;
+    virtual void FindCorrespondingSurfels(const ITMSurfelScene<TSurfel> *scene, const ITMView *view, const ITMTrackingState *trackingState) const = 0;
 
     /**
      * \brief TODO
