@@ -496,4 +496,5 @@ void UIEngine::Shutdown()
 	delete[] outFolder;
 	delete saveImage;
 	delete instance;
+	instance = NULL;
 }
