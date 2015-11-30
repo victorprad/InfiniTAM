@@ -38,7 +38,7 @@ namespace ITMLib
     /**
      * \brief TODO
      */
-    virtual void CopySceneToBuffers(const ITMSurfelScene<TSurfel> *scene, float *positions, unsigned char *colours) const = 0;
+    virtual void CopySceneToBuffers(const ITMSurfelScene<TSurfel> *scene, float *positions, unsigned char *normals, unsigned char *colours) const = 0;
 
     /**
      * \brief TODO

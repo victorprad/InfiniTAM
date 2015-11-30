@@ -22,12 +22,12 @@ __global__ void ck_copy_correspondences_to_buffer(int surfelCount, const TSurfel
 #endif
 
 template <typename TSurfel>
-__global__ void ck_copy_scene_to_buffers(int surfelCount, const TSurfel *surfels, float *positions, unsigned char *colours)
+__global__ void ck_copy_scene_to_buffers(int surfelCount, const TSurfel *surfels, float *positions, unsigned char *normals, unsigned char *colours)
 {
   int surfelId = threadIdx.x + blockDim.x * blockIdx.x;
   if(surfelId < surfelCount)
   {
-    copy_surfel_to_buffers(surfelId, surfels, positions, colours);
+    copy_surfel_to_buffers(surfelId, surfels, positions, normals, colours);
   }
 }
 
@@ -51,7 +51,7 @@ void ITMSurfelVisualisationEngine_CUDA<TSurfel>::CopyCorrespondencesToBuffer(con
 #endif
 
 template <typename TSurfel>
-void ITMSurfelVisualisationEngine_CUDA<TSurfel>::CopySceneToBuffers(const ITMSurfelScene<TSurfel> *scene, float *positions, unsigned char *colours) const
+void ITMSurfelVisualisationEngine_CUDA<TSurfel>::CopySceneToBuffers(const ITMSurfelScene<TSurfel> *scene, float *positions, unsigned char *normals, unsigned char *colours) const
 {
   const int surfelCount = static_cast<int>(scene->GetSurfelCount());
 
@@ -62,6 +62,7 @@ void ITMSurfelVisualisationEngine_CUDA<TSurfel>::CopySceneToBuffers(const ITMSur
     surfelCount,
     scene->GetSurfels()->GetData(MEMORYDEVICE_CUDA),
     positions,
+    normals,
     colours
   );
 }

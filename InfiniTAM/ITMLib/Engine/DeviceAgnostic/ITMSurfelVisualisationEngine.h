@@ -35,7 +35,7 @@ inline void copy_correspondences_to_buffer(int surfelId, const TSurfel *surfels,
  */
 template <typename TSurfel>
 _CPU_AND_GPU_CODE_
-inline void copy_surfel_to_buffers(int surfelId, const TSurfel *surfels, float *positions, unsigned char *colours)
+inline void copy_surfel_to_buffers(int surfelId, const TSurfel *surfels, float *positions, unsigned char *normals, unsigned char *colours)
 {
   TSurfel surfel = surfels[surfelId];
   int offset = surfelId * 3;
@@ -44,6 +44,12 @@ inline void copy_surfel_to_buffers(int surfelId, const TSurfel *surfels, float *
   positions[offset] = p.x;
   positions[offset+1] = p.y;
   positions[offset+2] = p.z;
+
+  // FIXME: Borrowed from drawPixelNormal - refactor.
+  Vector3f n = surfel.normal;
+  normals[offset] = (uchar)((0.3f + (-n.x + 1.0f)*0.35f)*255.0f);
+  normals[offset+1] = (uchar)((0.3f + (-n.y + 1.0f)*0.35f)*255.0f);
+  normals[offset+2] = (uchar)((0.3f + (-n.z + 1.0f)*0.35f)*255.0f);
 
   if(colours != NULL)
   {
