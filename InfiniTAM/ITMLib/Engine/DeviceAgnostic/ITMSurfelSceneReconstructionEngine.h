@@ -25,7 +25,7 @@ template <typename TSurfel>
 _CPU_AND_GPU_CODE_
 inline void add_new_surfel(int locId, const Matrix4f& T, const unsigned short *newPointsMask, const unsigned int *newPointsPrefixSum,
                            const Vector3f *vertexMap, const Vector4f *normalMap, const float *radiusMap, const Vector4u *colourMap,
-                           int timestamp, TSurfel *newSurfels)
+                           int timestamp, TSurfel *newSurfels, const TSurfel *surfels, const unsigned int *correspondenceMap)
 {
   if(newPointsMask[locId])
   {
@@ -38,6 +38,12 @@ inline void add_new_surfel(int locId, const Matrix4f& T, const unsigned short *n
 
     // Store a colour if the surfel type can support it.
     SurfelColourManipulator<TSurfel::hasColourInformation>::write(surfel, colourMap[locId].toVector3());  // TEMPORARY
+
+#if DEBUG_CORRESPONDENCES
+    // Store the position of the corresponding surfel (if any).
+    int correspondingSurfelIndex = correspondenceMap[locId] - 1;
+    surfel.correspondingSurfelPosition = correspondingSurfelIndex >= 0 ? surfels[correspondingSurfelIndex].position : surfel.position;
+#endif
 
     newSurfels[newPointsPrefixSum[locId]] = surfel;
   }
@@ -115,6 +121,10 @@ inline void find_corresponding_surfel(int locId, const float *depthMap, int dept
   // Record any corresponding surfel found, together with a flag indicating whether or not we need to add a new surfel.
   correspondenceMap[locId] = bestSurfelIndex >= 0 ? bestSurfelIndex + 1 : 0;
   newPointsMask[locId] = bestSurfelIndex >= 0 ? 0 : 1;
+
+#if DEBUG_CORRESPONDENCES
+  newPointsMask[locId] = 1;
+#endif
 }
 
 /**
@@ -126,6 +136,7 @@ inline void fuse_matched_point(int locId, const unsigned int *correspondenceMap,
                                const Vector4f *normalMap, const float *radiusMap, const Vector4u *colourMap, int timestamp,
                                TSurfel *surfels)
 {
+#ifndef DEBUG_CORRESPONDENCES
   int surfelIndex = correspondenceMap[locId] - 1;
   if(surfelIndex >= 0)
   {
@@ -136,6 +147,7 @@ inline void fuse_matched_point(int locId, const unsigned int *correspondenceMap,
     //SurfelColourManipulator<TSurfel::hasColourInformation>::write(surfels[surfelIndex], Vector3u(255, 0, 0));
     surfels[surfelIndex] = surfel;
   }
+#endif
 }
 
 /**
@@ -179,7 +191,7 @@ inline void mark_for_removal_if_unstable(int surfelId, const TSurfel *surfels, i
   // TEMPORARY
   const float stableConfidence = 10.0f;
   TSurfel surfel = surfels[surfelId];
-  if(surfel.confidence < stableConfidence && timestamp - surfel.timestamp >= 50)
+  if(surfel.confidence < stableConfidence && timestamp - surfel.timestamp >= 15)
   {
     surfelRemovalMask[surfelId] = 1;
   }

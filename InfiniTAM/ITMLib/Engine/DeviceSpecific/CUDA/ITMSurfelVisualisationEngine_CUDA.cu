@@ -9,6 +9,18 @@ namespace ITMLib
 
 //#################### CUDA KERNELS ####################
 
+#if DEBUG_CORRESPONDENCES
+template <typename TSurfel>
+__global__ void ck_copy_correspondences_to_buffer(int surfelCount, const TSurfel *surfels, float *correspondences)
+{
+  int surfelId = threadIdx.x + blockDim.x * blockIdx.x;
+  if(surfelId < surfelCount)
+  {
+    copy_correspondences_to_buffer(surfelId, surfels, correspondences);
+  }
+}
+#endif
+
 template <typename TSurfel>
 __global__ void ck_copy_scene_to_buffers(int surfelCount, const TSurfel *surfels, float *positions, unsigned char *colours)
 {
@@ -20,6 +32,23 @@ __global__ void ck_copy_scene_to_buffers(int surfelCount, const TSurfel *surfels
 }
 
 //#################### PUBLIC MEMBER FUNCTIONS ####################
+
+#if DEBUG_CORRESPONDENCES
+template <typename TSurfel>
+void ITMSurfelVisualisationEngine_CUDA<TSurfel>::CopyCorrespondencesToBuffer(const ITMSurfelScene<TSurfel> *scene, float *correspondences) const
+{
+  const int surfelCount = static_cast<int>(scene->GetSurfelCount());
+
+  int threadsPerBlock = 256;
+  int numBlocks = (surfelCount + threadsPerBlock - 1) / threadsPerBlock;
+
+  ck_copy_correspondences_to_buffer<<<numBlocks,threadsPerBlock>>>(
+    surfelCount,
+    scene->GetSurfels()->GetData(MEMORYDEVICE_CUDA),
+    correspondences
+  );
+}
+#endif
 
 template <typename TSurfel>
 void ITMSurfelVisualisationEngine_CUDA<TSurfel>::CopySceneToBuffers(const ITMSurfelScene<TSurfel> *scene, float *positions, unsigned char *colours) const

@@ -7,6 +7,29 @@
 namespace ITMLib
 {
 
+#if DEBUG_CORRESPONDENCES
+/**
+ * \brief TODO
+ */
+template <typename TSurfel>
+_CPU_AND_GPU_CODE_
+inline void copy_correspondences_to_buffer(int surfelId, const TSurfel *surfels, float *correspondences)
+{
+  TSurfel surfel = surfels[surfelId];
+  int offset = surfelId * 6;
+
+  Vector3f p = surfel.position;
+  Vector3f cp = surfel.correspondingSurfelPosition;
+
+  correspondences[offset] = p.x;
+  correspondences[offset+1] = p.y;
+  correspondences[offset+2] = p.z;
+  correspondences[offset+3] = cp.x;
+  correspondences[offset+4] = cp.y;
+  correspondences[offset+5] = cp.z;
+}
+#endif
+
 /**
  * \brief TODO
  */

@@ -4,6 +4,8 @@
 
 #include "../Utils/ITMMath.h"
 
+#define DEBUG_CORRESPONDENCES 1
+
 namespace ITMLib
 {
   /**
@@ -29,6 +31,11 @@ namespace ITMLib
 
     /** A timestamp for the surfel, recording the last frame in which it was updated. */
     int timestamp;
+
+#if DEBUG_CORRESPONDENCES
+    /** The position of the corresponding surfel. */
+    Vector3f correspondingSurfelPosition;
+#endif
   };
 
   /**
@@ -57,6 +64,11 @@ namespace ITMLib
 
     /** A timestamp for the surfel, recording the last frame in which it was updated. */
     int timestamp;
+
+#if DEBUG_CORRESPONDENCES
+    /** The position of the corresponding surfel. */
+    Vector3f correspondingSurfelPosition;
+#endif
   };
 
   /**

@@ -18,6 +18,11 @@ namespace ITMLib
 
     //#################### PUBLIC MEMBER FUNCTIONS ####################
   public:
+#if DEBUG_CORRESPONDENCES
+    /** Override */
+    virtual void CopyCorrespondencesToBuffer(const ITMSurfelScene<TSurfel> *scene, float *correspondences) const;
+#endif
+
     /** Override */
     virtual void CopySceneToBuffers(const ITMSurfelScene<TSurfel> *scene, float *positions, unsigned char *colours) const;
 

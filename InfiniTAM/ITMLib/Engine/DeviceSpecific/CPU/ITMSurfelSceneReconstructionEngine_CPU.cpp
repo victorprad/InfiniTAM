@@ -36,8 +36,10 @@ void ITMSurfelSceneReconstructionEngine_CPU<TSurfel>::AddNewSurfels(ITMSurfelSce
   if(newSurfels == NULL) return;
 
   const Vector4u *colourMap = view->rgb->GetData(MEMORYDEVICE_CPU);
+  const unsigned int *correspondenceMap = this->m_correspondenceMapMB->GetData(MEMORYDEVICE_CPU);
   const Vector4f *normalMap = this->m_normalMapMB->GetData(MEMORYDEVICE_CPU);
   const float *radiusMap = this->m_radiusMapMB->GetData(MEMORYDEVICE_CPU);
+  const TSurfel *surfels = scene->GetSurfels()->GetData(MEMORYDEVICE_CPU);
   const Matrix4f T = trackingState->pose_d->GetInvM();
   const Vector3f *vertexMap = this->m_vertexMapMB->GetData(MEMORYDEVICE_CPU);
 
@@ -46,7 +48,7 @@ void ITMSurfelSceneReconstructionEngine_CPU<TSurfel>::AddNewSurfels(ITMSurfelSce
 #endif
   for(int locId = 0; locId < pixelCount; ++locId)
   {
-    add_new_surfel(locId, T, newPointsMask, newPointsPrefixSum, vertexMap, normalMap, radiusMap, colourMap, this->m_timestamp, newSurfels);
+    add_new_surfel(locId, T, newPointsMask, newPointsPrefixSum, vertexMap, normalMap, radiusMap, colourMap, this->m_timestamp, newSurfels, surfels, correspondenceMap);
   }
 }
 
