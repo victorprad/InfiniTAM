@@ -158,14 +158,27 @@ inline void fuse_matched_point(int locId, const unsigned int *correspondenceMap,
                                const Vector4f *normalMap, const float *radiusMap, const Vector4u *colourMap, int timestamp,
                                TSurfel *surfels)
 {
+  // TEMPORARY
+  const float alpha = 1.0f;
+
   int surfelIndex = correspondenceMap[locId] - 1;
   if(surfelIndex >= 0)
   {
     TSurfel surfel = surfels[surfelIndex];
-    //surfel.position = 0.5f * surfel.position + 0.5f * transform_point(T, vertexMap[locId]); // TEMPORARY
-    ++surfel.confidence;
+
+    const float newConfidence = surfel.confidence + alpha;
+    surfel.position = (surfel.confidence * surfel.position + alpha * transform_point(T, vertexMap[locId])) / newConfidence;
+
+    // TODO: Normal, radius, etc.
+
+    Vector3u oldColour = SurfelColourManipulator<TSurfel::hasColourInformation>::read(surfel);
+    Vector3u newColour = colourMap[locId].toVector3();
+    Vector3u colour = ((surfel.confidence * oldColour.toFloat() + alpha * newColour.toFloat()) / newConfidence).toUChar();
+    SurfelColourManipulator<TSurfel::hasColourInformation>::write(surfel, colour);
+
+    surfel.confidence = newConfidence;
     surfel.timestamp = timestamp;
-    //SurfelColourManipulator<TSurfel::hasColourInformation>::write(surfels[surfelIndex], Vector3u(255, 0, 0));
+
     surfels[surfelIndex] = surfel;
   }
 }
@@ -211,7 +224,7 @@ inline void mark_for_removal_if_unstable(int surfelId, const TSurfel *surfels, i
   // TEMPORARY
   const float stableConfidence = 10.0f;
   TSurfel surfel = surfels[surfelId];
-  if(surfel.confidence < stableConfidence && timestamp - surfel.timestamp >= 15)
+  if(surfel.confidence < stableConfidence && timestamp - surfel.timestamp >= 50)
   {
     surfelRemovalMask[surfelId] = 1;
   }

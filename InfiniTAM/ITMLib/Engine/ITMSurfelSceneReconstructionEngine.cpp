@@ -53,7 +53,7 @@ void ITMSurfelSceneReconstructionEngine<TSurfel>::IntegrateIntoScene(ITMSurfelSc
 #endif
   AddNewSurfels(scene, view, trackingState);
 #if !DEBUG_CORRESPONDENCES
-  //RemoveBadSurfels(scene);
+  RemoveBadSurfels(scene);
 #endif
 
   ++m_timestamp;
