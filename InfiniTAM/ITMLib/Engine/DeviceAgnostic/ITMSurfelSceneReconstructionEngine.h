@@ -136,7 +136,6 @@ inline void fuse_matched_point(int locId, const unsigned int *correspondenceMap,
                                const Vector4f *normalMap, const float *radiusMap, const Vector4u *colourMap, int timestamp,
                                TSurfel *surfels)
 {
-#ifndef DEBUG_CORRESPONDENCES
   int surfelIndex = correspondenceMap[locId] - 1;
   if(surfelIndex >= 0)
   {
@@ -147,7 +146,6 @@ inline void fuse_matched_point(int locId, const unsigned int *correspondenceMap,
     //SurfelColourManipulator<TSurfel::hasColourInformation>::write(surfels[surfelIndex], Vector3u(255, 0, 0));
     surfels[surfelIndex] = surfel;
   }
-#endif
 }
 
 /**
