@@ -10,17 +10,26 @@ namespace LCDLib {
 
 class PoseDatabase {
 	public:
+	struct PoseInScene {
+		PoseInScene(void) {}
+		PoseInScene(const ITMLib::ITMPose & _pose, int _sceneIdx)
+		  : pose(_pose), sceneIdx(_sceneIdx) {}
+		ITMLib::ITMPose pose;
+		int sceneIdx;
+	};
+
 	PoseDatabase(void);
 	~PoseDatabase(void);
 
-	void storePose(int id, const ITMLib::ITMPose & pose);
+	void storePose(int id, const ITMLib::ITMPose & pose, int sceneId);
+	void storePose(int id, const PoseInScene & poseInScene);
 	int numPoses(void) const { return mPoses.size(); }
 
-	const ITMLib::ITMPose & retrievePose(int id) const;
-	ITMLib::ITMPose retrieveWAPose(int k, int ids[], float weights[]) const;
+	const PoseInScene & retrievePose(int id) const { return mPoses[id]; }
+	PoseInScene retrieveWAPose(int k, int ids[], float weights[]) const;
 
 	private:
-	std::vector<ITMLib::ITMPose> mPoses;
+	std::vector<PoseInScene> mPoses;
 };
 
 }

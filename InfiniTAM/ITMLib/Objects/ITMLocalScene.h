@@ -15,10 +15,11 @@ namespace ITMLib {
 	public:
 		ITMPoseConstraint(void);
 
-		void AddObservation(const Matrix4f & relative_pose);
-		Matrix4f GetAccumulatedInfo(void) const;
+		void AddObservation(const ITMPose & relative_pose, int weight = 1);
+		ITMPose GetAccumulatedInfo(void) const { return accu_poses; }
+		int GetNumAccumulatedInfo(void) const { return accu_num; }
 	private:
-		Matrix4f accu_poses;
+		ITMPose accu_poses;
 		int accu_num;
 	};
 
@@ -29,6 +30,7 @@ namespace ITMLib {
 		ITMScene<TVoxel,TIndex> *scene;
 		ITMRenderState *renderState;
 		ITMTrackingState *trackingState;
+		std::map<int,ITMPoseConstraint> relations;
 
 		ITMLocalScene(const ITMLibSettings *settings, const IITMVisualisationEngine *visualisationEngine, const ITMTrackingController *trackingController, const Vector2i & trackedImageSize)
 		{
@@ -42,6 +44,14 @@ namespace ITMLib {
 			delete renderState;
 			delete trackingState;
 		}
+
+		/** Check whether this is a new scene that has not been
+		    completely localised relative to any others.
+		*/
+/*		bool isNewScene(void) const
+		{
+			return (relations.size() == 0);
+		}*/
 	};
 }
 

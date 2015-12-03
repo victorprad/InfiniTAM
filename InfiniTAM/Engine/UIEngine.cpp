@@ -202,7 +202,9 @@ void UIEngine::glutKeyUpFunction(unsigned char key, int x, int y)
 			}
 			ITMMultiEngine *multiEngine = dynamic_cast<ITMMultiEngine*>(uiEngine->mainEngine);
 			if (multiEngine != NULL) {
-				multiEngine->SetFreeviewDataIdx(multiEngine->GetPrimaryDataIdx());
+				int idx = multiEngine->FindPrimaryDataIdx();
+				if (idx < 0) idx = 0;
+				multiEngine->SetFreeviewDataIdx(idx);
 			}
 			uiEngine->freeviewActive = true;
 		}
