@@ -39,6 +39,8 @@ namespace ITMLib
 	public:
 		ITMView* GetView(void) { return view; }
 		ITMTrackingState* GetTrackingState(void) { return trackingState; }
+
+		/// Gives access to the internal world representation
 		ITMScene<ITMVoxel, ITMVoxelIndex>* GetScene(void) { return scene; }
 
 		void ProcessFrame(ITMUChar4Image *rgbImage, ITMShortImage *rawDepthImage, ITMIMUMeasurement *imuMeasurement = NULL);

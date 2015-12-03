@@ -50,6 +50,11 @@ int LCDDatabase::findMostSimilar(const char *codeFragments, int nearestNeighbour
 		}
 	}
 
+	for (int i = foundNN; i < k; ++i) {
+		distances[i] = 1.0f;
+		nearestNeighbours[i] = -1;
+	}
+
 	delete[] similarities;
 
 	return foundNN;

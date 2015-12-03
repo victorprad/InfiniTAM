@@ -61,6 +61,7 @@ namespace ITMLib
 		Vector3f GetT(void) const;
 
 		void GetParams(Vector3f &translation, Vector3f &rotation);
+		const float* GetParams(void) const { return params.all; }
 
 		void SetM(const Matrix4f & M);
 
