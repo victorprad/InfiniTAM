@@ -32,7 +32,7 @@
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
-    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 7.0.props" />
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 7.5.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
@@ -119,20 +119,27 @@
     <ClCompile Include="ITMLib\Engine\DeviceSpecific\CPU\ITMViewBuilder_CPU.cpp" />
     <ClCompile Include="ITMLib\Engine\DeviceSpecific\CPU\ITMVisualisationEngine_CPU.cpp" />
     <ClCompile Include="ITMLib\Engine\DeviceSpecific\CPU\ITMWeightedICPTracker_CPU.cpp" />
+    <ClCompile Include="ITMLib\Engine\ITMBasicEngine.cpp" />
     <ClCompile Include="ITMLib\Engine\ITMColorTracker.cpp" />
     <ClCompile Include="ITMLib\Engine\ITMDenseMapper.cpp" />
     <ClCompile Include="ITMLib\Engine\ITMDepthTracker.cpp" />
     <ClCompile Include="ITMLib\Engine\ITMIMUTracker.cpp" />
-    <ClCompile Include="ITMLib\Engine\ITMMainEngine.cpp" />
+    <ClCompile Include="ITMLib\Engine\ITMMultiEngine.cpp" />
     <ClCompile Include="ITMLib\Engine\ITMRenTracker.cpp" />
     <ClCompile Include="ITMLib\Engine\ITMTrackerFactory.cpp" />
     <ClCompile Include="ITMLib\Engine\ITMTrackingController.cpp" />
     <ClCompile Include="ITMLib\Engine\ITMVisualisationEngine.cpp" />
     <ClCompile Include="ITMLib\Engine\ITMWeightedICPTracker.cpp" />
+    <ClCompile Include="ITMLib\Objects\ITMLocalScene.cpp" />
     <ClCompile Include="ITMLib\Utils\ITMLibSettings.cpp" />
     <ClCompile Include="ITMLib\Utils\ITMCalibIO.cpp" />
     <ClCompile Include="InfiniTAM.cpp" />
     <ClCompile Include="ITMLib\Objects\ITMPose.cpp" />
+    <ClCompile Include="LCDLib\FernConservatory.cpp" />
+    <ClCompile Include="LCDLib\LCDDatabase.cpp" />
+    <ClCompile Include="LCDLib\LoopClosureDetector.cpp" />
+    <ClCompile Include="LCDLib\PoseDatabase.cpp" />
+    <ClCompile Include="ORUtils\KeyValueConfig.cpp" />
     <ClCompile Include="Utils\FileUtils.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -175,6 +182,7 @@
     <ClInclude Include="ITMLib\Engine\DeviceSpecific\CUDA\ITMViewBuilder_CUDA.h" />
     <ClInclude Include="ITMLib\Engine\DeviceSpecific\CUDA\ITMVisualisationEngine_CUDA.h" />
     <ClInclude Include="ITMLib\Engine\DeviceSpecific\CUDA\ITMWeightedICPTracker_CUDA.h" />
+    <ClInclude Include="ITMLib\Engine\ITMBasicEngine.h" />
     <ClInclude Include="ITMLib\Engine\ITMColorTracker.h" />
     <ClInclude Include="ITMLib\Engine\ITMCompositeTracker.h" />
     <ClInclude Include="ITMLib\Engine\ITMDenseMapper.h" />
@@ -184,6 +192,7 @@
     <ClInclude Include="ITMLib\Engine\ITMLowLevelEngine.h" />
     <ClInclude Include="ITMLib\Engine\ITMMainEngine.h" />
     <ClInclude Include="ITMLib\Engine\ITMMeshingEngine.h" />
+    <ClInclude Include="ITMLib\Engine\ITMMultiEngine.h" />
     <ClInclude Include="ITMLib\Engine\ITMRenTracker.h" />
     <ClInclude Include="ITMLib\Engine\ITMSceneReconstructionEngine.h" />
     <ClInclude Include="ITMLib\Engine\ITMSwappingEngine.h" />
@@ -194,6 +203,7 @@
     <ClInclude Include="ITMLib\Engine\ITMVisualisationEngine.h" />
     <ClInclude Include="ITMLib\Engine\ITMWeightedICPTracker.h" />
     <ClInclude Include="ITMLib\Objects\ITMIMUMeasurement.h" />
+    <ClInclude Include="ITMLib\Objects\ITMLocalScene.h" />
     <ClInclude Include="ITMLib\Objects\ITMMesh.h" />
     <ClInclude Include="ITMLib\Objects\ITMRenderState.h" />
     <ClInclude Include="ITMLib\Objects\ITMRenderState_VH.h" />
@@ -221,12 +231,21 @@
     <ClInclude Include="ITMLib\Objects\ITMViewHierarchyLevel.h" />
     <ClInclude Include="ITMLib\Objects\ITMLocalVBA.h" />
     <ClInclude Include="ITMLib\ITMLib.h" />
+    <ClInclude Include="LCDLib\FernConservatory.h" />
+    <ClInclude Include="LCDLib\LCDDatabase.h" />
+    <ClInclude Include="LCDLib\LoopClosureDetector.h" />
+    <ClInclude Include="LCDLib\PoseDatabase.h" />
     <ClInclude Include="ORUtils\Cholesky.h" />
     <ClInclude Include="ORUtils\CUDADefines.h" />
     <ClInclude Include="ORUtils\Image.h" />
+    <ClInclude Include="ORUtils\KeyValueConfig.h" />
+    <ClInclude Include="ORUtils\LexicalCast.h" />
     <ClInclude Include="ORUtils\MathUtils.h" />
     <ClInclude Include="ORUtils\Matrix.h" />
     <ClInclude Include="ORUtils\MemoryBlock.h" />
+    <ClInclude Include="ORUtils\MemoryBlockPersister.h" />
+    <ClInclude Include="ORUtils\MetalContext.h" />
+    <ClInclude Include="ORUtils\PlatformIndependence.h" />
     <ClInclude Include="ORUtils\Vector.h" />
     <ClInclude Include="Utils\FileUtils.h" />
     <ClInclude Include="Utils\NVTimer.h" />
@@ -245,6 +264,6 @@
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
-    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 7.0.targets" />
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 7.5.targets" />
   </ImportGroup>
 </Project>

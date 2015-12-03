@@ -96,7 +96,7 @@ ITMMultiEngine::~ITMMultiEngine()
 
 void ITMMultiEngine::AddNewLocalScene(int primarySceneIdx)
 {
-	int newIdx = allData.size();
+	int newIdx = (int)allData.size();
 	allData.push_back(new ITMLocalScene<ITMVoxel,ITMVoxelIndex>(settings, visualisationEngine, trackingController, trackedImageSize));
 
 	denseMapper->ResetScene(allData.back()->scene);

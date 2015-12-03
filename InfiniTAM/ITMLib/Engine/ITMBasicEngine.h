@@ -11,7 +11,7 @@ namespace ITMLib
 	private:
 		const ITMLibSettings *settings;
 
-		bool trackingActive, fusionActive, mainProcessingActive;
+		bool trackingActive, fusionActive, mainProcessingActive, trackingInitialised;
 
 		ITMLowLevelEngine *lowLevelEngine;
 		IITMVisualisationEngine *visualisationEngine;

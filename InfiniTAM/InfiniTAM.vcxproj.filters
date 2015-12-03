@@ -37,9 +37,6 @@
     <Filter Include="ITMLib\Engine\DeviceAgnostic">
       <UniqueIdentifier>{81fe007a-9227-4a3c-8cc3-91bd54e42b5e}</UniqueIdentifier>
     </Filter>
-    <Filter Include="ITMLib\Engine\Trackers">
-      <UniqueIdentifier>{b7c1abfb-1faa-4437-b421-e0847200dd2f}</UniqueIdentifier>
-    </Filter>
     <Filter Include="ORUtils">
       <UniqueIdentifier>{6f3899ea-e71c-4ae8-a73c-79035b001e5c}</UniqueIdentifier>
     </Filter>
@@ -54,6 +51,21 @@
     </Filter>
     <Filter Include="ITMLib\Objects\PlainVoxelArray">
       <UniqueIdentifier>{85026f07-5c4c-4518-91e8-73a350f87441}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="LCDLib">
+      <UniqueIdentifier>{9a0515eb-8934-431e-a859-d85c9f1ed244}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ITMLib\Engine\Mains">
+      <UniqueIdentifier>{8a73ad3a-fa90-4719-be69-f961564076dc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ITMLib\Engine\Tracking">
+      <UniqueIdentifier>{b7c1abfb-1faa-4437-b421-e0847200dd2f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ITMLib\Engine\Reconstruction">
+      <UniqueIdentifier>{91b0f7a9-957f-4dca-ba59-28da4e8c7e45}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ITMLib\Engine\Others">
+      <UniqueIdentifier>{05722ac5-a9bb-488d-9f4a-9167687b2e3e}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -73,14 +85,8 @@
     <ClCompile Include="ITMLib\Engine\DeviceSpecific\CPU\ITMSceneReconstructionEngine_CPU.cpp">
       <Filter>ITMLib\Engine\DeviceSpecific\CPU</Filter>
     </ClCompile>
-    <ClCompile Include="ITMLib\Engine\ITMMainEngine.cpp">
-      <Filter>ITMLib\Engine</Filter>
-    </ClCompile>
     <ClCompile Include="ITMLib\Engine\DeviceSpecific\CPU\ITMColorTracker_CPU.cpp">
       <Filter>ITMLib\Engine\DeviceSpecific\CPU</Filter>
-    </ClCompile>
-    <ClCompile Include="ITMLib\Engine\ITMVisualisationEngine.cpp">
-      <Filter>ITMLib\Engine</Filter>
     </ClCompile>
     <ClCompile Include="Engine\UIEngine.cpp">
       <Filter>Engine\Source Files</Filter>
@@ -98,31 +104,25 @@
       <Filter>ITMLib\Engine\DeviceSpecific\CPU</Filter>
     </ClCompile>
     <ClCompile Include="ITMLib\Engine\ITMColorTracker.cpp">
-      <Filter>ITMLib\Engine\Trackers</Filter>
+      <Filter>ITMLib\Engine\Tracking</Filter>
     </ClCompile>
     <ClCompile Include="ITMLib\Engine\ITMDepthTracker.cpp">
-      <Filter>ITMLib\Engine\Trackers</Filter>
+      <Filter>ITMLib\Engine\Tracking</Filter>
     </ClCompile>
     <ClCompile Include="ITMLib\Engine\ITMRenTracker.cpp">
-      <Filter>ITMLib\Engine\Trackers</Filter>
-    </ClCompile>
-    <ClCompile Include="ITMLib\Engine\ITMDenseMapper.cpp">
-      <Filter>ITMLib\Engine</Filter>
+      <Filter>ITMLib\Engine\Tracking</Filter>
     </ClCompile>
     <ClCompile Include="ITMLib\Engine\DeviceSpecific\CPU\ITMViewBuilder_CPU.cpp">
       <Filter>ITMLib\Engine\DeviceSpecific\CPU</Filter>
     </ClCompile>
     <ClCompile Include="ITMLib\Engine\ITMIMUTracker.cpp">
-      <Filter>ITMLib\Engine\Trackers</Filter>
+      <Filter>ITMLib\Engine\Tracking</Filter>
     </ClCompile>
     <ClCompile Include="ITMLib\Objects\ITMPose.cpp">
       <Filter>ITMLib\Objects</Filter>
     </ClCompile>
     <ClCompile Include="Engine\IMUSourceEngine.cpp">
       <Filter>Engine\Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ITMLib\Engine\ITMTrackingController.cpp">
-      <Filter>ITMLib\Engine</Filter>
     </ClCompile>
     <ClCompile Include="ITMLib\Utils\ITMCalibIO.cpp">
       <Filter>ITMLib\Utils</Filter>
@@ -133,14 +133,11 @@
     <ClCompile Include="Utils\FileUtils.cpp">
       <Filter>Utils</Filter>
     </ClCompile>
-    <ClCompile Include="ITMLib\Engine\ITMTrackerFactory.cpp">
-      <Filter>ITMLib\Engine</Filter>
-    </ClCompile>
     <ClCompile Include="ITMLib\Engine\DeviceSpecific\CPU\ITMMeshingEngine_CPU.cpp">
       <Filter>ITMLib\Engine\DeviceSpecific\CPU</Filter>
     </ClCompile>
     <ClCompile Include="ITMLib\Engine\ITMWeightedICPTracker.cpp">
-      <Filter>ITMLib\Engine\Trackers</Filter>
+      <Filter>ITMLib\Engine\Tracking</Filter>
     </ClCompile>
     <ClCompile Include="ITMLib\Engine\DeviceSpecific\CPU\ITMWeightedICPTracker_CPU.cpp">
       <Filter>ITMLib\Engine\DeviceSpecific\CPU</Filter>
@@ -150,6 +147,42 @@
     </ClCompile>
     <ClCompile Include="Engine\RealSenseEngine.cpp">
       <Filter>Engine\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="LCDLib\FernConservatory.cpp">
+      <Filter>LCDLib</Filter>
+    </ClCompile>
+    <ClCompile Include="LCDLib\LCDDatabase.cpp">
+      <Filter>LCDLib</Filter>
+    </ClCompile>
+    <ClCompile Include="LCDLib\LoopClosureDetector.cpp">
+      <Filter>LCDLib</Filter>
+    </ClCompile>
+    <ClCompile Include="LCDLib\PoseDatabase.cpp">
+      <Filter>LCDLib</Filter>
+    </ClCompile>
+    <ClCompile Include="ORUtils\KeyValueConfig.cpp">
+      <Filter>ORUtils</Filter>
+    </ClCompile>
+    <ClCompile Include="ITMLib\Objects\ITMLocalScene.cpp">
+      <Filter>ITMLib\Objects</Filter>
+    </ClCompile>
+    <ClCompile Include="ITMLib\Engine\ITMBasicEngine.cpp">
+      <Filter>ITMLib\Engine\Mains</Filter>
+    </ClCompile>
+    <ClCompile Include="ITMLib\Engine\ITMMultiEngine.cpp">
+      <Filter>ITMLib\Engine\Mains</Filter>
+    </ClCompile>
+    <ClCompile Include="ITMLib\Engine\ITMTrackerFactory.cpp">
+      <Filter>ITMLib\Engine\Tracking</Filter>
+    </ClCompile>
+    <ClCompile Include="ITMLib\Engine\ITMTrackingController.cpp">
+      <Filter>ITMLib\Engine\Tracking</Filter>
+    </ClCompile>
+    <ClCompile Include="ITMLib\Engine\ITMDenseMapper.cpp">
+      <Filter>ITMLib\Engine\Reconstruction</Filter>
+    </ClCompile>
+    <ClCompile Include="ITMLib\Engine\ITMVisualisationEngine.cpp">
+      <Filter>ITMLib\Engine\Others</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -174,20 +207,8 @@
     <ClInclude Include="ITMLib\Engine\DeviceSpecific\CPU\ITMSceneReconstructionEngine_CPU.h">
       <Filter>ITMLib\Engine\DeviceSpecific\CPU</Filter>
     </ClInclude>
-    <ClInclude Include="ITMLib\Engine\ITMMainEngine.h">
-      <Filter>ITMLib\Engine</Filter>
-    </ClInclude>
     <ClInclude Include="ITMLib\Engine\DeviceSpecific\CPU\ITMColorTracker_CPU.h">
       <Filter>ITMLib\Engine\DeviceSpecific\CPU</Filter>
-    </ClInclude>
-    <ClInclude Include="ITMLib\Engine\ITMVisualisationEngine.h">
-      <Filter>ITMLib\Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="ITMLib\Engine\ITMLowLevelEngine.h">
-      <Filter>ITMLib\Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="ITMLib\Engine\ITMSceneReconstructionEngine.h">
-      <Filter>ITMLib\Engine</Filter>
     </ClInclude>
     <ClInclude Include="ITMLib\Engine\DeviceSpecific\CUDA\ITMColorTracker_CUDA.h">
       <Filter>ITMLib\Engine\DeviceSpecific\CUDA</Filter>
@@ -212,9 +233,6 @@
     </ClInclude>
     <ClInclude Include="Engine\UIEngine.h">
       <Filter>Engine\Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ITMLib\Engine\ITMSwappingEngine.h">
-      <Filter>ITMLib\Engine</Filter>
     </ClInclude>
     <ClInclude Include="ITMLib\Engine\DeviceSpecific\CUDA\ITMSwappingEngine_CUDA.h">
       <Filter>ITMLib\Engine\DeviceSpecific\CUDA</Filter>
@@ -253,16 +271,16 @@
       <Filter>ITMLib\Engine\DeviceSpecific\CUDA</Filter>
     </ClInclude>
     <ClInclude Include="ITMLib\Engine\ITMColorTracker.h">
-      <Filter>ITMLib\Engine\Trackers</Filter>
+      <Filter>ITMLib\Engine\Tracking</Filter>
     </ClInclude>
     <ClInclude Include="ITMLib\Engine\ITMDepthTracker.h">
-      <Filter>ITMLib\Engine\Trackers</Filter>
+      <Filter>ITMLib\Engine\Tracking</Filter>
     </ClInclude>
     <ClInclude Include="ITMLib\Engine\ITMRenTracker.h">
-      <Filter>ITMLib\Engine\Trackers</Filter>
+      <Filter>ITMLib\Engine\Tracking</Filter>
     </ClInclude>
     <ClInclude Include="ITMLib\Engine\ITMTracker.h">
-      <Filter>ITMLib\Engine\Trackers</Filter>
+      <Filter>ITMLib\Engine\Tracking</Filter>
     </ClInclude>
     <ClInclude Include="ORUtils\Cholesky.h">
       <Filter>ORUtils</Filter>
@@ -285,12 +303,6 @@
     <ClInclude Include="ORUtils\MemoryBlock.h">
       <Filter>ORUtils</Filter>
     </ClInclude>
-    <ClInclude Include="ITMLib\Engine\ITMDenseMapper.h">
-      <Filter>ITMLib\Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="ITMLib\Engine\ITMViewBuilder.h">
-      <Filter>ITMLib\Engine</Filter>
-    </ClInclude>
     <ClInclude Include="ITMLib\Engine\DeviceAgnostic\ITMViewBuilder.h">
       <Filter>ITMLib\Engine\DeviceAgnostic</Filter>
     </ClInclude>
@@ -301,7 +313,7 @@
       <Filter>ITMLib\Engine\DeviceSpecific\CUDA</Filter>
     </ClInclude>
     <ClInclude Include="ITMLib\Engine\ITMIMUTracker.h">
-      <Filter>ITMLib\Engine\Trackers</Filter>
+      <Filter>ITMLib\Engine\Tracking</Filter>
     </ClInclude>
     <ClInclude Include="ITMLib\Objects\ITMView.h">
       <Filter>ITMLib\Objects\Views</Filter>
@@ -372,11 +384,8 @@
     <ClInclude Include="Engine\IMUSourceEngine.h">
       <Filter>Engine\Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ITMLib\Engine\ITMTrackingController.h">
-      <Filter>ITMLib\Engine</Filter>
-    </ClInclude>
     <ClInclude Include="ITMLib\Engine\ITMCompositeTracker.h">
-      <Filter>ITMLib\Engine\Trackers</Filter>
+      <Filter>ITMLib\Engine\Tracking</Filter>
     </ClInclude>
     <ClInclude Include="ITMLib\Utils\ITMCalibIO.h">
       <Filter>ITMLib\Utils</Filter>
@@ -390,26 +399,17 @@
     <ClInclude Include="ITMLib\Utils\ITMMath.h">
       <Filter>ITMLib\Utils</Filter>
     </ClInclude>
-    <ClInclude Include="ITMLib\Engine\ITMIMUCalibrator.h">
-      <Filter>ITMLib\Engine</Filter>
-    </ClInclude>
     <ClInclude Include="Utils\FileUtils.h">
       <Filter>Utils</Filter>
     </ClInclude>
     <ClInclude Include="Utils\NVTimer.h">
       <Filter>Utils</Filter>
     </ClInclude>
-    <ClInclude Include="ITMLib\Engine\ITMTrackerFactory.h">
-      <Filter>ITMLib\Engine</Filter>
-    </ClInclude>
     <ClInclude Include="ITMLib\Engine\DeviceAgnostic\ITMPixelUtils.h">
       <Filter>ITMLib\Engine\DeviceAgnostic</Filter>
     </ClInclude>
     <ClInclude Include="ITMLib\Objects\ITMMesh.h">
       <Filter>ITMLib\Objects</Filter>
-    </ClInclude>
-    <ClInclude Include="ITMLib\Engine\ITMMeshingEngine.h">
-      <Filter>ITMLib\Engine</Filter>
     </ClInclude>
     <ClInclude Include="ITMLib\Engine\DeviceAgnostic\ITMMeshingEngine.h">
       <Filter>ITMLib\Engine\DeviceAgnostic</Filter>
@@ -421,7 +421,7 @@
       <Filter>ITMLib\Engine\DeviceSpecific\CUDA</Filter>
     </ClInclude>
     <ClInclude Include="ITMLib\Engine\ITMWeightedICPTracker.h">
-      <Filter>ITMLib\Engine\Trackers</Filter>
+      <Filter>ITMLib\Engine\Tracking</Filter>
     </ClInclude>
     <ClInclude Include="ITMLib\Engine\DeviceSpecific\CPU\ITMWeightedICPTracker_CPU.h">
       <Filter>ITMLib\Engine\DeviceSpecific\CPU</Filter>
@@ -434,6 +434,75 @@
     </ClInclude>
     <ClInclude Include="Engine\RealSenseEngine.h">
       <Filter>Engine\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LCDLib\FernConservatory.h">
+      <Filter>LCDLib</Filter>
+    </ClInclude>
+    <ClInclude Include="LCDLib\LCDDatabase.h">
+      <Filter>LCDLib</Filter>
+    </ClInclude>
+    <ClInclude Include="LCDLib\LoopClosureDetector.h">
+      <Filter>LCDLib</Filter>
+    </ClInclude>
+    <ClInclude Include="LCDLib\PoseDatabase.h">
+      <Filter>LCDLib</Filter>
+    </ClInclude>
+    <ClInclude Include="ORUtils\KeyValueConfig.h">
+      <Filter>ORUtils</Filter>
+    </ClInclude>
+    <ClInclude Include="ORUtils\LexicalCast.h">
+      <Filter>ORUtils</Filter>
+    </ClInclude>
+    <ClInclude Include="ORUtils\MemoryBlockPersister.h">
+      <Filter>ORUtils</Filter>
+    </ClInclude>
+    <ClInclude Include="ORUtils\MetalContext.h">
+      <Filter>ORUtils</Filter>
+    </ClInclude>
+    <ClInclude Include="ORUtils\PlatformIndependence.h">
+      <Filter>ORUtils</Filter>
+    </ClInclude>
+    <ClInclude Include="ITMLib\Objects\ITMLocalScene.h">
+      <Filter>ITMLib\Objects</Filter>
+    </ClInclude>
+    <ClInclude Include="ITMLib\Engine\ITMBasicEngine.h">
+      <Filter>ITMLib\Engine\Mains</Filter>
+    </ClInclude>
+    <ClInclude Include="ITMLib\Engine\ITMMultiEngine.h">
+      <Filter>ITMLib\Engine\Mains</Filter>
+    </ClInclude>
+    <ClInclude Include="ITMLib\Engine\ITMTrackerFactory.h">
+      <Filter>ITMLib\Engine\Tracking</Filter>
+    </ClInclude>
+    <ClInclude Include="ITMLib\Engine\ITMTrackingController.h">
+      <Filter>ITMLib\Engine\Tracking</Filter>
+    </ClInclude>
+    <ClInclude Include="ITMLib\Engine\ITMDenseMapper.h">
+      <Filter>ITMLib\Engine\Reconstruction</Filter>
+    </ClInclude>
+    <ClInclude Include="ITMLib\Engine\ITMMainEngine.h">
+      <Filter>ITMLib\Engine\Mains</Filter>
+    </ClInclude>
+    <ClInclude Include="ITMLib\Engine\ITMSceneReconstructionEngine.h">
+      <Filter>ITMLib\Engine\Reconstruction</Filter>
+    </ClInclude>
+    <ClInclude Include="ITMLib\Engine\ITMMeshingEngine.h">
+      <Filter>ITMLib\Engine\Reconstruction</Filter>
+    </ClInclude>
+    <ClInclude Include="ITMLib\Engine\ITMIMUCalibrator.h">
+      <Filter>ITMLib\Engine\Others</Filter>
+    </ClInclude>
+    <ClInclude Include="ITMLib\Engine\ITMLowLevelEngine.h">
+      <Filter>ITMLib\Engine\Others</Filter>
+    </ClInclude>
+    <ClInclude Include="ITMLib\Engine\ITMSwappingEngine.h">
+      <Filter>ITMLib\Engine\Others</Filter>
+    </ClInclude>
+    <ClInclude Include="ITMLib\Engine\ITMViewBuilder.h">
+      <Filter>ITMLib\Engine\Others</Filter>
+    </ClInclude>
+    <ClInclude Include="ITMLib\Engine\ITMVisualisationEngine.h">
+      <Filter>ITMLib\Engine\Others</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -36,16 +36,16 @@ void ITMDepthTracker::SetupLevels(int numIterCoarse, int numIterFine, float dist
 {
 	int noHierarchyLevels = viewHierarchy->noLevels;
 
-	if ((numIterCoarse!=-1)&&(numIterFine!=-1)) {
-		float step = (numIterCoarse-numIterFine)/(noHierarchyLevels-1);
-		float val = numIterCoarse;
-		for (int levelId = noHierarchyLevels-1; levelId >= 0; levelId--) {
-			this->noIterationsPerLevel[levelId] = round(val);
+	if ((numIterCoarse != -1) && (numIterFine != -1)) {
+		float step = (float)(numIterCoarse - numIterFine) / (float)(noHierarchyLevels - 1);
+		float val = (float)numIterCoarse;
+		for (int levelId = noHierarchyLevels - 1; levelId >= 0; levelId--) {
+			this->noIterationsPerLevel[levelId] = (int)round(val);
 			val -= step;
 		}
 	}
-	if ((distThreshCoarse>=0.0f)&&(distThreshFine>=0.0f)) {
-		float step = (distThreshCoarse-distThreshFine) / (noHierarchyLevels-1);
+	if ((distThreshCoarse >= 0.0f) && (distThreshFine >= 0.0f)) {
+		float step = (float)(distThreshCoarse - distThreshFine) / (float)(noHierarchyLevels - 1);
 		float val = distThreshCoarse;
 		for (int levelId = noHierarchyLevels - 1; levelId >= 0; levelId--) {
 			this->distThresh[levelId] = val;

@@ -15,9 +15,9 @@ FernConservatory::FernConservatory(int numFerns, ORUtils::Vector2<int> imgSize, 
 	mNumDecisions = decisionsPerFern;
 	mEncoders = new FernTester[mNumFerns*decisionsPerFern];
 	for (int f = 0; f < mNumFerns*decisionsPerFern; ++f) {
-		mEncoders[f].location.x = floor(random_uniform01() * imgSize.x);
-		mEncoders[f].location.y = floor(random_uniform01() * imgSize.y);
-		mEncoders[f].threshold = random_uniform01() * (bounds.y-bounds.x) + bounds.x;
+		mEncoders[f].location.x = (int)floor(random_uniform01() * imgSize.x);
+		mEncoders[f].location.y = (int)floor(random_uniform01() * imgSize.y);
+		mEncoders[f].threshold = random_uniform01() * (bounds.y - bounds.x) + bounds.x;
 	}
 }
 

@@ -133,7 +133,7 @@ namespace ITMLib
 	{
 		bool parseError = false;
 		std::vector<TrackerIterationType> ret;
-		for (int i = strlen(str)-1; i >= 0; --i) {
+		for (int i = static_cast<int>(strlen(str))-1; i >= 0; --i) {
 			switch (str[i]) {
 			case 'r':
 				ret.push_back(TRACKER_ITERATION_ROTATION);
@@ -177,16 +177,16 @@ namespace ITMLib
 		switch (deviceType)
 		{
 		case ITMLibSettings::DEVICE_CPU:
-			ret = new ITMColorTracker_CPU(imgSize_rgb, &(levels[0]), levels.size(), lowLevelEngine);
+			ret = new ITMColorTracker_CPU(imgSize_rgb, &(levels[0]), static_cast<int>(levels.size()), lowLevelEngine);
 			break;
 		case ITMLibSettings::DEVICE_CUDA:
 #ifndef COMPILE_WITHOUT_CUDA
-			ret = new ITMColorTracker_CUDA(imgSize_rgb, &(levels[0]), levels.size(), lowLevelEngine);
+			ret = new ITMColorTracker_CUDA(imgSize_rgb, &(levels[0]), static_cast<int>(levels.size()), lowLevelEngine);
 #endif
 			break;
 		case ITMLibSettings::DEVICE_METAL:
 #ifdef COMPILE_WITH_METAL
-			ret = new ITMColorTracker_CPU(imgSize_rgb, &(levels[0]), levels.size(), lowLevelEngine);
+			ret = new ITMColorTracker_CPU(imgSize_rgb, &(levels[0]), static_cast<int>(levels.size()), lowLevelEngine);
 #endif
 			break;
         	}
@@ -223,16 +223,16 @@ namespace ITMLib
 		switch (deviceType)
 		{
 		case ITMLibSettings::DEVICE_CPU:
-			ret = new ITMDepthTracker_CPU(imgSize_d, &(levels[0]), levels.size(), smallStepSizeCriterion, lowLevelEngine);
+			ret = new ITMDepthTracker_CPU(imgSize_d, &(levels[0]), static_cast<int>(levels.size()), smallStepSizeCriterion, lowLevelEngine);
 			break;
 		case ITMLibSettings::DEVICE_CUDA:
 #ifndef COMPILE_WITHOUT_CUDA
-			ret = new ITMDepthTracker_CUDA(imgSize_d, &(levels[0]), levels.size(), smallStepSizeCriterion, lowLevelEngine);
+			ret = new ITMDepthTracker_CUDA(imgSize_d, &(levels[0]), static_cast<int>(levels.size()), smallStepSizeCriterion, lowLevelEngine);
 #endif
 			break;
 		case ITMLibSettings::DEVICE_METAL:
 #ifdef COMPILE_WITH_METAL
-			ret = new ITMDepthTracker_Metal(imgSize_d, &(levels[0]), levels.size(), smallStepSizeCriterion, lowLevelEngine);
+			ret = new ITMDepthTracker_Metal(imgSize_d, &(levels[0]), static_cast<int>(levels.size()), smallStepSizeCriterion, lowLevelEngine);
 #endif
 			break;
 		}
@@ -264,10 +264,10 @@ namespace ITMLib
 		switch (deviceType)
 		{
 		case ITMLibSettings::DEVICE_CPU:
-			return new ITMWeightedICPTracker_CPU(imgSize_d, &(levels[0]), levels.size(), 0/* settings->noICPRunTillLevel*/, outlierDistance, smallStepSizeCriterion, lowLevelEngine);
+			return new ITMWeightedICPTracker_CPU(imgSize_d, &(levels[0]), static_cast<int>(levels.size()), 0/* settings->noICPRunTillLevel*/, outlierDistance, smallStepSizeCriterion, lowLevelEngine);
 		case ITMLibSettings::DEVICE_CUDA:
 #ifndef COMPILE_WITHOUT_CUDA
-			return new ITMWeightedICPTracker_CUDA(imgSize_d, &(levels[0]), levels.size(), 0/* settings->noICPRunTillLevel*/, outlierDistance, smallStepSizeCriterion, lowLevelEngine);
+			return new ITMWeightedICPTracker_CUDA(imgSize_d, &(levels[0]), static_cast<int>(levels.size()), 0/* settings->noICPRunTillLevel*/, outlierDistance, smallStepSizeCriterion, lowLevelEngine);
 #else
 			break;
 #endif
@@ -311,16 +311,16 @@ namespace ITMLib
 		switch (deviceType)
 		{
 		case ITMLibSettings::DEVICE_CPU:
-			dTracker = new ITMDepthTracker_CPU(imgSize_d, &(levels[0]), levels.size(), smallStepSizeCriterion, lowLevelEngine);
+			dTracker = new ITMDepthTracker_CPU(imgSize_d, &(levels[0]), static_cast<int>(levels.size()), smallStepSizeCriterion, lowLevelEngine);
 			break;
 		case ITMLibSettings::DEVICE_CUDA:
 #ifndef COMPILE_WITHOUT_CUDA
-			dTracker = new ITMDepthTracker_CUDA(imgSize_d, &(levels[0]), levels.size(), smallStepSizeCriterion, lowLevelEngine);
+			dTracker = new ITMDepthTracker_CUDA(imgSize_d, &(levels[0]), static_cast<int>(levels.size()), smallStepSizeCriterion, lowLevelEngine);
 #endif
 			break;
 		case ITMLibSettings::DEVICE_METAL:
 #ifdef COMPILE_WITH_METAL
-			dTracker = new ITMDepthTracker_Metal(imgSize_d, &(levels[0]), levels.size(), smallStepSizeCriterion, lowLevelEngine);
+			dTracker = new ITMDepthTracker_Metal(imgSize_d, &(levels[0]), static_cast<int>(levels.size()), smallStepSizeCriterion, lowLevelEngine);
 #endif
 			break;
 		default: break;
@@ -352,16 +352,16 @@ namespace ITMLib
 		switch(deviceType)
 		{
 		case ITMLibSettings::DEVICE_CPU:
-			return new ITMRenTracker_CPU<TVoxel, TIndex>(imgSize_d, &(levels[0]), levels.size(), lowLevelEngine, scene);
+			return new ITMRenTracker_CPU<TVoxel, TIndex>(imgSize_d, &(levels[0]), static_cast<int>(levels.size()), lowLevelEngine, scene);
 		case ITMLibSettings::DEVICE_CUDA:
 #ifndef COMPILE_WITHOUT_CUDA
-			return new ITMRenTracker_CUDA<TVoxel, TIndex>(imgSize_d, &(levels[0]), levels.size(), lowLevelEngine, scene);
+			return new ITMRenTracker_CUDA<TVoxel, TIndex>(imgSize_d, &(levels[0]), static_cast<int>(levels.size()), lowLevelEngine, scene);
 #else
 			break;
 #endif
 		case ITMLibSettings::DEVICE_METAL:
 #ifdef COMPILE_WITH_METAL
-			return new ITMRenTracker_CPU<TVoxel, TIndex>(imgSize_d, &(levels[0]), levels.size(), lowLevelEngine, scene);
+			return new ITMRenTracker_CPU<TVoxel, TIndex>(imgSize_d, &(levels[0]), static_cast<int>(levels.size()), lowLevelEngine, scene);
 #else
 			break;
 #endif

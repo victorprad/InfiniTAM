@@ -12,6 +12,7 @@
 #include <pxcsensemanager.h>
 
 using namespace InfiniTAM::Engine;
+using namespace ITMLib;
 
 class RealSenseEngine::PrivateData {
 public:

@@ -30,7 +30,7 @@ ${ORUTILS_HEADERS}
 # Specify the source groups #
 #############################
 
-SOURCE_GROUP("" FILES ${ORUTILS_HEADERS})
+SOURCE_GROUP("" FILES ${ORUTILS_OBJECTS} ${ORUTILS_HEADERS})
 
 ##############################################################
 # Specify the include directories, target and link libraries #
