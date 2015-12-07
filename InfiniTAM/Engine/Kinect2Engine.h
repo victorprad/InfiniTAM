@@ -9,19 +9,24 @@ namespace InfiniTAM
 	namespace Engine
 	{
 		/** This class provides an interface for reading from the
-		    Microsoft Kinect 2 via the provided API. There is currently
-		    no appropriate postprocessing to compensate for the
-		    artefacts in the depth images of the Kinect 2, so the
-		    results look a bit weird on objects with reflections.
+		Microsoft Kinect 2 via the provided API. There is currently
+		no appropriate postprocessing to compensate for the
+		artefacts in the depth images of the Kinect 2, so the
+		results look a bit weird on objects with reflections.
 		*/
 		class Kinect2Engine : public ImageSourceEngine
 		{
 		private:
+			static const int        cColorWidth = 1920;
+			static const int        cColorHeight = 1080;
+			static const int        cDepthWidth = 512;
+			static const int        cDepthHeight = 424;
 			class PrivateData;
 			PrivateData *data;
 
 			Vector2i imageSize_d, imageSize_rgb;
 			bool colorAvailable, depthAvailable;
+			RGBQUAD* m_pColorRGBX;
 		public:
 			Kinect2Engine(const char *calibFilename);
 			~Kinect2Engine();
