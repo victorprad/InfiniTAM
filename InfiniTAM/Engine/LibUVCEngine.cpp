@@ -185,7 +185,7 @@ LibUVCEngine::LibUVCEngine(const char *calibFilename, Vector2i requested_imageSi
 	: ImageSourceEngine(calibFilename)
 {
 	// default values to be returned if nothing else works
-	this->calib.disparityCalib.type = ITMDisparityCalib::TRAFO_AFFINE;
+	this->calib.disparityCalib.type = ITMLib::ITMDisparityCalib::TRAFO_AFFINE;
 	this->calib.disparityCalib.params = Vector2f(1.0f/1000.0f, 0.0f);
 	this->imageSize_rgb = Vector2i(0,0);
 	this->imageSize_d = Vector2i(0,0);
