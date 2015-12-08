@@ -48,7 +48,7 @@ void ITMSurfelSceneReconstructionEngine_CPU<TSurfel>::AddNewSurfels(ITMSurfelSce
 #endif
   for(int locId = 0; locId < pixelCount; ++locId)
   {
-    add_new_surfel(locId, T, newPointsMask, newPointsPrefixSum, vertexMap, normalMap, radiusMap, colourMap, this->m_timestamp, newSurfels, surfels, correspondenceMap);
+    add_new_surfel(locId, T, newPointsMask, newPointsPrefixSum, vertexMap, normalMap, radiusMap, colourMap, this->m_timestamp, newSurfels, surfels, correspondenceMap, view->rgb->noDims.x);
   }
 }
 
@@ -77,6 +77,7 @@ template <typename TSurfel>
 void ITMSurfelSceneReconstructionEngine_CPU<TSurfel>::FuseMatchedPoints(ITMSurfelScene<TSurfel> *scene, const ITMView *view, const ITMTrackingState *trackingState) const
 {
   const Vector4u *colourMap = view->rgb->GetData(MEMORYDEVICE_CPU);
+  const int colourMapWidth = view->rgb->noDims.x;
   const unsigned int *correspondenceMap = this->m_correspondenceMapMB->GetData(MEMORYDEVICE_CPU);
   const Vector4f *normalMap = this->m_normalMapMB->GetData(MEMORYDEVICE_CPU);
   const int pixelCount = static_cast<int>(view->depth->dataSize);
@@ -90,7 +91,7 @@ void ITMSurfelSceneReconstructionEngine_CPU<TSurfel>::FuseMatchedPoints(ITMSurfe
 #endif
   for(int locId = 0; locId < pixelCount; ++locId)
   {
-    fuse_matched_point(locId, correspondenceMap, T, vertexMap, normalMap, radiusMap, colourMap, this->m_timestamp, surfels);
+    fuse_matched_point(locId, correspondenceMap, T, vertexMap, normalMap, radiusMap, colourMap, this->m_timestamp, surfels, colourMapWidth);
   }
 }
 

@@ -28,12 +28,13 @@ namespace ITMLib
 template <typename TSurfel>
 __global__ void ck_add_new_surfel(int pixelCount, Matrix4f T, const unsigned short *newPointsMask, const unsigned int *newPointsPrefixSum,
                                   const Vector3f *vertexMap, const Vector4f *normalMap, const float *radiusMap, const Vector4u *colourMap,
-                                  int timestamp, TSurfel *newSurfels, const TSurfel *surfels, const unsigned int *correspondenceMap)
+                                  int timestamp, TSurfel *newSurfels, const TSurfel *surfels, const unsigned int *correspondenceMap,
+                                  int colourMapWidth)
 {
   int locId = threadIdx.x + blockDim.x * blockIdx.x;
   if(locId < pixelCount)
   {
-    add_new_surfel(locId, T, newPointsMask, newPointsPrefixSum, vertexMap, normalMap, radiusMap, colourMap, timestamp, newSurfels, surfels, correspondenceMap);
+    add_new_surfel(locId, T, newPointsMask, newPointsPrefixSum, vertexMap, normalMap, radiusMap, colourMap, timestamp, newSurfels, surfels, correspondenceMap, colourMapWidth);
   }
 }
 
@@ -68,12 +69,12 @@ __global__ void ck_find_corresponding_surfel(int pixelCount, Matrix4f invT, cons
 
 template <typename TSurfel>
 __global__ void ck_fuse_matched_point(int pixelCount, const unsigned int *correspondenceMap, Matrix4f T, const Vector3f *vertexMap, const Vector4f *normalMap,
-                                      const float *radiusMap, const Vector4u *colourMap, int timestamp, TSurfel *surfels)
+                                      const float *radiusMap, const Vector4u *colourMap, int timestamp, TSurfel *surfels, int colourMapWidth)
 {
   int locId = threadIdx.x + blockDim.x * blockIdx.x;
   if(locId < pixelCount)
   {
-    fuse_matched_point(locId, correspondenceMap, T, vertexMap, normalMap, radiusMap, colourMap, timestamp, surfels);
+    fuse_matched_point(locId, correspondenceMap, T, vertexMap, normalMap, radiusMap, colourMap, timestamp, surfels, colourMapWidth);
   }
 }
 
@@ -151,7 +152,8 @@ void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::AddNewSurfels(ITMSurfelSc
     this->m_timestamp,
     newSurfels,
     scene->GetSurfels()->GetData(MEMORYDEVICE_CUDA),
-    this->m_correspondenceMapMB->GetData(MEMORYDEVICE_CUDA)
+    this->m_correspondenceMapMB->GetData(MEMORYDEVICE_CUDA),
+    view->rgb->noDims.x
   );
 
 #if DEBUGGING
@@ -201,7 +203,8 @@ void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::FuseMatchedPoints(ITMSurf
     this->m_radiusMapMB->GetData(MEMORYDEVICE_CUDA),
     view->rgb->GetData(MEMORYDEVICE_CUDA),
     this->m_timestamp,
-    scene->GetSurfels()->GetData(MEMORYDEVICE_CUDA)
+    scene->GetSurfels()->GetData(MEMORYDEVICE_CUDA),
+    view->rgb->noDims.x
   );
 }
 
