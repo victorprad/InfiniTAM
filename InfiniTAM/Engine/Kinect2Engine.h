@@ -26,7 +26,6 @@ namespace InfiniTAM
 
 			Vector2i imageSize_d, imageSize_rgb;
 			bool colorAvailable, depthAvailable;
-			RGBQUAD* m_pColorRGBX;
 		public:
 			Kinect2Engine(const char *calibFilename);
 			~Kinect2Engine();

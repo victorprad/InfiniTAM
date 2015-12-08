@@ -39,7 +39,6 @@ Kinect2Engine::Kinect2Engine(const char *calibFilename) : ImageSourceEngine(cali
 	imageSize_rgb = Vector2i(cColorWidth, cColorHeight);
 
 	data = new PrivateData();
-	m_pColorRGBX = new RGBQUAD[cColorWidth * cColorHeight];
 
 	colorAvailable = true;
 
@@ -90,12 +89,6 @@ Kinect2Engine::Kinect2Engine(const char *calibFilename) : ImageSourceEngine(cali
 
 Kinect2Engine::~Kinect2Engine()
 {
-	if (m_pColorRGBX)
-	{
-		delete[] m_pColorRGBX;
-		m_pColorRGBX = NULL;
-	}
-
 	SafeRelease(data->depthFrameReader);
 	SafeRelease(data->colorFrameReader);
 
@@ -130,6 +123,8 @@ void Kinect2Engine::getImages(ITMUChar4Image *rgbImage, ITMShortImage *rawDepthI
 			hr = pFrameDescription->get_Height(&nHeight);
 
 		SafeRelease(pFrameDescription);
+
+		RGBQUAD* m_pColorRGBX = new RGBQUAD[cColorWidth * cColorHeight];
 
 		if (SUCCEEDED(hr))
 		{
@@ -166,6 +161,9 @@ void Kinect2Engine::getImages(ITMUChar4Image *rgbImage, ITMShortImage *rawDepthI
 				}
 			}
 		}
+
+		if (m_pColorRGBX)
+			delete[] m_pColorRGBX;
 
 		// If you don't release the color frame, you won't be able to get the next frame
 		SafeRelease(pColorFrame);
