@@ -42,7 +42,7 @@ ITMDenseMapper<TVoxel,TIndex>::~ITMDenseMapper()
 }
 
 template<class TVoxel, class TIndex>
-void ITMDenseMapper<TVoxel,TIndex>::ResetScene(ITMScene<TVoxel,TIndex> *scene)
+void ITMDenseMapper<TVoxel,TIndex>::ResetScene(ITMScene<TVoxel,TIndex> *scene) const
 {
 	sceneRecoEngine->ResetScene(scene);
 }
