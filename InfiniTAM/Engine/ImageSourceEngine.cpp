@@ -14,12 +14,48 @@ ImageSourceEngine::ImageSourceEngine(const char *calibFilename)
 	readRGBDCalib(calibFilename, calib);
 }
 
-ImageFileReader::ImageFileReader(const char *calibFilename, const char *rgbImageMask, const char *depthImageMask)
-	: ImageSourceEngine(calibFilename)
+ImageMask::ImageMask(const char *rgbImageMask, const char *depthImageMask)
 {
-	strncpy(this->rgbImageMask, rgbImageMask, BUF_SIZE);
-	strncpy(this->depthImageMask, depthImageMask, BUF_SIZE);
+  strncpy(this->rgbImageMask, rgbImageMask, BUF_SIZE);
+  strncpy(this->depthImageMask, depthImageMask, BUF_SIZE);
+}
 
+std::string ImageMask::getRgbImagePath(int currentFrameNo)
+{
+  char str[BUF_SIZE];
+  sprintf(str, rgbImageMask, currentFrameNo);
+  std::string path(str);
+  return path;
+}
+
+std::string ImageMask::getDepthImagePath(int currentFrameNo)
+{
+  char str[BUF_SIZE];
+  sprintf(str, depthImageMask, currentFrameNo);
+  std::string path(str);
+  return path;
+}
+
+ImageList::ImageList(const std::vector<std::string>& rgbImagePaths_, const std::vector<std::string>& depthImagePaths_)
+: rgbImagePaths(rgbImagePaths_),
+  depthImagePaths(depthImagePaths_)
+{}
+
+std::string ImageList::getRgbImagePath(int currentFrameNo)
+{
+  return rgbImagePaths[currentFrameNo];
+}
+
+std::string ImageList::getDepthImagePath(int currentFrameNo)
+{
+  return depthImagePaths[currentFrameNo];
+}
+
+template <typename T>
+ImageFileReader<T>::ImageFileReader(const char *calibFilename, const T& pathGenerator_)
+	: ImageSourceEngine(calibFilename),
+    pathGenerator(pathGenerator_)
+{
 	currentFrameNo = 0;
 	cachedFrameNo = -1;
 
@@ -27,45 +63,46 @@ ImageFileReader::ImageFileReader(const char *calibFilename, const char *rgbImage
 	cached_depth = NULL;
 }
 
-ImageFileReader::~ImageFileReader()
+template <typename T>
+ImageFileReader<T>::~ImageFileReader()
 {
 	delete cached_rgb;
 	delete cached_depth;
 }
 
-void ImageFileReader::loadIntoCache(void)
+template <typename T>
+void ImageFileReader<T>::loadIntoCache(void)
 {
 	if (currentFrameNo == cachedFrameNo) return;
 	cachedFrameNo = currentFrameNo;
 
 	//TODO> make nicer
-	cached_rgb = new ITMUChar4Image(true, false); 
-	cached_depth = new ITMShortImage(true, false);
+	cached_rgb = new ITMUChar4Image(true, false); cached_depth = new ITMShortImage(true, false);
 
-	char str[2048];
-
-	sprintf(str, rgbImageMask, currentFrameNo);
-	if (!ReadImageFromFile(cached_rgb, str)) 
+  std::string rgbPath = pathGenerator.getRgbImagePath(currentFrameNo);
+	if (!ReadImageFromFile(cached_rgb, rgbPath.c_str()))
 	{
 		delete cached_rgb; cached_rgb = NULL;
-		printf("error reading file '%s'\n", str);
+		printf("error reading file '%s'\n", rgbPath.c_str());
 	}
 
-	sprintf(str, depthImageMask, currentFrameNo);
-	if (!ReadImageFromFile(cached_depth, str)) 
+  std::string depthPath = pathGenerator.getDepthImagePath(currentFrameNo);
+	if (!ReadImageFromFile(cached_depth, depthPath.c_str()))
 	{
 		delete cached_depth; cached_depth = NULL;
-		printf("error reading file '%s'\n", str);
+		printf("error reading file '%s'\n", depthPath.c_str());
 	}
 }
 
-bool ImageFileReader::hasMoreImages(void)
+template <typename T>
+bool ImageFileReader<T>::hasMoreImages(void)
 {
 	loadIntoCache();
 	return ((cached_rgb!=NULL)&&(cached_depth!=NULL));
 }
 
-void ImageFileReader::getImages(ITMUChar4Image *rgb, ITMShortImage *rawDepth)
+template <typename T>
+void ImageFileReader<T>::getImages(ITMUChar4Image *rgb, ITMShortImage *rawDepth)
 {
 	bool bUsedCache = false;
 	if (cached_rgb != NULL) {
@@ -82,25 +119,26 @@ void ImageFileReader::getImages(ITMUChar4Image *rgb, ITMShortImage *rawDepth)
 	}
 
 	if (!bUsedCache) {
-		char str[2048];
 
-		sprintf(str, rgbImageMask, currentFrameNo);
-		if (!ReadImageFromFile(rgb, str)) printf("error reading file '%s'\n", str);
+    std::string rgbPath = pathGenerator.getRgbImagePath(currentFrameNo);
+		if (!ReadImageFromFile(rgb, rgbPath.c_str())) printf("error reading file '%s'\n", rgbPath.c_str());
 
-		sprintf(str, depthImageMask, currentFrameNo);
-		if (!ReadImageFromFile(rawDepth, str)) printf("error reading file '%s'\n", str);
+    std::string depthPath = pathGenerator.getDepthImagePath(currentFrameNo);
+		if (!ReadImageFromFile(rawDepth, depthPath.c_str())) printf("error reading file '%s'\n", depthPath.c_str());
 	}
 
 	++currentFrameNo;
 }
 
-Vector2i ImageFileReader::getDepthImageSize(void)
+template <typename T>
+Vector2i ImageFileReader<T>::getDepthImageSize(void)
 {
 	loadIntoCache();
 	return cached_depth->noDims;
 }
 
-Vector2i ImageFileReader::getRGBImageSize(void)
+template <typename T>
+Vector2i ImageFileReader<T>::getRGBImageSize(void)
 {
 	loadIntoCache();
 	if (cached_rgb != NULL) return cached_rgb->noDims;
@@ -124,13 +162,13 @@ void CalibSource::ResizeIntrinsics(ITMIntrinsics &intrinsics, float ratio)
 	intrinsics.projectionParamsSimple.all *= ratio;
 }
 
-RawFileReader::RawFileReader(const char *calibFilename, const char *rgbImageMask, const char *depthImageMask, Vector2i setImageSize, float ratio) 
+RawFileReader::RawFileReader(const char *calibFilename, const char *rgbImageMask, const char *depthImageMask, Vector2i setImageSize, float ratio)
 	: ImageSourceEngine(calibFilename)
 {
 	this->imgSize = setImageSize;
 	this->ResizeIntrinsics(calib.intrinsics_d, ratio);
 	this->ResizeIntrinsics(calib.intrinsics_rgb, ratio);
-	
+
 	strncpy(this->rgbImageMask, rgbImageMask, BUF_SIZE);
 	strncpy(this->depthImageMask, depthImageMask, BUF_SIZE);
 
@@ -194,7 +232,7 @@ void RawFileReader::loadIntoCache(void)
 
 bool RawFileReader::hasMoreImages(void)
 {
-	loadIntoCache(); 
+	loadIntoCache();
 
 	return ((cached_rgb != NULL) || (cached_depth != NULL));
 }
@@ -223,3 +261,6 @@ void RawFileReader::getImages(ITMUChar4Image *rgb, ITMShortImage *rawDepth)
 
 	++currentFrameNo;
 }
+
+template class ImageFileReader<ImageMask>;
+template class ImageFileReader<ImageList>;

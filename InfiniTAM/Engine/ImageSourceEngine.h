@@ -22,22 +22,47 @@ namespace InfiniTAM
 			virtual Vector2i getRGBImageSize(void) = 0;
 		};
 
+    class ImageMask
+    {
+      private:
+        static const int BUF_SIZE = 2048;
+        char rgbImageMask[BUF_SIZE];
+        char depthImageMask[BUF_SIZE];
+
+      public:
+        ImageMask(const char *rgbImageMask, const char *depthImageMask);
+        std::string getRgbImagePath(int currentFrameNo);
+        std::string getDepthImagePath(int currentFrameNo);
+    };
+
+    class ImageList
+    {
+      private:
+        std::vector<std::string> rgbImagePaths;
+        std::vector<std::string> depthImagePaths;
+
+      public:
+        ImageList(const std::vector<std::string>& rgbImagePaths_, const std::vector<std::string>& depthImagePaths_);
+        std::string getRgbImagePath(int currentFrameNo);
+        std::string getDepthImagePath(int currentFrameNo);
+
+    };
+
+    template <typename T>
 		class ImageFileReader : public ImageSourceEngine
 		{
 		private:
-			static const int BUF_SIZE = 2048;
-			char rgbImageMask[BUF_SIZE];
-			char depthImageMask[BUF_SIZE];
-
 			ITMUChar4Image *cached_rgb;
 			ITMShortImage *cached_depth;
 
 			void loadIntoCache();
 			int cachedFrameNo;
 			int currentFrameNo;
+
+      T pathGenerator;
 		public:
 
-			ImageFileReader(const char *calibFilename, const char *rgbImageMask, const char *depthImageMask);
+			ImageFileReader(const char *calibFilename, const T& pathGenerator_);
 			~ImageFileReader();
 
 			bool hasMoreImages(void);
