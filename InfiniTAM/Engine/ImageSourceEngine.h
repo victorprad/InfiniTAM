@@ -31,20 +31,21 @@ namespace InfiniTAM
 
       public:
         ImageMask(const char *rgbImageMask, const char *depthImageMask);
-        std::string getRgbImagePath(int currentFrameNo);
-        std::string getDepthImagePath(int currentFrameNo);
+        std::string getRgbImagePath(size_t currentFrameNo);
+        std::string getDepthImagePath(size_t currentFrameNo);
     };
 
     class ImageList
     {
       private:
-        std::vector<std::string> rgbImagePaths;
         std::vector<std::string> depthImagePaths;
+        size_t listLength;
+        std::vector<std::string> rgbImagePaths;
 
       public:
         ImageList(const std::vector<std::string>& rgbImagePaths_, const std::vector<std::string>& depthImagePaths_);
-        std::string getRgbImagePath(int currentFrameNo);
-        std::string getDepthImagePath(int currentFrameNo);
+        std::string getRgbImagePath(size_t currentFrameNo);
+        std::string getDepthImagePath(size_t currentFrameNo);
 
     };
 
@@ -56,8 +57,8 @@ namespace InfiniTAM
 			ITMShortImage *cached_depth;
 
 			void loadIntoCache();
-			int cachedFrameNo;
-			int currentFrameNo;
+			size_t cachedFrameNo;
+			size_t currentFrameNo;
 
       T pathGenerator;
 		public:

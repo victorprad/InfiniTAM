@@ -20,7 +20,7 @@ ImageMask::ImageMask(const char *rgbImageMask, const char *depthImageMask)
   strncpy(this->depthImageMask, depthImageMask, BUF_SIZE);
 }
 
-std::string ImageMask::getRgbImagePath(int currentFrameNo)
+std::string ImageMask::getRgbImagePath(size_t currentFrameNo)
 {
   char str[BUF_SIZE];
   sprintf(str, rgbImageMask, currentFrameNo);
@@ -28,7 +28,7 @@ std::string ImageMask::getRgbImagePath(int currentFrameNo)
   return path;
 }
 
-std::string ImageMask::getDepthImagePath(int currentFrameNo)
+std::string ImageMask::getDepthImagePath(size_t currentFrameNo)
 {
   char str[BUF_SIZE];
   sprintf(str, depthImageMask, currentFrameNo);
@@ -37,18 +37,27 @@ std::string ImageMask::getDepthImagePath(int currentFrameNo)
 }
 
 ImageList::ImageList(const std::vector<std::string>& rgbImagePaths_, const std::vector<std::string>& depthImagePaths_)
-: rgbImagePaths(rgbImagePaths_),
-  depthImagePaths(depthImagePaths_)
-{}
-
-std::string ImageList::getRgbImagePath(int currentFrameNo)
 {
-  return rgbImagePaths[currentFrameNo];
+  if(rgbImagePaths_.size() != depthImagePaths_.size())
+  {
+    printf("error: the rgb and depth image path lists do not have the sme size\n");
+  }
+  else
+  {
+    depthImagePaths = depthImagePaths_;
+    rgbImagePaths = rgbImagePaths_;
+    listLength = rgbImagePaths_.size();
+  }
 }
 
-std::string ImageList::getDepthImagePath(int currentFrameNo)
+std::string ImageList::getRgbImagePath(size_t currentFrameNo)
 {
-  return depthImagePaths[currentFrameNo];
+  return currentFrameNo < listLength ? rgbImagePaths[currentFrameNo] : "";
+}
+
+std::string ImageList::getDepthImagePath(size_t currentFrameNo)
+{
+  return currentFrameNo < listLength ? depthImagePaths[currentFrameNo] : "";
 }
 
 template <typename T>
