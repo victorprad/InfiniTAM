@@ -8,7 +8,8 @@ using namespace LCDLib;
 
 LoopClosureDetector::LoopClosureDetector(ORUtils::Vector2<int> imgSize, ORUtils::Vector2<float> range, float harvestingThreshold, int numFerns, int numDecisionsPerFern)
 {
-	mEncoding = new FernConservatory(numFerns, imgSize, range, numDecisionsPerFern);
+	static const int levels = 5;
+	mEncoding = new FernConservatory(numFerns, imgSize / (1 << levels), range, numDecisionsPerFern);
 	mDatabase = new LCDDatabase(numFerns, mEncoding->getNumCodes());
 	mKeyframeHarvestingThreshold = harvestingThreshold;
 }
