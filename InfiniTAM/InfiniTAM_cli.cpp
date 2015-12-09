@@ -62,7 +62,7 @@ try
 		if (imagesource_part3 == NULL)
 		{
 			printf("using rgb images: %s\nusing depth images: %s\n", imagesource_part1, imagesource_part2);
-                        ImageMaskPathGenerator pathGenerator(imagesource_part1, imagesource_part2);
+			ImageMaskPathGenerator pathGenerator(imagesource_part1, imagesource_part2);
 			imageSource = new ImageFileReader<ImageMaskPathGenerator>(calibFile, pathGenerator);
 		}
 		else

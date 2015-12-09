@@ -36,7 +36,7 @@ static void CreateDefaultImageSource(ImageSourceEngine* & imageSource, IMUSource
 		printf("using rgb images: %s\nusing depth images: %s\n", filename1, filename2);
 		if (filename_imu == NULL)
 		{
-                        ImageMaskPathGenerator pathGenerator(filename1, filename2);
+			ImageMaskPathGenerator pathGenerator(filename1, filename2);
 			imageSource = new ImageFileReader<ImageMaskPathGenerator>(calibFile, pathGenerator);
 		}
 		else
