@@ -4,6 +4,7 @@
 
 #include "../Utils/FileUtils.h"
 
+#include <stdexcept>
 #include <stdio.h>
 
 using namespace InfiniTAM::Engine;
@@ -14,56 +15,48 @@ ImageSourceEngine::ImageSourceEngine(const char *calibFilename)
 	readRGBDCalib(calibFilename, calib);
 }
 
-ImageMask::ImageMask(const char *rgbImageMask, const char *depthImageMask)
+ImageMask::ImageMask(const char *rgbImageMask_, const char *depthImageMask_)
 {
-  strncpy(this->rgbImageMask, rgbImageMask, BUF_SIZE);
-  strncpy(this->depthImageMask, depthImageMask, BUF_SIZE);
+        strncpy(rgbImageMask, rgbImageMask_, BUF_SIZE);
+        strncpy(depthImageMask, depthImageMask_, BUF_SIZE);
 }
 
 std::string ImageMask::getRgbImagePath(size_t currentFrameNo)
 {
-  char str[BUF_SIZE];
-  sprintf(str, rgbImageMask, currentFrameNo);
-  std::string path(str);
-  return path;
+        char str[BUF_SIZE];
+        sprintf(str, rgbImageMask, currentFrameNo);
+        return std::string(str);
 }
 
 std::string ImageMask::getDepthImagePath(size_t currentFrameNo)
 {
-  char str[BUF_SIZE];
-  sprintf(str, depthImageMask, currentFrameNo);
-  std::string path(str);
-  return path;
+        char str[BUF_SIZE];
+        sprintf(str, depthImageMask, currentFrameNo);
+        return std::string(str);
 }
 
 ImageList::ImageList(const std::vector<std::string>& rgbImagePaths_, const std::vector<std::string>& depthImagePaths_)
+      : depthImagePaths(depthImagePaths_),
+        listLength(rgbImagePaths_.size()),
+        rgbImagePaths(rgbImagePaths_)
 {
-  if(rgbImagePaths_.size() != depthImagePaths_.size())
-  {
-    printf("error: the rgb and depth image path lists do not have the sme size\n");
-  }
-  else
-  {
-    depthImagePaths = depthImagePaths_;
-    rgbImagePaths = rgbImagePaths_;
-    listLength = rgbImagePaths_.size();
-  }
+        if(rgbImagePaths.size() != depthImagePaths.size()) throw std::runtime_error("error: the rgb and depth image path lists do not have the same size");
 }
 
 std::string ImageList::getRgbImagePath(size_t currentFrameNo)
 {
-  return currentFrameNo < listLength ? rgbImagePaths[currentFrameNo] : "";
+        return currentFrameNo < listLength ? rgbImagePaths[currentFrameNo] : "";
 }
 
 std::string ImageList::getDepthImagePath(size_t currentFrameNo)
 {
-  return currentFrameNo < listLength ? depthImagePaths[currentFrameNo] : "";
+        return currentFrameNo < listLength ? depthImagePaths[currentFrameNo] : "";
 }
 
 template <typename T>
 ImageFileReader<T>::ImageFileReader(const char *calibFilename, const T& pathGenerator_)
 	: ImageSourceEngine(calibFilename),
-    pathGenerator(pathGenerator_)
+          pathGenerator(pathGenerator_)
 {
 	currentFrameNo = 0;
 	cachedFrameNo = -1;
