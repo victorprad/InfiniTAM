@@ -22,34 +22,35 @@ namespace InfiniTAM
 			virtual Vector2i getRGBImageSize(void) = 0;
 		};
 
-    class ImageMask
-    {
-      private:
-        static const int BUF_SIZE = 2048;
-        char rgbImageMask[BUF_SIZE];
-        char depthImageMask[BUF_SIZE];
+                class ImageMaskPathGenerator
+                {
+                  private:
+                    static const int BUF_SIZE = 2048;
+                    char rgbImageMask[BUF_SIZE];
+                    char depthImageMask[BUF_SIZE];
 
-      public:
-        ImageMask(const char *rgbImageMask, const char *depthImageMask);
-        std::string getRgbImagePath(size_t currentFrameNo);
-        std::string getDepthImagePath(size_t currentFrameNo);
-    };
+                  public:
+                    ImageMaskPathGenerator(const char *rgbImageMask, const char *depthImageMask);
+                    std::string getRgbImagePath(size_t currentFrameNo) const;
+                    std::string getDepthImagePath(size_t currentFrameNo) const;;
+                };
 
-    class ImageList
-    {
-      private:
-        std::vector<std::string> depthImagePaths;
-        size_t listLength;
-        std::vector<std::string> rgbImagePaths;
+                class ImageListPathGenerator
+                {
+                  private:
+                    std::vector<std::string> depthImagePaths;
+                    std::vector<std::string> rgbImagePaths;
 
-      public:
-        ImageList(const std::vector<std::string>& rgbImagePaths_, const std::vector<std::string>& depthImagePaths_);
-        std::string getRgbImagePath(size_t currentFrameNo);
-        std::string getDepthImagePath(size_t currentFrameNo);
+                    size_t imageCount() const;
 
-    };
+                  public:
+                    ImageListPathGenerator(const std::vector<std::string>& rgbImagePaths_, const std::vector<std::string>& depthImagePaths_);
+                    std::string getRgbImagePath(size_t currentFrameNo) const;
+                    std::string getDepthImagePath(size_t currentFrameNo) const;
 
-    template <typename T>
+                };
+
+                template <typename PathGenerator>
 		class ImageFileReader : public ImageSourceEngine
 		{
 		private:
@@ -60,10 +61,10 @@ namespace InfiniTAM
 			size_t cachedFrameNo;
 			size_t currentFrameNo;
 
-      T pathGenerator;
+                        PathGenerator pathGenerator;
 		public:
 
-			ImageFileReader(const char *calibFilename, const T& pathGenerator_);
+			ImageFileReader(const char *calibFilename, const PathGenerator& pathGenerator_);
 			~ImageFileReader();
 
 			bool hasMoreImages(void);

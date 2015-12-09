@@ -15,46 +15,50 @@ ImageSourceEngine::ImageSourceEngine(const char *calibFilename)
 	readRGBDCalib(calibFilename, calib);
 }
 
-ImageMask::ImageMask(const char *rgbImageMask_, const char *depthImageMask_)
+ImageMaskPathGenerator::ImageMaskPathGenerator(const char *rgbImageMask_, const char *depthImageMask_)
 {
         strncpy(rgbImageMask, rgbImageMask_, BUF_SIZE);
         strncpy(depthImageMask, depthImageMask_, BUF_SIZE);
 }
 
-std::string ImageMask::getRgbImagePath(size_t currentFrameNo)
+std::string ImageMaskPathGenerator::getRgbImagePath(size_t currentFrameNo) const
 {
         char str[BUF_SIZE];
         sprintf(str, rgbImageMask, currentFrameNo);
         return std::string(str);
 }
 
-std::string ImageMask::getDepthImagePath(size_t currentFrameNo)
+std::string ImageMaskPathGenerator::getDepthImagePath(size_t currentFrameNo) const
 {
         char str[BUF_SIZE];
         sprintf(str, depthImageMask, currentFrameNo);
         return std::string(str);
 }
 
-ImageList::ImageList(const std::vector<std::string>& rgbImagePaths_, const std::vector<std::string>& depthImagePaths_)
+ImageListPathGenerator::ImageListPathGenerator(const std::vector<std::string>& rgbImagePaths_, const std::vector<std::string>& depthImagePaths_)
       : depthImagePaths(depthImagePaths_),
-        listLength(rgbImagePaths_.size()),
         rgbImagePaths(rgbImagePaths_)
 {
         if(rgbImagePaths.size() != depthImagePaths.size()) throw std::runtime_error("error: the rgb and depth image path lists do not have the same size");
 }
 
-std::string ImageList::getRgbImagePath(size_t currentFrameNo)
+std::string ImageListPathGenerator::getRgbImagePath(size_t currentFrameNo) const
 {
-        return currentFrameNo < listLength ? rgbImagePaths[currentFrameNo] : "";
+        return currentFrameNo < imageCount() ? rgbImagePaths[currentFrameNo] : "";
 }
 
-std::string ImageList::getDepthImagePath(size_t currentFrameNo)
+std::string ImageListPathGenerator::getDepthImagePath(size_t currentFrameNo) const
 {
-        return currentFrameNo < listLength ? depthImagePaths[currentFrameNo] : "";
+        return currentFrameNo < imageCount() ? depthImagePaths[currentFrameNo] : "";
 }
 
-template <typename T>
-ImageFileReader<T>::ImageFileReader(const char *calibFilename, const T& pathGenerator_)
+size_t ImageListPathGenerator::imageCount() const
+{
+        return rgbImagePaths.size();
+}
+
+template <typename PathGenerator>
+ImageFileReader<PathGenerator>::ImageFileReader(const char *calibFilename, const PathGenerator& pathGenerator_)
 	: ImageSourceEngine(calibFilename),
           pathGenerator(pathGenerator_)
 {
@@ -65,30 +69,31 @@ ImageFileReader<T>::ImageFileReader(const char *calibFilename, const T& pathGene
 	cached_depth = NULL;
 }
 
-template <typename T>
-ImageFileReader<T>::~ImageFileReader()
+template <typename PathGenerator>
+ImageFileReader<PathGenerator>::~ImageFileReader()
 {
 	delete cached_rgb;
 	delete cached_depth;
 }
 
-template <typename T>
-void ImageFileReader<T>::loadIntoCache(void)
+template <typename PathGenerator>
+void ImageFileReader<PathGenerator>::loadIntoCache(void)
 {
 	if (currentFrameNo == cachedFrameNo) return;
 	cachedFrameNo = currentFrameNo;
 
 	//TODO> make nicer
-	cached_rgb = new ITMUChar4Image(true, false); cached_depth = new ITMShortImage(true, false);
+	cached_rgb = new ITMUChar4Image(true, false);
+        cached_depth = new ITMShortImage(true, false);
 
-  std::string rgbPath = pathGenerator.getRgbImagePath(currentFrameNo);
+        std::string rgbPath = pathGenerator.getRgbImagePath(currentFrameNo);
 	if (!ReadImageFromFile(cached_rgb, rgbPath.c_str()))
 	{
 		delete cached_rgb; cached_rgb = NULL;
 		printf("error reading file '%s'\n", rgbPath.c_str());
 	}
 
-  std::string depthPath = pathGenerator.getDepthImagePath(currentFrameNo);
+        std::string depthPath = pathGenerator.getDepthImagePath(currentFrameNo);
 	if (!ReadImageFromFile(cached_depth, depthPath.c_str()))
 	{
 		delete cached_depth; cached_depth = NULL;
@@ -96,15 +101,15 @@ void ImageFileReader<T>::loadIntoCache(void)
 	}
 }
 
-template <typename T>
-bool ImageFileReader<T>::hasMoreImages(void)
+template <typename PathGenerator>
+bool ImageFileReader<PathGenerator>::hasMoreImages(void)
 {
 	loadIntoCache();
 	return ((cached_rgb!=NULL)&&(cached_depth!=NULL));
 }
 
-template <typename T>
-void ImageFileReader<T>::getImages(ITMUChar4Image *rgb, ITMShortImage *rawDepth)
+template <typename PathGenerator>
+void ImageFileReader<PathGenerator>::getImages(ITMUChar4Image *rgb, ITMShortImage *rawDepth)
 {
 	bool bUsedCache = false;
 	if (cached_rgb != NULL) {
@@ -122,25 +127,25 @@ void ImageFileReader<T>::getImages(ITMUChar4Image *rgb, ITMShortImage *rawDepth)
 
 	if (!bUsedCache) {
 
-    std::string rgbPath = pathGenerator.getRgbImagePath(currentFrameNo);
+                std::string rgbPath = pathGenerator.getRgbImagePath(currentFrameNo);
 		if (!ReadImageFromFile(rgb, rgbPath.c_str())) printf("error reading file '%s'\n", rgbPath.c_str());
 
-    std::string depthPath = pathGenerator.getDepthImagePath(currentFrameNo);
+                std::string depthPath = pathGenerator.getDepthImagePath(currentFrameNo);
 		if (!ReadImageFromFile(rawDepth, depthPath.c_str())) printf("error reading file '%s'\n", depthPath.c_str());
 	}
 
 	++currentFrameNo;
 }
 
-template <typename T>
-Vector2i ImageFileReader<T>::getDepthImageSize(void)
+template <typename PathGenerator>
+Vector2i ImageFileReader<PathGenerator>::getDepthImageSize(void)
 {
 	loadIntoCache();
 	return cached_depth->noDims;
 }
 
-template <typename T>
-Vector2i ImageFileReader<T>::getRGBImageSize(void)
+template <typename PathGenerator>
+Vector2i ImageFileReader<PathGenerator>::getRGBImageSize(void)
 {
 	loadIntoCache();
 	if (cached_rgb != NULL) return cached_rgb->noDims;
@@ -264,5 +269,5 @@ void RawFileReader::getImages(ITMUChar4Image *rgb, ITMShortImage *rawDepth)
 	++currentFrameNo;
 }
 
-template class ImageFileReader<ImageMask>;
-template class ImageFileReader<ImageList>;
+template class ImageFileReader<ImageMaskPathGenerator>;
+template class ImageFileReader<ImageListPathGenerator>;
