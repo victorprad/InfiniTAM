@@ -52,7 +52,7 @@ namespace ITMLib
 		*/
 		virtual typename IndexToRenderState<TIndex>::type *CreateRenderState(const ITMScene<TVoxel,TIndex> *scene, const Vector2i & imgSize) const = 0;
 
-    /** Given a scene, pose and intrinsics, compute the
+		/** Given a scene, pose and intrinsics, compute the
 		visible subset of the scene and store it in an
 		appropriate visualisation state object, created
 		previously using allocateInternalState().
