@@ -3,6 +3,7 @@
 #pragma once
 
 #include "MemoryBlock.h"
+#include "Vector.h"
 
 #ifndef __METALC__
 
