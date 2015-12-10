@@ -3,7 +3,7 @@
 #pragma once
 
 #include "ITMSurfelSceneReconstructionEngine.h"
-#include "../Objects/ITMRenderState.h"
+#include "../Objects/ITMSurfelRenderState.h"
 #include "../Utils/ITMLibSettings.h"
 
 namespace ITMLib
@@ -44,6 +44,6 @@ namespace ITMLib
     /**
      * \brief TODO
      */
-    void ProcessFrame(const ITMView *view, const ITMTrackingState *trackingState, ITMSurfelScene<TSurfel> *scene, ITMRenderState *liveRenderState) const;
+    void ProcessFrame(const ITMView *view, const ITMTrackingState *trackingState, ITMSurfelScene<TSurfel> *scene, ITMSurfelRenderState *liveRenderState) const;
   };
 }

@@ -63,6 +63,7 @@ ITMBasicEngine::ITMBasicEngine(const ITMLibSettings *settings, const ITMRGBDCali
 
 	renderState_live = visualisationEngine->CreateRenderState(scene, trackedImageSize);
 	renderState_freeview = NULL; //will be created by the visualisation engine
+  surfelRenderState_live = new ITMSurfelRenderState(trackedImageSize);
 
 	trackingState = new ITMTrackingState(trackedImageSize, memoryType);
 	tracker->UpdateInitialPose(trackingState);
@@ -79,6 +80,7 @@ ITMBasicEngine::~ITMBasicEngine()
 {
 	delete renderState_live;
 	if (renderState_freeview!=NULL) delete renderState_freeview;
+  delete surfelRenderState_live;
 
 	delete scene;
 	delete surfelScene;
@@ -146,7 +148,7 @@ void ITMBasicEngine::ProcessFrame(ITMUChar4Image *rgbImage, ITMShortImage *rawDe
 	if ((trackingSuccess >= 2 || !trackingInitialised) && (fusionActive)) {
 		// fusion
 		denseMapper->ProcessFrame(view, trackingState, scene, renderState_live);
-		denseSurfelMapper->ProcessFrame(view, trackingState, surfelScene, renderState_live);
+		denseSurfelMapper->ProcessFrame(view, trackingState, surfelScene, surfelRenderState_live);
 		didFusion = true;
 		trackingInitialised = true;
 	}

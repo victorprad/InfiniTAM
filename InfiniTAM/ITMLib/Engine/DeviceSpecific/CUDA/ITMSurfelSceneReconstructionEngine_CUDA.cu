@@ -162,7 +162,8 @@ void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::AddNewSurfels(ITMSurfelSc
 }
 
 template <typename TSurfel>
-void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::FindCorrespondingSurfels(const ITMSurfelScene<TSurfel> *scene, const ITMView *view, const ITMTrackingState *trackingState) const
+void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::FindCorrespondingSurfels(const ITMSurfelScene<TSurfel> *scene, const ITMView *view, const ITMTrackingState *trackingState,
+                                                                                const ITMSurfelRenderState *renderState) const
 {
   const int pixelCount = static_cast<int>(view->depth->dataSize);
 
@@ -174,7 +175,7 @@ void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::FindCorrespondingSurfels(
     trackingState->pose_d->GetM(),
     view->depth->GetData(MEMORYDEVICE_CUDA),
     view->depth->noDims.x,
-    this->m_indexMapMB->GetData(MEMORYDEVICE_CUDA),
+    renderState->GetIndexImageSuper()->GetData(MEMORYDEVICE_CUDA),
     scene->GetSurfels()->GetData(MEMORYDEVICE_CUDA),
     this->m_correspondenceMapMB->GetData(MEMORYDEVICE_CUDA),
     this->m_newPointsMaskMB->GetData(MEMORYDEVICE_CUDA)
@@ -206,39 +207,6 @@ void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::FuseMatchedPoints(ITMSurf
     scene->GetSurfels()->GetData(MEMORYDEVICE_CUDA),
     view->rgb->noDims.x
   );
-}
-
-template <typename TSurfel>
-void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::GenerateIndexMap(const ITMSurfelScene<TSurfel> *scene, const ITMView *view, const ITMPose& pose) const
-{
-  const int indexPixelCount = static_cast<int>(this->m_indexMapMB->dataSize);
-  unsigned int *indexMap = this->m_indexMapMB->GetData(MEMORYDEVICE_CUDA);
-  int threadsPerBlock = 256;
-  int numBlocks = (indexPixelCount + threadsPerBlock - 1) / threadsPerBlock;
-
-  ck_reset_index_map<<<numBlocks,threadsPerBlock>>>(
-    indexPixelCount,
-    indexMap
-  );
-
-  const int surfelCount = static_cast<int>(scene->GetSurfelCount());
-  if(surfelCount > 0)
-  {
-    numBlocks = (surfelCount + threadsPerBlock - 1) / threadsPerBlock;
-    ck_project_to_index_map<<<numBlocks,threadsPerBlock>>>(
-      surfelCount,
-      scene->GetSurfels()->GetData(MEMORYDEVICE_CUDA),
-      pose.GetM(),
-      view->calib->intrinsics_d,
-      view->depth->noDims.x,
-      view->depth->noDims.y,
-      indexMap
-    );
-  }
-
-#if DEBUGGING
-  this->m_indexMapMB->UpdateHostFromDevice();
-#endif
 }
 
 template <typename TSurfel>

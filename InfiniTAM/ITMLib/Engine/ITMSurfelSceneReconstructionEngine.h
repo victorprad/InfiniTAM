@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "../Objects/ITMSurfelRenderState.h"
 #include "../Objects/ITMSurfelScene.h"
 #include "../Objects/ITMTrackingState.h"
 #include "../Objects/ITMView.h"
@@ -18,9 +19,6 @@ namespace ITMLib
   protected:
     /** TODO */
     ORUtils::MemoryBlock<unsigned int> *m_correspondenceMapMB;
-
-    /** TODO */
-    ORUtils::MemoryBlock<unsigned int> *m_indexMapMB;
 
     /** A mask whose values denote whether the corresponding points in the vertex map need to be added to the scene as new points. */
     ORUtils::MemoryBlock<unsigned short> *m_newPointsMaskMB;
@@ -73,17 +71,13 @@ namespace ITMLib
     /**
      * \brief TODO
      */
-    virtual void FindCorrespondingSurfels(const ITMSurfelScene<TSurfel> *scene, const ITMView *view, const ITMTrackingState *trackingState) const = 0;
+    virtual void FindCorrespondingSurfels(const ITMSurfelScene<TSurfel> *scene, const ITMView *view, const ITMTrackingState *trackingState,
+                                          const ITMSurfelRenderState *renderState) const = 0;
 
     /**
      * \brief TODO
      */
     virtual void FuseMatchedPoints(ITMSurfelScene<TSurfel> *scene, const ITMView *view, const ITMTrackingState *trackingState) const = 0;
-
-    /**
-     * \brief TODO
-     */
-    virtual void GenerateIndexMap(const ITMSurfelScene<TSurfel> *scene, const ITMView *view, const ITMPose& pose) const = 0;
 
     /**
      * \brief TODO
@@ -103,8 +97,9 @@ namespace ITMLib
      * \param scene         The scene to update.
      * \param view          The current view (containing the live input images from the current image source).
      * \param trackingState The current tracking state.
+     * \param renderState   The current render state.
      */
-    void IntegrateIntoScene(ITMSurfelScene<TSurfel> *scene, const ITMView *view, const ITMTrackingState *trackingState);
+    void IntegrateIntoScene(ITMSurfelScene<TSurfel> *scene, const ITMView *view, const ITMTrackingState *trackingState, const ITMSurfelRenderState *renderState);
 
     /**
      * \brief Resets the specified surfel-based scene.

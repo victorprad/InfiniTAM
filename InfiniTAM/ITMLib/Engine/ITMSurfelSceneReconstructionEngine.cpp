@@ -13,7 +13,6 @@ ITMSurfelSceneReconstructionEngine<TSurfel>::ITMSurfelSceneReconstructionEngine(
 {
   size_t pixelCount = depthImageSize.x * depthImageSize.y;
   m_correspondenceMapMB = new ORUtils::MemoryBlock<unsigned int>(pixelCount, true, true);
-  m_indexMapMB = new ORUtils::MemoryBlock<unsigned int>(pixelCount * 16, true, true);
   m_newPointsMaskMB = new ORUtils::MemoryBlock<unsigned short>(pixelCount + 1, true, true);
   m_newPointsPrefixSumMB = new ORUtils::MemoryBlock<unsigned int>(pixelCount + 1, true, true);
   m_normalMapMB = new ORUtils::MemoryBlock<Vector4f>(pixelCount, true, true);
@@ -32,7 +31,6 @@ template <typename TSurfel>
 ITMSurfelSceneReconstructionEngine<TSurfel>::~ITMSurfelSceneReconstructionEngine()
 {
   delete m_correspondenceMapMB;
-  delete m_indexMapMB;
   delete m_normalMapMB;
   delete m_radiusMapMB;
   delete m_surfelRemovalMaskMB;
@@ -42,12 +40,12 @@ ITMSurfelSceneReconstructionEngine<TSurfel>::~ITMSurfelSceneReconstructionEngine
 //#################### PUBLIC MEMBER FUNCTIONS ####################
 
 template <typename TSurfel>
-void ITMSurfelSceneReconstructionEngine<TSurfel>::IntegrateIntoScene(ITMSurfelScene<TSurfel> *scene, const ITMView *view, const ITMTrackingState *trackingState)
+void ITMSurfelSceneReconstructionEngine<TSurfel>::IntegrateIntoScene(ITMSurfelScene<TSurfel> *scene, const ITMView *view, const ITMTrackingState *trackingState,
+                                                                     const ITMSurfelRenderState *renderState)
 {
   const ITMPose& pose = *trackingState->pose_d;
   PreprocessDepthMap(view);
-  GenerateIndexMap(scene, view, pose);
-  FindCorrespondingSurfels(scene, view, trackingState);
+  FindCorrespondingSurfels(scene, view, trackingState, renderState);
 #if !DEBUG_CORRESPONDENCES
   FuseMatchedPoints(scene, view, trackingState);
 #endif

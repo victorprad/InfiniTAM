@@ -29,6 +29,7 @@ namespace ITMLib
 		ITMSurfelScene<ITMSurfel> *surfelScene;
 		ITMRenderState *renderState_live;
 		ITMRenderState *renderState_freeview;
+    ITMSurfelRenderState *surfelRenderState_live;
 
 		ITMTracker *tracker;
 		ITMIMUCalibrator *imuCalibrator;
