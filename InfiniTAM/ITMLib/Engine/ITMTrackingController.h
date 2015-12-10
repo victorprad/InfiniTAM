@@ -19,14 +19,14 @@ namespace ITMLib
 	{
 	private:
 		const ITMLibSettings *settings;
-
 		ITMTracker *tracker;
 
 	public:
 		void Track(ITMTrackingState *trackingState, const ITMView *view);
 
 		template <typename TVoxel, typename TIndex>
-		void Prepare(ITMTrackingState *trackingState, const ITMScene<TVoxel,TIndex> *scene, const ITMView *view, const IITMVisualisationEngine *visualisationEngine, ITMRenderState *renderState)
+		void Prepare(ITMTrackingState *trackingState, const ITMScene<TVoxel,TIndex> *scene, const ITMView *view,
+			const ITMVisualisationEngine<TVoxel,TIndex> *visualisationEngine, ITMRenderState *renderState)
 		{
 			//render for tracking
 			bool requiresColourRendering = tracker->requiresColourRendering();
