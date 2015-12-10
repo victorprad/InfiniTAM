@@ -34,7 +34,7 @@ namespace ITMLib
 			this->visualisationEngine = visualisationEngine;
 		}
 
-		static Vector2i GetTrackedImageSize(const ITMTracker *tracker, const Vector2i& imgSize_rgb, const Vector2i& imgSize_d)
+		const Vector2i& GetTrackedImageSize(const Vector2i& imgSize_rgb, const Vector2i& imgSize_d) const
 		{
 			return tracker->requiresColourRendering() ? imgSize_rgb : imgSize_d;
 		}

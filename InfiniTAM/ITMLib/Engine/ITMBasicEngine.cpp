@@ -54,7 +54,7 @@ ITMBasicEngine::ITMBasicEngine(const ITMLibSettings *settings, const ITMRGBDCali
 	tracker = ITMTrackerFactory<ITMVoxel, ITMVoxelIndex>::Instance().Make(imgSize_rgb, imgSize_d, settings, lowLevelEngine, imuCalibrator, scene);
 	trackingController = new ITMTrackingController(tracker, visualisationEngine, settings);
 
-	Vector2i trackedImageSize = ITMTrackingController::GetTrackedImageSize(tracker, imgSize_rgb, imgSize_d);
+	Vector2i trackedImageSize = trackingController->GetTrackedImageSize(imgSize_rgb, imgSize_d);
 
 	renderState_live = visualisationEngine->CreateRenderState(scene, trackedImageSize);
 	renderState_freeview = NULL; //will be created by the visualisation engine
