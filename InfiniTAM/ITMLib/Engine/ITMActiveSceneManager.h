@@ -38,14 +38,13 @@ namespace ITMLib
 		private:
 		const ITMLibSettings *settings;
 		const IITMVisualisationEngine *visualisationEngine;
-		const ITMTrackingController *trackingController;
 		const ITMDenseMapper<TVoxel,TIndex> *denseMapper;
 		Vector2i trackedImageSize;
 
 		std::vector<ITMLocalScene<TVoxel,TIndex>*> allData;
 
 		public:
-		ITMLocalSceneManager_instance(const ITMLibSettings *settings, const IITMVisualisationEngine *visualisationEngine, const ITMTrackingController *trackingController, const ITMDenseMapper<TVoxel,TIndex> *denseMapper, const Vector2i & trackedImageSize);
+		ITMLocalSceneManager_instance(const ITMLibSettings *settings, const IITMVisualisationEngine *visualisationEngine, const ITMDenseMapper<TVoxel,TIndex> *denseMapper, const Vector2i & trackedImageSize);
 		~ITMLocalSceneManager_instance(void);
 
 		int createNewScene(void);
@@ -107,7 +106,7 @@ namespace ITMLib
 		int findPrimarySceneIdx(void) const;
 
 		int numActiveScenes(void) const
-		{ return activeData.size(); }
+		{ return static_cast<int>(activeData.size()); }
 		int getSceneIndex(int dataIdx) const
 		{ return activeData[dataIdx].sceneIndex; }
 		SceneActivity getSceneType(int dataIdx) const

@@ -2,11 +2,12 @@
 
 #pragma once
 
+#include <map>
+
 #include "ITMScene.h"
 #include "ITMRenderState.h"
 #include "ITMTrackingState.h"
 #include "../Utils/ITMLibSettings.h"
-#include "../Engine/ITMTrackingController.h"
 #include "../Engine/ITMVisualisationEngine.h"
 
 namespace ITMLib {
@@ -32,11 +33,12 @@ namespace ITMLib {
 		ITMTrackingState *trackingState;
 		std::map<int,ITMPoseConstraint> relations;
 
-		ITMLocalScene(const ITMLibSettings *settings, const IITMVisualisationEngine *visualisationEngine, const ITMTrackingController *trackingController, const Vector2i & trackedImageSize)
+		ITMLocalScene(const ITMLibSettings *settings, const IITMVisualisationEngine *visualisationEngine, const Vector2i & trackedImageSize)
 		{
-			scene = new ITMScene<TVoxel,TIndex>(&(settings->sceneParams), settings->useSwapping, settings->deviceType == ITMLibSettings::DEVICE_CUDA ? MEMORYDEVICE_CUDA : MEMORYDEVICE_CPU);
+			MemoryDeviceType memoryType = settings->deviceType == ITMLibSettings::DEVICE_CUDA ? MEMORYDEVICE_CUDA : MEMORYDEVICE_CPU;
+			scene = new ITMScene<TVoxel,TIndex>(&settings->sceneParams, settings->useSwapping, memoryType);
 			renderState = visualisationEngine->CreateRenderState(scene, trackedImageSize);
-			trackingState = trackingController->BuildTrackingState(trackedImageSize);
+			trackingState = new ITMTrackingState(trackedImageSize, memoryType);
 		}
 		~ITMLocalScene(void)
 		{

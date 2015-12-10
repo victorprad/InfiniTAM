@@ -61,7 +61,7 @@ ITMMultiEngine::ITMMultiEngine(const ITMLibSettings *settings, const ITMRGBDCali
 
 //	primaryDataIdx = 0;
 	freeviewSceneIdx = 0;
-	sceneManager = new ITMLocalSceneManager_instance<ITMVoxel,ITMVoxelIndex>(settings, visualisationEngine, trackingController, denseMapper, trackedImageSize);
+	sceneManager = new ITMLocalSceneManager_instance<ITMVoxel,ITMVoxelIndex>(settings, visualisationEngine, denseMapper, trackedImageSize);
 	activeDataManager = new ITMActiveSceneManager(sceneManager);
 	activeDataManager->initiateNewScene(true);
 //	AddNewLocalScene(-1);
