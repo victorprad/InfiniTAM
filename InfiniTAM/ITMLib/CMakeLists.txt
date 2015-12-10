@@ -159,6 +159,7 @@ Engine/DeviceSpecific/CUDA/ITMMeshingEngine_CUDA.h
 set(ITMLIB_OBJECTS_SOURCES
 Objects/ITMPose.cpp
 Objects/ITMLocalScene.cpp
+Objects/ITMSurfelRenderState.cpp
 )
 
 set(ITMLIB_OBJECTS_HEADERS

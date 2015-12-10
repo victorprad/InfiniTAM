@@ -28,7 +28,11 @@ namespace ITMLib
 
     /** Override */
     virtual void FindSurface(const ITMSurfelScene<TSurfel> *scene, const ITMPose *pose, const ITMIntrinsics *intrinsics,
-                             const ITMSurfelRenderState *renderState) const;
+                             ITMSurfelRenderState *renderState) const;
+
+    /** Override */
+    virtual void FindSurfaceSuper(const ITMSurfelScene<TSurfel> *scene, const ITMPose *pose, const ITMIntrinsics *intrinsics,
+                                  ITMSurfelRenderState *renderState) const;
 
     /** Override */
     virtual void RenderImage(const ITMSurfelScene<TSurfel> *scene, const ITMPose *pose, const ITMIntrinsics *intrinsics,

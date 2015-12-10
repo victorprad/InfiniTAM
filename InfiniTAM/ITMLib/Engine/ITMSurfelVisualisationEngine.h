@@ -44,7 +44,13 @@ namespace ITMLib
      * \brief TODO
      */
     virtual void FindSurface(const ITMSurfelScene<TSurfel> *scene, const ITMPose *pose, const ITMIntrinsics *intrinsics,
-                             const ITMSurfelRenderState *renderState) const = 0;
+                             ITMSurfelRenderState *renderState) const = 0;
+
+    /**
+     * \brief TODO
+     */
+    virtual void FindSurfaceSuper(const ITMSurfelScene<TSurfel> *scene, const ITMPose *pose, const ITMIntrinsics *intrinsics,
+                                  ITMSurfelRenderState *renderState) const = 0;
 
     /**
      * \brief TODO

@@ -28,10 +28,22 @@ namespace ITMLib
 
     /** Override */
     virtual void FindSurface(const ITMSurfelScene<TSurfel> *scene, const ITMPose *pose, const ITMIntrinsics *intrinsics,
-                             const ITMSurfelRenderState *renderState) const;
+                             ITMSurfelRenderState *renderState) const;
+
+    /** Override */
+    virtual void FindSurfaceSuper(const ITMSurfelScene<TSurfel> *scene, const ITMPose *pose, const ITMIntrinsics *intrinsics,
+                                  ITMSurfelRenderState *renderState) const;
 
     /** Override */
     virtual void RenderImage(const ITMSurfelScene<TSurfel> *scene, const ITMPose *pose, const ITMIntrinsics *intrinsics,
                              const ITMSurfelRenderState *renderState, ITMUChar4Image *outputImage, RenderImageType type) const;
+
+    //#################### PRIVATE MEMBER FUNCTIONS ####################
+  private:
+    /**
+     * \brief TODO
+     */
+    void MakeIndexImage(const ITMSurfelScene<TSurfel> *scene, const ITMPose *pose, const ITMIntrinsics *intrinsics,
+                        int width, int height, int scaleFactor, unsigned int *surfelIndexImage, int *depthBuffer) const;
   };
 }

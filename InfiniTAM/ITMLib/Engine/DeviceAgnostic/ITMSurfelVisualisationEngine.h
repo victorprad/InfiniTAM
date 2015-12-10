@@ -7,6 +7,16 @@
 namespace ITMLib
 {
 
+/**
+ * \brief TODO
+ */
+_CPU_AND_GPU_CODE_
+inline void clear_surfel_index_image(int locId, unsigned int *surfelIndexImage, int *depthBuffer)
+{
+  surfelIndexImage[locId] = 0;
+  depthBuffer[locId] = INT_MAX;
+}
+
 #if DEBUG_CORRESPONDENCES
 /**
  * \brief TODO
@@ -65,10 +75,27 @@ inline void copy_surfel_to_buffers(int surfelId, const TSurfel *surfels, float *
  */
 template <typename TSurfel>
 _CPU_AND_GPU_CODE_
-inline void project_to_surfel_index_image(int surfelId, const TSurfel *surfels, const Matrix4f& invT, const ITMIntrinsics& intrinsics, int width, int height,
-                                          unsigned long *surfelIndexImage, float *depthBuffer)
+inline void project_to_surfel_index_image(int surfelId, const TSurfel *surfels, const Matrix4f& invT, const ITMIntrinsics& intrinsics, int indexImageWidth, int indexImageHeight,
+                                          int scaleFactor, unsigned int *surfelIndexImage, int *depthBuffer)
 {
-  // TODO
+  // Convert the surfel point into the coordinates of the current frame using v_i = T_i^{-1} v_i^g.
+  Vector3f p = surfels[surfelId].position;
+  Vector4f vg(p.x, p.y, p.z, 1.0f);
+  Vector4f v = invT * vg;
+
+  // Project the point onto the image plane of the current frame.
+  float ux = intrinsics.projectionParamsSimple.fx * v.x / v.z + intrinsics.projectionParamsSimple.px;
+  float uy = intrinsics.projectionParamsSimple.fy * v.y / v.z + intrinsics.projectionParamsSimple.py;
+
+  // Convert the projected point into index map coordinates.
+  int x = static_cast<int>(ux * scaleFactor + 0.5f);
+  int y = static_cast<int>(uy * scaleFactor + 0.5f);
+
+  if(0 <= x && x < indexImageWidth && 0 <= y && y < indexImageHeight)
+  {
+    // Write the surfel ID + 1 into the surfel index image.
+    surfelIndexImage[y * indexImageWidth + x] = static_cast<unsigned int>(surfelId + 1);
+  }
 }
 
 }

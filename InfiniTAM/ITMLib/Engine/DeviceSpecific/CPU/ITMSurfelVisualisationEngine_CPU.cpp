@@ -43,23 +43,27 @@ void ITMSurfelVisualisationEngine_CPU<TSurfel>::CopySceneToBuffers(const ITMSurf
 
 template <typename TSurfel>
 void ITMSurfelVisualisationEngine_CPU<TSurfel>::FindSurface(const ITMSurfelScene<TSurfel> *scene, const ITMPose *pose, const ITMIntrinsics *intrinsics,
-                                                            const ITMSurfelRenderState *renderState) const
+                                                            ITMSurfelRenderState *renderState) const
 {
-  float *depthBuffer = renderState->depthBuffer->GetData(MEMORYDEVICE_CPU);
-  const int height = renderState->surfelIndexImage->noDims.y;
-  const Matrix4f& invT = pose->GetM();
-  const int surfelCount = static_cast<int>(scene->GetSurfelCount());
-  unsigned long *surfelIndexImage = renderState->surfelIndexImage->GetData(MEMORYDEVICE_CPU);
-  const TSurfel *surfels = scene->GetSurfels()->GetData(MEMORYDEVICE_CPU);
-  const int width = renderState->surfelIndexImage->noDims.x;
+  int *depthBuffer = renderState->GetDepthBuffer()->GetData(MEMORYDEVICE_CPU);
+  const int height = renderState->GetIndexImage()->noDims.y;
+  const int scaleFactor = 1;
+  unsigned int *surfelIndexImage = renderState->GetIndexImage()->GetData(MEMORYDEVICE_CPU);
+  const int width = renderState->GetIndexImage()->noDims.x;
+  MakeIndexImage(scene, pose, intrinsics, width, height, scaleFactor, surfelIndexImage, depthBuffer);
+}
 
-#ifdef WITH_OPENMP
-  //#pragma omp parallel for
-#endif
-  for(int surfelId = 0; surfelId < surfelCount; ++surfelId)
-  {
-    project_to_surfel_index_image(surfelId, surfels, invT, *intrinsics, width, height, surfelIndexImage, depthBuffer);
-  }
+template <typename TSurfel>
+void ITMSurfelVisualisationEngine_CPU<TSurfel>::FindSurfaceSuper(const ITMSurfelScene<TSurfel> *scene, const ITMPose *pose, const ITMIntrinsics *intrinsics,
+                                                                 ITMSurfelRenderState *renderState) const
+{
+  // FIXME: The 4 here shouldn't be hard-coded.
+  int *depthBufferSuper = renderState->GetDepthBufferSuper()->GetData(MEMORYDEVICE_CPU);
+  const int height = renderState->GetIndexImageSuper()->noDims.y;
+  const int scaleFactor = 4;
+  unsigned int *surfelIndexImageSuper = renderState->GetIndexImageSuper()->GetData(MEMORYDEVICE_CPU);
+  const int width = renderState->GetIndexImageSuper()->noDims.x;
+  MakeIndexImage(scene, pose, intrinsics, width, height, scaleFactor, surfelIndexImageSuper, depthBufferSuper);
 }
 
 template <typename TSurfel>
@@ -67,6 +71,35 @@ void ITMSurfelVisualisationEngine_CPU<TSurfel>::RenderImage(const ITMSurfelScene
                                                              const ITMSurfelRenderState *renderState, ITMUChar4Image *outputImage, RenderImageType type) const
 {
   // TODO
+}
+
+//#################### PRIVATE MEMBER FUNCTIONS ####################
+
+template <typename TSurfel>
+void ITMSurfelVisualisationEngine_CPU<TSurfel>::MakeIndexImage(const ITMSurfelScene<TSurfel> *scene, const ITMPose *pose, const ITMIntrinsics *intrinsics,
+                                                               int width, int height, int scaleFactor, unsigned int *surfelIndexImage, int *depthBuffer) const
+{
+  const int pixelCount = width * height;
+
+#ifdef WITH_OPENMP
+  //#pragma omp parallel for
+#endif
+  for(int locId = 0; locId < pixelCount; ++locId)
+  {
+    clear_surfel_index_image(locId, surfelIndexImage, depthBuffer);
+  }
+
+  const Matrix4f& invT = pose->GetM();
+  const int surfelCount = static_cast<int>(scene->GetSurfelCount());
+  const TSurfel *surfels = scene->GetSurfels()->GetData(MEMORYDEVICE_CPU);
+
+#ifdef WITH_OPENMP
+  //#pragma omp parallel for
+#endif
+  for(int surfelId = 0; surfelId < surfelCount; ++surfelId)
+  {
+    project_to_surfel_index_image(surfelId, surfels, invT, *intrinsics, width, height, scaleFactor, surfelIndexImage, depthBuffer);
+  }
 }
 
 //#################### EXPLICIT INSTANTIATIONS ####################
