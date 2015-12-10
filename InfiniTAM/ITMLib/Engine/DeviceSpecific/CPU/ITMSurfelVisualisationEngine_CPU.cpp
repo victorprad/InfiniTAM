@@ -42,31 +42,6 @@ void ITMSurfelVisualisationEngine_CPU<TSurfel>::CopySceneToBuffers(const ITMSurf
 }
 
 template <typename TSurfel>
-void ITMSurfelVisualisationEngine_CPU<TSurfel>::FindSurface(const ITMSurfelScene<TSurfel> *scene, const ITMPose *pose, const ITMIntrinsics *intrinsics,
-                                                            ITMSurfelRenderState *renderState) const
-{
-  int *depthBuffer = renderState->GetDepthBuffer()->GetData(MEMORYDEVICE_CPU);
-  const int height = renderState->GetIndexImage()->noDims.y;
-  const int scaleFactor = 1;
-  unsigned int *surfelIndexImage = renderState->GetIndexImage()->GetData(MEMORYDEVICE_CPU);
-  const int width = renderState->GetIndexImage()->noDims.x;
-  MakeIndexImage(scene, pose, intrinsics, width, height, scaleFactor, surfelIndexImage, depthBuffer);
-}
-
-template <typename TSurfel>
-void ITMSurfelVisualisationEngine_CPU<TSurfel>::FindSurfaceSuper(const ITMSurfelScene<TSurfel> *scene, const ITMPose *pose, const ITMIntrinsics *intrinsics,
-                                                                 ITMSurfelRenderState *renderState) const
-{
-  // FIXME: The 4 here shouldn't be hard-coded.
-  int *depthBufferSuper = renderState->GetDepthBufferSuper()->GetData(MEMORYDEVICE_CPU);
-  const int height = renderState->GetIndexImageSuper()->noDims.y;
-  const int scaleFactor = 4;
-  unsigned int *surfelIndexImageSuper = renderState->GetIndexImageSuper()->GetData(MEMORYDEVICE_CPU);
-  const int width = renderState->GetIndexImageSuper()->noDims.x;
-  MakeIndexImage(scene, pose, intrinsics, width, height, scaleFactor, surfelIndexImageSuper, depthBufferSuper);
-}
-
-template <typename TSurfel>
 void ITMSurfelVisualisationEngine_CPU<TSurfel>::RenderImage(const ITMSurfelScene<TSurfel> *scene, const ITMPose *pose, const ITMIntrinsics *intrinsics,
                                                              const ITMSurfelRenderState *renderState, ITMUChar4Image *outputImage, RenderImageType type) const
 {
@@ -74,6 +49,12 @@ void ITMSurfelVisualisationEngine_CPU<TSurfel>::RenderImage(const ITMSurfelScene
 }
 
 //#################### PRIVATE MEMBER FUNCTIONS ####################
+
+template <typename TSurfel>
+MemoryDeviceType ITMSurfelVisualisationEngine_CPU<TSurfel>::GetMemoryType() const
+{
+  return MEMORYDEVICE_CPU;
+}
 
 template <typename TSurfel>
 void ITMSurfelVisualisationEngine_CPU<TSurfel>::MakeIndexImage(const ITMSurfelScene<TSurfel> *scene, const ITMPose *pose, const ITMIntrinsics *intrinsics,

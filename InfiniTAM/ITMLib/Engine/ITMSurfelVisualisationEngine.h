@@ -26,7 +26,7 @@ namespace ITMLib
       RENDER_COLOUR
     };
 
-    //#################### PUBLIC MEMBER FUNCTIONS ####################
+    //#################### PUBLIC ABSTRACT MEMBER FUNCTIONS ####################
   public:
 #if DEBUG_CORRESPONDENCES
     /**
@@ -43,19 +43,34 @@ namespace ITMLib
     /**
      * \brief TODO
      */
-    virtual void FindSurface(const ITMSurfelScene<TSurfel> *scene, const ITMPose *pose, const ITMIntrinsics *intrinsics,
-                             ITMSurfelRenderState *renderState) const = 0;
-
-    /**
-     * \brief TODO
-     */
-    virtual void FindSurfaceSuper(const ITMSurfelScene<TSurfel> *scene, const ITMPose *pose, const ITMIntrinsics *intrinsics,
-                                  ITMSurfelRenderState *renderState) const = 0;
-
-    /**
-     * \brief TODO
-     */
     virtual void RenderImage(const ITMSurfelScene<TSurfel> *scene, const ITMPose *pose, const ITMIntrinsics *intrinsics,
                              const ITMSurfelRenderState *renderState, ITMUChar4Image *outputImage, RenderImageType type = RENDER_LAMBERTIAN) const = 0;
+
+    //#################### PUBLIC MEMBER FUNCTIONS ####################
+  public:
+    /**
+     * \brief TODO
+     */
+    void FindSurface(const ITMSurfelScene<TSurfel> *scene, const ITMPose *pose, const ITMIntrinsics *intrinsics,
+                     ITMSurfelRenderState *renderState) const;
+
+    /**
+     * \brief TODO
+     */
+    void FindSurfaceSuper(const ITMSurfelScene<TSurfel> *scene, const ITMPose *pose, const ITMIntrinsics *intrinsics,
+                          ITMSurfelRenderState *renderState) const;
+
+    //#################### PRIVATE ABSTRACT MEMBER FUNCTIONS ####################
+  private:
+    /**
+     * \brief TODO
+     */
+    virtual MemoryDeviceType GetMemoryType() const = 0;
+
+    /**
+     * \brief TODO
+     */
+    virtual void MakeIndexImage(const ITMSurfelScene<TSurfel> *scene, const ITMPose *pose, const ITMIntrinsics *intrinsics,
+                                int width, int height, int scaleFactor, unsigned int *surfelIndexImage, int *depthBuffer) const = 0;
   };
 }

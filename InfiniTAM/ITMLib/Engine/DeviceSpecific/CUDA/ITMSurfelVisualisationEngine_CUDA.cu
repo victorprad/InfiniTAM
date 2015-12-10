@@ -68,22 +68,23 @@ void ITMSurfelVisualisationEngine_CUDA<TSurfel>::CopySceneToBuffers(const ITMSur
 }
 
 template <typename TSurfel>
-void ITMSurfelVisualisationEngine_CUDA<TSurfel>::FindSurface(const ITMSurfelScene<TSurfel> *scene, const ITMPose *pose, const ITMIntrinsics *intrinsics,
-                                                             ITMSurfelRenderState *renderState) const
-{
-  // TODO
-}
-
-template <typename TSurfel>
-void ITMSurfelVisualisationEngine_CUDA<TSurfel>::FindSurfaceSuper(const ITMSurfelScene<TSurfel> *scene, const ITMPose *pose, const ITMIntrinsics *intrinsics,
-                                                                  ITMSurfelRenderState *renderState) const
-{
-  // TODO
-}
-
-template <typename TSurfel>
 void ITMSurfelVisualisationEngine_CUDA<TSurfel>::RenderImage(const ITMSurfelScene<TSurfel> *scene, const ITMPose *pose, const ITMIntrinsics *intrinsics,
                                                              const ITMSurfelRenderState *renderState, ITMUChar4Image *outputImage, RenderImageType type) const
+{
+  // TODO
+}
+
+//#################### PRIVATE MEMBER FUNCTIONS ####################
+
+template <typename TSurfel>
+MemoryDeviceType ITMSurfelVisualisationEngine_CUDA<TSurfel>::GetMemoryType() const
+{
+  return MEMORYDEVICE_CUDA;
+}
+
+template <typename TSurfel>
+void ITMSurfelVisualisationEngine_CUDA<TSurfel>::MakeIndexImage(const ITMSurfelScene<TSurfel> *scene, const ITMPose *pose, const ITMIntrinsics *intrinsics,
+                                                                int width, int height, int scaleFactor, unsigned int *surfelIndexImage, int *depthBuffer) const
 {
   // TODO
 }
