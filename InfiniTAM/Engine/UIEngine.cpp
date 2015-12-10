@@ -202,9 +202,9 @@ void UIEngine::glutKeyUpFunction(unsigned char key, int x, int y)
 			}
 			ITMMultiEngine *multiEngine = dynamic_cast<ITMMultiEngine*>(uiEngine->mainEngine);
 			if (multiEngine != NULL) {
-				int idx = multiEngine->FindPrimaryDataIdx();
+				int idx = multiEngine->findPrimarySceneIdx();
 				if (idx < 0) idx = 0;
-				multiEngine->SetFreeviewDataIdx(idx);
+				multiEngine->setFreeviewSceneIdx(idx);
 			}
 			uiEngine->freeviewActive = true;
 		}
@@ -239,10 +239,10 @@ void UIEngine::glutKeyUpFunction(unsigned char key, int x, int y)
 		{
 		ITMMultiEngine *multiEngine = dynamic_cast<ITMMultiEngine*>(uiEngine->mainEngine);
 		if (multiEngine != NULL) {
-			int idx = multiEngine->GetFreeviewDataIdx();
+			int idx = multiEngine->getFreeviewSceneIdx();
 			if (key == '[') idx--;
 			else idx++;
-			multiEngine->ChangeFreeviewDataIdx(&(uiEngine->freeviewPose), idx);
+			multiEngine->changeFreeviewSceneIdx(&(uiEngine->freeviewPose), idx);
 			uiEngine->needsRefresh = true;
 		}
 		}

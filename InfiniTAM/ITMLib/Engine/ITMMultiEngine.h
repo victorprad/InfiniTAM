@@ -9,17 +9,19 @@
 #include "../../LCDLib/LoopClosureDetector.h"
 #include "../../LCDLib/PoseDatabase.h"
 
+#include "ITMActiveSceneManager.h"
+
 #include <vector>
 
 namespace ITMLib
 {
-	struct ActiveDataDescriptor {
+/*	struct ActiveDataDescriptor {
 		int sceneIndex;
 		enum { PRIMARY_SCENE, NEW_SCENE, LOOP_CLOSURE, RELOCALISATION, LOST, LOST_NEW } type;
 		std::vector<Matrix4f> constraints;
 		ITMPose estimatedPose;
 		int trackingAttempts;
-	};
+	};*/
 
 	/** \brief
 	*/
@@ -40,12 +42,14 @@ namespace ITMLib
 		LCDLib::LoopClosureDetector *mLoopClosureDetector;
 		LCDLib::PoseDatabase poseDatabase;
 
-		std::vector<ITMLocalScene<ITMVoxel,ITMVoxelIndex>*> allData;
-		std::vector<ActiveDataDescriptor> activeData;
+/*		std::vector<ITMLocalScene<ITMVoxel,ITMVoxelIndex>*> allData;
+		std::vector<ActiveDataDescriptor> activeData;*/
+		ITMLocalSceneManager_instance<ITMVoxel,ITMVoxelIndex> *sceneManager;
+		ITMActiveSceneManager *activeDataManager;
 
 		Vector2i trackedImageSize;
 		ITMRenderState *renderState_freeview;
-		int freeviewDataIdx;
+		int freeviewSceneIdx;
 
 		/// Pointer for storing the current input frame
 		ITMView *view;
@@ -62,7 +66,7 @@ namespace ITMLib
 
 		void GetImage(ITMUChar4Image *out, GetImageType getImageType, ITMPose *pose = NULL, ITMIntrinsics *intrinsics = NULL);
 
-		bool shouldStartNewArea(void) const;
+/*		bool shouldStartNewArea(void) const;
 		bool shouldMovePrimaryScene(int newDataIdx, int bestDataIdx, int primaryDataIdx) const;
 		void AddNewLocalScene(int primarySceneIdx);
 		bool AddNewRelocalisationScene(int sceneID, int primarySceneIdx, const ITMPose & pose);
@@ -71,20 +75,21 @@ namespace ITMLib
 		void AcceptNewLink(int dataId, int primaryDataId, ITMPose pose, int weight);
 		void DiscardLocalScene(int sceneID);
 		static ITMPose EstimateRelativePose(const std::vector<Matrix4f> & observations, int *out_numInliers, ITMPose *out_inlierPose);
-
-		void ChangeFreeviewDataIdx(ITMPose *pose, int newIdx);
-		void SetFreeviewDataIdx(int newIdx)
-		{ freeviewDataIdx = newIdx; }
-		int GetFreeviewDataIdx(void) const
-		{ return freeviewDataIdx; }
-		int FindPrimaryDataIdx(void) const;
+*/
+		void changeFreeviewSceneIdx(ITMPose *pose, int newIdx);
+		void setFreeviewSceneIdx(int newIdx)
+		{ freeviewSceneIdx = newIdx; }
+		int getFreeviewSceneIdx(void) const
+		{ return freeviewSceneIdx; }
+		int findPrimarySceneIdx(void) const
+		{ return activeDataManager->findPrimarySceneIdx(); }
 
 		/** \brief Constructor
 		    Ommitting a separate image size for the depth images
 		    will assume same resolution as for the RGB images.
 		*/
 		ITMMultiEngine(const ITMLibSettings *settings, const ITMRGBDCalib *calib, Vector2i imgSize_rgb, Vector2i imgSize_d = Vector2i(-1,-1));
-		~ITMMultiEngine();
+		~ITMMultiEngine(void);
 	};
 }
 

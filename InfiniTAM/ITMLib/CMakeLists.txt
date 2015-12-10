@@ -16,6 +16,7 @@ Engine/ITMWeightedICPTracker.cpp
 Engine/ITMIMUTracker.cpp
 Engine/ITMBasicEngine.cpp
 Engine/ITMMultiEngine.cpp
+Engine/ITMActiveSceneManager.cpp
 Engine/ITMRenTracker.cpp
 Engine/ITMTrackerFactory.cpp
 Engine/ITMTrackingController.cpp
@@ -34,6 +35,7 @@ Engine/ITMLowLevelEngine.h
 Engine/ITMMainEngine.h
 Engine/ITMBasicEngine.h
 Engine/ITMMultiEngine.h
+Engine/ITMActiveSceneManager.h
 Engine/ITMRenTracker.h
 Engine/ITMSceneReconstructionEngine.h
 Engine/ITMSwappingEngine.h
