@@ -23,8 +23,6 @@ namespace ITMLib
 
 		ITMTracker *tracker;
 
-		MemoryDeviceType memoryType;
-
 	public:
 		void Track(ITMTrackingState *trackingState, const ITMView *view);
 		void Prepare(ITMTrackingState *trackingState, const ITMSceneBase *scene, const ITMView *view, ITMRenderState *renderState);
@@ -34,8 +32,6 @@ namespace ITMLib
 			this->tracker = tracker;
 			this->settings = settings;
 			this->visualisationEngine = visualisationEngine;
-
-			memoryType = settings->deviceType == ITMLibSettings::DEVICE_CUDA ? MEMORYDEVICE_CUDA : MEMORYDEVICE_CPU;
 		}
 
 		static Vector2i GetTrackedImageSize(const ITMTracker *tracker, const Vector2i& imgSize_rgb, const Vector2i& imgSize_d)
