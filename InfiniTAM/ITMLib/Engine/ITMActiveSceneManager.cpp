@@ -18,7 +18,7 @@ static const int N_relocsuccess = 10;
 static const int N_maxblocknum = 10000;
 
 template<class TVoxel, class TIndex>
-ITMLocalSceneManager_instance<TVoxel,TIndex>::ITMLocalSceneManager_instance(const ITMLibSettings *_settings, const IITMVisualisationEngine *_visualisationEngine, const ITMDenseMapper<TVoxel,TIndex> *_denseMapper, const Vector2i & _trackedImageSize)
+ITMLocalSceneManager_instance<TVoxel,TIndex>::ITMLocalSceneManager_instance(const ITMLibSettings *_settings, const ITMVisualisationEngine<TVoxel,TIndex> *_visualisationEngine, const ITMDenseMapper<TVoxel,TIndex> *_denseMapper, const Vector2i & _trackedImageSize)
 	: settings(_settings), visualisationEngine(_visualisationEngine), denseMapper(_denseMapper), trackedImageSize(_trackedImageSize)
 { 
 }

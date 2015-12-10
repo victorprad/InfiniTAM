@@ -37,14 +37,14 @@ namespace ITMLib
 	{
 		private:
 		const ITMLibSettings *settings;
-		const IITMVisualisationEngine *visualisationEngine;
+		const ITMVisualisationEngine<TVoxel,TIndex> *visualisationEngine;
 		const ITMDenseMapper<TVoxel,TIndex> *denseMapper;
 		Vector2i trackedImageSize;
 
 		std::vector<ITMLocalScene<TVoxel,TIndex>*> allData;
 
 		public:
-		ITMLocalSceneManager_instance(const ITMLibSettings *settings, const IITMVisualisationEngine *visualisationEngine, const ITMDenseMapper<TVoxel,TIndex> *denseMapper, const Vector2i & trackedImageSize);
+		ITMLocalSceneManager_instance(const ITMLibSettings *settings, const ITMVisualisationEngine<TVoxel,TIndex> *visualisationEngine, const ITMDenseMapper<TVoxel,TIndex> *denseMapper, const Vector2i & trackedImageSize);
 		~ITMLocalSceneManager_instance(void);
 
 		int createNewScene(void);
