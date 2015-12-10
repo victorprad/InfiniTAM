@@ -14,8 +14,8 @@ ITMBasicEngine::ITMBasicEngine(const ITMLibSettings *settings, const ITMRGBDCali
 
 	this->settings = settings;
 
-	this->scene = new ITMScene<ITMVoxel, ITMVoxelIndex>(&(settings->sceneParams), settings->useSwapping, 
-		settings->deviceType == ITMLibSettings::DEVICE_CUDA ? MEMORYDEVICE_CUDA : MEMORYDEVICE_CPU);
+	MemoryDeviceType memoryType = settings->deviceType == ITMLibSettings::DEVICE_CUDA ? MEMORYDEVICE_CUDA : MEMORYDEVICE_CPU;
+	this->scene = new ITMScene<ITMVoxel, ITMVoxelIndex>(&settings->sceneParams, settings->useSwapping, memoryType);
 
 	meshingEngine = NULL;
 	switch (settings->deviceType)
@@ -45,7 +45,7 @@ ITMBasicEngine::ITMBasicEngine(const ITMLibSettings *settings, const ITMRGBDCali
 	}
 
 	mesh = NULL;
-	if (createMeshingEngine) mesh = new ITMMesh(settings->deviceType == ITMLibSettings::DEVICE_CUDA ? MEMORYDEVICE_CUDA : MEMORYDEVICE_CPU);
+	if (createMeshingEngine) mesh = new ITMMesh(memoryType);
 
 	denseMapper = new ITMDenseMapper<ITMVoxel, ITMVoxelIndex>(settings);
 	denseMapper->ResetScene(scene);
@@ -59,7 +59,7 @@ ITMBasicEngine::ITMBasicEngine(const ITMLibSettings *settings, const ITMRGBDCali
 	renderState_live = visualisationEngine->CreateRenderState(scene, trackedImageSize);
 	renderState_freeview = NULL; //will be created by the visualisation engine
 
-	trackingState = trackingController->BuildTrackingState(trackedImageSize);
+	trackingState = new ITMTrackingState(trackedImageSize, memoryType);
 	tracker->UpdateInitialPose(trackingState);
 
 	view = NULL; // will be allocated by the view builder

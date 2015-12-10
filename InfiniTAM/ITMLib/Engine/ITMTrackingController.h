@@ -38,11 +38,6 @@ namespace ITMLib
 			memoryType = settings->deviceType == ITMLibSettings::DEVICE_CUDA ? MEMORYDEVICE_CUDA : MEMORYDEVICE_CPU;
 		}
 
-		ITMTrackingState *BuildTrackingState(const Vector2i & trackedImageSize) const
-		{
-			return new ITMTrackingState(trackedImageSize, memoryType);
-		}
-
 		static Vector2i GetTrackedImageSize(const ITMTracker *tracker, const Vector2i& imgSize_rgb, const Vector2i& imgSize_d)
 		{
 			return tracker->requiresColourRendering() ? imgSize_rgb : imgSize_d;
@@ -53,4 +48,3 @@ namespace ITMLib
 		ITMTrackingController& operator=(const ITMTrackingController&);
 	};
 }
-
