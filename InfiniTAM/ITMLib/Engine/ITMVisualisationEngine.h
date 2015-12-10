@@ -26,8 +26,33 @@ namespace ITMLib
 		static void DepthToUchar4(ITMUChar4Image *dst, const ITMFloatImage *src);
 		static void NormalToUchar4(ITMUChar4Image* dst, const ITMFloat4Image *src);
 		static void WeightToUchar4(ITMUChar4Image *dst, const ITMFloatImage *src);
+	};
 
-		/** Given a scene, pose and intrinsics, compute the
+	template<class TIndex> struct IndexToRenderState { typedef ITMRenderState type; };
+	template<> struct IndexToRenderState<ITMVoxelBlockHash> { typedef ITMRenderState_VH type; };
+
+	/** \brief
+		Interface to engines helping with the visualisation of
+		the results from the rest of the library.
+
+		This is also used internally to get depth estimates for the
+		raycasting done for the trackers. The basic idea there is
+		to project down a scene of 8x8x8 voxel
+		blocks and look at the bounding boxes. The projection
+		provides an idea of the possible depth range for each pixel
+		in an image, which can be used to speed up raycasting
+		operations.
+		*/
+	template<class TVoxel, class TIndex>
+	class ITMVisualisationEngine : public IITMVisualisationEngine
+	{
+	public:
+		/** Creates a render state, containing rendering info
+		for the scene.
+		*/
+		virtual typename IndexToRenderState<TIndex>::type *CreateRenderState(const ITMSceneBase *scene, const Vector2i & imgSize) const = 0;
+
+    /** Given a scene, pose and intrinsics, compute the
 		visible subset of the scene and store it in an
 		appropriate visualisation state object, created
 		previously using allocateInternalState().
@@ -69,33 +94,5 @@ namespace ITMLib
 		*/
 		virtual void ForwardRender(const ITMSceneBase *scene, const ITMView *view, ITMTrackingState *trackingState,
 			ITMRenderState *renderState) const = 0;
-
-		/** Creates a render state, containing rendering info
-		for the scene.
-		*/
-		virtual ITMRenderState* CreateRenderState(const ITMSceneBase *scene, const Vector2i & imgSize) const = 0;
-	};
-
-	template<class TIndex> struct IndexToRenderState { typedef ITMRenderState type; };
-	template<> struct IndexToRenderState<ITMVoxelBlockHash> { typedef ITMRenderState_VH type; };
-
-	/** \brief
-		Interface to engines helping with the visualisation of
-		the results from the rest of the library.
-
-		This is also used internally to get depth estimates for the
-		raycasting done for the trackers. The basic idea there is
-		to project down a scene of 8x8x8 voxel
-		blocks and look at the bounding boxes. The projection
-		provides an idea of the possible depth range for each pixel
-		in an image, which can be used to speed up raycasting
-		operations.
-		*/
-	template<class TVoxel, class TIndex>
-	class ITMVisualisationEngine : public IITMVisualisationEngine
-	{
-	public:
-		/** Override */
-		virtual typename IndexToRenderState<TIndex>::type *CreateRenderState(const ITMSceneBase *scene, const Vector2i & imgSize) const = 0;
 	};
 }
