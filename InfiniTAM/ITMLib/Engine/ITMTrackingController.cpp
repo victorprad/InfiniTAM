@@ -13,7 +13,8 @@ void ITMTrackingController::Track(ITMTrackingState *trackingState, const ITMView
 	if (trackingState->age_pointCloud!=-1) tracker->TrackCamera(trackingState, view);
 }
 
-void ITMTrackingController::Prepare(ITMTrackingState *trackingState, const ITMSceneBase *scene, const ITMView *view, ITMRenderState *renderState)
+void ITMTrackingController::Prepare(ITMTrackingState *trackingState, const ITMSceneBase *scene, const ITMView *view,
+	const IITMVisualisationEngine *visualisationEngine, ITMRenderState *renderState)
 {
 	//render for tracking
 	bool requiresColourRendering = tracker->requiresColourRendering();

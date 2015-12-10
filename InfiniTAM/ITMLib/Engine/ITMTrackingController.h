@@ -19,19 +19,17 @@ namespace ITMLib
 	{
 	private:
 		const ITMLibSettings *settings;
-		const IITMVisualisationEngine *visualisationEngine;
 
 		ITMTracker *tracker;
 
 	public:
 		void Track(ITMTrackingState *trackingState, const ITMView *view);
-		void Prepare(ITMTrackingState *trackingState, const ITMSceneBase *scene, const ITMView *view, ITMRenderState *renderState);
+		void Prepare(ITMTrackingState *trackingState, const ITMSceneBase *scene, const ITMView *view, const IITMVisualisationEngine *visualisationEngine, ITMRenderState *renderState);
 
-		ITMTrackingController(ITMTracker *tracker, const IITMVisualisationEngine *visualisationEngine, const ITMLibSettings *settings)
+		ITMTrackingController(ITMTracker *tracker, const ITMLibSettings *settings)
 		{
 			this->tracker = tracker;
 			this->settings = settings;
-			this->visualisationEngine = visualisationEngine;
 		}
 
 		const Vector2i& GetTrackedImageSize(const Vector2i& imgSize_rgb, const Vector2i& imgSize_d) const

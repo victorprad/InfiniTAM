@@ -52,7 +52,7 @@ ITMBasicEngine::ITMBasicEngine(const ITMLibSettings *settings, const ITMRGBDCali
 
 	imuCalibrator = new ITMIMUCalibrator_iPad();
 	tracker = ITMTrackerFactory<ITMVoxel, ITMVoxelIndex>::Instance().Make(imgSize_rgb, imgSize_d, settings, lowLevelEngine, imuCalibrator, scene);
-	trackingController = new ITMTrackingController(tracker, visualisationEngine, settings);
+	trackingController = new ITMTrackingController(tracker, settings);
 
 	Vector2i trackedImageSize = trackingController->GetTrackedImageSize(imgSize_rgb, imgSize_d);
 
@@ -146,7 +146,7 @@ void ITMBasicEngine::ProcessFrame(ITMUChar4Image *rgbImage, ITMShortImage *rawDe
 		if (!didFusion) denseMapper->UpdateVisibleList(view, trackingState, scene, renderState_live);
 
 		// raycast to renderState_live for tracking and free visualisation
-		trackingController->Prepare(trackingState, scene, view, renderState_live);
+		trackingController->Prepare(trackingState, scene, view, visualisationEngine, renderState_live);
 	}
 	else {
 		*trackingState->pose_d = oldPose;
