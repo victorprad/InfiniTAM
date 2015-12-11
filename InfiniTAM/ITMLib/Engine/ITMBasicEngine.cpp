@@ -2,6 +2,7 @@
 
 #include "ITMBasicEngine.h"
 
+#include "ITMSurfelVisualisationEngineFactory.h"
 using namespace ITMLib;
 
 ITMBasicEngine::ITMBasicEngine(const ITMLibSettings *settings, const ITMRGBDCalib *calib, Vector2i imgSize_rgb, Vector2i imgSize_d)
@@ -17,10 +18,11 @@ ITMBasicEngine::ITMBasicEngine(const ITMLibSettings *settings, const ITMRGBDCali
 	MemoryDeviceType memoryType = settings->deviceType == ITMLibSettings::DEVICE_CUDA ? MEMORYDEVICE_CUDA : MEMORYDEVICE_CPU;
 	this->scene = new ITMScene<ITMVoxel, ITMVoxelIndex>(&settings->sceneParams, settings->useSwapping, memoryType);
 
-	this->surfelScene = new ITMSurfelScene<ITMSurfel>(
+	this->surfelScene = new ITMSurfelScene<TSurfel>(
 		settings->deviceType == ITMLibSettings::DEVICE_CUDA ? MEMORYDEVICE_CUDA : MEMORYDEVICE_CPU);
 
 	meshingEngine = NULL;
+	surfelVisualisationEngine = ITMSurfelVisualisationEngineFactory<TSurfel>::make_surfel_visualisation_engine(settings->deviceType);
 	switch (settings->deviceType)
 	{
 	case ITMLibSettings::DEVICE_CPU:
@@ -53,7 +55,7 @@ ITMBasicEngine::ITMBasicEngine(const ITMLibSettings *settings, const ITMRGBDCali
 	denseMapper = new ITMDenseMapper<ITMVoxel, ITMVoxelIndex>(settings);
 	denseMapper->ResetScene(scene);
 
-	denseSurfelMapper = new ITMDenseSurfelMapper<ITMSurfel>(imgSize_d, settings->deviceType);
+	denseSurfelMapper = new ITMDenseSurfelMapper<TSurfel>(imgSize_d, settings->deviceType);
 
 	imuCalibrator = new ITMIMUCalibrator_iPad();
 	tracker = ITMTrackerFactory<ITMVoxel, ITMVoxelIndex>::Instance().Make(imgSize_rgb, imgSize_d, settings, lowLevelEngine, imuCalibrator, scene);
@@ -98,6 +100,7 @@ ITMBasicEngine::~ITMBasicEngine()
 	delete trackingState;
 	if (view != NULL) delete view;
 
+	delete surfelVisualisationEngine;
 	delete visualisationEngine;
 
 	if (meshingEngine != NULL) delete meshingEngine;
@@ -158,6 +161,8 @@ void ITMBasicEngine::ProcessFrame(ITMUChar4Image *rgbImage, ITMShortImage *rawDe
 
 		// raycast to renderState_live for tracking and free visualisation
 		trackingController->Prepare(trackingState, scene, view, visualisationEngine, renderState_live);
+		// TODO: Tracking against the surfel scene.
+		surfelVisualisationEngine->FindSurfaceSuper(surfelScene, trackingState->pose_d, &view->calib->intrinsics_d, surfelRenderState_live);
 	}
 	else {
 		*trackingState->pose_d = oldPose;

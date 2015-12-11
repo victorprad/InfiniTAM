@@ -4,17 +4,21 @@
 
 #include "ITMDenseSurfelMapper.h"
 #include "ITMMainEngine.h"
+#include "ITMSurfelVisualisationEngine.h"
 
 namespace ITMLib
 {
 	class ITMBasicEngine : public ITMMainEngine
 	{
 	private:
+		typedef ITMSurfel_rgb TSurfel;
+
 		const ITMLibSettings *settings;
 
 		bool trackingActive, fusionActive, mainProcessingActive, trackingInitialised;
 
 		ITMLowLevelEngine *lowLevelEngine;
+		ITMSurfelVisualisationEngine<TSurfel> *surfelVisualisationEngine;
 		ITMVisualisationEngine<ITMVoxel,ITMVoxelIndex> *visualisationEngine;
 
 		ITMMeshingEngine<ITMVoxel, ITMVoxelIndex> *meshingEngine;
@@ -22,11 +26,11 @@ namespace ITMLib
 
 		ITMViewBuilder *viewBuilder;		
 		ITMDenseMapper<ITMVoxel,ITMVoxelIndex> *denseMapper;
-		ITMDenseSurfelMapper<ITMSurfel> *denseSurfelMapper;
+		ITMDenseSurfelMapper<TSurfel> *denseSurfelMapper;
 		ITMTrackingController *trackingController;
 
 		ITMScene<ITMVoxel, ITMVoxelIndex> *scene;
-		ITMSurfelScene<ITMSurfel> *surfelScene;
+		ITMSurfelScene<TSurfel> *surfelScene;
 		ITMRenderState *renderState_live;
 		ITMRenderState *renderState_freeview;
     ITMSurfelRenderState *surfelRenderState_live;
