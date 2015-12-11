@@ -9,7 +9,7 @@
 
 #include "../Engine/ITMVisualisationEngine.h"
 
-#include "ITMTrackerFactory.h"
+#include "../Trackers/ITMTrackerFactory.h"
 
 namespace ITMLib
 {

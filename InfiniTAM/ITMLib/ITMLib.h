@@ -17,19 +17,19 @@
 #include "Engine/DeviceSpecific/Metal/ITMLowLevelEngine_Metal.h"
 #endif
 
-#include "Engine/ITMDepthTracker.h"
-#include "Engine/DeviceSpecific/CPU/ITMDepthTracker_CPU.h"
+#include "Trackers/Interface/ITMDepthTracker.h"
+#include "Trackers/CPU/ITMDepthTracker_CPU.h"
 #ifndef COMPILE_WITHOUT_CUDA
-#include "Engine/DeviceSpecific/CUDA/ITMDepthTracker_CUDA.h"
+#include "Trackers/CUDA/ITMDepthTracker_CUDA.h"
 #endif
 #ifdef COMPILE_WITH_METAL
-#include "Engine/DeviceSpecific/Metal/ITMDepthTracker_Metal.h"
+#include "Trackers/Metal/ITMDepthTracker_Metal.h"
 #endif
 
-#include "Engine/ITMWeightedICPTracker.h"
-#include "Engine/DeviceSpecific/CPU/ITMWeightedICPTracker_CPU.h"
+#include "Trackers/Interface/ITMWeightedICPTracker.h"
+#include "Trackers/CPU/ITMWeightedICPTracker_CPU.h"
 #ifndef COMPILE_WITHOUT_CUDA
-#include "Engine/DeviceSpecific/CUDA/ITMWeightedICPTracker_CUDA.h"
+#include "Trackers/CUDA/ITMWeightedICPTracker_CUDA.h"
 #endif
 
 #include "Engine/ITMSceneReconstructionEngine.h"
@@ -50,13 +50,13 @@
 #include "Engine/DeviceSpecific/Metal/ITMVisualisationEngine_Metal.h"
 #endif
 
-#include "Engine/ITMColorTracker.h"
-#include "Engine/DeviceSpecific/CPU/ITMColorTracker_CPU.h"
+#include "Trackers/Interface/ITMColorTracker.h"
+#include "Trackers/CPU/ITMColorTracker_CPU.h"
 #ifndef COMPILE_WITHOUT_CUDA
-#include "Engine/DeviceSpecific/CUDA/ITMColorTracker_CUDA.h"
+#include "Trackers/CUDA/ITMColorTracker_CUDA.h"
 #endif
 #ifdef COMPILE_WITH_METAL
-#include "Engine/DeviceSpecific/Metal/ITMColorTracker_Metal.h"
+#include "Trackers/Metal/ITMColorTracker_Metal.h"
 #endif
 
 #include "Engine/ITMSwappingEngine.h"
@@ -68,17 +68,17 @@
 #include "Engine/DeviceSpecific/Metal/ITMSwappingEngine_Metal.h"
 #endif
 
-#include "Engine/ITMRenTracker.h"
-#include "Engine/DeviceSpecific/CPU/ITMRenTracker_CPU.h"
+#include "Trackers/Interface/ITMRenTracker.h"
+#include "Trackers/CPU/ITMRenTracker_CPU.h"
 #ifndef COMPILE_WITHOUT_CUDA
-#include "Engine/DeviceSpecific/CUDA/ITMRenTracker_CUDA.h"
+#include "Trackers/CUDA/ITMRenTracker_CUDA.h"
 #endif
 #ifdef COMPILE_WITH_METAL
-#include "Engine/DeviceSpecific/Metal/ITMRenTracker_Metal.h"
+#include "Trackers/Metal/ITMRenTracker_Metal.h"
 #endif
 
-#include "Engine/ITMIMUTracker.h"
-#include "Engine/ITMCompositeTracker.h"
+#include "Trackers/Interface/ITMIMUTracker.h"
+#include "Trackers/Interface/ITMCompositeTracker.h"
 #include "Engine/ITMTrackingController.h"
 
 #include "Engine/ITMViewBuilder.h"

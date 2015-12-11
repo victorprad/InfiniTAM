@@ -9,38 +9,24 @@ ITMLib.h
 
 ##
 SET(ITMLIB_ENGINE_SOURCES
-Engine/ITMColorTracker.cpp
 Engine/ITMDenseMapper.cpp
-Engine/ITMDepthTracker.cpp
-Engine/ITMWeightedICPTracker.cpp
-Engine/ITMIMUTracker.cpp
 Engine/ITMBasicEngine.cpp
 Engine/ITMMultiEngine.cpp
 Engine/ITMActiveSceneManager.cpp
-Engine/ITMRenTracker.cpp
-Engine/ITMTrackerFactory.cpp
 Engine/ITMTrackingController.cpp
 Engine/ITMVisualisationEngine.cpp
 )
 
 SET(ITMLIB_ENGINE_HEADERS
-Engine/ITMColorTracker.h
-Engine/ITMCompositeTracker.h
 Engine/ITMDenseMapper.h
-Engine/ITMDepthTracker.h
-Engine/ITMWeightedICPTracker.h
 Engine/ITMIMUCalibrator.h
-Engine/ITMIMUTracker.h
 Engine/ITMLowLevelEngine.h
 Engine/ITMMainEngine.h
 Engine/ITMBasicEngine.h
 Engine/ITMMultiEngine.h
 Engine/ITMActiveSceneManager.h
-Engine/ITMRenTracker.h
 Engine/ITMSceneReconstructionEngine.h
 Engine/ITMSwappingEngine.h
-Engine/ITMTracker.h
-Engine/ITMTrackerFactory.h
 Engine/ITMTrackingController.h
 Engine/ITMViewBuilder.h
 Engine/ITMVisualisationEngine.h
@@ -49,12 +35,7 @@ Engine/ITMMeshingEngine.h
 
 ##
 set(ITMLIB_ENGINE_DEVICEAGNOSTIC_HEADERS
-Engine/DeviceAgnostic/ITMColorTracker.h
-Engine/DeviceAgnostic/ITMDepthTracker.h
-Engine/DeviceAgnostic/ITMWeightedICPTracker.h
 Engine/DeviceAgnostic/ITMLowLevelEngine.h
-Engine/DeviceAgnostic/ITMPixelUtils.h
-Engine/DeviceAgnostic/ITMRenTracker.h
 Engine/DeviceAgnostic/ITMRepresentationAccess.h
 Engine/DeviceAgnostic/ITMSceneReconstructionEngine.h
 Engine/DeviceAgnostic/ITMSwappingEngine.h
@@ -66,11 +47,7 @@ Engine/DeviceAgnostic/ITMMeshingEngine.h
 
 ##
 set(ITMLIB_ENGINE_DEVICESPECIFIC_CPU_SOURCES
-Engine/DeviceSpecific/CPU/ITMColorTracker_CPU.cpp
-Engine/DeviceSpecific/CPU/ITMDepthTracker_CPU.cpp
-Engine/DeviceSpecific/CPU/ITMWeightedICPTracker_CPU.cpp
 Engine/DeviceSpecific/CPU/ITMLowLevelEngine_CPU.cpp
-Engine/DeviceSpecific/CPU/ITMRenTracker_CPU.cpp
 Engine/DeviceSpecific/CPU/ITMSceneReconstructionEngine_CPU.cpp
 Engine/DeviceSpecific/CPU/ITMSwappingEngine_CPU.cpp
 Engine/DeviceSpecific/CPU/ITMViewBuilder_CPU.cpp
@@ -79,11 +56,7 @@ Engine/DeviceSpecific/CPU/ITMMeshingEngine_CPU.cpp
 )
 
 set(ITMLIB_ENGINE_DEVICESPECIFIC_CPU_HEADERS
-Engine/DeviceSpecific/CPU/ITMColorTracker_CPU.h
-Engine/DeviceSpecific/CPU/ITMDepthTracker_CPU.h
-Engine/DeviceSpecific/CPU/ITMWeightedICPTracker_CPU.h
 Engine/DeviceSpecific/CPU/ITMLowLevelEngine_CPU.h
-Engine/DeviceSpecific/CPU/ITMRenTracker_CPU.h
 Engine/DeviceSpecific/CPU/ITMSceneReconstructionEngine_CPU.h
 Engine/DeviceSpecific/CPU/ITMSwappingEngine_CPU.h
 Engine/DeviceSpecific/CPU/ITMViewBuilder_CPU.h
@@ -93,11 +66,7 @@ Engine/DeviceSpecific/CPU/ITMMeshingEngine_CPU.h
 
 ##
 set(ITMLIB_ENGINE_DEVICESPECIFIC_CUDA_SOURCES
-Engine/DeviceSpecific/CUDA/ITMColorTracker_CUDA.cu
-Engine/DeviceSpecific/CUDA/ITMDepthTracker_CUDA.cu
-Engine/DeviceSpecific/CUDA/ITMWeightedICPTracker_CUDA.cu
 Engine/DeviceSpecific/CUDA/ITMLowLevelEngine_CUDA.cu
-Engine/DeviceSpecific/CUDA/ITMRenTracker_CUDA.cu
 Engine/DeviceSpecific/CUDA/ITMSceneReconstructionEngine_CUDA.cu
 Engine/DeviceSpecific/CUDA/ITMSwappingEngine_CUDA.cu
 Engine/DeviceSpecific/CUDA/ITMViewBuilder_CUDA.cu
@@ -106,12 +75,8 @@ Engine/DeviceSpecific/CUDA/ITMMeshingEngine_CUDA.cu
 )
 
 set(ITMLIB_ENGINE_DEVICESPECIFIC_CUDA_HEADERS
-Engine/DeviceSpecific/CUDA/ITMColorTracker_CUDA.h
 Engine/DeviceSpecific/CUDA/ITMCUDAUtils.h
-Engine/DeviceSpecific/CUDA/ITMDepthTracker_CUDA.h
-Engine/DeviceSpecific/CUDA/ITMWeightedICPTracker_CUDA.h
 Engine/DeviceSpecific/CUDA/ITMLowLevelEngine_CUDA.h
-Engine/DeviceSpecific/CUDA/ITMRenTracker_CUDA.h
 Engine/DeviceSpecific/CUDA/ITMSceneReconstructionEngine_CUDA.h
 Engine/DeviceSpecific/CUDA/ITMSwappingEngine_CUDA.h
 Engine/DeviceSpecific/CUDA/ITMViewBuilder_CUDA.h
@@ -155,6 +120,72 @@ Objects/ITMMesh.h
 )
 
 ##
+SET(ITMLIB_TRACKERS_SOURCES
+Trackers/ITMTrackerFactory.cpp
+)
+
+SET(ITMLIB_TRACKERS_HEADERS
+Trackers/ITMTrackerFactory.h
+)
+
+##
+SET(ITMLIB_TRACKERS_CPU_SOURCES
+Trackers/CPU/ITMColorTracker_CPU.cpp
+Trackers/CPU/ITMDepthTracker_CPU.cpp
+Trackers/CPU/ITMRenTracker_CPU.cpp
+Trackers/CPU/ITMWeightedICPTracker_CPU.cpp
+)
+
+SET(ITMLIB_TRACKERS_CPU_HEADERS
+Trackers/CPU/ITMColorTracker_CPU.h
+Trackers/CPU/ITMDepthTracker_CPU.h
+Trackers/CPU/ITMRenTracker_CPU.h
+Trackers/CPU/ITMWeightedICPTracker_CPU.h
+)
+
+##
+SET(ITMLIB_TRACKERS_CUDA_SOURCES
+Trackers/CUDA/ITMColorTracker_CUDA.cu
+Trackers/CUDA/ITMDepthTracker_CUDA.cu
+Trackers/CUDA/ITMRenTracker_CUDA.cu
+Trackers/CUDA/ITMWeightedICPTracker_CUDA.cu
+)
+
+SET(ITMLIB_TRACKERS_CUDA_HEADERS
+Trackers/CUDA/ITMColorTracker_CUDA.h
+Trackers/CUDA/ITMDepthTracker_CUDA.h
+Trackers/CUDA/ITMRenTracker_CUDA.h
+Trackers/CUDA/ITMWeightedICPTracker_CUDA.h
+)
+
+##
+SET(ITMLIB_TRACKERS_INTERFACE_SOURCES
+Trackers/Interface/ITMColorTracker.cpp
+Trackers/Interface/ITMDepthTracker.cpp
+Trackers/Interface/ITMIMUTracker.cpp
+Trackers/Interface/ITMRenTracker.cpp
+Trackers/Interface/ITMWeightedICPTracker.cpp
+)
+
+SET(ITMLIB_TRACKERS_INTERFACE_HEADERS
+Trackers/Interface/ITMColorTracker.h
+Trackers/Interface/ITMCompositeTracker.h
+Trackers/Interface/ITMDepthTracker.h
+Trackers/Interface/ITMIMUTracker.h
+Trackers/Interface/ITMRenTracker.h
+Trackers/Interface/ITMTracker.h
+Trackers/Interface/ITMWeightedICPTracker.h
+)
+
+##
+SET(ITMLIB_TRACKERS_SHARED_HEADERS
+Trackers/Shared/ITMColorTracker.h
+Trackers/Shared/ITMDepthTracker.h
+Trackers/Shared/ITMRenTracker.h
+Trackers/Shared/ITMWeightedICPTracker.h
+)
+
+##
 set(ITMLIB_UTILS_SOURCES
 Utils/ITMCalibIO.cpp
 Utils/ITMLibSettings.cpp
@@ -179,6 +210,11 @@ ${ITMLIB_ENGINE_HEADERS}
 ${ITMLIB_ENGINE_DEVICEAGNOSTIC_HEADERS}
 ${ITMLIB_OBJECTS_SOURCES}
 ${ITMLIB_OBJECTS_HEADERS}
+${ITMLIB_TRACKERS_SOURCES}
+${ITMLIB_TRACKERS_HEADERS}
+${ITMLIB_TRACKERS_INTERFACE_SOURCES}
+${ITMLIB_TRACKERS_INTERFACE_HEADERS}
+${ITMLIB_TRACKERS_SHARED_HEADERS}
 ${ITMLIB_UTILS_SOURCES}
 ${ITMLIB_UTILS_HEADERS}
 )
@@ -186,11 +222,15 @@ ${ITMLIB_UTILS_HEADERS}
 set(ITMLIB_CPU_OBJECTS
 ${ITMLIB_ENGINE_DEVICESPECIFIC_CPU_SOURCES}
 ${ITMLIB_ENGINE_DEVICESPECIFIC_CPU_HEADERS}
+${ITMLIB_TRACKERS_CPU_SOURCES}
+${ITMLIB_TRACKERS_CPU_HEADERS}
 )
 
 set(ITMLIB_CUDA_OBJECTS
 ${ITMLIB_ENGINE_DEVICESPECIFIC_CUDA_SOURCES}
 ${ITMLIB_ENGINE_DEVICESPECIFIC_CUDA_HEADERS}
+${ITMLIB_TRACKERS_CUDA_SOURCES}
+${ITMLIB_TRACKERS_CUDA_HEADERS}
 )
 
 #############################
@@ -203,6 +243,11 @@ SOURCE_GROUP(Engine\\DeviceAgnostic FILES ${ITMLIB_ENGINE_DEVICEAGNOSTIC_HEADERS
 SOURCE_GROUP(Engine\\DeviceSpecific\\CPU FILES ${ITMLIB_ENGINE_DEVICESPECIFIC_CPU_SOURCES} ${ITMLIB_ENGINE_DEVICESPECIFIC_CPU_HEADERS})
 SOURCE_GROUP(Engine\\DeviceSpecific\\CUDA FILES ${ITMLIB_ENGINE_DEVICESPECIFIC_CUDA_SOURCES} ${ITMLIB_ENGINE_DEVICESPECIFIC_CUDA_HEADERS})
 SOURCE_GROUP(Objects FILES ${ITMLIB_OBJECTS_SOURCES} ${ITMLIB_OBJECTS_HEADERS})
+SOURCE_GROUP(Trackers FILES ${ITMLIB_TRACKERS_SOURCES} ${ITMLIB_TRACKERS_HEADERS})
+SOURCE_GROUP(Trackers\\CPU FILES ${ITMLIB_TRACKERS_CPU_SOURCES} ${ITMLIB_TRACKERS_CPU_HEADERS})
+SOURCE_GROUP(Trackers\\CUDA FILES ${ITMLIB_TRACKERS_CUDA_SOURCES} ${ITMLIB_TRACKERS_CUDA_HEADERS})
+SOURCE_GROUP(Trackers\\Interface FILES ${ITMLIB_TRACKERS_INTERFACE_SOURCES} ${ITMLIB_TRACKERS_INTERFACE_HEADERS})
+SOURCE_GROUP(Trackers\\Shared FILES ${ITMLIB_TRACKERS_SHARED_HEADERS})
 SOURCE_GROUP(Utils FILES ${ITMLIB_UTILS_SOURCES} ${ITMLIB_UTILS_HEADERS})
 
 ##############################################################
