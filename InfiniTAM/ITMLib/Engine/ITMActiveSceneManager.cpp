@@ -394,7 +394,7 @@ int ITMActiveSceneManager::CheckSuccess_relocalisation(int dataID) const
 		// sucessfully relocalised
 		return 1;
 	}
-	if (activeData[dataID].trackingAttempts >= N_reloctrials)
+	if ((N_reloctrials - activeData[dataID].trackingAttempts) < (N_relocsuccess - (int)activeData[dataID].constraints.size()))
 	{
 		// relocalisation failed: declare as LOST
 		return -1;
@@ -420,7 +420,7 @@ fprintf(stderr, "trying to establish link ... -> %i: %i/%i attempts, %i/%i inlie
 		// accept link
 		return 1;
 	}
-	if (link.trackingAttempts > N_linktrials) {
+	if ((N_linktrials - link.trackingAttempts) < (N_linkoverlap - *inliers)) {
 		// reject link
 		return -1;
 	}
