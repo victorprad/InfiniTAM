@@ -14,7 +14,7 @@ namespace ITMLib
 		bool trackingActive, fusionActive, mainProcessingActive, trackingInitialised;
 
 		ITMLowLevelEngine *lowLevelEngine;
-		IITMVisualisationEngine *visualisationEngine;
+		ITMVisualisationEngine<ITMVoxel,ITMVoxelIndex> *visualisationEngine;
 
 		ITMMeshingEngine<ITMVoxel, ITMVoxelIndex> *meshingEngine;
 		ITMMesh *mesh;

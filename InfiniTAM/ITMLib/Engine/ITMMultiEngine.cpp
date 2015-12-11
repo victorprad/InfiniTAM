@@ -56,12 +56,12 @@ ITMMultiEngine::ITMMultiEngine(const ITMLibSettings *settings, const ITMRGBDCali
 
 	imuCalibrator = new ITMIMUCalibrator_iPad();
 	tracker = ITMTrackerFactory<ITMVoxel, ITMVoxelIndex>::Instance().Make(imgSize_rgb, imgSize_d, settings, lowLevelEngine, imuCalibrator, NULL/*scene TODO: this will fail for Ren Tracker*/);
-	trackingController = new ITMTrackingController(tracker, visualisationEngine, settings);
-	trackedImageSize = ITMTrackingController::GetTrackedImageSize(tracker, imgSize_rgb, imgSize_d);
+	trackingController = new ITMTrackingController(tracker, settings);
+	trackedImageSize = trackingController->GetTrackedImageSize(imgSize_rgb, imgSize_d);
 
 //	primaryDataIdx = 0;
 	freeviewSceneIdx = 0;
-	sceneManager = new ITMLocalSceneManager_instance<ITMVoxel,ITMVoxelIndex>(settings, visualisationEngine, trackingController, denseMapper, trackedImageSize);
+	sceneManager = new ITMLocalSceneManager_instance<ITMVoxel,ITMVoxelIndex>(settings, visualisationEngine, denseMapper, trackedImageSize);
 	activeDataManager = new ITMActiveSceneManager(sceneManager);
 	activeDataManager->initiateNewScene(true);
 //	AddNewLocalScene(-1);
@@ -221,7 +221,7 @@ fprintf(stderr, "LCD\n");
 		if (todoList[i].preprepare) {
 			// this is typically happening once to initiate relocalisation/loop closure
 			denseMapper->UpdateVisibleList(view, currentScene->trackingState, currentScene->scene, currentScene->renderState);
-			trackingController->Prepare(currentScene->trackingState, currentScene->scene, view, currentScene->renderState);
+			trackingController->Prepare(currentScene->trackingState, currentScene->scene, view, visualisationEngine, currentScene->renderState);
 		}
 
 		if (todoList[i].track)
@@ -272,7 +272,7 @@ fprintf(stderr, "Lost track of primary scene\n");
 
 		// raycast to renderState_live for tracking and free visualisation
 		if (todoList[i].prepare) {
-			trackingController->Prepare(currentScene->trackingState, currentScene->scene, view, currentScene->renderState);
+			trackingController->Prepare(currentScene->trackingState, currentScene->scene, view, visualisationEngine, currentScene->renderState);
 		}
 	}
 

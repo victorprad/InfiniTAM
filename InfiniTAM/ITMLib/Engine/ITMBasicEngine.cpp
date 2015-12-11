@@ -14,8 +14,8 @@ ITMBasicEngine::ITMBasicEngine(const ITMLibSettings *settings, const ITMRGBDCali
 
 	this->settings = settings;
 
-	this->scene = new ITMScene<ITMVoxel, ITMVoxelIndex>(&(settings->sceneParams), settings->useSwapping, 
-		settings->deviceType == ITMLibSettings::DEVICE_CUDA ? MEMORYDEVICE_CUDA : MEMORYDEVICE_CPU);
+	MemoryDeviceType memoryType = settings->deviceType == ITMLibSettings::DEVICE_CUDA ? MEMORYDEVICE_CUDA : MEMORYDEVICE_CPU;
+	this->scene = new ITMScene<ITMVoxel, ITMVoxelIndex>(&settings->sceneParams, settings->useSwapping, memoryType);
 
 	meshingEngine = NULL;
 	switch (settings->deviceType)
@@ -45,21 +45,21 @@ ITMBasicEngine::ITMBasicEngine(const ITMLibSettings *settings, const ITMRGBDCali
 	}
 
 	mesh = NULL;
-	if (createMeshingEngine) mesh = new ITMMesh(settings->deviceType == ITMLibSettings::DEVICE_CUDA ? MEMORYDEVICE_CUDA : MEMORYDEVICE_CPU);
+	if (createMeshingEngine) mesh = new ITMMesh(memoryType);
 
 	denseMapper = new ITMDenseMapper<ITMVoxel, ITMVoxelIndex>(settings);
 	denseMapper->ResetScene(scene);
 
 	imuCalibrator = new ITMIMUCalibrator_iPad();
 	tracker = ITMTrackerFactory<ITMVoxel, ITMVoxelIndex>::Instance().Make(imgSize_rgb, imgSize_d, settings, lowLevelEngine, imuCalibrator, scene);
-	trackingController = new ITMTrackingController(tracker, visualisationEngine, settings);
+	trackingController = new ITMTrackingController(tracker, settings);
 
-	Vector2i trackedImageSize = ITMTrackingController::GetTrackedImageSize(tracker, imgSize_rgb, imgSize_d);
+	Vector2i trackedImageSize = trackingController->GetTrackedImageSize(imgSize_rgb, imgSize_d);
 
 	renderState_live = visualisationEngine->CreateRenderState(scene, trackedImageSize);
 	renderState_freeview = NULL; //will be created by the visualisation engine
 
-	trackingState = trackingController->BuildTrackingState(trackedImageSize);
+	trackingState = new ITMTrackingState(trackedImageSize, memoryType);
 	tracker->UpdateInitialPose(trackingState);
 
 	view = NULL; // will be allocated by the view builder
@@ -146,7 +146,7 @@ void ITMBasicEngine::ProcessFrame(ITMUChar4Image *rgbImage, ITMShortImage *rawDe
 		if (!didFusion) denseMapper->UpdateVisibleList(view, trackingState, scene, renderState_live);
 
 		// raycast to renderState_live for tracking and free visualisation
-		trackingController->Prepare(trackingState, scene, view, renderState_live);
+		trackingController->Prepare(trackingState, scene, view, visualisationEngine, renderState_live);
 	}
 	else {
 		*trackingState->pose_d = oldPose;

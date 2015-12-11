@@ -31,7 +31,7 @@ namespace ITMLib
 		const ITMLibSettings *settings;
 
 		ITMLowLevelEngine *lowLevelEngine;
-		IITMVisualisationEngine *visualisationEngine;
+		ITMVisualisationEngine<ITMVoxel,ITMVoxelIndex> *visualisationEngine;
 
 		ITMViewBuilder *viewBuilder;		
 		ITMTrackingController *trackingController;
