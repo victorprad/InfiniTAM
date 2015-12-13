@@ -2,8 +2,7 @@
 
 #pragma once
 
-#include "../../Utils/ITMLibDefines.h"
-#include "ITMPixelUtils.h"
+#include "../../Utils/ITMPixelUtils.h"
 #include "ITMRepresentationAccess.h"
 
 template<class TVoxel>

@@ -2,8 +2,7 @@
 
 #pragma once
 
-#include "../../Utils/ITMLibDefines.h"
-#include "../../Engine/DeviceAgnostic/ITMPixelUtils.h"
+#include "../../Utils/ITMPixelUtils.h"
 
 _CPU_AND_GPU_CODE_ inline float getColorDifferenceSq(DEVICEPTR(Vector4f) *locations, DEVICEPTR(Vector4f) *colours, DEVICEPTR(Vector4u) *rgb,
 	const CONSTPTR(Vector2i) & imgSize, int locId_global, Vector4f projParams, Matrix4f M)

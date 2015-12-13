@@ -41,7 +41,6 @@ Engine/DeviceAgnostic/ITMSceneReconstructionEngine.h
 Engine/DeviceAgnostic/ITMSwappingEngine.h
 Engine/DeviceAgnostic/ITMViewBuilder.h
 Engine/DeviceAgnostic/ITMVisualisationEngine.h
-Engine/DeviceAgnostic/ITMPixelUtils.h
 Engine/DeviceAgnostic/ITMMeshingEngine.h
 )
 
@@ -186,16 +185,17 @@ Trackers/Shared/ITMWeightedICPTracker_Shared.h
 )
 
 ##
-set(ITMLIB_UTILS_SOURCES
+SET(ITMLIB_UTILS_SOURCES
 Utils/ITMCalibIO.cpp
 Utils/ITMLibSettings.cpp
 )
 
-set(ITMLIB_UTILS_HEADERS
+SET(ITMLIB_UTILS_HEADERS
 Utils/ITMCalibIO.h
 Utils/ITMLibDefines.h
 Utils/ITMLibSettings.h
 Utils/ITMMath.h
+Utils/ITMPixelUtils.h
 Utils/ITMVoxelTypes.h
 )
 

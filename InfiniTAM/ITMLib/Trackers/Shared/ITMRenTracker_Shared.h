@@ -2,8 +2,7 @@
 
 #pragma once
 
-#include "../../Utils/ITMLibDefines.h"
-#include "../../Engine/DeviceAgnostic/ITMPixelUtils.h"
+#include "../../Utils/ITMPixelUtils.h"
 #include "../../Engine/ITMSceneReconstructionEngine.h"
 
 // sigma that controls the basin of attraction
