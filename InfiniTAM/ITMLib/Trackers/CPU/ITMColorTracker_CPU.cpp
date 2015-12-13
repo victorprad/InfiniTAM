@@ -1,7 +1,7 @@
 // Copyright 2014-2015 Isis Innovation Limited and the authors of InfiniTAM
 
 #include "ITMColorTracker_CPU.h"
-#include "../Shared/ITMColorTracker.h"
+#include "../Shared/ITMColorTracker_Shared.h"
 
 using namespace ITMLib;
 

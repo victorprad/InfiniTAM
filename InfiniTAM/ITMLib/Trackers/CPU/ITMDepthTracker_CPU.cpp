@@ -1,7 +1,7 @@
 // Copyright 2014-2015 Isis Innovation Limited and the authors of InfiniTAM
 
 #include "ITMDepthTracker_CPU.h"
-#include "../Shared/ITMDepthTracker.h"
+#include "../Shared/ITMDepthTracker_Shared.h"
 
 using namespace ITMLib;
 

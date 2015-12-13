@@ -179,10 +179,10 @@ Trackers/Interface/ITMWeightedICPTracker.h
 
 ##
 SET(ITMLIB_TRACKERS_SHARED_HEADERS
-Trackers/Shared/ITMColorTracker.h
-Trackers/Shared/ITMDepthTracker.h
-Trackers/Shared/ITMRenTracker.h
-Trackers/Shared/ITMWeightedICPTracker.h
+Trackers/Shared/ITMColorTracker_Shared.h
+Trackers/Shared/ITMDepthTracker_Shared.h
+Trackers/Shared/ITMRenTracker_Shared.h
+Trackers/Shared/ITMWeightedICPTracker_Shared.h
 )
 
 ##

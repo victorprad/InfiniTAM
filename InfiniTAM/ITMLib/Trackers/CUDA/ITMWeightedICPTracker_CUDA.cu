@@ -2,7 +2,7 @@
 
 #include "ITMWeightedICPTracker_CUDA.h"
 #include "../../Engine/DeviceSpecific/CUDA/ITMCUDAUtils.h"
-#include "../Shared/ITMWeightedICPTracker.h"
+#include "../Shared/ITMWeightedICPTracker_Shared.h"
 #include "../../../ORUtils/CUDADefines.h"
 
 using namespace ITMLib;

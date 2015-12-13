@@ -2,7 +2,7 @@
 
 #include "ITMColorTracker_CUDA.h"
 #include "../../Engine/DeviceSpecific/CUDA/ITMCUDAUtils.h"
-#include "../Shared/ITMColorTracker.h"
+#include "../Shared/ITMColorTracker_Shared.h"
 #include "../../Engine/DeviceAgnostic/ITMPixelUtils.h"
 
 using namespace ITMLib;

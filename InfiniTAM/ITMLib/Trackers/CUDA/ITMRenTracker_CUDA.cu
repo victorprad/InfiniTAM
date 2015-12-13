@@ -4,7 +4,7 @@
 #include "../../Engine/DeviceSpecific/CUDA/ITMCUDAUtils.h"
 
 #include "../../../ORUtils/CUDADefines.h"
-#include "../Shared/ITMRenTracker.h"
+#include "../Shared/ITMRenTracker_Shared.h"
 #include "../../Engine/DeviceAgnostic/ITMRepresentationAccess.h" 
 
 using namespace ITMLib;

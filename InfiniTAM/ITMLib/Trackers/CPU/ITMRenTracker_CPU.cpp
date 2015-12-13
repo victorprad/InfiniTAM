@@ -1,7 +1,7 @@
 // Copyright 2014-2015 Isis Innovation Limited and the authors of InfiniTAM
 
 #include "ITMRenTracker_CPU.h"
-#include "../Shared/ITMRenTracker.h"
+#include "../Shared/ITMRenTracker_Shared.h"
 #include "../../Engine/DeviceAgnostic/ITMRepresentationAccess.h"
 
 using namespace ITMLib;

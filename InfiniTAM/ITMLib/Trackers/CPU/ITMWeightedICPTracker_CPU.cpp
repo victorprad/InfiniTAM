@@ -1,7 +1,7 @@
 // Copyright 2014-2015 Isis Innovation Limited and the authors of InfiniTAM
 
 #include "ITMWeightedICPTracker_CPU.h"
-#include "../Shared/ITMWeightedICPTracker.h"
+#include "../Shared/ITMWeightedICPTracker_Shared.h"
 
 using namespace ITMLib;
 
