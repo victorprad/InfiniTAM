@@ -2,7 +2,7 @@
 
 #include "ITMMeshingEngine_CUDA.h"
 #include "../../DeviceAgnostic/ITMMeshingEngine.h"
-#include "ITMCUDAUtils.h"
+#include "../../../Utils/ITMCUDAUtils.h"
 
 #include "../../../../ORUtils/CUDADefines.h"
 

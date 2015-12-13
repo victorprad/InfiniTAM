@@ -1,7 +1,7 @@
 // Copyright 2014-2015 Isis Innovation Limited and the authors of InfiniTAM
 
 #include "ITMSwappingEngine_CUDA.h"
-#include "ITMCUDAUtils.h"
+#include "../../../Utils/ITMCUDAUtils.h"
 #include "../../DeviceAgnostic/ITMSwappingEngine.h"
 #include "../../../Objects/ITMRenderState_VH.h"
 

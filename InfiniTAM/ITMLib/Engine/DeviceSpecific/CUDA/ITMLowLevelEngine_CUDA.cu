@@ -2,7 +2,7 @@
 
 #include "ITMLowLevelEngine_CUDA.h"
 #include "../../../../ORUtils/CUDADefines.h"
-#include "ITMCUDAUtils.h"
+#include "../../../Utils/ITMCUDAUtils.h"
 
 #include "../../DeviceAgnostic/ITMLowLevelEngine.h"
 

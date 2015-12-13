@@ -1,7 +1,7 @@
 // Copyright 2014-2015 Isis Innovation Limited and the authors of InfiniTAM
 
 #include "ITMSceneReconstructionEngine_CUDA.h"
-#include "ITMCUDAUtils.h"
+#include "../../../Utils/ITMCUDAUtils.h"
 #include "../../DeviceAgnostic/ITMSceneReconstructionEngine.h"
 #include "../../../Objects/ITMRenderState_VH.h"
 

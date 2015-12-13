@@ -1,7 +1,7 @@
 // Copyright 2014-2015 Isis Innovation Limited and the authors of InfiniTAM
 
 #include "ITMRenTracker_CUDA.h"
-#include "../../Engine/DeviceSpecific/CUDA/ITMCUDAUtils.h"
+#include "../../Utils/ITMCUDAUtils.h"
 
 #include "../../../ORUtils/CUDADefines.h"
 #include "../Shared/ITMRenTracker_Shared.h"

@@ -1,7 +1,7 @@
 // Copyright 2014-2015 Isis Innovation Limited and the authors of InfiniTAM
 
 #include "ITMWeightedICPTracker_CUDA.h"
-#include "../../Engine/DeviceSpecific/CUDA/ITMCUDAUtils.h"
+#include "../../Utils/ITMCUDAUtils.h"
 #include "../Shared/ITMWeightedICPTracker_Shared.h"
 #include "../../../ORUtils/CUDADefines.h"
 

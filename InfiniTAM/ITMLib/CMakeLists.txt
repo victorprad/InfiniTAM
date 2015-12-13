@@ -74,7 +74,6 @@ Engine/DeviceSpecific/CUDA/ITMMeshingEngine_CUDA.cu
 )
 
 set(ITMLIB_ENGINE_DEVICESPECIFIC_CUDA_HEADERS
-Engine/DeviceSpecific/CUDA/ITMCUDAUtils.h
 Engine/DeviceSpecific/CUDA/ITMLowLevelEngine_CUDA.h
 Engine/DeviceSpecific/CUDA/ITMSceneReconstructionEngine_CUDA.h
 Engine/DeviceSpecific/CUDA/ITMSwappingEngine_CUDA.h
@@ -192,6 +191,7 @@ Utils/ITMLibSettings.cpp
 
 SET(ITMLIB_UTILS_HEADERS
 Utils/ITMCalibIO.h
+Utils/ITMCUDAUtils.h
 Utils/ITMLibDefines.h
 Utils/ITMLibSettings.h
 Utils/ITMMath.h
