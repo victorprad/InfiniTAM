@@ -26,6 +26,7 @@ namespace ITMLib
 		virtual size_t numScenes(void) const = 0;
 
 		virtual void addRelation(int fromScene, int toScene, const ITMPose & pose, int weight) = 0;
+		virtual void getRelation(int fromScene, int toScene, ITMPose *out_pose = NULL, int *out_weight = NULL) const = 0;
 		virtual bool resetTracking(int sceneID, const ITMPose & pose) = 0;
 
 		virtual const ITMPose* getTrackingPose(int sceneID) const = 0;
@@ -54,6 +55,7 @@ namespace ITMLib
 		{ return allData.size(); }
 
 		void addRelation(int fromScene, int toScene, const ITMPose & pose, int weight);
+		void getRelation(int fromScene, int toScene, ITMPose *out_pose, int *out_weight) const;
 		bool resetTracking(int sceneID, const ITMPose & pose);
 
 		const ITMLocalScene<TVoxel,TIndex>* getScene(int sceneID) const
@@ -91,7 +93,7 @@ namespace ITMLib
 		std::vector<ActiveDataDescriptor> activeData;
 
 		int CheckSuccess_relocalisation(int dataID) const;
-		int CheckSuccess_newlink(int dataID, int *inliers, ITMPose *inlierPose) const;
+		int CheckSuccess_newlink(int dataID, int primaryDataID, int *inliers, ITMPose *inlierPose) const;
 		void AcceptNewLink(int dataId, int primaryDataId, const ITMPose & pose, int weight);
 
 		float visibleOriginalBlocks(int dataID) const;

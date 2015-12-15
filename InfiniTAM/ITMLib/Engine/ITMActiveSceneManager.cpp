@@ -72,6 +72,22 @@ void ITMLocalSceneManager_instance<TVoxel,TIndex>::addRelation(int fromScene, in
 }
 
 template<class TVoxel, class TIndex>
+void ITMLocalSceneManager_instance<TVoxel,TIndex>::getRelation(int fromScene, int toScene, ITMPose *out_pose, int *out_weight) const
+{
+	if ((fromScene >= 0)&&((unsigned)fromScene < allData.size())) {
+		const std::map<int,ITMPoseConstraint> & m = getScene(fromScene)->relations;
+		std::map<int,ITMPoseConstraint>::const_iterator it = m.find(toScene);
+		if (it != m.end()) {
+			if (out_pose) *out_pose = it->second.GetAccumulatedInfo();
+			if (out_weight) *out_weight = it->second.GetNumAccumulatedInfo();
+			return;
+		}
+	}
+	if (out_pose) *out_pose = ITMPose();
+	if (out_weight) *out_weight = 0;
+}
+
+template<class TVoxel, class TIndex>
 bool ITMLocalSceneManager_instance<TVoxel,TIndex>::resetTracking(int sceneID, const ITMPose & pose)
 {
 	if ((sceneID < 0)||((unsigned)sceneID >= allData.size())) return false;
@@ -379,12 +395,18 @@ static float huber_weight(float residual, float b)
 	return sqrt(tmp)/r_abs;
 }
 
-static ITMPose estimateRelativePose(const std::vector<Matrix4f> & observations, int *out_numInliers, ITMPose *out_inlierPose)
+/** estimate a relative pose, taking into account a previous estimate (weight 0
+    indicates that no previous estimate is available).
+    out_numInliers and out_inlierPose is the number of inliers from amongst the
+    new observations and the pose computed from them.
+*/
+static ITMPose estimateRelativePose(const std::vector<Matrix4f> & observations, const ITMPose & previousEstimate, float previousEstimate_weight, int *out_numInliers, ITMPose *out_inlierPose)
 {
 	static const float huber_b = 0.1f;
 	static const float weightsConverged = 0.01f;
 	static const int maxIter = 10;
-	std::vector<float> weights(observations.size(), 1.0f);
+	static const float inlierThresholdForFinalResult = 0.8f;
+	std::vector<float> weights(observations.size()+1, 1.0f);
 	std::vector<ITMPose> poses;
 
 	for (size_t i = 0; i < observations.size(); ++i) {
@@ -394,8 +416,8 @@ static ITMPose estimateRelativePose(const std::vector<Matrix4f> & observations, 
 	float params[6];
 	for (int iter = 0; iter < maxIter; ++iter) {
 		// estimate with fixed weights
-		float sumweight = 0.0f;
-		for (int j = 0; j < 6; ++j) params[j] = 0.0f;
+		float sumweight = previousEstimate_weight;
+		for (int j = 0; j < 6; ++j) params[j] = weights.back() * previousEstimate_weight * previousEstimate.GetParams()[j];
 		for (size_t i = 0; i < poses.size(); ++i) {
 			for (int j = 0; j < 6; ++j) params[j] += weights[i] * poses[i].GetParams()[j];
 			sumweight += weights[i];
@@ -404,18 +426,26 @@ static ITMPose estimateRelativePose(const std::vector<Matrix4f> & observations, 
 
 		// compute new weights
 		float weightchanges = 0.0f;
-		for (size_t i = 0; i < poses.size(); ++i) {
+		for (size_t i = 0; i < weights.size(); ++i) {
+			const ITMPose *p;
+			float w = 1.0f;
+			if (i < poses.size()) p = &(poses[i]);
+			else {
+				p = &(previousEstimate);
+				w = previousEstimate_weight;
+			}
+
 			float residual = 0.0f;
 			for (int j = 0; j < 6; ++j) {
-				float r = poses[i].GetParams()[j] - params[j];
+				float r = p->GetParams()[j] - params[j];
 				residual += r*r;
 			}
 			residual = sqrt(residual);
 			float newweight = huber_weight(residual, huber_b);
-			weightchanges += fabs(newweight - weights[i]);
+			weightchanges += w * fabs(newweight - weights[i]);
 			weights[i] = newweight;
 		}
-		float avgweightchange = weightchanges/poses.size();
+		float avgweightchange = weightchanges/(weights.size() - 1 + previousEstimate_weight);
 		if (avgweightchange < weightsConverged) break;
 	}
 
@@ -423,11 +453,11 @@ static ITMPose estimateRelativePose(const std::vector<Matrix4f> & observations, 
 	Matrix4f inlierTrafo;
 	inlierTrafo.setZeros();
 
-	for (size_t i = 0; i < weights.size(); ++i) if (weights[i] > 0.8) {
+	for (size_t i = 0; i < poses.size(); ++i) if (weights[i] > inlierThresholdForFinalResult) {
 		inlierTrafo += observations[i];
 		++inliers;
 	}
-	if (out_inlierPose) out_inlierPose->SetM(inlierTrafo / (float)inliers);
+	if (out_inlierPose) out_inlierPose->SetM(inlierTrafo / (float)MAX(inliers,1));
 	if (out_numInliers) *out_numInliers = inliers;
 
 	return ITMPose(params);
@@ -449,19 +479,31 @@ int ITMActiveSceneManager::CheckSuccess_relocalisation(int dataID) const
 	return 0;
 }
 
-int ITMActiveSceneManager::CheckSuccess_newlink(int dataID, int *inliers, ITMPose *inlierPose) const
+/*static void printPose(const ITMPose & p)
+{
+	fprintf(stderr, "%f %f %f %f\n%f %f %f %f\n%f %f %f %f\n", p.GetM().m00, p.GetM().m10, p.GetM().m20, p.GetM().m30, p.GetM().m01, p.GetM().m11, p.GetM().m21, p.GetM().m31, p.GetM().m02, p.GetM().m12, p.GetM().m22, p.GetM().m32);
+}*/
+
+
+int ITMActiveSceneManager::CheckSuccess_newlink(int dataID, int primaryDataID, int *inliers, ITMPose *inlierPose) const
 {
 	const ActiveDataDescriptor & link = activeData[dataID];
+
+	// take previous data from scene relations into account!
+	ITMPose previousEstimate;
+	int previousEstimate_weight = 0;
+	int primarySceneIndex = -1;
+	if (primaryDataID >= 0) primarySceneIndex = activeData[primaryDataID].sceneIndex;
+	localSceneManager->getRelation(primarySceneIndex, link.sceneIndex, &previousEstimate, &previousEstimate_weight);
 
 	int inliers_local;
 	ITMPose inlierPose_local;
 	if (inliers == NULL) inliers = &inliers_local;
 	if (inlierPose == NULL) inlierPose = &inlierPose_local;
-	// TODO: take previous data from scene relations into account!
 
-	estimateRelativePose(link.constraints, inliers, inlierPose);
+	estimateRelativePose(link.constraints, previousEstimate, previousEstimate_weight, inliers, inlierPose);
 
-	//fprintf(stderr, "trying to establish link ... -> %i: %i/%i attempts, %i/%i inliers\n", /*primaryDataIdx,*/ link.sceneIndex, link.trackingAttempts, N_linktrials, *inliers, N_linkoverlap);
+	//fprintf(stderr, "trying to establish link %i -> %i: %i/%i attempts, %i/%i inliers\n", primarySceneIndex, link.sceneIndex, link.trackingAttempts, N_linktrials, *inliers, N_linkoverlap);
 	if (*inliers >= N_linkoverlap) {
 		// accept link
 		return 1;
@@ -508,7 +550,7 @@ void ITMActiveSceneManager::maintainActiveData(void)
 		    (link.type == NEW_SCENE))
 		{
 			ITMPose inlierPose; int inliers;
-			int success = CheckSuccess_newlink(i, &inliers, &inlierPose);
+			int success = CheckSuccess_newlink(i, primaryDataIdx, &inliers, &inlierPose);
 			if (success == 1)
 			{
 				AcceptNewLink(primaryDataIdx, i, inlierPose, inliers);
