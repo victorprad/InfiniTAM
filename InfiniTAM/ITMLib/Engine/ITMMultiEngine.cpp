@@ -59,12 +59,10 @@ ITMMultiEngine::ITMMultiEngine(const ITMLibSettings *settings, const ITMRGBDCali
 	trackingController = new ITMTrackingController(tracker, settings);
 	trackedImageSize = trackingController->GetTrackedImageSize(imgSize_rgb, imgSize_d);
 
-//	primaryDataIdx = 0;
 	freeviewSceneIdx = 0;
 	sceneManager = new ITMLocalSceneManager_instance<ITMVoxel,ITMVoxelIndex>(settings, visualisationEngine, denseMapper, trackedImageSize);
 	activeDataManager = new ITMActiveSceneManager(sceneManager);
 	activeDataManager->initiateNewScene(true);
-//	AddNewLocalScene(-1);
 
 //TODO	tracker->UpdateInitialPose(allData[0]->trackingState);
 
@@ -148,46 +146,35 @@ void ITMMultiEngine::ProcessFrame(ITMUChar4Image *rgbImage, ITMShortImage *rawDe
 
 	// find primary data, if available
 	int primaryDataIdx = activeDataManager->findPrimaryDataIdx();
-// TODO: move elsewhere! it might as well stay here, but might be nicer elsewhere
-	if ((primaryDataIdx>=0)&&(activeDataManager->shouldStartNewArea())) {
-		activeDataManager->initiateNewScene();
-	}
 
 	// if there is a "primary data index", process it
 	if (primaryDataIdx >= 0) {
 		todoList.push_back(TodoListEntry(primaryDataIdx, true, true, true));
 	}
-	// also make sure to process all "relocalisations"
-	// usually this implies "no primary data index"
+	// after primary scene, make sure to process all relocalisations, new
+	// scenes and loop closures
 	for (int i = 0; i < activeDataManager->numActiveScenes(); ++i) {
-		if (activeDataManager->getSceneType(i) == ITMActiveSceneManager::RELOCALISATION) {
-			todoList.push_back(TodoListEntry(i, true, false, true));
-		}
+		if (activeDataManager->getSceneType(i) == ITMActiveSceneManager::NEW_SCENE) todoList.push_back(TodoListEntry(i, true, true, true));
+		else if (activeDataManager->getSceneType(i) == ITMActiveSceneManager::LOOP_CLOSURE) todoList.push_back(TodoListEntry(i, true, false, true));
+		else if (activeDataManager->getSceneType(i) == ITMActiveSceneManager::RELOCALISATION) todoList.push_back(TodoListEntry(i, true, false, true));
 	}
-	// make sure the list is not empty from the start!
+
+	// finally, once all is done, call the loop closure detection engine
 	todoList.push_back(TodoListEntry(-1, false, false, false));
 
-	// tracking
 	fprintf(stderr, "tracking data blocks:");
 	bool primaryTrackingSuccess = false;
 	for (size_t i = 0; i < todoList.size(); ++i)
 	{
-		// - first tracking pass is for primary scene or ongoing
-		//   relocalisation attempts
-		// - second tracking pass will be about (newly detected) loop
+		// - first pass of the todo list is for primary scene and
+		//   ongoing relocalisation and loopclosure attempts
+		// - an element with id -1 marks the end of the first pass,
+		//   a request to call the loop closure detection engine, and
+		//   the start of the second pass
+		// - second tracking pass will be about newly detected loop
 		//   closures, relocalisations, etc.
-		// - an element with id -1 marks the end of the first part,
-		//   start of the second part, and request to call the loop
-		//   closure detection engine
 		if (todoList[i].dataID == -1) {
-			// first refresh the todolist
-			for (int i = 0; i < activeDataManager->numActiveScenes(); ++i) {
-				if (activeDataManager->getSceneType(i) == ITMActiveSceneManager::NEW_SCENE) todoList.push_back(TodoListEntry(i, true, true, true));
-				else if (activeDataManager->getSceneType(i) == ITMActiveSceneManager::LOOP_CLOSURE) todoList.push_back(TodoListEntry(i, true, false, true));
-				//else if (activeData[i].type == ActiveDataDescriptor::RELOCALISATION) todoList.push_back(TodoListEntry(i, true, false, true));
-			}
-
-fprintf(stderr, "LCD\n");
+			fprintf(stderr, " LCD");
 			int NN[k_loopcloseneighbours];
 			float distances[k_loopcloseneighbours];
 			int addKeyframeIdx = mLoopClosureDetector->ProcessFrame(view->depth, k_loopcloseneighbours, NN, distances, primaryTrackingSuccess);
@@ -204,7 +191,7 @@ fprintf(stderr, "LCD\n");
 				if (distances[j] > F_maxdistattemptreloc) continue;
 				const LCDLib::PoseDatabase::PoseInScene & keyframe = poseDatabase.retrievePose(NN[j]);
 				int newDataIdx = activeDataManager->initiateNewLink(keyframe.sceneIdx, keyframe.pose, (primarySceneIdx<0));
-				if ((newDataIdx >= 0) /*&& (primarySceneIdx<0) ???*/) {
+				if (newDataIdx >= 0) {
 					// this is a new relocalisation attempt
 					TodoListEntry todoItem(newDataIdx, true, false, true);
 					todoItem.preprepare = true;
@@ -218,12 +205,14 @@ fprintf(stderr, "LCD\n");
 		int currentSceneIdx = activeDataManager->getSceneIndex(todoList[i].dataID);
 		currentScene = sceneManager->getScene(currentSceneIdx);
 
+		// if a new relocalisation/loopclosure is started, this will
+		// do the initial raycasting before tracking can start
 		if (todoList[i].preprepare) {
-			// this is typically happening once to initiate relocalisation/loop closure
 			denseMapper->UpdateVisibleList(view, currentScene->trackingState, currentScene->scene, currentScene->renderState);
 			trackingController->Prepare(currentScene->trackingState, currentScene->scene, view, visualisationEngine, currentScene->renderState);
 		}
 
+		// tracking
 		if (todoList[i].track)
 		{
 			int dataID = todoList[i].dataID;
@@ -278,7 +267,7 @@ fprintf(stderr, "Lost track of primary scene\n");
 
 	activeDataManager->maintainActiveData();
 
-fprintf(stderr, "...done!\n");
+	fprintf(stderr, "...done!\n");
 }
 
 Vector2i ITMMultiEngine::GetImageSize(void) const

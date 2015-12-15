@@ -30,6 +30,7 @@ namespace ITMLib
 
 		virtual const ITMPose* getTrackingPose(int sceneID) const = 0;
 		virtual int getSceneSize(int sceneID) const = 0;
+		virtual int countVisibleBlocks(int sceneID, int minBlockId, int maxBlockId, bool invertIDs) const = 0;
 	};
 
 	template<class TVoxel, class TIndex>
@@ -64,6 +65,7 @@ namespace ITMLib
 		const ITMPose* getTrackingPose(int sceneID) const
 		{ return getScene(sceneID)->trackingState->pose_d; }
 		int getSceneSize(int sceneID) const;
+		int countVisibleBlocks(int sceneID, int minBlockId, int maxBlockId, bool invertIDs) const;
 
 		std::vector<int> getShortestLinkPath(int fromSceneID, int toSceneID) const;
 		ITMPose findTransformation(int fromSceneID, int toSceneID) const;
@@ -92,10 +94,11 @@ namespace ITMLib
 		int CheckSuccess_newlink(int dataID, int *inliers, ITMPose *inlierPose) const;
 		void AcceptNewLink(int dataId, int primaryDataId, const ITMPose & pose, int weight);
 
-	public:
+		float visibleOriginalBlocks(int dataID) const;
 		bool shouldStartNewArea(void) const;
 		bool shouldMovePrimaryScene(int newDataIdx, int bestDataIdx, int primaryDataIdx) const;
 
+	public:
 		void initiateNewScene(bool isPrimaryScene = false);
 		int initiateNewLink(int sceneID, const ITMPose & pose, bool isRelocalisation);
 

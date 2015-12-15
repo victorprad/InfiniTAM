@@ -16,6 +16,10 @@ static const int N_reloctrials = 20;
 static const int N_relocsuccess = 10;
 // threshold on number of blucks when a new local scene should be started
 static const int N_maxblocknum = 10000;
+// When checking "overlap with original scene", find how many of the first N
+// blocks are still visible
+static const int N_originalblocks = 2000;
+static const float F_originalBlocksThreshold = 0.1f;
 
 template<class TVoxel, class TIndex>
 ITMLocalSceneManager_instance<TVoxel,TIndex>::ITMLocalSceneManager_instance(const ITMLibSettings *_settings, const ITMVisualisationEngine<TVoxel,TIndex> *_visualisationEngine, const ITMDenseMapper<TVoxel,TIndex> *_denseMapper, const Vector2i & _trackedImageSize)
@@ -64,7 +68,7 @@ void ITMLocalSceneManager_instance<TVoxel,TIndex>::addRelation(int fromScene, in
 	ITMPose invPose(pose.GetInvM());
 	localScene = allData[toScene];
 	localScene->relations[fromScene].AddObservation(invPose, weight);
-fprintf(stderr, "createSceneRelation %i -> %i\n", fromScene, toScene);
+	//fprintf(stderr, "createSceneRelation %i -> %i\n", fromScene, toScene);
 }
 
 template<class TVoxel, class TIndex>
@@ -83,6 +87,21 @@ int ITMLocalSceneManager_instance<TVoxel,TIndex>::getSceneSize(int sceneID) cons
 
 	ITMScene<TVoxel,TIndex> *scene = allData[sceneID]->scene;
 	return scene->index.getNumAllocatedVoxelBlocks() - scene->localVBA.lastFreeBlockId - 1;
+}
+
+template<class TVoxel, class TIndex>
+int ITMLocalSceneManager_instance<TVoxel,TIndex>::countVisibleBlocks(int sceneID, int minBlockId, int maxBlockId, bool invertIDs) const
+{
+	if ((sceneID < 0)||((unsigned)sceneID >= allData.size())) return -1.0f;
+	const ITMLocalScene<TVoxel,TIndex> *scene = allData[sceneID];
+
+	if (invertIDs) {
+		int tmp = minBlockId;
+		minBlockId = scene->scene->index.getNumAllocatedVoxelBlocks() - maxBlockId - 1;
+		maxBlockId = scene->scene->index.getNumAllocatedVoxelBlocks() - tmp - 1;
+	}
+
+	return visualisationEngine->CountVisibleBlocks(scene->scene, scene->renderState, minBlockId, maxBlockId);
 }
 
 struct LinkPathComparison {
@@ -183,18 +202,34 @@ int ITMActiveSceneManager::initiateNewLink(int sceneID, const ITMPose & pose, bo
 	newLink.type = isRelocalisation?RELOCALISATION:LOOP_CLOSURE;
 	newLink.trackingAttempts = 0;
 	activeData.push_back(newLink);
-fprintf(stderr, "attempting relocalisation... %i (type %i)\n", sceneID, (int)isRelocalisation);
+	//fprintf(stderr, "attempting relocalisation... %i (type %i)\n", sceneID, (int)isRelocalisation);
 	return activeData.size()-1;
+}
+
+float ITMActiveSceneManager::visibleOriginalBlocks(int dataID) const
+{
+	int sceneID = activeData[dataID].sceneIndex;
+
+	int allocated = localSceneManager->getSceneSize(sceneID);
+	int counted = localSceneManager->countVisibleBlocks(sceneID, 0, N_originalblocks, true);
+	//fprintf(stderr, "data %i: %i/%i (%i allocated)\n", dataID, counted, N_originalblocks, allocated);
+	int tmp = N_originalblocks;
+	if (allocated < tmp) tmp = allocated;
+	return (float)counted / (float)tmp;
 }
 
 bool ITMActiveSceneManager::shouldStartNewArea(void) const
 {
 	int primarySceneIdx = -1;
+	int primaryDataIdx = -1;
 
 	// don't start two new scenes at a time
 	for (size_t i = 0; i < activeData.size(); ++i) {
 		if (activeData[i].type == NEW_SCENE) return false;
-		if (activeData[i].type == PRIMARY_SCENE) primarySceneIdx = activeData[i].sceneIndex;
+		if (activeData[i].type == PRIMARY_SCENE) {
+			primaryDataIdx = i;
+			primarySceneIdx = activeData[i].sceneIndex;
+		}
 	}
 
 	if (primarySceneIdx < 0)
@@ -202,10 +237,13 @@ bool ITMActiveSceneManager::shouldStartNewArea(void) const
 		// TODO: check: if relocalisation fails for some time, start new scene
 		return false;
 	} else {
-		int blocksInUse = localSceneManager->getSceneSize(primarySceneIdx);
-		if (blocksInUse < N_maxblocknum) return false;
+//		int blocksInUse = localSceneManager->getSceneSize(primarySceneIdx);
+//		if (blocksInUse < N_maxblocknum) return false;
+		float visibleRatio = visibleOriginalBlocks(primaryDataIdx);
+		//fprintf(stderr, "original %f threshold %f\n", visibleRatio, F_originalBlocksThreshold);
+		return visibleRatio < F_originalBlocksThreshold;
 
-		return true;
+//		return true;
 	}
 
 	return false;
@@ -218,9 +256,12 @@ bool ITMActiveSceneManager::shouldMovePrimaryScene(int newDataId, int bestDataId
 	int sceneIdx_new = -1;
 
 	int blocksInUse_primary = -1;
+	float visibleRatio_primary = 1.0f;
 	int blocksInUse_best = -1;
+	float visibleRatio_best = 1.0f;
 	bool isNewScene_best = false;
 	int blocksInUse_new = -1;
+	float visibleRatio_new = 1.0f;
 	bool isNewScene_new = false;
 
 	if (primaryDataId >= 0) sceneIdx_primary = activeData[primaryDataId].sceneIndex;
@@ -230,17 +271,20 @@ bool ITMActiveSceneManager::shouldMovePrimaryScene(int newDataId, int bestDataId
 	// count blocks in all relevant scenes
 	if (sceneIdx_primary >= 0) {
 		blocksInUse_primary = localSceneManager->getSceneSize(sceneIdx_primary);
+		visibleRatio_primary = visibleOriginalBlocks(primaryDataId);
 	}
 
 	if (sceneIdx_new >= 0) {
 		isNewScene_new = (activeData[newDataId].type == NEW_SCENE);
 		blocksInUse_new = localSceneManager->getSceneSize(sceneIdx_new);
 		if (blocksInUse_new < 0) return false;
+		visibleRatio_new = visibleOriginalBlocks(newDataId);
 	}
 
 	if (sceneIdx_best >= 0) {
 		isNewScene_best = (activeData[bestDataId].type == NEW_SCENE);
 		blocksInUse_best = localSceneManager->getSceneSize(sceneIdx_best);
+		visibleRatio_best = visibleOriginalBlocks(bestDataId);
 	}
 
 	if (blocksInUse_primary < 0) {
@@ -252,11 +296,12 @@ bool ITMActiveSceneManager::shouldMovePrimaryScene(int newDataId, int bestDataId
 	// step 1: is "new" better than "primary" ?
 
 	// don't continue a local scene that is already full
-	if (blocksInUse_new >= N_maxblocknum) return false;
+/*	if (blocksInUse_new >= N_maxblocknum) return false;
 
-	if (blocksInUse_new >= blocksInUse_primary) return false;
+	if (blocksInUse_new >= blocksInUse_primary) return false;*/
+	if (visibleRatio_new <= visibleRatio_primary) return false;
 
-	// step 2: is "new" better than "best"?
+	// step 2: is there any contender for a new scene to move to?
 	if (blocksInUse_best < 0) return true;
 
 	// if this is a new scene, but we previously found that we can loop
@@ -267,7 +312,8 @@ bool ITMActiveSceneManager::shouldMovePrimaryScene(int newDataId, int bestDataId
 	if (!isNewScene_new && isNewScene_best) return true;
 
 	// if the two are equal, take the smaller one
-	return (blocksInUse_new < blocksInUse_best);
+	//return (blocksInUse_new < blocksInUse_best);
+	return (visibleRatio_new > visibleRatio_best);
 }
 
 int ITMActiveSceneManager::findPrimaryDataIdx(void) const
@@ -415,7 +461,7 @@ int ITMActiveSceneManager::CheckSuccess_newlink(int dataID, int *inliers, ITMPos
 
 	estimateRelativePose(link.constraints, inliers, inlierPose);
 
-fprintf(stderr, "trying to establish link ... -> %i: %i/%i attempts, %i/%i inliers\n", /*primaryDataIdx,*/ link.sceneIndex, link.trackingAttempts, N_linktrials, *inliers, N_linkoverlap);
+	//fprintf(stderr, "trying to establish link ... -> %i: %i/%i attempts, %i/%i inliers\n", /*primaryDataIdx,*/ link.sceneIndex, link.trackingAttempts, N_linktrials, *inliers, N_linkoverlap);
 	if (*inliers >= N_linkoverlap) {
 		// accept link
 		return 1;
@@ -451,7 +497,7 @@ void ITMActiveSceneManager::maintainActiveData(void)
 			{
 				if (moveToDataIdx < 0) moveToDataIdx = i;
 				else link.type = LOST;
-fprintf(stderr, "relocalisation success, move to data %i\n", moveToDataIdx);
+				//fprintf(stderr, "relocalisation success, move to data %i\n", moveToDataIdx);
 			}
 			else if (success == -1)
 			{
@@ -502,16 +548,19 @@ fprintf(stderr, "relocalisation success, move to data %i\n", moveToDataIdx);
 		ActiveDataDescriptor & link = activeData[i];
 		if (link.type == LOST_NEW)
 		{
+			// NOTE: there will only be at most one new scene at
+			// any given time and it's guaranteed to be the last
+			// in the list. Removing this new scene will therefore
+			// not require rearranging indices!
 			localSceneManager->removeScene(link.sceneIndex);
 			link.type = LOST;
 		}
-		if (link.type == LOST)
-		{
-			activeData.erase(activeData.begin()+i);
-		} else {
-			i++;
-		}
+		if (link.type == LOST) activeData.erase(activeData.begin()+i);
+		else i++;
 	}
+
+	// NOTE: this has to be done AFTER removing any previous new scene
+	if (shouldStartNewArea()) initiateNewScene();
 }
 
 template class ITMLib::ITMLocalSceneManager_instance<ITMVoxel, ITMVoxelIndex>;
