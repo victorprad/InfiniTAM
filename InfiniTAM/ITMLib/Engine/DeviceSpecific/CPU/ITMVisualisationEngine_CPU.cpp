@@ -77,6 +77,29 @@ void ITMVisualisationEngine_CPU<TVoxel,ITMVoxelBlockHash>::FindVisibleBlocks(con
 }
 
 template<class TVoxel, class TIndex>
+int ITMVisualisationEngine_CPU<TVoxel, TIndex>::CountVisibleBlocks(const ITMScene<TVoxel,TIndex> *scene, const ITMRenderState *renderState, int minBlockId, int maxBlockId) const
+{
+	return 1;
+}
+
+template<class TVoxel>
+int ITMVisualisationEngine_CPU<TVoxel, ITMVoxelBlockHash>::CountVisibleBlocks(const ITMScene<TVoxel,ITMVoxelBlockHash> *scene, const ITMRenderState *renderState, int minBlockId, int maxBlockId) const
+{
+	const ITMRenderState_VH *renderState_vh = (const ITMRenderState_VH*)renderState;
+
+	int noVisibleEntries = renderState_vh->noVisibleEntries;
+	const int *visibleEntryIDs = renderState_vh->GetVisibleEntryIDs();
+
+	int ret = 0;
+	for (int i = 0; i < noVisibleEntries; ++i) {
+		int blockID = scene->index.GetEntries()[visibleEntryIDs[i]].ptr;
+		if ((blockID >= minBlockId)&&(blockID <= maxBlockId)) ++ret;
+	}
+
+	return ret;
+}
+
+template<class TVoxel, class TIndex>
 void ITMVisualisationEngine_CPU<TVoxel, TIndex>::CreateExpectedDepths(const ITMScene<TVoxel,TIndex> *scene, const ITMPose *pose, const ITMIntrinsics *intrinsics, ITMRenderState *renderState) const
 {
 	Vector2i imgSize = renderState->renderingRangeImage->noDims;

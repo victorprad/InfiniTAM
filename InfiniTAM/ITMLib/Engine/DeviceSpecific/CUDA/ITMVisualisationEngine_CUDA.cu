@@ -22,6 +22,8 @@ inline dim3 getGridSize(Vector2i taskSize, dim3 blockSize) { return getGridSize(
 __global__ void buildVisibleList_device(const ITMHashEntry *hashTable, /*ITMHashCacheState *cacheStates, bool useSwapping,*/ int noTotalEntries,
 	int *visibleEntryIDs, int *noVisibleEntries, uchar *entriesVisibleType, Matrix4f M, Vector4f projParams, Vector2i imgSize, float voxelSize);
 
+__global__ void countVisibleBlocks_device(const int *visibleEntryIDs, int noVisibleEntries, const ITMHashEntry *hashTable, uint *noBlocks, int minBlockId, int maxBlockId);
+
 __global__ void projectAndSplitBlocks_device(const ITMHashEntry *hashEntries, const int *visibleEntryIDs, int noVisibleEntries,
 	const Matrix4f pose_M, const Vector4f intrinsics, const Vector2i imgSize, float voxelSize, RenderingBlock *renderingBlocks,
 	uint *noTotalBlocks);
@@ -147,6 +149,34 @@ void ITMVisualisationEngine_CUDA<TVoxel, ITMVoxelBlockHash>::FindVisibleBlocks(c
 			}*/
 
 	ITMSafeCall(cudaMemcpy(&renderState_vh->noVisibleEntries, noVisibleEntries_device, sizeof(int), cudaMemcpyDeviceToHost));
+}
+
+template<class TVoxel, class TIndex>
+int ITMVisualisationEngine_CUDA<TVoxel, TIndex>::CountVisibleBlocks(const ITMScene<TVoxel,TIndex> *scene, const ITMRenderState *renderState, int minBlockId, int maxBlockId) const
+{
+	return 1;
+}
+
+template<class TVoxel>
+int ITMVisualisationEngine_CUDA<TVoxel, ITMVoxelBlockHash>::CountVisibleBlocks(const ITMScene<TVoxel,ITMVoxelBlockHash> *scene, const ITMRenderState *renderState, int minBlockId, int maxBlockId) const
+{
+	const ITMRenderState_VH *renderState_vh = (const ITMRenderState_VH*)renderState;
+
+	int noVisibleEntries = renderState_vh->noVisibleEntries;
+	const int *visibleEntryIDs_device = renderState_vh->GetVisibleEntryIDs();
+
+	ITMSafeCall(cudaMemset(noTotalBlocks_device, 0, sizeof(uint)));
+
+	dim3 blockSize(256);
+	dim3 gridSize((int)ceil((float)noVisibleEntries / (float)blockSize.x));
+
+	const ITMHashEntry *hashTable_device = scene->index.GetEntries();
+	countVisibleBlocks_device<<<gridSize,blockSize>>>(visibleEntryIDs_device, noVisibleEntries, hashTable_device, noTotalBlocks_device, minBlockId, maxBlockId);
+
+	uint noTotalBlocks;
+	ITMSafeCall(cudaMemcpy(&noTotalBlocks, noTotalBlocks_device, sizeof(uint), cudaMemcpyDeviceToHost));
+
+	return noTotalBlocks;
 }
 
 template<class TVoxel, class TIndex>
@@ -442,6 +472,16 @@ void ITMVisualisationEngine_CUDA<TVoxel, ITMVoxelBlockHash>::ForwardRender(const
 }
 
 //device implementations
+
+__global__ void countVisibleBlocks_device(const int *visibleEntryIDs, int noVisibleEntries, const ITMHashEntry *hashTable, uint *noBlocks, int minBlockId, int maxBlockId)
+{
+	int globalIdx = threadIdx.x + blockIdx.x * blockDim.x;
+	if (globalIdx >= noVisibleEntries) return;
+
+	int entryId = visibleEntryIDs[globalIdx];
+	int blockId = hashTable[entryId].ptr;
+	if ((blockId >= minBlockId)&&(blockId <= maxBlockId)) atomicAdd(noBlocks, 1);
+}
 
 __global__ void buildVisibleList_device(const ITMHashEntry *hashTable, /*ITMHashCacheState *cacheStates, bool useSwapping,*/ int noTotalEntries,
 	int *visibleEntryIDs, int *noVisibleEntries, uchar *entriesVisibleType, Matrix4f M, Vector4f projParams, Vector2i imgSize, float voxelSize)
