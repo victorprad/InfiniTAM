@@ -123,8 +123,8 @@ void ITMBasicEngine::ProcessFrame(ITMUChar4Image *rgbImage, ITMShortImage *rawDe
 	if (trackingActive) trackingController->Track(trackingState, view);
 
 	int trackingSuccess = 0;
-	if (trackingState->poseQuality > 0.8f) trackingSuccess = 2;
-	else if (trackingState->poseQuality > 0.4f) trackingSuccess = 1;
+	if (trackingState->poseQuality > settings->goodTrackingThreshold) trackingSuccess = 2;
+	else if (trackingState->poseQuality > settings->poorTrackingThreshold) trackingSuccess = 1;
 
 	static int trackingSuccess_prev = -1;
 	if (trackingSuccess != trackingSuccess_prev) {

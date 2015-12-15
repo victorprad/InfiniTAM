@@ -30,6 +30,9 @@ namespace ITMLib
 		/// For ITMColorTracker: skip every other point in energy function evaluation.
 		bool skipPoints;
 
+		float goodTrackingThreshold;
+		float poorTrackingThreshold;
+
 		const char *trackerConfig;
 
 		/// Further, scene specific parameters such as voxel size
