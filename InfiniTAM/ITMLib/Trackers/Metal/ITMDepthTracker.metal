@@ -2,7 +2,7 @@
 
 #include <metal_stdlib>
 
-#include "../../DeviceAgnostic/ITMDepthTracker.h"
+#include "../Shared/ITMDepthTracker_Shared.h"
 #include "ITMDepthTracker_Metal.h"
 
 using namespace metal;

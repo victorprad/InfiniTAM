@@ -4,7 +4,7 @@
 
 #ifndef __METALC__
 
-#include "../../ITMDepthTracker.h"
+#include "../Interface/ITMDepthTracker.h"
 
 namespace ITMLib
 {

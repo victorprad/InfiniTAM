@@ -1,7 +1,7 @@
 // Copyright 2014 Isis Innovation Limited and the authors of InfiniTAM
 
 #include "ITMDepthTracker_Metal.h"
-#include "../../DeviceAgnostic/ITMDepthTracker.h"
+#include "../Shared/ITMDepthTracker_Shared.h"
 #import <Accelerate/Accelerate.h>
 
 using namespace ITMLib::Engine;

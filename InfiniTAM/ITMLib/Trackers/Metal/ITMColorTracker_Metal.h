@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "../../ITMColorTracker.h"
+#include "../Interface/ITMColorTracker.h"
 
 namespace ITMLib
 {

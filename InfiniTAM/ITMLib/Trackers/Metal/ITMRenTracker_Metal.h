@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "../../ITMRenTracker.h"
+#include "../Interface/ITMRenTracker.h"
 
 namespace ITMLib
 {
