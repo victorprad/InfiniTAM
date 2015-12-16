@@ -349,6 +349,28 @@ int ITMActiveSceneManager::findPrimarySceneIdx(void) const
 	return activeData[id].sceneIndex;
 }
 
+int ITMActiveSceneManager::findBestVisualisationDataIdx(void) const
+{
+	int bestIdx = -1;
+	for (size_t i = 0; i < activeData.size(); ++i) {
+		if (activeData[i].type == PRIMARY_SCENE) return i;
+		else if (activeData[i].type == NEW_SCENE) bestIdx = i;
+		else if (activeData[i].type == RELOCALISATION) {
+			if (bestIdx<0) { bestIdx = i; continue; }
+			if (activeData[bestIdx].type == NEW_SCENE) continue;
+			if (activeData[bestIdx].constraints.size() < activeData[i].constraints.size()) bestIdx = i;
+		}
+	}
+	return bestIdx;
+}
+
+int ITMActiveSceneManager::findBestVisualisationSceneIdx(void) const
+{
+	int id = findBestVisualisationDataIdx();
+	if (id < 0) return -1;
+	return activeData[id].sceneIndex;
+}
+
 void ITMActiveSceneManager::recordTrackingResult(int dataID, int trackingSuccess, bool primaryTrackingSuccess)
 {
 	ActiveDataDescriptor & data = activeData[dataID];

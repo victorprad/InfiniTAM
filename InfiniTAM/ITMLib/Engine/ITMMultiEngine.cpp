@@ -296,9 +296,9 @@ void ITMMultiEngine::GetImage(ITMUChar4Image *out, GetImageType getImageType, IT
 		break;
 	case ITMMultiEngine::InfiniTAM_IMAGE_SCENERAYCAST:
 	{
-		int primarySceneIdx = activeDataManager->findPrimarySceneIdx();
-		if (primarySceneIdx < 0) break; // TODO: clear image? what else to do when tracking is lost?
-		ITMLocalScene<ITMVoxel,ITMVoxelIndex> *activeScene = sceneManager->getScene(primarySceneIdx);
+		int visualisationSceneIdx = activeDataManager->findBestVisualisationSceneIdx();
+		if (visualisationSceneIdx < 0) break; // TODO: clear image? what else to do when tracking is lost?
+		ITMLocalScene<ITMVoxel,ITMVoxelIndex> *activeScene = sceneManager->getScene(visualisationSceneIdx);
 		ORUtils::Image<Vector4u> *srcImage = activeScene->renderState->raycastImage;
 		out->ChangeDims(srcImage->noDims);
 		if (settings->deviceType == ITMLibSettings::DEVICE_CUDA)

@@ -110,6 +110,9 @@ namespace ITMLib
 		int findPrimaryDataIdx(void) const;
 		int findPrimarySceneIdx(void) const;
 
+		int findBestVisualisationDataIdx(void) const;
+		int findBestVisualisationSceneIdx(void) const;
+
 		int numActiveScenes(void) const
 		{ return static_cast<int>(activeData.size()); }
 		int getSceneIndex(int dataIdx) const
