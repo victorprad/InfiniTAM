@@ -6,8 +6,6 @@
 #include <stdlib.h>
 #endif
 
-#include "../Utils/ITMLibDefines.h"
-
 #include "../../ORUtils/MemoryBlock.h"
 
 #define SDF_BLOCK_SIZE 8				// SDF block size
