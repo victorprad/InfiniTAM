@@ -4,8 +4,8 @@
 
 #include "../../Utils/ITMLibDefines.h"
 
-#include "../../Objects/ITMImageHierarchy.h"
-#include "../../Objects/ITMViewHierarchyLevel.h"
+#include "../Base/ITMImageHierarchy.h"
+#include "../Base/ITMViewHierarchyLevel.h"
 
 #include "ITMTracker.h"
 #include "../../Engine/ITMLowLevelEngine.h"

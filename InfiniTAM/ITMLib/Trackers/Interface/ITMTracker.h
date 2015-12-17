@@ -4,7 +4,7 @@
 
 #include "../../Utils/ITMLibDefines.h"
 
-#include "../../Objects/ITMTrackingState.h"
+#include "../Base/ITMTrackingState.h"
 #include "../../Objects/ITMView.h"
 
 namespace ITMLib

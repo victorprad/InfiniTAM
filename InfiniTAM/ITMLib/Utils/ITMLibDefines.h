@@ -32,7 +32,6 @@
 #include "../Objects/ITMPlainVoxelArray.h"
 #include "../Objects/ITMVoxelBlockHash.h"
 #include "../../ORUtils/Image.h"
-#include "../../ORUtils/PlatformIndependence.h"
 
 /** This chooses the information stored at each voxel. At the moment, valid
     options are ITMVoxel_s, ITMVoxel_f, ITMVoxel_s_rgb and ITMVoxel_f_rgb 

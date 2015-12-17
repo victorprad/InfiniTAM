@@ -94,7 +94,6 @@ Objects/ITMExtrinsics.h
 Objects/ITMGlobalCache.h
 Objects/ITMHashEntry.h
 Objects/ITMHashSwapState.h
-Objects/ITMImageHierarchy.h
 Objects/ITMIntrinsics.h
 Objects/ITMLocalScene.h
 Objects/ITMLocalVBA.h
@@ -103,13 +102,9 @@ Objects/ITMPointCloud.h
 Objects/ITMPose.h
 Objects/ITMRGBDCalib.h
 Objects/ITMScene.h
-Objects/ITMSceneHierarchyLevel.h
 Objects/ITMSceneParams.h
-Objects/ITMTemplatedHierarchyLevel.h
-Objects/ITMTrackingState.h
 Objects/ITMView.h
 Objects/ITMViewIMU.h
-Objects/ITMViewHierarchyLevel.h
 Objects/ITMRenderState.h
 Objects/ITMRenderState_VH.h
 Objects/ITMVoxelBlockHash.h
@@ -124,6 +119,15 @@ Trackers/ITMTrackerFactory.cpp
 
 SET(ITMLIB_TRACKERS_HEADERS
 Trackers/ITMTrackerFactory.h
+)
+
+##
+SET(ITMLIB_TRACKERS_BASE_HEADERS
+Trackers/Base/ITMImageHierarchy.h
+Trackers/Base/ITMSceneHierarchyLevel.h
+Trackers/Base/ITMTemplatedHierarchyLevel.h
+Trackers/Base/ITMTrackingState.h
+Trackers/Base/ITMViewHierarchyLevel.h
 )
 
 ##
@@ -212,6 +216,7 @@ ${ITMLIB_OBJECTS_SOURCES}
 ${ITMLIB_OBJECTS_HEADERS}
 ${ITMLIB_TRACKERS_SOURCES}
 ${ITMLIB_TRACKERS_HEADERS}
+${ITMLIB_TRACKERS_BASE_HEADERS}
 ${ITMLIB_TRACKERS_INTERFACE_SOURCES}
 ${ITMLIB_TRACKERS_INTERFACE_HEADERS}
 ${ITMLIB_TRACKERS_SHARED_HEADERS}
@@ -244,6 +249,7 @@ SOURCE_GROUP(Engine\\DeviceSpecific\\CPU FILES ${ITMLIB_ENGINE_DEVICESPECIFIC_CP
 SOURCE_GROUP(Engine\\DeviceSpecific\\CUDA FILES ${ITMLIB_ENGINE_DEVICESPECIFIC_CUDA_SOURCES} ${ITMLIB_ENGINE_DEVICESPECIFIC_CUDA_HEADERS})
 SOURCE_GROUP(Objects FILES ${ITMLIB_OBJECTS_SOURCES} ${ITMLIB_OBJECTS_HEADERS})
 SOURCE_GROUP(Trackers FILES ${ITMLIB_TRACKERS_SOURCES} ${ITMLIB_TRACKERS_HEADERS})
+SOURCE_GROUP(Trackers\\Base FILES ${ITMLIB_TRACKERS_BASE_HEADERS})
 SOURCE_GROUP(Trackers\\CPU FILES ${ITMLIB_TRACKERS_CPU_SOURCES} ${ITMLIB_TRACKERS_CPU_HEADERS})
 SOURCE_GROUP(Trackers\\CUDA FILES ${ITMLIB_TRACKERS_CUDA_SOURCES} ${ITMLIB_TRACKERS_CUDA_HEADERS})
 SOURCE_GROUP(Trackers\\Interface FILES ${ITMLIB_TRACKERS_INTERFACE_SOURCES} ${ITMLIB_TRACKERS_INTERFACE_HEADERS})

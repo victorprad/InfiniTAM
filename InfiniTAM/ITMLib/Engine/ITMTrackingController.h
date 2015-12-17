@@ -4,7 +4,7 @@
 
 #include "../Utils/ITMLibDefines.h"
 
-#include "../Objects/ITMTrackingState.h"
+#include "../Trackers/Base/ITMTrackingState.h"
 #include "../Objects/ITMRenderState.h"
 
 #include "../Engine/ITMVisualisationEngine.h"

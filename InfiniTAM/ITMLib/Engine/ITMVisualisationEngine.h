@@ -6,7 +6,7 @@
 
 #include "../Objects/ITMScene.h"
 #include "../Objects/ITMView.h"
-#include "../Objects/ITMTrackingState.h"
+#include "../Trackers/Base/ITMTrackingState.h"
 #include "../Objects/ITMRenderState_VH.h"
 
 namespace ITMLib
