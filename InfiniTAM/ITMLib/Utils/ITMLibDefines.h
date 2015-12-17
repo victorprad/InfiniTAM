@@ -26,58 +26,16 @@
 
 #endif
 
-#include "../../ORUtils/PlatformIndependence.h"
-#include "ITMMath.h"
-
-//////////////////////////////////////////////////////////////////////////
-// Voxel Hashing definition and helper functions
-//////////////////////////////////////////////////////////////////////////
-
-#define SDF_BLOCK_SIZE 8				// SDF block size
-#define SDF_BLOCK_SIZE3 512				// SDF_BLOCK_SIZE3 = SDF_BLOCK_SIZE * SDF_BLOCK_SIZE * SDF_BLOCK_SIZE
-#define SDF_LOCAL_BLOCK_NUM 0x40000		// Number of locally stored blocks, currently 2^17
-
-#define SDF_GLOBAL_BLOCK_NUM 0x120000	// Number of globally stored blocks: SDF_BUCKET_NUM + SDF_EXCESS_LIST_SIZE
-#define SDF_TRANSFER_BLOCK_NUM 0x1000	// Maximum number of blocks transfered in one swap operation
-
-#define SDF_BUCKET_NUM 0x100000			// Number of Hash Bucket, should be 2^n and bigger than SDF_LOCAL_BLOCK_NUM, SDF_HASH_MASK = SDF_BUCKET_NUM - 1
-#define SDF_HASH_MASK 0xfffff			// Used for get hashing value of the bucket index,  SDF_HASH_MASK = SDF_BUCKET_NUM - 1
-#define SDF_EXCESS_LIST_SIZE 0x20000	// 0x20000 Size of excess list, used to handle collisions. Also max offset (unsigned short) value.
-
-//////////////////////////////////////////////////////////////////////////
-// Voxel Hashing data structures
-//////////////////////////////////////////////////////////////////////////
-
-/** \brief
-    A single entry in the hash table.
-*/
-struct ITMHashEntry
-{
-	/** Position of the corner of the 8x8x8 volume, that identifies the entry. */
-	Vector3s pos;
-	/** Offset in the excess list. */
-	int offset;
-	/** Pointer to the voxel block array.
-	    - >= 0 identifies an actual allocated entry in the voxel block array
-	    - -1 identifies an entry that has been removed (swapped out)
-	    - <-1 identifies an unallocated block
-	*/
-	int ptr;
-};
-
-struct ITMHashSwapState
-{
-	/// 0 - most recent data is on host, data not currently in active
-	///     memory
-	/// 1 - data both on host and in active memory, information has not
-	///     yet been combined
-	/// 2 - most recent data is in active memory, should save this data
-	///     back to host at some point
-	uchar state;
-};
-
+#include "ITMHashEntry.h"
+#include "ITMHashSwapState.h"
 #include "../Objects/ITMVoxelBlockHash.h"
 #include "../Objects/ITMPlainVoxelArray.h"
+#include "../../ORUtils/Image.h"
+#include "../../ORUtils/PlatformIndependence.h"
+
+//////////////////////////////////////////////////////////////////////////
+// Voxel data structures
+//////////////////////////////////////////////////////////////////////////
 
 /** \brief
     Stores the information of a single voxel in the volume
@@ -193,8 +151,6 @@ typedef ITMVoxel_s ITMVoxel;
 */
 typedef ITMLib::ITMVoxelBlockHash ITMVoxelIndex;
 //typedef ITMLib::ITMPlainVoxelArray ITMVoxelIndex;
-
-#include "../../ORUtils/Image.h"
 
 //////////////////////////////////////////////////////////////////////////
 // Do not change below this point

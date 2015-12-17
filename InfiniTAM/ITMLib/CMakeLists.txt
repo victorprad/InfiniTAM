@@ -160,6 +160,8 @@ Utils/ITMLibSettings.cpp
 
 set(ITMLIB_UTILS_HEADERS
 Utils/ITMCalibIO.h
+Utils/ITMHashEntry.h
+Utils/ITMHashSwapState.h
 Utils/ITMLibDefines.h
 Utils/ITMLibSettings.h
 Utils/ITMMath.h
