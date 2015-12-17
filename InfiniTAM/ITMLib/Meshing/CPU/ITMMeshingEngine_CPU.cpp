@@ -1,7 +1,7 @@
 // Copyright 2014-2015 Isis Innovation Limited and the authors of InfiniTAM
 
 #include "ITMMeshingEngine_CPU.h"
-#include "../../DeviceAgnostic/ITMMeshingEngine.h"
+#include "../Shared/ITMMeshingEngine_Shared.h"
 
 using namespace ITMLib;
 

@@ -30,7 +30,6 @@ Engine/ITMSwappingEngine.h
 Engine/ITMTrackingController.h
 Engine/ITMViewBuilder.h
 Engine/ITMVisualisationEngine.h
-Engine/ITMMeshingEngine.h
 )
 
 ##
@@ -41,7 +40,6 @@ Engine/DeviceAgnostic/ITMSceneReconstructionEngine.h
 Engine/DeviceAgnostic/ITMSwappingEngine.h
 Engine/DeviceAgnostic/ITMViewBuilder.h
 Engine/DeviceAgnostic/ITMVisualisationEngine.h
-Engine/DeviceAgnostic/ITMMeshingEngine.h
 )
 
 ##
@@ -51,7 +49,6 @@ Engine/DeviceSpecific/CPU/ITMSceneReconstructionEngine_CPU.cpp
 Engine/DeviceSpecific/CPU/ITMSwappingEngine_CPU.cpp
 Engine/DeviceSpecific/CPU/ITMViewBuilder_CPU.cpp
 Engine/DeviceSpecific/CPU/ITMVisualisationEngine_CPU.cpp
-Engine/DeviceSpecific/CPU/ITMMeshingEngine_CPU.cpp
 )
 
 set(ITMLIB_ENGINE_DEVICESPECIFIC_CPU_HEADERS
@@ -60,7 +57,6 @@ Engine/DeviceSpecific/CPU/ITMSceneReconstructionEngine_CPU.h
 Engine/DeviceSpecific/CPU/ITMSwappingEngine_CPU.h
 Engine/DeviceSpecific/CPU/ITMViewBuilder_CPU.h
 Engine/DeviceSpecific/CPU/ITMVisualisationEngine_CPU.h
-Engine/DeviceSpecific/CPU/ITMMeshingEngine_CPU.h
 )
 
 ##
@@ -70,7 +66,6 @@ Engine/DeviceSpecific/CUDA/ITMSceneReconstructionEngine_CUDA.cu
 Engine/DeviceSpecific/CUDA/ITMSwappingEngine_CUDA.cu
 Engine/DeviceSpecific/CUDA/ITMViewBuilder_CUDA.cu
 Engine/DeviceSpecific/CUDA/ITMVisualisationEngine_CUDA.cu
-Engine/DeviceSpecific/CUDA/ITMMeshingEngine_CUDA.cu
 )
 
 set(ITMLIB_ENGINE_DEVICESPECIFIC_CUDA_HEADERS
@@ -79,7 +74,39 @@ Engine/DeviceSpecific/CUDA/ITMSceneReconstructionEngine_CUDA.h
 Engine/DeviceSpecific/CUDA/ITMSwappingEngine_CUDA.h
 Engine/DeviceSpecific/CUDA/ITMViewBuilder_CUDA.h
 Engine/DeviceSpecific/CUDA/ITMVisualisationEngine_CUDA.h
-Engine/DeviceSpecific/CUDA/ITMMeshingEngine_CUDA.h
+)
+
+##
+SET(ITMLIB_MESHING_BASE_HEADERS
+Meshing/Base/ITMMesh.h
+)
+
+##
+SET(ITMLIB_MESHING_CPU_SOURCES
+Meshing/CPU/ITMMeshingEngine_CPU.cpp
+)
+
+SET(ITMLIB_MESHING_CPU_HEADERS
+Meshing/CPU/ITMMeshingEngine_CPU.h
+)
+
+##
+SET(ITMLIB_MESHING_CUDA_SOURCES
+Meshing/CUDA/ITMMeshingEngine_CUDA.cu
+)
+
+SET(ITMLIB_MESHING_CUDA_HEADERS
+Meshing/CUDA/ITMMeshingEngine_CUDA.h
+)
+
+##
+SET(ITMLIB_MESHING_INTERFACE_HEADERS
+Meshing/Interface/ITMMeshingEngine.h
+)
+
+##
+SET(ITMLIB_MESHING_SHARED_HEADERS
+Meshing/Shared/ITMMeshingEngine_Shared.h
 )
 
 ##
@@ -109,7 +136,6 @@ Objects/ITMRenderState.h
 Objects/ITMRenderState_VH.h
 Objects/ITMVoxelBlockHash.h
 Objects/ITMIMUMeasurement.h
-Objects/ITMMesh.h
 )
 
 ##
@@ -212,6 +238,9 @@ ${ITMLIB_TOPLEVEL_HEADERS}
 ${ITMLIB_ENGINE_SOURCES}
 ${ITMLIB_ENGINE_HEADERS}
 ${ITMLIB_ENGINE_DEVICEAGNOSTIC_HEADERS}
+${ITMLIB_MESHING_BASE_HEADERS}
+${ITMLIB_MESHING_INTERFACE_HEADERS}
+${ITMLIB_MESHING_SHARED_HEADERS}
 ${ITMLIB_OBJECTS_SOURCES}
 ${ITMLIB_OBJECTS_HEADERS}
 ${ITMLIB_TRACKERS_SOURCES}
@@ -227,6 +256,8 @@ ${ITMLIB_UTILS_HEADERS}
 set(ITMLIB_CPU_OBJECTS
 ${ITMLIB_ENGINE_DEVICESPECIFIC_CPU_SOURCES}
 ${ITMLIB_ENGINE_DEVICESPECIFIC_CPU_HEADERS}
+${ITMLIB_MESHING_CPU_SOURCES}
+${ITMLIB_MESHING_CPU_HEADERS}
 ${ITMLIB_TRACKERS_CPU_SOURCES}
 ${ITMLIB_TRACKERS_CPU_HEADERS}
 )
@@ -234,6 +265,8 @@ ${ITMLIB_TRACKERS_CPU_HEADERS}
 set(ITMLIB_CUDA_OBJECTS
 ${ITMLIB_ENGINE_DEVICESPECIFIC_CUDA_SOURCES}
 ${ITMLIB_ENGINE_DEVICESPECIFIC_CUDA_HEADERS}
+${ITMLIB_MESHING_CUDA_SOURCES}
+${ITMLIB_MESHING_CUDA_HEADERS}
 ${ITMLIB_TRACKERS_CUDA_SOURCES}
 ${ITMLIB_TRACKERS_CUDA_HEADERS}
 )
@@ -247,6 +280,11 @@ SOURCE_GROUP(Engine FILES ${ITMLIB_ENGINE_SOURCES} ${ITMLIB_ENGINE_HEADERS})
 SOURCE_GROUP(Engine\\DeviceAgnostic FILES ${ITMLIB_ENGINE_DEVICEAGNOSTIC_HEADERS})
 SOURCE_GROUP(Engine\\DeviceSpecific\\CPU FILES ${ITMLIB_ENGINE_DEVICESPECIFIC_CPU_SOURCES} ${ITMLIB_ENGINE_DEVICESPECIFIC_CPU_HEADERS})
 SOURCE_GROUP(Engine\\DeviceSpecific\\CUDA FILES ${ITMLIB_ENGINE_DEVICESPECIFIC_CUDA_SOURCES} ${ITMLIB_ENGINE_DEVICESPECIFIC_CUDA_HEADERS})
+SOURCE_GROUP(Meshing\\Base FILES ${ITMLIB_MESHING_BASE_HEADERS})
+SOURCE_GROUP(Meshing\\CPU FILES ${ITMLIB_MESHING_CPU_SOURCES} ${ITMLIB_MESHING_CPU_HEADERS})
+SOURCE_GROUP(Meshing\\CUDA FILES ${ITMLIB_MESHING_CUDA_SOURCES} ${ITMLIB_MESHING_CUDA_HEADERS})
+SOURCE_GROUP(Meshing\\Interface FILES ${ITMLIB_MESHING_INTERFACE_HEADERS})
+SOURCE_GROUP(Meshing\\Shared FILES ${ITMLIB_MESHING_SHARED_HEADERS})
 SOURCE_GROUP(Objects FILES ${ITMLIB_OBJECTS_SOURCES} ${ITMLIB_OBJECTS_HEADERS})
 SOURCE_GROUP(Trackers FILES ${ITMLIB_TRACKERS_SOURCES} ${ITMLIB_TRACKERS_HEADERS})
 SOURCE_GROUP(Trackers\\Base FILES ${ITMLIB_TRACKERS_BASE_HEADERS})

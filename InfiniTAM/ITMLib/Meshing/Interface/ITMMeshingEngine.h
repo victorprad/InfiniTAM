@@ -4,10 +4,10 @@
 
 #include <math.h>
 
-#include "../Utils/ITMLibDefines.h"
+#include "../../Utils/ITMLibDefines.h"
 
-#include "../Objects/ITMScene.h"
-#include "../Objects/ITMMesh.h"
+#include "../../Objects/ITMScene.h"
+#include "../Base/ITMMesh.h"
 
 namespace ITMLib
 {

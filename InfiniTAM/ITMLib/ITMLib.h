@@ -90,13 +90,13 @@
 #include "Engine/DeviceSpecific/Metal/ITMViewBuilder_Metal.h"
 #endif
 
-#include "Engine/ITMMeshingEngine.h"
-#include "Engine/DeviceSpecific/CPU/ITMMeshingEngine_CPU.h"
+#include "Meshing/Interface/ITMMeshingEngine.h"
+#include "Meshing/CPU/ITMMeshingEngine_CPU.h"
 #ifndef COMPILE_WITHOUT_CUDA
-#include "Engine/DeviceSpecific/CUDA/ITMMeshingEngine_CUDA.h"
+#include "Meshing/CUDA/ITMMeshingEngine_CUDA.h"
 #endif
 #ifdef COMPILE_WITH_METAL
-#include "Engine/DeviceSpecific/CPU/ITMMeshingEngine_CPU.h"
+#include "Meshing/CPU/ITMMeshingEngine_CPU.h"
 #endif
 
 #include "Engine/ITMDenseMapper.h"
