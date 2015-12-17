@@ -165,6 +165,7 @@ Utils/ITMHashSwapState.h
 Utils/ITMLibDefines.h
 Utils/ITMLibSettings.h
 Utils/ITMMath.h
+Utils/ITMVoxelTypes.h
 )
 
 #################################################################
