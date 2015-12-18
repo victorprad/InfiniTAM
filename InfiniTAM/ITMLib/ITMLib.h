@@ -41,13 +41,13 @@
 #include "Engine/DeviceSpecific/Metal/ITMSceneReconstructionEngine_Metal.h"
 #endif
 
-#include "Engine/ITMVisualisationEngine.h"
-#include "Engine/DeviceSpecific/CPU/ITMVisualisationEngine_CPU.h"
+#include "Visualisation/Interface/ITMVisualisationEngine.h"
+#include "Visualisation/CPU/ITMVisualisationEngine_CPU.h"
 #ifndef COMPILE_WITHOUT_CUDA
-#include "Engine/DeviceSpecific/CUDA/ITMVisualisationEngine_CUDA.h"
+#include "Visualisation/CUDA/ITMVisualisationEngine_CUDA.h"
 #endif
 #ifdef COMPILE_WITH_METAL
-#include "Engine/DeviceSpecific/Metal/ITMVisualisationEngine_Metal.h"
+#include "Visualisation/Metal/ITMVisualisationEngine_Metal.h"
 #endif
 
 #include "Trackers/Interface/ITMColorTracker.h"

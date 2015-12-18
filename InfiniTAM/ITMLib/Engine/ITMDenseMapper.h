@@ -10,7 +10,7 @@
 #include "../Objects/ITMRenderState.h"
 
 #include "../Engine/ITMSceneReconstructionEngine.h"
-#include "../Engine/ITMVisualisationEngine.h"
+#include "../Visualisation/Interface/ITMVisualisationEngine.h"
 #include "../Engine/ITMSwappingEngine.h"
 
 namespace ITMLib

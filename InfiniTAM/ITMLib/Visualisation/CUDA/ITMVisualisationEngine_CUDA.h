@@ -2,19 +2,24 @@
 
 #pragma once
 
-#include "../../ITMVisualisationEngine.h"
+#include "../Interface/ITMVisualisationEngine.h"
+
+struct RenderingBlock;
 
 namespace ITMLib
 {
 	template<class TVoxel, class TIndex>
-	class ITMVisualisationEngine_CPU : public ITMVisualisationEngine < TVoxel, TIndex >
+	class ITMVisualisationEngine_CUDA : public ITMVisualisationEngine < TVoxel, TIndex >
 	{
+	private:
+		uint *noTotalPoints_device;
+
 	public:
-		explicit ITMVisualisationEngine_CPU(void) { }
-		~ITMVisualisationEngine_CPU(void) { }
+		explicit ITMVisualisationEngine_CUDA(void);
+		~ITMVisualisationEngine_CUDA(void);
 
 		void FindVisibleBlocks(const ITMScene<TVoxel,TIndex> *scene, const ITMPose *pose, const ITMIntrinsics *intrinsics, ITMRenderState *renderState) const;
-		int CountVisibleBlocks(const ITMScene<TVoxel,TIndex> *scene,const ITMRenderState *renderState, int minBlockId, int maxBlockId) const;
+		int CountVisibleBlocks(const ITMScene<TVoxel,TIndex> *scene, const ITMRenderState *renderState, int minBlockId, int maxBlockId) const;
 		void CreateExpectedDepths(const ITMScene<TVoxel,TIndex> *scene, const ITMPose *pose, const ITMIntrinsics *intrinsics, ITMRenderState *renderState) const;
 		void RenderImage(const ITMScene<TVoxel,TIndex> *scene, const ITMPose *pose, const ITMIntrinsics *intrinsics, const ITMRenderState *renderState, 
 			ITMUChar4Image *outputImage, IITMVisualisationEngine::RenderImageType type = IITMVisualisationEngine::RENDER_SHADED_GREYSCALE) const;
@@ -27,11 +32,16 @@ namespace ITMLib
 	};
 
 	template<class TVoxel>
-	class ITMVisualisationEngine_CPU<TVoxel, ITMVoxelBlockHash> : public ITMVisualisationEngine < TVoxel, ITMVoxelBlockHash >
+	class ITMVisualisationEngine_CUDA<TVoxel, ITMVoxelBlockHash> : public ITMVisualisationEngine < TVoxel, ITMVoxelBlockHash >
 	{
+	private:
+		uint *noTotalPoints_device;
+		RenderingBlock *renderingBlockList_device;
+		uint *noTotalBlocks_device;
+		int *noVisibleEntries_device;
 	public:
-		explicit ITMVisualisationEngine_CPU(void) { }
-		~ITMVisualisationEngine_CPU(void) { }
+		explicit ITMVisualisationEngine_CUDA(void);
+		~ITMVisualisationEngine_CUDA(void);
 
 		void FindVisibleBlocks(const ITMScene<TVoxel,ITMVoxelBlockHash> *scene, const ITMPose *pose, const ITMIntrinsics *intrinsics, ITMRenderState *renderState) const;
 		int CountVisibleBlocks(const ITMScene<TVoxel,ITMVoxelBlockHash> *scene, const ITMRenderState *renderState, int minBlockId, int maxBlockId) const;

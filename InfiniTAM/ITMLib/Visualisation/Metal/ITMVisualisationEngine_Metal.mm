@@ -6,7 +6,7 @@
 
 #include "ITMVisualisationEngine_Metal.h"
 #include "../../DeviceAgnostic/ITMSceneReconstructionEngine.h"
-#include "../../DeviceAgnostic/ITMVisualisationEngine.h"
+#include "../Shared/ITMVisualisationEngine_Shared.h"
 #include "../../DeviceAgnostic/ITMSceneReconstructionEngine.h"
 #include "../../../Objects/ITMRenderState_VH.h"
 

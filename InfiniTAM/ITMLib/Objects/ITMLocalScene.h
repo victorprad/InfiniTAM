@@ -8,7 +8,7 @@
 #include "ITMRenderState.h"
 #include "../Trackers/Base/ITMTrackingState.h"
 #include "../Utils/ITMLibSettings.h"
-#include "../Engine/ITMVisualisationEngine.h"
+#include "../Visualisation/Interface/ITMVisualisationEngine.h"
 
 namespace ITMLib {
 	struct ITMPoseConstraint

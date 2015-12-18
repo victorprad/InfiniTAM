@@ -7,7 +7,7 @@
 #include "../Trackers/Base/ITMTrackingState.h"
 #include "../Objects/ITMRenderState.h"
 
-#include "../Engine/ITMVisualisationEngine.h"
+#include "../Visualisation/Interface/ITMVisualisationEngine.h"
 
 #include "../Trackers/ITMTrackerFactory.h"
 

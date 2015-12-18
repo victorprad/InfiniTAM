@@ -3,7 +3,7 @@
 #include <metal_stdlib>
 
 #include "../../DeviceAgnostic/ITMSceneReconstructionEngine.h"
-#include "../../DeviceAgnostic/ITMVisualisationEngine.h"
+#include "../Shared/ITMVisualisationEngine_Shared.h"
 #include "ITMVisualisationEngine_Metal.h"
 
 using namespace metal;

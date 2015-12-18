@@ -14,7 +14,6 @@ Engine/ITMBasicEngine.cpp
 Engine/ITMMultiEngine.cpp
 Engine/ITMActiveSceneManager.cpp
 Engine/ITMTrackingController.cpp
-Engine/ITMVisualisationEngine.cpp
 )
 
 SET(ITMLIB_ENGINE_HEADERS
@@ -29,7 +28,6 @@ Engine/ITMSceneReconstructionEngine.h
 Engine/ITMSwappingEngine.h
 Engine/ITMTrackingController.h
 Engine/ITMViewBuilder.h
-Engine/ITMVisualisationEngine.h
 )
 
 ##
@@ -39,7 +37,6 @@ Engine/DeviceAgnostic/ITMRepresentationAccess.h
 Engine/DeviceAgnostic/ITMSceneReconstructionEngine.h
 Engine/DeviceAgnostic/ITMSwappingEngine.h
 Engine/DeviceAgnostic/ITMViewBuilder.h
-Engine/DeviceAgnostic/ITMVisualisationEngine.h
 )
 
 ##
@@ -48,7 +45,6 @@ Engine/DeviceSpecific/CPU/ITMLowLevelEngine_CPU.cpp
 Engine/DeviceSpecific/CPU/ITMSceneReconstructionEngine_CPU.cpp
 Engine/DeviceSpecific/CPU/ITMSwappingEngine_CPU.cpp
 Engine/DeviceSpecific/CPU/ITMViewBuilder_CPU.cpp
-Engine/DeviceSpecific/CPU/ITMVisualisationEngine_CPU.cpp
 )
 
 set(ITMLIB_ENGINE_DEVICESPECIFIC_CPU_HEADERS
@@ -56,7 +52,6 @@ Engine/DeviceSpecific/CPU/ITMLowLevelEngine_CPU.h
 Engine/DeviceSpecific/CPU/ITMSceneReconstructionEngine_CPU.h
 Engine/DeviceSpecific/CPU/ITMSwappingEngine_CPU.h
 Engine/DeviceSpecific/CPU/ITMViewBuilder_CPU.h
-Engine/DeviceSpecific/CPU/ITMVisualisationEngine_CPU.h
 )
 
 ##
@@ -65,7 +60,6 @@ Engine/DeviceSpecific/CUDA/ITMLowLevelEngine_CUDA.cu
 Engine/DeviceSpecific/CUDA/ITMSceneReconstructionEngine_CUDA.cu
 Engine/DeviceSpecific/CUDA/ITMSwappingEngine_CUDA.cu
 Engine/DeviceSpecific/CUDA/ITMViewBuilder_CUDA.cu
-Engine/DeviceSpecific/CUDA/ITMVisualisationEngine_CUDA.cu
 )
 
 set(ITMLIB_ENGINE_DEVICESPECIFIC_CUDA_HEADERS
@@ -73,7 +67,6 @@ Engine/DeviceSpecific/CUDA/ITMLowLevelEngine_CUDA.h
 Engine/DeviceSpecific/CUDA/ITMSceneReconstructionEngine_CUDA.h
 Engine/DeviceSpecific/CUDA/ITMSwappingEngine_CUDA.h
 Engine/DeviceSpecific/CUDA/ITMViewBuilder_CUDA.h
-Engine/DeviceSpecific/CUDA/ITMVisualisationEngine_CUDA.h
 )
 
 ##
@@ -229,6 +222,38 @@ Utils/ITMPixelUtils.h
 Utils/ITMVoxelTypes.h
 )
 
+##
+SET(ITMLIB_VISUALISATION_CPU_SOURCES
+Visualisation/CPU/ITMVisualisationEngine_CPU.cpp
+)
+
+SET(ITMLIB_VISUALISATION_CPU_HEADERS
+Visualisation/CPU/ITMVisualisationEngine_CPU.h
+)
+
+##
+SET(ITMLIB_VISUALISATION_CUDA_SOURCES
+Visualisation/CUDA/ITMVisualisationEngine_CUDA.cu
+)
+
+SET(ITMLIB_VISUALISATION_CUDA_HEADERS
+Visualisation/CUDA/ITMVisualisationEngine_CUDA.h
+)
+
+##
+SET(ITMLIB_VISUALISATION_INTERFACE_SOURCES
+Visualisation/Interface/ITMVisualisationEngine.cpp
+)
+
+SET(ITMLIB_VISUALISATION_INTERFACE_HEADERS
+Visualisation/Interface/ITMVisualisationEngine.h
+)
+
+##
+SET(ITMLIB_VISUALISATION_SHARED_HEADERS
+Visualisation/Shared/ITMVisualisationEngine_Shared.h
+)
+
 #################################################################
 # Collect the project files into common, CPU-only and CUDA-only #
 #################################################################
@@ -251,6 +276,11 @@ ${ITMLIB_TRACKERS_INTERFACE_HEADERS}
 ${ITMLIB_TRACKERS_SHARED_HEADERS}
 ${ITMLIB_UTILS_SOURCES}
 ${ITMLIB_UTILS_HEADERS}
+${ITMLIB_VISUALISATION_SOURCES}
+${ITMLIB_VISUALISATION_HEADERS}
+${ITMLIB_VISUALISATION_INTERFACE_SOURCES}
+${ITMLIB_VISUALISATION_INTERFACE_HEADERS}
+${ITMLIB_VISUALISATION_SHARED_HEADERS}
 )
 
 set(ITMLIB_CPU_OBJECTS
@@ -260,6 +290,8 @@ ${ITMLIB_MESHING_CPU_SOURCES}
 ${ITMLIB_MESHING_CPU_HEADERS}
 ${ITMLIB_TRACKERS_CPU_SOURCES}
 ${ITMLIB_TRACKERS_CPU_HEADERS}
+${ITMLIB_VISUALISATION_CPU_SOURCES}
+${ITMLIB_VISUALISATION_CPU_HEADERS}
 )
 
 set(ITMLIB_CUDA_OBJECTS
@@ -269,6 +301,8 @@ ${ITMLIB_MESHING_CUDA_SOURCES}
 ${ITMLIB_MESHING_CUDA_HEADERS}
 ${ITMLIB_TRACKERS_CUDA_SOURCES}
 ${ITMLIB_TRACKERS_CUDA_HEADERS}
+${ITMLIB_VISUALISATION_CUDA_SOURCES}
+${ITMLIB_VISUALISATION_CUDA_HEADERS}
 )
 
 #############################
@@ -293,6 +327,11 @@ SOURCE_GROUP(Trackers\\CUDA FILES ${ITMLIB_TRACKERS_CUDA_SOURCES} ${ITMLIB_TRACK
 SOURCE_GROUP(Trackers\\Interface FILES ${ITMLIB_TRACKERS_INTERFACE_SOURCES} ${ITMLIB_TRACKERS_INTERFACE_HEADERS})
 SOURCE_GROUP(Trackers\\Shared FILES ${ITMLIB_TRACKERS_SHARED_HEADERS})
 SOURCE_GROUP(Utils FILES ${ITMLIB_UTILS_SOURCES} ${ITMLIB_UTILS_HEADERS})
+SOURCE_GROUP(Visualisation FILES ${ITMLIB_VISUALISATION_SOURCES} ${ITMLIB_VISUALISATION_HEADERS})
+SOURCE_GROUP(Visualisation\\CPU FILES ${ITMLIB_VISUALISATION_CPU_SOURCES} ${ITMLIB_VISUALISATION_CPU_HEADERS})
+SOURCE_GROUP(Visualisation\\CUDA FILES ${ITMLIB_VISUALISATION_CUDA_SOURCES} ${ITMLIB_VISUALISATION_CUDA_HEADERS})
+SOURCE_GROUP(Visualisation\\Interface FILES ${ITMLIB_VISUALISATION_INTERFACE_SOURCES} ${ITMLIB_VISUALISATION_INTERFACE_HEADERS})
+SOURCE_GROUP(Visualisation\\Shared FILES ${ITMLIB_VISUALISATION_SHARED_HEADERS})
 
 ##############################################################
 # Specify the include directories, target and link libraries #
