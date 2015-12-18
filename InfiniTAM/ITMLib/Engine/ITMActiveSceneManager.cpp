@@ -108,7 +108,7 @@ int ITMLocalSceneManager_instance<TVoxel,TIndex>::getSceneSize(int sceneID) cons
 template<class TVoxel, class TIndex>
 int ITMLocalSceneManager_instance<TVoxel,TIndex>::countVisibleBlocks(int sceneID, int minBlockId, int maxBlockId, bool invertIDs) const
 {
-	if ((sceneID < 0)||((unsigned)sceneID >= allData.size())) return -1.0f;
+	if ((sceneID < 0)||((unsigned)sceneID >= allData.size())) return -1;
 	const ITMLocalScene<TVoxel,TIndex> *scene = allData[sceneID];
 
 	if (invertIDs) {
@@ -219,7 +219,7 @@ int ITMActiveSceneManager::initiateNewLink(int sceneID, const ITMPose & pose, bo
 	newLink.trackingAttempts = 0;
 	activeData.push_back(newLink);
 	//fprintf(stderr, "attempting relocalisation... %i (type %i)\n", sceneID, (int)isRelocalisation);
-	return activeData.size()-1;
+	return (int)activeData.size()-1;
 }
 
 float ITMActiveSceneManager::visibleOriginalBlocks(int dataID) const
@@ -240,7 +240,7 @@ bool ITMActiveSceneManager::shouldStartNewArea(void) const
 	int primaryDataIdx = -1;
 
 	// don't start two new scenes at a time
-	for (size_t i = 0; i < activeData.size(); ++i) {
+	for (int i = 0; i < (int)activeData.size(); ++i) {
 		if (activeData[i].type == NEW_SCENE) return false;
 		if (activeData[i].type == PRIMARY_SCENE) {
 			primaryDataIdx = i;
@@ -334,7 +334,7 @@ bool ITMActiveSceneManager::shouldMovePrimaryScene(int newDataId, int bestDataId
 
 int ITMActiveSceneManager::findPrimaryDataIdx(void) const
 {
-	for (size_t i = 0; i < activeData.size(); ++i) {
+	for (int i = 0; i < (int)activeData.size(); ++i) {
 		if (activeData[i].type == PRIMARY_SCENE) {
 			return i;
 		}
@@ -391,8 +391,8 @@ static float huber_weight(float residual, float b)
 {
 	double r_abs = fabs(residual);
 	if (r_abs<b) return 1.0f;
-	float tmp = 2.0f * b * r_abs - b*b;
-	return sqrt(tmp)/r_abs;
+	double tmp = 2.0 * b * r_abs - b*b;
+	return (float)(sqrt(tmp)/r_abs);
 }
 
 /** estimate a relative pose, taking into account a previous estimate (weight 0
@@ -501,7 +501,7 @@ int ITMActiveSceneManager::CheckSuccess_newlink(int dataID, int primaryDataID, i
 	if (inliers == NULL) inliers = &inliers_local;
 	if (inlierPose == NULL) inlierPose = &inlierPose_local;
 
-	estimateRelativePose(link.constraints, previousEstimate, previousEstimate_weight, inliers, inlierPose);
+	estimateRelativePose(link.constraints, previousEstimate, (float)previousEstimate_weight, inliers, inlierPose);
 
 	//fprintf(stderr, "trying to establish link %i -> %i: %i/%i attempts, %i/%i inliers\n", primarySceneIndex, link.sceneIndex, link.trackingAttempts, N_linktrials, *inliers, N_linkoverlap);
 	if (*inliers >= N_linkoverlap) {
@@ -528,7 +528,7 @@ void ITMActiveSceneManager::maintainActiveData(void)
 {
 	int primaryDataIdx = findPrimaryDataIdx();
 	int moveToDataIdx = -1;
-	for (size_t i = 0; i < activeData.size(); ++i)
+	for (int i = 0; i < (int)activeData.size(); ++i)
 	{
 		ActiveDataDescriptor & link = activeData[i];
 
@@ -567,7 +567,7 @@ void ITMActiveSceneManager::maintainActiveData(void)
 	}
 
 	primaryDataIdx = -1;
-	for (size_t i = 0; i < activeData.size(); ++i)
+	for (int i = 0; i < (int)activeData.size(); ++i)
 	{
 		ActiveDataDescriptor & link = activeData[i];
 

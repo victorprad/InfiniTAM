@@ -97,7 +97,7 @@ ITMMultiEngine::~ITMMultiEngine(void)
 void ITMMultiEngine::changeFreeviewSceneIdx(ITMPose *pose, int newIdx)
 {
 //	if ((newIdx < 0)||((unsigned)newIdx >= sceneManager->numScenes())) return;
-	if (newIdx < 0) newIdx = sceneManager->numScenes()-1;
+	if (newIdx < 0) newIdx = (int)sceneManager->numScenes()-1;
 	if ((unsigned)newIdx >= sceneManager->numScenes()) newIdx = 0;
 
 	ITMPose trafo = sceneManager->findTransformation(freeviewSceneIdx, newIdx);
