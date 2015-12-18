@@ -29,8 +29,8 @@
 
 #include "ITMVoxelTypes.h"
 #include "../Objects/ITMHashSwapState.h"
-#include "../Objects/ITMVoxelBlockHash.h"
 #include "../Objects/ITMPlainVoxelArray.h"
+#include "../Objects/ITMVoxelBlockHash.h"
 #include "../../ORUtils/Image.h"
 #include "../../ORUtils/PlatformIndependence.h"
 
