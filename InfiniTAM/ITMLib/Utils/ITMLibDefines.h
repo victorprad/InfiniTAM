@@ -18,6 +18,7 @@
 #endif
 
 #ifndef COMPILE_WITHOUT_CUDA
+
 #include <cuda_runtime.h>
 
 #ifndef ITMSafeCall
@@ -26,162 +27,12 @@
 
 #endif
 
-#include "../../ORUtils/PlatformIndependence.h"
-#include "ITMMath.h"
-
-//////////////////////////////////////////////////////////////////////////
-// Voxel Hashing definition and helper functions
-//////////////////////////////////////////////////////////////////////////
-
-#define SDF_BLOCK_SIZE 8				// SDF block size
-#define SDF_BLOCK_SIZE3 512				// SDF_BLOCK_SIZE3 = SDF_BLOCK_SIZE * SDF_BLOCK_SIZE * SDF_BLOCK_SIZE
-#define SDF_LOCAL_BLOCK_NUM 0x40000		// Number of locally stored blocks, currently 2^17
-
-#define SDF_GLOBAL_BLOCK_NUM 0x120000	// Number of globally stored blocks: SDF_BUCKET_NUM + SDF_EXCESS_LIST_SIZE
-#define SDF_TRANSFER_BLOCK_NUM 0x1000	// Maximum number of blocks transfered in one swap operation
-
-#define SDF_BUCKET_NUM 0x100000			// Number of Hash Bucket, should be 2^n and bigger than SDF_LOCAL_BLOCK_NUM, SDF_HASH_MASK = SDF_BUCKET_NUM - 1
-#define SDF_HASH_MASK 0xfffff			// Used for get hashing value of the bucket index,  SDF_HASH_MASK = SDF_BUCKET_NUM - 1
-#define SDF_EXCESS_LIST_SIZE 0x20000	// 0x20000 Size of excess list, used to handle collisions. Also max offset (unsigned short) value.
-
-//////////////////////////////////////////////////////////////////////////
-// Voxel Hashing data structures
-//////////////////////////////////////////////////////////////////////////
-
-/** \brief
-    A single entry in the hash table.
-*/
-struct ITMHashEntry
-{
-	/** Position of the corner of the 8x8x8 volume, that identifies the entry. */
-	Vector3s pos;
-	/** Offset in the excess list. */
-	int offset;
-	/** Pointer to the voxel block array.
-	    - >= 0 identifies an actual allocated entry in the voxel block array
-	    - -1 identifies an entry that has been removed (swapped out)
-	    - <-1 identifies an unallocated block
-	*/
-	int ptr;
-};
-
-struct ITMHashSwapState
-{
-	/// 0 - most recent data is on host, data not currently in active
-	///     memory
-	/// 1 - data both on host and in active memory, information has not
-	///     yet been combined
-	/// 2 - most recent data is in active memory, should save this data
-	///     back to host at some point
-	uchar state;
-};
-
-#include "../Objects/ITMVoxelBlockHash.h"
+#include "ITMVoxelTypes.h"
+#include "../Objects/ITMHashSwapState.h"
 #include "../Objects/ITMPlainVoxelArray.h"
-
-/** \brief
-    Stores the information of a single voxel in the volume
-*/
-struct ITMVoxel_f_rgb
-{
-	_CPU_AND_GPU_CODE_ static float SDF_initialValue() { return 1.0f; }
-	_CPU_AND_GPU_CODE_ static float SDF_valueToFloat(float x) { return x; }
-	_CPU_AND_GPU_CODE_ static float SDF_floatToValue(float x) { return x; }
-
-	static const CONSTPTR(bool) hasColorInformation = true;
-
-	/** Value of the truncated signed distance transformation. */
-	float sdf;
-	/** Number of fused observations that make up @p sdf. */
-	uchar w_depth;
-	/** RGB colour information stored for this voxel. */
-	Vector3u clr;
-	/** Number of observations that made up @p clr. */
-	uchar w_color;
-
-	_CPU_AND_GPU_CODE_ ITMVoxel_f_rgb()
-	{
-		sdf = SDF_initialValue();
-		w_depth = 0;
-		clr = (uchar)0;
-		w_color = 0;
-	}
-};
-
-/** \brief
-    Stores the information of a single voxel in the volume
-*/
-struct ITMVoxel_s_rgb
-{
-	_CPU_AND_GPU_CODE_ static short SDF_initialValue() { return 32767; }
-	_CPU_AND_GPU_CODE_ static float SDF_valueToFloat(float x) { return (float)(x) / 32767.0f; }
-	_CPU_AND_GPU_CODE_ static short SDF_floatToValue(float x) { return (short)((x) * 32767.0f); }
-
-	static const CONSTPTR(bool) hasColorInformation = true;
-
-	/** Value of the truncated signed distance transformation. */
-	short sdf;
-	/** Number of fused observations that make up @p sdf. */
-	uchar w_depth;
-	/** Padding that may or may not improve performance on certain GPUs */
-	//uchar pad;
-	/** RGB colour information stored for this voxel. */
-	Vector3u clr;
-	/** Number of observations that made up @p clr. */
-	uchar w_color;
-
-	_CPU_AND_GPU_CODE_ ITMVoxel_s_rgb()
-	{
-		sdf = SDF_initialValue();
-		w_depth = 0;
-		clr = (uchar)0;
-		w_color = 0;
-	}
-};
-
-struct ITMVoxel_s
-{
-	_CPU_AND_GPU_CODE_ static short SDF_initialValue() { return 32767; }
-	_CPU_AND_GPU_CODE_ static float SDF_valueToFloat(float x) { return (float)(x) / 32767.0f; }
-	_CPU_AND_GPU_CODE_ static short SDF_floatToValue(float x) { return (short)((x) * 32767.0f); }
-
-	static const CONSTPTR(bool) hasColorInformation = false;
-
-	/** Value of the truncated signed distance transformation. */
-	short sdf;
-	/** Number of fused observations that make up @p sdf. */
-	uchar w_depth;
-	/** Padding that may or may not improve performance on certain GPUs */
-	//uchar pad;
-
-	_CPU_AND_GPU_CODE_ ITMVoxel_s()
-	{
-		sdf = SDF_initialValue();
-		w_depth = 0;
-	}
-};
-
-struct ITMVoxel_f
-{
-	_CPU_AND_GPU_CODE_ static float SDF_initialValue() { return 1.0f; }
-	_CPU_AND_GPU_CODE_ static float SDF_valueToFloat(float x) { return x; }
-	_CPU_AND_GPU_CODE_ static float SDF_floatToValue(float x) { return x; }
-
-	static const CONSTPTR(bool) hasColorInformation = false;
-
-	/** Value of the truncated signed distance transformation. */
-	float sdf;
-	/** Number of fused observations that make up @p sdf. */
-	uchar w_depth;
-	/** Padding that may or may not improve performance on certain GPUs */
-	//uchar pad;
-
-	_CPU_AND_GPU_CODE_ ITMVoxel_f()
-	{
-		sdf = SDF_initialValue();
-		w_depth = 0;
-	}
-};
+#include "../Objects/ITMVoxelBlockHash.h"
+#include "../../ORUtils/Image.h"
+#include "../../ORUtils/PlatformIndependence.h"
 
 /** This chooses the information stored at each voxel. At the moment, valid
     options are ITMVoxel_s, ITMVoxel_f, ITMVoxel_s_rgb and ITMVoxel_f_rgb 
@@ -193,8 +44,6 @@ typedef ITMVoxel_s ITMVoxel;
 */
 typedef ITMLib::ITMVoxelBlockHash ITMVoxelIndex;
 //typedef ITMLib::ITMPlainVoxelArray ITMVoxelIndex;
-
-#include "../../ORUtils/Image.h"
 
 //////////////////////////////////////////////////////////////////////////
 // Do not change below this point
