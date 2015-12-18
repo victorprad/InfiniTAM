@@ -129,6 +129,8 @@ set(ITMLIB_OBJECTS_HEADERS
 Objects/ITMDisparityCalib.h
 Objects/ITMExtrinsics.h
 Objects/ITMGlobalCache.h
+Objects/ITMHashEntry.h
+Objects/ITMHashSwapState.h
 Objects/ITMImageHierarchy.h
 Objects/ITMIntrinsics.h
 Objects/ITMLocalScene.h
@@ -160,8 +162,6 @@ Utils/ITMLibSettings.cpp
 
 set(ITMLIB_UTILS_HEADERS
 Utils/ITMCalibIO.h
-Utils/ITMHashEntry.h
-Utils/ITMHashSwapState.h
 Utils/ITMLibDefines.h
 Utils/ITMLibSettings.h
 Utils/ITMMath.h

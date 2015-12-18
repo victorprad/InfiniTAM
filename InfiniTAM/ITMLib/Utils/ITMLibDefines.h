@@ -27,9 +27,8 @@
 
 #endif
 
-#include "ITMHashEntry.h"
-#include "ITMHashSwapState.h"
 #include "ITMVoxelTypes.h"
+#include "../Objects/ITMHashSwapState.h"
 #include "../Objects/ITMVoxelBlockHash.h"
 #include "../Objects/ITMPlainVoxelArray.h"
 #include "../../ORUtils/Image.h"
