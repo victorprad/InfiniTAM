@@ -7,7 +7,7 @@
 
 #include "Interface/ITMCompositeTracker.h"
 #include "Interface/ITMIMUTracker.h"
-#include "../Engine/ITMLowLevelEngine.h"
+#include "../LowLevel/Interface/ITMLowLevelEngine.h"
 #include "Interface/ITMTracker.h"
 
 #include "CPU/ITMColorTracker_CPU.h"

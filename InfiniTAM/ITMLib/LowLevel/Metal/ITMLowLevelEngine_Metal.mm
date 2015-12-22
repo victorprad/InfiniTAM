@@ -5,7 +5,7 @@
 #import "MetalContext.h"
 
 #include "ITMLowLevelEngine_Metal.h"
-#include "../../DeviceAgnostic/ITMLowLevelEngine.h"
+#include "../Shared/ITMLowLevelEngine_Shared.h"
 
 using namespace ITMLib::Engine;
 

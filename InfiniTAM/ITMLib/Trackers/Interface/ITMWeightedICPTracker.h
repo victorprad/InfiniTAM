@@ -9,7 +9,7 @@
 #include "../Base/ITMTemplatedHierarchyLevel.h"
 
 #include "ITMTracker.h"
-#include "../../Engine/ITMLowLevelEngine.h"
+#include "../../LowLevel/Interface/ITMLowLevelEngine.h"
 
 namespace ITMLib
 {

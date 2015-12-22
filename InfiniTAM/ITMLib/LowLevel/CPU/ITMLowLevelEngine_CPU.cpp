@@ -2,7 +2,7 @@
 
 #include "ITMLowLevelEngine_CPU.h"
 
-#include "../../DeviceAgnostic/ITMLowLevelEngine.h"
+#include "../Shared/ITMLowLevelEngine_Shared.h"
 
 using namespace ITMLib;
 

@@ -3,7 +3,7 @@
 #pragma once
 
 #include "../Interface/ITMColorTracker.h"
-#include "../../Engine/ITMLowLevelEngine.h"
+#include "../../LowLevel/Interface/ITMLowLevelEngine.h"
 
 namespace ITMLib
 {
