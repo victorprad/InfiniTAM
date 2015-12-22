@@ -59,13 +59,13 @@
 #include "Trackers/Metal/ITMColorTracker_Metal.h"
 #endif
 
-#include "Engine/ITMSwappingEngine.h"
-#include "Engine/DeviceSpecific/CPU/ITMSwappingEngine_CPU.h"
+#include "Swapping/Interface/ITMSwappingEngine.h"
+#include "Swapping/CPU/ITMSwappingEngine_CPU.h"
 #ifndef COMPILE_WITHOUT_CUDA
-#include "Engine/DeviceSpecific/CUDA/ITMSwappingEngine_CUDA.h"
+#include "Swapping/CUDA/ITMSwappingEngine_CUDA.h"
 #endif
 #ifdef COMPILE_WITH_METAL
-#include "Engine/DeviceSpecific/Metal/ITMSwappingEngine_Metal.h"
+#include "Swapping/Metal/ITMSwappingEngine_Metal.h"
 #endif
 
 #include "Trackers/Interface/ITMRenTracker.h"

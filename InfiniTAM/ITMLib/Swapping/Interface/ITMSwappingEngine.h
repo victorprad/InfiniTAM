@@ -2,11 +2,11 @@
 
 #pragma once
 
-#include "../Utils/ITMLibDefines.h"
+#include "../../Utils/ITMLibDefines.h"
 
-#include "../Objects/ITMScene.h"
-#include "../Objects/ITMView.h"
-#include "../Objects/ITMRenderState.h"
+#include "../../Objects/ITMScene.h"
+#include "../../Objects/ITMView.h"
+#include "../../Objects/ITMRenderState.h"
 
 namespace ITMLib
 {

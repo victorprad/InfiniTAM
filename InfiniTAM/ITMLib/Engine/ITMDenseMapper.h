@@ -11,7 +11,7 @@
 
 #include "../Reconstruction/Interface/ITMSceneReconstructionEngine.h"
 #include "../Visualisation/Interface/ITMVisualisationEngine.h"
-#include "../Engine/ITMSwappingEngine.h"
+#include "../Swapping/Interface/ITMSwappingEngine.h"
 
 namespace ITMLib
 {
