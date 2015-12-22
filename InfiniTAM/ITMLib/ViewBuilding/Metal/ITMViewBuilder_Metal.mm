@@ -5,7 +5,7 @@
 #import "MetalContext.h"
 
 #include "ITMViewBuilder_Metal.h"
-#include "../../DeviceAgnostic/ITMViewBuilder.h"
+#include "../Shared/ITMViewBuilder_Shared.h"
 
 id<MTLFunction> f_convertDisparityToDepth;
 id<MTLComputePipelineState> p_convertDisparityToDepth;

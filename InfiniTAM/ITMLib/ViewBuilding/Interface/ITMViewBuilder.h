@@ -2,12 +2,12 @@
 
 #pragma once
 
-#include "../Utils/ITMLibDefines.h"
-#include "../Utils/ITMLibSettings.h"
+#include "../../Utils/ITMLibDefines.h"
+#include "../../Utils/ITMLibSettings.h"
 
-#include "../Objects/ITMView.h"
-#include "../Objects/ITMViewIMU.h"
-#include "../Objects/ITMRGBDCalib.h"
+#include "../../Objects/ITMView.h"
+#include "../../Objects/ITMViewIMU.h"
+#include "../../Objects/ITMRGBDCalib.h"
 
 namespace ITMLib
 {

@@ -2,7 +2,7 @@
 
 #include <metal_stdlib>
 
-#include "../../DeviceAgnostic/ITMViewBuilder.h"
+#include "../Shared/ITMViewBuilder_Shared.h"
 #include "ITMViewBuilder_Metal.h"
 
 using namespace metal;

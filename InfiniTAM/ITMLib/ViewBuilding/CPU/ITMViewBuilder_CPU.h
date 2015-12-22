@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "../../ITMViewBuilder.h"
+#include "../Interface/ITMViewBuilder.h"
 
 namespace ITMLib
 {
