@@ -4,10 +4,10 @@
 
 #import "MetalContext.h"
 
-#include "../../../Objects/ITMRenderState_VH.h"
+#include "../../Objects/ITMRenderState_VH.h"
 
 #include "ITMSceneReconstructionEngine_Metal.h"
-#include "../../DeviceAgnostic/ITMSceneReconstructionEngine.h"
+#include "../Shared/ITMSceneReconstructionEngine_Shared.h"
 
 id<MTLFunction> f_integrateIntoScene_vh_device;
 id<MTLComputePipelineState> p_integrateIntoScene_vh_device;

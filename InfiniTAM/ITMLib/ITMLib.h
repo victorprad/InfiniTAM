@@ -32,13 +32,13 @@
 #include "Trackers/CUDA/ITMWeightedICPTracker_CUDA.h"
 #endif
 
-#include "Engine/ITMSceneReconstructionEngine.h"
-#include "Engine/DeviceSpecific/CPU/ITMSceneReconstructionEngine_CPU.h"
+#include "Reconstruction/Interface/ITMSceneReconstructionEngine.h"
+#include "Reconstruction/CPU/ITMSceneReconstructionEngine_CPU.h"
 #ifndef COMPILE_WITHOUT_CUDA
-#include "Engine/DeviceSpecific/CUDA/ITMSceneReconstructionEngine_CUDA.h"
+#include "Reconstruction/CUDA/ITMSceneReconstructionEngine_CUDA.h"
 #endif
 #ifdef COMPILE_WITH_METAL
-#include "Engine/DeviceSpecific/Metal/ITMSceneReconstructionEngine_Metal.h"
+#include "Reconstruction/Metal/ITMSceneReconstructionEngine_Metal.h"
 #endif
 
 #include "Visualisation/Interface/ITMVisualisationEngine.h"

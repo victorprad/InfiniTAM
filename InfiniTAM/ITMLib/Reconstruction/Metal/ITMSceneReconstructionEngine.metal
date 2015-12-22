@@ -2,7 +2,7 @@
 
 #include <metal_stdlib>
 
-#include "../../DeviceAgnostic/ITMSceneReconstructionEngine.h"
+#include "../Shared/ITMSceneReconstructionEngine_Shared.h"
 #include "ITMSceneReconstructionEngine_Metal.h"
 
 using namespace metal;

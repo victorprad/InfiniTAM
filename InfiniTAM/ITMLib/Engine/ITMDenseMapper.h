@@ -9,7 +9,7 @@
 #include "../Trackers/Base/ITMTrackingState.h"
 #include "../Objects/ITMRenderState.h"
 
-#include "../Engine/ITMSceneReconstructionEngine.h"
+#include "../Reconstruction/Interface/ITMSceneReconstructionEngine.h"
 #include "../Visualisation/Interface/ITMVisualisationEngine.h"
 #include "../Engine/ITMSwappingEngine.h"
 

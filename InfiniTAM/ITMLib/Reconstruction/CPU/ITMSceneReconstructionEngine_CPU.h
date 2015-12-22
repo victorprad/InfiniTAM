@@ -2,22 +2,20 @@
 
 #pragma once
 
-#include "../../ITMSceneReconstructionEngine.h"
+#include "../Interface/ITMSceneReconstructionEngine.h"
 
 namespace ITMLib
 {
 	template<class TVoxel, class TIndex>
-	class ITMSceneReconstructionEngine_CUDA : public ITMSceneReconstructionEngine < TVoxel, TIndex >
+	class ITMSceneReconstructionEngine_CPU : public ITMSceneReconstructionEngine < TVoxel, TIndex >
 	{};
 
 	template<class TVoxel>
-	class ITMSceneReconstructionEngine_CUDA<TVoxel, ITMVoxelBlockHash> : public ITMSceneReconstructionEngine < TVoxel, ITMVoxelBlockHash >
+	class ITMSceneReconstructionEngine_CPU<TVoxel, ITMVoxelBlockHash> : public ITMSceneReconstructionEngine < TVoxel, ITMVoxelBlockHash >
 	{
-	private:
-		void *allocationTempData_device;
-		void *allocationTempData_host;
-		unsigned char *entriesAllocType_device;
-		Vector4s *blockCoords_device;
+	protected:
+		ORUtils::MemoryBlock<unsigned char> *entriesAllocType;
+		ORUtils::MemoryBlock<Vector4s> *blockCoords;
 
 	public:
 		void ResetScene(ITMScene<TVoxel, ITMVoxelBlockHash> *scene);
@@ -28,12 +26,12 @@ namespace ITMLib
 		void IntegrateIntoScene(ITMScene<TVoxel, ITMVoxelBlockHash> *scene, const ITMView *view, const ITMTrackingState *trackingState,
 			const ITMRenderState *renderState);
 
-		ITMSceneReconstructionEngine_CUDA(void);
-		~ITMSceneReconstructionEngine_CUDA(void);
+		ITMSceneReconstructionEngine_CPU(void);
+		~ITMSceneReconstructionEngine_CPU(void);
 	};
 
 	template<class TVoxel>
-	class ITMSceneReconstructionEngine_CUDA<TVoxel, ITMPlainVoxelArray> : public ITMSceneReconstructionEngine < TVoxel, ITMPlainVoxelArray >
+	class ITMSceneReconstructionEngine_CPU<TVoxel, ITMPlainVoxelArray> : public ITMSceneReconstructionEngine < TVoxel, ITMPlainVoxelArray >
 	{
 	public:
 		void ResetScene(ITMScene<TVoxel, ITMPlainVoxelArray> *scene);
@@ -43,5 +41,8 @@ namespace ITMLib
 
 		void IntegrateIntoScene(ITMScene<TVoxel, ITMPlainVoxelArray> *scene, const ITMView *view, const ITMTrackingState *trackingState,
 			const ITMRenderState *renderState);
+
+		ITMSceneReconstructionEngine_CPU(void);
+		~ITMSceneReconstructionEngine_CPU(void);
 	};
 }

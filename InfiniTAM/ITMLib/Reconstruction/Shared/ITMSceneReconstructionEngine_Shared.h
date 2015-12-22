@@ -3,7 +3,7 @@
 #pragma once
 
 #include "../../Utils/ITMPixelUtils.h"
-#include "ITMRepresentationAccess.h"
+#include "../../Engine/DeviceAgnostic/ITMRepresentationAccess.h"
 
 template<class TVoxel>
 _CPU_AND_GPU_CODE_ inline float computeUpdatedVoxelDepthInfo(DEVICEPTR(TVoxel) &voxel, const THREADPTR(Vector4f) & pt_model, const CONSTPTR(Matrix4f) & M_d,

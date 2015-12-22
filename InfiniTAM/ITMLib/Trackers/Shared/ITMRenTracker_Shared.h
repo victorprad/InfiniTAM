@@ -3,7 +3,7 @@
 #pragma once
 
 #include "../../Utils/ITMPixelUtils.h"
-#include "../../Engine/ITMSceneReconstructionEngine.h"
+#include "../../Reconstruction/Interface/ITMSceneReconstructionEngine.h"
 
 // sigma that controls the basin of attraction
 #define DTUNE 6.0f

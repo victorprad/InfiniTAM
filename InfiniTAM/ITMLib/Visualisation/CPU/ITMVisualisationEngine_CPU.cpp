@@ -3,7 +3,7 @@
 #include "ITMVisualisationEngine_CPU.h"
 #include "../../Engine/DeviceAgnostic/ITMRepresentationAccess.h"
 #include "../Shared/ITMVisualisationEngine_Shared.h"
-#include "../../Engine/DeviceAgnostic/ITMSceneReconstructionEngine.h"
+#include "../../Reconstruction/Shared/ITMSceneReconstructionEngine_Shared.h"
 #include "../../Objects/ITMRenderState_VH.h"
 
 #include <vector>

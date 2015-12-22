@@ -1,8 +1,8 @@
 // Copyright 2014-2015 Isis Innovation Limited and the authors of InfiniTAM
 
 #include "ITMSceneReconstructionEngine_CPU.h"
-#include "../../DeviceAgnostic/ITMSceneReconstructionEngine.h"
-#include "../../../Objects/ITMRenderState_VH.h"
+#include "../Shared/ITMSceneReconstructionEngine_Shared.h"
+#include "../../Objects/ITMRenderState_VH.h"
 
 using namespace ITMLib;
 
