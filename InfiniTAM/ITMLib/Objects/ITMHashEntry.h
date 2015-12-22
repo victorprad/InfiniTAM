@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "ITMMath.h"
+#include "../Utils/ITMMath.h"
 
 /** \brief
     A single entry in the hash table.
