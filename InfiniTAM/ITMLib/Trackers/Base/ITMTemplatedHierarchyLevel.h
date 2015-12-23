@@ -2,6 +2,10 @@
 
 #pragma once
 
+#include "TrackerIterationType.h"
+#include "../../Utils/ITMMath.h"
+#include "../../../ORUtils/MemoryBlock.h"
+
 namespace ITMLib
 {
 	template <class ImageType>

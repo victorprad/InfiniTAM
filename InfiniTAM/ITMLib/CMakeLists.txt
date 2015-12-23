@@ -193,6 +193,7 @@ Trackers/Base/ITMSceneHierarchyLevel.h
 Trackers/Base/ITMTemplatedHierarchyLevel.h
 Trackers/Base/ITMTrackingState.h
 Trackers/Base/ITMViewHierarchyLevel.h
+Trackers/Base/TrackerIterationType.h
 )
 
 ##

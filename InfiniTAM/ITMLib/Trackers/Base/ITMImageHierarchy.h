@@ -2,7 +2,9 @@
 
 #pragma once
 
-#include "../../Utils/ITMLibDefines.h"
+#include "TrackerIterationType.h"
+#include "../../Utils/ITMMath.h"
+#include "../../../ORUtils/MemoryBlock.h"
 
 namespace ITMLib
 {

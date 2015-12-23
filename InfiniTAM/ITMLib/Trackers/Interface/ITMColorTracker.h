@@ -4,6 +4,7 @@
 
 #include "../Base/ITMImageHierarchy.h"
 #include "../Base/ITMViewHierarchyLevel.h"
+#include "../Base/TrackerIterationType.h"
 
 #include "ITMTracker.h"
 #include "../../LowLevel/Interface/ITMLowLevelEngine.h"

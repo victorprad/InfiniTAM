@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "TrackerIterationType.h"
 #include "../../Utils/ITMLibDefines.h"
 
 namespace ITMLib
