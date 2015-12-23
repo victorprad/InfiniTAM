@@ -2,6 +2,7 @@
 
 #include "ITMMultiEngine.h"
 
+#include "../Visualisation/ITMVisualisationEngineFactory.h"
 using namespace ITMLib;
 
 #if 0
@@ -27,25 +28,23 @@ ITMMultiEngine::ITMMultiEngine(const ITMLibSettings *settings, const ITMRGBDCali
 
 	this->settings = settings;
 
+	visualisationEngine = ITMVisualisationEngineFactory::MakeVisualisationEngine<ITMVoxel,ITMVoxelIndex>(settings->deviceType);
 	switch (settings->deviceType)
 	{
 	case ITMLibSettings::DEVICE_CPU:
 		lowLevelEngine = new ITMLowLevelEngine_CPU();
 		viewBuilder = new ITMViewBuilder_CPU(calib);
-		visualisationEngine = new ITMVisualisationEngine_CPU<ITMVoxel, ITMVoxelIndex>();
 		break;
 	case ITMLibSettings::DEVICE_CUDA:
 #ifndef COMPILE_WITHOUT_CUDA
 		lowLevelEngine = new ITMLowLevelEngine_CUDA();
 		viewBuilder = new ITMViewBuilder_CUDA(calib);
-		visualisationEngine = new ITMVisualisationEngine_CUDA<ITMVoxel, ITMVoxelIndex>();
 #endif
 		break;
 	case ITMLibSettings::DEVICE_METAL:
 #ifdef COMPILE_WITH_METAL
 		lowLevelEngine = new ITMLowLevelEngine_Metal();
 		viewBuilder = new ITMViewBuilder_Metal(calib);
-		visualisationEngine = new ITMVisualisationEngine_Metal<ITMVoxel, ITMVoxelIndex>();
 #endif
 		break;
 	}

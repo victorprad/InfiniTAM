@@ -41,15 +41,6 @@
 #include "Reconstruction/Metal/ITMSceneReconstructionEngine_Metal.h"
 #endif
 
-#include "Visualisation/Interface/ITMVisualisationEngine.h"
-#include "Visualisation/CPU/ITMVisualisationEngine_CPU.h"
-#ifndef COMPILE_WITHOUT_CUDA
-#include "Visualisation/CUDA/ITMVisualisationEngine_CUDA.h"
-#endif
-#ifdef COMPILE_WITH_METAL
-#include "Visualisation/Metal/ITMVisualisationEngine_Metal.h"
-#endif
-
 #include "Trackers/Interface/ITMColorTracker.h"
 #include "Trackers/CPU/ITMColorTracker_CPU.h"
 #ifndef COMPILE_WITHOUT_CUDA
