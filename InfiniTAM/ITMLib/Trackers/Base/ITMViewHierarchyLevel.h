@@ -3,7 +3,8 @@
 #pragma once
 
 #include "TrackerIterationType.h"
-#include "../../Utils/ITMLibDefines.h"
+#include "../../Utils/ITMMath.h"
+#include "../../../ORUtils/Image.h"
 
 namespace ITMLib
 {
@@ -14,8 +15,8 @@ namespace ITMLib
 
 		TrackerIterationType iterationType;
 
-		ITMUChar4Image *rgb; ITMFloatImage *depth;
-		ITMShort4Image *gradientX_rgb, *gradientY_rgb;
+		ORUtils::Image<Vector4u> *rgb; ORUtils::Image<float> *depth;
+		ORUtils::Image<Vector4s> *gradientX_rgb, *gradientY_rgb;
 		Vector4f intrinsics;
 
 		bool manageData;
@@ -27,10 +28,10 @@ namespace ITMLib
 			this->iterationType = iterationType;
 
 			if (!skipAllocation) {
-				this->rgb = new ITMUChar4Image(imgSize, memoryType);
-				this->depth = new ITMFloatImage(imgSize, memoryType);
-				this->gradientX_rgb = new ITMShort4Image(imgSize, memoryType);
-				this->gradientY_rgb = new ITMShort4Image(imgSize, memoryType);
+				this->rgb = new ORUtils::Image<Vector4u>(imgSize, memoryType);
+				this->depth = new ORUtils::Image<float>(imgSize, memoryType);
+				this->gradientX_rgb = new ORUtils::Image<Vector4s>(imgSize, memoryType);
+				this->gradientY_rgb = new ORUtils::Image<Vector4s>(imgSize, memoryType);
 			}
 		}
 

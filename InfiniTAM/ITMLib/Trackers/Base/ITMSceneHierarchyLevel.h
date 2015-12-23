@@ -3,7 +3,8 @@
 #pragma once
 
 #include "TrackerIterationType.h"
-#include "../../Utils/ITMLibDefines.h"
+#include "../../Utils/ITMMath.h"
+#include "../../../ORUtils/Image.h"
 
 namespace ITMLib
 {
@@ -14,8 +15,8 @@ namespace ITMLib
 
 		TrackerIterationType iterationType;
 
-		ITMFloat4Image *pointsMap;
-		ITMFloat4Image *normalsMap;
+		ORUtils::Image<Vector4f> *pointsMap;
+		ORUtils::Image<Vector4f> *normalsMap;
 		Vector4f intrinsics;
 
 		bool manageData;
@@ -27,8 +28,8 @@ namespace ITMLib
 			this->iterationType = iterationType;
 
 			if (!skipAllocation) {
-				this->pointsMap = new ITMFloat4Image(imgSize, memoryType);
-				this->normalsMap = new ITMFloat4Image(imgSize, memoryType);
+				this->pointsMap = new ORUtils::Image<Vector4f>(imgSize, memoryType);
+				this->normalsMap = new ORUtils::Image<Vector4f>(imgSize, memoryType);
 			}
 		}
 
