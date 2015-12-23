@@ -1,9 +1,9 @@
 // Copyright 2014-2015 Isis Innovation Limited and the authors of InfiniTAM
 
 #include "ITMViewBuilder_CUDA.h"
-#include "../../../ORUtils/CUDADefines.h"
 
 #include "../Shared/ITMViewBuilder_Shared.h"
+#include "../../../ORUtils/CUDADefines.h"
 #include "../../../ORUtils/MemoryBlock.h"
 
 using namespace ITMLib;

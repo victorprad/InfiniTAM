@@ -2,10 +2,8 @@
 
 #pragma once
 
-#include "../Utils/ITMLibDefines.h"
+#include "../Utils/ITMMath.h"
 #include "../../ORUtils/Image.h"
-
-#include <stdlib.h>
 
 namespace ITMLib
 {

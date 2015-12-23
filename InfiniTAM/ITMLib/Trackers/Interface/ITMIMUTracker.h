@@ -2,8 +2,6 @@
 
 #pragma once
 
-#include "../../Utils/ITMLibDefines.h"
-
 #include "../../Objects/ITMIMUMeasurement.h"
 
 #include "ITMTracker.h"

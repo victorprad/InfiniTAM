@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "../../Utils/ITMLibDefines.h"
+#include "../../Engine/DeviceAgnostic/ITMRepresentationAccess.h"
 
 struct RenderingBlock {
 	Vector2s upperLeft;

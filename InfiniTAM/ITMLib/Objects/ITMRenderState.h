@@ -4,9 +4,6 @@
 
 #ifndef __METALC__
 
-#include <stdlib.h>
-
-#include "../Utils/ITMLibDefines.h"
 #include "../../ORUtils/Image.h"
 
 namespace ITMLib

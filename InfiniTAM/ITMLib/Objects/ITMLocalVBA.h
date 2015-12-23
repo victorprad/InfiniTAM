@@ -2,9 +2,6 @@
 
 #pragma once
 
-#include <stdlib.h>
-
-#include "../Utils/ITMLibDefines.h"
 #include "../../ORUtils/MemoryBlock.h"
 
 namespace ITMLib

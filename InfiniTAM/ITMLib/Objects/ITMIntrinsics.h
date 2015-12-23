@@ -2,9 +2,7 @@
 
 #pragma once
 
-#include <string>
-
-#include "../Utils/ITMLibDefines.h"
+#include "../Utils/ITMMath.h"
 
 namespace ITMLib
 {

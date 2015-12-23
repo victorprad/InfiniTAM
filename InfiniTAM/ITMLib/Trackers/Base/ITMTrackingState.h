@@ -2,8 +2,6 @@
 
 #pragma once
 
-#include "../../Utils/ITMLibDefines.h"
-
 #include "../../Objects/ITMPose.h"
 #include "../../Objects/ITMPointCloud.h"
 #include "../../Objects/ITMScene.h"

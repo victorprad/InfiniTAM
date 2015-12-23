@@ -2,10 +2,6 @@
 
 #include "ITMTrackingController.h"
 
-#include "../Objects/ITMRenderState_VH.h"
-
-#include "../ITMLib.h"
-
 using namespace ITMLib;
 
 void ITMTrackingController::Track(ITMTrackingState *trackingState, const ITMView *view)

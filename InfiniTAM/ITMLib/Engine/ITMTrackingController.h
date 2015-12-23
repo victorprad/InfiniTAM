@@ -2,8 +2,6 @@
 
 #pragma once
 
-#include "../Utils/ITMLibDefines.h"
-
 #include "../Trackers/Base/ITMTrackingState.h"
 #include "../Objects/ITMRenderState.h"
 

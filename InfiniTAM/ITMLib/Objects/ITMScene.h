@@ -2,8 +2,6 @@
 
 #pragma once
 
-#include "../Utils/ITMLibDefines.h"
-
 #include "ITMSceneParams.h"
 #include "ITMLocalVBA.h"
 #include "ITMGlobalCache.h"

@@ -2,8 +2,6 @@
 
 #pragma once
 
-#include "../../Utils/ITMLibDefines.h"
-
 #include "../Base/ITMImageHierarchy.h"
 #include "../Base/ITMViewHierarchyLevel.h"
 

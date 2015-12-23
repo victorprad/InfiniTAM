@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include "../../Utils/ITMLibDefines.h"
 #include "ITMTracker.h"
 
 namespace ITMLib

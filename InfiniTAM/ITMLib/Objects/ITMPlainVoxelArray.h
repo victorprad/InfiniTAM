@@ -2,11 +2,7 @@
 
 #pragma once
 
-#ifndef __METALC__
-#include <stdlib.h>
-#endif
-
-#include "../Utils/ITMLibDefines.h"
+#include "../Utils/ITMMath.h"
 #include "../../ORUtils/MemoryBlock.h"
 
 namespace ITMLib

@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include "../Utils/ITMLibDefines.h"
 #include "../Utils/ITMLibSettings.h"
 
 #include "../Objects/ITMScene.h"

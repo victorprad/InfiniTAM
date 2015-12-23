@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include "../Utils/ITMLibDefines.h"
 #include "../Objects/ITMPose.h"
 
 namespace ITMLib

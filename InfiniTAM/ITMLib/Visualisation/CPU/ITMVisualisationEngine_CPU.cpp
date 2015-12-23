@@ -1,7 +1,7 @@
 // Copyright 2014-2015 Isis Innovation Limited and the authors of InfiniTAM
 
 #include "ITMVisualisationEngine_CPU.h"
-#include "../../Engine/DeviceAgnostic/ITMRepresentationAccess.h"
+
 #include "../Shared/ITMVisualisationEngine_Shared.h"
 #include "../../Reconstruction/Shared/ITMSceneReconstructionEngine_Shared.h"
 #include "../../Objects/ITMRenderState_VH.h"
