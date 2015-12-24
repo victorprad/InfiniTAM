@@ -2,12 +2,8 @@
 
 #pragma once
 
-#include "../Trackers/Base/ITMTrackingState.h"
-#include "../Objects/ITMRenderState.h"
-
+#include "../Utils/ITMLibSettings.h"
 #include "../Visualisation/Interface/ITMVisualisationEngine.h"
-
-#include "../Trackers/ITMTrackerFactory.h"
 
 namespace ITMLib
 {

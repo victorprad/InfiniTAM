@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "ITMIMUCalibrator.h"
 #include "ITMMainEngine.h"
 #include "ITMTrackingController.h"
 #include "../Objects/ITMLocalScene.h"

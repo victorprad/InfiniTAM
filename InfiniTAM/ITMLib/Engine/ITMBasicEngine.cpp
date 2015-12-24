@@ -4,6 +4,7 @@
 
 #include "../LowLevel/ITMLowLevelEngineFactory.h"
 #include "../Meshing/ITMMeshingEngineFactory.h"
+#include "../Trackers/ITMTrackerFactory.h"
 #include "../ViewBuilding/ITMViewBuilderFactory.h"
 #include "../Visualisation/ITMVisualisationEngineFactory.h"
 using namespace ITMLib;

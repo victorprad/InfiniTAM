@@ -3,6 +3,7 @@
 #pragma once
 
 #include "ITMDenseMapper.h"
+#include "ITMIMUCalibrator.h"
 #include "ITMMainEngine.h"
 #include "ITMTrackingController.h"
 #include "../LowLevel/Interface/ITMLowLevelEngine.h"
