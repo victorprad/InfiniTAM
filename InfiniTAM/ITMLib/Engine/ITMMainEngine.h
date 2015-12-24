@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "../ITMLib.h"
+#include "../Objects/ITMIMUMeasurement.h"
 #include "../Utils/ITMLibSettings.h"
 
 /** \mainpage
@@ -74,4 +74,3 @@ namespace ITMLib
 		virtual ~ITMMainEngine() {}
 	};
 }
-

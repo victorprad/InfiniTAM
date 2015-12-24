@@ -3,7 +3,6 @@
 #pragma once
 
 #include "ITMMainEngine.h"
-#include "../ITMLib.h"
 #include "../Objects/ITMLocalScene.h"
 #include "../ViewBuilding/Interface/ITMViewBuilder.h"
 

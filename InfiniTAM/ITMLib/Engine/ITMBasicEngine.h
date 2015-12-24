@@ -2,9 +2,13 @@
 
 #pragma once
 
+#include "ITMDenseMapper.h"
 #include "ITMMainEngine.h"
+#include "ITMTrackingController.h"
+#include "../LowLevel/Interface/ITMLowLevelEngine.h"
 #include "../Meshing/Interface/ITMMeshingEngine.h"
 #include "../ViewBuilding/Interface/ITMViewBuilder.h"
+#include "../Visualisation/Interface/ITMVisualisationEngine.h"
 
 namespace ITMLib
 {
