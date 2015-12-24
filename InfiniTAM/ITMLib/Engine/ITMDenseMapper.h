@@ -2,15 +2,9 @@
 
 #pragma once
 
-#include "../Utils/ITMLibSettings.h"
-
-#include "../Objects/ITMScene.h"
-#include "../Trackers/Base/ITMTrackingState.h"
-#include "../Objects/ITMRenderState.h"
-
 #include "../Reconstruction/Interface/ITMSceneReconstructionEngine.h"
-#include "../Visualisation/Interface/ITMVisualisationEngine.h"
 #include "../Swapping/Interface/ITMSwappingEngine.h"
+#include "../Utils/ITMLibSettings.h"
 
 namespace ITMLib
 {
