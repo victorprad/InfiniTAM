@@ -4,40 +4,21 @@
 
 #include "../Objects/ITMRenderState_VH.h"
 #include "../Reconstruction/ITMSceneReconstructionEngineFactory.h"
-
-#include "../ITMLib.h"
-
+#include "../Swapping/ITMSwappingEngineFactory.h"
 using namespace ITMLib;
 
 template<class TVoxel, class TIndex>
 ITMDenseMapper<TVoxel, TIndex>::ITMDenseMapper(const ITMLibSettings *settings)
 {
-	swappingEngine = NULL;
 	sceneRecoEngine = ITMSceneReconstructionEngineFactory::MakeSceneReconstructionEngine<TVoxel,TIndex>(settings->deviceType);
-
-	switch (settings->deviceType)
-	{
-	case ITMLibSettings::DEVICE_CPU:
-		if (settings->useSwapping) swappingEngine = new ITMSwappingEngine_CPU<TVoxel,TIndex>();
-		break;
-	case ITMLibSettings::DEVICE_CUDA:
-#ifndef COMPILE_WITHOUT_CUDA
-		if (settings->useSwapping) swappingEngine = new ITMSwappingEngine_CUDA<TVoxel,TIndex>();
-#endif
-		break;
-	case ITMLibSettings::DEVICE_METAL:
-#ifdef COMPILE_WITH_METAL
-		if (settings->useSwapping) swappingEngine = new ITMSwappingEngine_CPU<TVoxel, TIndex>();
-#endif
-		break;
-	}
+	swappingEngine = settings->useSwapping ? ITMSwappingEngineFactory::MakeSwappingEngine<TVoxel,TIndex>(settings->deviceType) : NULL;
 }
 
 template<class TVoxel, class TIndex>
 ITMDenseMapper<TVoxel,TIndex>::~ITMDenseMapper()
 {
 	delete sceneRecoEngine;
-	if (swappingEngine!=NULL) delete swappingEngine;
+	delete swappingEngine;
 }
 
 template<class TVoxel, class TIndex>

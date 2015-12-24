@@ -32,15 +32,6 @@
 #include "Trackers/Metal/ITMColorTracker_Metal.h"
 #endif
 
-#include "Swapping/Interface/ITMSwappingEngine.h"
-#include "Swapping/CPU/ITMSwappingEngine_CPU.h"
-#ifndef COMPILE_WITHOUT_CUDA
-#include "Swapping/CUDA/ITMSwappingEngine_CUDA.h"
-#endif
-#ifdef COMPILE_WITH_METAL
-#include "Swapping/Metal/ITMSwappingEngine_Metal.h"
-#endif
-
 #include "Trackers/Interface/ITMRenTracker.h"
 #include "Trackers/CPU/ITMRenTracker_CPU.h"
 #ifndef COMPILE_WITHOUT_CUDA
