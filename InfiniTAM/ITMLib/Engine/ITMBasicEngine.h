@@ -3,6 +3,7 @@
 #pragma once
 
 #include "ITMMainEngine.h"
+#include "../Meshing/Interface/ITMMeshingEngine.h"
 #include "../ViewBuilding/Interface/ITMViewBuilder.h"
 
 namespace ITMLib

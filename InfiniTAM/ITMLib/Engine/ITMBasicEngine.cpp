@@ -3,6 +3,7 @@
 #include "ITMBasicEngine.h"
 
 #include "../LowLevel/ITMLowLevelEngineFactory.h"
+#include "../Meshing/ITMMeshingEngineFactory.h"
 #include "../ViewBuilding/ITMViewBuilderFactory.h"
 #include "../Visualisation/ITMVisualisationEngineFactory.h"
 using namespace ITMLib;
@@ -21,29 +22,18 @@ ITMBasicEngine::ITMBasicEngine(const ITMLibSettings *settings, const ITMRGBDCali
 	this->scene = new ITMScene<ITMVoxel, ITMVoxelIndex>(&settings->sceneParams, settings->useSwapping, memoryType);
 
 	const ITMLibSettings::DeviceType deviceType = settings->deviceType;
-	meshingEngine = NULL;
+
 	lowLevelEngine = ITMLowLevelEngineFactory::MakeLowLevelEngine(deviceType);
 	viewBuilder = ITMViewBuilderFactory::MakeViewBuilder(calib, deviceType);
 	visualisationEngine = ITMVisualisationEngineFactory::MakeVisualisationEngine<ITMVoxel,ITMVoxelIndex>(deviceType);
-	switch (deviceType)
-	{
-	case ITMLibSettings::DEVICE_CPU:
-		if (createMeshingEngine) meshingEngine = new ITMMeshingEngine_CPU<ITMVoxel, ITMVoxelIndex>();
-		break;
-	case ITMLibSettings::DEVICE_CUDA:
-#ifndef COMPILE_WITHOUT_CUDA
-		if (createMeshingEngine) meshingEngine = new ITMMeshingEngine_CUDA<ITMVoxel, ITMVoxelIndex>();
-#endif
-		break;
-	case ITMLibSettings::DEVICE_METAL:
-#ifdef COMPILE_WITH_METAL
-		if (createMeshingEngine) meshingEngine = new ITMMeshingEngine_CPU<ITMVoxel, ITMVoxelIndex>();
-#endif
-		break;
-	}
 
 	mesh = NULL;
-	if (createMeshingEngine) mesh = new ITMMesh(memoryType);
+	meshingEngine = NULL;
+	if (createMeshingEngine)
+	{
+		mesh = new ITMMesh(memoryType);
+		meshingEngine = ITMMeshingEngineFactory::MakeMeshingEngine<ITMVoxel,ITMVoxelIndex>(deviceType);
+	}
 
 	denseMapper = new ITMDenseMapper<ITMVoxel, ITMVoxelIndex>(settings);
 	denseMapper->ResetScene(scene);
