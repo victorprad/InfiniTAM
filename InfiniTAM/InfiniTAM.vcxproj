@@ -230,7 +230,6 @@
     <ClInclude Include="ITMLib\Objects\ITMImageHierarchy.h" />
     <ClInclude Include="ITMLib\Objects\ITMViewHierarchyLevel.h" />
     <ClInclude Include="ITMLib\Objects\ITMLocalVBA.h" />
-    <ClInclude Include="ITMLib\ITMLib.h" />
     <ClInclude Include="LCDLib\FernConservatory.h" />
     <ClInclude Include="LCDLib\LCDDatabase.h" />
     <ClInclude Include="LCDLib\LoopClosureDetector.h" />

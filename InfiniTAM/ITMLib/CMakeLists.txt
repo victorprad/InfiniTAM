@@ -3,11 +3,6 @@
 #############################
 
 ##
-SET(ITMLIB_TOPLEVEL_HEADERS
-ITMLib.h
-)
-
-##
 SET(ITMLIB_ENGINE_SOURCES
 Engine/ITMDenseMapper.cpp
 Engine/ITMBasicEngine.cpp
@@ -372,7 +367,6 @@ Visualisation/Shared/ITMVisualisationEngine_Shared.h
 #################################################################
 
 set(ITMLIB_COMMON_OBJECTS
-${ITMLIB_TOPLEVEL_HEADERS}
 ${ITMLIB_ENGINE_SOURCES}
 ${ITMLIB_ENGINE_HEADERS}
 ${ITMLIB_ENGINE_DEVICEAGNOSTIC_HEADERS}
@@ -448,7 +442,6 @@ ${ITMLIB_VISUALISATION_CUDA_HEADERS}
 # Specify the source groups #
 #############################
 
-SOURCE_GROUP("" FILES ${ITMLIB_TOPLEVEL_HEADERS})
 SOURCE_GROUP(Engine FILES ${ITMLIB_ENGINE_SOURCES} ${ITMLIB_ENGINE_HEADERS})
 SOURCE_GROUP(Engine\\DeviceAgnostic FILES ${ITMLIB_ENGINE_DEVICEAGNOSTIC_HEADERS})
 SOURCE_GROUP(LowLevel FILES ${ITMLIB_LOWLEVEL_SOURCES} ${ITMLIB_LOWLEVEL_HEADERS})

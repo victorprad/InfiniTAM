@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "../ITMLib.h"
+#include "ITMDenseMapper.h"
 #include "ITMMainEngine.h"
 #include "../Objects/ITMLocalScene.h"
 
