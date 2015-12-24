@@ -23,15 +23,6 @@
 #include "Trackers/CUDA/ITMWeightedICPTracker_CUDA.h"
 #endif
 
-#include "Reconstruction/Interface/ITMSceneReconstructionEngine.h"
-#include "Reconstruction/CPU/ITMSceneReconstructionEngine_CPU.h"
-#ifndef COMPILE_WITHOUT_CUDA
-#include "Reconstruction/CUDA/ITMSceneReconstructionEngine_CUDA.h"
-#endif
-#ifdef COMPILE_WITH_METAL
-#include "Reconstruction/Metal/ITMSceneReconstructionEngine_Metal.h"
-#endif
-
 #include "Trackers/Interface/ITMColorTracker.h"
 #include "Trackers/CPU/ITMColorTracker_CPU.h"
 #ifndef COMPILE_WITHOUT_CUDA

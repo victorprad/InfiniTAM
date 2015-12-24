@@ -3,6 +3,7 @@
 #include "ITMDenseMapper.h"
 
 #include "../Objects/ITMRenderState_VH.h"
+#include "../Reconstruction/ITMSceneReconstructionEngineFactory.h"
 
 #include "../ITMLib.h"
 
@@ -12,22 +13,20 @@ template<class TVoxel, class TIndex>
 ITMDenseMapper<TVoxel, TIndex>::ITMDenseMapper(const ITMLibSettings *settings)
 {
 	swappingEngine = NULL;
+	sceneRecoEngine = ITMSceneReconstructionEngineFactory::MakeSceneReconstructionEngine<TVoxel,TIndex>(settings->deviceType);
 
 	switch (settings->deviceType)
 	{
 	case ITMLibSettings::DEVICE_CPU:
-		sceneRecoEngine = new ITMSceneReconstructionEngine_CPU<TVoxel,TIndex>();
 		if (settings->useSwapping) swappingEngine = new ITMSwappingEngine_CPU<TVoxel,TIndex>();
 		break;
 	case ITMLibSettings::DEVICE_CUDA:
 #ifndef COMPILE_WITHOUT_CUDA
-		sceneRecoEngine = new ITMSceneReconstructionEngine_CUDA<TVoxel,TIndex>();
 		if (settings->useSwapping) swappingEngine = new ITMSwappingEngine_CUDA<TVoxel,TIndex>();
 #endif
 		break;
 	case ITMLibSettings::DEVICE_METAL:
 #ifdef COMPILE_WITH_METAL
-		sceneRecoEngine = new ITMSceneReconstructionEngine_Metal<TVoxel, TIndex>();
 		if (settings->useSwapping) swappingEngine = new ITMSwappingEngine_CPU<TVoxel, TIndex>();
 #endif
 		break;
