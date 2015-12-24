@@ -2,7 +2,10 @@
 
 #pragma once
 
-#include "../ITMLib/ITMLib.h"
+#include <vector>
+
+#include "../ITMLib/Objects/ITMRGBDCalib.h"
+#include "../ITMLib/Utils/ITMLibDefines.h"
 
 namespace InfiniTAM
 {
@@ -118,4 +121,3 @@ namespace InfiniTAM
 		};
 	}
 }
-

@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "../ITMLib/ITMLib.h"
+#include "../ITMLib/Objects/ITMIMUMeasurement.h"
 
 namespace InfiniTAM
 {
@@ -29,4 +29,3 @@ namespace InfiniTAM
 		};
 	}
 }
-
