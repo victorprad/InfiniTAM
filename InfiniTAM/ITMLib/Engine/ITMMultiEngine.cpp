@@ -2,7 +2,8 @@
 
 #include "ITMMultiEngine.h"
 
-#include "../Lowlevel/ITMLowLevelEngineFactory.h"
+#include "../LowLevel/ITMLowLevelEngineFactory.h"
+#include "../ViewBuilding/ITMViewBuilderFactory.h"
 #include "../Visualisation/ITMVisualisationEngineFactory.h"
 using namespace ITMLib;
 
@@ -31,23 +32,8 @@ ITMMultiEngine::ITMMultiEngine(const ITMLibSettings *settings, const ITMRGBDCali
 
 	const ITMLibSettings::DeviceType deviceType = settings->deviceType;
 	lowLevelEngine = ITMLowLevelEngineFactory::MakeLowLevelEngine(deviceType);
+	viewBuilder = ITMViewBuilderFactory::MakeViewBuilder(calib, deviceType);
 	visualisationEngine = ITMVisualisationEngineFactory::MakeVisualisationEngine<ITMVoxel,ITMVoxelIndex>(deviceType);
-	switch (deviceType)
-	{
-	case ITMLibSettings::DEVICE_CPU:
-		viewBuilder = new ITMViewBuilder_CPU(calib);
-		break;
-	case ITMLibSettings::DEVICE_CUDA:
-#ifndef COMPILE_WITHOUT_CUDA
-		viewBuilder = new ITMViewBuilder_CUDA(calib);
-#endif
-		break;
-	case ITMLibSettings::DEVICE_METAL:
-#ifdef COMPILE_WITH_METAL
-		viewBuilder = new ITMViewBuilder_Metal(calib);
-#endif
-		break;
-	}
 
 	renderState_freeview = NULL; //will be created by the visualisation engine
 

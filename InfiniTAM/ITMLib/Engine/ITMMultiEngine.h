@@ -2,9 +2,10 @@
 
 #pragma once
 
-#include "../ITMLib.h"
 #include "ITMMainEngine.h"
+#include "../ITMLib.h"
 #include "../Objects/ITMLocalScene.h"
+#include "../ViewBuilding/Interface/ITMViewBuilder.h"
 
 #include "../../LCDLib/LoopClosureDetector.h"
 #include "../../LCDLib/PoseDatabase.h"

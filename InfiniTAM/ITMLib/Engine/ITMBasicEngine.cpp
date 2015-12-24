@@ -3,6 +3,7 @@
 #include "ITMBasicEngine.h"
 
 #include "../LowLevel/ITMLowLevelEngineFactory.h"
+#include "../ViewBuilding/ITMViewBuilderFactory.h"
 #include "../Visualisation/ITMVisualisationEngineFactory.h"
 using namespace ITMLib;
 
@@ -22,22 +23,20 @@ ITMBasicEngine::ITMBasicEngine(const ITMLibSettings *settings, const ITMRGBDCali
 	const ITMLibSettings::DeviceType deviceType = settings->deviceType;
 	meshingEngine = NULL;
 	lowLevelEngine = ITMLowLevelEngineFactory::MakeLowLevelEngine(deviceType);
+	viewBuilder = ITMViewBuilderFactory::MakeViewBuilder(calib, deviceType);
 	visualisationEngine = ITMVisualisationEngineFactory::MakeVisualisationEngine<ITMVoxel,ITMVoxelIndex>(deviceType);
 	switch (deviceType)
 	{
 	case ITMLibSettings::DEVICE_CPU:
-		viewBuilder = new ITMViewBuilder_CPU(calib);
 		if (createMeshingEngine) meshingEngine = new ITMMeshingEngine_CPU<ITMVoxel, ITMVoxelIndex>();
 		break;
 	case ITMLibSettings::DEVICE_CUDA:
 #ifndef COMPILE_WITHOUT_CUDA
-		viewBuilder = new ITMViewBuilder_CUDA(calib);
 		if (createMeshingEngine) meshingEngine = new ITMMeshingEngine_CUDA<ITMVoxel, ITMVoxelIndex>();
 #endif
 		break;
 	case ITMLibSettings::DEVICE_METAL:
 #ifdef COMPILE_WITH_METAL
-		viewBuilder = new ITMViewBuilder_Metal(calib);
 		if (createMeshingEngine) meshingEngine = new ITMMeshingEngine_CPU<ITMVoxel, ITMVoxelIndex>();
 #endif
 		break;

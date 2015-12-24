@@ -63,15 +63,6 @@
 #include "Trackers/Interface/ITMCompositeTracker.h"
 #include "Engine/ITMTrackingController.h"
 
-#include "ViewBuilding/Interface/ITMViewBuilder.h"
-#include "ViewBuilding/CPU/ITMViewBuilder_CPU.h"
-#ifndef COMPILE_WITHOUT_CUDA
-#include "ViewBuilding/CUDA/ITMViewBuilder_CUDA.h"
-#endif
-#ifdef COMPILE_WITH_METAL
-#include "ViewBuilding/Metal/ITMViewBuilder_Metal.h"
-#endif
-
 #include "Meshing/Interface/ITMMeshingEngine.h"
 #include "Meshing/CPU/ITMMeshingEngine_CPU.h"
 #ifndef COMPILE_WITHOUT_CUDA
