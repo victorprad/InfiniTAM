@@ -8,15 +8,6 @@
 #include "Objects/ITMScene.h"
 #include "Objects/ITMView.h"
 
-#include "LowLevel/Interface/ITMLowLevelEngine.h"
-#include "LowLevel/CPU/ITMLowLevelEngine_CPU.h"
-#ifndef COMPILE_WITHOUT_CUDA
-#include "LowLevel/CUDA/ITMLowLevelEngine_CUDA.h"
-#endif
-#ifdef COMPILE_WITH_METAL
-#include "LowLevel/Metal/ITMLowLevelEngine_Metal.h"
-#endif
-
 #include "Trackers/Interface/ITMDepthTracker.h"
 #include "Trackers/CPU/ITMDepthTracker_CPU.h"
 #ifndef COMPILE_WITHOUT_CUDA

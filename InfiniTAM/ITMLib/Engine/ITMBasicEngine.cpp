@@ -2,6 +2,7 @@
 
 #include "ITMBasicEngine.h"
 
+#include "../LowLevel/ITMLowLevelEngineFactory.h"
 #include "../Visualisation/ITMVisualisationEngineFactory.h"
 using namespace ITMLib;
 
@@ -18,25 +19,24 @@ ITMBasicEngine::ITMBasicEngine(const ITMLibSettings *settings, const ITMRGBDCali
 	MemoryDeviceType memoryType = settings->deviceType == ITMLibSettings::DEVICE_CUDA ? MEMORYDEVICE_CUDA : MEMORYDEVICE_CPU;
 	this->scene = new ITMScene<ITMVoxel, ITMVoxelIndex>(&settings->sceneParams, settings->useSwapping, memoryType);
 
+	const ITMLibSettings::DeviceType deviceType = settings->deviceType;
 	meshingEngine = NULL;
-	visualisationEngine = ITMVisualisationEngineFactory::MakeVisualisationEngine<ITMVoxel,ITMVoxelIndex>(settings->deviceType);
-	switch (settings->deviceType)
+	lowLevelEngine = ITMLowLevelEngineFactory::MakeLowLevelEngine(deviceType);
+	visualisationEngine = ITMVisualisationEngineFactory::MakeVisualisationEngine<ITMVoxel,ITMVoxelIndex>(deviceType);
+	switch (deviceType)
 	{
 	case ITMLibSettings::DEVICE_CPU:
-		lowLevelEngine = new ITMLowLevelEngine_CPU();
 		viewBuilder = new ITMViewBuilder_CPU(calib);
 		if (createMeshingEngine) meshingEngine = new ITMMeshingEngine_CPU<ITMVoxel, ITMVoxelIndex>();
 		break;
 	case ITMLibSettings::DEVICE_CUDA:
 #ifndef COMPILE_WITHOUT_CUDA
-		lowLevelEngine = new ITMLowLevelEngine_CUDA();
 		viewBuilder = new ITMViewBuilder_CUDA(calib);
 		if (createMeshingEngine) meshingEngine = new ITMMeshingEngine_CUDA<ITMVoxel, ITMVoxelIndex>();
 #endif
 		break;
 	case ITMLibSettings::DEVICE_METAL:
 #ifdef COMPILE_WITH_METAL
-		lowLevelEngine = new ITMLowLevelEngine_Metal();
 		viewBuilder = new ITMViewBuilder_Metal(calib);
 		if (createMeshingEngine) meshingEngine = new ITMMeshingEngine_CPU<ITMVoxel, ITMVoxelIndex>();
 #endif
