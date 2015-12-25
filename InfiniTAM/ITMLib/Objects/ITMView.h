@@ -4,7 +4,7 @@
 
 #include "../Objects/ITMRGBDCalib.h"
 #include "../Utils/ITMCalibIO.h"
-#include "../Utils/ITMLibDefines.h"
+#include "../Utils/ITMImageTypes.h"
 
 namespace ITMLib
 {

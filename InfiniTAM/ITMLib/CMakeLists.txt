@@ -281,6 +281,7 @@ Utils/ITMLibSettings.cpp
 SET(ITMLIB_UTILS_HEADERS
 Utils/ITMCalibIO.h
 Utils/ITMCUDAUtils.h
+Utils/ITMImageTypes.h
 Utils/ITMLibDefines.h
 Utils/ITMLibSettings.h
 Utils/ITMMath.h

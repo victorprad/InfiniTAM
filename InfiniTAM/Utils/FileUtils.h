@@ -4,7 +4,7 @@
 
 #include <stdio.h>
 
-#include "../ITMLib/Utils/ITMLibDefines.h"
+#include "../ITMLib/Utils/ITMImageTypes.h"
 
 void SaveImageToFile(const ITMUChar4Image* image, const char* fileName, bool flipVertical = false);
 void SaveImageToFile(const ITMShortImage* image, const char* fileName);
@@ -25,4 +25,3 @@ template <typename T> void WriteToBIN(const T *data, int dataSize, const char *f
 	fwrite(data, dataSize * sizeof(T), 1, f);
 	fclose(f);
 }
-
