@@ -276,5 +276,3 @@ __global__ void renTrackerOneLevel_g_device(float *g_device, float *h_device, Ve
 	//	atomicAdd(&h_device[blockIdx.x * noParaSQ + paraId], localHessian[paraId]);
 	//}
 }
-
-template class ITMLib::ITMRenTracker_CUDA<ITMVoxel, ITMVoxelIndex>;

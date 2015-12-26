@@ -367,5 +367,3 @@ void ITMSceneReconstructionEngine_CPU<TVoxel, ITMPlainVoxelArray>::IntegrateInto
 			depth, depthImgSize, rgb, rgbImgSize);
 	}
 }
-
-template class ITMLib::ITMSceneReconstructionEngine_CPU<ITMVoxel, ITMVoxelIndex>;

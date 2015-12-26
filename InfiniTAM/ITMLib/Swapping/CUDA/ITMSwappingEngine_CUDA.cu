@@ -292,5 +292,3 @@ __global__ void integrateOldIntoActiveData_device(TVoxel *localVBA, ITMHashSwapS
 
 	if (vIdx == 0) swapStates[entryDestId].state = 2;
 }
-
-template class ITMLib::ITMSwappingEngine_CUDA<ITMVoxel, ITMVoxelIndex>;

@@ -756,5 +756,3 @@ __global__ void renderColour_device(Vector4u *outRendering, const Vector4f *ptsR
 
 	processPixelColour<TVoxel, TIndex>(outRendering[locId], ptRay.toVector3(), ptRay.w > 0, voxelData, voxelIndex, lightSource);
 }
-
-template class ITMLib::ITMVisualisationEngine_CUDA < ITMVoxel, ITMVoxelIndex > ;

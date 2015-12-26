@@ -468,6 +468,3 @@ __global__ void buildVisibleList_device(ITMHashEntry *hashTable, ITMHashSwapStat
 	}
 #endif
 }
-
-template class ITMLib::ITMSceneReconstructionEngine_CUDA<ITMVoxel, ITMVoxelIndex>;
-

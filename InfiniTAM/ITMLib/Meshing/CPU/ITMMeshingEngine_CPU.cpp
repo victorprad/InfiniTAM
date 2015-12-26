@@ -68,5 +68,3 @@ ITMMeshingEngine_CPU<TVoxel,ITMPlainVoxelArray>::~ITMMeshingEngine_CPU(void)
 template<class TVoxel>
 void ITMMeshingEngine_CPU<TVoxel, ITMPlainVoxelArray>::MeshScene(ITMMesh *mesh, const ITMScene<TVoxel, ITMPlainVoxelArray> *scene)
 {}
-
-template class ITMLib::ITMMeshingEngine_CPU<ITMVoxel, ITMVoxelIndex>;

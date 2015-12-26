@@ -99,5 +99,3 @@ void ITMRenTracker_CPU<TVoxel,TIndex>::UnprojectDepthToCam(ITMFloatImage *depth,
 		else camPoints[locId] = Vector4f(0.0f, 0.0f, 0.0f, -1.0f);
 	}
 }
-
-template class ITMLib::ITMRenTracker_CPU<ITMVoxel, ITMVoxelIndex>;

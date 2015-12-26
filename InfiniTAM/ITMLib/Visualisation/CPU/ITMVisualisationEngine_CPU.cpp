@@ -483,5 +483,3 @@ static int RenderPointCloud(Vector4u *outRendering, Vector4f *locations, Vector4
 
 	return noTotalPoints;
 }
-
-template class ITMLib::ITMVisualisationEngine_CPU<ITMVoxel, ITMVoxelIndex>;

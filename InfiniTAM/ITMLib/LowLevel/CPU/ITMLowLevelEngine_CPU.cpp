@@ -112,4 +112,3 @@ int ITMLowLevelEngine_CPU::CountValidDepths(const ITMFloatImage *image_in) const
 
 	return noValidPoints;
 }
-

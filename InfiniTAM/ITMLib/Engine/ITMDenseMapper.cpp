@@ -49,5 +49,3 @@ void ITMDenseMapper<TVoxel,TIndex>::UpdateVisibleList(const ITMView *view, const
 {
 	sceneRecoEngine->AllocateSceneFromDepth(scene, view, trackingState, renderState, true);
 }
-
-template class ITMLib::ITMDenseMapper<ITMVoxel, ITMVoxelIndex>;
