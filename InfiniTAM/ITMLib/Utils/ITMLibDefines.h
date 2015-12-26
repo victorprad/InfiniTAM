@@ -17,12 +17,6 @@
 #define COMPILE_WITHOUT_Kinect2
 #endif
 
-#ifndef COMPILE_WITHOUT_CUDA
-
-#include <cuda_runtime.h>
-
-#endif
-
 #include "ITMVoxelTypes.h"
 #include "../Objects/ITMHashSwapState.h"
 #include "../Objects/ITMPlainVoxelArray.h"
