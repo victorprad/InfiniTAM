@@ -133,7 +133,6 @@ Objects/ITMLocalScene.cpp
 set(ITMLIB_OBJECTS_HEADERS
 Objects/ITMGlobalCache.h
 Objects/ITMHashEntry.h
-Objects/ITMHashSwapState.h
 Objects/ITMLocalScene.h
 Objects/ITMLocalVBA.h
 Objects/ITMPlainVoxelArray.h
