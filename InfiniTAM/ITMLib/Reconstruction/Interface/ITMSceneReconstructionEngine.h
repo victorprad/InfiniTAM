@@ -4,10 +4,10 @@
 
 #include <math.h>
 
-#include "../../Objects/ITMScene.h"
-#include "../../Objects/ITMView.h"
-#include "../../Trackers/Base/ITMTrackingState.h"
 #include "../../Objects/ITMRenderState.h"
+#include "../../Objects/ITMView.h"
+#include "../../Scene/ITMScene.h"
+#include "../../Trackers/Base/ITMTrackingState.h"
 
 namespace ITMLib
 {

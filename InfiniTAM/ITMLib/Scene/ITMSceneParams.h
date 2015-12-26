@@ -2,8 +2,6 @@
 
 #pragma once
 
-#include "../Camera/ITMIntrinsics.h"
-
 namespace ITMLib
 {
 	/** \brief

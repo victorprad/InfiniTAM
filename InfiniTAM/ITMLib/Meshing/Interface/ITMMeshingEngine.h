@@ -4,7 +4,7 @@
 
 #include <math.h>
 
-#include "../../Objects/ITMScene.h"
+#include "../../Scene/ITMScene.h"
 #include "../Base/ITMMesh.h"
 
 namespace ITMLib

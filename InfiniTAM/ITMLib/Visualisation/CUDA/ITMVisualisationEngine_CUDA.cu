@@ -1,12 +1,12 @@
 // Copyright 2014-2015 Isis Innovation Limited and the authors of InfiniTAM
 
 #include "ITMVisualisationEngine_CUDA.h"
-#include "../../Utils/ITMCUDAUtils.h"
-#include "../../Engine/DeviceAgnostic/ITMRepresentationAccess.h"
-#include "../Shared/ITMVisualisationEngine_Shared.h"
-#include "../../Reconstruction/Shared/ITMSceneReconstructionEngine_Shared.h"
 
+#include "../Shared/ITMVisualisationEngine_Shared.h"
 #include "../../Objects/ITMRenderState_VH.h"
+#include "../../Reconstruction/Shared/ITMSceneReconstructionEngine_Shared.h"
+#include "../../Scene/ITMRepresentationAccess.h"
+#include "../../Utils/ITMCUDAUtils.h"
 
 using namespace ITMLib;
 

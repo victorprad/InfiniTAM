@@ -5,7 +5,7 @@
 #include <stdlib.h>
 
 #include "ITMRenderState.h"
-#include "../Objects/ITMVoxelBlockHash.h"
+#include "../Scene/ITMVoxelBlockHash.h"
 #include "../../ORUtils/MemoryBlock.h"
 
 namespace ITMLib

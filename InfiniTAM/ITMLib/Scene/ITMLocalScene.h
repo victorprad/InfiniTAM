@@ -5,7 +5,7 @@
 #include <map>
 
 #include "ITMScene.h"
-#include "ITMRenderState.h"
+#include "../Objects/ITMRenderState.h"
 #include "../Trackers/Base/ITMTrackingState.h"
 #include "../Utils/ITMLibSettings.h"
 #include "../Visualisation/Interface/ITMVisualisationEngine.h"

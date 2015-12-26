@@ -2,8 +2,8 @@
 
 #pragma once
 
-#include "../../Objects/ITMPlainVoxelArray.h"
-#include "../../Objects/ITMVoxelBlockHash.h"
+#include "ITMPlainVoxelArray.h"
+#include "ITMVoxelBlockHash.h"
 
 template<typename T> _CPU_AND_GPU_CODE_ inline int hashIndex(const THREADPTR(T) & blockPos) {
 	return (((uint)blockPos.x * 73856093u) ^ ((uint)blockPos.y * 19349669u) ^ ((uint)blockPos.z * 83492791u)) & (uint)SDF_HASH_MASK;

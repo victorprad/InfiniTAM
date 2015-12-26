@@ -3,8 +3,8 @@
 #pragma once
 
 #include "../../Objects/ITMRenderState_VH.h"
-#include "../../Objects/ITMScene.h"
 #include "../../Objects/ITMView.h"
+#include "../../Scene/ITMScene.h"
 #include "../../Trackers/Base/ITMTrackingState.h"
 
 namespace ITMLib

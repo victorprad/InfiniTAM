@@ -5,10 +5,9 @@
 #include "ITMIMUCalibrator.h"
 #include "ITMMainEngine.h"
 #include "ITMTrackingController.h"
-#include "../Objects/ITMLocalScene.h"
 #include "../LowLevel/Interface/ITMLowLevelEngine.h"
+#include "../Scene/ITMLocalScene.h"
 #include "../ViewBuilding/Interface/ITMViewBuilder.h"
-
 #include "../../LCDLib/LoopClosureDetector.h"
 #include "../../LCDLib/PoseDatabase.h"
 
