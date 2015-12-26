@@ -18,7 +18,6 @@
 #endif
 
 #include "ITMVoxelTypes.h"
-#include "../Objects/ITMHashSwapState.h"
 #include "../Objects/ITMPlainVoxelArray.h"
 #include "../Objects/ITMVoxelBlockHash.h"
 
