@@ -4,7 +4,7 @@
 
 #include <vector>
 
-#include "../ITMLib/Objects/ITMPose.h"
+#include "../ITMLib/Camera/ITMPose.h"
 
 namespace LCDLib {
 
@@ -32,4 +32,3 @@ class PoseDatabase {
 };
 
 }
-

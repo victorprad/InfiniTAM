@@ -2,8 +2,7 @@
 
 #pragma once
 
-#include "../Objects/ITMRGBDCalib.h"
-#include "../Utils/ITMCalibIO.h"
+#include "../Camera/ITMCalibIO.h"
 #include "../Utils/ITMImageTypes.h"
 
 namespace ITMLib

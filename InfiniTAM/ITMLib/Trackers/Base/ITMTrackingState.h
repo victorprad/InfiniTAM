@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "../../Objects/ITMPose.h"
+#include "../../Camera/ITMPose.h"
 #include "../../Objects/ITMPointCloud.h"
 #include "../../Objects/ITMScene.h"
 

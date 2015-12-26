@@ -2,7 +2,7 @@
 
 #include "ImageSourceEngine.h"
 
-#include "../ITMLib/Utils/ITMCalibIO.h"
+#include "../ITMLib/Camera/ITMCalibIO.h"
 #include "../Utils/FileUtils.h"
 
 #include <stdexcept>

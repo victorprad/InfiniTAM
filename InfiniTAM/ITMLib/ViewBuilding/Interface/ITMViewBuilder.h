@@ -2,9 +2,8 @@
 
 #pragma once
 
-#include "../../Objects/ITMView.h"
+#include "../../Camera/ITMRGBDCalib.h"
 #include "../../Objects/ITMViewIMU.h"
-#include "../../Objects/ITMRGBDCalib.h"
 
 namespace ITMLib
 {

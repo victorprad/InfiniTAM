@@ -12,6 +12,21 @@ CUDAInstantiations.cu
 )
 
 ##
+SET(ITMLIB_CAMERA_SOURCES
+Camera/ITMCalibIO.cpp
+Camera/ITMPose.cpp
+)
+
+SET(ITMLIB_CAMERA_HEADERS
+Camera/ITMCalibIO.h
+Camera/ITMDisparityCalib.h
+Camera/ITMExtrinsics.h
+Camera/ITMIntrinsics.h
+Camera/ITMPose.h
+Camera/ITMRGBDCalib.h
+)
+
+##
 SET(ITMLIB_ENGINE_SOURCES
 Engine/ITMDenseMapper.cpp
 Engine/ITMBasicEngine.cpp
@@ -112,23 +127,17 @@ Meshing/Shared/ITMMeshingEngine_Shared.h
 
 ##
 set(ITMLIB_OBJECTS_SOURCES
-Objects/ITMPose.cpp
 Objects/ITMLocalScene.cpp
 )
 
 set(ITMLIB_OBJECTS_HEADERS
-Objects/ITMDisparityCalib.h
-Objects/ITMExtrinsics.h
 Objects/ITMGlobalCache.h
 Objects/ITMHashEntry.h
 Objects/ITMHashSwapState.h
-Objects/ITMIntrinsics.h
 Objects/ITMLocalScene.h
 Objects/ITMLocalVBA.h
 Objects/ITMPlainVoxelArray.h
 Objects/ITMPointCloud.h
-Objects/ITMPose.h
-Objects/ITMRGBDCalib.h
 Objects/ITMScene.h
 Objects/ITMSceneParams.h
 Objects/ITMView.h
@@ -279,12 +288,10 @@ Trackers/Shared/ITMWeightedICPTracker_Shared.h
 
 ##
 SET(ITMLIB_UTILS_SOURCES
-Utils/ITMCalibIO.cpp
 Utils/ITMLibSettings.cpp
 )
 
 SET(ITMLIB_UTILS_HEADERS
-Utils/ITMCalibIO.h
 Utils/ITMCUDAUtils.h
 Utils/ITMImageTypes.h
 Utils/ITMLibDefines.h
@@ -373,6 +380,8 @@ Visualisation/Shared/ITMVisualisationEngine_Shared.h
 #################################################################
 
 set(ITMLIB_COMMON_OBJECTS
+${ITMLIB_CAMERA_SOURCES}
+${ITMLIB_CAMERA_HEADERS}
 ${ITMLIB_ENGINE_SOURCES}
 ${ITMLIB_ENGINE_HEADERS}
 ${ITMLIB_ENGINE_DEVICEAGNOSTIC_HEADERS}
@@ -450,6 +459,7 @@ ${ITMLIB_VISUALISATION_CUDA_HEADERS}
 #############################
 
 SOURCE_GROUP("" FILES ${ITMLIB_TOPLEVEL_CPU_SOURCES} ${ITMLIB_TOPLEVEL_CUDA_SOURCES})
+SOURCE_GROUP(Camera FILES ${ITMLIB_CAMERA_SOURCES} ${ITMLIB_CAMERA_HEADERS})
 SOURCE_GROUP(Engine FILES ${ITMLIB_ENGINE_SOURCES} ${ITMLIB_ENGINE_HEADERS})
 SOURCE_GROUP(Engine\\DeviceAgnostic FILES ${ITMLIB_ENGINE_DEVICEAGNOSTIC_HEADERS})
 SOURCE_GROUP(LowLevel FILES ${ITMLIB_LOWLEVEL_SOURCES} ${ITMLIB_LOWLEVEL_HEADERS})

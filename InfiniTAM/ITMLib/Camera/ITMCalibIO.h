@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "../Objects/ITMRGBDCalib.h"
+#include "ITMRGBDCalib.h"
 
 #include <iostream>
 
@@ -19,4 +19,3 @@ namespace ITMLib
 
 	bool readRGBDCalib(const char *rgbIntrinsicsFile, const char *depthIntrinsicsFile, const char *disparityCalibFile, const char *extrinsicsFile, ITMRGBDCalib & dest);
 }
-

@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "../Objects/ITMIntrinsics.h"
+#include "../Camera/ITMIntrinsics.h"
 
 namespace ITMLib
 {
