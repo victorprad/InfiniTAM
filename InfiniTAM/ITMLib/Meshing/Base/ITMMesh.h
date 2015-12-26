@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "../../Objects/ITMVoxelBlockHash.h"
 #include "../../../ORUtils/Image.h"
 
 #include <stdlib.h>

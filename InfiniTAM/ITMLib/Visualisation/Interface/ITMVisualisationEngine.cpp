@@ -104,6 +104,3 @@ void IITMVisualisationEngine::WeightToUchar4(ITMUChar4Image *dst, const ITMFloat
 		}
 	}
 }
-
-template class ITMLib::ITMVisualisationEngine<ITMVoxel, ITMVoxelIndex>;
-

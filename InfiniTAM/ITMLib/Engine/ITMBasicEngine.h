@@ -8,6 +8,7 @@
 #include "ITMTrackingController.h"
 #include "../LowLevel/Interface/ITMLowLevelEngine.h"
 #include "../Meshing/Interface/ITMMeshingEngine.h"
+#include "../Utils/ITMLibDefines.h"
 #include "../ViewBuilding/Interface/ITMViewBuilder.h"
 #include "../Visualisation/Interface/ITMVisualisationEngine.h"
 

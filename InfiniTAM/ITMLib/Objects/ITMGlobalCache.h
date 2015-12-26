@@ -6,7 +6,7 @@
 #include <stdio.h>
 
 #include "ITMHashSwapState.h"
-#include "../Utils/ITMLibDefines.h"
+#include "../Objects/ITMVoxelBlockHash.h"
 #include "../../ORUtils/CUDADefines.h"
 
 namespace ITMLib
