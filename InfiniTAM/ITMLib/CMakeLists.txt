@@ -170,7 +170,6 @@ Scene/ITMLocalScene.cpp
 
 SET(ITMLIB_SCENE_HEADERS
 Scene/ITMGlobalCache.h
-Scene/ITMHashEntry.h
 Scene/ITMLocalScene.h
 Scene/ITMLocalVBA.h
 Scene/ITMPlainVoxelArray.h

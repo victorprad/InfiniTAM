@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #endif
 
-#include "ITMHashEntry.h"
+#include "../Utils/ITMMath.h"
 #include "../../ORUtils/MemoryBlock.h"
 
 #define SDF_BLOCK_SIZE 8				// SDF block size
@@ -19,6 +19,23 @@
 #define SDF_BUCKET_NUM 0x100000			// Number of Hash Bucket, should be 2^n and bigger than SDF_LOCAL_BLOCK_NUM, SDF_HASH_MASK = SDF_BUCKET_NUM - 1
 #define SDF_HASH_MASK 0xfffff			// Used for get hashing value of the bucket index,  SDF_HASH_MASK = SDF_BUCKET_NUM - 1
 #define SDF_EXCESS_LIST_SIZE 0x20000	// 0x20000 Size of excess list, used to handle collisions. Also max offset (unsigned short) value.
+
+/** \brief
+	A single entry in the hash table.
+*/
+struct ITMHashEntry
+{
+	/** Position of the corner of the 8x8x8 volume, that identifies the entry. */
+	Vector3s pos;
+	/** Offset in the excess list. */
+	int offset;
+	/** Pointer to the voxel block array.
+		- >= 0 identifies an actual allocated entry in the voxel block array
+		- -1 identifies an entry that has been removed (swapped out)
+		- <-1 identifies an unallocated block
+	*/
+	int ptr;
+};
 
 namespace ITMLib
 {
