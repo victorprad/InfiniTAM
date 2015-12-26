@@ -11,14 +11,14 @@ using namespace ITMLib;
 
 ITMLowLevelEngine_CUDA::ITMLowLevelEngine_CUDA(void)
 {
-	ITMSafeCall(cudaMalloc((void**)&counterTempData_device, sizeof(int)));
-	ITMSafeCall(cudaMallocHost((void**)&counterTempData_host, sizeof(int)));
+	ORcudaSafeCall(cudaMalloc((void**)&counterTempData_device, sizeof(int)));
+	ORcudaSafeCall(cudaMallocHost((void**)&counterTempData_host, sizeof(int)));
 }
 
 ITMLowLevelEngine_CUDA::~ITMLowLevelEngine_CUDA(void)
 {
-	ITMSafeCall(cudaFree(counterTempData_device));
-	ITMSafeCall(cudaFreeHost(counterTempData_host));
+	ORcudaSafeCall(cudaFree(counterTempData_device));
+	ORcudaSafeCall(cudaFreeHost(counterTempData_host));
 }
 
 __global__ void filterSubsample_device(Vector4u *imageData_out, Vector2i newDims, const Vector4u *imageData_in, Vector2i oldDims);
@@ -38,7 +38,7 @@ void ITMLowLevelEngine_CUDA::CopyImage(ITMUChar4Image *image_out, const ITMUChar
 	Vector4u *dest = image_out->GetData(MEMORYDEVICE_CUDA);
 	const Vector4u *src = image_in->GetData(MEMORYDEVICE_CUDA);
 
-	ITMSafeCall(cudaMemcpy(dest, src, image_in->dataSize * sizeof(Vector4u), cudaMemcpyDeviceToDevice));
+	ORcudaSafeCall(cudaMemcpy(dest, src, image_in->dataSize * sizeof(Vector4u), cudaMemcpyDeviceToDevice));
 }
 
 void ITMLowLevelEngine_CUDA::CopyImage(ITMFloatImage *image_out, const ITMFloatImage *image_in) const
@@ -46,7 +46,7 @@ void ITMLowLevelEngine_CUDA::CopyImage(ITMFloatImage *image_out, const ITMFloatI
 	float *dest = image_out->GetData(MEMORYDEVICE_CUDA);
 	const float *src = image_in->GetData(MEMORYDEVICE_CUDA);
 
-	ITMSafeCall(cudaMemcpy(dest, src, image_in->dataSize * sizeof(float), cudaMemcpyDeviceToDevice));
+	ORcudaSafeCall(cudaMemcpy(dest, src, image_in->dataSize * sizeof(float), cudaMemcpyDeviceToDevice));
 }
 
 void ITMLowLevelEngine_CUDA::CopyImage(ITMFloat4Image *image_out, const ITMFloat4Image *image_in) const
@@ -54,7 +54,7 @@ void ITMLowLevelEngine_CUDA::CopyImage(ITMFloat4Image *image_out, const ITMFloat
 	Vector4f *dest = image_out->GetData(MEMORYDEVICE_CUDA);
 	const Vector4f *src = image_in->GetData(MEMORYDEVICE_CUDA);
 
-	ITMSafeCall(cudaMemcpy(dest, src, image_in->dataSize * sizeof(Vector4f), cudaMemcpyDeviceToDevice));
+	ORcudaSafeCall(cudaMemcpy(dest, src, image_in->dataSize * sizeof(Vector4f), cudaMemcpyDeviceToDevice));
 }
 
 void ITMLowLevelEngine_CUDA::FilterSubsample(ITMUChar4Image *image_out, const ITMUChar4Image *image_in) const
@@ -116,7 +116,7 @@ void ITMLowLevelEngine_CUDA::GradientX(ITMShort4Image *grad_out, const ITMUChar4
 	dim3 blockSize(16, 16);
 	dim3 gridSize((int)ceil((float)imgSize.x / (float)blockSize.x), (int)ceil((float)imgSize.y / (float)blockSize.y));
 
-	ITMSafeCall(cudaMemset(grad, 0, imgSize.x * imgSize.y * sizeof(Vector4s)));
+	ORcudaSafeCall(cudaMemset(grad, 0, imgSize.x * imgSize.y * sizeof(Vector4s)));
 
 	gradientX_device << <gridSize, blockSize >> >(grad, image, imgSize);
 }
@@ -132,7 +132,7 @@ void ITMLowLevelEngine_CUDA::GradientY(ITMShort4Image *grad_out, const ITMUChar4
 	dim3 blockSize(16, 16);
 	dim3 gridSize((int)ceil((float)imgSize.x / (float)blockSize.x), (int)ceil((float)imgSize.y / (float)blockSize.y));
 
-	ITMSafeCall(cudaMemset(grad, 0, imgSize.x * imgSize.y * sizeof(Vector4s)));
+	ORcudaSafeCall(cudaMemset(grad, 0, imgSize.x * imgSize.y * sizeof(Vector4s)));
 
 	gradientY_device << <gridSize, blockSize >> >(grad, image, imgSize);
 }
@@ -145,9 +145,9 @@ int ITMLowLevelEngine_CUDA::CountValidDepths(const ITMFloatImage *image_in) cons
 	dim3 blockSize(256);
 	dim3 gridSize((int)ceil((float)imgSize.x*imgSize.y / (float)blockSize.x));
 
-	ITMSafeCall(cudaMemset(counterTempData_device, 0, sizeof(int)));
+	ORcudaSafeCall(cudaMemset(counterTempData_device, 0, sizeof(int)));
 	countValidDepths_device <<<gridSize, blockSize>>>(imageData_in, imgSize.x*imgSize.y, counterTempData_device);
-	ITMSafeCall(cudaMemcpy(counterTempData_host, counterTempData_device, sizeof(int), cudaMemcpyDeviceToHost));
+	ORcudaSafeCall(cudaMemcpy(counterTempData_host, counterTempData_device, sizeof(int), cudaMemcpyDeviceToHost));
 
 	return *counterTempData_host;
 }

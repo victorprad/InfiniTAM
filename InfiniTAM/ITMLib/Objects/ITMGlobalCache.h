@@ -51,17 +51,17 @@ namespace ITMLib
 			memset(swapStates_host, 0, sizeof(ITMHashSwapState) * noTotalEntries);
 
 #ifndef COMPILE_WITHOUT_CUDA
-			ITMSafeCall(cudaMallocHost((void**)&syncedVoxelBlocks_host, SDF_TRANSFER_BLOCK_NUM * sizeof(TVoxel) * SDF_BLOCK_SIZE3));
-			ITMSafeCall(cudaMallocHost((void**)&hasSyncedData_host, SDF_TRANSFER_BLOCK_NUM * sizeof(bool)));
-			ITMSafeCall(cudaMallocHost((void**)&neededEntryIDs_host, SDF_TRANSFER_BLOCK_NUM * sizeof(int)));
+			ORcudaSafeCall(cudaMallocHost((void**)&syncedVoxelBlocks_host, SDF_TRANSFER_BLOCK_NUM * sizeof(TVoxel) * SDF_BLOCK_SIZE3));
+			ORcudaSafeCall(cudaMallocHost((void**)&hasSyncedData_host, SDF_TRANSFER_BLOCK_NUM * sizeof(bool)));
+			ORcudaSafeCall(cudaMallocHost((void**)&neededEntryIDs_host, SDF_TRANSFER_BLOCK_NUM * sizeof(int)));
 
-			ITMSafeCall(cudaMalloc((void**)&swapStates_device, noTotalEntries * sizeof(ITMHashSwapState)));
-			ITMSafeCall(cudaMemset(swapStates_device, 0, noTotalEntries * sizeof(ITMHashSwapState)));
+			ORcudaSafeCall(cudaMalloc((void**)&swapStates_device, noTotalEntries * sizeof(ITMHashSwapState)));
+			ORcudaSafeCall(cudaMemset(swapStates_device, 0, noTotalEntries * sizeof(ITMHashSwapState)));
 
-			ITMSafeCall(cudaMalloc((void**)&syncedVoxelBlocks_device, SDF_TRANSFER_BLOCK_NUM * sizeof(TVoxel) * SDF_BLOCK_SIZE3));
-			ITMSafeCall(cudaMalloc((void**)&hasSyncedData_device, SDF_TRANSFER_BLOCK_NUM * sizeof(bool)));
+			ORcudaSafeCall(cudaMalloc((void**)&syncedVoxelBlocks_device, SDF_TRANSFER_BLOCK_NUM * sizeof(TVoxel) * SDF_BLOCK_SIZE3));
+			ORcudaSafeCall(cudaMalloc((void**)&hasSyncedData_device, SDF_TRANSFER_BLOCK_NUM * sizeof(bool)));
 
-			ITMSafeCall(cudaMalloc((void**)&neededEntryIDs_device, SDF_TRANSFER_BLOCK_NUM * sizeof(int)));
+			ORcudaSafeCall(cudaMalloc((void**)&neededEntryIDs_device, SDF_TRANSFER_BLOCK_NUM * sizeof(int)));
 #else
 			syncedVoxelBlocks_host = (TVoxel *)malloc(SDF_TRANSFER_BLOCK_NUM * sizeof(TVoxel) * SDF_BLOCK_SIZE3);
 			hasSyncedData_host = (bool*)malloc(SDF_TRANSFER_BLOCK_NUM * sizeof(bool));
@@ -110,14 +110,14 @@ namespace ITMLib
 			free(swapStates_host);
 
 #ifndef COMPILE_WITHOUT_CUDA
-			ITMSafeCall(cudaFreeHost(hasSyncedData_host));
-			ITMSafeCall(cudaFreeHost(syncedVoxelBlocks_host));
-			ITMSafeCall(cudaFreeHost(neededEntryIDs_host));
+			ORcudaSafeCall(cudaFreeHost(hasSyncedData_host));
+			ORcudaSafeCall(cudaFreeHost(syncedVoxelBlocks_host));
+			ORcudaSafeCall(cudaFreeHost(neededEntryIDs_host));
 
-			ITMSafeCall(cudaFree(swapStates_device));
-			ITMSafeCall(cudaFree(syncedVoxelBlocks_device));
-			ITMSafeCall(cudaFree(hasSyncedData_device));
-			ITMSafeCall(cudaFree(neededEntryIDs_device));
+			ORcudaSafeCall(cudaFree(swapStates_device));
+			ORcudaSafeCall(cudaFree(syncedVoxelBlocks_device));
+			ORcudaSafeCall(cudaFree(hasSyncedData_device));
+			ORcudaSafeCall(cudaFree(neededEntryIDs_device));
 #else
 			free(hasSyncedData_host);
 			free(syncedVoxelBlocks_host);

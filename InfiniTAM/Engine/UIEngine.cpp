@@ -444,7 +444,7 @@ void UIEngine::Initialise(int & argc, char** argv, ImageSourceEngine *imageSourc
 	processedTime = 0.0f;
 
 #ifndef COMPILE_WITHOUT_CUDA
-	ITMSafeCall(cudaThreadSynchronize());
+	ORcudaSafeCall(cudaThreadSynchronize());
 #endif
 
 	sdkCreateTimer(&timer_instant);
@@ -498,7 +498,7 @@ void UIEngine::ProcessFrame()
 	else mainEngine->ProcessFrame(inputRGBImage, inputRawDepthImage);
 
 #ifndef COMPILE_WITHOUT_CUDA
-	ITMSafeCall(cudaThreadSynchronize());
+	ORcudaSafeCall(cudaThreadSynchronize());
 #endif
 	sdkStopTimer(&timer_instant); sdkStopTimer(&timer_average);
 

@@ -37,14 +37,14 @@ ITMDepthTracker_CUDA::ITMDepthTracker_CUDA(Vector2i imgSize, TrackerIterationTyp
 	float terminationThreshold, const ITMLowLevelEngine *lowLevelEngine)
  : ITMDepthTracker(imgSize, trackingRegime, noHierarchyLevels, terminationThreshold, lowLevelEngine, MEMORYDEVICE_CUDA)
 {
-	ITMSafeCall(cudaMallocHost((void**)&accu_host, sizeof(AccuCell)));
-	ITMSafeCall(cudaMalloc((void**)&accu_device, sizeof(AccuCell)));
+	ORcudaSafeCall(cudaMallocHost((void**)&accu_host, sizeof(AccuCell)));
+	ORcudaSafeCall(cudaMalloc((void**)&accu_device, sizeof(AccuCell)));
 }
 
 ITMDepthTracker_CUDA::~ITMDepthTracker_CUDA(void)
 {
-	ITMSafeCall(cudaFreeHost(accu_host));
-	ITMSafeCall(cudaFree(accu_device));
+	ORcudaSafeCall(cudaFreeHost(accu_host));
+	ORcudaSafeCall(cudaFree(accu_device));
 }
 
 int ITMDepthTracker_CUDA::ComputeGandH(float &f, float *nabla, float *hessian, Matrix4f approxInvPose)
@@ -67,7 +67,7 @@ int ITMDepthTracker_CUDA::ComputeGandH(float &f, float *nabla, float *hessian, M
 	dim3 blockSize(16, 16);
 	dim3 gridSize((int)ceil((float)viewImageSize.x / (float)blockSize.x), (int)ceil((float)viewImageSize.y / (float)blockSize.y));
 
-	ITMSafeCall(cudaMemset(accu_device, 0, sizeof(AccuCell)));
+	ORcudaSafeCall(cudaMemset(accu_device, 0, sizeof(AccuCell)));
 
 	struct ITMDepthTracker_KernelParameters args;
 	args.accu = accu_device;
@@ -96,7 +96,7 @@ int ITMDepthTracker_CUDA::ComputeGandH(float &f, float *nabla, float *hessian, M
 	default: break;
 	}
 
-	ITMSafeCall(cudaMemcpy(accu_host, accu_device, sizeof(AccuCell), cudaMemcpyDeviceToHost));
+	ORcudaSafeCall(cudaMemcpy(accu_host, accu_device, sizeof(AccuCell), cudaMemcpyDeviceToHost));
 
 	for (int r = 0, counter = 0; r < noPara; r++) for (int c = 0; c <= r; c++, counter++) hessian[r + c * 6] = accu_host->h[counter];
 	for (int r = 0; r < noPara; ++r) for (int c = r + 1; c < noPara; c++) hessian[r + c * 6] = hessian[c + r * 6];

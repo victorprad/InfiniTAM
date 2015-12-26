@@ -28,13 +28,13 @@ ITMWeightedICPTracker_CUDA::ITMWeightedICPTracker_CUDA(Vector2i imgSize, Tracker
 	Vector2i gridSize((imgSize.x+15)/16, (imgSize.y+15)/16);
 
 	accu_host = new AccuCell[gridSize.x * gridSize.y];
-	ITMSafeCall(cudaMalloc((void**)&accu_device, sizeof(AccuCell)* gridSize.x * gridSize.y));
+	ORcudaSafeCall(cudaMalloc((void**)&accu_device, sizeof(AccuCell)* gridSize.x * gridSize.y));
 }
 
 ITMWeightedICPTracker_CUDA::~ITMWeightedICPTracker_CUDA(void)
 {
 	delete[] accu_host;
-	ITMSafeCall(cudaFree(accu_device));
+	ORcudaSafeCall(cudaFree(accu_device));
 }
 
 int ITMWeightedICPTracker_CUDA::ComputeGandH(float &f, float *nabla, float *hessian, Matrix4f approxInvPose)
@@ -82,7 +82,7 @@ int ITMWeightedICPTracker_CUDA::ComputeGandH(float &f, float *nabla, float *hess
 	default: break;
 	}
 
-	ITMSafeCall(cudaMemcpy(accu_host, accu_device, sizeof(AccuCell)* gridSizeTotal, cudaMemcpyDeviceToHost));
+	ORcudaSafeCall(cudaMemcpy(accu_host, accu_device, sizeof(AccuCell)* gridSizeTotal, cudaMemcpyDeviceToHost));
 
 	memset(sumHessian, 0, sizeof(float) * noParaSQ);
 

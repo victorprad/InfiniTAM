@@ -73,31 +73,31 @@ __global__ void renderColour_device(Vector4u *outRendering, const Vector4f *ptsR
 template<class TVoxel, class TIndex>
 ITMVisualisationEngine_CUDA<TVoxel, TIndex>::ITMVisualisationEngine_CUDA(void)
 {
-	ITMSafeCall(cudaMalloc((void**)&noTotalPoints_device, sizeof(uint)));
+	ORcudaSafeCall(cudaMalloc((void**)&noTotalPoints_device, sizeof(uint)));
 }
 
 template<class TVoxel, class TIndex>
 ITMVisualisationEngine_CUDA<TVoxel, TIndex>::~ITMVisualisationEngine_CUDA(void)
 {
-	ITMSafeCall(cudaFree(noTotalPoints_device));
+	ORcudaSafeCall(cudaFree(noTotalPoints_device));
 }
 
 template<class TVoxel>
 ITMVisualisationEngine_CUDA<TVoxel, ITMVoxelBlockHash>::ITMVisualisationEngine_CUDA(void)
 {
-	ITMSafeCall(cudaMalloc((void**)&renderingBlockList_device, sizeof(RenderingBlock) * MAX_RENDERING_BLOCKS));
-	ITMSafeCall(cudaMalloc((void**)&noTotalBlocks_device, sizeof(uint)));
-	ITMSafeCall(cudaMalloc((void**)&noTotalPoints_device, sizeof(uint)));
-	ITMSafeCall(cudaMalloc((void**)&noVisibleEntries_device, sizeof(uint)));
+	ORcudaSafeCall(cudaMalloc((void**)&renderingBlockList_device, sizeof(RenderingBlock) * MAX_RENDERING_BLOCKS));
+	ORcudaSafeCall(cudaMalloc((void**)&noTotalBlocks_device, sizeof(uint)));
+	ORcudaSafeCall(cudaMalloc((void**)&noTotalPoints_device, sizeof(uint)));
+	ORcudaSafeCall(cudaMalloc((void**)&noVisibleEntries_device, sizeof(uint)));
 }
 
 template<class TVoxel>
 ITMVisualisationEngine_CUDA<TVoxel, ITMVoxelBlockHash>::~ITMVisualisationEngine_CUDA(void)
 {
-	ITMSafeCall(cudaFree(noTotalPoints_device));
-	ITMSafeCall(cudaFree(noTotalBlocks_device));
-	ITMSafeCall(cudaFree(renderingBlockList_device));
-	ITMSafeCall(cudaFree(noVisibleEntries_device));
+	ORcudaSafeCall(cudaFree(noTotalPoints_device));
+	ORcudaSafeCall(cudaFree(noTotalBlocks_device));
+	ORcudaSafeCall(cudaFree(renderingBlockList_device));
+	ORcudaSafeCall(cudaFree(noVisibleEntries_device));
 }
 
 template<class TVoxel, class TIndex>
@@ -134,7 +134,7 @@ void ITMVisualisationEngine_CUDA<TVoxel, ITMVoxelBlockHash>::FindVisibleBlocks(c
 
 	ITMRenderState_VH *renderState_vh = (ITMRenderState_VH*)renderState;
 
-	ITMSafeCall(cudaMemset(noVisibleEntries_device, 0, sizeof(int)));
+	ORcudaSafeCall(cudaMemset(noVisibleEntries_device, 0, sizeof(int)));
 
 	dim3 cudaBlockSizeAL(256, 1);
 	dim3 gridSizeAL((int)ceil((float)noTotalEntries / (float)cudaBlockSizeAL.x));
@@ -148,7 +148,7 @@ void ITMVisualisationEngine_CUDA<TVoxel, ITMVoxelBlockHash>::FindVisibleBlocks(c
 			noAllocatedVoxelEntries_device, entriesVisibleType);
 			}*/
 
-	ITMSafeCall(cudaMemcpy(&renderState_vh->noVisibleEntries, noVisibleEntries_device, sizeof(int), cudaMemcpyDeviceToHost));
+	ORcudaSafeCall(cudaMemcpy(&renderState_vh->noVisibleEntries, noVisibleEntries_device, sizeof(int), cudaMemcpyDeviceToHost));
 }
 
 template<class TVoxel, class TIndex>
@@ -165,7 +165,7 @@ int ITMVisualisationEngine_CUDA<TVoxel, ITMVoxelBlockHash>::CountVisibleBlocks(c
 	int noVisibleEntries = renderState_vh->noVisibleEntries;
 	const int *visibleEntryIDs_device = renderState_vh->GetVisibleEntryIDs();
 
-	ITMSafeCall(cudaMemset(noTotalBlocks_device, 0, sizeof(uint)));
+	ORcudaSafeCall(cudaMemset(noTotalBlocks_device, 0, sizeof(uint)));
 
 	dim3 blockSize(256);
 	dim3 gridSize((int)ceil((float)noVisibleEntries / (float)blockSize.x));
@@ -174,7 +174,7 @@ int ITMVisualisationEngine_CUDA<TVoxel, ITMVoxelBlockHash>::CountVisibleBlocks(c
 	countVisibleBlocks_device<<<gridSize,blockSize>>>(visibleEntryIDs_device, noVisibleEntries, hashTable_device, noTotalBlocks_device, minBlockId, maxBlockId);
 
 	uint noTotalBlocks;
-	ITMSafeCall(cudaMemcpy(&noTotalBlocks, noTotalBlocks_device, sizeof(uint), cudaMemcpyDeviceToHost));
+	ORcudaSafeCall(cudaMemcpy(&noTotalBlocks, noTotalBlocks_device, sizeof(uint), cudaMemcpyDeviceToHost));
 
 	return noTotalBlocks;
 }
@@ -214,13 +214,13 @@ void ITMVisualisationEngine_CUDA<TVoxel, ITMVoxelBlockHash>::CreateExpectedDepth
 
 		dim3 blockSize(256);
 		dim3 gridSize((int)ceil((float)noVisibleEntries / (float)blockSize.x));
-		ITMSafeCall(cudaMemset(noTotalBlocks_device, 0, sizeof(uint)));
+		ORcudaSafeCall(cudaMemset(noTotalBlocks_device, 0, sizeof(uint)));
 		projectAndSplitBlocks_device << <gridSize, blockSize >> >(hash_entries, visibleEntryIDs, noVisibleEntries, pose->GetM(),
 			intrinsics->projectionParamsSimple.all, imgSize, voxelSize, renderingBlockList_device, noTotalBlocks_device);
 	}
 
 	uint noTotalBlocks;
-	ITMSafeCall(cudaMemcpy(&noTotalBlocks, noTotalBlocks_device, sizeof(uint), cudaMemcpyDeviceToHost));
+	ORcudaSafeCall(cudaMemcpy(&noTotalBlocks, noTotalBlocks_device, sizeof(uint), cudaMemcpyDeviceToHost));
 	if (noTotalBlocks > (unsigned)MAX_RENDERING_BLOCKS) noTotalBlocks = MAX_RENDERING_BLOCKS;
 
 	// go through rendering blocks
@@ -302,7 +302,7 @@ static void CreatePointCloud_common(const ITMScene<TVoxel, TIndex> *scene, const
 	GenericRaycast(scene, imgSize, invM, view->calib->intrinsics_rgb.projectionParamsSimple.all, renderState);
 	trackingState->pose_pointCloud->SetFrom(trackingState->pose_d);
 
-	ITMSafeCall(cudaMemsetAsync(noTotalPoints_device, 0, sizeof(uint)));
+	ORcudaSafeCall(cudaMemsetAsync(noTotalPoints_device, 0, sizeof(uint)));
 
 	Vector3f lightSource = -Vector3f(invM.getColumn(2));
 	Vector4f *locations = trackingState->pointCloud->locations->GetData(MEMORYDEVICE_CUDA);
@@ -315,7 +315,7 @@ static void CreatePointCloud_common(const ITMScene<TVoxel, TIndex> *scene, const
 	renderPointCloud_device<TVoxel, TIndex> << <gridSize, cudaBlockSize >> >(outRendering, locations, colours, noTotalPoints_device,
 		pointsRay, scene->localVBA.GetVoxelBlocks(), scene->index.getIndexData(), skipPoints, scene->sceneParams->voxelSize, imgSize, lightSource);
 
-	ITMSafeCall(cudaMemcpy(&trackingState->pointCloud->noTotalPoints, noTotalPoints_device, sizeof(uint), cudaMemcpyDeviceToHost));
+	ORcudaSafeCall(cudaMemcpy(&trackingState->pointCloud->noTotalPoints, noTotalPoints_device, sizeof(uint), cudaMemcpyDeviceToHost));
 }
 
 template<class TVoxel, class TIndex>
@@ -374,7 +374,7 @@ static void ForwardRender_common(const ITMScene<TVoxel, TIndex> *scene, const IT
 		forwardProject_device << <gridSize, blockSize >> >(forwardProjection, pointsRay, imgSize, M, projParams, voxelSize);
 	}
 
-	ITMSafeCall(cudaMemset(noTotalPoints_device, 0, sizeof(uint)));
+	ORcudaSafeCall(cudaMemset(noTotalPoints_device, 0, sizeof(uint)));
 
 	{ // find missing points
 		blockSize = dim3(16, 16);
@@ -384,7 +384,7 @@ static void ForwardRender_common(const ITMScene<TVoxel, TIndex> *scene, const IT
 			forwardProjection, currentDepth, imgSize);
 	}
 
-	ITMSafeCall(cudaMemcpy(&renderState->noFwdProjMissingPoints, noTotalPoints_device, sizeof(uint), cudaMemcpyDeviceToHost));
+	ORcudaSafeCall(cudaMemcpy(&renderState->noFwdProjMissingPoints, noTotalPoints_device, sizeof(uint), cudaMemcpyDeviceToHost));
 
 	{ // render missing points
 		blockSize = dim3(256);

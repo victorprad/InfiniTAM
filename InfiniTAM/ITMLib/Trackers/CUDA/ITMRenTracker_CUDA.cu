@@ -33,9 +33,9 @@ ITMRenTracker_CUDA<TVoxel, TIndex>::ITMRenTracker_CUDA(Vector2i imgSize, Tracker
 	g_host = new float[dim_g * gridSize.x * gridSize.y];
 	h_host = new float[dim_h * gridSize.x * gridSize.y];
 
-	ITMSafeCall(cudaMalloc((void**)&f_device, sizeof(float)* dim_f * gridSize.x * gridSize.y));
-	ITMSafeCall(cudaMalloc((void**)&g_device, sizeof(float)* dim_g * gridSize.x * gridSize.y));
-	ITMSafeCall(cudaMalloc((void**)&h_device, sizeof(float)* dim_h * gridSize.x * gridSize.y));
+	ORcudaSafeCall(cudaMalloc((void**)&f_device, sizeof(float)* dim_f * gridSize.x * gridSize.y));
+	ORcudaSafeCall(cudaMalloc((void**)&g_device, sizeof(float)* dim_g * gridSize.x * gridSize.y));
+	ORcudaSafeCall(cudaMalloc((void**)&h_device, sizeof(float)* dim_h * gridSize.x * gridSize.y));
 }
 
 template<class TVoxel, class TIndex>
@@ -45,9 +45,9 @@ ITMRenTracker_CUDA<TVoxel,TIndex>::~ITMRenTracker_CUDA(void)
 	delete[] g_host;
 	delete[] h_host;
 
-	ITMSafeCall(cudaFree(f_device));
-	ITMSafeCall(cudaFree(g_device));
-	ITMSafeCall(cudaFree(h_device));
+	ORcudaSafeCall(cudaFree(f_device));
+	ORcudaSafeCall(cudaFree(g_device));
+	ORcudaSafeCall(cudaFree(h_device));
 }
 
 template<class TVoxel, class TIndex>
@@ -62,12 +62,12 @@ void ITMRenTracker_CUDA<TVoxel,TIndex>::F_oneLevel(float *f, Matrix4f invM)
 	const typename TIndex::IndexData *index = this->scene->index.getIndexData();
 	float oneOverVoxelSize = 1.0f / (float)this->scene->sceneParams->voxelSize;
 
-	ITMSafeCall(cudaMemset(f_device, 0, sizeof(float) * gridSize.x));
+	ORcudaSafeCall(cudaMemset(f_device, 0, sizeof(float) * gridSize.x));
 
 	renTrackerOneLevel_f_device<TVoxel,TIndex> << <gridSize, blockSize >> >(f_device, this->viewHierarchy->levels[this->levelId]->depth->GetData(MEMORYDEVICE_CUDA), 
 		count, voxelBlocks, index, oneOverVoxelSize, invM);
 
-	ITMSafeCall(cudaMemcpy(f_host, f_device, sizeof(float)* gridSize.x, cudaMemcpyDeviceToHost));
+	ORcudaSafeCall(cudaMemcpy(f_host, f_device, sizeof(float)* gridSize.x, cudaMemcpyDeviceToHost));
 
 	float energy = 0;
 	for (size_t i = 0; i < gridSize.x; i++) energy += f_host[i];
@@ -94,13 +94,13 @@ void ITMRenTracker_CUDA<TVoxel,TIndex>::G_oneLevel(float *gradient, float *hessi
 	dim3 blockSize(256, 1);
 	dim3 gridSize((int)ceil((float)count / (float)blockSize.x), 1);
 
-	ITMSafeCall(cudaMemset(g_device, 0, sizeof(float) * gridSize.x * noPara));
-	ITMSafeCall(cudaMemset(h_device, 0, sizeof(float) * gridSize.x * noParaSQ));
+	ORcudaSafeCall(cudaMemset(g_device, 0, sizeof(float) * gridSize.x * noPara));
+	ORcudaSafeCall(cudaMemset(h_device, 0, sizeof(float) * gridSize.x * noParaSQ));
 
 	renTrackerOneLevel_g_device<TVoxel,TIndex> << <gridSize, blockSize >> >(g_device, h_device, ptList, count, voxelBlocks, index, oneOverVoxelSize, invM);
 
-	ITMSafeCall(cudaMemcpy(g_host, g_device, sizeof(float)* gridSize.x * noPara, cudaMemcpyDeviceToHost));
-	ITMSafeCall(cudaMemcpy(h_host, h_device, sizeof(float)* gridSize.x * noParaSQ, cudaMemcpyDeviceToHost));
+	ORcudaSafeCall(cudaMemcpy(g_host, g_device, sizeof(float)* gridSize.x * noPara, cudaMemcpyDeviceToHost));
+	ORcudaSafeCall(cudaMemcpy(h_host, h_device, sizeof(float)* gridSize.x * noParaSQ, cudaMemcpyDeviceToHost));
 
 	for (size_t i = 0; i < gridSize.x; i++)
 	{

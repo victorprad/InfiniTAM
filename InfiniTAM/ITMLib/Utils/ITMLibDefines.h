@@ -21,10 +21,6 @@
 
 #include <cuda_runtime.h>
 
-#ifndef ITMSafeCall
-#define ITMSafeCall ORcudaSafeCall
-#endif
-
 #endif
 
 #include "ITMVoxelTypes.h"

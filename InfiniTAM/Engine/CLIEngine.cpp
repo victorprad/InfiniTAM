@@ -28,7 +28,7 @@ void CLIEngine::Initialise(ImageSourceEngine *imageSource, IMUSourceEngine *imuS
 	inputIMUMeasurement = new ITMIMUMeasurement();
 
 #ifndef COMPILE_WITHOUT_CUDA
-	ITMSafeCall(cudaThreadSynchronize());
+	ORcudaSafeCall(cudaThreadSynchronize());
 #endif
 
 	sdkCreateTimer(&timer_instant);
@@ -57,7 +57,7 @@ bool CLIEngine::ProcessFrame()
 	else mainEngine->ProcessFrame(inputRGBImage, inputRawDepthImage);
 
 #ifndef COMPILE_WITHOUT_CUDA
-	ITMSafeCall(cudaThreadSynchronize());
+	ORcudaSafeCall(cudaThreadSynchronize());
 #endif
 	sdkStopTimer(&timer_instant); sdkStopTimer(&timer_average);
 

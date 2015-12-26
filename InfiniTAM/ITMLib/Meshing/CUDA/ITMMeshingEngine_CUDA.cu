@@ -17,15 +17,15 @@ __global__ void findAllocateBlocks(Vector4s *visibleBlockGlobalPos, const ITMHas
 template<class TVoxel>
 ITMMeshingEngine_CUDA<TVoxel,ITMVoxelBlockHash>::ITMMeshingEngine_CUDA(void) 
 {
-	ITMSafeCall(cudaMalloc((void**)&visibleBlockGlobalPos_device, SDF_LOCAL_BLOCK_NUM * sizeof(Vector4s)));
-	ITMSafeCall(cudaMalloc((void**)&noTriangles_device, sizeof(unsigned int)));
+	ORcudaSafeCall(cudaMalloc((void**)&visibleBlockGlobalPos_device, SDF_LOCAL_BLOCK_NUM * sizeof(Vector4s)));
+	ORcudaSafeCall(cudaMalloc((void**)&noTriangles_device, sizeof(unsigned int)));
 }
 
 template<class TVoxel>
 ITMMeshingEngine_CUDA<TVoxel,ITMVoxelBlockHash>::~ITMMeshingEngine_CUDA(void) 
 {
-	ITMSafeCall(cudaFree(visibleBlockGlobalPos_device));
-	ITMSafeCall(cudaFree(noTriangles_device));
+	ORcudaSafeCall(cudaFree(visibleBlockGlobalPos_device));
+	ORcudaSafeCall(cudaFree(noTriangles_device));
 }
 
 template<class TVoxel>
@@ -38,8 +38,8 @@ void ITMMeshingEngine_CUDA<TVoxel, ITMVoxelBlockHash>::MeshScene(ITMMesh *mesh, 
 	int noMaxTriangles = mesh->noMaxTriangles, noTotalEntries = scene->index.noTotalEntries;
 	float factor = scene->sceneParams->voxelSize;
 
-	ITMSafeCall(cudaMemset(noTriangles_device, 0, sizeof(unsigned int)));
-	ITMSafeCall(cudaMemset(visibleBlockGlobalPos_device, 0, sizeof(Vector4s) * SDF_LOCAL_BLOCK_NUM));
+	ORcudaSafeCall(cudaMemset(noTriangles_device, 0, sizeof(unsigned int)));
+	ORcudaSafeCall(cudaMemset(visibleBlockGlobalPos_device, 0, sizeof(Vector4s) * SDF_LOCAL_BLOCK_NUM));
 
 	{ // identify used voxel blocks
 		dim3 cudaBlockSize(256); 
@@ -55,7 +55,7 @@ void ITMMeshingEngine_CUDA<TVoxel, ITMVoxelBlockHash>::MeshScene(ITMMesh *mesh, 
 		meshScene_device<TVoxel> << <gridSize, cudaBlockSize >> >(triangles, noTriangles_device, factor, noTotalEntries, noMaxTriangles,
 			visibleBlockGlobalPos_device, localVBA, hashTable);
 
-		ITMSafeCall(cudaMemcpy(&mesh->noTotalTriangles, noTriangles_device, sizeof(unsigned int), cudaMemcpyDeviceToHost));
+		ORcudaSafeCall(cudaMemcpy(&mesh->noTotalTriangles, noTriangles_device, sizeof(unsigned int), cudaMemcpyDeviceToHost));
 	}
 }
 
