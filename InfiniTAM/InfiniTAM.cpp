@@ -1,6 +1,7 @@
 // Copyright 2014-2015 Isis Innovation Limited and the authors of InfiniTAM
 
 #include <cstdlib>
+#include <iostream>
 
 #include "Engine/UIEngine.h"
 #include "Engine/ImageSourceEngine.h"

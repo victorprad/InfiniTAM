@@ -2,9 +2,9 @@
 
 #pragma once
 
-#include "ITMRGBDCalib.h"
+#include <iosfwd>
 
-#include <iostream>
+#include "ITMRGBDCalib.h"
 
 namespace ITMLib
 {
@@ -16,6 +16,5 @@ namespace ITMLib
 	bool readDisparityCalib(const char *fileName, ITMDisparityCalib & dest);
 	bool readRGBDCalib(std::istream & src, ITMRGBDCalib & dest);
 	bool readRGBDCalib(const char *fileName, ITMRGBDCalib & dest);
-
 	bool readRGBDCalib(const char *rgbIntrinsicsFile, const char *depthIntrinsicsFile, const char *disparityCalibFile, const char *extrinsicsFile, ITMRGBDCalib & dest);
 }

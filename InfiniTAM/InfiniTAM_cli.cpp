@@ -1,6 +1,7 @@
 // Copyright 2014-2015 Isis Innovation Limited and the authors of InfiniTAM
 
 #include <cstdlib>
+#include <iostream>
 
 #include "Engine/CLIEngine.h"
 #include "Engine/ImageSourceEngine.h"
@@ -89,4 +90,3 @@ catch(std::exception& e)
 	std::cerr << e.what() << '\n';
 	return EXIT_FAILURE;
 }
-

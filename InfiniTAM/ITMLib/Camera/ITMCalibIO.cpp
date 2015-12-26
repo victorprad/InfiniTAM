@@ -109,4 +109,3 @@ bool ITMLib::readRGBDCalib(const char *rgbIntrinsicsFile, const char *depthIntri
 	ret &= ITMLib::readDisparityCalib(disparityCalibFile, dest.disparityCalib);
 	return ret;
 }
-
