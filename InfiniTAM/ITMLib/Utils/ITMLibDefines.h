@@ -2,21 +2,6 @@
 
 #pragma once
 
-#ifndef __METALC__
-#ifdef NDEBUG
-#undef NDEBUG
-#include <assert.h>
-#define NDEBUG
-#else
-#include <assert.h>
-#endif // NDEBUG
-#endif
-
-/// Kinect2 support is disabled by default (to not add the Kinect2 SDK dependency)
-#ifndef COMPILE_WITHOUT_Kinect2
-#define COMPILE_WITHOUT_Kinect2
-#endif
-
 #include "ITMVoxelTypes.h"
 #include "../Objects/ITMPlainVoxelArray.h"
 #include "../Objects/ITMVoxelBlockHash.h"
@@ -31,12 +16,3 @@ typedef ITMVoxel_s ITMVoxel;
 */
 typedef ITMLib::ITMVoxelBlockHash ITMVoxelIndex;
 //typedef ITMLib::ITMPlainVoxelArray ITMVoxelIndex;
-
-//debug
-#ifndef DEBUGBREAK
-#define DEBUGBREAK \
-{ \
-	int ryifrklaeybfcklarybckyar=0; \
-	ryifrklaeybfcklarybckyar++; \
-}
-#endif
