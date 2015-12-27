@@ -4,8 +4,8 @@
 
 #include "ITMDenseMapper.h"
 #include "ITMLibDefines.h"
+#include "ITMLocalScene.h"
 #include "ITMMainEngine.h"
-#include "../Scene/ITMLocalScene.h"
 #include "../../LCDLib/LoopClosureDetector.h"
 #include "../../LCDLib/PoseDatabase.h"
 

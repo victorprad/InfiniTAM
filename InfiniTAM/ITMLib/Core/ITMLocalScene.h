@@ -4,8 +4,8 @@
 
 #include <map>
 
-#include "ITMScene.h"
 #include "../Objects/ITMRenderState.h"
+#include "../Scene/ITMScene.h"
 #include "../Trackers/Base/ITMTrackingState.h"
 #include "../Utils/ITMLibSettings.h"
 #include "../Visualisation/Interface/ITMVisualisationEngine.h"

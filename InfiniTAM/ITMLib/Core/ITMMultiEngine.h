@@ -2,10 +2,10 @@
 
 #pragma once
 
+#include "ITMLocalScene.h"
 #include "ITMMainEngine.h"
 #include "ITMTrackingController.h"
 #include "../LowLevel/Interface/ITMLowLevelEngine.h"
-#include "../Scene/ITMLocalScene.h"
 #include "../Trackers/Base/ITMIMUCalibrator.h"
 #include "../ViewBuilding/Interface/ITMViewBuilder.h"
 #include "../../LCDLib/LoopClosureDetector.h"
