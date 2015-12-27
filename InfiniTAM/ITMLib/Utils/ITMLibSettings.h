@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "../Scene/ITMSceneParams.h"
+#include "ITMSceneParams.h"
 
 namespace ITMLib
 {

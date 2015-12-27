@@ -172,7 +172,6 @@ Scene/ITMLocalVBA.h
 Scene/ITMPlainVoxelArray.h
 Scene/ITMRepresentationAccess.h
 Scene/ITMScene.h
-Scene/ITMSceneParams.h
 Scene/ITMVoxelBlockHash.h
 )
 
@@ -293,6 +292,7 @@ Utils/ITMImageTypes.h
 Utils/ITMLibSettings.h
 Utils/ITMMath.h
 Utils/ITMPixelUtils.h
+Utils/ITMSceneParams.h
 )
 
 ##
