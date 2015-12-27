@@ -38,7 +38,6 @@ SET(ITMLIB_CORE_HEADERS
 Core/ITMActiveSceneManager.h
 Core/ITMBasicEngine.h
 Core/ITMDenseMapper.h
-Core/ITMIMUCalibrator.h
 Core/ITMLibDefines.h
 Core/ITMMainEngine.h
 Core/ITMMultiEngine.h
@@ -220,6 +219,7 @@ Trackers/ITMTrackerFactory.h
 
 ##
 SET(ITMLIB_TRACKERS_BASE_HEADERS
+Trackers/Base/ITMIMUCalibrator.h
 Trackers/Base/ITMImageHierarchy.h
 Trackers/Base/ITMSceneHierarchyLevel.h
 Trackers/Base/ITMTemplatedHierarchyLevel.h

@@ -3,12 +3,12 @@
 #pragma once
 
 #include "ITMDenseMapper.h"
-#include "ITMIMUCalibrator.h"
 #include "ITMLibDefines.h"
 #include "ITMMainEngine.h"
 #include "ITMTrackingController.h"
 #include "../LowLevel/Interface/ITMLowLevelEngine.h"
 #include "../Meshing/Interface/ITMMeshingEngine.h"
+#include "../Trackers/Base/ITMIMUCalibrator.h"
 #include "../ViewBuilding/Interface/ITMViewBuilder.h"
 #include "../Visualisation/Interface/ITMVisualisationEngine.h"
 

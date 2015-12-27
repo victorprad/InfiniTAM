@@ -4,7 +4,7 @@
 
 #include "ITMTracker.h"
 
-#include "../../Core/ITMIMUCalibrator.h"
+#include "../Base/ITMIMUCalibrator.h"
 #include "../../LowLevel/Interface/ITMLowLevelEngine.h"
 #include "../../Objects/ITMIMUMeasurement.h"
 

@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "../Camera/ITMPose.h"
+#include "../../Camera/ITMPose.h"
 
 namespace ITMLib
 {
