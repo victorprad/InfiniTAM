@@ -3,6 +3,7 @@
 #pragma once
 
 #include "../Objects/ITMIMUMeasurement.h"
+#include "../Trackers/Interface/ITMTracker.h"
 #include "../Utils/ITMLibSettings.h"
 
 /** \mainpage

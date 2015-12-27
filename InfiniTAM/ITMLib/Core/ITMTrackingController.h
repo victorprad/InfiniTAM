@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "../Trackers/Interface/ITMTracker.h"
 #include "../Utils/ITMLibSettings.h"
 #include "../Visualisation/Interface/ITMVisualisationEngine.h"
 
