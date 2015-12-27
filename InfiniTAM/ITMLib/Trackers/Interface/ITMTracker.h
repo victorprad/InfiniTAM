@@ -2,8 +2,8 @@
 
 #pragma once
 
-#include "../Base/ITMTrackingState.h"
 #include "../../Objects/ITMView.h"
+#include "../../Objects/Tracking/ITMTrackingState.h"
 
 namespace ITMLib
 {

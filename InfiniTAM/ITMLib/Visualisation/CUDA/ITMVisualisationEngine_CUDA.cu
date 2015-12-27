@@ -4,8 +4,8 @@
 
 #include "../Shared/ITMVisualisationEngine_Shared.h"
 #include "../../Objects/ITMRenderState_VH.h"
+#include "../../Objects/Scene/ITMRepresentationAccess.h"
 #include "../../Reconstruction/Shared/ITMSceneReconstructionEngine_Shared.h"
-#include "../../Scene/ITMRepresentationAccess.h"
 #include "../../Utils/ITMCUDAUtils.h"
 
 using namespace ITMLib;

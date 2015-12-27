@@ -2,12 +2,11 @@
 
 #pragma once
 
-#include "../Base/ITMImageHierarchy.h"
-#include "../Base/ITMViewHierarchyLevel.h"
-#include "../Base/TrackerIterationType.h"
-
 #include "ITMTracker.h"
 #include "../../LowLevel/Interface/ITMLowLevelEngine.h"
+#include "../../Objects/Tracking/ITMImageHierarchy.h"
+#include "../../Objects/Tracking/ITMViewHierarchyLevel.h"
+#include "../../Objects/Tracking/TrackerIterationType.h"
 
 namespace ITMLib
 {

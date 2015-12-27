@@ -2,8 +2,8 @@
 
 #pragma once
 
-#include "../Utils/ITMMath.h"
-#include "../../ORUtils/MemoryBlock.h"
+#include "../../Utils/ITMMath.h"
+#include "../../../ORUtils/MemoryBlock.h"
 
 namespace ITMLib
 {

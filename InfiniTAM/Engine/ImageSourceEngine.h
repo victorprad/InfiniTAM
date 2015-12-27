@@ -4,7 +4,7 @@
 
 #include <vector>
 
-#include "../ITMLib/Camera/ITMRGBDCalib.h"
+#include "../ITMLib/Objects/Camera/ITMRGBDCalib.h"
 #include "../ITMLib/Utils/ITMImageTypes.h"
 
 namespace InfiniTAM

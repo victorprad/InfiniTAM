@@ -3,7 +3,7 @@
 #include "ITMRenTracker_CPU.h"
 
 #include "../Shared/ITMRenTracker_Shared.h"
-#include "../../Scene/ITMRepresentationAccess.h"
+#include "../../Objects/Scene/ITMRepresentationAccess.h"
 using namespace ITMLib;
 
 template<class TVoxel, class TIndex>

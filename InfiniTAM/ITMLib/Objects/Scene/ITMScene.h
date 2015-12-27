@@ -4,7 +4,7 @@
 
 #include "ITMLocalVBA.h"
 #include "ITMGlobalCache.h"
-#include "../Utils/ITMSceneParams.h"
+#include "../../Utils/ITMSceneParams.h"
 
 namespace ITMLib
 {

@@ -6,8 +6,8 @@
 #include <stdlib.h>
 #endif
 
-#include "../Utils/ITMMath.h"
-#include "../../ORUtils/MemoryBlock.h"
+#include "../../Utils/ITMMath.h"
+#include "../../../ORUtils/MemoryBlock.h"
 
 #define SDF_BLOCK_SIZE 8				// SDF block size
 #define SDF_BLOCK_SIZE3 512				// SDF_BLOCK_SIZE3 = SDF_BLOCK_SIZE * SDF_BLOCK_SIZE * SDF_BLOCK_SIZE

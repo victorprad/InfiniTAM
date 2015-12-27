@@ -4,7 +4,7 @@
 
 #include <vector>
 
-#include "../ITMLib/Camera/ITMPose.h"
+#include "../ITMLib/Objects/Camera/ITMPose.h"
 
 namespace LCDLib {
 

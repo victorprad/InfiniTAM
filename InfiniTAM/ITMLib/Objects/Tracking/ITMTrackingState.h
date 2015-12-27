@@ -2,8 +2,8 @@
 
 #pragma once
 
-#include "../../Camera/ITMPose.h"
-#include "../../Objects/ITMPointCloud.h"
+#include "../Camera/ITMPose.h"
+#include "../Misc/ITMPointCloud.h"
 
 namespace ITMLib
 {

@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "../Objects/ITMIMUMeasurement.h"
+#include "../Objects/Misc/ITMIMUMeasurement.h"
 #include "../Trackers/Interface/ITMTracker.h"
 #include "../Utils/ITMLibSettings.h"
 

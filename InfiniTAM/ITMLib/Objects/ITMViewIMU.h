@@ -2,8 +2,8 @@
 
 #pragma once
 
-#include "../Objects/ITMView.h"
-#include "../Objects/ITMIMUMeasurement.h"
+#include "ITMView.h"
+#include "Misc/ITMIMUMeasurement.h"
 
 namespace ITMLib
 {

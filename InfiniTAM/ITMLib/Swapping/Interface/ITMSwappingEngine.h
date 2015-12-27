@@ -4,7 +4,7 @@
 
 #include "../../Objects/ITMRenderState.h"
 #include "../../Objects/ITMView.h"
-#include "../../Scene/ITMScene.h"
+#include "../../Objects/Scene/ITMScene.h"
 
 namespace ITMLib
 {

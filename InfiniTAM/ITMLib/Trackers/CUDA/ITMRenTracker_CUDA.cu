@@ -3,7 +3,7 @@
 #include "ITMRenTracker_CUDA.h"
 
 #include "../Shared/ITMRenTracker_Shared.h"
-#include "../../Scene/ITMRepresentationAccess.h"
+#include "../../Objects/Scene/ITMRepresentationAccess.h"
 #include "../../Utils/ITMCUDAUtils.h"
 #include "../../../ORUtils/CUDADefines.h"
 using namespace ITMLib;

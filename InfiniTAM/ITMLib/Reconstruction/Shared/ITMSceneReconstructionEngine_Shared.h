@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "../../Scene/ITMRepresentationAccess.h"
+#include "../../Objects/Scene/ITMRepresentationAccess.h"
 #include "../../Utils/ITMPixelUtils.h"
 
 template<class TVoxel>

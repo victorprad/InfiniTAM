@@ -4,8 +4,8 @@
 
 #include "../../Objects/ITMRenderState_VH.h"
 #include "../../Objects/ITMView.h"
-#include "../../Scene/ITMScene.h"
-#include "../../Trackers/Base/ITMTrackingState.h"
+#include "../../Objects/Scene/ITMScene.h"
+#include "../../Objects/Tracking/ITMTrackingState.h"
 
 namespace ITMLib
 {
