@@ -4,7 +4,6 @@
 
 #include "../../Camera/ITMPose.h"
 #include "../../Objects/ITMPointCloud.h"
-#include "../../Scene/ITMScene.h"
 
 namespace ITMLib
 {
