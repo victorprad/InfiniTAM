@@ -7,7 +7,7 @@
 #include "Engine/ImageSourceEngine.h"
 #include "Engine/OpenNIEngine.h"
 #include "Engine/Kinect2Engine.h"
-#include "ITMLib/Engine/ITMBasicEngine.h"
+#include "ITMLib/Core/ITMBasicEngine.h"
 
 using namespace InfiniTAM::Engine;
 using namespace ITMLib;

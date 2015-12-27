@@ -2,11 +2,11 @@
 
 #pragma once
 
-#include "../../Objects/ITMIMUMeasurement.h"
-
 #include "ITMTracker.h"
+
+#include "../../Core/ITMIMUCalibrator.h"
 #include "../../LowLevel/Interface/ITMLowLevelEngine.h"
-#include "../../Engine/ITMIMUCalibrator.h"
+#include "../../Objects/ITMIMUMeasurement.h"
 
 namespace ITMLib
 {

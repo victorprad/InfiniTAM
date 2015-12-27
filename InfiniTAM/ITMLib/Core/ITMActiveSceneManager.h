@@ -3,9 +3,9 @@
 #pragma once
 
 #include "ITMDenseMapper.h"
+#include "ITMLibDefines.h"
 #include "ITMMainEngine.h"
 #include "../Scene/ITMLocalScene.h"
-#include "../Utils/ITMLibDefines.h"
 #include "../../LCDLib/LoopClosureDetector.h"
 #include "../../LCDLib/PoseDatabase.h"
 

@@ -11,8 +11,8 @@
 #include "Engine/LibUVCEngine.h"
 #include "Engine/RealSenseEngine.h"
 
-#include "ITMLib/Engine/ITMBasicEngine.h"
-#include "ITMLib/Engine/ITMMultiEngine.h"
+#include "ITMLib/Core/ITMBasicEngine.h"
+#include "ITMLib/Core/ITMMultiEngine.h"
 
 using namespace InfiniTAM::Engine;
 using namespace ITMLib;

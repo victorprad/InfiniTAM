@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "../ITMLib/Engine/ITMMainEngine.h"
+#include "../ITMLib/Core/ITMMainEngine.h"
 #include "../ITMLib/Utils/ITMLibSettings.h"
 #include "../Utils/FileUtils.h"
 #include "../Utils/NVTimer.h"
