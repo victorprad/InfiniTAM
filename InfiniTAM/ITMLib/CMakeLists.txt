@@ -43,6 +43,7 @@ Core/ITMLibDefines.h
 Core/ITMMainEngine.h
 Core/ITMMultiEngine.h
 Core/ITMTrackingController.h
+Core/ITMVoxelTypes.h
 )
 
 ##
@@ -295,7 +296,6 @@ Utils/ITMImageTypes.h
 Utils/ITMLibSettings.h
 Utils/ITMMath.h
 Utils/ITMPixelUtils.h
-Utils/ITMVoxelTypes.h
 )
 
 ##
