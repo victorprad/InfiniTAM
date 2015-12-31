@@ -3,9 +3,6 @@
 #pragma once
 
 #include "ITMLocalSceneManager.h"
-#include "ITMMainEngine.h"
-#include "../../LCDLib/LoopClosureDetector.h"
-#include "../../LCDLib/PoseDatabase.h"
 
 namespace ITMLib
 {
