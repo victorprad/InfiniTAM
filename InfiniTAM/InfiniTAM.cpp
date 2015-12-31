@@ -12,6 +12,7 @@
 #include "Engine/RealSenseEngine.h"
 
 #include "ITMLib/Core/ITMBasicEngine.h"
+#include "ITMLib/Core/ITMLibDefines.h"
 #include "ITMLib/Core/ITMMultiEngine.h"
 
 using namespace InfiniTAM::Engine;

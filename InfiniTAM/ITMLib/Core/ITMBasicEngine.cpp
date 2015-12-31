@@ -21,27 +21,27 @@ ITMBasicEngine<TVoxel,TIndex>::ITMBasicEngine(const ITMLibSettings *settings, co
 	this->settings = settings;
 
 	MemoryDeviceType memoryType = settings->deviceType == ITMLibSettings::DEVICE_CUDA ? MEMORYDEVICE_CUDA : MEMORYDEVICE_CPU;
-	this->scene = new ITMScene<ITMVoxel, ITMVoxelIndex>(&settings->sceneParams, settings->useSwapping, memoryType);
+	this->scene = new ITMScene<TVoxel,TIndex>(&settings->sceneParams, settings->useSwapping, memoryType);
 
 	const ITMLibSettings::DeviceType deviceType = settings->deviceType;
 
 	lowLevelEngine = ITMLowLevelEngineFactory::MakeLowLevelEngine(deviceType);
 	viewBuilder = ITMViewBuilderFactory::MakeViewBuilder(calib, deviceType);
-	visualisationEngine = ITMVisualisationEngineFactory::MakeVisualisationEngine<ITMVoxel,ITMVoxelIndex>(deviceType);
+	visualisationEngine = ITMVisualisationEngineFactory::MakeVisualisationEngine<TVoxel,TIndex>(deviceType);
 
 	mesh = NULL;
 	meshingEngine = NULL;
 	if (createMeshingEngine)
 	{
 		mesh = new ITMMesh(memoryType);
-		meshingEngine = ITMMeshingEngineFactory::MakeMeshingEngine<ITMVoxel,ITMVoxelIndex>(deviceType);
+		meshingEngine = ITMMeshingEngineFactory::MakeMeshingEngine<TVoxel,TIndex>(deviceType);
 	}
 
-	denseMapper = new ITMDenseMapper<ITMVoxel, ITMVoxelIndex>(settings);
+	denseMapper = new ITMDenseMapper<TVoxel,TIndex>(settings);
 	denseMapper->ResetScene(scene);
 
 	imuCalibrator = new ITMIMUCalibrator_iPad();
-	tracker = ITMTrackerFactory<ITMVoxel, ITMVoxelIndex>::Instance().Make(imgSize_rgb, imgSize_d, settings, lowLevelEngine, imuCalibrator, scene);
+	tracker = ITMTrackerFactory<TVoxel,TIndex>::Instance().Make(imgSize_rgb, imgSize_d, settings, lowLevelEngine, imuCalibrator, scene);
 	trackingController = new ITMTrackingController(tracker, settings);
 
 	Vector2i trackedImageSize = trackingController->GetTrackedImageSize(imgSize_rgb, imgSize_d);
@@ -173,12 +173,12 @@ void ITMBasicEngine<TVoxel,TIndex>::GetImage(ITMUChar4Image *out, GetImageType g
 		if (tracker->requiresDepthReliability())
 		{
 			if (settings->deviceType == ITMLibSettings::DEVICE_CUDA) view->depthUncertainty->UpdateHostFromDevice();
-			ITMVisualisationEngine<ITMVoxel, ITMVoxelIndex>::WeightToUchar4(out, view->depthUncertainty);
+			ITMVisualisationEngine<TVoxel,TIndex>::WeightToUchar4(out, view->depthUncertainty);
 		}
 		else
 		{
 			if (settings->deviceType == ITMLibSettings::DEVICE_CUDA) view->depth->UpdateHostFromDevice();
-			ITMVisualisationEngine<ITMVoxel, ITMVoxelIndex>::DepthToUchar4(out, view->depth);
+			ITMVisualisationEngine<TVoxel,TIndex>::DepthToUchar4(out, view->depth);
 		}
 
 		break;

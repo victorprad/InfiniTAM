@@ -8,6 +8,7 @@
 #include "Engine/OpenNIEngine.h"
 #include "Engine/Kinect2Engine.h"
 #include "ITMLib/Core/ITMBasicEngine.h"
+#include "ITMLib/Core/ITMLibDefines.h"
 
 using namespace InfiniTAM::Engine;
 using namespace ITMLib;

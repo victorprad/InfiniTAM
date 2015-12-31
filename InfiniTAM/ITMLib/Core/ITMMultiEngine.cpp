@@ -35,19 +35,19 @@ ITMMultiEngine<TVoxel,TIndex>::ITMMultiEngine(const ITMLibSettings *settings, co
 	const ITMLibSettings::DeviceType deviceType = settings->deviceType;
 	lowLevelEngine = ITMLowLevelEngineFactory::MakeLowLevelEngine(deviceType);
 	viewBuilder = ITMViewBuilderFactory::MakeViewBuilder(calib, deviceType);
-	visualisationEngine = ITMVisualisationEngineFactory::MakeVisualisationEngine<ITMVoxel,ITMVoxelIndex>(deviceType);
+	visualisationEngine = ITMVisualisationEngineFactory::MakeVisualisationEngine<TVoxel,TIndex>(deviceType);
 
 	renderState_freeview = NULL; //will be created by the visualisation engine
 
-	denseMapper = new ITMDenseMapper<ITMVoxel, ITMVoxelIndex>(settings);
+	denseMapper = new ITMDenseMapper<TVoxel,TIndex>(settings);
 
 	imuCalibrator = new ITMIMUCalibrator_iPad();
-	tracker = ITMTrackerFactory<ITMVoxel, ITMVoxelIndex>::Instance().Make(imgSize_rgb, imgSize_d, settings, lowLevelEngine, imuCalibrator, NULL/*scene TODO: this will fail for Ren Tracker*/);
+	tracker = ITMTrackerFactory<TVoxel,TIndex>::Instance().Make(imgSize_rgb, imgSize_d, settings, lowLevelEngine, imuCalibrator, NULL/*scene TODO: this will fail for Ren Tracker*/);
 	trackingController = new ITMTrackingController(tracker, settings);
 	trackedImageSize = trackingController->GetTrackedImageSize(imgSize_rgb, imgSize_d);
 
 	freeviewSceneIdx = 0;
-	sceneManager = new ITMLocalSceneManager_instance<ITMVoxel,ITMVoxelIndex>(settings, visualisationEngine, denseMapper, trackedImageSize);
+	sceneManager = new ITMLocalSceneManager_instance<TVoxel,TIndex>(settings, visualisationEngine, denseMapper, trackedImageSize);
 	activeDataManager = new ITMActiveSceneManager(sceneManager);
 	activeDataManager->initiateNewScene(true);
 
@@ -192,7 +192,7 @@ void ITMMultiEngine<TVoxel,TIndex>::ProcessFrame(ITMUChar4Image *rgbImage, ITMSh
 			continue;
 		}
 
-		ITMLocalScene<ITMVoxel,ITMVoxelIndex> *currentScene = NULL;
+		ITMLocalScene<TVoxel,TIndex> *currentScene = NULL;
 		int currentSceneIdx = activeDataManager->getSceneIndex(todoList[i].dataID);
 		currentScene = sceneManager->getScene(currentSceneIdx);
 
@@ -285,13 +285,13 @@ void ITMMultiEngine<TVoxel,TIndex>::GetImage(ITMUChar4Image *out, GetImageType g
 	case ITMMultiEngine::InfiniTAM_IMAGE_ORIGINAL_DEPTH:
 		out->ChangeDims(view->depth->noDims);
 		if (settings->deviceType == ITMLibSettings::DEVICE_CUDA) view->depth->UpdateHostFromDevice();
-		ITMVisualisationEngine<ITMVoxel,ITMVoxelIndex>::DepthToUchar4(out, view->depth);
+		ITMVisualisationEngine<TVoxel,TIndex>::DepthToUchar4(out, view->depth);
 		break;
 	case ITMMultiEngine::InfiniTAM_IMAGE_SCENERAYCAST:
 	{
 		int primarySceneIdx = activeDataManager->findPrimarySceneIdx();
 		if (primarySceneIdx < 0) break; // TODO: clear image? what else to do when tracking is lost?
-		ITMLocalScene<ITMVoxel,ITMVoxelIndex> *activeScene = sceneManager->getScene(primarySceneIdx);
+		ITMLocalScene<TVoxel,TIndex> *activeScene = sceneManager->getScene(primarySceneIdx);
 		ORUtils::Image<Vector4u> *srcImage = activeScene->renderState->raycastImage;
 		out->ChangeDims(srcImage->noDims);
 		if (settings->deviceType == ITMLibSettings::DEVICE_CUDA)
@@ -304,7 +304,7 @@ void ITMMultiEngine<TVoxel,TIndex>::GetImage(ITMUChar4Image *out, GetImageType g
 	case ITMMultiEngine::InfiniTAM_IMAGE_FREECAMERA_COLOUR_FROM_NORMAL:
 	{
 		IITMVisualisationEngine::RenderImageType type = IITMVisualisationEngine::RENDER_SHADED_GREYSCALE;
-		ITMLocalScene<ITMVoxel,ITMVoxelIndex> *activeData = sceneManager->getScene(freeviewSceneIdx);
+		ITMLocalScene<TVoxel,TIndex> *activeData = sceneManager->getScene(freeviewSceneIdx);
 		if (getImageType == ITMMultiEngine::InfiniTAM_IMAGE_FREECAMERA_COLOUR_FROM_VOLUME) type = IITMVisualisationEngine::RENDER_COLOUR_FROM_VOLUME;
 		else if (getImageType == ITMMultiEngine::InfiniTAM_IMAGE_FREECAMERA_COLOUR_FROM_NORMAL) type = IITMVisualisationEngine::RENDER_COLOUR_FROM_NORMAL;
 		if (renderState_freeview == NULL) renderState_freeview = visualisationEngine->CreateRenderState(activeData->scene, out->noDims);

@@ -3,7 +3,6 @@
 #pragma once
 
 #include "ITMDenseMapper.h"
-#include "ITMLibDefines.h"
 #include "ITMMainEngine.h"
 #include "ITMTrackingController.h"
 #include "../LowLevel/Interface/ITMLowLevelEngine.h"
@@ -23,16 +22,16 @@ namespace ITMLib
 		bool trackingActive, fusionActive, mainProcessingActive, trackingInitialised;
 
 		ITMLowLevelEngine *lowLevelEngine;
-		ITMVisualisationEngine<ITMVoxel,ITMVoxelIndex> *visualisationEngine;
+		ITMVisualisationEngine<TVoxel,TIndex> *visualisationEngine;
 
-		ITMMeshingEngine<ITMVoxel, ITMVoxelIndex> *meshingEngine;
+		ITMMeshingEngine<TVoxel,TIndex> *meshingEngine;
 		ITMMesh *mesh;
 
 		ITMViewBuilder *viewBuilder;		
-		ITMDenseMapper<ITMVoxel,ITMVoxelIndex> *denseMapper;
+		ITMDenseMapper<TVoxel,TIndex> *denseMapper;
 		ITMTrackingController *trackingController;
 
-		ITMScene<ITMVoxel, ITMVoxelIndex> *scene;
+		ITMScene<TVoxel,TIndex> *scene;
 		ITMRenderState *renderState_live;
 		ITMRenderState *renderState_freeview;
 
@@ -50,7 +49,7 @@ namespace ITMLib
 		ITMTrackingState* GetTrackingState(void) { return trackingState; }
 
 		/// Gives access to the internal world representation
-		ITMScene<ITMVoxel, ITMVoxelIndex>* GetScene(void) { return scene; }
+		ITMScene<TVoxel,TIndex>* GetScene(void) { return scene; }
 
 		void ProcessFrame(ITMUChar4Image *rgbImage, ITMShortImage *rawDepthImage, ITMIMUMeasurement *imuMeasurement = NULL);
 

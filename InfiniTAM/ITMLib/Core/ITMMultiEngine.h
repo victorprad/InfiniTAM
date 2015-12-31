@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include "ITMLibDefines.h"
 #include "ITMLocalScene.h"
 #include "ITMMainEngine.h"
 #include "ITMTrackingController.h"
@@ -35,20 +34,20 @@ namespace ITMLib
 		const ITMLibSettings *settings;
 
 		ITMLowLevelEngine *lowLevelEngine;
-		ITMVisualisationEngine<ITMVoxel,ITMVoxelIndex> *visualisationEngine;
+		ITMVisualisationEngine<TVoxel,TIndex> *visualisationEngine;
 
 		ITMViewBuilder *viewBuilder;		
 		ITMTrackingController *trackingController;
 		ITMTracker *tracker;
 		ITMIMUCalibrator *imuCalibrator;
-		ITMDenseMapper<ITMVoxel,ITMVoxelIndex> *denseMapper;
+		ITMDenseMapper<TVoxel,TIndex> *denseMapper;
 
 		LCDLib::LoopClosureDetector *mLoopClosureDetector;
 		LCDLib::PoseDatabase poseDatabase;
 
 /*		std::vector<ITMLocalScene<ITMVoxel,ITMVoxelIndex>*> allData;
 		std::vector<ActiveDataDescriptor> activeData;*/
-		ITMLocalSceneManager_instance<ITMVoxel,ITMVoxelIndex> *sceneManager;
+		ITMLocalSceneManager_instance<TVoxel,TIndex> *sceneManager;
 		ITMActiveSceneManager *activeDataManager;
 
 		Vector2i trackedImageSize;
