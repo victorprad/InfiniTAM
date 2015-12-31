@@ -2,9 +2,9 @@
 
 #pragma once
 
-#include "Core/ITMVoxelTypes.h"
 #include "Objects/Scene/ITMPlainVoxelArray.h"
 #include "Objects/Scene/ITMVoxelBlockHash.h"
+#include "Objects/Scene/ITMVoxelTypes.h"
 
 /** This chooses the information stored at each voxel. At the moment, valid
     options are ITMVoxel_s, ITMVoxel_f, ITMVoxel_s_rgb and ITMVoxel_f_rgb 

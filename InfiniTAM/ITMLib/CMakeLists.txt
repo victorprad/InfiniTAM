@@ -35,7 +35,6 @@ Core/ITMLocalSceneManager.h
 Core/ITMMainEngine.h
 Core/ITMMultiEngine.h
 Core/ITMTrackingController.h
-Core/ITMVoxelTypes.h
 )
 
 ##
@@ -150,6 +149,7 @@ Objects/Scene/ITMPlainVoxelArray.h
 Objects/Scene/ITMRepresentationAccess.h
 Objects/Scene/ITMScene.h
 Objects/Scene/ITMVoxelBlockHash.h
+Objects/Scene/ITMVoxelTypes.h
 )
 
 ##
