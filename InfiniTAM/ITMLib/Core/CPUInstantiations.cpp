@@ -4,6 +4,7 @@
 #include "ITMDenseMapper.cpp"
 #include "ITMLibDefines.h"
 #include "ITMLocalSceneManager.cpp"
+#include "ITMMultiEngine.cpp"
 #include "../Meshing/CPU/ITMMeshingEngine_CPU.cpp"
 #include "../Reconstruction/CPU/ITMSceneReconstructionEngine_CPU.cpp"
 #include "../Swapping/CPU/ITMSwappingEngine_CPU.cpp"
@@ -20,6 +21,7 @@ template class ITMBasicEngine<ITMVoxel, ITMVoxelIndex>;
 template class ITMDenseMapper<ITMVoxel, ITMVoxelIndex>;
 template class ITMLocalSceneManager_instance<ITMVoxel, ITMVoxelIndex>;
 template class ITMMeshingEngine_CPU<ITMVoxel, ITMVoxelIndex>;
+template class ITMMultiEngine<ITMVoxel, ITMVoxelIndex>;
 template class ITMRenTracker<ITMVoxel, ITMVoxelIndex>;
 template class ITMRenTracker_CPU<ITMVoxel, ITMVoxelIndex>;
 template class ITMSceneReconstructionEngine_CPU<ITMVoxel, ITMVoxelIndex>;

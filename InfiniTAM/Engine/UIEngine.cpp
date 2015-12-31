@@ -200,7 +200,7 @@ void UIEngine::glutKeyUpFunction(unsigned char key, int x, int y)
 				uiEngine->freeviewIntrinsics = uiEngine->mainEngine->GetView()->calib->intrinsics_d;
 				uiEngine->outImage[0]->ChangeDims(uiEngine->mainEngine->GetView()->depth->noDims);
 			}
-			ITMMultiEngine *multiEngine = dynamic_cast<ITMMultiEngine*>(uiEngine->mainEngine);
+			ITMMultiEngine<ITMVoxel,ITMVoxelIndex> *multiEngine = dynamic_cast<ITMMultiEngine<ITMVoxel,ITMVoxelIndex>*>(uiEngine->mainEngine);
 			if (multiEngine != NULL) {
 				int idx = multiEngine->findPrimarySceneIdx();
 				if (idx < 0) idx = 0;
@@ -237,7 +237,7 @@ void UIEngine::glutKeyUpFunction(unsigned char key, int x, int y)
 	case '[':
 	case ']':
 		{
-		ITMMultiEngine *multiEngine = dynamic_cast<ITMMultiEngine*>(uiEngine->mainEngine);
+		ITMMultiEngine<ITMVoxel,ITMVoxelIndex> *multiEngine = dynamic_cast<ITMMultiEngine<ITMVoxel,ITMVoxelIndex>*>(uiEngine->mainEngine);
 		if (multiEngine != NULL) {
 			int idx = multiEngine->getFreeviewSceneIdx();
 			if (key == '[') idx--;

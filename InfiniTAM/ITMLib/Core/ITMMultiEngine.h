@@ -28,6 +28,7 @@ namespace ITMLib
 
 	/** \brief
 	*/
+	template <typename TVoxel, typename TIndex>
 	class ITMMultiEngine : public ITMMainEngine
 	{
 	private:

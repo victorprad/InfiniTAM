@@ -25,7 +25,8 @@ static const int k_loopcloseneighbours = 5;
 // maximum distance reported by LCD library to attempt relocalisation
 static const float F_maxdistattemptreloc = 0.2f;
 
-ITMMultiEngine::ITMMultiEngine(const ITMLibSettings *settings, const ITMRGBDCalib *calib, Vector2i imgSize_rgb, Vector2i imgSize_d)
+template <typename TVoxel, typename TIndex>
+ITMMultiEngine<TVoxel,TIndex>::ITMMultiEngine(const ITMLibSettings *settings, const ITMRGBDCalib *calib, Vector2i imgSize_rgb, Vector2i imgSize_d)
 {
 	if ((imgSize_d.x == -1) || (imgSize_d.y == -1)) imgSize_d = imgSize_rgb;
 
@@ -57,7 +58,8 @@ ITMMultiEngine::ITMMultiEngine(const ITMLibSettings *settings, const ITMRGBDCali
 	mLoopClosureDetector = new LCDLib::LoopClosureDetector(imgSize_d, Vector2f(0.5f,3.0f), 0.2f, 500, 4);
 }
 
-ITMMultiEngine::~ITMMultiEngine(void)
+template <typename TVoxel, typename TIndex>
+ITMMultiEngine<TVoxel,TIndex>::~ITMMultiEngine(void)
 {
 	delete activeDataManager;
 	delete sceneManager;
@@ -80,7 +82,8 @@ ITMMultiEngine::~ITMMultiEngine(void)
 	delete mLoopClosureDetector;
 }
 
-void ITMMultiEngine::changeFreeviewSceneIdx(ITMPose *pose, int newIdx)
+template <typename TVoxel, typename TIndex>
+void ITMMultiEngine<TVoxel,TIndex>::changeFreeviewSceneIdx(ITMPose *pose, int newIdx)
 {
 //	if ((newIdx < 0)||((unsigned)newIdx >= sceneManager->numScenes())) return;
 	if (newIdx < 0) newIdx = (int)sceneManager->numScenes()-1;
@@ -92,7 +95,8 @@ void ITMMultiEngine::changeFreeviewSceneIdx(ITMPose *pose, int newIdx)
 	freeviewSceneIdx = newIdx;
 }
 
-ITMTrackingState* ITMMultiEngine::GetTrackingState(void)
+template <typename TVoxel, typename TIndex>
+ITMTrackingState* ITMMultiEngine<TVoxel,TIndex>::GetTrackingState(void)
 {
 	int idx = activeDataManager->findPrimarySceneIdx();
 	if (idx < 0) idx = 0;
@@ -122,7 +126,8 @@ struct TodoListEntry {
 	bool preprepare;
 };
 
-void ITMMultiEngine::ProcessFrame(ITMUChar4Image *rgbImage, ITMShortImage *rawDepthImage, ITMIMUMeasurement *imuMeasurement)
+template <typename TVoxel, typename TIndex>
+void ITMMultiEngine<TVoxel,TIndex>::ProcessFrame(ITMUChar4Image *rgbImage, ITMShortImage *rawDepthImage, ITMIMUMeasurement *imuMeasurement)
 {
 	// prepare image and turn it into a depth image
 	if (imuMeasurement==NULL) viewBuilder->UpdateView(&view, rgbImage, rawDepthImage, settings->useBilateralFilter);
@@ -232,7 +237,7 @@ void ITMMultiEngine::ProcessFrame(ITMUChar4Image *rgbImage, ITMShortImage *rawDe
 					primaryDataIdx = -1;
 					todoList.resize(i+1);
 					todoList.push_back(TodoListEntry(-1, false, false, false));
-fprintf(stderr, "Lost track of primary scene\n");
+					fprintf(stderr, "Lost track of primary scene\n");
 				}
 			}
 			activeDataManager->recordTrackingResult(dataID, trackingSuccess, primaryTrackingSuccess);
@@ -256,12 +261,14 @@ fprintf(stderr, "Lost track of primary scene\n");
 	fprintf(stderr, "...done!\n");
 }
 
-Vector2i ITMMultiEngine::GetImageSize(void) const
+template <typename TVoxel, typename TIndex>
+Vector2i ITMMultiEngine<TVoxel,TIndex>::GetImageSize(void) const
 {
 	return trackedImageSize;
 }
 
-void ITMMultiEngine::GetImage(ITMUChar4Image *out, GetImageType getImageType, ITMPose *pose, ITMIntrinsics *intrinsics)
+template <typename TVoxel, typename TIndex>
+void ITMMultiEngine<TVoxel,TIndex>::GetImage(ITMUChar4Image *out, GetImageType getImageType, ITMPose *pose, ITMIntrinsics *intrinsics)
 {
 	if (view == NULL) return;
 
