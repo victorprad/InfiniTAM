@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "ITMLibDefines.h"
 #include "ITMLocalScene.h"
 #include "ITMMainEngine.h"
 #include "ITMTrackingController.h"

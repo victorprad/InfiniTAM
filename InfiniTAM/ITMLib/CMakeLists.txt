@@ -8,6 +8,7 @@ Core/ITMActiveSceneManager.cpp
 Core/ITMBasicEngine.cpp
 Core/ITMDenseMapper.cpp
 Core/ITMLocalScene.cpp
+Core/ITMLocalSceneManager.cpp
 Core/ITMMultiEngine.cpp
 Core/ITMTrackingController.cpp
 )
@@ -26,6 +27,7 @@ Core/ITMBasicEngine.h
 Core/ITMDenseMapper.h
 Core/ITMLibDefines.h
 Core/ITMLocalScene.h
+Core/ITMLocalSceneManager.h
 Core/ITMMainEngine.h
 Core/ITMMultiEngine.h
 Core/ITMTrackingController.h

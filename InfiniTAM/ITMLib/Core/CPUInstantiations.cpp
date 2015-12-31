@@ -3,6 +3,7 @@
 #include "ITMBasicEngine.cpp"
 #include "ITMDenseMapper.cpp"
 #include "ITMLibDefines.h"
+#include "ITMLocalSceneManager.cpp"
 #include "../Meshing/CPU/ITMMeshingEngine_CPU.cpp"
 #include "../Reconstruction/CPU/ITMSceneReconstructionEngine_CPU.cpp"
 #include "../Swapping/CPU/ITMSwappingEngine_CPU.cpp"
@@ -17,6 +18,7 @@ namespace ITMLib
 
 template class ITMBasicEngine<ITMVoxel, ITMVoxelIndex>;
 template class ITMDenseMapper<ITMVoxel, ITMVoxelIndex>;
+template class ITMLocalSceneManager_instance<ITMVoxel, ITMVoxelIndex>;
 template class ITMMeshingEngine_CPU<ITMVoxel, ITMVoxelIndex>;
 template class ITMRenTracker<ITMVoxel, ITMVoxelIndex>;
 template class ITMRenTracker_CPU<ITMVoxel, ITMVoxelIndex>;
