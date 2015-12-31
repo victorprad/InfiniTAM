@@ -2,18 +2,17 @@
 
 #pragma once
 
-#include <vector>
 #include <stdexcept>
-
-#include "Interface/ITMCompositeTracker.h"
-#include "Interface/ITMIMUTracker.h"
-#include "../LowLevel/Interface/ITMLowLevelEngine.h"
-#include "Interface/ITMTracker.h"
+#include <vector>
 
 #include "CPU/ITMColorTracker_CPU.h"
 #include "CPU/ITMDepthTracker_CPU.h"
-#include "CPU/ITMWeightedICPTracker_CPU.h"
 #include "CPU/ITMRenTracker_CPU.h"
+#include "CPU/ITMWeightedICPTracker_CPU.h"
+#include "Interface/ITMCompositeTracker.h"
+#include "Interface/ITMIMUTracker.h"
+#include "Interface/ITMTracker.h"
+#include "../LowLevel/Interface/ITMLowLevelEngine.h"
 #include "../Utils/ITMLibSettings.h"
 
 #ifndef COMPILE_WITHOUT_CUDA
@@ -24,7 +23,7 @@
 #endif
 
 #ifdef COMPILE_WITH_METAL
-#include "DeviceSpecific/Metal/ITMDepthTracker_Metal.h"
+#include "Metal/ITMDepthTracker_Metal.h"
 #endif
 
 #include "../../ORUtils/KeyValueConfig.h"
