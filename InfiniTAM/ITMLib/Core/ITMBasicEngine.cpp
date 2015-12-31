@@ -9,7 +9,8 @@
 #include "../Visualisation/ITMVisualisationEngineFactory.h"
 using namespace ITMLib;
 
-ITMBasicEngine::ITMBasicEngine(const ITMLibSettings *settings, const ITMRGBDCalib *calib, Vector2i imgSize_rgb, Vector2i imgSize_d)
+template <typename TVoxel, typename TIndex>
+ITMBasicEngine<TVoxel,TIndex>::ITMBasicEngine(const ITMLibSettings *settings, const ITMRGBDCalib *calib, Vector2i imgSize_rgb, Vector2i imgSize_d)
 {
 	// create all the things required for marching cubes and mesh extraction
 	// - uses additional memory (lots!)
@@ -59,7 +60,8 @@ ITMBasicEngine::ITMBasicEngine(const ITMLibSettings *settings, const ITMRGBDCali
 	trackingInitialised = false;
 }
 
-ITMBasicEngine::~ITMBasicEngine()
+template <typename TVoxel, typename TIndex>
+ITMBasicEngine<TVoxel,TIndex>::~ITMBasicEngine()
 {
 	delete renderState_live;
 	if (renderState_freeview!=NULL) delete renderState_freeview;
@@ -85,20 +87,23 @@ ITMBasicEngine::~ITMBasicEngine()
 	if (mesh != NULL) delete mesh;
 }
 
-ITMMesh* ITMBasicEngine::UpdateMesh(void)
+template <typename TVoxel, typename TIndex>
+ITMMesh* ITMBasicEngine<TVoxel,TIndex>::UpdateMesh(void)
 {
 	if (mesh != NULL) meshingEngine->MeshScene(mesh, scene);
 	return mesh;
 }
 
-void ITMBasicEngine::SaveSceneToMesh(const char *objFileName)
+template <typename TVoxel, typename TIndex>
+void ITMBasicEngine<TVoxel,TIndex>::SaveSceneToMesh(const char *objFileName)
 {
 	if (mesh == NULL) return;
 	meshingEngine->MeshScene(mesh, scene);
 	mesh->WriteSTL(objFileName);
 }
 
-void ITMBasicEngine::ProcessFrame(ITMUChar4Image *rgbImage, ITMShortImage *rawDepthImage, ITMIMUMeasurement *imuMeasurement)
+template <typename TVoxel, typename TIndex>
+void ITMBasicEngine<TVoxel,TIndex>::ProcessFrame(ITMUChar4Image *rgbImage, ITMShortImage *rawDepthImage, ITMIMUMeasurement *imuMeasurement)
 {
 	// prepare image and turn it into a depth image
 	bool modelSensorNoise = tracker->requiresDepthReliability();
@@ -142,12 +147,14 @@ void ITMBasicEngine::ProcessFrame(ITMUChar4Image *rgbImage, ITMShortImage *rawDe
 	}
 }
 
-Vector2i ITMBasicEngine::GetImageSize(void) const
+template <typename TVoxel, typename TIndex>
+Vector2i ITMBasicEngine<TVoxel,TIndex>::GetImageSize(void) const
 {
 	return renderState_live->raycastImage->noDims;
 }
 
-void ITMBasicEngine::GetImage(ITMUChar4Image *out, GetImageType getImageType, ITMPose *pose, ITMIntrinsics *intrinsics)
+template <typename TVoxel, typename TIndex>
+void ITMBasicEngine<TVoxel,TIndex>::GetImage(ITMUChar4Image *out, GetImageType getImageType, ITMPose *pose, ITMIntrinsics *intrinsics)
 {
 	if (view == NULL) return;
 
@@ -207,9 +214,20 @@ void ITMBasicEngine::GetImage(ITMUChar4Image *out, GetImageType getImageType, IT
 	};
 }
 
-void ITMBasicEngine::turnOnTracking() { trackingActive = true; }
-void ITMBasicEngine::turnOffTracking() { trackingActive = false; }
-void ITMBasicEngine::turnOnIntegration() { fusionActive = true; }
-void ITMBasicEngine::turnOffIntegration() { fusionActive = false; }
-void ITMBasicEngine::turnOnMainProcessing() { mainProcessingActive = true; }
-void ITMBasicEngine::turnOffMainProcessing() { mainProcessingActive = false; }
+template <typename TVoxel, typename TIndex>
+void ITMBasicEngine<TVoxel,TIndex>::turnOnTracking() { trackingActive = true; }
+
+template <typename TVoxel, typename TIndex>
+void ITMBasicEngine<TVoxel,TIndex>::turnOffTracking() { trackingActive = false; }
+
+template <typename TVoxel, typename TIndex>
+void ITMBasicEngine<TVoxel,TIndex>::turnOnIntegration() { fusionActive = true; }
+
+template <typename TVoxel, typename TIndex>
+void ITMBasicEngine<TVoxel,TIndex>::turnOffIntegration() { fusionActive = false; }
+
+template <typename TVoxel, typename TIndex>
+void ITMBasicEngine<TVoxel,TIndex>::turnOnMainProcessing() { mainProcessingActive = true; }
+
+template <typename TVoxel, typename TIndex>
+void ITMBasicEngine<TVoxel,TIndex>::turnOffMainProcessing() { mainProcessingActive = false; }

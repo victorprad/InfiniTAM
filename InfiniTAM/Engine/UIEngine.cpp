@@ -217,7 +217,7 @@ void UIEngine::glutKeyUpFunction(unsigned char key, int x, int y)
 	case 't':
 		{
 		uiEngine->intergrationActive = !uiEngine->intergrationActive;
-		ITMBasicEngine *basicEngine = dynamic_cast<ITMBasicEngine*>(uiEngine->mainEngine); 
+		ITMBasicEngine<ITMVoxel,ITMVoxelIndex> *basicEngine = dynamic_cast<ITMBasicEngine<ITMVoxel,ITMVoxelIndex>*>(uiEngine->mainEngine); 
 		if (basicEngine != NULL) {
 			if (uiEngine->intergrationActive) basicEngine->turnOnIntegration();
 			else basicEngine->turnOffIntegration();
@@ -226,7 +226,7 @@ void UIEngine::glutKeyUpFunction(unsigned char key, int x, int y)
 		break;
 	case 'w':
 		{
-		ITMBasicEngine *basicEngine = dynamic_cast<ITMBasicEngine*>(uiEngine->mainEngine); 
+		ITMBasicEngine<ITMVoxel,ITMVoxelIndex> *basicEngine = dynamic_cast<ITMBasicEngine<ITMVoxel,ITMVoxelIndex>*>(uiEngine->mainEngine); 
 		if (basicEngine != NULL) {
 			printf("saving mesh to disk ...");
 			basicEngine->SaveSceneToMesh("mesh.stl");

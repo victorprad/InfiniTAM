@@ -14,6 +14,7 @@
 
 namespace ITMLib
 {
+	template <typename TVoxel, typename TIndex>
 	class ITMBasicEngine : public ITMMainEngine
 	{
 	private:
@@ -87,4 +88,3 @@ namespace ITMLib
 		~ITMBasicEngine();
 	};
 }
-

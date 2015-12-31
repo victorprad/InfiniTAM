@@ -1,5 +1,6 @@
 // Copyright 2014-2015 Isis Innovation Limited and the authors of InfiniTAM
 
+#include "ITMBasicEngine.cpp"
 #include "ITMDenseMapper.cpp"
 #include "ITMLibDefines.h"
 #include "../Meshing/CPU/ITMMeshingEngine_CPU.cpp"
@@ -14,6 +15,7 @@
 namespace ITMLib
 {
 
+template class ITMBasicEngine<ITMVoxel, ITMVoxelIndex>;
 template class ITMDenseMapper<ITMVoxel, ITMVoxelIndex>;
 template class ITMMeshingEngine_CPU<ITMVoxel, ITMVoxelIndex>;
 template class ITMRenTracker<ITMVoxel, ITMVoxelIndex>;
