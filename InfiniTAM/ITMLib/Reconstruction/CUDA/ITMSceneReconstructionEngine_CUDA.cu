@@ -1,9 +1,10 @@
 // Copyright 2014-2015 Isis Innovation Limited and the authors of InfiniTAM
 
 #include "ITMSceneReconstructionEngine_CUDA.h"
-#include "../../Utils/ITMCUDAUtils.h"
+
 #include "../Shared/ITMSceneReconstructionEngine_Shared.h"
-#include "../../Objects/ITMRenderState_VH.h"
+#include "../../Objects/RenderStates/ITMRenderState_VH.h"
+#include "../../Utils/ITMCUDAUtils.h"
 
 struct AllocationTempData {
 	int noAllocatedVoxelEntries;

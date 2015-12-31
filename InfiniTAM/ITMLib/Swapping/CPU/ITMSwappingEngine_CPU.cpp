@@ -3,8 +3,7 @@
 #include "ITMSwappingEngine_CPU.h"
 
 #include "../Shared/ITMSwappingEngine_Shared.h"
-#include "../../Objects/ITMRenderState_VH.h"
-
+#include "../../Objects/RenderStates/ITMRenderState_VH.h"
 using namespace ITMLib;
 
 template<class TVoxel>

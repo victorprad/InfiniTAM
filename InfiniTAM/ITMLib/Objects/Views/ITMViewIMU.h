@@ -3,7 +3,7 @@
 #pragma once
 
 #include "ITMView.h"
-#include "Misc/ITMIMUMeasurement.h"
+#include "../Misc/ITMIMUMeasurement.h"
 
 namespace ITMLib
 {

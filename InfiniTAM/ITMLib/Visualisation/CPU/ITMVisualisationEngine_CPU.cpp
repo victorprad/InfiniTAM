@@ -4,7 +4,6 @@
 
 #include "../Shared/ITMVisualisationEngine_Shared.h"
 #include "../../Reconstruction/Shared/ITMSceneReconstructionEngine_Shared.h"
-#include "../../Objects/ITMRenderState_VH.h"
 
 #include <vector>
 

@@ -2,9 +2,9 @@
 
 #pragma once
 
-#include "../../Objects/ITMRenderState.h"
-#include "../../Objects/ITMView.h"
+#include "../../Objects/RenderStates/ITMRenderState.h"
 #include "../../Objects/Scene/ITMScene.h"
+#include "../../Objects/Views/ITMView.h"
 
 namespace ITMLib
 {

@@ -2,8 +2,8 @@
 
 #pragma once
 
-#include "Camera/ITMCalibIO.h"
-#include "../Utils/ITMImageTypes.h"
+#include "../Camera/ITMCalibIO.h"
+#include "../../Utils/ITMImageTypes.h"
 
 namespace ITMLib
 {

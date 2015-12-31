@@ -1,10 +1,10 @@
 // Copyright 2014-2015 Isis Innovation Limited and the authors of InfiniTAM
 
 #include "ITMSwappingEngine_CUDA.h"
-#include "../../Utils/ITMCUDAUtils.h"
-#include "../Shared/ITMSwappingEngine_Shared.h"
-#include "../../Objects/ITMRenderState_VH.h"
 
+#include "../Shared/ITMSwappingEngine_Shared.h"
+#include "../../Objects/RenderStates/ITMRenderState_VH.h"
+#include "../../Utils/ITMCUDAUtils.h"
 using namespace ITMLib;
 
 __global__ void buildListToSwapIn_device(int *neededEntryIDs, int *noNeededEntries, ITMHashSwapState *swapStates, int noTotalEntries);

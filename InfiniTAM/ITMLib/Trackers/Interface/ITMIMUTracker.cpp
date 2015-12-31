@@ -1,8 +1,8 @@
 // Copyright 2014-2015 Isis Innovation Limited and the authors of InfiniTAM
 
 #include "ITMIMUTracker.h"
-#include "../../Objects/ITMViewIMU.h"
 
+#include "../../Objects/Views/ITMViewIMU.h"
 using namespace ITMLib;
 
 ITMIMUTracker::ITMIMUTracker(ITMIMUCalibrator *calibrator)

@@ -2,7 +2,7 @@
 
 #include "ITMDenseMapper.h"
 
-#include "../Objects/ITMRenderState_VH.h"
+#include "../Objects/RenderStates/ITMRenderState_VH.h"
 #include "../Reconstruction/ITMSceneReconstructionEngineFactory.h"
 #include "../Swapping/ITMSwappingEngineFactory.h"
 using namespace ITMLib;
