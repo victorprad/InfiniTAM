@@ -7,7 +7,7 @@
 #include "ITMTrackingController.h"
 #include "../LowLevel/Interface/ITMLowLevelEngine.h"
 #include "../Meshing/Interface/ITMMeshingEngine.h"
-#include "../Objects/Tracking/ITMIMUCalibrator.h"
+#include "../Objects/Misc/ITMIMUCalibrator.h"
 #include "../ViewBuilding/Interface/ITMViewBuilder.h"
 #include "../Visualisation/Interface/ITMVisualisationEngine.h"
 

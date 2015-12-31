@@ -129,6 +129,7 @@ Objects/Meshing/ITMMesh.h
 
 ##
 SET(ITMLIB_OBJECTS_MISC_HEADERS
+Objects/Misc/ITMIMUCalibrator.h
 Objects/Misc/ITMIMUMeasurement.h
 Objects/Misc/ITMPointCloud.h
 )
@@ -152,7 +153,6 @@ Objects/Scene/ITMVoxelTypes.h
 
 ##
 SET(ITMLIB_OBJECTS_TRACKING_HEADERS
-Objects/Tracking/ITMIMUCalibrator.h
 Objects/Tracking/ITMImageHierarchy.h
 Objects/Tracking/ITMSceneHierarchyLevel.h
 Objects/Tracking/ITMTemplatedHierarchyLevel.h

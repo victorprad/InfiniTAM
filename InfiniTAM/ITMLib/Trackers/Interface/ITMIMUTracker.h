@@ -5,8 +5,8 @@
 #include "ITMTracker.h"
 
 #include "../../LowLevel/Interface/ITMLowLevelEngine.h"
+#include "../../Objects/Misc/ITMIMUCalibrator.h"
 #include "../../Objects/Misc/ITMIMUMeasurement.h"
-#include "../../Objects/Tracking/ITMIMUCalibrator.h"
 
 namespace ITMLib
 {
