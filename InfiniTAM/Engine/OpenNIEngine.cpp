@@ -5,6 +5,7 @@
 #include "../Utils/FileUtils.h"
 
 #include <cstdio>
+#include <iostream>
 #include <stdexcept>
 
 #ifndef COMPILE_WITHOUT_OpenNI

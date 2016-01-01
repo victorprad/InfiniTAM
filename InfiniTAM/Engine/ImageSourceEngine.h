@@ -2,7 +2,10 @@
 
 #pragma once
 
-#include "../ITMLib/ITMLib.h"
+#include <vector>
+
+#include "../ITMLib/Objects/Camera/ITMRGBDCalib.h"
+#include "../ITMLib/Utils/ITMImageTypes.h"
 
 namespace InfiniTAM
 {
@@ -118,4 +121,3 @@ namespace InfiniTAM
 		};
 	}
 }
-

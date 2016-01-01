@@ -19,8 +19,9 @@
 
 #include "../Utils/FileUtils.h"
 
-#include "../ITMLib/Engine/ITMBasicEngine.h"
-#include "../ITMLib/Engine/ITMMultiEngine.h"
+#include "../ITMLib/ITMLibDefines.h"
+#include "../ITMLib/Core/ITMBasicEngine.h"
+#include "../ITMLib/Core/ITMMultiEngine.h"
 
 using namespace InfiniTAM::Engine;
 using namespace ITMLib;
@@ -200,7 +201,7 @@ void UIEngine::glutKeyUpFunction(unsigned char key, int x, int y)
 				uiEngine->freeviewIntrinsics = uiEngine->mainEngine->GetView()->calib->intrinsics_d;
 				uiEngine->outImage[0]->ChangeDims(uiEngine->mainEngine->GetView()->depth->noDims);
 			}
-			ITMMultiEngine *multiEngine = dynamic_cast<ITMMultiEngine*>(uiEngine->mainEngine);
+			ITMMultiEngine<ITMVoxel,ITMVoxelIndex> *multiEngine = dynamic_cast<ITMMultiEngine<ITMVoxel,ITMVoxelIndex>*>(uiEngine->mainEngine);
 			if (multiEngine != NULL) {
 				int idx = multiEngine->findPrimarySceneIdx();
 				if (idx < 0) idx = 0;
@@ -217,7 +218,7 @@ void UIEngine::glutKeyUpFunction(unsigned char key, int x, int y)
 	case 't':
 		{
 		uiEngine->intergrationActive = !uiEngine->intergrationActive;
-		ITMBasicEngine *basicEngine = dynamic_cast<ITMBasicEngine*>(uiEngine->mainEngine); 
+		ITMBasicEngine<ITMVoxel,ITMVoxelIndex> *basicEngine = dynamic_cast<ITMBasicEngine<ITMVoxel,ITMVoxelIndex>*>(uiEngine->mainEngine); 
 		if (basicEngine != NULL) {
 			if (uiEngine->intergrationActive) basicEngine->turnOnIntegration();
 			else basicEngine->turnOffIntegration();
@@ -226,7 +227,7 @@ void UIEngine::glutKeyUpFunction(unsigned char key, int x, int y)
 		break;
 	case 'w':
 		{
-		ITMBasicEngine *basicEngine = dynamic_cast<ITMBasicEngine*>(uiEngine->mainEngine); 
+		ITMBasicEngine<ITMVoxel,ITMVoxelIndex> *basicEngine = dynamic_cast<ITMBasicEngine<ITMVoxel,ITMVoxelIndex>*>(uiEngine->mainEngine); 
 		if (basicEngine != NULL) {
 			printf("saving mesh to disk ...");
 			basicEngine->SaveSceneToMesh("mesh.stl");
@@ -237,7 +238,7 @@ void UIEngine::glutKeyUpFunction(unsigned char key, int x, int y)
 	case '[':
 	case ']':
 		{
-		ITMMultiEngine *multiEngine = dynamic_cast<ITMMultiEngine*>(uiEngine->mainEngine);
+		ITMMultiEngine<ITMVoxel,ITMVoxelIndex> *multiEngine = dynamic_cast<ITMMultiEngine<ITMVoxel,ITMVoxelIndex>*>(uiEngine->mainEngine);
 		if (multiEngine != NULL) {
 			int idx = multiEngine->getFreeviewSceneIdx();
 			if (key == '[') idx--;
@@ -444,7 +445,7 @@ void UIEngine::Initialise(int & argc, char** argv, ImageSourceEngine *imageSourc
 	processedTime = 0.0f;
 
 #ifndef COMPILE_WITHOUT_CUDA
-	ITMSafeCall(cudaThreadSynchronize());
+	ORcudaSafeCall(cudaThreadSynchronize());
 #endif
 
 	sdkCreateTimer(&timer_instant);
@@ -498,7 +499,7 @@ void UIEngine::ProcessFrame()
 	else mainEngine->ProcessFrame(inputRGBImage, inputRawDepthImage);
 
 #ifndef COMPILE_WITHOUT_CUDA
-	ITMSafeCall(cudaThreadSynchronize());
+	ORcudaSafeCall(cudaThreadSynchronize());
 #endif
 	sdkStopTimer(&timer_instant); sdkStopTimer(&timer_average);
 

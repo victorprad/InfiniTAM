@@ -1,12 +1,15 @@
 // Copyright 2014-2015 Isis Innovation Limited and the authors of InfiniTAM
 
 #include <cstdlib>
+#include <iostream>
 
 #include "Engine/CLIEngine.h"
 #include "Engine/ImageSourceEngine.h"
 #include "Engine/OpenNIEngine.h"
 #include "Engine/Kinect2Engine.h"
-#include "ITMLib/Engine/ITMBasicEngine.h"
+
+#include "ITMLib/ITMLibDefines.h"
+#include "ITMLib/Core/ITMBasicEngine.h"
 
 using namespace InfiniTAM::Engine;
 using namespace ITMLib;
@@ -73,7 +76,9 @@ try
 		}
 	}
 
-	ITMMainEngine *mainEngine = new ITMBasicEngine(internalSettings, &imageSource->calib, imageSource->getRGBImageSize(), imageSource->getDepthImageSize());
+	ITMMainEngine *mainEngine = new ITMBasicEngine<ITMVoxel,ITMVoxelIndex>(
+		internalSettings, &imageSource->calib, imageSource->getRGBImageSize(), imageSource->getDepthImageSize()
+	);
 
 	CLIEngine::Instance()->Initialise(imageSource, imuSource, mainEngine, internalSettings->deviceType);
 	CLIEngine::Instance()->Run();
@@ -89,4 +94,3 @@ catch(std::exception& e)
 	std::cerr << e.what() << '\n';
 	return EXIT_FAILURE;
 }
-

@@ -141,7 +141,7 @@ void InfiniTAMApp::StartProcessing(int useLiveCamera)
 	inputIMUMeasurement = new ITMIMUMeasurement();
 
 #ifndef COMPILE_WITHOUT_CUDA
-	ITMSafeCall(cudaThreadSynchronize());
+	ORcudaSafeCall(cudaThreadSynchronize());
 #endif
 
 	sdkCreateTimer(&timer_instant);
@@ -168,7 +168,7 @@ bool InfiniTAMApp::ProcessFrame(void)
 	if (mImuSource != NULL) mMainEngine->ProcessFrame(inputRGBImage, inputRawDepthImage, inputIMUMeasurement);
 	else mMainEngine->ProcessFrame(inputRGBImage, inputRawDepthImage);
 
-	ITMSafeCall(cudaDeviceSynchronize());
+	ORcudaSafeCall(cudaDeviceSynchronize());
 	sdkStopTimer(&timer_instant); sdkStopTimer(&timer_average);
 
 	__android_log_print(ANDROID_LOG_VERBOSE, "InfiniTAM", "Process Frame finished: %f %f", sdkGetTimerValue(&timer_instant), sdkGetAverageTimerValue(&timer_average));
