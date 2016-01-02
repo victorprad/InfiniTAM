@@ -5,7 +5,6 @@
 #include <cassert>
 
 #include "../../../ORUtils/MemoryBlock.h"
-#include "ITMSurfel.h"
 
 namespace ITMLib
 {

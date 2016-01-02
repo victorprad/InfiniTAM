@@ -63,9 +63,4 @@ void ITMSurfelSceneReconstructionEngine<TSurfel>::ResetScene(ITMSurfelScene<TSur
   scene->Reset();
 }
 
-//#################### EXPLICIT INSTANTIATIONS ####################
-
-template class ITMSurfelSceneReconstructionEngine<ITMSurfel>;
-template class ITMSurfelSceneReconstructionEngine<ITMSurfel_rgb>;
-
 }

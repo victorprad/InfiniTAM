@@ -2,8 +2,8 @@
 
 #pragma once
 
-#include "../../../ORUtils/PlatformIndependence.h"
 #include "../../Objects/Camera/ITMIntrinsics.h"
+#include "../../Objects/Scene/ITMRepresentationAccess.h"
 
 namespace ITMLib
 {

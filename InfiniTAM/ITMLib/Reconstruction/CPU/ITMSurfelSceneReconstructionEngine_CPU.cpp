@@ -150,9 +150,4 @@ void ITMSurfelSceneReconstructionEngine_CPU<TSurfel>::RemoveBadSurfels(ITMSurfel
   // TODO
 }
 
-//#################### EXPLICIT INSTANTIATIONS ####################
-
-template class ITMSurfelSceneReconstructionEngine_CPU<ITMSurfel>;
-template class ITMSurfelSceneReconstructionEngine_CPU<ITMSurfel_rgb>;
-
 }

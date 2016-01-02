@@ -39,9 +39,4 @@ void ITMSurfelVisualisationEngine<TSurfel>::FindSurfaceSuper(const ITMSurfelScen
   );
 }
 
-//#################### EXPLICIT INSTANTIATIONS ####################
-
-template class ITMSurfelVisualisationEngine<ITMSurfel>;
-template class ITMSurfelVisualisationEngine<ITMSurfel_rgb>;
-
 }

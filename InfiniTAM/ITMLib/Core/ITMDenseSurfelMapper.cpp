@@ -30,9 +30,4 @@ void ITMDenseSurfelMapper<TSurfel>::ProcessFrame(const ITMView *view, const ITMT
   m_reconstructionEngine->IntegrateIntoScene(scene, view, trackingState, liveRenderState);
 }
 
-//#################### EXPLICIT INSTANTIATIONS ####################
-
-template class ITMDenseSurfelMapper<ITMSurfel>;
-template class ITMDenseSurfelMapper<ITMSurfel_rgb>;
-
 }

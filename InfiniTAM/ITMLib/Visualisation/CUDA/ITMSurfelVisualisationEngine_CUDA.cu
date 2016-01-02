@@ -133,9 +133,4 @@ void ITMSurfelVisualisationEngine_CUDA<TSurfel>::MakeIndexImage(const ITMSurfelS
   );
 }
 
-//#################### EXPLICIT INSTANTIATIONS ####################
-
-template class ITMSurfelVisualisationEngine_CUDA<ITMSurfel>;
-template class ITMSurfelVisualisationEngine_CUDA<ITMSurfel_rgb>;
-
 }

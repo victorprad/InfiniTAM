@@ -278,9 +278,4 @@ void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::RemoveBadSurfels(ITMSurfe
   scene->DeallocateRemovedSurfels(thrust::reduce(surfelRemovalMaskBegin, surfelRemovalMaskEnd));
 }
 
-//#################### EXPLICIT INSTANTIATIONS ####################
-
-template class ITMSurfelSceneReconstructionEngine_CUDA<ITMSurfel>;
-template class ITMSurfelSceneReconstructionEngine_CUDA<ITMSurfel_rgb>;
-
 }

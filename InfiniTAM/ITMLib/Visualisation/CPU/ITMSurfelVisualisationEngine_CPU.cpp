@@ -83,9 +83,4 @@ void ITMSurfelVisualisationEngine_CPU<TSurfel>::MakeIndexImage(const ITMSurfelSc
   }
 }
 
-//#################### EXPLICIT INSTANTIATIONS ####################
-
-template class ITMSurfelVisualisationEngine_CPU<ITMSurfel>;
-template class ITMSurfelVisualisationEngine_CPU<ITMSurfel_rgb>;
-
 }

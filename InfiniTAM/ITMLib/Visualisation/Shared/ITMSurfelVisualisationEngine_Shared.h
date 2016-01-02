@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "../../../ORUtils/PlatformIndependence.h"
+#include "../../Objects/Scene/ITMRepresentationAccess.h"
 
 namespace ITMLib
 {
