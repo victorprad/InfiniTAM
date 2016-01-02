@@ -1,17 +1,17 @@
 // Copyright 2014-2015 Isis Innovation Limited and the authors of InfiniTAM
 
 #include "ITMLibDefines.h"
-#include "Core/ITMBasicEngine.cpp"
-#include "Core/ITMDenseMapper.cpp"
-#include "Core/ITMLocalSceneManager.cpp"
-#include "Core/ITMMultiEngine.cpp"
-#include "Meshing/CPU/ITMMeshingEngine_CPU.cpp"
-#include "Reconstruction/CPU/ITMSceneReconstructionEngine_CPU.cpp"
-#include "Swapping/CPU/ITMSwappingEngine_CPU.cpp"
+#include "Core/ITMBasicEngine.tpp"
+#include "Core/ITMDenseMapper.tpp"
+#include "Core/ITMLocalSceneManager.tpp"
+#include "Core/ITMMultiEngine.tpp"
+#include "Meshing/CPU/ITMMeshingEngine_CPU.tpp"
+#include "Reconstruction/CPU/ITMSceneReconstructionEngine_CPU.tpp"
+#include "Swapping/CPU/ITMSwappingEngine_CPU.tpp"
 #include "Trackers/ITMTrackerFactory.h"
-#include "Trackers/CPU/ITMRenTracker_CPU.cpp"
-#include "Trackers/Interface/ITMRenTracker.cpp"
-#include "Visualisation/CPU/ITMVisualisationEngine_CPU.cpp"
+#include "Trackers/CPU/ITMRenTracker_CPU.tpp"
+#include "Trackers/Interface/ITMRenTracker.tpp"
+#include "Visualisation/CPU/ITMVisualisationEngine_CPU.tpp"
 #include "Visualisation/Interface/ITMVisualisationEngine.h"
 
 namespace ITMLib

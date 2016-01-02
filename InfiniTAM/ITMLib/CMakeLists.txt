@@ -35,11 +35,11 @@ ITMLibDefines.h
 ##
 SET(ITMLIB_CORE_SOURCES
 Core/ITMActiveSceneManager.cpp
-Core/ITMBasicEngine.cpp
-Core/ITMDenseMapper.cpp
+Core/ITMBasicEngine.tpp
+Core/ITMDenseMapper.tpp
 Core/ITMLocalScene.cpp
-Core/ITMLocalSceneManager.cpp
-Core/ITMMultiEngine.cpp
+Core/ITMLocalSceneManager.tpp
+Core/ITMMultiEngine.tpp
 Core/ITMTrackingController.cpp
 )
 
@@ -98,7 +98,7 @@ Meshing/ITMMeshingEngineFactory.h
 
 ##
 SET(ITMLIB_MESHING_CPU_SOURCES
-Meshing/CPU/ITMMeshingEngine_CPU.cpp
+Meshing/CPU/ITMMeshingEngine_CPU.tpp
 )
 
 SET(ITMLIB_MESHING_CPU_HEADERS
@@ -107,7 +107,7 @@ Meshing/CPU/ITMMeshingEngine_CPU.h
 
 ##
 SET(ITMLIB_MESHING_CUDA_SOURCES
-Meshing/CUDA/ITMMeshingEngine_CUDA.cu
+Meshing/CUDA/ITMMeshingEngine_CUDA.tcu
 )
 
 SET(ITMLIB_MESHING_CUDA_HEADERS
@@ -191,7 +191,7 @@ Reconstruction/ITMSceneReconstructionEngineFactory.h
 
 ##
 SET(ITMLIB_RECONSTRUCTION_CPU_SOURCES
-Reconstruction/CPU/ITMSceneReconstructionEngine_CPU.cpp
+Reconstruction/CPU/ITMSceneReconstructionEngine_CPU.tpp
 )
 
 SET(ITMLIB_RECONSTRUCTION_CPU_HEADERS
@@ -200,7 +200,7 @@ Reconstruction/CPU/ITMSceneReconstructionEngine_CPU.h
 
 ##
 SET(ITMLIB_RECONSTRUCTION_CUDA_SOURCES
-Reconstruction/CUDA/ITMSceneReconstructionEngine_CUDA.cu
+Reconstruction/CUDA/ITMSceneReconstructionEngine_CUDA.tcu
 )
 
 SET(ITMLIB_RECONSTRUCTION_CUDA_HEADERS
@@ -224,7 +224,7 @@ Swapping/ITMSwappingEngineFactory.h
 
 ##
 SET(ITMLIB_SWAPPING_CPU_SOURCES
-Swapping/CPU/ITMSwappingEngine_CPU.cpp
+Swapping/CPU/ITMSwappingEngine_CPU.tpp
 )
 
 SET(ITMLIB_SWAPPING_CPU_HEADERS
@@ -233,7 +233,7 @@ Swapping/CPU/ITMSwappingEngine_CPU.h
 
 ##
 SET(ITMLIB_SWAPPING_CUDA_SOURCES
-Swapping/CUDA/ITMSwappingEngine_CUDA.cu
+Swapping/CUDA/ITMSwappingEngine_CUDA.tcu
 )
 
 SET(ITMLIB_SWAPPING_CUDA_HEADERS
@@ -259,7 +259,7 @@ Trackers/ITMTrackerFactory.h
 SET(ITMLIB_TRACKERS_CPU_SOURCES
 Trackers/CPU/ITMColorTracker_CPU.cpp
 Trackers/CPU/ITMDepthTracker_CPU.cpp
-Trackers/CPU/ITMRenTracker_CPU.cpp
+Trackers/CPU/ITMRenTracker_CPU.tpp
 Trackers/CPU/ITMWeightedICPTracker_CPU.cpp
 )
 
@@ -274,7 +274,7 @@ Trackers/CPU/ITMWeightedICPTracker_CPU.h
 SET(ITMLIB_TRACKERS_CUDA_SOURCES
 Trackers/CUDA/ITMColorTracker_CUDA.cu
 Trackers/CUDA/ITMDepthTracker_CUDA.cu
-Trackers/CUDA/ITMRenTracker_CUDA.cu
+Trackers/CUDA/ITMRenTracker_CUDA.tcu
 Trackers/CUDA/ITMWeightedICPTracker_CUDA.cu
 )
 
@@ -290,7 +290,7 @@ SET(ITMLIB_TRACKERS_INTERFACE_SOURCES
 Trackers/Interface/ITMColorTracker.cpp
 Trackers/Interface/ITMDepthTracker.cpp
 Trackers/Interface/ITMIMUTracker.cpp
-Trackers/Interface/ITMRenTracker.cpp
+Trackers/Interface/ITMRenTracker.tpp
 Trackers/Interface/ITMWeightedICPTracker.cpp
 )
 
@@ -370,7 +370,7 @@ Visualisation/ITMVisualisationEngineFactory.h
 
 ##
 SET(ITMLIB_VISUALISATION_CPU_SOURCES
-Visualisation/CPU/ITMVisualisationEngine_CPU.cpp
+Visualisation/CPU/ITMVisualisationEngine_CPU.tpp
 )
 
 SET(ITMLIB_VISUALISATION_CPU_HEADERS
@@ -379,7 +379,7 @@ Visualisation/CPU/ITMVisualisationEngine_CPU.h
 
 ##
 SET(ITMLIB_VISUALISATION_CUDA_SOURCES
-Visualisation/CUDA/ITMVisualisationEngine_CUDA.cu
+Visualisation/CUDA/ITMVisualisationEngine_CUDA.tcu
 )
 
 SET(ITMLIB_VISUALISATION_CUDA_HEADERS
