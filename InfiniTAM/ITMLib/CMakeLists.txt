@@ -37,6 +37,7 @@ SET(ITMLIB_CORE_SOURCES
 Core/ITMActiveSceneManager.cpp
 Core/ITMBasicEngine.tpp
 Core/ITMDenseMapper.tpp
+Core/ITMDenseSurfelMapper.cpp
 Core/ITMLocalScene.cpp
 Core/ITMLocalSceneManager.tpp
 Core/ITMMultiEngine.tpp
@@ -47,6 +48,7 @@ SET(ITMLIB_CORE_HEADERS
 Core/ITMActiveSceneManager.h
 Core/ITMBasicEngine.h
 Core/ITMDenseMapper.h
+Core/ITMDenseSurfelMapper.h
 Core/ITMLocalScene.h
 Core/ITMLocalSceneManager.h
 Core/ITMMainEngine.h
@@ -152,9 +154,14 @@ Objects/Misc/ITMPointCloud.h
 )
 
 ##
+SET(ITMLIB_OBJECTS_RENDERSTATES_SOURCES
+Objects/RenderStates/ITMSurfelRenderState.cpp
+)
+
 SET(ITMLIB_OBJECTS_RENDERSTATES_HEADERS
 Objects/RenderStates/ITMRenderState.h
 Objects/RenderStates/ITMRenderState_VH.h
+Objects/RenderStates/ITMSurfelRenderState.h
 )
 
 ##
@@ -164,6 +171,8 @@ Objects/Scene/ITMLocalVBA.h
 Objects/Scene/ITMPlainVoxelArray.h
 Objects/Scene/ITMRepresentationAccess.h
 Objects/Scene/ITMScene.h
+Objects/Scene/ITMSurfel.h
+Objects/Scene/ITMSurfelScene.h
 Objects/Scene/ITMVoxelBlockHash.h
 Objects/Scene/ITMVoxelTypes.h
 )
@@ -185,36 +194,51 @@ Objects/Views/ITMViewIMU.h
 )
 
 ##
+SET(ITMLIB_RECONSTRUCTION_SOURCES
+Reconstruction/ITMSurfelSceneReconstructionEngineFactory.cpp
+)
+
 SET(ITMLIB_RECONSTRUCTION_HEADERS
 Reconstruction/ITMSceneReconstructionEngineFactory.h
+Reconstruction/ITMSurfelSceneReconstructionEngineFactory.h
 )
 
 ##
 SET(ITMLIB_RECONSTRUCTION_CPU_SOURCES
 Reconstruction/CPU/ITMSceneReconstructionEngine_CPU.tpp
+Reconstruction/CPU/ITMSurfelSceneReconstructionEngine_CPU.cpp
 )
 
 SET(ITMLIB_RECONSTRUCTION_CPU_HEADERS
 Reconstruction/CPU/ITMSceneReconstructionEngine_CPU.h
+Reconstruction/CPU/ITMSurfelSceneReconstructionEngine_CPU.h
 )
 
 ##
 SET(ITMLIB_RECONSTRUCTION_CUDA_SOURCES
 Reconstruction/CUDA/ITMSceneReconstructionEngine_CUDA.tcu
+Reconstruction/CUDA/ITMSurfelSceneReconstructionEngine_CUDA.cu
 )
 
 SET(ITMLIB_RECONSTRUCTION_CUDA_HEADERS
 Reconstruction/CUDA/ITMSceneReconstructionEngine_CUDA.h
+Reconstruction/CUDA/ITMSurfelSceneReconstructionEngine_CUDA.h
 )
 
 ##
+SET(ITMLIB_RECONSTRUCTION_INTERFACE_SOURCES
+Reconstruction/Interface/ITMSurfelSceneReconstructionEngine.cpp
+)
+
 SET(ITMLIB_RECONSTRUCTION_INTERFACE_HEADERS
 Reconstruction/Interface/ITMSceneReconstructionEngine.h
+Reconstruction/Interface/ITMSurfelSceneReconstructionEngine.h
 )
 
 ##
 SET(ITMLIB_RECONSTRUCTION_SHARED_HEADERS
 Reconstruction/Shared/ITMSceneReconstructionEngine_Shared.h
+Reconstruction/Shared/ITMSurfelSceneReconstructionEngine_Shared.h
 )
 
 ##
@@ -364,39 +388,51 @@ ViewBuilding/Shared/ITMViewBuilder_Shared.h
 )
 
 ##
+SET(ITMLIB_VISUALISATION_SOURCES
+Visualisation/ITMSurfelVisualisationEngineFactory.cpp
+)
+
 SET(ITMLIB_VISUALISATION_HEADERS
+Visualisation/ITMSurfelVisualisationEngineFactory.h
 Visualisation/ITMVisualisationEngineFactory.h
 )
 
 ##
 SET(ITMLIB_VISUALISATION_CPU_SOURCES
+Visualisation/CPU/ITMSurfelVisualisationEngine_CPU.cpp
 Visualisation/CPU/ITMVisualisationEngine_CPU.tpp
 )
 
 SET(ITMLIB_VISUALISATION_CPU_HEADERS
+Visualisation/CPU/ITMSurfelVisualisationEngine_CPU.h
 Visualisation/CPU/ITMVisualisationEngine_CPU.h
 )
 
 ##
 SET(ITMLIB_VISUALISATION_CUDA_SOURCES
+Visualisation/CUDA/ITMSurfelVisualisationEngine_CUDA.cu
 Visualisation/CUDA/ITMVisualisationEngine_CUDA.tcu
 )
 
 SET(ITMLIB_VISUALISATION_CUDA_HEADERS
+Visualisation/CUDA/ITMSurfelVisualisationEngine_CUDA.h
 Visualisation/CUDA/ITMVisualisationEngine_CUDA.h
 )
 
 ##
 SET(ITMLIB_VISUALISATION_INTERFACE_SOURCES
+Visualisation/Interface/ITMSurfelVisualisationEngine.cpp
 Visualisation/Interface/ITMVisualisationEngine.cpp
 )
 
 SET(ITMLIB_VISUALISATION_INTERFACE_HEADERS
+Visualisation/Interface/ITMSurfelVisualisationEngine.h
 Visualisation/Interface/ITMVisualisationEngine.h
 )
 
 ##
 SET(ITMLIB_VISUALISATION_SHARED_HEADERS
+Visualisation/Shared/ITMSurfelVisualisationEngine_Shared.h
 Visualisation/Shared/ITMVisualisationEngine_Shared.h
 )
 
@@ -415,8 +451,11 @@ ${ITMLIB_LOWLEVEL_CUDA_SOURCES}
 ${ITMLIB_MESHING_CPU_SOURCES}
 ${ITMLIB_MESHING_CUDA_SOURCES}
 ${ITMLIB_OBJECTS_CAMERA_SOURCES}
+${ITMLIB_OBJECTS_RENDERSTATES_SOURCES}
+${ITMLIB_RECONSTRUCTION_SOURCES}
 ${ITMLIB_RECONSTRUCTION_CPU_SOURCES}
 ${ITMLIB_RECONSTRUCTION_CUDA_SOURCES}
+${ITMLIB_RECONSTRUCTION_INTERFACE_SOURCES}
 ${ITMLIB_SWAPPING_CPU_SOURCES}
 ${ITMLIB_SWAPPING_CUDA_SOURCES}
 ${ITMLIB_TRACKERS_CPU_SOURCES}
@@ -426,6 +465,7 @@ ${ITMLIB_UTILS_SOURCES}
 ${ITMLIB_VIEWBUILDING_SOURCES}
 ${ITMLIB_VIEWBUILDING_CPU_SOURCES}
 ${ITMLIB_VIEWBUILDING_CUDA_SOURCES}
+${ITMLIB_VISUALISATION_SOURCES}
 ${ITMLIB_VISUALISATION_CPU_SOURCES}
 ${ITMLIB_VISUALISATION_CUDA_SOURCES}
 ${ITMLIB_VISUALISATION_INTERFACE_SOURCES}
@@ -501,14 +541,14 @@ SOURCE_GROUP(Meshing\\Shared FILES ${ITMLIB_MESHING_SHARED_HEADERS})
 SOURCE_GROUP(Objects\\Camera FILES ${ITMLIB_OBJECTS_CAMERA_SOURCES} ${ITMLIB_OBJECTS_CAMERA_HEADERS})
 SOURCE_GROUP(Objects\\Meshing FILES ${ITMLIB_OBJECTS_MESHING_HEADERS})
 SOURCE_GROUP(Objects\\Misc FILES ${ITMLIB_OBJECTS_MISC_HEADERS})
-SOURCE_GROUP(Objects\\RenderStates FILES ${ITMLIB_OBJECTS_RENDERSTATES_HEADERS})
+SOURCE_GROUP(Objects\\RenderStates FILES ${ITMLIB_OBJECTS_RENDERSTATES_SOURCES} ${ITMLIB_OBJECTS_RENDERSTATES_HEADERS})
 SOURCE_GROUP(Objects\\Scene FILES ${ITMLIB_OBJECTS_SCENE_HEADERS})
 SOURCE_GROUP(Objects\\Tracking FILES ${ITMLIB_OBJECTS_TRACKING_HEADERS})
 SOURCE_GROUP(Objects\\Views FILES ${ITMLIB_OBJECTS_VIEWS_HEADERS})
-SOURCE_GROUP(Reconstruction FILES ${ITMLIB_RECONSTRUCTION_HEADERS})
+SOURCE_GROUP(Reconstruction FILES ${ITMLIB_RECONSTRUCTION_SOURCES} ${ITMLIB_RECONSTRUCTION_HEADERS})
 SOURCE_GROUP(Reconstruction\\CPU FILES ${ITMLIB_RECONSTRUCTION_CPU_SOURCES} ${ITMLIB_RECONSTRUCTION_CPU_HEADERS})
 SOURCE_GROUP(Reconstruction\\CUDA FILES ${ITMLIB_RECONSTRUCTION_CUDA_SOURCES} ${ITMLIB_RECONSTRUCTION_CUDA_HEADERS})
-SOURCE_GROUP(Reconstruction\\Interface FILES ${ITMLIB_RECONSTRUCTION_INTERFACE_HEADERS})
+SOURCE_GROUP(Reconstruction\\Interface FILES ${ITMLIB_RECONSTRUCTION_INTERFACE_SOURCES} ${ITMLIB_RECONSTRUCTION_INTERFACE_HEADERS})
 SOURCE_GROUP(Reconstruction\\Shared FILES ${ITMLIB_RECONSTRUCTION_SHARED_HEADERS})
 SOURCE_GROUP(Scene FILES ${ITMLIB_SCENE_HEADERS})
 SOURCE_GROUP(Swapping FILES ${ITMLIB_SWAPPING_HEADERS})
@@ -527,7 +567,7 @@ SOURCE_GROUP(ViewBuilding\\CPU FILES ${ITMLIB_VIEWBUILDING_CPU_SOURCES} ${ITMLIB
 SOURCE_GROUP(ViewBuilding\\CUDA FILES ${ITMLIB_VIEWBUILDING_CUDA_SOURCES} ${ITMLIB_VIEWBUILDING_CUDA_HEADERS})
 SOURCE_GROUP(ViewBuilding\\Interface FILES ${ITMLIB_VIEWBUILDING_INTERFACE_HEADERS})
 SOURCE_GROUP(ViewBuilding\\Shared FILES ${ITMLIB_VIEWBUILDING_SHARED_HEADERS})
-SOURCE_GROUP(Visualisation FILES ${ITMLIB_VISUALISATION_HEADERS})
+SOURCE_GROUP(Visualisation FILES ${ITMLIB_VISUALISATION_SOURCES} ${ITMLIB_VISUALISATION_HEADERS})
 SOURCE_GROUP(Visualisation\\CPU FILES ${ITMLIB_VISUALISATION_CPU_SOURCES} ${ITMLIB_VISUALISATION_CPU_HEADERS})
 SOURCE_GROUP(Visualisation\\CUDA FILES ${ITMLIB_VISUALISATION_CUDA_SOURCES} ${ITMLIB_VISUALISATION_CUDA_HEADERS})
 SOURCE_GROUP(Visualisation\\Interface FILES ${ITMLIB_VISUALISATION_INTERFACE_SOURCES} ${ITMLIB_VISUALISATION_INTERFACE_HEADERS})
