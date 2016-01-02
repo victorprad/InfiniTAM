@@ -37,7 +37,7 @@ SET(ITMLIB_CORE_SOURCES
 Core/ITMActiveSceneManager.cpp
 Core/ITMBasicEngine.tpp
 Core/ITMDenseMapper.tpp
-Core/ITMDenseSurfelMapper.cpp
+Core/ITMDenseSurfelMapper.tpp
 Core/ITMLocalScene.cpp
 Core/ITMLocalSceneManager.tpp
 Core/ITMMultiEngine.tpp
@@ -171,8 +171,8 @@ Objects/Scene/ITMLocalVBA.h
 Objects/Scene/ITMPlainVoxelArray.h
 Objects/Scene/ITMRepresentationAccess.h
 Objects/Scene/ITMScene.h
-Objects/Scene/ITMSurfel.h
 Objects/Scene/ITMSurfelScene.h
+Objects/Scene/ITMSurfelTypes.h
 Objects/Scene/ITMVoxelBlockHash.h
 Objects/Scene/ITMVoxelTypes.h
 )
@@ -195,7 +195,7 @@ Objects/Views/ITMViewIMU.h
 
 ##
 SET(ITMLIB_RECONSTRUCTION_SOURCES
-Reconstruction/ITMSurfelSceneReconstructionEngineFactory.cpp
+Reconstruction/ITMSurfelSceneReconstructionEngineFactory.tpp
 )
 
 SET(ITMLIB_RECONSTRUCTION_HEADERS
@@ -206,7 +206,7 @@ Reconstruction/ITMSurfelSceneReconstructionEngineFactory.h
 ##
 SET(ITMLIB_RECONSTRUCTION_CPU_SOURCES
 Reconstruction/CPU/ITMSceneReconstructionEngine_CPU.tpp
-Reconstruction/CPU/ITMSurfelSceneReconstructionEngine_CPU.cpp
+Reconstruction/CPU/ITMSurfelSceneReconstructionEngine_CPU.tpp
 )
 
 SET(ITMLIB_RECONSTRUCTION_CPU_HEADERS
@@ -217,7 +217,7 @@ Reconstruction/CPU/ITMSurfelSceneReconstructionEngine_CPU.h
 ##
 SET(ITMLIB_RECONSTRUCTION_CUDA_SOURCES
 Reconstruction/CUDA/ITMSceneReconstructionEngine_CUDA.tcu
-Reconstruction/CUDA/ITMSurfelSceneReconstructionEngine_CUDA.cu
+Reconstruction/CUDA/ITMSurfelSceneReconstructionEngine_CUDA.tcu
 )
 
 SET(ITMLIB_RECONSTRUCTION_CUDA_HEADERS
@@ -227,7 +227,7 @@ Reconstruction/CUDA/ITMSurfelSceneReconstructionEngine_CUDA.h
 
 ##
 SET(ITMLIB_RECONSTRUCTION_INTERFACE_SOURCES
-Reconstruction/Interface/ITMSurfelSceneReconstructionEngine.cpp
+Reconstruction/Interface/ITMSurfelSceneReconstructionEngine.tpp
 )
 
 SET(ITMLIB_RECONSTRUCTION_INTERFACE_HEADERS
@@ -389,7 +389,7 @@ ViewBuilding/Shared/ITMViewBuilder_Shared.h
 
 ##
 SET(ITMLIB_VISUALISATION_SOURCES
-Visualisation/ITMSurfelVisualisationEngineFactory.cpp
+Visualisation/ITMSurfelVisualisationEngineFactory.tpp
 )
 
 SET(ITMLIB_VISUALISATION_HEADERS
@@ -399,7 +399,7 @@ Visualisation/ITMVisualisationEngineFactory.h
 
 ##
 SET(ITMLIB_VISUALISATION_CPU_SOURCES
-Visualisation/CPU/ITMSurfelVisualisationEngine_CPU.cpp
+Visualisation/CPU/ITMSurfelVisualisationEngine_CPU.tpp
 Visualisation/CPU/ITMVisualisationEngine_CPU.tpp
 )
 
@@ -410,7 +410,7 @@ Visualisation/CPU/ITMVisualisationEngine_CPU.h
 
 ##
 SET(ITMLIB_VISUALISATION_CUDA_SOURCES
-Visualisation/CUDA/ITMSurfelVisualisationEngine_CUDA.cu
+Visualisation/CUDA/ITMSurfelVisualisationEngine_CUDA.tcu
 Visualisation/CUDA/ITMVisualisationEngine_CUDA.tcu
 )
 
@@ -421,7 +421,7 @@ Visualisation/CUDA/ITMVisualisationEngine_CUDA.h
 
 ##
 SET(ITMLIB_VISUALISATION_INTERFACE_SOURCES
-Visualisation/Interface/ITMSurfelVisualisationEngine.cpp
+Visualisation/Interface/ITMSurfelVisualisationEngine.tpp
 Visualisation/Interface/ITMVisualisationEngine.cpp
 )
 

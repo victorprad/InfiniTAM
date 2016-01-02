@@ -3,10 +3,10 @@
 #include "ITMLibDefines.h"
 #include "Meshing/CUDA/ITMMeshingEngine_CUDA.tcu"
 #include "Reconstruction/CUDA/ITMSceneReconstructionEngine_CUDA.tcu"
-#include "Reconstruction/CUDA/ITMSurfelSceneReconstructionEngine_CUDA.cu"
+#include "Reconstruction/CUDA/ITMSurfelSceneReconstructionEngine_CUDA.tcu"
 #include "Swapping/CUDA/ITMSwappingEngine_CUDA.tcu"
 #include "Trackers/CUDA/ITMRenTracker_CUDA.tcu"
-#include "Visualisation/CUDA/ITMSurfelVisualisationEngine_CUDA.cu"
+#include "Visualisation/CUDA/ITMSurfelVisualisationEngine_CUDA.tcu"
 #include "Visualisation/CUDA/ITMVisualisationEngine_CUDA.tcu"
 
 namespace ITMLib
