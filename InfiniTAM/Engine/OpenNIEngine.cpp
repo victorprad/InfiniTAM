@@ -7,6 +7,7 @@
 #include <cstdio>
 #include <iostream>
 #include <stdexcept>
+#include <string>
 
 #ifndef COMPILE_WITHOUT_OpenNI
 #include <OpenNI.h>
