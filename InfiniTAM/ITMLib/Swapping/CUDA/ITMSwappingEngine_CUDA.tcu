@@ -7,6 +7,9 @@
 #include "../../Utils/ITMCUDAUtils.h"
 using namespace ITMLib;
 
+namespace
+{
+
 __global__ void buildListToSwapIn_device(int *neededEntryIDs, int *noNeededEntries, ITMHashSwapState *swapStates, int noTotalEntries);
 
 template<class TVoxel>
@@ -23,6 +26,8 @@ __global__ void cleanMemory_device(int *voxelAllocationList, int *noAllocatedVox
 template<class TVoxel>
 __global__ void moveActiveDataToTransferBuffer_device(TVoxel *syncedVoxelBlocks_local, bool *hasSyncedData_local,
 	int *neededEntryIDs_local, ITMHashEntry *hashTable, TVoxel *localVBA);
+
+}
 
 template<class TVoxel>
 ITMSwappingEngine_CUDA<TVoxel,ITMVoxelBlockHash>::ITMSwappingEngine_CUDA(void)
@@ -191,6 +196,9 @@ void ITMSwappingEngine_CUDA<TVoxel, ITMVoxelBlockHash>::SaveToGlobalMemory(ITMSc
 	}
 }
 
+namespace
+{
+
 __global__ void buildListToSwapIn_device(int *neededEntryIDs, int *noNeededEntries, ITMHashSwapState *swapStates, int noTotalEntries)
 {
 	int targetIdx = threadIdx.x + blockIdx.x * blockDim.x;
@@ -291,4 +299,6 @@ __global__ void integrateOldIntoActiveData_device(TVoxel *localVBA, ITMHashSwapS
 	CombineVoxelInformation<TVoxel::hasColorInformation, TVoxel>::compute(srcVB[vIdx], dstVB[vIdx], maxW);
 
 	if (vIdx == 0) swapStates[entryDestId].state = 2;
+}
+
 }

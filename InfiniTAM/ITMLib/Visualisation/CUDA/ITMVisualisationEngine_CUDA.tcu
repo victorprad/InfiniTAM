@@ -16,6 +16,9 @@ inline dim3 getGridSize(dim3 taskSize, dim3 blockSize)
 
 inline dim3 getGridSize(Vector2i taskSize, dim3 blockSize) { return getGridSize(dim3(taskSize.x, taskSize.y), blockSize); }
 
+namespace
+{
+
 // declaration of device functions
 
 __global__ void buildVisibleList_device(const ITMHashEntry *hashTable, /*ITMHashCacheState *cacheStates, bool useSwapping,*/ int noTotalEntries,
@@ -66,6 +69,8 @@ __global__ void renderPointCloud_device(Vector4u *outRendering, Vector4f *locati
 template<class TVoxel, class TIndex>
 __global__ void renderColour_device(Vector4u *outRendering, const Vector4f *ptsRay, const TVoxel *voxelData,
 	const typename TIndex::IndexData *voxelIndex, Vector2i imgSize, Vector3f lightSource);
+
+}
 
 // class implementation
 
@@ -470,6 +475,9 @@ void ITMVisualisationEngine_CUDA<TVoxel, ITMVoxelBlockHash>::ForwardRender(const
 	ForwardRender_common(scene, view, trackingState, renderState, this->noTotalPoints_device);
 }
 
+namespace
+{
+
 //device implementations
 
 __global__ void countVisibleBlocks_device(const int *visibleEntryIDs, int noVisibleEntries, const ITMHashEntry *hashTable, uint *noBlocks, int minBlockId, int maxBlockId)
@@ -754,4 +762,6 @@ __global__ void renderColour_device(Vector4u *outRendering, const Vector4f *ptsR
 	Vector4f ptRay = ptsRay[locId];
 
 	processPixelColour<TVoxel, TIndex>(outRendering[locId], ptRay.toVector3(), ptRay.w > 0, voxelData, voxelIndex, lightSource);
+}
+
 }

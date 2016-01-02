@@ -8,6 +8,9 @@
 #include "../../../ORUtils/CUDADefines.h"
 using namespace ITMLib;
 
+namespace
+{
+
 __global__ void unprojectDepthToCam_device(Vector4f *camPoints, float *depthMap, Vector2i imgSize, Vector4f ooIntrinsics);
 
 template<class TVoxel, class TIndex>
@@ -17,6 +20,8 @@ __global__ void renTrackerOneLevel_f_device(float *f_device, Vector4f *ptList, i
 template<class TVoxel, class TIndex>
 __global__ void renTrackerOneLevel_g_device(float *g_device, float *h_device, Vector4f *ptList, int count, const TVoxel *voxelBlocks,
 	const typename TIndex::IndexData *index, float oneOverVoxelSize, Matrix4f invM);
+
+}
 
 // host functions
 
@@ -138,6 +143,9 @@ void ITMRenTracker_CUDA<TVoxel,TIndex>::UnprojectDepthToCam(ITMFloatImage *depth
 
 	unprojectDepthToCam_device << <gridSize, blockSize >> >(camPoints, depthMap, imgSize, ooIntrinsics);
 }
+
+namespace
+{
 
 // device functions
 
@@ -274,4 +282,6 @@ __global__ void renTrackerOneLevel_g_device(float *g_device, float *h_device, Ve
 	//{
 	//	atomicAdd(&h_device[blockIdx.x * noParaSQ + paraId], localHessian[paraId]);
 	//}
+}
+
 }
