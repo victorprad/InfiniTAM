@@ -103,7 +103,7 @@ inline void project_to_surfel_index_image(int surfelId, const TSurfel *surfels, 
  */
 template <typename TSurfel>
 _CPU_AND_GPU_CODE_
-void render_pixel_colour(int locId, const unsigned int *surfelIndexImage, const TSurfel *surfels, Vector4u *outputImage)
+void shade_pixel_colour(int locId, const unsigned int *surfelIndexImage, const TSurfel *surfels, Vector4u *outputImage)
 {
   Vector4u col4(0, 0, 0, 255);
 
@@ -115,6 +115,36 @@ void render_pixel_colour(int locId, const unsigned int *surfelIndexImage, const 
   }
 
   outputImage[locId] = col4;
+}
+
+/**
+ * \brief TODO
+ */
+template <typename TSurfel>
+_CPU_AND_GPU_CODE_
+void shade_pixel_depth(int locId, const unsigned int *surfelIndexImage, const TSurfel *surfels, const Vector3f& cameraPosition,
+                       Vector4u *outputImage)
+{
+  unsigned char c = 0;
+
+  int surfelIndex = surfelIndexImage[locId] - 1;
+  if(surfelIndex >= 0)
+  {
+    Vector3f p = surfels[surfelIndex].position;
+    float dx = abs(cameraPosition.x - p.x);
+    float dy = abs(cameraPosition.y - p.y);
+    float dz = abs(cameraPosition.z - p.z);
+    float value = sqrt(dx * dx + dy * dy + dz * dz);
+    if(value >= 0)
+    {
+      // FIXME: This should be tidied up in due course.
+      int i = static_cast<int>(255 * value);
+      if(i > 255) i = 255;
+      c = static_cast<unsigned char>(i);
+    }
+  }
+
+  outputImage[locId] = Vector4u(c, c, c, 255);
 }
 
 }

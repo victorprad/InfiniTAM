@@ -23,8 +23,9 @@ namespace ITMLib
      */
     enum RenderImageType
     {
+      RENDER_COLOUR,
+      RENDER_DEPTH,
       RENDER_LAMBERTIAN,
-      RENDER_COLOUR
     };
 
     //#################### PUBLIC ABSTRACT MEMBER FUNCTIONS ####################
@@ -44,7 +45,7 @@ namespace ITMLib
     /**
      * \brief TODO
      */
-    virtual void RenderImage(const ITMSurfelScene<TSurfel> *scene, const ITMSurfelRenderState *renderState,
+    virtual void RenderImage(const ITMSurfelScene<TSurfel> *scene, const ITMPose *pose, const ITMSurfelRenderState *renderState,
                              ITMUChar4Image *outputImage, RenderImageType type = RENDER_LAMBERTIAN) const = 0;
 
     //#################### PUBLIC MEMBER FUNCTIONS ####################
