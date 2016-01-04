@@ -42,14 +42,31 @@ void ITMSurfelVisualisationEngine_CPU<TSurfel>::CopySceneToBuffers(const ITMSurf
 }
 
 template <typename TSurfel>
-void ITMSurfelVisualisationEngine_CPU<TSurfel>::RenderImage(const ITMSurfelScene<TSurfel> *scene, const ITMPose *pose,
-                                                            const ITMSurfelRenderState *renderState, ITMUChar4Image *outputImage,
-                                                            RenderImageType type) const
+void ITMSurfelVisualisationEngine_CPU<TSurfel>::RenderDepthImage(const ITMSurfelScene<TSurfel> *scene, const ITMPose *pose,
+                                                                 const ITMSurfelRenderState *renderState, ITMFloatImage *outputImage) const
+{
+  const Vector3f cameraPosition = pose->GetT();
+  float *outputImagePtr = outputImage->GetData(MEMORYDEVICE_CPU);
+  const int pixelCount = static_cast<int>(outputImage->dataSize);
+  const unsigned int *surfelIndexImagePtr = renderState->GetIndexImage()->GetData(MEMORYDEVICE_CPU);
+  const TSurfel *surfels = scene->GetSurfels()->GetData(MEMORYDEVICE_CPU);
+
+#ifdef WITH_OPENMP
+  //#pragma omp parallel for
+#endif
+  for(int locId = 0; locId < pixelCount; ++locId)
+  {
+    shade_pixel_depth(locId, surfelIndexImagePtr, surfels, cameraPosition, outputImagePtr);
+  }
+}
+
+template <typename TSurfel>
+void ITMSurfelVisualisationEngine_CPU<TSurfel>::RenderImage(const ITMSurfelScene<TSurfel> *scene, const ITMSurfelRenderState *renderState,
+                                                            ITMUChar4Image *outputImage, RenderImageType type) const
 {
   // Prevent colour rendering if the surfels don't store colour information.
   if(type == RENDER_COLOUR && !TSurfel::hasColourInformation) type = RENDER_LAMBERTIAN;
 
-  const Vector3f cameraPosition = pose->GetT();
   Vector4u *outputImagePtr = outputImage->GetData(MEMORYDEVICE_CPU);
   const int pixelCount = static_cast<int>(outputImage->dataSize);
   const unsigned int *surfelIndexImagePtr = renderState->GetIndexImage()->GetData(MEMORYDEVICE_CPU);
@@ -65,17 +82,6 @@ void ITMSurfelVisualisationEngine_CPU<TSurfel>::RenderImage(const ITMSurfelScene
       for(int locId = 0; locId < pixelCount; ++locId)
       {
         shade_pixel_colour(locId, surfelIndexImagePtr, surfels, outputImagePtr);
-      }
-      break;
-    }
-    case RENDER_DEPTH:
-    {
-#ifdef WITH_OPENMP
-      //#pragma omp parallel for
-#endif
-      for(int locId = 0; locId < pixelCount; ++locId)
-      {
-        shade_pixel_depth(locId, surfelIndexImagePtr, surfels, cameraPosition, outputImagePtr);
       }
       break;
     }

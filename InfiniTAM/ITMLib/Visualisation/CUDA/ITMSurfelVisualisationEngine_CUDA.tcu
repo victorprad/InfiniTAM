@@ -63,7 +63,7 @@ __global__ void ck_shade_pixel_colour(int pixelCount, const unsigned int *surfel
 
 template <typename TSurfel>
 __global__ void ck_shade_pixel_depth(int pixelCount, const unsigned int *surfelIndexImage, const TSurfel *surfels, Vector3f cameraPosition,
-                                     Vector4u *outputImage)
+                                     float *outputImage)
 {
   int locId = threadIdx.x + blockDim.x * blockIdx.x;
   if(locId < pixelCount)
@@ -109,14 +109,34 @@ void ITMSurfelVisualisationEngine_CUDA<TSurfel>::CopySceneToBuffers(const ITMSur
 }
 
 template <typename TSurfel>
-void ITMSurfelVisualisationEngine_CUDA<TSurfel>::RenderImage(const ITMSurfelScene<TSurfel> *scene, const ITMPose *pose,
-                                                             const ITMSurfelRenderState *renderState, ITMUChar4Image *outputImage,
-                                                             RenderImageType type) const
+void ITMSurfelVisualisationEngine_CUDA<TSurfel>::RenderDepthImage(const ITMSurfelScene<TSurfel> *scene, const ITMPose *pose,
+                                                                  const ITMSurfelRenderState *renderState, ITMFloatImage *outputImage) const
+{
+  const Vector3f cameraPosition = pose->GetT();
+  float *outputImagePtr = outputImage->GetData(MEMORYDEVICE_CUDA);
+  const int pixelCount = static_cast<int>(outputImage->dataSize);
+  const unsigned int *surfelIndexImagePtr = renderState->GetIndexImage()->GetData(MEMORYDEVICE_CUDA);
+  const TSurfel *surfels = scene->GetSurfels()->GetData(MEMORYDEVICE_CUDA);
+
+  int threadsPerBlock = 256;
+  int numBlocks = (pixelCount + threadsPerBlock - 1) / threadsPerBlock;
+
+  ck_shade_pixel_depth<<<numBlocks,threadsPerBlock>>>(
+    pixelCount,
+    surfelIndexImagePtr,
+    surfels,
+    cameraPosition,
+    outputImagePtr
+  );
+}
+
+template <typename TSurfel>
+void ITMSurfelVisualisationEngine_CUDA<TSurfel>::RenderImage(const ITMSurfelScene<TSurfel> *scene, const ITMSurfelRenderState *renderState,
+                                                             ITMUChar4Image *outputImage, RenderImageType type) const
 {
   // Prevent colour rendering if the surfels don't store colour information.
   if(type == RENDER_COLOUR && !TSurfel::hasColourInformation) type = RENDER_LAMBERTIAN;
 
-  const Vector3f cameraPosition = pose->GetT();
   Vector4u *outputImagePtr = outputImage->GetData(MEMORYDEVICE_CUDA);
   const int pixelCount = static_cast<int>(outputImage->dataSize);
   const unsigned int *surfelIndexImagePtr = renderState->GetIndexImage()->GetData(MEMORYDEVICE_CUDA);
@@ -133,17 +153,6 @@ void ITMSurfelVisualisationEngine_CUDA<TSurfel>::RenderImage(const ITMSurfelScen
         pixelCount,
         surfelIndexImagePtr,
         surfels,
-        outputImagePtr
-      );
-      break;
-    }
-    case RENDER_DEPTH:
-    {
-      ck_shade_pixel_depth<<<numBlocks,threadsPerBlock>>>(
-        pixelCount,
-        surfelIndexImagePtr,
-        surfels,
-        cameraPosition,
         outputImagePtr
       );
       break;

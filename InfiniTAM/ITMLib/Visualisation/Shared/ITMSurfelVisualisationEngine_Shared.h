@@ -123,9 +123,10 @@ void shade_pixel_colour(int locId, const unsigned int *surfelIndexImage, const T
 template <typename TSurfel>
 _CPU_AND_GPU_CODE_
 void shade_pixel_depth(int locId, const unsigned int *surfelIndexImage, const TSurfel *surfels, const Vector3f& cameraPosition,
-                       Vector4u *outputImage)
+                       float *outputImage)
 {
-  unsigned char c = 0;
+  // FIXME: This should be set to a less arbitrary value.
+  float value = -1.0f;
 
   int surfelIndex = surfelIndexImage[locId] - 1;
   if(surfelIndex >= 0)
@@ -134,17 +135,10 @@ void shade_pixel_depth(int locId, const unsigned int *surfelIndexImage, const TS
     float dx = abs(cameraPosition.x - p.x);
     float dy = abs(cameraPosition.y - p.y);
     float dz = abs(cameraPosition.z - p.z);
-    float value = sqrt(dx * dx + dy * dy + dz * dz);
-    if(value >= 0)
-    {
-      // FIXME: This should be tidied up in due course.
-      int i = static_cast<int>(255 * value);
-      if(i > 255) i = 255;
-      c = static_cast<unsigned char>(i);
-    }
+    value = sqrt(dx * dx + dy * dy + dz * dz);
   }
 
-  outputImage[locId] = Vector4u(c, c, c, 255);
+  outputImage[locId] = value;
 }
 
 }
