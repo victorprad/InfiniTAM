@@ -98,4 +98,23 @@ inline void project_to_surfel_index_image(int surfelId, const TSurfel *surfels, 
   }
 }
 
+/**
+ * \brief TODO
+ */
+template <typename TSurfel>
+_CPU_AND_GPU_CODE_
+void render_pixel_colour(int locId, const unsigned int *surfelIndexImage, const TSurfel *surfels, Vector4u *outputImage)
+{
+  Vector4u col4(0, 0, 0, 255);
+
+  int surfelIndex = surfelIndexImage[locId] - 1;  
+  if(surfelIndex >= 0)
+  {
+    Vector3u col3 = SurfelColourManipulator<TSurfel::hasColourInformation>::read(surfels[surfelIndex]);
+    col4 = Vector4u(col3.x, col3.y, col3.z, 255);
+  }
+
+  outputImage[locId] = col4;
+}
+
 }

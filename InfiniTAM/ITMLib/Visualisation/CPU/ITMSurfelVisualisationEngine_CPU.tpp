@@ -42,10 +42,37 @@ void ITMSurfelVisualisationEngine_CPU<TSurfel>::CopySceneToBuffers(const ITMSurf
 }
 
 template <typename TSurfel>
-void ITMSurfelVisualisationEngine_CPU<TSurfel>::RenderImage(const ITMSurfelScene<TSurfel> *scene, const ITMPose *pose, const ITMIntrinsics *intrinsics,
-                                                             const ITMSurfelRenderState *renderState, ITMUChar4Image *outputImage, RenderImageType type) const
+void ITMSurfelVisualisationEngine_CPU<TSurfel>::RenderImage(const ITMSurfelScene<TSurfel> *scene, const ITMSurfelRenderState *renderState,
+                                                            ITMUChar4Image *outputImage, RenderImageType type) const
 {
-  // TODO
+  // Prevent colour rendering if the surfels don't store colour information.
+  if(type == RENDER_COLOUR && !TSurfel::hasColourInformation) type = RENDER_LAMBERTIAN;
+
+  Vector4u *outputImagePtr = outputImage->GetData(MEMORYDEVICE_CPU);
+  const int pixelCount = static_cast<int>(outputImage->dataSize);
+  const unsigned int *surfelIndexImagePtr = renderState->GetIndexImage()->GetData(MEMORYDEVICE_CPU);
+  const TSurfel *surfels = scene->GetSurfels()->GetData(MEMORYDEVICE_CPU);
+
+  switch(type)
+  {
+    case RENDER_COLOUR:
+    {
+#ifdef WITH_OPENMP
+      //#pragma omp parallel for
+#endif
+      for(int locId = 0; locId < pixelCount; ++locId)
+      {
+        render_pixel_colour(locId, surfelIndexImagePtr, surfels, outputImagePtr);
+      }
+      break;
+    }
+    case RENDER_LAMBERTIAN:
+    default:
+    {
+      // TODO
+      break;
+    }
+  }
 }
 
 //#################### PRIVATE MEMBER FUNCTIONS ####################

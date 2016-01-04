@@ -51,6 +51,16 @@ __global__ void ck_project_to_surfel_index_image(int surfelCount, const TSurfel 
   }
 }
 
+template <typename TSurfel>
+__global__ void ck_render_pixel_colour(int pixelCount, const unsigned int *surfelIndexImage, const TSurfel *surfels, Vector4u *outputImage)
+{
+  int locId = threadIdx.x + blockDim.x * blockIdx.x;
+  if(locId < pixelCount)
+  {
+    render_pixel_colour(locId, surfelIndexImage, surfels, outputImage);
+  }
+}
+
 //#################### PUBLIC MEMBER FUNCTIONS ####################
 
 #if DEBUG_CORRESPONDENCES
@@ -88,10 +98,39 @@ void ITMSurfelVisualisationEngine_CUDA<TSurfel>::CopySceneToBuffers(const ITMSur
 }
 
 template <typename TSurfel>
-void ITMSurfelVisualisationEngine_CUDA<TSurfel>::RenderImage(const ITMSurfelScene<TSurfel> *scene, const ITMPose *pose, const ITMIntrinsics *intrinsics,
-                                                             const ITMSurfelRenderState *renderState, ITMUChar4Image *outputImage, RenderImageType type) const
+void ITMSurfelVisualisationEngine_CUDA<TSurfel>::RenderImage(const ITMSurfelScene<TSurfel> *scene, const ITMSurfelRenderState *renderState,
+                                                             ITMUChar4Image *outputImage, RenderImageType type) const
 {
-  // TODO
+  // Prevent colour rendering if the surfels don't store colour information.
+  if(type == RENDER_COLOUR && !TSurfel::hasColourInformation) type = RENDER_LAMBERTIAN;
+
+  Vector4u *outputImagePtr = outputImage->GetData(MEMORYDEVICE_CUDA);
+  const int pixelCount = static_cast<int>(outputImage->dataSize);
+  const unsigned int *surfelIndexImagePtr = renderState->GetIndexImage()->GetData(MEMORYDEVICE_CUDA);
+  const TSurfel *surfels = scene->GetSurfels()->GetData(MEMORYDEVICE_CUDA);
+
+  int threadsPerBlock = 256;
+  int numBlocks = (pixelCount + threadsPerBlock - 1) / threadsPerBlock;
+
+  switch(type)
+  {
+    case RENDER_COLOUR:
+    {
+      ck_render_pixel_colour<<<numBlocks,threadsPerBlock>>>(
+        pixelCount,
+        surfelIndexImagePtr,
+        surfels,
+        outputImagePtr
+      );
+      break;
+    }
+    case RENDER_LAMBERTIAN:
+    default:
+    {
+      // TODO
+      break;
+    }
+  }
 }
 
 //#################### PRIVATE MEMBER FUNCTIONS ####################
