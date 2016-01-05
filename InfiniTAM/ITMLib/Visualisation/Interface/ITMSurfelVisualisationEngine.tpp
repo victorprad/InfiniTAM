@@ -5,6 +5,14 @@
 namespace ITMLib
 {
 
+//#################### DESTRUCTOR ####################
+
+template <typename TSurfel>
+ITMSurfelVisualisationEngine<TSurfel>::~ITMSurfelVisualisationEngine()
+{}
+
+//#################### PUBLIC MEMBER FUNCTIONS ####################
+
 template <typename TSurfel>
 void ITMSurfelVisualisationEngine<TSurfel>::FindSurface(const ITMSurfelScene<TSurfel> *scene, const ITMPose *pose, const ITMIntrinsics *intrinsics,
                                                         ITMSurfelRenderState *renderState) const

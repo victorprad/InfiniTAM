@@ -27,6 +27,13 @@ namespace ITMLib
       RENDER_LAMBERTIAN,
     };
 
+    //#################### DESTRUCTOR ####################
+  public:
+    /**
+     * \brief Destroys the visualisation engine.
+     */
+    virtual ~ITMSurfelVisualisationEngine();
+
     //#################### PUBLIC ABSTRACT MEMBER FUNCTIONS ####################
   public:
 #if DEBUG_CORRESPONDENCES

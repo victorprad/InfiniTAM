@@ -65,7 +65,7 @@ void ITMSurfelVisualisationEngine_CPU<TSurfel>::RenderImage(const ITMSurfelScene
                                                             ITMUChar4Image *outputImage, RenderImageType type) const
 {
   // Prevent colour rendering if the surfels don't store colour information.
-  if(type == RENDER_COLOUR && !TSurfel::hasColourInformation) type = RENDER_LAMBERTIAN;
+  if(type == Base::RENDER_COLOUR && !TSurfel::hasColourInformation) type = Base::RENDER_LAMBERTIAN;
 
   Vector4u *outputImagePtr = outputImage->GetData(MEMORYDEVICE_CPU);
   const int pixelCount = static_cast<int>(outputImage->dataSize);
@@ -74,7 +74,7 @@ void ITMSurfelVisualisationEngine_CPU<TSurfel>::RenderImage(const ITMSurfelScene
 
   switch(type)
   {
-    case RENDER_COLOUR:
+    case Base::RENDER_COLOUR:
     {
 #ifdef WITH_OPENMP
       //#pragma omp parallel for
@@ -85,7 +85,7 @@ void ITMSurfelVisualisationEngine_CPU<TSurfel>::RenderImage(const ITMSurfelScene
       }
       break;
     }
-    case RENDER_LAMBERTIAN:
+    case Base::RENDER_LAMBERTIAN:
     default:
     {
       // TODO

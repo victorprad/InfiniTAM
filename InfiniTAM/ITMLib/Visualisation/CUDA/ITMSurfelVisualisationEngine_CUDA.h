@@ -12,9 +12,10 @@ namespace ITMLib
   template <typename TSurfel>
   class ITMSurfelVisualisationEngine_CUDA : public ITMSurfelVisualisationEngine<TSurfel>
   {
-    //#################### USINGS ####################
+    //#################### TYPEDEFS & USINGS ####################
   private:
-    using typename ITMSurfelVisualisationEngine<TSurfel>::RenderImageType;
+    typedef ITMSurfelVisualisationEngine<TSurfel> Base;
+    using typename Base::RenderImageType;
 
     //#################### PUBLIC MEMBER FUNCTIONS ####################
   public:
