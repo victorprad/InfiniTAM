@@ -120,9 +120,7 @@ void ITMSurfelVisualisationEngine_CPU<TSurfel>::MakeIndexImage(const ITMSurfelSc
   const int surfelCount = static_cast<int>(scene->GetSurfelCount());
   const TSurfel *surfels = scene->GetSurfels()->GetData(MEMORYDEVICE_CPU);
 
-#ifdef WITH_OPENMP
-  #pragma omp parallel for
-#endif
+  // Note: This is deliberately not parallelised (it would be slower due to the synchronisation needed).
   for(int surfelId = 0; surfelId < surfelCount; ++surfelId)
   {
     update_depth_buffer_for_surfel(surfelId, surfels, invT, *intrinsics, width, height, scaleFactor, depthBuffer);

@@ -161,9 +161,7 @@ inline void update_depth_buffer_for_surfel(int surfelId, const TSurfel *surfels,
 #if defined(__CUDACC__) && defined(__CUDA_ARCH__)
     atomicMin(&depthBuffer[locId], z);
 #else
-  #ifdef WITH_OPENMP
-    #pragma omp critical
-  #endif
+    // Note: No synchronisation is needed for the CPU version because it's not parallelised.
     if(z < depthBuffer[locId]) depthBuffer[locId] = z;
 #endif
   }
