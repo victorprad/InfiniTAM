@@ -44,18 +44,32 @@ _CPU_AND_GPU_CODE_
 inline void add_new_surfel(int locId, const Matrix4f& T, const unsigned short *newPointsMask, const unsigned int *newPointsPrefixSum,
                            const Vector3f *vertexMap, const Vector4f *normalMap, const float *radiusMap, const Vector4u *colourMap,
                            int timestamp, TSurfel *newSurfels, const TSurfel *surfels, const unsigned int *correspondenceMap,
-                           int colourMapWidth)
+                           int colourMapWidth, int colourMapHeight, const Matrix4f& depthToRGB, const Vector4f& projParamsRGB)
 {
   if(newPointsMask[locId])
   {
+    const Vector3f v = vertexMap[locId];
+
     TSurfel surfel;
-    surfel.position = transform_point(T, vertexMap[locId]);
+    surfel.position = transform_point(T, v);
     surfel.normal = normalMap[locId].toVector3();
     surfel.radius = radiusMap[locId];
     surfel.confidence = 1.0f;                     // TEMPORARY
     surfel.timestamp = timestamp;
 
     // Store a colour if the surfel type can support it.
+#if 1
+    Vector3f cv = transform_point(depthToRGB, v);
+    int cx = static_cast<int>(projParamsRGB.x * cv.x / cv.z + projParamsRGB.z + 0.5f);
+    int cy = static_cast<int>(projParamsRGB.y * cv.y / cv.z + projParamsRGB.w + 0.5f);
+    Vector3u colour((uchar)0);
+    if(cx >= 0 && cx < colourMapWidth && cy >= 0 && cy < colourMapHeight)
+    {
+      colour = colourMap[cy * colourMapWidth + cx].toVector3();
+    }
+    SurfelColourManipulator<TSurfel::hasColourInformation>::write(surfel, colour);
+#endif
+#if 0
     // TEMPORARY: Read from the proper position in the colour map.
     if(colourMapWidth == 320)
     {
@@ -64,6 +78,7 @@ inline void add_new_surfel(int locId, const Matrix4f& T, const unsigned short *n
         SurfelColourManipulator<TSurfel::hasColourInformation>::write(surfel, colourMap[y * 320 + x].toVector3());
     }
     else SurfelColourManipulator<TSurfel::hasColourInformation>::write(surfel, colourMap[locId].toVector3());
+#endif
 
 #if DEBUG_CORRESPONDENCES
     // Store the position of the corresponding surfel (if any).
@@ -192,7 +207,7 @@ inline void fuse_matched_point(int locId, const unsigned int *correspondenceMap,
     else newColour = colourMap[locId].toVector3();
 
     Vector3u colour = ((surfel.confidence * oldColour.toFloat() + alpha * newColour.toFloat()) / newConfidence).toUChar();
-    SurfelColourManipulator<TSurfel::hasColourInformation>::write(surfel, colour);
+    SurfelColourManipulator<TSurfel::hasColourInformation>::write(surfel, oldColour);
 
     surfel.confidence = newConfidence;
     surfel.timestamp = timestamp;

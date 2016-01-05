@@ -29,12 +29,12 @@ template <typename TSurfel>
 __global__ void ck_add_new_surfel(int pixelCount, Matrix4f T, const unsigned short *newPointsMask, const unsigned int *newPointsPrefixSum,
                                   const Vector3f *vertexMap, const Vector4f *normalMap, const float *radiusMap, const Vector4u *colourMap,
                                   int timestamp, TSurfel *newSurfels, const TSurfel *surfels, const unsigned int *correspondenceMap,
-                                  int colourMapWidth)
+                                  int colourMapWidth, int colourMapHeight, Matrix4f depthToRGB, Vector4f projParamsRGB)
 {
   int locId = threadIdx.x + blockDim.x * blockIdx.x;
   if(locId < pixelCount)
   {
-    add_new_surfel(locId, T, newPointsMask, newPointsPrefixSum, vertexMap, normalMap, radiusMap, colourMap, timestamp, newSurfels, surfels, correspondenceMap, colourMapWidth);
+    add_new_surfel(locId, T, newPointsMask, newPointsPrefixSum, vertexMap, normalMap, radiusMap, colourMap, timestamp, newSurfels, surfels, correspondenceMap, colourMapWidth, colourMapHeight, depthToRGB, projParamsRGB);
   }
 }
 
@@ -133,7 +133,10 @@ void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::AddNewSurfels(ITMSurfelSc
     newSurfels,
     scene->GetSurfels()->GetData(MEMORYDEVICE_CUDA),
     this->m_correspondenceMapMB->GetData(MEMORYDEVICE_CUDA),
-    view->rgb->noDims.x
+    view->rgb->noDims.x,
+    view->rgb->noDims.y,
+    view->calib->trafo_rgb_to_depth.calib_inv,
+    view->calib->intrinsics_rgb.projectionParamsSimple.all
   );
 
 #if DEBUGGING
