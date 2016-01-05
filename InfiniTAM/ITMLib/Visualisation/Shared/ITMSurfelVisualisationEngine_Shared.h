@@ -84,6 +84,9 @@ inline bool project_surfel_to_index_image(const TSurfel& surfel, const Matrix4f&
   Vector4f vg(p.x, p.y, p.z, 1.0f);
   Vector4f v = invT * vg;
 
+  // If the point isn't in front of the viewer, early out.
+  if(v.z <= 0) return false;
+
   // Project the point onto the image plane of the current frame.
   float ux = intrinsics.projectionParamsSimple.fx * v.x / v.z + intrinsics.projectionParamsSimple.px;
   float uy = intrinsics.projectionParamsSimple.fy * v.y / v.z + intrinsics.projectionParamsSimple.py;
