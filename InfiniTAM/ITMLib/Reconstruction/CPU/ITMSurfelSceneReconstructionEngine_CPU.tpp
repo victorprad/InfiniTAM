@@ -80,9 +80,12 @@ template <typename TSurfel>
 void ITMSurfelSceneReconstructionEngine_CPU<TSurfel>::FuseMatchedPoints(ITMSurfelScene<TSurfel> *scene, const ITMView *view, const ITMTrackingState *trackingState) const
 {
   const Vector4u *colourMap = view->rgb->GetData(MEMORYDEVICE_CPU);
+  const int colourMapHeight = view->rgb->noDims.y;
   const int colourMapWidth = view->rgb->noDims.x;
   const unsigned int *correspondenceMap = this->m_correspondenceMapMB->GetData(MEMORYDEVICE_CPU);
+  const Matrix4f& depthToRGB = view->calib->trafo_rgb_to_depth.calib_inv;
   const Vector4f *normalMap = this->m_normalMapMB->GetData(MEMORYDEVICE_CPU);
+  const Vector4f& projParamsRGB = view->calib->intrinsics_rgb.projectionParamsSimple.all;
   const int pixelCount = static_cast<int>(view->depth->dataSize);
   TSurfel *surfels = scene->GetSurfels()->GetData(MEMORYDEVICE_CPU);
   const float *radiusMap = this->m_radiusMapMB->GetData(MEMORYDEVICE_CPU);
@@ -94,7 +97,7 @@ void ITMSurfelSceneReconstructionEngine_CPU<TSurfel>::FuseMatchedPoints(ITMSurfe
 #endif
   for(int locId = 0; locId < pixelCount; ++locId)
   {
-    fuse_matched_point(locId, correspondenceMap, T, vertexMap, normalMap, radiusMap, colourMap, this->m_timestamp, surfels, colourMapWidth);
+    fuse_matched_point(locId, correspondenceMap, T, vertexMap, normalMap, radiusMap, colourMap, this->m_timestamp, surfels, colourMapWidth, colourMapHeight, depthToRGB, projParamsRGB);
   }
 }
 

@@ -69,12 +69,13 @@ __global__ void ck_find_corresponding_surfel(int pixelCount, Matrix4f invT, cons
 
 template <typename TSurfel>
 __global__ void ck_fuse_matched_point(int pixelCount, const unsigned int *correspondenceMap, Matrix4f T, const Vector3f *vertexMap, const Vector4f *normalMap,
-                                      const float *radiusMap, const Vector4u *colourMap, int timestamp, TSurfel *surfels, int colourMapWidth)
+                                      const float *radiusMap, const Vector4u *colourMap, int timestamp, TSurfel *surfels, int colourMapWidth, int colourMapHeight,
+                                      Matrix4f depthToRGB, Vector4f projParamsRGB)
 {
   int locId = threadIdx.x + blockDim.x * blockIdx.x;
   if(locId < pixelCount)
   {
-    fuse_matched_point(locId, correspondenceMap, T, vertexMap, normalMap, radiusMap, colourMap, timestamp, surfels, colourMapWidth);
+    fuse_matched_point(locId, correspondenceMap, T, vertexMap, normalMap, radiusMap, colourMap, timestamp, surfels, colourMapWidth, colourMapHeight, depthToRGB, projParamsRGB);
   }
 }
 
@@ -188,7 +189,10 @@ void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::FuseMatchedPoints(ITMSurf
     view->rgb->GetData(MEMORYDEVICE_CUDA),
     this->m_timestamp,
     scene->GetSurfels()->GetData(MEMORYDEVICE_CUDA),
-    view->rgb->noDims.x
+    view->rgb->noDims.x,
+    view->rgb->noDims.y,
+    view->calib->trafo_rgb_to_depth.calib_inv,
+    view->calib->intrinsics_rgb.projectionParamsSimple.all
   );
 }
 
