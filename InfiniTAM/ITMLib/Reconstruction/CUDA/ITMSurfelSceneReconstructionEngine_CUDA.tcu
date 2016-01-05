@@ -88,26 +88,6 @@ __global__ void ck_mark_for_removal_if_unstable(int surfelCount, const TSurfel *
   }
 }
 
-template <typename TSurfel>
-__global__ void ck_project_to_index_map(int surfelCount, const TSurfel *surfels, Matrix4f invT, ITMIntrinsics intrinsics, int depthMapWidth, int depthMapHeight,
-                                        unsigned int *indexMap)
-{
-  int surfelId = threadIdx.x + blockDim.x * blockIdx.x;
-  if(surfelId < surfelCount)
-  {
-    project_to_index_map(surfelId, surfels, invT, intrinsics, depthMapWidth, depthMapHeight, indexMap);
-  }
-}
-
-__global__ void ck_reset_index_map(int indexPixelCount, unsigned int *indexMap)
-{
-  int indexLocId = threadIdx.x + blockDim.x * blockIdx.x;
-  if(indexLocId < indexPixelCount)
-  {
-    reset_index_map_pixel(indexLocId, indexMap);
-  }
-}
-
 //#################### CONSTRUCTORS ####################
 
 template <typename TSurfel>

@@ -206,37 +206,6 @@ inline void fuse_matched_point(int locId, const unsigned int *correspondenceMap,
  */
 template <typename TSurfel>
 _CPU_AND_GPU_CODE_
-inline void project_to_index_map(int surfelId, const TSurfel *surfels, const Matrix4f& invT, const ITMIntrinsics& intrinsics,
-                                 int depthMapWidth, int depthMapHeight, unsigned int *indexMap)
-{
-  // Convert the surfel point into the coordinates of the current frame using v_i = T_i^{-1} v_i^g.
-  Vector3f p = surfels[surfelId].position;
-  Vector4f vg(p.x, p.y, p.z, 1.0f);
-  Vector4f v = invT * vg;
-
-  // Project the point onto the image plane of the current frame.
-  float ux = intrinsics.projectionParamsSimple.fx * v.x / v.z + intrinsics.projectionParamsSimple.px;
-  float uy = intrinsics.projectionParamsSimple.fy * v.y / v.z + intrinsics.projectionParamsSimple.py;
-
-  // Convert the projected point into index map coordinates.
-  // FIXME: The 4s here shouldn't be hard-coded.
-  int x = static_cast<int>(ux * 4 + 0.5f);
-  int y = static_cast<int>(uy * 4 + 0.5f);
-
-  int indexMapWidth = depthMapWidth * 4;
-  int indexMapHeight = depthMapHeight * 4;
-  if(0 <= x && x < indexMapWidth && 0 <= y && y < indexMapHeight)
-  {
-    // Write the surfel ID + 1 into the index map.
-    indexMap[y * indexMapWidth + x] = static_cast<unsigned int>(surfelId + 1);
-  }
-}
-
-/**
- * \brief TODO
- */
-template <typename TSurfel>
-_CPU_AND_GPU_CODE_
 inline void mark_for_removal_if_unstable(int surfelId, const TSurfel *surfels, int timestamp, unsigned int *surfelRemovalMask)
 {
   // TEMPORARY
@@ -246,15 +215,6 @@ inline void mark_for_removal_if_unstable(int surfelId, const TSurfel *surfels, i
   {
     surfelRemovalMask[surfelId] = 1;
   }
-}
-
-/**
- * \brief TODO
- */
-_CPU_AND_GPU_CODE_
-inline void reset_index_map_pixel(int indexLocId, unsigned int *indexMap)
-{
-  indexMap[indexLocId] = 0;
 }
 
 }
