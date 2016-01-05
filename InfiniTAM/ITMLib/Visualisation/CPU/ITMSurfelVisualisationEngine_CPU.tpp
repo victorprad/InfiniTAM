@@ -52,7 +52,7 @@ void ITMSurfelVisualisationEngine_CPU<TSurfel>::RenderDepthImage(const ITMSurfel
   const TSurfel *surfels = scene->GetSurfels()->GetData(MEMORYDEVICE_CPU);
 
 #ifdef WITH_OPENMP
-  //#pragma omp parallel for
+  #pragma omp parallel for
 #endif
   for(int locId = 0; locId < pixelCount; ++locId)
   {
@@ -77,7 +77,7 @@ void ITMSurfelVisualisationEngine_CPU<TSurfel>::RenderImage(const ITMSurfelScene
     case Base::RENDER_COLOUR:
     {
 #ifdef WITH_OPENMP
-      //#pragma omp parallel for
+      #pragma omp parallel for
 #endif
       for(int locId = 0; locId < pixelCount; ++locId)
       {
@@ -109,7 +109,7 @@ void ITMSurfelVisualisationEngine_CPU<TSurfel>::MakeIndexImage(const ITMSurfelSc
   const int pixelCount = width * height;
 
 #ifdef WITH_OPENMP
-  //#pragma omp parallel for
+  #pragma omp parallel for
 #endif
   for(int locId = 0; locId < pixelCount; ++locId)
   {
@@ -121,11 +121,19 @@ void ITMSurfelVisualisationEngine_CPU<TSurfel>::MakeIndexImage(const ITMSurfelSc
   const TSurfel *surfels = scene->GetSurfels()->GetData(MEMORYDEVICE_CPU);
 
 #ifdef WITH_OPENMP
-  //#pragma omp parallel for
+  #pragma omp parallel for
 #endif
   for(int surfelId = 0; surfelId < surfelCount; ++surfelId)
   {
-    project_to_surfel_index_image(surfelId, surfels, invT, *intrinsics, width, height, scaleFactor, surfelIndexImage, depthBuffer);
+    update_depth_buffer_for_surfel(surfelId, surfels, invT, *intrinsics, width, height, scaleFactor, depthBuffer);
+  }
+
+#ifdef WITH_OPENMP
+  #pragma omp parallel for
+#endif
+  for(int surfelId = 0; surfelId < surfelCount; ++surfelId)
+  {
+    update_index_image_for_surfel(surfelId, surfels, invT, *intrinsics, width, height, scaleFactor, depthBuffer, surfelIndexImage);
   }
 }
 

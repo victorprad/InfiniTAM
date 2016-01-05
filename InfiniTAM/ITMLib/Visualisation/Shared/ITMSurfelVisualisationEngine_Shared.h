@@ -75,11 +75,12 @@ inline void copy_surfel_to_buffers(int surfelId, const TSurfel *surfels, float *
  */
 template <typename TSurfel>
 _CPU_AND_GPU_CODE_
-inline void project_to_surfel_index_image(int surfelId, const TSurfel *surfels, const Matrix4f& invT, const ITMIntrinsics& intrinsics, int indexImageWidth, int indexImageHeight,
-                                          int scaleFactor, unsigned int *surfelIndexImage, int *depthBuffer)
+inline bool project_surfel_to_index_image(const TSurfel& surfel, const Matrix4f& invT, const ITMIntrinsics& intrinsics,
+                                          int indexImageWidth, int indexImageHeight, int scaleFactor,
+                                          int& locId, int& z)
 {
   // Convert the surfel point into the coordinates of the current frame using v_i = T_i^{-1} v_i^g.
-  Vector3f p = surfels[surfelId].position;
+  Vector3f p = surfel.position;
   Vector4f vg(p.x, p.y, p.z, 1.0f);
   Vector4f v = invT * vg;
 
@@ -91,11 +92,16 @@ inline void project_to_surfel_index_image(int surfelId, const TSurfel *surfels, 
   int x = static_cast<int>(ux * scaleFactor + 0.5f);
   int y = static_cast<int>(uy * scaleFactor + 0.5f);
 
-  if(0 <= x && x < indexImageWidth && 0 <= y && y < indexImageHeight)
-  {
-    // Write the surfel ID + 1 into the surfel index image.
-    surfelIndexImage[y * indexImageWidth + x] = static_cast<unsigned int>(surfelId + 1);
-  }
+  // If the resulting point is outside the index map, early out.
+  if(x < 0 || x >= indexImageWidth || y < 0 || y >= indexImageHeight) return false;
+
+  // Calculate the raster position of the point in the index map.
+  locId = y * indexImageWidth + x;
+
+  // Calculate an integer depth value for the point for storage in the depth buffer.
+  z = static_cast<int>(v.z * 100000);
+
+  return true;
 }
 
 /**
@@ -139,6 +145,48 @@ void shade_pixel_depth(int locId, const unsigned int *surfelIndexImage, const TS
   }
 
   outputImage[locId] = value;
+}
+
+/**
+ * \brief TODO
+ */
+template <typename TSurfel>
+_CPU_AND_GPU_CODE_
+inline void update_depth_buffer_for_surfel(int surfelId, const TSurfel *surfels, const Matrix4f& invT, const ITMIntrinsics& intrinsics,
+                                           int indexImageWidth, int indexImageHeight, int scaleFactor, int *depthBuffer)
+{
+  int locId, z;
+  if(project_surfel_to_index_image(surfels[surfelId], invT, intrinsics, indexImageWidth, indexImageHeight, scaleFactor, locId, z))
+  {
+#if defined(__CUDACC__) && defined(__CUDA_ARCH__)
+    atomicMin(&depthBuffer[locId], z);
+#else
+  #ifdef WITH_OPENMP
+    #pragma omp critical
+  #endif
+    if(z < depthBuffer[locId]) depthBuffer[locId] = z;
+#endif
+  }
+}
+
+/**
+ * \brief TODO
+ */
+template <typename TSurfel>
+_CPU_AND_GPU_CODE_
+inline void update_index_image_for_surfel(int surfelId, const TSurfel *surfels, const Matrix4f& invT, const ITMIntrinsics& intrinsics,
+                                          int indexImageWidth, int indexImageHeight, int scaleFactor, const int *depthBuffer,
+                                          unsigned int *surfelIndexImage)
+{
+  int locId, z;
+  if(project_surfel_to_index_image(surfels[surfelId], invT, intrinsics, indexImageWidth, indexImageHeight, scaleFactor, locId, z))
+  {
+    if(depthBuffer[locId] == z)
+    {
+      // Write the surfel ID + 1 into the surfel index image.
+      surfelIndexImage[locId] = static_cast<unsigned int>(surfelId + 1);
+    }
+  }
 }
 
 }
