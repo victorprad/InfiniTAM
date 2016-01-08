@@ -173,17 +173,43 @@ void shade_pixel_depth(int locId, const unsigned int *surfelIndexImage, const TS
  */
 template <typename TSurfel>
 _CPU_AND_GPU_CODE_
-void shade_pixel_normal(int locId, const unsigned int *surfelIndexImage, const TSurfel *surfels, Vector4u *outputImage)
+void shade_pixel_grey(int locId, const unsigned int *surfelIndexImage, const TSurfel *surfels, const Vector3f& lightSource,
+                      Vector4u *outputImage)
 {
-  Vector4u n((uchar)0);
+  const float ambient = 0.2f;
+  const float lambertianCoefficient = 0.8f;
+
+  Vector4u value((uchar)0);
 
   int surfelIndex = surfelIndexImage[locId] - 1;
   if(surfelIndex >= 0)
   {
-    n = colourise_normal(surfels[surfelIndex].normal);
+    TSurfel surfel = surfels[surfelIndex];
+    float NdotL = ORUtils::dot(surfel.normal, lightSource);
+    float lambertian = CLAMP(NdotL, 0.0f, 1.0f);
+    float intensity = ambient + lambertianCoefficient * lambertian;
+    value = Vector4u((uchar)(intensity * 255.0f));
   }
 
-  outputImage[locId] = n;
+  outputImage[locId] = value;
+}
+
+/**
+ * \brief TODO
+ */
+template <typename TSurfel>
+_CPU_AND_GPU_CODE_
+void shade_pixel_normal(int locId, const unsigned int *surfelIndexImage, const TSurfel *surfels, Vector4u *outputImage)
+{
+  Vector4u value((uchar)0);
+
+  int surfelIndex = surfelIndexImage[locId] - 1;
+  if(surfelIndex >= 0)
+  {
+    value = colourise_normal(surfels[surfelIndex].normal);
+  }
+
+  outputImage[locId] = value;
 }
 
 /**

@@ -61,7 +61,7 @@ void ITMSurfelVisualisationEngine_CPU<TSurfel>::RenderDepthImage(const ITMSurfel
 }
 
 template <typename TSurfel>
-void ITMSurfelVisualisationEngine_CPU<TSurfel>::RenderImage(const ITMSurfelScene<TSurfel> *scene, const ITMSurfelRenderState *renderState,
+void ITMSurfelVisualisationEngine_CPU<TSurfel>::RenderImage(const ITMSurfelScene<TSurfel> *scene, const ITMPose *pose, const ITMSurfelRenderState *renderState,
                                                             ITMUChar4Image *outputImage, RenderImageType type) const
 {
   // Prevent colour rendering if the surfels don't store colour information.
@@ -87,7 +87,15 @@ void ITMSurfelVisualisationEngine_CPU<TSurfel>::RenderImage(const ITMSurfelScene
     }
     case Base::RENDER_LAMBERTIAN:
     {
-      // TODO
+      const Vector3f lightSource = -Vector3f(pose->GetInvM().getColumn(2));
+
+#ifdef WITH_OPENMP
+      #pragma omp parallel for
+#endif
+      for(int locId = 0; locId < pixelCount; ++locId)
+      {
+        shade_pixel_grey(locId, surfelIndexImagePtr, surfels, lightSource, outputImagePtr);
+      }
       break;
     }
     case Base::RENDER_NORMAL:

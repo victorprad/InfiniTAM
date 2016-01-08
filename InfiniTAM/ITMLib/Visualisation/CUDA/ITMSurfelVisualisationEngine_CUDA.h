@@ -32,7 +32,7 @@ namespace ITMLib
                                   ITMFloatImage *outputImage) const;
 
     /** Override */
-    virtual void RenderImage(const ITMSurfelScene<TSurfel> *scene, const ITMSurfelRenderState *renderState,
+    virtual void RenderImage(const ITMSurfelScene<TSurfel> *scene, const ITMPose *pose, const ITMSurfelRenderState *renderState,
                              ITMUChar4Image *outputImage, RenderImageType type) const;
 
     //#################### PRIVATE MEMBER FUNCTIONS ####################

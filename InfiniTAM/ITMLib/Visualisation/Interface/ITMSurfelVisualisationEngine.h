@@ -58,7 +58,7 @@ namespace ITMLib
     /**
      * \brief TODO
      */
-    virtual void RenderImage(const ITMSurfelScene<TSurfel> *scene, const ITMSurfelRenderState *renderState,
+    virtual void RenderImage(const ITMSurfelScene<TSurfel> *scene, const ITMPose *pose, const ITMSurfelRenderState *renderState,
                              ITMUChar4Image *outputImage, RenderImageType type = RENDER_LAMBERTIAN) const = 0;
 
     //#################### PUBLIC MEMBER FUNCTIONS ####################
