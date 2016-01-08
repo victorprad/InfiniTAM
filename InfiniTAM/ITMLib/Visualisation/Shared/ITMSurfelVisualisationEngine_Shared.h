@@ -64,6 +64,31 @@ inline void copy_correspondences_to_buffer(int surfelId, const TSurfel *surfels,
  */
 template <typename TSurfel>
 _CPU_AND_GPU_CODE_
+inline void copy_surfel_data_to_icp_maps(int locId, const TSurfel *surfels, const unsigned int *surfelIndexImage, Vector4f *pointsMap, Vector4f *normalsMap)
+{
+  int surfelIndex = surfelIndexImage[locId] - 1;
+  if(surfelIndex >= 0)
+  {
+    TSurfel surfel = surfels[surfelIndex];
+    const Vector3f& p = surfel.position;
+    const Vector3f& n = surfel.normal;
+    pointsMap[locId] = Vector4f(p.x, p.y, p.z, 1.0f);
+    normalsMap[locId] = Vector4f(n.x, n.y, n.z, 0.0f);
+  }
+  else
+  {
+    Vector4f dummy;
+    dummy.x = dummy.y = dummy.z = 0.0f; dummy.w = -1.0f;
+    pointsMap[locId] = dummy;
+    normalsMap[locId] = dummy;
+  }
+}
+
+/**
+ * \brief TODO
+ */
+template <typename TSurfel>
+_CPU_AND_GPU_CODE_
 inline void copy_surfel_to_buffers(int surfelId, const TSurfel *surfels, float *positions, unsigned char *normals, unsigned char *colours)
 {
   TSurfel surfel = surfels[surfelId];

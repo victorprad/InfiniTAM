@@ -28,6 +28,9 @@ namespace ITMLib
     virtual void CopySceneToBuffers(const ITMSurfelScene<TSurfel> *scene, float *positions, unsigned char *normals, unsigned char *colours) const;
 
     /** Override */
+    virtual void CreateICPMaps(const ITMSurfelScene<TSurfel> *scene, const ITMSurfelRenderState *renderState, ITMTrackingState *trackingState) const;
+
+    /** Override */
     virtual void RenderDepthImage(const ITMSurfelScene<TSurfel> *scene, const ITMPose *pose, const ITMSurfelRenderState *renderState,
                                   ITMFloatImage *outputImage) const;
 

@@ -64,6 +64,7 @@ void ITMSurfelSceneReconstructionEngine_CPU<TSurfel>::FindCorrespondingSurfels(c
   const unsigned int *indexImageSuper = renderState->GetIndexImageSuper()->GetData(MEMORYDEVICE_CPU);
   const Matrix4f& invT = trackingState->pose_d->GetM();
   unsigned short *newPointsMask = this->m_newPointsMaskMB->GetData(MEMORYDEVICE_CPU);
+  const Vector3f *normalMap = this->m_normalMapMB->GetData(MEMORYDEVICE_CPU);
   const int pixelCount = static_cast<int>(view->depth->dataSize);
   const TSurfel *surfels = scene->GetSurfels()->GetData(MEMORYDEVICE_CPU);
 
@@ -72,7 +73,7 @@ void ITMSurfelSceneReconstructionEngine_CPU<TSurfel>::FindCorrespondingSurfels(c
 #endif
   for(int locId = 0; locId < pixelCount; ++locId)
   {
-    find_corresponding_surfel(locId, invT, depthMap, depthMapWidth, indexImageSuper, surfels, correspondenceMap, newPointsMask);
+    find_corresponding_surfel(locId, invT, depthMap, depthMapWidth, normalMap, indexImageSuper, surfels, correspondenceMap, newPointsMask);
   }
 }
 

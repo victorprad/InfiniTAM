@@ -28,6 +28,16 @@ inline float calculate_depth_from_pose(const Matrix4f& invT, const Vector3f& p)
  * \brief TODO
  */
 _CPU_AND_GPU_CODE_
+inline Vector3f transform_free_vector(const Matrix4f& T, const Vector3f& p)
+{
+  Vector4f v(p.x, p.y, p.z, 0.0f);
+  return (T * v).toVector3();
+}
+
+/**
+ * \brief TODO
+ */
+_CPU_AND_GPU_CODE_
 inline Vector3f transform_point(const Matrix4f& T, const Vector3f& p)
 {
   Vector4f v(p.x, p.y, p.z, 1.0f);
@@ -84,7 +94,7 @@ inline void add_new_surfel(int locId, const Matrix4f& T, const unsigned short *n
 
     TSurfel surfel;
     surfel.position = transform_point(T, v);
-    surfel.normal = normalMap[locId];
+    surfel.normal = transform_free_vector(T, normalMap[locId]);
     surfel.radius = radiusMap[locId];
     surfel.confidence = 1.0f;                     // TEMPORARY
     surfel.timestamp = timestamp;
@@ -127,7 +137,7 @@ inline void calculate_normal(int locId, const Vector3f *vertexMap, int width, in
     n = ORUtils::cross(ydiff, xdiff);
 
     float len = length(n);
-    if(len >= 0.0f) n /= len;
+    if(len > 0.0f) n /= len;
   }
 
   normalMap[locId] = n;
@@ -167,12 +177,12 @@ inline void clear_removal_mask(int surfelId, unsigned int *surfelRemovalMask)
  */
 template <typename TSurfel>
 _CPU_AND_GPU_CODE_
-inline void find_corresponding_surfel(int locId, const Matrix4f& invT, const float *depthMap, int depthMapWidth, const unsigned int *indexMap, const TSurfel *surfels,
-                                      unsigned int *correspondenceMap, unsigned short *newPointsMask)
+inline void find_corresponding_surfel(int locId, const Matrix4f& invT, const float *depthMap, int depthMapWidth, const Vector3f *normalMap, const unsigned int *indexMap,
+                                      const TSurfel *surfels, unsigned int *correspondenceMap, unsigned short *newPointsMask)
 {
   // If the depth pixel is invalid, early out.
   float depth = depthMap[locId];
-  if(fabs(depth + 1) <= 0.0001f)
+  if(fabs(depth + 1) <= 0.0001f || length(normalMap[locId]) < 0.0001f)
   {
     correspondenceMap[locId] = 0;
     newPointsMask[locId] = 0;
@@ -237,7 +247,7 @@ inline void fuse_matched_point(int locId, const unsigned int *correspondenceMap,
 
     const float newConfidence = surfel.confidence + alpha;
     surfel.position = (surfel.confidence * surfel.position + alpha * transform_point(T, v)) / newConfidence;
-    surfel.normal = (surfel.confidence * surfel.normal + alpha * normalMap[locId]) / newConfidence;
+    surfel.normal = (surfel.confidence * surfel.normal + alpha * transform_free_vector(T, normalMap[locId])) / newConfidence;
     surfel.normal /= length(surfel.normal);
 
     // TODO: Radius, etc.

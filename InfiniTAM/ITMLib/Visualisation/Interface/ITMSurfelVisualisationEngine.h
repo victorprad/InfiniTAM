@@ -6,6 +6,8 @@
 #include "../../Objects/Camera/ITMPose.h"
 #include "../../Objects/RenderStates/ITMSurfelRenderState.h"
 #include "../../Objects/Scene/ITMSurfelScene.h"
+#include "../../Objects/Tracking/ITMTrackingState.h"
+#include "../../Objects/Views/ITMView.h"
 #include "../../Utils/ITMImageTypes.h"
 
 namespace ITMLib
@@ -48,6 +50,11 @@ namespace ITMLib
      * \brief TODO
      */
     virtual void CopySceneToBuffers(const ITMSurfelScene<TSurfel> *scene, float *positions, unsigned char *normals, unsigned char *colours) const = 0;
+
+    /**
+     * \brief TODO
+     */
+    virtual void CreateICPMaps(const ITMSurfelScene<TSurfel> *scene, const ITMSurfelRenderState *renderState, ITMTrackingState *trackingState) const = 0;
 
     /**
      * \brief TODO

@@ -42,6 +42,24 @@ void ITMSurfelVisualisationEngine_CPU<TSurfel>::CopySceneToBuffers(const ITMSurf
 }
 
 template <typename TSurfel>
+void ITMSurfelVisualisationEngine_CPU<TSurfel>::CreateICPMaps(const ITMSurfelScene<TSurfel> *scene, const ITMSurfelRenderState *renderState, ITMTrackingState *trackingState) const
+{
+  Vector4f *normalsMap = trackingState->pointCloud->colours->GetData(MEMORYDEVICE_CPU);
+  const int pixelCount = static_cast<int>(renderState->GetIndexImage()->dataSize);
+  Vector4f *pointsMap = trackingState->pointCloud->locations->GetData(MEMORYDEVICE_CPU);
+  const unsigned int *surfelIndexImage = renderState->GetIndexImage()->GetData(MEMORYDEVICE_CPU);
+  const TSurfel *surfels = scene->GetSurfels()->GetData(MEMORYDEVICE_CPU);
+
+#ifdef WITH_OPENMP
+  #pragma omp parallel for
+#endif
+  for(int locId = 0; locId < pixelCount; ++locId)
+  {
+    copy_surfel_data_to_icp_maps(locId, surfels, surfelIndexImage, pointsMap, normalsMap);
+  }
+}
+
+template <typename TSurfel>
 void ITMSurfelVisualisationEngine_CPU<TSurfel>::RenderDepthImage(const ITMSurfelScene<TSurfel> *scene, const ITMPose *pose,
                                                                  const ITMSurfelRenderState *renderState, ITMFloatImage *outputImage) const
 {

@@ -66,13 +66,13 @@ __global__ void ck_clear_removal_mask(int surfelCount, unsigned int *surfelRemov
 }
 
 template <typename TSurfel>
-__global__ void ck_find_corresponding_surfel(int pixelCount, Matrix4f invT, const float *depthMap, int depthMapWidth, const unsigned int *indexMap, const TSurfel *surfels,
-                                             unsigned int *correspondenceMap, unsigned short *newPointsMask)
+__global__ void ck_find_corresponding_surfel(int pixelCount, Matrix4f invT, const float *depthMap, int depthMapWidth, const Vector3f *normalMap, const unsigned int *indexMap,
+                                             const TSurfel *surfels, unsigned int *correspondenceMap, unsigned short *newPointsMask)
 {
   int locId = threadIdx.x + blockDim.x * blockIdx.x;
   if(locId < pixelCount)
   {
-    find_corresponding_surfel(locId, invT, depthMap, depthMapWidth, indexMap, surfels, correspondenceMap, newPointsMask);
+    find_corresponding_surfel(locId, invT, depthMap, depthMapWidth, normalMap, indexMap, surfels, correspondenceMap, newPointsMask);
   }
 }
 
@@ -168,6 +168,7 @@ void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::FindCorrespondingSurfels(
     trackingState->pose_d->GetM(),
     view->depth->GetData(MEMORYDEVICE_CUDA),
     view->depth->noDims.x,
+    this->m_normalMapMB->GetData(MEMORYDEVICE_CUDA),
     renderState->GetIndexImageSuper()->GetData(MEMORYDEVICE_CUDA),
     scene->GetSurfels()->GetData(MEMORYDEVICE_CUDA),
     this->m_correspondenceMapMB->GetData(MEMORYDEVICE_CUDA),
