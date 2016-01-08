@@ -109,6 +109,7 @@ inline void add_new_surfel(int locId, const Matrix4f& T, const unsigned short *n
 _CPU_AND_GPU_CODE_
 inline void calculate_normal(int locId, const Vector3f *vertexMap, int width, int height, Vector3f *normalMap)
 {
+  // FIXME: This is a bit of a quick hack at the moment - it can be improved in due course.
   int x = locId % width, y = locId / width;
 
   Vector3f n(0.0f);
@@ -236,8 +237,10 @@ inline void fuse_matched_point(int locId, const unsigned int *correspondenceMap,
 
     const float newConfidence = surfel.confidence + alpha;
     surfel.position = (surfel.confidence * surfel.position + alpha * transform_point(T, v)) / newConfidence;
+    surfel.normal = (surfel.confidence * surfel.normal + alpha * normalMap[locId]) / newConfidence;
+    surfel.normal /= length(surfel.normal);
 
-    // TODO: Normal, radius, etc.
+    // TODO: Radius, etc.
 
     Vector3u oldColour = SurfelColourManipulator<TSurfel::hasColourInformation>::read(surfel);
     Vector3u newColour = compute_colour(v, depthToRGB, projParamsRGB, colourMap, colourMapWidth, colourMapHeight);
