@@ -25,6 +25,7 @@ namespace ITMLib
     {
       RENDER_COLOUR,
       RENDER_LAMBERTIAN,
+      RENDER_NORMAL,
     };
 
     //#################### DESTRUCTOR ####################

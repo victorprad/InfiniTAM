@@ -27,7 +27,7 @@ namespace ITMLib
 
 template <typename TSurfel>
 __global__ void ck_add_new_surfel(int pixelCount, Matrix4f T, const unsigned short *newPointsMask, const unsigned int *newPointsPrefixSum,
-                                  const Vector3f *vertexMap, const Vector4f *normalMap, const float *radiusMap, const Vector4u *colourMap,
+                                  const Vector3f *vertexMap, const Vector3f *normalMap, const float *radiusMap, const Vector4u *colourMap,
                                   int timestamp, TSurfel *newSurfels, const TSurfel *surfels, const unsigned int *correspondenceMap,
                                   int colourMapWidth, int colourMapHeight, Matrix4f depthToRGB, Vector4f projParamsRGB)
 {
@@ -35,6 +35,15 @@ __global__ void ck_add_new_surfel(int pixelCount, Matrix4f T, const unsigned sho
   if(locId < pixelCount)
   {
     add_new_surfel(locId, T, newPointsMask, newPointsPrefixSum, vertexMap, normalMap, radiusMap, colourMap, timestamp, newSurfels, surfels, correspondenceMap, colourMapWidth, colourMapHeight, depthToRGB, projParamsRGB);
+  }
+}
+
+__global__ void ck_calculate_normal(int pixelCount, const Vector3f *vertexMap, int width, int height, Vector3f *normalMap)
+{
+  int locId = threadIdx.x + blockDim.x * blockIdx.x;
+  if(locId < pixelCount)
+  {
+    calculate_normal(locId, vertexMap, width, height, normalMap);
   }
 }
 
@@ -68,7 +77,7 @@ __global__ void ck_find_corresponding_surfel(int pixelCount, Matrix4f invT, cons
 }
 
 template <typename TSurfel>
-__global__ void ck_fuse_matched_point(int pixelCount, const unsigned int *correspondenceMap, Matrix4f T, const Vector3f *vertexMap, const Vector4f *normalMap,
+__global__ void ck_fuse_matched_point(int pixelCount, const unsigned int *correspondenceMap, Matrix4f T, const Vector3f *vertexMap, const Vector3f *normalMap,
                                       const float *radiusMap, const Vector4u *colourMap, int timestamp, TSurfel *surfels, int colourMapWidth, int colourMapHeight,
                                       Matrix4f depthToRGB, Vector4f projParamsRGB)
 {
@@ -199,7 +208,11 @@ void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::FuseMatchedPoints(ITMSurf
 template <typename TSurfel>
 void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::PreprocessDepthMap(const ITMView *view) const
 {
+  const int height = view->depth->noDims.y;
+  Vector3f *normalMap = this->m_normalMapMB->GetData(MEMORYDEVICE_CUDA);
   const int pixelCount = static_cast<int>(view->depth->dataSize);
+  Vector3f *vertexMap = this->m_vertexMapMB->GetData(MEMORYDEVICE_CUDA);
+  const int width = view->depth->noDims.x;
 
   // Calculate the vertex map.
   int threadsPerBlock = 256;
@@ -207,10 +220,10 @@ void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::PreprocessDepthMap(const 
 
   ck_calculate_vertex_position<<<numBlocks,threadsPerBlock>>>(
     pixelCount,
-    view->depth->noDims.x,
+    width,
     view->calib->intrinsics_d,
     view->depth->GetData(MEMORYDEVICE_CUDA),
-    this->m_vertexMapMB->GetData(MEMORYDEVICE_CUDA)
+    vertexMap
   );
 
 #if DEBUGGING
@@ -218,8 +231,13 @@ void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::PreprocessDepthMap(const 
 #endif
 
   // Calculate the normal map.
-  // FIXME: We don't need to store two copies of it.
-  this->m_normalMapMB->SetFrom(view->depthNormal, ORUtils::MemoryBlock<Vector4f>::CUDA_TO_CUDA);
+  ck_calculate_normal<<<numBlocks,threadsPerBlock>>>(
+    pixelCount,
+    vertexMap,
+    width,
+    height,
+    normalMap
+  );
 
 #if DEBUGGING
   this->m_normalMapMB->UpdateHostFromDevice();

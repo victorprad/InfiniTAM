@@ -7,6 +7,25 @@
 namespace ITMLib
 {
 
+//#################### HELPERS ####################
+
+/**
+ * \brief TODO
+ */
+_CPU_AND_GPU_CODE_
+inline Vector4u colourise_normal(const Vector3f& n)
+{
+  // FIXME: Borrowed from drawPixelNormal - refactor.
+  return Vector4u(
+    (uchar)((0.3f + (-n.x + 1.0f)*0.35f)*255.0f),
+    (uchar)((0.3f + (-n.y + 1.0f)*0.35f)*255.0f),
+    (uchar)((0.3f + (-n.z + 1.0f)*0.35f)*255.0f),
+    255
+  );
+}
+
+//#################### MAIN FUNCTIONS ####################
+
 /**
  * \brief TODO
  */
@@ -55,11 +74,10 @@ inline void copy_surfel_to_buffers(int surfelId, const TSurfel *surfels, float *
   positions[offset+1] = p.y;
   positions[offset+2] = p.z;
 
-  // FIXME: Borrowed from drawPixelNormal - refactor.
-  Vector3f n = surfel.normal;
-  normals[offset] = (uchar)((0.3f + (-n.x + 1.0f)*0.35f)*255.0f);
-  normals[offset+1] = (uchar)((0.3f + (-n.y + 1.0f)*0.35f)*255.0f);
-  normals[offset+2] = (uchar)((0.3f + (-n.z + 1.0f)*0.35f)*255.0f);
+  Vector4u n = colourise_normal(surfel.normal);
+  normals[offset] = n.x;
+  normals[offset+1] = n.y;
+  normals[offset+2] = n.z;
 
   if(colours != NULL)
   {
@@ -148,6 +166,24 @@ void shade_pixel_depth(int locId, const unsigned int *surfelIndexImage, const TS
   }
 
   outputImage[locId] = value;
+}
+
+/**
+ * \brief TODO
+ */
+template <typename TSurfel>
+_CPU_AND_GPU_CODE_
+void shade_pixel_normal(int locId, const unsigned int *surfelIndexImage, const TSurfel *surfels, Vector4u *outputImage)
+{
+  Vector4u n((uchar)0);
+
+  int surfelIndex = surfelIndexImage[locId] - 1;
+  if(surfelIndex >= 0)
+  {
+    n = colourise_normal(surfels[surfelIndex].normal);
+  }
+
+  outputImage[locId] = n;
 }
 
 /**

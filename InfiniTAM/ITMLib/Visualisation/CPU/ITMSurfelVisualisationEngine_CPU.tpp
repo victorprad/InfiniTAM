@@ -86,6 +86,21 @@ void ITMSurfelVisualisationEngine_CPU<TSurfel>::RenderImage(const ITMSurfelScene
       break;
     }
     case Base::RENDER_LAMBERTIAN:
+    {
+      // TODO
+      break;
+    }
+    case Base::RENDER_NORMAL:
+    {
+#ifdef WITH_OPENMP
+      #pragma omp parallel for
+#endif
+      for(int locId = 0; locId < pixelCount; ++locId)
+      {
+        shade_pixel_normal(locId, surfelIndexImagePtr, surfels, outputImagePtr);
+      }
+      break;
+    }
     default:
     {
       // TODO

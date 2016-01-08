@@ -62,6 +62,16 @@ __global__ void ck_shade_pixel_depth(int pixelCount, const unsigned int *surfelI
 }
 
 template <typename TSurfel>
+__global__ void ck_shade_pixel_normal(int pixelCount, const unsigned int *surfelIndexImage, const TSurfel *surfels, Vector4u *outputImage)
+{
+  int locId = threadIdx.x + blockDim.x * blockIdx.x;
+  if(locId < pixelCount)
+  {
+    shade_pixel_normal(locId, surfelIndexImage, surfels, outputImage);
+  }
+}
+
+template <typename TSurfel>
 __global__ void ck_update_depth_buffer_for_surfel(int surfelCount, const TSurfel *surfels, Matrix4f invT, ITMIntrinsics intrinsics,
                                                   int indexImageWidth, int indexImageHeight, int scaleFactor, int *depthBuffer)
 {
@@ -170,6 +180,20 @@ void ITMSurfelVisualisationEngine_CUDA<TSurfel>::RenderImage(const ITMSurfelScen
       break;
     }
     case Base::RENDER_LAMBERTIAN:
+    {
+      // TODO
+      break;
+    }
+    case Base::RENDER_NORMAL:
+    {
+      ck_shade_pixel_normal<<<numBlocks,threadsPerBlock>>>(
+        pixelCount,
+        surfelIndexImagePtr,
+        surfels,
+        outputImagePtr
+      );
+      break;
+    }
     default:
     {
       // TODO

@@ -27,7 +27,7 @@ namespace ITMLib
     ORUtils::MemoryBlock<unsigned int> *m_newPointsPrefixSumMB;
 
     /** The normal map corresponding to the live depth image. */
-    ORUtils::MemoryBlock<Vector4f> *m_normalMapMB;
+    ORUtils::MemoryBlock<Vector3f> *m_normalMapMB;
 
     /** The radius map corresponding to the live depth image. */
     ORUtils::MemoryBlock<float> *m_radiusMapMB;

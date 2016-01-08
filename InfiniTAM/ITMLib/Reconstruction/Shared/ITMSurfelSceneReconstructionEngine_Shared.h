@@ -52,6 +52,20 @@ inline Vector3u compute_colour(const Vector3f& v, const Matrix4f& depthToRGB, co
   return colour;
 }
 
+/**
+ * \brief TODO
+ */
+_CPU_AND_GPU_CODE_
+inline bool try_read_vertex(int x, int y, const Vector3f *vertexMap, int width, int height, Vector3f& result)
+{
+  if(x >= 0 && x < width && y >= 0 && y < height)
+  {
+    result = vertexMap[y * width + x];
+    return true;
+  }
+  return false;
+}
+
 //#################### MAIN FUNCTIONS ####################
 
 /**
@@ -60,7 +74,7 @@ inline Vector3u compute_colour(const Vector3f& v, const Matrix4f& depthToRGB, co
 template <typename TSurfel>
 _CPU_AND_GPU_CODE_
 inline void add_new_surfel(int locId, const Matrix4f& T, const unsigned short *newPointsMask, const unsigned int *newPointsPrefixSum,
-                           const Vector3f *vertexMap, const Vector4f *normalMap, const float *radiusMap, const Vector4u *colourMap,
+                           const Vector3f *vertexMap, const Vector3f *normalMap, const float *radiusMap, const Vector4u *colourMap,
                            int timestamp, TSurfel *newSurfels, const TSurfel *surfels, const unsigned int *correspondenceMap,
                            int colourMapWidth, int colourMapHeight, const Matrix4f& depthToRGB, const Vector4f& projParamsRGB)
 {
@@ -70,7 +84,7 @@ inline void add_new_surfel(int locId, const Matrix4f& T, const unsigned short *n
 
     TSurfel surfel;
     surfel.position = transform_point(T, v);
-    surfel.normal = normalMap[locId].toVector3();
+    surfel.normal = normalMap[locId];
     surfel.radius = radiusMap[locId];
     surfel.confidence = 1.0f;                     // TEMPORARY
     surfel.timestamp = timestamp;
@@ -87,6 +101,35 @@ inline void add_new_surfel(int locId, const Matrix4f& T, const unsigned short *n
 
     newSurfels[newPointsPrefixSum[locId]] = surfel;
   }
+}
+
+/**
+ * \brief TODO
+ */
+_CPU_AND_GPU_CODE_
+inline void calculate_normal(int locId, const Vector3f *vertexMap, int width, int height, Vector3f *normalMap)
+{
+  int x = locId % width, y = locId / width;
+
+  Vector3f n(0.0f);
+
+  bool ok = true;
+  Vector3f xm, xp, ym, yp;
+  ok = ok && try_read_vertex(x - 1, y, vertexMap, width, height, xm);
+  ok = ok && try_read_vertex(x + 1, y, vertexMap, width, height, xp);
+  ok = ok && try_read_vertex(x, y - 1, vertexMap, width, height, ym);
+  ok = ok && try_read_vertex(x, y + 1, vertexMap, width, height, yp);
+
+  if(ok)
+  {
+    Vector3f xdiff = xp - xm, ydiff = yp - ym;
+    n = ORUtils::cross(ydiff, xdiff);
+
+    float len = length(n);
+    if(len >= 0.0f) n /= len;
+  }
+
+  normalMap[locId] = n;
 }
 
 /**
@@ -177,7 +220,7 @@ inline void find_corresponding_surfel(int locId, const Matrix4f& invT, const flo
 template <typename TSurfel>
 _CPU_AND_GPU_CODE_
 inline void fuse_matched_point(int locId, const unsigned int *correspondenceMap, const Matrix4f& T, const Vector3f *vertexMap,
-                               const Vector4f *normalMap, const float *radiusMap, const Vector4u *colourMap, int timestamp,
+                               const Vector3f *normalMap, const float *radiusMap, const Vector4u *colourMap, int timestamp,
                                TSurfel *surfels, int colourMapWidth, int colourMapHeight, const Matrix4f& depthToRGB,
                                const Vector4f& projParamsRGB)
 {
