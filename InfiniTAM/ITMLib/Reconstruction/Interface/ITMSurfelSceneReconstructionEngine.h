@@ -38,8 +38,11 @@ namespace ITMLib
     /** TODO */
     int m_timestamp;
 
-    /** The vertex map corresponding to the live depth image (obtained by unprojecting the points in the depth image). */
-    ORUtils::MemoryBlock<Vector3f> *m_vertexMapMB;
+    /**
+     * The vertex map corresponding to the live depth image (obtained by unprojecting the points in the depth image).
+     * The w component of each vertex is set to 1 if the corresponding depth pixel was valid, and -1 otherwise.
+     */
+    ORUtils::MemoryBlock<Vector4f> *m_vertexMapMB;
 
     //#################### CONSTRUCTORS ####################
   protected:

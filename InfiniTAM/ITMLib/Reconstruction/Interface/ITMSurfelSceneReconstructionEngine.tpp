@@ -18,7 +18,7 @@ ITMSurfelSceneReconstructionEngine<TSurfel>::ITMSurfelSceneReconstructionEngine(
   m_normalMapMB = new ORUtils::MemoryBlock<Vector3f>(pixelCount, true, true);
   m_radiusMapMB = new ORUtils::MemoryBlock<float>(pixelCount, true, true);
   m_surfelRemovalMaskMB = new ORUtils::MemoryBlock<unsigned int>(MAX_SURFEL_COUNT, true, true);
-  m_vertexMapMB =  new ORUtils::MemoryBlock<Vector3f>(pixelCount, true, true);
+  m_vertexMapMB =  new ORUtils::MemoryBlock<Vector4f>(pixelCount, true, true);
 
   // Make sure that the dummy element at the end of the new points mask is initialised properly.
   m_newPointsMaskMB->GetData(MEMORYDEVICE_CPU)[pixelCount] = 0;

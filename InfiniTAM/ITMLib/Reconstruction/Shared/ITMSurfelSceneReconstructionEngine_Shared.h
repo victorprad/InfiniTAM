@@ -69,12 +69,16 @@ inline Vector3f transform_point(const Matrix4f& T, const Vector3f& p)
  * \brief TODO
  */
 _CPU_AND_GPU_CODE_
-inline bool try_read_vertex(int x, int y, const Vector3f *vertexMap, int width, int height, Vector3f& result)
+inline bool try_read_vertex(int x, int y, const Vector4f *vertexMap, int width, int height, Vector3f& result)
 {
   if(x >= 0 && x < width && y >= 0 && y < height)
   {
-    result = vertexMap[y * width + x];
-    return true;
+    Vector4f v = vertexMap[y * width + x];
+    if(v.w > 0.0f)
+    {
+      result = v.toVector3();
+      return true;
+    }
   }
   return false;
 }
@@ -87,13 +91,13 @@ inline bool try_read_vertex(int x, int y, const Vector3f *vertexMap, int width, 
 template <typename TSurfel>
 _CPU_AND_GPU_CODE_
 inline void add_new_surfel(int locId, const Matrix4f& T, const unsigned short *newPointsMask, const unsigned int *newPointsPrefixSum,
-                           const Vector3f *vertexMap, const Vector3f *normalMap, const float *radiusMap, const Vector4u *colourMap,
+                           const Vector4f *vertexMap, const Vector3f *normalMap, const float *radiusMap, const Vector4u *colourMap,
                            int timestamp, TSurfel *newSurfels, const TSurfel *surfels, const unsigned int *correspondenceMap,
                            int colourMapWidth, int colourMapHeight, const Matrix4f& depthToRGB, const Vector4f& projParamsRGB)
 {
   if(newPointsMask[locId])
   {
-    const Vector3f v = vertexMap[locId];
+    const Vector3f v = vertexMap[locId].toVector3();
 
     TSurfel surfel;
     surfel.position = transform_point(T, v);
@@ -120,7 +124,7 @@ inline void add_new_surfel(int locId, const Matrix4f& T, const unsigned short *n
  * \brief TODO
  */
 _CPU_AND_GPU_CODE_
-inline void calculate_normal(int locId, const Vector3f *vertexMap, int width, int height, Vector3f *normalMap)
+inline void calculate_normal(int locId, const Vector4f *vertexMap, int width, int height, Vector3f *normalMap)
 {
   // FIXME: This is a bit of a quick hack at the moment - it can be improved in due course.
   int x = locId % width, y = locId / width;
@@ -150,7 +154,7 @@ inline void calculate_normal(int locId, const Vector3f *vertexMap, int width, in
  * \brief TODO
  */
 _CPU_AND_GPU_CODE_
-inline void calculate_vertex_position(int locId, int width, const ITMIntrinsics& intrinsics, const float *depthMap, Vector3f *vertexMap)
+inline void calculate_vertex_position(int locId, int width, const ITMIntrinsics& intrinsics, const float *depthMap, Vector4f *vertexMap)
 {
   /*
   v(~u~) = D(~u~) K^{-1} (~u~^T,1)^T
@@ -159,11 +163,19 @@ inline void calculate_vertex_position(int locId, int width, const ITMIntrinsics&
                   (0  0  1)      ( 1)          (             1)
   */
   int ux = locId % width, uy = locId / width;
-  vertexMap[locId] = depthMap[locId] * Vector3f(
-    (ux - intrinsics.projectionParamsSimple.px) / intrinsics.projectionParamsSimple.fx,
-    (uy - intrinsics.projectionParamsSimple.py) / intrinsics.projectionParamsSimple.fy,
-    1
-  );
+  Vector4f value(0.0f, 0.0f, 0.0f, -1.0f);
+  const float depth = depthMap[locId];
+  const float EPSILON = 1e-3f;
+  if(fabs(depth + 1) > EPSILON)
+  {
+    value = Vector4f(
+      depth * (ux - intrinsics.projectionParamsSimple.px) / intrinsics.projectionParamsSimple.fx,
+      depth * (uy - intrinsics.projectionParamsSimple.py) / intrinsics.projectionParamsSimple.fy,
+      depth,
+      1.0f
+    );
+  }
+  vertexMap[locId] = value;
 }
 
 /**
@@ -234,7 +246,7 @@ inline void find_corresponding_surfel(int locId, const Matrix4f& invT, const flo
  */
 template <typename TSurfel>
 _CPU_AND_GPU_CODE_
-inline void fuse_matched_point(int locId, const unsigned int *correspondenceMap, const Matrix4f& T, const Vector3f *vertexMap,
+inline void fuse_matched_point(int locId, const unsigned int *correspondenceMap, const Matrix4f& T, const Vector4f *vertexMap,
                                const Vector3f *normalMap, const float *radiusMap, const Vector4u *colourMap, int timestamp,
                                TSurfel *surfels, int colourMapWidth, int colourMapHeight, const Matrix4f& depthToRGB,
                                const Vector4f& projParamsRGB)
@@ -245,7 +257,7 @@ inline void fuse_matched_point(int locId, const unsigned int *correspondenceMap,
   int surfelIndex = correspondenceMap[locId] - 1;
   if(surfelIndex >= 0)
   {
-    const Vector3f v = vertexMap[locId];
+    const Vector3f v = vertexMap[locId].toVector3();
 
     TSurfel surfel = surfels[surfelIndex];
 
