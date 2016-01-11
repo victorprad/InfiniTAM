@@ -154,6 +154,15 @@ inline void calculate_normal(int locId, const Vector4f *vertexMap, int width, in
  * \brief TODO
  */
 _CPU_AND_GPU_CODE_
+inline void calculate_radius(int locId, float *radiusMap)
+{
+  // TODO
+}
+
+/**
+ * \brief TODO
+ */
+_CPU_AND_GPU_CODE_
 inline void calculate_vertex_position(int locId, int width, const ITMIntrinsics& intrinsics, const float *depthMap, Vector4f *vertexMap)
 {
   /*

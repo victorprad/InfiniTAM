@@ -110,6 +110,7 @@ void ITMSurfelSceneReconstructionEngine_CPU<TSurfel>::PreprocessDepthMap(const I
   const ITMIntrinsics& intrinsics = view->calib->intrinsics_d;
   Vector3f *normalMap = this->m_normalMapMB->GetData(MEMORYDEVICE_CPU);
   const int pixelCount = static_cast<int>(view->depth->dataSize);
+  float *radiusMap = this->m_radiusMapMB->GetData(MEMORYDEVICE_CPU);
   Vector4f *vertexMap = this->m_vertexMapMB->GetData(MEMORYDEVICE_CPU);
   const int width = view->depth->noDims.x;
 
@@ -131,7 +132,14 @@ void ITMSurfelSceneReconstructionEngine_CPU<TSurfel>::PreprocessDepthMap(const I
     calculate_normal(locId, vertexMap, width, height, normalMap);
   }
 
-  // TODO: Calculate the radius map.
+  // Calculate the radius map.
+#ifdef WITH_OPENMP
+  #pragma omp parallel for
+#endif
+  for(int locId = 0; locId < pixelCount; ++locId)
+  {
+    calculate_radius(locId, radiusMap);
+  }
 }
 
 template <typename TSurfel>
