@@ -10,6 +10,9 @@ namespace ITMLib
 
 //#################### HELPERS ####################
 
+_CPU_AND_GPU_CODE_ Vector3f transform_normal(const Matrix4f& T, const Vector3f& n);
+_CPU_AND_GPU_CODE_ Vector3f transform_point(const Matrix4f& T, const Vector3f& p);
+
 /**
  * \brief TODO
  *
@@ -28,26 +31,6 @@ inline float calculate_depth_from_pose(const Matrix4f& invT, const Vector3f& p)
  * \brief TODO
  */
 _CPU_AND_GPU_CODE_
-inline Vector3f transform_free_vector(const Matrix4f& T, const Vector3f& p)
-{
-  Vector4f v(p.x, p.y, p.z, 0.0f);
-  return (T * v).toVector3();
-}
-
-/**
- * \brief TODO
- */
-_CPU_AND_GPU_CODE_
-inline Vector3f transform_point(const Matrix4f& T, const Vector3f& p)
-{
-  Vector4f v(p.x, p.y, p.z, 1.0f);
-  return (T * v).toVector3();
-}
-
-/**
- * \brief TODO
- */
-_CPU_AND_GPU_CODE_
 inline Vector3u compute_colour(const Vector3f& v, const Matrix4f& depthToRGB, const Vector4f& projParamsRGB,
                                const Vector4u *colourMap, int colourMapWidth, int colourMapHeight)
 {
@@ -60,6 +43,26 @@ inline Vector3u compute_colour(const Vector3f& v, const Matrix4f& depthToRGB, co
     colour = colourMap[y * colourMapWidth + x].toVector3();
   }
   return colour;
+}
+
+/**
+ * \brief TODO
+ */
+_CPU_AND_GPU_CODE_
+inline Vector3f transform_normal(const Matrix4f& T, const Vector3f& n)
+{
+  Vector4f v(n.x, n.y, n.z, 0.0f);
+  return (T * v).toVector3();
+}
+
+/**
+ * \brief TODO
+ */
+_CPU_AND_GPU_CODE_
+inline Vector3f transform_point(const Matrix4f& T, const Vector3f& p)
+{
+  Vector4f v(p.x, p.y, p.z, 1.0f);
+  return (T * v).toVector3();
 }
 
 /**
@@ -94,7 +97,7 @@ inline void add_new_surfel(int locId, const Matrix4f& T, const unsigned short *n
 
     TSurfel surfel;
     surfel.position = transform_point(T, v);
-    surfel.normal = transform_free_vector(T, normalMap[locId]);
+    surfel.normal = transform_normal(T, normalMap[locId]);
     surfel.radius = radiusMap[locId];
     surfel.confidence = 1.0f;                     // TEMPORARY
     surfel.timestamp = timestamp;
@@ -180,9 +183,10 @@ _CPU_AND_GPU_CODE_
 inline void find_corresponding_surfel(int locId, const Matrix4f& invT, const float *depthMap, int depthMapWidth, const Vector3f *normalMap, const unsigned int *indexMap,
                                       const TSurfel *surfels, unsigned int *correspondenceMap, unsigned short *newPointsMask)
 {
-  // If the depth pixel is invalid, early out.
+  // If the depth pixel or normal is invalid, early out.
+  const float EPSILON = 1e-3f;
   float depth = depthMap[locId];
-  if(fabs(depth + 1) <= 0.0001f || length(normalMap[locId]) < 0.0001f)
+  if(fabs(depth + 1) <= EPSILON || length(normalMap[locId]) <= EPSILON)
   {
     correspondenceMap[locId] = 0;
     newPointsMask[locId] = 0;
@@ -247,7 +251,7 @@ inline void fuse_matched_point(int locId, const unsigned int *correspondenceMap,
 
     const float newConfidence = surfel.confidence + alpha;
     surfel.position = (surfel.confidence * surfel.position + alpha * transform_point(T, v)) / newConfidence;
-    surfel.normal = (surfel.confidence * surfel.normal + alpha * transform_free_vector(T, normalMap[locId])) / newConfidence;
+    surfel.normal = (surfel.confidence * surfel.normal + alpha * transform_normal(T, normalMap[locId])) / newConfidence;
     surfel.normal /= length(surfel.normal);
 
     // TODO: Radius, etc.
