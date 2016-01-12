@@ -2,9 +2,9 @@
 
 #include "ITMDenseMapper.h"
 
+#include "../Engines/Reconstruction/ITMSceneReconstructionEngineFactory.h"
+#include "../Engines/Swapping/ITMSwappingEngineFactory.h"
 #include "../Objects/RenderStates/ITMRenderState_VH.h"
-#include "../Reconstruction/ITMSceneReconstructionEngineFactory.h"
-#include "../Swapping/ITMSwappingEngineFactory.h"
 using namespace ITMLib;
 
 template<class TVoxel, class TIndex>

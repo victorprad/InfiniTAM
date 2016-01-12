@@ -4,11 +4,11 @@
 
 #include <map>
 
+#include "../Engines/Visualisation/Interface/ITMVisualisationEngine.h"
 #include "../Objects/RenderStates/ITMRenderState.h"
 #include "../Objects/Scene/ITMScene.h"
 #include "../Objects/Tracking/ITMTrackingState.h"
 #include "../Utils/ITMLibSettings.h"
-#include "../Visualisation/Interface/ITMVisualisationEngine.h"
 
 namespace ITMLib {
 	struct ITMPoseConstraint
