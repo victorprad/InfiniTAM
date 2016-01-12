@@ -3,13 +3,13 @@
 #include <cstdlib>
 #include <iostream>
 
-#include "Engine/CLIEngine.h"
-#include "Engine/ImageSourceEngine.h"
-#include "Engine/OpenNIEngine.h"
-#include "Engine/Kinect2Engine.h"
+#include "CLIEngine.h"
 
-#include "ITMLib/ITMLibDefines.h"
-#include "ITMLib/Core/ITMBasicEngine.h"
+#include "../../Engine/OpenNIEngine.h"
+#include "../../Engine/Kinect2Engine.h"
+
+#include "../../ITMLib/ITMLibDefines.h"
+#include "../../ITMLib/Core/ITMBasicEngine.h"
 
 using namespace InfiniTAM::Engine;
 using namespace ITMLib;

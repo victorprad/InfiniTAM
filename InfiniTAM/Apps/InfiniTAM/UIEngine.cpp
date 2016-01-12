@@ -17,11 +17,11 @@
 #endif
 #endif
 
-#include "../Utils/FileUtils.h"
+#include "../../ITMLib/ITMLibDefines.h"
+#include "../../ITMLib/Core/ITMBasicEngine.h"
+#include "../../ITMLib/Core/ITMMultiEngine.h"
 
-#include "../ITMLib/ITMLibDefines.h"
-#include "../ITMLib/Core/ITMBasicEngine.h"
-#include "../ITMLib/Core/ITMMultiEngine.h"
+#include "../../Utils/FileUtils.h"
 
 using namespace InfiniTAM::Engine;
 using namespace ITMLib;

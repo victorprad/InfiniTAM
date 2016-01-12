@@ -3,17 +3,16 @@
 #include <cstdlib>
 #include <iostream>
 
-#include "Engine/UIEngine.h"
-#include "Engine/ImageSourceEngine.h"
+#include "UIEngine.h"
 
-#include "Engine/OpenNIEngine.h"
-#include "Engine/Kinect2Engine.h"
-#include "Engine/LibUVCEngine.h"
-#include "Engine/RealSenseEngine.h"
+#include "../../Engine/OpenNIEngine.h"
+#include "../../Engine/Kinect2Engine.h"
+#include "../../Engine/LibUVCEngine.h"
+#include "../../Engine/RealSenseEngine.h"
 
-#include "ITMLib/ITMLibDefines.h"
-#include "ITMLib/Core/ITMBasicEngine.h"
-#include "ITMLib/Core/ITMMultiEngine.h"
+#include "../../ITMLib/ITMLibDefines.h"
+#include "../../ITMLib/Core/ITMBasicEngine.h"
+#include "../../ITMLib/Core/ITMMultiEngine.h"
 
 using namespace InfiniTAM::Engine;
 using namespace ITMLib;

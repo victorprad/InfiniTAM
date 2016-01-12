@@ -4,7 +4,7 @@
 
 #include <string.h>
 
-#include "../Utils/FileUtils.h"
+#include "../../Utils/FileUtils.h"
 
 using namespace InfiniTAM::Engine;
 using namespace ITMLib;

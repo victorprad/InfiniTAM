@@ -2,13 +2,12 @@
 
 #pragma once
 
-#include "../ITMLib/Core/ITMMainEngine.h"
-#include "../ITMLib/Utils/ITMLibSettings.h"
-#include "../Utils/FileUtils.h"
-#include "../Utils/NVTimer.h"
-
-#include "ImageSourceEngine.h"
-#include "IMUSourceEngine.h"
+#include "../../Engine/ImageSourceEngine.h"
+#include "../../Engine/IMUSourceEngine.h"
+#include "../../ITMLib/Core/ITMMainEngine.h"
+#include "../../ITMLib/Utils/ITMLibSettings.h"
+#include "../../Utils/FileUtils.h"
+#include "../../Utils/NVTimer.h"
 
 #include <vector>
 
