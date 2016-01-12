@@ -2,10 +2,10 @@
 
 #include "ITMMultiEngine.h"
 
-#include "../LowLevel/ITMLowLevelEngineFactory.h"
+#include "../Engines/LowLevel/ITMLowLevelEngineFactory.h"
+#include "../Engines/ViewBuilding/ITMViewBuilderFactory.h"
+#include "../Engines/Visualisation/ITMVisualisationEngineFactory.h"
 #include "../Trackers/ITMTrackerFactory.h"
-#include "../ViewBuilding/ITMViewBuilderFactory.h"
-#include "../Visualisation/ITMVisualisationEngineFactory.h"
 using namespace ITMLib;
 
 #if 0
