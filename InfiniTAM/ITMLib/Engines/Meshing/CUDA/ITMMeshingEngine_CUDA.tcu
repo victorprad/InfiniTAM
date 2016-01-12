@@ -1,10 +1,10 @@
 // Copyright 2014-2015 Isis Innovation Limited and the authors of InfiniTAM
 
 #include "ITMMeshingEngine_CUDA.h"
-#include "../Shared/ITMMeshingEngine_Shared.h"
-#include "../../Utils/ITMCUDAUtils.h"
 
-#include "../../../ORUtils/CUDADefines.h"
+#include "../Shared/ITMMeshingEngine_Shared.h"
+#include "../../../Utils/ITMCUDAUtils.h"
+#include "../../../../ORUtils/CUDADefines.h"
 
 using namespace ITMLib;
 

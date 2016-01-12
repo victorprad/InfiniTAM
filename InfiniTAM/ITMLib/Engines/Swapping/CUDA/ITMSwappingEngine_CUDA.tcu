@@ -3,8 +3,8 @@
 #include "ITMSwappingEngine_CUDA.h"
 
 #include "../Shared/ITMSwappingEngine_Shared.h"
-#include "../../Objects/RenderStates/ITMRenderState_VH.h"
-#include "../../Utils/ITMCUDAUtils.h"
+#include "../../../Objects/RenderStates/ITMRenderState_VH.h"
+#include "../../../Utils/ITMCUDAUtils.h"
 using namespace ITMLib;
 
 namespace

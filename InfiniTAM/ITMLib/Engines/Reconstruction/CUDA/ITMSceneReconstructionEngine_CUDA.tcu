@@ -3,8 +3,8 @@
 #include "ITMSceneReconstructionEngine_CUDA.h"
 
 #include "../Shared/ITMSceneReconstructionEngine_Shared.h"
-#include "../../Objects/RenderStates/ITMRenderState_VH.h"
-#include "../../Utils/ITMCUDAUtils.h"
+#include "../../../Objects/RenderStates/ITMRenderState_VH.h"
+#include "../../../Utils/ITMCUDAUtils.h"
 
 struct AllocationTempData {
 	int noAllocatedVoxelEntries;

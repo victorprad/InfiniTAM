@@ -3,7 +3,7 @@
 #pragma once
 
 #include "../Interface/ITMSceneReconstructionEngine.h"
-#include "../../Objects/Scene/ITMPlainVoxelArray.h"
+#include "../../../Objects/Scene/ITMPlainVoxelArray.h"
 
 namespace ITMLib
 {

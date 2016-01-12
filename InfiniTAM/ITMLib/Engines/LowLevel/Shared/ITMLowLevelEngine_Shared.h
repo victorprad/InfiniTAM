@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "../../Utils/ITMMath.h"
+#include "../../../Utils/ITMMath.h"
 
 _CPU_AND_GPU_CODE_ inline void filterSubsample(DEVICEPTR(Vector4u) *imageData_out, int x, int y, Vector2i newDims, 
 	const CONSTPTR(Vector4u) *imageData_in, Vector2i oldDims)

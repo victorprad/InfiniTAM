@@ -4,8 +4,8 @@
 
 #include <math.h>
 
-#include "../../Objects/Meshing/ITMMesh.h"
-#include "../../Objects/Scene/ITMScene.h"
+#include "../../../Objects/Meshing/ITMMesh.h"
+#include "../../../Objects/Scene/ITMScene.h"
 
 namespace ITMLib
 {

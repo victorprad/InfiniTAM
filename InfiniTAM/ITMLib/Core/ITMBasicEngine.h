@@ -5,11 +5,11 @@
 #include "ITMDenseMapper.h"
 #include "ITMMainEngine.h"
 #include "ITMTrackingController.h"
-#include "../LowLevel/Interface/ITMLowLevelEngine.h"
-#include "../Meshing/Interface/ITMMeshingEngine.h"
+#include "../Engines/LowLevel/Interface/ITMLowLevelEngine.h"
+#include "../Engines/Meshing/Interface/ITMMeshingEngine.h"
+#include "../Engines/ViewBuilding/Interface/ITMViewBuilder.h"
+#include "../Engines/Visualisation/Interface/ITMVisualisationEngine.h"
 #include "../Objects/Misc/ITMIMUCalibrator.h"
-#include "../ViewBuilding/Interface/ITMViewBuilder.h"
-#include "../Visualisation/Interface/ITMVisualisationEngine.h"
 
 namespace ITMLib
 {

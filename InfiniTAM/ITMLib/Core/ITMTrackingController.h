@@ -2,9 +2,9 @@
 
 #pragma once
 
+#include "../Engines/Visualisation/Interface/ITMVisualisationEngine.h"
 #include "../Trackers/Interface/ITMTracker.h"
 #include "../Utils/ITMLibSettings.h"
-#include "../Visualisation/Interface/ITMVisualisationEngine.h"
 
 namespace ITMLib
 {

@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "../../Utils/ITMMath.h"
+#include "../../../Utils/ITMMath.h"
 
 template<class TVoxel>
 _CPU_AND_GPU_CODE_ inline void combineVoxelDepthInformation(const CONSTPTR(TVoxel) & src, DEVICEPTR(TVoxel) & dst, int maxW)

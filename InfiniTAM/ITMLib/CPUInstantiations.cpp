@@ -5,14 +5,14 @@
 #include "Core/ITMDenseMapper.tpp"
 #include "Core/ITMLocalSceneManager.tpp"
 #include "Core/ITMMultiEngine.tpp"
-#include "Meshing/CPU/ITMMeshingEngine_CPU.tpp"
-#include "Reconstruction/CPU/ITMSceneReconstructionEngine_CPU.tpp"
-#include "Swapping/CPU/ITMSwappingEngine_CPU.tpp"
+#include "Engines/Meshing/CPU/ITMMeshingEngine_CPU.tpp"
+#include "Engines/Reconstruction/CPU/ITMSceneReconstructionEngine_CPU.tpp"
+#include "Engines/Swapping/CPU/ITMSwappingEngine_CPU.tpp"
+#include "Engines/Visualisation/CPU/ITMVisualisationEngine_CPU.tpp"
+#include "Engines/Visualisation/Interface/ITMVisualisationEngine.h"
 #include "Trackers/ITMTrackerFactory.h"
 #include "Trackers/CPU/ITMRenTracker_CPU.tpp"
 #include "Trackers/Interface/ITMRenTracker.tpp"
-#include "Visualisation/CPU/ITMVisualisationEngine_CPU.tpp"
-#include "Visualisation/Interface/ITMVisualisationEngine.h"
 
 namespace ITMLib
 {

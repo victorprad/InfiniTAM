@@ -3,8 +3,8 @@
 #include "ITMViewBuilder_CUDA.h"
 
 #include "../Shared/ITMViewBuilder_Shared.h"
-#include "../../../ORUtils/CUDADefines.h"
-#include "../../../ORUtils/MemoryBlock.h"
+#include "../../../../ORUtils/CUDADefines.h"
+#include "../../../../ORUtils/MemoryBlock.h"
 
 using namespace ITMLib;
 using namespace ORUtils;
