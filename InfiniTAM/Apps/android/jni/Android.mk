@@ -48,11 +48,11 @@ LOCAL_SRC_FILES := InfiniTAMApp.cpp jniExport.cpp
 LOCAL_CFLAGS := -Werror #-DCOMPILE_WITHOUT_CUDA
 LOCAL_LDLIBS := -landroid -lGLESv1_CM -llog
 LOCAL_SHARED_LIBRARIES := $(MY_OPENNI_MODULE)
-LOCAL_STATIC_LIBRARIES := Engine Utils ITMLib cudart_static
+LOCAL_STATIC_LIBRARIES := Engine ORUtils ITMLib cudart_static
 
 include $(BUILD_SHARED_LIBRARY)
 
 include ../Engine/Android.mk
-include ../Utils/Android.mk
+include ../ORUtils/Android.mk
 include ../ITMLib/Android.mk
 

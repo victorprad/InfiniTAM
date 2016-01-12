@@ -2,7 +2,7 @@ LOCAL_PATH := $(call my-dir)
 
 include $(CLEAR_VARS)
 
-LOCAL_MODULE    := Utils
+LOCAL_MODULE    := ORUtils
 LOCAL_SRC_FILES := FileUtils.cpp
 LOCAL_CFLAGS := -Werror
 # -DCOMPILE_WITHOUT_CUDA

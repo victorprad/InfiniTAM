@@ -248,7 +248,7 @@ static bool pnm_writedata(FILE *f, int xsize, int ysize, FormatType type, const 
 	return true;
 }
 
-void SaveImageToFile(const ITMUChar4Image* image, const char* fileName, bool flipVertical)
+void SaveImageToFile(const ORUtils::Image<ORUtils::Vector4<unsigned char>> * image, const char* fileName, bool flipVertical)
 {
 	FILE *f = fopen(fileName, "wb");
 	if (!pnm_writeheader(f, image->noDims.x, image->noDims.y, RGB_8u)) {
@@ -257,7 +257,7 @@ void SaveImageToFile(const ITMUChar4Image* image, const char* fileName, bool fli
 
 	unsigned char *data = new unsigned char[image->noDims.x*image->noDims.y * 3];
 
-	Vector2i noDims = image->noDims;
+	ORUtils::Vector2<int> noDims = image->noDims;
 
 	if (flipVertical)
 	{
@@ -286,7 +286,7 @@ void SaveImageToFile(const ITMUChar4Image* image, const char* fileName, bool fli
 	fclose(f);
 }
 
-void SaveImageToFile(const ITMShortImage* image, const char* fileName)
+void SaveImageToFile(const ORUtils::Image<short>* image, const char* fileName)
 {
 	short *data = (short*)malloc(sizeof(short) * image->dataSize);
 	const short *dataSource = image->GetData(MEMORYDEVICE_CPU);
@@ -302,7 +302,7 @@ void SaveImageToFile(const ITMShortImage* image, const char* fileName)
 	delete data;
 }
 
-void SaveImageToFile(const ITMFloatImage* image, const char* fileName)
+void SaveImageToFile(const ORUtils::Image<float>* image, const char* fileName)
 {
 	unsigned short *data = new unsigned short[image->dataSize];
 	for (size_t i = 0; i < image->dataSize; i++)
@@ -321,7 +321,7 @@ void SaveImageToFile(const ITMFloatImage* image, const char* fileName)
 	delete[] data;
 }
 
-bool ReadImageFromFile(ITMUChar4Image* image, const char* fileName)
+bool ReadImageFromFile(ORUtils::Image<ORUtils::Vector4<unsigned char>> * image, const char* fileName)
 {
 	PNGReaderData pngData;
 	bool usepng = false;
@@ -343,9 +343,9 @@ bool ReadImageFromFile(ITMUChar4Image* image, const char* fileName)
 		usepng = true;
 	}
 
-	Vector2i newSize(xsize, ysize);
+	ORUtils::Vector2<int> newSize(xsize, ysize);
 	image->ChangeDims(newSize);
-	Vector4u *dataPtr = image->GetData(MEMORYDEVICE_CPU);
+	ORUtils::Vector4<unsigned char> *dataPtr = image->GetData(MEMORYDEVICE_CPU);
 
 	unsigned char *data;
 	if (type != RGBA_8u) data = new unsigned char[xsize*ysize * 3];
@@ -374,7 +374,7 @@ bool ReadImageFromFile(ITMUChar4Image* image, const char* fileName)
 	return true;
 }
 
-bool ReadImageFromFile(ITMShortImage *image, const char *fileName)
+bool ReadImageFromFile(ORUtils::Image<short> *image, const char *fileName)
 {
 	PNGReaderData pngData;
 	bool usepng = false;
@@ -406,7 +406,7 @@ bool ReadImageFromFile(ITMShortImage *image, const char *fileName)
 	}
 	fclose(f);
 
-	Vector2i newSize(xsize, ysize);
+	ORUtils::Vector2<int> newSize(xsize, ysize);
 	image->ChangeDims(newSize);
 	if (binary) {
 		for (int i = 0; i < image->noDims.x*image->noDims.y; ++i) {

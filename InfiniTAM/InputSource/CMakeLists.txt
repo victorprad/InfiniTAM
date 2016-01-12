@@ -28,7 +28,7 @@ IF(WITH_REALSENSE)
   add_definitions(-DCOMPILE_WITH_RealSenseWindows)
 ENDIF()
 
-add_library(Engine
+add_library(InputSource
 ImageSourceEngine.cpp
 ImageSourceEngine.h
 IMUSourceEngine.cpp
@@ -43,20 +43,20 @@ RealSenseEngine.cpp
 RealSenseEngine.h
 )
 
-target_link_libraries(Engine ${GLUT_LIBRARIES})
-target_link_libraries(Engine ${OPENGL_LIBRARIES})
-target_link_libraries(Engine ITMLib)
-target_link_libraries(Engine ORUtils)
+target_link_libraries(InputSource ${GLUT_LIBRARIES})
+target_link_libraries(InputSource ${OPENGL_LIBRARIES})
+target_link_libraries(InputSource ITMLib)
+target_link_libraries(InputSource ORUtils)
 IF(WITH_CUDA)
-  target_link_libraries(Engine ${CUDA_LIBRARY})
+  target_link_libraries(InputSource ${CUDA_LIBRARY})
 ENDIF()
 IF(OPENNI_FOUND)
-  target_link_libraries(Engine ${OpenNI_LIBRARY})
+  target_link_libraries(InputSource ${OpenNI_LIBRARY})
 ENDIF(OPENNI_FOUND)
 IF(DEFINED libuvc_LIBRARIES)
-  target_link_libraries(Engine ${libuvc_LIBRARIES})
+  target_link_libraries(InputSource ${libuvc_LIBRARIES})
 ENDIF()
 IF(WITH_REALSENSE)
-  TARGET_LINK_LIBRARIES(Engine ${RealSense_LIBRARY})
+  TARGET_LINK_LIBRARIES(InputSource ${RealSense_LIBRARY})
 ENDIF()
 

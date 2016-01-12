@@ -1,3 +1,15 @@
+IF(WITH_CUDA)
+  include_directories(${CUDA_INCLUDE_DIRS})
+ELSE()
+  add_definitions(-DCOMPILE_WITHOUT_CUDA)
+ENDIF()
+
+IF(PNG_FOUND)
+  include_directories(${PNG_INCLUDE_DIRS})
+  add_definitions(${PNG_DEFINITIONS})
+  add_definitions(-DUSE_LIBPNG)
+ENDIF()
+
 #############################
 # Specify the project files #
 #############################
@@ -15,6 +27,8 @@ MemoryBlock.h
 MemoryBlockPersister.h
 PlatformIndependence.h
 KeyValueConfig.h
+NVTimer.h
+FileUtils.h
 )
 
 #################################################################
@@ -23,6 +37,7 @@ KeyValueConfig.h
 
 set(ORUTILS_OBJECTS
 KeyValueConfig.cpp
+FileUtils.cpp
 ${ORUTILS_HEADERS}
 )
 
@@ -38,6 +53,10 @@ SOURCE_GROUP("" FILES ${ORUTILS_OBJECTS} ${ORUTILS_HEADERS})
 
 add_library(ORUtils ${ORUTILS_OBJECTS})
 
+IF(PNG_FOUND)
+  target_link_libraries(ORUtils ${PNG_LIBRARIES})
+ENDIF()
+
 IF(WITH_CUDA)
 #  include_directories(${CUDA_INCLUDE_DIRS})
 #  cuda_add_library(ITMLib
@@ -51,4 +70,4 @@ ELSE()
 #  add_library(ITMLib ${ITMLIB_CPU_OBJECTS} ${ITMLIB_COMMON_OBJECTS})
 ENDIF()
 
-#target_link_libraries(ITMLib Utils)
+#target_link_libraries(ITMLib ORUtils)
