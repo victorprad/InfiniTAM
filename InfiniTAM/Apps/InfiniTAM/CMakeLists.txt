@@ -38,7 +38,7 @@ UIEngine.h
 # Specify the source groups #
 #############################
 
-SOURCE_GROUP("" FILES ${sources})
+SOURCE_GROUP("" FILES ${sources} ${headers})
 
 ##########################################
 # Specify the target and where to put it #
