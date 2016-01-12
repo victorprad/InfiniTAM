@@ -3,7 +3,7 @@
 #pragma once
 
 #include "Interface/ITMSurfelSceneReconstructionEngine.h"
-#include "../Utils/ITMLibSettings.h"
+#include "../../Utils/ITMLibSettings.h"
 
 namespace ITMLib
 {
