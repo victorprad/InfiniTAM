@@ -55,7 +55,7 @@ ITMMultiEngine<TVoxel,TIndex>::ITMMultiEngine(const ITMLibSettings *settings, co
 
 	view = NULL; // will be allocated by the view builder
 
-	mLoopClosureDetector = new LCDLib::LoopClosureDetector(imgSize_d, Vector2f(0.5f,3.0f), 0.2f, 500, 4);
+	mRelocaliser = new RelocLib::Relocaliser(imgSize_d, Vector2f(0.5f,3.0f), 0.2f, 500, 4);
 }
 
 template <typename TVoxel, typename TIndex>
@@ -79,7 +79,7 @@ ITMMultiEngine<TVoxel,TIndex>::~ITMMultiEngine(void)
 
 	delete visualisationEngine;
 
-	delete mLoopClosureDetector;
+	delete mRelocaliser;
 }
 
 template <typename TVoxel, typename TIndex>
@@ -168,7 +168,7 @@ void ITMMultiEngine<TVoxel,TIndex>::ProcessFrame(ITMUChar4Image *rgbImage, ITMSh
 			fprintf(stderr, " LCD");
 			int NN[k_loopcloseneighbours];
 			float distances[k_loopcloseneighbours];
-			int addKeyframeIdx = mLoopClosureDetector->ProcessFrame(view->depth, k_loopcloseneighbours, NN, distances, primaryTrackingSuccess);
+			int addKeyframeIdx = mRelocaliser->ProcessFrame(view->depth, k_loopcloseneighbours, NN, distances, primaryTrackingSuccess);
 			int primarySceneIdx = -1;
 			if (primaryDataIdx >= 0) primarySceneIdx = activeDataManager->getSceneIndex(primaryDataIdx);
 
@@ -180,7 +180,7 @@ void ITMMultiEngine<TVoxel,TIndex>::ProcessFrame(ITMUChar4Image *rgbImage, ITMSh
 			else for (int j = 0; j < k_loopcloseneighbours; ++j)
 			{
 				if (distances[j] > F_maxdistattemptreloc) continue;
-				const LCDLib::PoseDatabase::PoseInScene & keyframe = poseDatabase.retrievePose(NN[j]);
+				const RelocLib::PoseDatabase::PoseInScene & keyframe = poseDatabase.retrievePose(NN[j]);
 				int newDataIdx = activeDataManager->initiateNewLink(keyframe.sceneIdx, keyframe.pose, (primarySceneIdx<0));
 				if (newDataIdx >= 0) {
 					// this is a new relocalisation attempt

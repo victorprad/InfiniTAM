@@ -6,7 +6,7 @@
 
 #include "../ITMLib/Objects/Camera/ITMPose.h"
 
-namespace LCDLib {
+namespace RelocLib {
 
 class PoseDatabase {
 	public:

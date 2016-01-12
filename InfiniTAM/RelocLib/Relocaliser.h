@@ -3,14 +3,14 @@
 #pragma once
 
 #include "FernConservatory.h"
-#include "LCDDatabase.h"
+#include "RelocDatabase.h"
 
-namespace LCDLib {
+namespace RelocLib {
 
-class LoopClosureDetector {
+class Relocaliser {
 	public:
-	LoopClosureDetector(ORUtils::Vector2<int> imgSize, ORUtils::Vector2<float> range, float harvestingThreshold, int numFerns, int numDecisionsPerFern);
-	~LoopClosureDetector(void);
+	Relocaliser(ORUtils::Vector2<int> imgSize, ORUtils::Vector2<float> range, float harvestingThreshold, int numFerns, int numDecisionsPerFern);
+	~Relocaliser(void);
 
 	/** Process an image for loop closure detection. This will find nearby
 	    keyframes in the database and possibly add the image as a new
@@ -34,7 +34,7 @@ class LoopClosureDetector {
 	private:
 	float mKeyframeHarvestingThreshold;
 	FernConservatory *mEncoding;
-	LCDDatabase *mDatabase;
+	RelocDatabase *mDatabase;
 };
 
 }

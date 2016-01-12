@@ -4,9 +4,9 @@ ELSE()
   add_definitions(-DCOMPILE_WITHOUT_CUDA)
 ENDIF()
 
-add_library(LCDLib
+add_library(RelocLib
 PoseDatabase.h PoseDatabase.cpp
-LCDDatabase.h LCDDatabase.cpp
+RelocDatabase.h RelocDatabase.cpp
 FernConservatory.h FernConservatory.cpp
-LoopClosureDetector.h LoopClosureDetector.cpp
+Relocaliser.h Relocaliser.cpp
 )

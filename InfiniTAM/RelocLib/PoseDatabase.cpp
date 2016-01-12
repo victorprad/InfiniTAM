@@ -2,7 +2,7 @@
 
 #include "PoseDatabase.h"
 
-using namespace LCDLib;
+using namespace RelocLib;
 
 PoseDatabase::PoseDatabase(void)
 {}

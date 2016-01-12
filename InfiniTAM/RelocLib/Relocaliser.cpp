@@ -1,20 +1,20 @@
 // Copyright 2014 Isis Innovation Limited and the authors of InfiniTAM
 
-#include "LoopClosureDetector.h"
+#include "Relocaliser.h"
 
 #define TREAT_HOLES
 
-using namespace LCDLib;
+using namespace RelocLib;
 
-LoopClosureDetector::LoopClosureDetector(ORUtils::Vector2<int> imgSize, ORUtils::Vector2<float> range, float harvestingThreshold, int numFerns, int numDecisionsPerFern)
+Relocaliser::Relocaliser(ORUtils::Vector2<int> imgSize, ORUtils::Vector2<float> range, float harvestingThreshold, int numFerns, int numDecisionsPerFern)
 {
 	static const int levels = 5;
 	mEncoding = new FernConservatory(numFerns, imgSize / (1 << levels), range, numDecisionsPerFern);
-	mDatabase = new LCDDatabase(numFerns, mEncoding->getNumCodes());
+	mDatabase = new RelocDatabase(numFerns, mEncoding->getNumCodes());
 	mKeyframeHarvestingThreshold = harvestingThreshold;
 }
 
-LoopClosureDetector::~LoopClosureDetector(void)
+Relocaliser::~Relocaliser(void)
 {
 	delete mEncoding;
 	delete mDatabase;
@@ -136,7 +136,7 @@ void filterSubsample(const ORUtils::Image<float> *input, ORUtils::Image<float> *
 	}
 }
 
-int LoopClosureDetector::ProcessFrame(const ORUtils::Image<float> *img_d, int k, int nearestNeighbours[], float *distances, bool harvestKeyframes) const
+int Relocaliser::ProcessFrame(const ORUtils::Image<float> *img_d, int k, int nearestNeighbours[], float *distances, bool harvestKeyframes) const
 {
 	// downsample and preprocess image => processedImage1
 	ORUtils::Image<float> processedImage1(ORUtils::Vector2<int>(1,1), MEMORYDEVICE_CPU), processedImage2(ORUtils::Vector2<int>(1,1), MEMORYDEVICE_CPU);

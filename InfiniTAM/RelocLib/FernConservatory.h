@@ -7,7 +7,7 @@
 #include "../ORUtils/Vector.h"
 #include "../ORUtils/Image.h"
 
-namespace LCDLib {
+namespace RelocLib {
 
 struct FernTester {
 	public:

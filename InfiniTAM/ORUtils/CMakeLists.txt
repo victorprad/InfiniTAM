@@ -29,6 +29,8 @@ PlatformIndependence.h
 KeyValueConfig.h
 NVTimer.h
 FileUtils.h
+HomkerMap.h
+SVMClassifier.h
 )
 
 #################################################################

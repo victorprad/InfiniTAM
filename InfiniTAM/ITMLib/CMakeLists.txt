@@ -540,4 +540,4 @@ else()
 endif()
 
 target_link_libraries(ITMLib ORUtils)
-target_link_libraries(ITMLib LCDLib)
+target_link_libraries(ITMLib RelocLib)

@@ -1,10 +1,10 @@
 // Copyright 2014 Isis Innovation Limited and the authors of InfiniTAM
 
-#include "LCDDatabase.h"
+#include "RelocDatabase.h"
 
-using namespace LCDLib;
+using namespace RelocLib;
 
-LCDDatabase::LCDDatabase(int codeLength, int codeFragmentDim)
+RelocDatabase::RelocDatabase(int codeLength, int codeFragmentDim)
 {
 	mTotalEntries = 0;
 	mCodeLength = codeLength;
@@ -13,12 +13,12 @@ LCDDatabase::LCDDatabase(int codeLength, int codeFragmentDim)
 	mIds = new std::vector<int>[codeLength*codeFragmentDim];
 }
 
-LCDDatabase::~LCDDatabase(void)
+RelocDatabase::~RelocDatabase(void)
 {
 	delete[] mIds;
 }
 
-int LCDDatabase::findMostSimilar(const char *codeFragments, int nearestNeighbours[], float distances[], int k)
+int RelocDatabase::findMostSimilar(const char *codeFragments, int nearestNeighbours[], float distances[], int k)
 {
 	int foundNN = 0;
 	if (mTotalEntries > 0) {
@@ -61,7 +61,7 @@ int LCDDatabase::findMostSimilar(const char *codeFragments, int nearestNeighbour
 }
 
 // returns ID of newly added entry
-int LCDDatabase::addEntry(const char *codeFragments)
+int RelocDatabase::addEntry(const char *codeFragments)
 {
 	int newId = mTotalEntries++;
 	for (int f = 0; f < mCodeLength; f++) {

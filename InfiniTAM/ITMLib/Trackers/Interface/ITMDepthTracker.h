@@ -9,6 +9,9 @@
 #include "../../Objects/Tracking/ITMSceneHierarchyLevel.h"
 #include "../../Objects/Tracking/TrackerIterationType.h"
 
+#include "../../../ORUtils/HomkerMap.h"
+#include "../../../ORUtils/SVMClassifier.h"
+
 namespace ITMLib
 {
 	/** Base class for engine performing ICP based depth tracking.
@@ -36,6 +39,9 @@ namespace ITMLib
 		bool HasConverged(float *step) const;
 
 		void SetEvaluationData(ITMTrackingState *trackingState, const ITMView *view);
+
+		ORUtils::HomkerMap *map;
+		ORUtils::SVMClassifier *svmClassifier;
 	protected:
 		float *distThresh;
 

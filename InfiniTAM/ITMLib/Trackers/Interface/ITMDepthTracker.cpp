@@ -21,6 +21,44 @@ ITMDepthTracker::ITMDepthTracker(Vector2i imgSize, TrackerIterationType *trackin
 	this->lowLevelEngine = lowLevelEngine;
 
 	this->terminationThreshold = terminationThreshold;
+
+	map = new ORUtils::HomkerMap(2);
+	svmClassifier = new ORUtils::SVMClassifier(map->getDescriptorSize(3));
+
+	float w[15];
+	w[0] = -1.72212087210501f;
+	w[1] = -0.136016024824135f;
+	w[2] = -0.562074750899139f;
+	w[3] = 1.37310356821369f;
+	w[4] = -1.57318813391889f;
+	w[5] = 22.2145753928831f;
+	w[6] = 26.3434421002226f;
+	w[7] = 4.62689077066077f;
+	w[8] = 16.1495398120736f;
+	w[9] = 3.62534435756138f;
+	w[10] = 23.6357984497165f;
+	w[11] = 24.5233064935708f;
+	w[12] = 5.95699505002752f;
+	w[13] = 11.8968636593367f;
+	w[14] = 7.24695568292752f;
+
+	float b = 3.64234600716764f;
+
+	//float w[10];
+	//w[0] = 10.4227282422940f;
+	//w[1] = 14.8232243396814f;
+	//w[2] = 2.21603094089285f;
+	//w[3] = 7.90681776011089f;
+	//w[4] = 1.34137621165059f;
+	//w[5] = 9.81968216614471f;
+	//w[6] = 13.6595063100916f;
+	//w[7] = 2.61986086308402f;
+	//w[8] = 7.08129115746894f;
+	//w[9] = 3.60365564864781f;
+
+	//float b = 1.85215483679993f;
+
+	svmClassifier->SetVectors(w, b);
 }
 
 ITMDepthTracker::~ITMDepthTracker(void) 
@@ -30,6 +68,9 @@ ITMDepthTracker::~ITMDepthTracker(void)
 
 	delete[] this->noIterationsPerLevel;
 	delete[] this->distThresh;
+
+	delete map;
+	delete svmClassifier;
 }
 
 void ITMDepthTracker::SetupLevels(int numIterCoarse, int numIterFine, float distThreshCoarse, float distThreshFine)
@@ -246,6 +287,12 @@ for (int r = 0; r < 6; r++) { for (int c = 0; c < 6; c++) fprintf(stderr, "%f ",
 	}
 //for (int i = 0; i < 6*6; ++i) hessian_good[i] *= (float)noValidPoints_old/(float)noTotalPoints;
 #endif
+	float det = 0.0f;
+	if (iterationType == TRACKER_ITERATION_BOTH) {
+		ORUtils::Cholesky cholA(hessian_good, 6);
+		det = cholA.Determinant();
+	}
+
 	float det_norm = 0.0f;
 	if (iterationType == TRACKER_ITERATION_BOTH) {
 		for (int i = 0; i < 6*6; ++i) hessian_good[i] *= (float)noValidPoints_old/(float)noValidPointsMax;
@@ -281,5 +328,22 @@ for (int r = 0; r < 6; r++) { for (int c = 0; c < 6; c++) fprintf(stderr, "%f ",
 //if (det_norm<exp(-35.0f)) fprintf(stderr, "determinant poor! %f, %e %e\n", log(det_norm), det_norm, exp(-35.0f));*/
 //fprintf(stderr, "tracking quality: %f\n", trackingState->poseQuality);
 #endif
+
+	Vector3f inputVector(log(det), finalResidual, percentageInliers);
+	Vector3f mu(-35.2214825141208f, 0.221580289149999f, 0.525250054066656f);
+	Vector3f sigma(7.30680157141668f, 0.0377952139232572f, 0.159912597009472f);
+	
+	Vector3f normalisedVector = (inputVector - mu) / sigma;
+
+	float mapped[15];
+	map->evaluate(mapped, normalisedVector.v, 3);
+
+	float score = svmClassifier->Classify(mapped);
+
+	if (score > -20) trackingState->poseQuality = 1.0f;
+	else if (score > -40) trackingState->poseQuality = 0.5f;
+	else trackingState->poseQuality = 0.2f;
+
+	printf("%f %f %f -> %f\n", inputVector.x, inputVector.y, inputVector.z, score); 
 }
 

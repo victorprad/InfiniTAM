@@ -8,8 +8,8 @@
 #include "../Engines/LowLevel/Interface/ITMLowLevelEngine.h"
 #include "../Engines/ViewBuilding/Interface/ITMViewBuilder.h"
 #include "../Objects/Misc/ITMIMUCalibrator.h"
-#include "../../LCDLib/LoopClosureDetector.h"
-#include "../../LCDLib/PoseDatabase.h"
+#include "../../RelocLib/Relocaliser.h"
+#include "../../RelocLib/PoseDatabase.h"
 
 #include "ITMActiveSceneManager.h"
 
@@ -42,8 +42,8 @@ namespace ITMLib
 		ITMIMUCalibrator *imuCalibrator;
 		ITMDenseMapper<TVoxel,TIndex> *denseMapper;
 
-		LCDLib::LoopClosureDetector *mLoopClosureDetector;
-		LCDLib::PoseDatabase poseDatabase;
+		RelocLib::Relocaliser *mRelocaliser;
+		RelocLib::PoseDatabase poseDatabase;
 
 /*		std::vector<ITMLocalScene<ITMVoxel,ITMVoxelIndex>*> allData;
 		std::vector<ActiveDataDescriptor> activeData;*/

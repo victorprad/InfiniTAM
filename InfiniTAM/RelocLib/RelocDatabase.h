@@ -4,12 +4,12 @@
 
 #include <vector>
 
-namespace LCDLib {
+namespace RelocLib {
 
-class LCDDatabase {
+class RelocDatabase {
 	public:
-	LCDDatabase(int codeLength, int codeFragmentDim);
-	~LCDDatabase(void);
+	RelocDatabase(int codeLength, int codeFragmentDim);
+	~RelocDatabase(void);
 
 	/** @return Number of valid similar entries that were found. Mostly
 	    relevant in case of an empty database.
