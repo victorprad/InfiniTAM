@@ -12,7 +12,7 @@
 #include "Interface/ITMCompositeTracker.h"
 #include "Interface/ITMIMUTracker.h"
 #include "Interface/ITMTracker.h"
-#include "../LowLevel/Interface/ITMLowLevelEngine.h"
+#include "../Engines/LowLevel/Interface/ITMLowLevelEngine.h"
 #include "../Utils/ITMLibSettings.h"
 
 #ifndef COMPILE_WITHOUT_CUDA

@@ -38,62 +38,9 @@ ENDIF()
 # Add subdirectories #
 ######################
 
+ADD_SUBDIRECTORY(Apps)
 ADD_SUBDIRECTORY(Engine)
 ADD_SUBDIRECTORY(ITMLib)
 ADD_SUBDIRECTORY(LCDLib)
 ADD_SUBDIRECTORY(ORUtils)
 ADD_SUBDIRECTORY(Utils)
-
-#########################
-# Specify InfiniTAM_cli #
-#########################
-
-SET(targetname InfiniTAM_cli)
-
-INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseCUDA.cmake)
-INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseOpenMP.cmake)
-INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseOpenNI.cmake)
-INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UsePNG.cmake)
-INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseRealSense.cmake)
-INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseUVC.cmake)
-
-SET(sources InfiniTAM_cli.cpp)
-
-SOURCE_GROUP("" FILES ${sources})
-
-INCLUDE(${PROJECT_SOURCE_DIR}/cmake/SetCUDAAppTarget.cmake)
-
-TARGET_LINK_LIBRARIES(${targetname} Engine ITMLib LCDLib ORUtils Utils)
-INCLUDE(${PROJECT_SOURCE_DIR}/cmake/LinkOpenNI.cmake)
-INCLUDE(${PROJECT_SOURCE_DIR}/cmake/LinkPNG.cmake)
-INCLUDE(${PROJECT_SOURCE_DIR}/cmake/LinkRealSense.cmake)
-INCLUDE(${PROJECT_SOURCE_DIR}/cmake/LinkUVC.cmake)
-
-#####################
-# Specify InfiniTAM #
-#####################
-
-SET(targetname InfiniTAM)
-
-INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseCUDA.cmake)
-INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseGLUT.cmake)
-INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseOpenGL.cmake)
-INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseOpenMP.cmake)
-INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseOpenNI.cmake)
-INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UsePNG.cmake)
-INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseRealSense.cmake)
-INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseUVC.cmake)
-
-SET(sources InfiniTAM.cpp)
-
-SOURCE_GROUP("" FILES ${sources})
-
-INCLUDE(${PROJECT_SOURCE_DIR}/cmake/SetCUDAAppTarget.cmake)
-
-TARGET_LINK_LIBRARIES(${targetname} Engine ITMLib LCDLib ORUtils Utils)
-INCLUDE(${PROJECT_SOURCE_DIR}/cmake/LinkGLUT.cmake)
-INCLUDE(${PROJECT_SOURCE_DIR}/cmake/LinkOpenGL.cmake)
-INCLUDE(${PROJECT_SOURCE_DIR}/cmake/LinkOpenNI.cmake)
-INCLUDE(${PROJECT_SOURCE_DIR}/cmake/LinkPNG.cmake)
-INCLUDE(${PROJECT_SOURCE_DIR}/cmake/LinkRealSense.cmake)
-INCLUDE(${PROJECT_SOURCE_DIR}/cmake/LinkUVC.cmake)

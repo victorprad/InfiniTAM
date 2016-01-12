@@ -1,13 +1,13 @@
 // Copyright 2014-2015 Isis Innovation Limited and the authors of InfiniTAM
 
 #include "ITMLibDefines.h"
-#include "Meshing/CUDA/ITMMeshingEngine_CUDA.tcu"
-#include "Reconstruction/CUDA/ITMSceneReconstructionEngine_CUDA.tcu"
-#include "Reconstruction/CUDA/ITMSurfelSceneReconstructionEngine_CUDA.tcu"
-#include "Swapping/CUDA/ITMSwappingEngine_CUDA.tcu"
+#include "Engines/Meshing/CUDA/ITMMeshingEngine_CUDA.tcu"
+#include "Engines/Reconstruction/CUDA/ITMSceneReconstructionEngine_CUDA.tcu"
+#include "Engines/Reconstruction/CUDA/ITMSurfelSceneReconstructionEngine_CUDA.tcu"
+#include "Engines/Swapping/CUDA/ITMSwappingEngine_CUDA.tcu"
+#include "Engines/Visualisation/CUDA/ITMSurfelVisualisationEngine_CUDA.tcu"
+#include "Engines/Visualisation/CUDA/ITMVisualisationEngine_CUDA.tcu"
 #include "Trackers/CUDA/ITMRenTracker_CUDA.tcu"
-#include "Visualisation/CUDA/ITMSurfelVisualisationEngine_CUDA.tcu"
-#include "Visualisation/CUDA/ITMVisualisationEngine_CUDA.tcu"
 
 namespace ITMLib
 {

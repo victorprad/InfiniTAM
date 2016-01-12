@@ -26,25 +26,21 @@ INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseUVC.cmake)
 #############################
 
 SET(sources
-CLIEngine.cpp
 ImageSourceEngine.cpp
 IMUSourceEngine.cpp
 Kinect2Engine.cpp
 LibUVCEngine.cpp
 OpenNIEngine.cpp
 RealSenseEngine.cpp
-UIEngine.cpp
 )
 
 SET(headers
-CLIEngine.h
 ImageSourceEngine.h
 IMUSourceEngine.h
 Kinect2Engine.h
 LibUVCEngine.h
 OpenNIEngine.h
 RealSenseEngine.h
-UIEngine.h
 )
 
 #############################

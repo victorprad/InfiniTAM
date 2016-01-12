@@ -2,12 +2,12 @@
 
 #include "ITMBasicEngine.h"
 
-#include "../LowLevel/ITMLowLevelEngineFactory.h"
-#include "../Meshing/ITMMeshingEngineFactory.h"
+#include "../Engines/LowLevel/ITMLowLevelEngineFactory.h"
+#include "../Engines/Meshing/ITMMeshingEngineFactory.h"
+#include "../Engines/ViewBuilding/ITMViewBuilderFactory.h"
+#include "../Engines/Visualisation/ITMSurfelVisualisationEngineFactory.h"
+#include "../Engines/Visualisation/ITMVisualisationEngineFactory.h"
 #include "../Trackers/ITMTrackerFactory.h"
-#include "../ViewBuilding/ITMViewBuilderFactory.h"
-#include "../Visualisation/ITMSurfelVisualisationEngineFactory.h"
-#include "../Visualisation/ITMVisualisationEngineFactory.h"
 using namespace ITMLib;
 
 template <typename TVoxel, typename TIndex>

@@ -2,8 +2,8 @@
 
 #pragma once
 
+#include "../../Engines/Reconstruction/Interface/ITMSceneReconstructionEngine.h"
 #include "../../Utils/ITMPixelUtils.h"
-#include "../../Reconstruction/Interface/ITMSceneReconstructionEngine.h"
 
 // sigma that controls the basin of attraction
 #define DTUNE 6.0f
