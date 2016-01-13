@@ -189,9 +189,6 @@
     <ClInclude Include="Engine\OpenNIEngine.h">
       <Filter>Engine\Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ITMLib\ITMLib.h">
-      <Filter>ITMLib</Filter>
-    </ClInclude>
     <ClInclude Include="Engine\ImageSourceEngine.h">
       <Filter>Engine\Header Files</Filter>
     </ClInclude>

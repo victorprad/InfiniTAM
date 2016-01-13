@@ -2,8 +2,7 @@
 
 #pragma once
 
-#include "../Objects/ITMSceneParams.h"
-#include "../Engine/ITMTracker.h"
+#include "ITMSceneParams.h"
 
 namespace ITMLib
 {
