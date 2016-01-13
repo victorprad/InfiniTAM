@@ -71,10 +71,6 @@ OpenNIEngine::OpenNIEngine(const char *calibFilename, const char *deviceURI, con
 	// images from openni always come in millimeters...
 	this->calib.disparityCalib.type = ITMDisparityCalib::TRAFO_AFFINE;
 	this->calib.disparityCalib.params = Vector2f(1.0f/1000.0f, 0.0f);
-	if (useInternalCalibration) {
-		this->calib.trafo_rgb_to_depth = ITMExtrinsics();
-		this->calib.intrinsics_d = this->calib.intrinsics_rgb;
-	}
 
 	this->imageSize_d = Vector2i(0,0);
 	this->imageSize_rgb = Vector2i(0,0);
@@ -113,8 +109,6 @@ OpenNIEngine::OpenNIEngine(const char *calibFilename, const char *deviceURI, con
 	if (rc == openni::STATUS_OK)
 	{
 		openni::VideoMode depthMode = findBestMode(data->device.getSensorInfo(openni::SENSOR_DEPTH), requested_imageSize_d.x, requested_imageSize_d.y, openni::PIXEL_FORMAT_DEPTH_1_MM);
-		imageSize_d.x = depthMode.getResolutionX();
-		imageSize_d.y = depthMode.getResolutionY();
 		rc = data->depthStream.setVideoMode(depthMode);
 		if (rc != openni::STATUS_OK)
 		{
@@ -131,6 +125,9 @@ OpenNIEngine::OpenNIEngine(const char *calibFilename, const char *deviceURI, con
 			data->depthStream.destroy();
 		}
 
+		imageSize_d.x = data->depthStream.getVideoMode().getResolutionX();
+		imageSize_d.y = data->depthStream.getVideoMode().getResolutionY();
+
 		printf("Initialised OpenNI depth camera with resolution: %d x %d\n", imageSize_d.x, imageSize_d.y);
 
 		depthAvailable = true;
@@ -145,8 +142,6 @@ OpenNIEngine::OpenNIEngine(const char *calibFilename, const char *deviceURI, con
 	if (rc == openni::STATUS_OK)
 	{
 		openni::VideoMode colourMode = findBestMode(data->device.getSensorInfo(openni::SENSOR_COLOR), requested_imageSize_rgb.x, requested_imageSize_rgb.y);
-		this->imageSize_rgb.x = colourMode.getResolutionX();
-		this->imageSize_rgb.y = colourMode.getResolutionY();
 		rc = data->colorStream.setVideoMode(colourMode);
 		if (rc != openni::STATUS_OK)
 		{
@@ -160,6 +155,9 @@ OpenNIEngine::OpenNIEngine(const char *calibFilename, const char *deviceURI, con
 			printf("OpenNI: Couldn't start colorStream stream:\n%s\n", openni::OpenNI::getExtendedError());
 			data->colorStream.destroy();
 		}
+
+		imageSize_rgb.x = data->colorStream.getVideoMode().getResolutionX();
+		imageSize_rgb.y = data->colorStream.getVideoMode().getResolutionY();
 
 		printf("Initialised OpenNI color camera with resolution: %d x %d\n", imageSize_rgb.x, imageSize_rgb.y);
 
@@ -183,6 +181,30 @@ OpenNIEngine::OpenNIEngine(const char *calibFilename, const char *deviceURI, con
 	data->streams = new openni::VideoStream*[2];
 	if (depthAvailable) data->streams[0] = &data->depthStream;
 	if (colorAvailable) data->streams[1] = &data->colorStream;
+
+	if (useInternalCalibration) {
+		this->calib.trafo_rgb_to_depth = ITMExtrinsics();
+		if (depthAvailable) {
+			float h_fov = data->depthStream.getHorizontalFieldOfView();
+			float v_fov = data->depthStream.getVerticalFieldOfView();
+			this->calib.intrinsics_d.SetFrom(
+				(float)imageSize_d.x / (2.0f * tan(h_fov/2.0f)),
+				(float)imageSize_d.y / (2.0f * tan(v_fov/2.0f)),
+				(float)imageSize_d.x / 2.0f,
+				(float)imageSize_d.y / 2.0f,
+				imageSize_d.x,imageSize_d.y);
+		}
+		if (colorAvailable) {
+			float h_fov = data->colorStream.getHorizontalFieldOfView();
+			float v_fov = data->colorStream.getVerticalFieldOfView();
+			this->calib.intrinsics_rgb.SetFrom(
+				(float)imageSize_rgb.x / (2.0f * tan(h_fov/2.0f)),
+				(float)imageSize_rgb.y / (2.0f * tan(v_fov/2.0f)),
+				(float)imageSize_rgb.x / 2.0f,
+				(float)imageSize_rgb.y / 2.0f,
+				imageSize_rgb.x, imageSize_rgb.y);
+		}
+	}
 }
 
 OpenNIEngine::~OpenNIEngine()
