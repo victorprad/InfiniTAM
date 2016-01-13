@@ -9,6 +9,8 @@
 #include "../Trackers/ITMTrackerFactory.h"
 using namespace ITMLib;
 
+static const int relocNeighbors = 1;
+
 template <typename TVoxel, typename TIndex>
 ITMBasicEngine<TVoxel,TIndex>::ITMBasicEngine(const ITMLibSettings *settings, const ITMRGBDCalib *calib, Vector2i imgSize_rgb, Vector2i imgSize_d)
 {
@@ -53,11 +55,15 @@ ITMBasicEngine<TVoxel,TIndex>::ITMBasicEngine(const ITMLibSettings *settings, co
 	tracker->UpdateInitialPose(trackingState);
 
 	view = NULL; // will be allocated by the view builder
-
+	
+	mRelocaliser = new RelocLib::Relocaliser(imgSize_d, Vector2f(settings->sceneParams.viewFrustum_min, settings->sceneParams.viewFrustum_max), 0.2f, 500, 4);
+	
 	trackingActive = true;
 	fusionActive = true;
 	mainProcessingActive = true;
 	trackingInitialised = false;
+	relocalisationCount = 0;
+	framesProcessed = 0;
 }
 
 template <typename TVoxel, typename TIndex>
@@ -81,6 +87,8 @@ ITMBasicEngine<TVoxel,TIndex>::~ITMBasicEngine()
 	if (view != NULL) delete view;
 
 	delete visualisationEngine;
+
+	delete mRelocaliser;
 
 	if (meshingEngine != NULL) delete meshingEngine;
 
@@ -128,12 +136,38 @@ void ITMBasicEngine<TVoxel,TIndex>::ProcessFrame(ITMUChar4Image *rgbImage, ITMSh
 		trackingSuccess_prev = trackingSuccess;
 	}
 
+	//relocalisation
+	if (trackingSuccess == 2 && relocalisationCount > 0) relocalisationCount--;
+
+	int NN[relocNeighbors];
+	float distances[relocNeighbors];
+	int addKeyframeIdx = mRelocaliser->ProcessFrame(view->depth, relocNeighbors, NN, distances, trackingSuccess == 2 && relocalisationCount == 0);
+
+	// add keyframe, if necessary
+	if (addKeyframeIdx >= 0) poseDatabase.storePose(addKeyframeIdx, *(trackingState->pose_d), 0);
+	else if (trackingSuccess == 0)
+	{
+		relocalisationCount = 10;
+
+		const RelocLib::PoseDatabase::PoseInScene & keyframe = poseDatabase.retrievePose(NN[0]);
+		trackingState->pose_d->SetFrom(&keyframe.pose);
+		denseMapper->UpdateVisibleList(view, trackingState, scene, renderState_live);
+		trackingController->Prepare(trackingState, scene, view, visualisationEngine, renderState_live);
+		trackingController->Track(trackingState, view);
+
+		trackingSuccess = 0;
+		if (trackingState->poseQuality > settings->goodTrackingThreshold) trackingSuccess = 2;
+		else if (trackingState->poseQuality > settings->poorTrackingThreshold) trackingSuccess = 1;
+	}
+
 	bool didFusion = false;
-	if ((trackingSuccess >= 2 || !trackingInitialised) && (fusionActive)) {
+	if ((trackingSuccess >= 2 || !trackingInitialised) && (fusionActive) && (relocalisationCount == 0)) {
 		// fusion
 		denseMapper->ProcessFrame(view, trackingState, scene, renderState_live);
 		didFusion = true;
-		trackingInitialised = true;
+		if (framesProcessed > 50) trackingInitialised = true;
+
+		framesProcessed++;
 	}
 
 	if (trackingSuccess >= 1) {

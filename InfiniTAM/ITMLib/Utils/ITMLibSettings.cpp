@@ -4,7 +4,7 @@
 using namespace ITMLib;
 
 ITMLibSettings::ITMLibSettings(void)
-	: sceneParams(0.02f, 100, 0.005f, 0.2f, 3.0f, false)
+	: sceneParams(0.02f, 100, 0.005f, 0.2f, 4.0f, false)
 {
 	// skips every other point when using the colour renderer for creating a point cloud
 	skipPoints = true;
@@ -31,7 +31,7 @@ ITMLibSettings::ITMLibSettings(void)
 	useApproximateRaycast = false;
 
 	/// enable or disable bilateral depth filtering;
-	useBilateralFilter = false;
+	useBilateralFilter = true;
 
 	trackerConfig = "type=icp,levels=rrrbb,minstep=1e-3,outlierC=0.01,outlierF=0.002,numiterC=10,numiterF=2";
 	//trackerConfig = "type=rgb,levels=rrrbb";

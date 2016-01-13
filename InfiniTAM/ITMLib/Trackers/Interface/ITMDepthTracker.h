@@ -40,8 +40,11 @@ namespace ITMLib
 
 		void SetEvaluationData(ITMTrackingState *trackingState, const ITMView *view);
 
+		void UpdatePoseQuality(int noValidPoints_old, float *hessian_good, float f_old);
+
 		ORUtils::HomkerMap *map;
 		ORUtils::SVMClassifier *svmClassifier;
+		Vector4f mu, sigma;
 	protected:
 		float *distThresh;
 
