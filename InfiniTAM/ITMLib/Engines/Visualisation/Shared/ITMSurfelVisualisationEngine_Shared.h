@@ -64,7 +64,8 @@ inline void copy_correspondences_to_buffer(int surfelId, const TSurfel *surfels,
  */
 template <typename TSurfel>
 _CPU_AND_GPU_CODE_
-inline void copy_surfel_data_to_icp_maps(int locId, const TSurfel *surfels, const unsigned int *surfelIndexImage, Vector4f *pointsMap, Vector4f *normalsMap)
+inline void copy_surfel_data_to_icp_maps(int locId, const TSurfel *surfels, const unsigned int *surfelIndexImage, const Matrix4f& invT,
+                                         Vector4f *pointsMap, Vector4f *normalsMap)
 {
   int surfelIndex = surfelIndexImage[locId] - 1;
   if(surfelIndex >= 0)
@@ -72,16 +73,19 @@ inline void copy_surfel_data_to_icp_maps(int locId, const TSurfel *surfels, cons
     TSurfel surfel = surfels[surfelIndex];
     const Vector3f& p = surfel.position;
     const Vector3f& n = surfel.normal;
-    pointsMap[locId] = Vector4f(p.x, p.y, p.z, 1.0f);
-    normalsMap[locId] = Vector4f(n.x, n.y, n.z, 0.0f);
+    Vector3f v = transform_point(invT, p);
+    if(v.z <= 1.0f)
+    {
+      pointsMap[locId] = Vector4f(p.x, p.y, p.z, 1.0f);
+      normalsMap[locId] = Vector4f(n.x, n.y, n.z, 0.0f);
+      return;
+    }
   }
-  else
-  {
-    Vector4f dummy;
-    dummy.x = dummy.y = dummy.z = 0.0f; dummy.w = -1.0f;
-    pointsMap[locId] = dummy;
-    normalsMap[locId] = dummy;
-  }
+
+  Vector4f dummy;
+  dummy.x = dummy.y = dummy.z = 0.0f; dummy.w = -1.0f;
+  pointsMap[locId] = dummy;
+  normalsMap[locId] = dummy;
 }
 
 /**
@@ -272,7 +276,14 @@ inline void update_index_image_for_surfel(int surfelId, const TSurfel *surfels, 
     if(depthBuffer[locId] == z)
     {
       // Write the surfel ID + 1 into the surfel index image.
-      surfelIndexImage[locId] = static_cast<unsigned int>(surfelId + 1);
+      unsigned int surfelIdPlusOne = static_cast<unsigned int>(surfelId + 1);
+
+#if defined(__CUDACC__) && defined(__CUDA_ARCH__)
+      atomicMax(&surfelIndexImage[locId], surfelIdPlusOne);
+#else
+      // Note: No synchronisation is needed for the CPU version because it's not parallelised.
+      if(surfelIdPlusOne > surfelIndexImage[locId]) surfelIndexImage[locId] = surfelIdPlusOne;
+#endif
     }
   }
 }

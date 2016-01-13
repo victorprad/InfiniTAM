@@ -31,12 +31,13 @@ __global__ void ck_copy_correspondences_to_buffer(int surfelCount, const TSurfel
 #endif
 
 template <typename TSurfel>
-__global__ void ck_copy_surfel_data_to_icp_maps(int pixelCount, const TSurfel *surfels, const unsigned int *surfelIndexImage, Vector4f *pointsMap, Vector4f *normalsMap)
+__global__ void ck_copy_surfel_data_to_icp_maps(int pixelCount, const TSurfel *surfels, const unsigned int *surfelIndexImage, Matrix4f invT,
+                                                Vector4f *pointsMap, Vector4f *normalsMap)
 {
   int locId = threadIdx.x + blockDim.x * blockIdx.x;
   if(locId < pixelCount)
   {
-    copy_surfel_data_to_icp_maps(locId, surfels, surfelIndexImage, pointsMap, normalsMap);
+    copy_surfel_data_to_icp_maps(locId, surfels, surfelIndexImage, invT, pointsMap, normalsMap);
   }
 }
 
@@ -154,6 +155,7 @@ void ITMSurfelVisualisationEngine_CUDA<TSurfel>::CopySceneToBuffers(const ITMSur
 template <typename TSurfel>
 void ITMSurfelVisualisationEngine_CUDA<TSurfel>::CreateICPMaps(const ITMSurfelScene<TSurfel> *scene, const ITMSurfelRenderState *renderState, ITMTrackingState *trackingState) const
 {
+  const Matrix4f& invT = trackingState->pose_d->GetM();
   const int pixelCount = static_cast<int>(renderState->GetIndexImage()->dataSize);
 
   int threadsPerBlock = 256;
@@ -163,6 +165,7 @@ void ITMSurfelVisualisationEngine_CUDA<TSurfel>::CreateICPMaps(const ITMSurfelSc
     pixelCount,
     scene->GetSurfels()->GetData(MEMORYDEVICE_CUDA),
     renderState->GetIndexImage()->GetData(MEMORYDEVICE_CUDA),
+    invT,
     trackingState->pointCloud->locations->GetData(MEMORYDEVICE_CUDA),
     trackingState->pointCloud->colours->GetData(MEMORYDEVICE_CUDA)
   );

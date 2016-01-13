@@ -44,6 +44,7 @@ void ITMSurfelVisualisationEngine_CPU<TSurfel>::CopySceneToBuffers(const ITMSurf
 template <typename TSurfel>
 void ITMSurfelVisualisationEngine_CPU<TSurfel>::CreateICPMaps(const ITMSurfelScene<TSurfel> *scene, const ITMSurfelRenderState *renderState, ITMTrackingState *trackingState) const
 {
+  const Matrix4f& invT = trackingState->pose_d->GetM();
   Vector4f *normalsMap = trackingState->pointCloud->colours->GetData(MEMORYDEVICE_CPU);
   const int pixelCount = static_cast<int>(renderState->GetIndexImage()->dataSize);
   Vector4f *pointsMap = trackingState->pointCloud->locations->GetData(MEMORYDEVICE_CPU);
@@ -55,7 +56,7 @@ void ITMSurfelVisualisationEngine_CPU<TSurfel>::CreateICPMaps(const ITMSurfelSce
 #endif
   for(int locId = 0; locId < pixelCount; ++locId)
   {
-    copy_surfel_data_to_icp_maps(locId, surfels, surfelIndexImage, pointsMap, normalsMap);
+    copy_surfel_data_to_icp_maps(locId, surfels, surfelIndexImage, invT, pointsMap, normalsMap);
   }
 }
 
@@ -167,9 +168,7 @@ void ITMSurfelVisualisationEngine_CPU<TSurfel>::MakeIndexImage(const ITMSurfelSc
     update_depth_buffer_for_surfel(surfelId, surfels, invT, *intrinsics, width, height, scaleFactor, depthBuffer);
   }
 
-#ifdef WITH_OPENMP
-  #pragma omp parallel for
-#endif
+  // Note: This is deliberately not parallelised (it would be slower due to the synchronisation needed).
   for(int surfelId = 0; surfelId < surfelCount; ++surfelId)
   {
     update_index_image_for_surfel(surfelId, surfels, invT, *intrinsics, width, height, scaleFactor, depthBuffer, surfelIndexImage);
