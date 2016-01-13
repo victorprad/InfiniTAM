@@ -154,9 +154,21 @@ inline void calculate_normal(int locId, const Vector4f *vertexMap, int width, in
  * \brief TODO
  */
 _CPU_AND_GPU_CODE_
-inline void calculate_radius(int locId, float *radiusMap)
+inline void calculate_radius(int locId, const float *depthMap, const Vector3f *normalMap, const ITMIntrinsics& intrinsics,
+                             float *radiusMap)
 {
-  // TODO
+  float r = 0.0f;
+  Vector3f n = normalMap[locId];
+
+  if(n.z > 0.0f)
+  {
+    float d = depthMap[locId] * 1000.0f;
+    float f = (intrinsics.projectionParamsSimple.fx + intrinsics.projectionParamsSimple.fy) / 2.0f;
+    r = d / (f * n.z * sqrtf(2.0f));
+    if(r > 3) r = 3;
+  }
+
+  radiusMap[locId] = r;
 }
 
 /**
@@ -274,8 +286,7 @@ inline void fuse_matched_point(int locId, const unsigned int *correspondenceMap,
     surfel.position = (surfel.confidence * surfel.position + alpha * transform_point(T, v)) / newConfidence;
     surfel.normal = (surfel.confidence * surfel.normal + alpha * transform_normal(T, normalMap[locId])) / newConfidence;
     surfel.normal /= length(surfel.normal);
-
-    // TODO: Radius, etc.
+    surfel.radius = (surfel.confidence * surfel.radius + alpha * radiusMap[locId]) / newConfidence;
 
     Vector3u oldColour = SurfelColourManipulator<TSurfel::hasColourInformation>::read(surfel);
     Vector3u newColour = compute_colour(v, depthToRGB, projParamsRGB, colourMap, colourMapWidth, colourMapHeight);

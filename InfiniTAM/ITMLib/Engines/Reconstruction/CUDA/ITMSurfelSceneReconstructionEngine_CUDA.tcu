@@ -47,12 +47,12 @@ __global__ void ck_calculate_normal(int pixelCount, const Vector4f *vertexMap, i
   }
 }
 
-__global__ void ck_calculate_radius(int pixelCount, float *radiusMap)
+__global__ void ck_calculate_radius(int pixelCount, const float *depthMap, const Vector3f *normalMap, ITMIntrinsics intrinsics, float *radiusMap)
 {
   int locId = threadIdx.x + blockDim.x * blockIdx.x;
   if(locId < pixelCount)
   {
-    calculate_radius(locId, radiusMap);
+    calculate_radius(locId, depthMap, normalMap, intrinsics, radiusMap);
   }
 }
 
@@ -218,7 +218,9 @@ void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::FuseMatchedPoints(ITMSurf
 template <typename TSurfel>
 void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::PreprocessDepthMap(const ITMView *view) const
 {
+  const float *depthMap = view->depth->GetData(MEMORYDEVICE_CUDA);
   const int height = view->depth->noDims.y;
+  const ITMIntrinsics& intrinsics = view->calib->intrinsics_d;
   Vector3f *normalMap = this->m_normalMapMB->GetData(MEMORYDEVICE_CUDA);
   const int pixelCount = static_cast<int>(view->depth->dataSize);
   float *radiusMap = this->m_radiusMapMB->GetData(MEMORYDEVICE_CUDA);
@@ -232,8 +234,8 @@ void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::PreprocessDepthMap(const 
   ck_calculate_vertex_position<<<numBlocks,threadsPerBlock>>>(
     pixelCount,
     width,
-    view->calib->intrinsics_d,
-    view->depth->GetData(MEMORYDEVICE_CUDA),
+    intrinsics,
+    depthMap,
     vertexMap
   );
 
@@ -257,6 +259,9 @@ void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::PreprocessDepthMap(const 
   // Calculate the radius map.
   ck_calculate_radius<<<numBlocks,threadsPerBlock>>>(
     pixelCount,
+    depthMap,
+    normalMap,
+    intrinsics,
     radiusMap
   );
 

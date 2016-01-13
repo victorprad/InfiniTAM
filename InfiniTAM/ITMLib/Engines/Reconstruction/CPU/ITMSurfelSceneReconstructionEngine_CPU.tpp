@@ -138,7 +138,7 @@ void ITMSurfelSceneReconstructionEngine_CPU<TSurfel>::PreprocessDepthMap(const I
 #endif
   for(int locId = 0; locId < pixelCount; ++locId)
   {
-    calculate_radius(locId, radiusMap);
+    calculate_radius(locId, depthMap, normalMap, intrinsics, radiusMap);
   }
 }
 

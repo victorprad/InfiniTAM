@@ -253,7 +253,21 @@ inline void update_depth_buffer_for_surfel(int surfelId, const TSurfel *surfels,
   if(project_surfel_to_index_image(surfels[surfelId], invT, intrinsics, indexImageWidth, indexImageHeight, scaleFactor, locId, z))
   {
 #if defined(__CUDACC__) && defined(__CUDA_ARCH__)
-    atomicMin(&depthBuffer[locId], z);
+    //atomicMin(&depthBuffer[locId], z);
+    int cx = locId % indexImageWidth, cy = locId / indexImageWidth;
+    int radius = indexImageWidth == 640 ? surfels[surfelId].radius : 0;
+    for(int y = cy - radius; y <= cy + radius; ++y)
+    {
+      if(y < 0) y = 0;
+      if(y >= indexImageHeight) break;
+      for(int x = cx - radius; x <= cx + radius; ++x)
+      {
+        if(x < 0) x = 0;
+        if(x >= indexImageWidth) break;
+        if((x-cx)*(x-cx) + (y-cy)*(y-cy) > radius*radius) continue;
+        atomicMin(&depthBuffer[y * indexImageWidth + x], z);
+      }
+    }
 #else
     // Note: No synchronisation is needed for the CPU version because it's not parallelised.
     if(z < depthBuffer[locId]) depthBuffer[locId] = z;
@@ -279,7 +293,25 @@ inline void update_index_image_for_surfel(int surfelId, const TSurfel *surfels, 
       unsigned int surfelIdPlusOne = static_cast<unsigned int>(surfelId + 1);
 
 #if defined(__CUDACC__) && defined(__CUDA_ARCH__)
-      atomicMax(&surfelIndexImage[locId], surfelIdPlusOne);
+      //atomicMax(&surfelIndexImage[locId], surfelIdPlusOne);
+      int cx = locId % indexImageWidth, cy = locId / indexImageWidth;
+      int radius = indexImageWidth == 640 ? surfels[surfelId].radius : 0;
+      for(int y = cy - radius; y <= cy + radius; ++y)
+      {
+        if(y < 0) y = 0;
+        if(y >= indexImageHeight) break;
+        for(int x = cx - radius; x <= cx + radius; ++x)
+        {
+          if(x < 0) x = 0;
+          if(x >= indexImageWidth) break;
+          if((x-cx)*(x-cx) + (y-cy)*(y-cy) > radius*radius) continue;
+          int offset = y * indexImageWidth + x;
+          if(depthBuffer[offset] == z)
+          {
+            atomicMax(&surfelIndexImage[offset], surfelIdPlusOne);
+          }
+        }
+     }
 #else
       // Note: No synchronisation is needed for the CPU version because it's not parallelised.
       if(surfelIdPlusOne > surfelIndexImage[locId]) surfelIndexImage[locId] = surfelIdPlusOne;
