@@ -9,8 +9,6 @@
 #include "../Trackers/ITMTrackerFactory.h"
 using namespace ITMLib;
 
-static const int relocNeighbors = 1;
-
 template <typename TVoxel, typename TIndex>
 ITMBasicEngine<TVoxel,TIndex>::ITMBasicEngine(const ITMLibSettings *settings, const ITMRGBDCalib *calib, Vector2i imgSize_rgb, Vector2i imgSize_d)
 {
@@ -56,8 +54,9 @@ ITMBasicEngine<TVoxel,TIndex>::ITMBasicEngine(const ITMLibSettings *settings, co
 
 	view = NULL; // will be allocated by the view builder
 	
-	mRelocaliser = new RelocLib::Relocaliser(imgSize_d, Vector2f(settings->sceneParams.viewFrustum_min, settings->sceneParams.viewFrustum_max), 0.2f, 500, 4);
-	
+	relocaliser = new RelocLib::Relocaliser(imgSize_d, Vector2f(settings->sceneParams.viewFrustum_min, settings->sceneParams.viewFrustum_max), 0.2f, 500, 4);
+	kfRaycast = new ITMUChar4Image(imgSize_d, memoryType);
+
 	trackingActive = true;
 	fusionActive = true;
 	mainProcessingActive = true;
@@ -88,7 +87,8 @@ ITMBasicEngine<TVoxel,TIndex>::~ITMBasicEngine()
 
 	delete visualisationEngine;
 
-	delete mRelocaliser;
+	delete relocaliser;
+	delete kfRaycast;
 
 	if (meshingEngine != NULL) delete meshingEngine;
 
@@ -137,27 +137,30 @@ void ITMBasicEngine<TVoxel,TIndex>::ProcessFrame(ITMUChar4Image *rgbImage, ITMSh
 	}
 
 	//relocalisation
-	if (trackingSuccess == 2 && relocalisationCount > 0) relocalisationCount--;
+	int addKeyframeIdx = -1;
+	if (settings->useRelocalisation && settings->useTrackingFailureDetection) {
+		if (trackingSuccess == 2 && relocalisationCount > 0) relocalisationCount--;
 
-	int NN[relocNeighbors];
-	float distances[relocNeighbors];
-	int addKeyframeIdx = mRelocaliser->ProcessFrame(view->depth, relocNeighbors, NN, distances, trackingSuccess == 2 && relocalisationCount == 0);
+		int NN; float distances;
+		addKeyframeIdx = relocaliser->ProcessFrame(view->depth, 1, &NN, &distances, trackingSuccess == 2 && relocalisationCount == 0);
 
-	// add keyframe, if necessary
-	if (addKeyframeIdx >= 0) poseDatabase.storePose(addKeyframeIdx, *(trackingState->pose_d), 0);
-	else if (trackingSuccess == 0)
-	{
-		relocalisationCount = 10;
+		// add keyframe, if necessary
+		if (addKeyframeIdx >= 0) poseDatabase.storePose(addKeyframeIdx, *(trackingState->pose_d), 0);
+		
+		else if (trackingSuccess == 0) {
+			relocalisationCount = 10;
 
-		const RelocLib::PoseDatabase::PoseInScene & keyframe = poseDatabase.retrievePose(NN[0]);
-		trackingState->pose_d->SetFrom(&keyframe.pose);
-		denseMapper->UpdateVisibleList(view, trackingState, scene, renderState_live);
-		trackingController->Prepare(trackingState, scene, view, visualisationEngine, renderState_live);
-		trackingController->Track(trackingState, view);
+			const RelocLib::PoseDatabase::PoseInScene & keyframe = poseDatabase.retrievePose(NN);
+			trackingState->pose_d->SetFrom(&keyframe.pose);
 
-		trackingSuccess = 0;
-		if (trackingState->poseQuality > settings->goodTrackingThreshold) trackingSuccess = 2;
-		else if (trackingState->poseQuality > settings->poorTrackingThreshold) trackingSuccess = 1;
+			denseMapper->UpdateVisibleList(view, trackingState, scene, renderState_live, true);
+			trackingController->Prepare(trackingState, scene, view, visualisationEngine, renderState_live);
+			trackingController->Track(trackingState, view);
+
+			trackingSuccess = 0;
+			if (trackingState->poseQuality > settings->goodTrackingThreshold) trackingSuccess = 2;
+			else if (trackingState->poseQuality > settings->poorTrackingThreshold) trackingSuccess = 1;
+		}
 	}
 
 	bool didFusion = false;
@@ -175,10 +178,12 @@ void ITMBasicEngine<TVoxel,TIndex>::ProcessFrame(ITMUChar4Image *rgbImage, ITMSh
 
 		// raycast to renderState_live for tracking and free visualisation
 		trackingController->Prepare(trackingState, scene, view, visualisationEngine, renderState_live);
+
+		ORUtils::MemoryBlock<Vector4u>::MemoryCopyDirection memoryCopyDirection = 
+			settings->deviceType == ITMLibSettings::DEVICE_CUDA ? ORUtils::MemoryBlock<Vector4u>::CUDA_TO_CUDA : ORUtils::MemoryBlock<Vector4u>::CPU_TO_CPU;
+		if (addKeyframeIdx >= 0) kfRaycast->SetFrom(renderState_live->raycastImage, memoryCopyDirection);
 	}
-	else {
-		*trackingState->pose_d = oldPose;
-	}
+	else { *trackingState->pose_d = oldPose; }
 }
 
 template <typename TVoxel, typename TIndex>
@@ -218,7 +223,11 @@ void ITMBasicEngine<TVoxel,TIndex>::GetImage(ITMUChar4Image *out, GetImageType g
 		break;
 	case ITMBasicEngine::InfiniTAM_IMAGE_SCENERAYCAST:
 	{
-		ORUtils::Image<Vector4u> *srcImage = renderState_live->raycastImage;
+		ORUtils::Image<Vector4u> *srcImage = NULL;
+
+		if (relocalisationCount != 0) srcImage = kfRaycast;
+		else srcImage = renderState_live->raycastImage;
+
 		out->ChangeDims(srcImage->noDims);
 		if (settings->deviceType == ITMLibSettings::DEVICE_CUDA)
 			out->SetFrom(srcImage, ORUtils::MemoryBlock<Vector4u>::CUDA_TO_CPU);

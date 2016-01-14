@@ -33,7 +33,7 @@ namespace ITMLib
 		    table so that the new image data can be integrated.
 		*/
 		virtual void AllocateSceneFromDepth(ITMScene<TVoxel,TIndex> *scene, const ITMView *view, const ITMTrackingState *trackingState,
-			const ITMRenderState *renderState, bool onlyUpdateVisibleList = false) = 0;
+			const ITMRenderState *renderState, bool onlyUpdateVisibleList = false, bool resetVisibleList = false) = 0;
 
 		/** Update the voxel blocks by integrating depth and
 		    possibly colour information from the given view.

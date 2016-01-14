@@ -31,7 +31,13 @@ ITMLibSettings::ITMLibSettings(void)
 	useApproximateRaycast = false;
 
 	/// enable or disable bilateral depth filtering;
-	useBilateralFilter = true;
+	useBilateralFilter = false;
+
+	/// enable or disable relocalisation
+	useRelocalisation = true;
+
+	/// enable or disable tracking failure detection
+	useTrackingFailureDetection = true;
 
 	trackerConfig = "type=icp,levels=rrrbb,minstep=1e-3,outlierC=0.01,outlierF=0.002,numiterC=10,numiterF=2";
 	//trackerConfig = "type=rgb,levels=rrrbb";

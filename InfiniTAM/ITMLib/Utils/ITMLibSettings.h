@@ -29,6 +29,9 @@ namespace ITMLib
 		/// For ITMColorTracker: skip every other point in energy function evaluation.
 		bool skipPoints;
 
+		bool useRelocalisation;
+		bool useTrackingFailureDetection;
+
 		float goodTrackingThreshold;
 		float poorTrackingThreshold;
 
