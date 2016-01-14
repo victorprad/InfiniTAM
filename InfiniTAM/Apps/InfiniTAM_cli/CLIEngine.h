@@ -3,7 +3,7 @@
 #pragma once
 
 #include "../../InputSource/ImageSourceEngine.h"
-#include "../../InputSource//IMUSourceEngine.h"
+#include "../../InputSource/IMUSourceEngine.h"
 #include "../../ITMLib/Core/ITMMainEngine.h"
 #include "../../ITMLib/Utils/ITMLibSettings.h"
 #include "../../ORUtils/FileUtils.h"

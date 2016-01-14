@@ -5,10 +5,10 @@
 
 #include "UIEngine.h"
 
-#include "../../InputSource//OpenNIEngine.h"
-#include "../../InputSource//Kinect2Engine.h"
-#include "../../InputSource//LibUVCEngine.h"
-#include "../../InputSource//RealSenseEngine.h"
+#include "../../InputSource/OpenNIEngine.h"
+#include "../../InputSource/Kinect2Engine.h"
+#include "../../InputSource/LibUVCEngine.h"
+#include "../../InputSource/RealSenseEngine.h"
 
 #include "../../ITMLib/ITMLibDefines.h"
 #include "../../ITMLib/Core/ITMBasicEngine.h"
