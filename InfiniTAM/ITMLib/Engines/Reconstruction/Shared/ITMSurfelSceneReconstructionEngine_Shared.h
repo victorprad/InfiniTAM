@@ -160,18 +160,12 @@ inline void calculate_radius(int locId, const float *depthMap, const Vector3f *n
   float r = 0.0f;
   Vector3f n = normalMap[locId];
 
-  //if(n.z > -1.0f) // FIXME: Is this right?
   if(length(n) > 0.0f)
   {
+    // FIXME: This is currently a total hack.
     float d = depthMap[locId];
-    if(d > 10.0f) d = 10.0f; // FIXME: Is this reasonable?
-    //float f = (intrinsics.projectionParamsSimple.fx + intrinsics.projectionParamsSimple.fy) / 2.0f;
-    //float nz = n.z;
-    //if(nz < 0.2f) nz = 0.2f;
-    //r = d / (/*f * */n.z * sqrtf(2.0f));
-    //r = d;// / nz;
-    r = sqrt(2.0f) * d;// / (fabs(nz) * sqrt(2.0f));
-    //r = d / (fabs(nz) * sqrt(2.0f));
+    if(d > 10.0f) d = 10.0f;
+    r = sqrt(2.0f) * d;
   }
 
   radiusMap[locId] = r;
