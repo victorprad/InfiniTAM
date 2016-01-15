@@ -65,6 +65,7 @@ int ITMSwappingEngine_CUDA<TVoxel,ITMVoxelBlockHash>::LoadFromGlobalMemory(ITMSc
 
 	buildListToSwapIn_device << <gridSize, blockSize >> >(neededEntryIDs_local, noNeededEntries_device, swapStates,
 		scene->globalCache->noTotalEntries);
+	ORcudaKernelCheck;
 
 	int noNeededEntries;
 	ORcudaSafeCall(cudaMemcpy(&noNeededEntries, noNeededEntries_device, sizeof(int), cudaMemcpyDeviceToHost));
@@ -118,6 +119,7 @@ void ITMSwappingEngine_CUDA<TVoxel, ITMVoxelBlockHash>::IntegrateGlobalIntoLocal
 
 		integrateOldIntoActiveData_device << <gridSize, blockSize >> >(localVBA, swapStates, syncedVoxelBlocks_local,
 			neededEntryIDs_local, hashTable, maxW);
+		ORcudaKernelCheck;
 	}
 }
 
@@ -155,6 +157,7 @@ void ITMSwappingEngine_CUDA<TVoxel, ITMVoxelBlockHash>::SaveToGlobalMemory(ITMSc
 
 		buildListToSwapOut_device << <gridSize, blockSize >> >(neededEntryIDs_local, noNeededEntries_device, swapStates,
 			hashTable, entriesVisibleType, noTotalEntries);
+		ORcudaKernelCheck;
 
 		ORcudaSafeCall(cudaMemcpy(&noNeededEntries, noNeededEntries_device, sizeof(int), cudaMemcpyDeviceToHost));
 	}
@@ -168,6 +171,7 @@ void ITMSwappingEngine_CUDA<TVoxel, ITMVoxelBlockHash>::SaveToGlobalMemory(ITMSc
 
 			moveActiveDataToTransferBuffer_device << <gridSize, blockSize >> >(syncedVoxelBlocks_local, hasSyncedData_local,
 				neededEntryIDs_local, hashTable, localVBA);
+			ORcudaKernelCheck;
 		}
 
 		{
@@ -178,6 +182,7 @@ void ITMSwappingEngine_CUDA<TVoxel, ITMVoxelBlockHash>::SaveToGlobalMemory(ITMSc
 
 			cleanMemory_device << <gridSize, blockSize >> >(voxelAllocationList, noAllocatedVoxelEntries_device, swapStates, hashTable, localVBA,
 				neededEntryIDs_local, noNeededEntries);
+			ORcudaKernelCheck;
 
 			ORcudaSafeCall(cudaMemcpy(&scene->localVBA.lastFreeBlockId, noAllocatedVoxelEntries_device, sizeof(int), cudaMemcpyDeviceToHost));
 			scene->localVBA.lastFreeBlockId = MAX(scene->localVBA.lastFreeBlockId, 0);
