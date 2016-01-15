@@ -70,6 +70,7 @@ void ITMLowLevelEngine_CUDA::FilterSubsample(ITMUChar4Image *image_out, const IT
 	dim3 gridSize((int)ceil((float)newDims.x / (float)blockSize.x), (int)ceil((float)newDims.y / (float)blockSize.y));
 
 	filterSubsample_device << <gridSize, blockSize >> >(imageData_out, newDims, imageData_in, oldDims);
+	ORcudaKernelCheck;
 }
 
 void ITMLowLevelEngine_CUDA::FilterSubsampleWithHoles(ITMFloatImage *image_out, const ITMFloatImage *image_in) const
@@ -86,6 +87,7 @@ void ITMLowLevelEngine_CUDA::FilterSubsampleWithHoles(ITMFloatImage *image_out, 
 	dim3 gridSize((int)ceil((float)newDims.x / (float)blockSize.x), (int)ceil((float)newDims.y / (float)blockSize.y));
 
 	filterSubsampleWithHoles_device << <gridSize, blockSize >> >(imageData_out, newDims, imageData_in, oldDims);
+	ORcudaKernelCheck;
 }
 
 void ITMLowLevelEngine_CUDA::FilterSubsampleWithHoles(ITMFloat4Image *image_out, const ITMFloat4Image *image_in) const
@@ -102,6 +104,7 @@ void ITMLowLevelEngine_CUDA::FilterSubsampleWithHoles(ITMFloat4Image *image_out,
 	dim3 gridSize((int)ceil((float)newDims.x / (float)blockSize.x), (int)ceil((float)newDims.y / (float)blockSize.y));
 
 	filterSubsampleWithHoles_device << <gridSize, blockSize >> >(imageData_out, newDims, imageData_in, oldDims);
+	ORcudaKernelCheck;
 }
 
 void ITMLowLevelEngine_CUDA::GradientX(ITMShort4Image *grad_out, const ITMUChar4Image *image_in) const
@@ -118,6 +121,7 @@ void ITMLowLevelEngine_CUDA::GradientX(ITMShort4Image *grad_out, const ITMUChar4
 	ORcudaSafeCall(cudaMemset(grad, 0, imgSize.x * imgSize.y * sizeof(Vector4s)));
 
 	gradientX_device << <gridSize, blockSize >> >(grad, image, imgSize);
+	ORcudaKernelCheck;
 }
 
 void ITMLowLevelEngine_CUDA::GradientY(ITMShort4Image *grad_out, const ITMUChar4Image *image_in) const
@@ -134,6 +138,7 @@ void ITMLowLevelEngine_CUDA::GradientY(ITMShort4Image *grad_out, const ITMUChar4
 	ORcudaSafeCall(cudaMemset(grad, 0, imgSize.x * imgSize.y * sizeof(Vector4s)));
 
 	gradientY_device << <gridSize, blockSize >> >(grad, image, imgSize);
+	ORcudaKernelCheck;
 }
 
 int ITMLowLevelEngine_CUDA::CountValidDepths(const ITMFloatImage *image_in) const
@@ -146,6 +151,7 @@ int ITMLowLevelEngine_CUDA::CountValidDepths(const ITMFloatImage *image_in) cons
 
 	ORcudaSafeCall(cudaMemset(counterTempData_device, 0, sizeof(int)));
 	countValidDepths_device <<<gridSize, blockSize>>>(imageData_in, imgSize.x*imgSize.y, counterTempData_device);
+	ORcudaKernelCheck;
 	ORcudaSafeCall(cudaMemcpy(counterTempData_host, counterTempData_device, sizeof(int), cudaMemcpyDeviceToHost));
 
 	return *counterTempData_host;

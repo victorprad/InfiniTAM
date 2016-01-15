@@ -72,12 +72,15 @@ int ITMWeightedICPTracker_CUDA::ComputeGandH(float &f, float *nabla, float *hess
 	{
 	case TRACKER_ITERATION_ROTATION:
 		wICPTrackerOneLevel_g_rt_device<true, true> << <gridSize, blockSize >> >(accu_device, depth, approxInvPose, pointsMap,normalsMap, weight, minSigmaZ,sceneIntrinsics, sceneImageSize, scenePose, viewIntrinsics, viewImageSize, distThresh[levelId]);
+		ORcudaKernelCheck;
 		break;
 	case TRACKER_ITERATION_TRANSLATION:
 		wICPTrackerOneLevel_g_rt_device<true, false> << <gridSize, blockSize >> >(accu_device, depth, approxInvPose, pointsMap, normalsMap, weight, minSigmaZ, sceneIntrinsics, sceneImageSize, scenePose, viewIntrinsics, viewImageSize, distThresh[levelId]);
+		ORcudaKernelCheck;
 		break;
 	case TRACKER_ITERATION_BOTH:
 		wICPTrackerOneLevel_g_rt_device<false, false> << <gridSize, blockSize >> >(accu_device, depth, approxInvPose, pointsMap, normalsMap, weight, minSigmaZ, sceneIntrinsics, sceneImageSize, scenePose, viewIntrinsics, viewImageSize, distThresh[levelId]);
+		ORcudaKernelCheck;
 		break;
 	default: break;
 	}
