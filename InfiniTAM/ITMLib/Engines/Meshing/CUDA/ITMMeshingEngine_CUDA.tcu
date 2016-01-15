@@ -46,6 +46,7 @@ void ITMMeshingEngine_CUDA<TVoxel, ITMVoxelBlockHash>::MeshScene(ITMMesh *mesh, 
 		dim3 gridSize((int)ceil((float)noTotalEntries / (float)cudaBlockSize.x));
 
 		findAllocateBlocks << <gridSize, cudaBlockSize >> >(visibleBlockGlobalPos_device, hashTable, noTotalEntries);
+		ORcudaKernelCheck;
 	}
 
 	{ // mesh used voxel blocks
@@ -54,6 +55,7 @@ void ITMMeshingEngine_CUDA<TVoxel, ITMVoxelBlockHash>::MeshScene(ITMMesh *mesh, 
 
 		meshScene_device<TVoxel> << <gridSize, cudaBlockSize >> >(triangles, noTriangles_device, factor, noTotalEntries, noMaxTriangles,
 			visibleBlockGlobalPos_device, localVBA, hashTable);
+		ORcudaKernelCheck;
 
 		ORcudaSafeCall(cudaMemcpy(&mesh->noTotalTriangles, noTriangles_device, sizeof(unsigned int), cudaMemcpyDeviceToHost));
 	}
