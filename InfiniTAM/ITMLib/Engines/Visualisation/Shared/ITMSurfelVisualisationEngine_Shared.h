@@ -182,7 +182,7 @@ void shade_pixel_colour(int locId, const unsigned int *surfelIndexImage, const T
 {
   Vector4u col4(0, 0, 0, 255);
 
-  int surfelIndex = surfelIndexImage[locId] - 1;  
+  int surfelIndex = surfelIndexImage[locId] - 1;
   if(surfelIndex >= 0)
   {
     Vector3u col3 = SurfelColourManipulator<TSurfel::hasColourInformation>::read(surfels[surfelIndex]);
