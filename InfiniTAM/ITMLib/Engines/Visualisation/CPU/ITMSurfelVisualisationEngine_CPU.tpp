@@ -146,7 +146,8 @@ MemoryDeviceType ITMSurfelVisualisationEngine_CPU<TSurfel>::GetMemoryType() cons
 
 template <typename TSurfel>
 void ITMSurfelVisualisationEngine_CPU<TSurfel>::MakeIndexImage(const ITMSurfelScene<TSurfel> *scene, const ITMPose *pose, const ITMIntrinsics *intrinsics,
-                                                               int width, int height, int scaleFactor, unsigned int *surfelIndexImage, int *depthBuffer) const
+                                                               int width, int height, int scaleFactor, unsigned int *surfelIndexImage, bool useRadii,
+                                                               int *depthBuffer) const
 {
   const int pixelCount = width * height;
 
@@ -165,13 +166,13 @@ void ITMSurfelVisualisationEngine_CPU<TSurfel>::MakeIndexImage(const ITMSurfelSc
   // Note: This is deliberately not parallelised (it would be slower due to the synchronisation needed).
   for(int surfelId = 0; surfelId < surfelCount; ++surfelId)
   {
-    update_depth_buffer_for_surfel(surfelId, surfels, invT, *intrinsics, width, height, scaleFactor, depthBuffer);
+    update_depth_buffer_for_surfel(surfelId, surfels, invT, *intrinsics, width, height, scaleFactor, useRadii, depthBuffer);
   }
 
   // Note: This is deliberately not parallelised (it would be slower due to the synchronisation needed).
   for(int surfelId = 0; surfelId < surfelCount; ++surfelId)
   {
-    update_index_image_for_surfel(surfelId, surfels, invT, *intrinsics, width, height, scaleFactor, depthBuffer, surfelIndexImage);
+    update_index_image_for_surfel(surfelId, surfels, invT, *intrinsics, width, height, scaleFactor, depthBuffer, useRadii, surfelIndexImage);
   }
 }
 

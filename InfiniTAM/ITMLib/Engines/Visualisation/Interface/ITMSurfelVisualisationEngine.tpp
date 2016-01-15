@@ -26,6 +26,7 @@ void ITMSurfelVisualisationEngine<TSurfel>::FindSurface(const ITMSurfelScene<TSu
     renderState->GetIndexImage()->noDims.y,
     1,
     renderState->GetIndexImage()->GetData(memoryType),
+    true,
     renderState->GetDepthBuffer()->GetData(memoryType)
   );
 }
@@ -43,6 +44,7 @@ void ITMSurfelVisualisationEngine<TSurfel>::FindSurfaceSuper(const ITMSurfelScen
     renderState->GetIndexImageSuper()->noDims.y,
     renderState->GetSuperScaleFactor(),
     renderState->GetIndexImageSuper()->GetData(memoryType),
+    false,
     renderState->GetDepthBufferSuper()->GetData(memoryType)
   );
 }

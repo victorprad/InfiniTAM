@@ -95,24 +95,25 @@ __global__ void ck_shade_pixel_normal(int pixelCount, const unsigned int *surfel
 
 template <typename TSurfel>
 __global__ void ck_update_depth_buffer_for_surfel(int surfelCount, const TSurfel *surfels, Matrix4f invT, ITMIntrinsics intrinsics,
-                                                  int indexImageWidth, int indexImageHeight, int scaleFactor, int *depthBuffer)
+                                                  int indexImageWidth, int indexImageHeight, int scaleFactor, bool useRadii,
+                                                  int *depthBuffer)
 {
   int surfelId = threadIdx.x + blockDim.x * blockIdx.x;
   if(surfelId < surfelCount)
   {
-    update_depth_buffer_for_surfel(surfelId, surfels, invT, intrinsics, indexImageWidth, indexImageHeight, scaleFactor, depthBuffer);
+    update_depth_buffer_for_surfel(surfelId, surfels, invT, intrinsics, indexImageWidth, indexImageHeight, scaleFactor, useRadii, depthBuffer);
   }
 }
 
 template <typename TSurfel>
 __global__ void ck_update_index_image_for_surfel(int surfelCount, const TSurfel *surfels, Matrix4f invT, ITMIntrinsics intrinsics,
                                                  int indexImageWidth, int indexImageHeight, int scaleFactor, const int *depthBuffer,
-                                                 unsigned int *surfelIndexImage)
+                                                 bool useRadii, unsigned int *surfelIndexImage)
 {
   int surfelId = threadIdx.x + blockDim.x * blockIdx.x;
   if(surfelId < surfelCount)
   {
-    update_index_image_for_surfel(surfelId, surfels, invT, intrinsics, indexImageWidth, indexImageHeight, scaleFactor, depthBuffer, surfelIndexImage);
+    update_index_image_for_surfel(surfelId, surfels, invT, intrinsics, indexImageWidth, indexImageHeight, scaleFactor, depthBuffer, useRadii, surfelIndexImage);
   }
 }
 
@@ -132,6 +133,7 @@ void ITMSurfelVisualisationEngine_CUDA<TSurfel>::CopyCorrespondencesToBuffer(con
     scene->GetSurfels()->GetData(MEMORYDEVICE_CUDA),
     correspondences
   );
+  ORcudaKernelCheck;
 }
 #endif
 
@@ -150,6 +152,7 @@ void ITMSurfelVisualisationEngine_CUDA<TSurfel>::CopySceneToBuffers(const ITMSur
     normals,
     colours
   );
+  ORcudaKernelCheck;
 }
 
 template <typename TSurfel>
@@ -169,6 +172,7 @@ void ITMSurfelVisualisationEngine_CUDA<TSurfel>::CreateICPMaps(const ITMSurfelSc
     trackingState->pointCloud->locations->GetData(MEMORYDEVICE_CUDA),
     trackingState->pointCloud->colours->GetData(MEMORYDEVICE_CUDA)
   );
+  ORcudaKernelCheck;
 }
 
 template <typename TSurfel>
@@ -191,6 +195,7 @@ void ITMSurfelVisualisationEngine_CUDA<TSurfel>::RenderDepthImage(const ITMSurfe
     cameraPosition,
     outputImagePtr
   );
+  ORcudaKernelCheck;
 }
 
 template <typename TSurfel>
@@ -218,6 +223,7 @@ void ITMSurfelVisualisationEngine_CUDA<TSurfel>::RenderImage(const ITMSurfelScen
         surfels,
         outputImagePtr
       );
+      ORcudaKernelCheck;
       break;
     }
     case Base::RENDER_LAMBERTIAN:
@@ -231,6 +237,7 @@ void ITMSurfelVisualisationEngine_CUDA<TSurfel>::RenderImage(const ITMSurfelScen
         lightSource,
         outputImagePtr
       );
+      ORcudaKernelCheck;
       break;
     }
     case Base::RENDER_NORMAL:
@@ -241,6 +248,7 @@ void ITMSurfelVisualisationEngine_CUDA<TSurfel>::RenderImage(const ITMSurfelScen
         surfels,
         outputImagePtr
       );
+      ORcudaKernelCheck;
       break;
     }
     default:
@@ -261,7 +269,8 @@ MemoryDeviceType ITMSurfelVisualisationEngine_CUDA<TSurfel>::GetMemoryType() con
 
 template <typename TSurfel>
 void ITMSurfelVisualisationEngine_CUDA<TSurfel>::MakeIndexImage(const ITMSurfelScene<TSurfel> *scene, const ITMPose *pose, const ITMIntrinsics *intrinsics,
-                                                                int width, int height, int scaleFactor, unsigned int *surfelIndexImage, int *depthBuffer) const
+                                                                int width, int height, int scaleFactor, unsigned int *surfelIndexImage, bool useRadii,
+                                                                int *depthBuffer) const
 {
   const int pixelCount = width * height;
 
@@ -273,6 +282,7 @@ void ITMSurfelVisualisationEngine_CUDA<TSurfel>::MakeIndexImage(const ITMSurfelS
     surfelIndexImage,
     depthBuffer
   );
+  ORcudaKernelCheck;
 
   const int surfelCount = static_cast<int>(scene->GetSurfelCount());
   numBlocks = (surfelCount + threadsPerBlock - 1) / threadsPerBlock;
@@ -285,8 +295,10 @@ void ITMSurfelVisualisationEngine_CUDA<TSurfel>::MakeIndexImage(const ITMSurfelS
     width,
     height,
     scaleFactor,
+    useRadii,
     depthBuffer
   );
+  ORcudaKernelCheck;
 
   ck_update_index_image_for_surfel<<<numBlocks,threadsPerBlock>>>(
     surfelCount,
@@ -297,8 +309,10 @@ void ITMSurfelVisualisationEngine_CUDA<TSurfel>::MakeIndexImage(const ITMSurfelS
     height,
     scaleFactor,
     depthBuffer,
+    useRadii,
     surfelIndexImage
   );
+  ORcudaKernelCheck;
 }
 
 }

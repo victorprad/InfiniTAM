@@ -160,7 +160,8 @@ inline void calculate_radius(int locId, const float *depthMap, const Vector3f *n
   float r = 0.0f;
   Vector3f n = normalMap[locId];
 
-  if(n.z > -1.0f) // FIXME: Is this right?
+  //if(n.z > -1.0f) // FIXME: Is this right?
+  if(length(n) > 0.0f)
   {
     float d = depthMap[locId];
     if(d > 10.0f) d = 10.0f; // FIXME: Is this reasonable?

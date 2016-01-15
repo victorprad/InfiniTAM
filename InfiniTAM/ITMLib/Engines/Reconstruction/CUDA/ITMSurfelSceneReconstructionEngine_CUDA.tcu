@@ -157,6 +157,7 @@ void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::AddNewSurfels(ITMSurfelSc
     view->calib->trafo_rgb_to_depth.calib_inv,
     view->calib->intrinsics_rgb.projectionParamsSimple.all
   );
+  ORcudaKernelCheck;
 
 #if DEBUGGING
   scene->GetSurfels()->UpdateHostFromDevice();
@@ -183,6 +184,7 @@ void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::FindCorrespondingSurfels(
     this->m_correspondenceMapMB->GetData(MEMORYDEVICE_CUDA),
     this->m_newPointsMaskMB->GetData(MEMORYDEVICE_CUDA)
   );
+  ORcudaKernelCheck;
 
 #if DEBUGGING
   this->m_correspondenceMapMB->UpdateHostFromDevice();
@@ -213,6 +215,7 @@ void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::FuseMatchedPoints(ITMSurf
     view->calib->trafo_rgb_to_depth.calib_inv,
     view->calib->intrinsics_rgb.projectionParamsSimple.all
   );
+  ORcudaKernelCheck;
 }
 
 template <typename TSurfel>
@@ -238,6 +241,7 @@ void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::PreprocessDepthMap(const 
     depthMap,
     vertexMap
   );
+  ORcudaKernelCheck;
 
 #if DEBUGGING
   this->m_vertexMapMB->UpdateHostFromDevice();
@@ -251,6 +255,7 @@ void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::PreprocessDepthMap(const 
     height,
     normalMap
   );
+  ORcudaKernelCheck;
 
 #if DEBUGGING
   this->m_normalMapMB->UpdateHostFromDevice();
@@ -264,6 +269,7 @@ void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::PreprocessDepthMap(const 
     intrinsics,
     radiusMap
   );
+  ORcudaKernelCheck;
 
 #if DEBUGGING
   this->m_radiusMapMB->UpdateHostFromDevice();
@@ -289,6 +295,7 @@ void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::RemoveBadSurfels(ITMSurfe
     surfelCount,
     surfelRemovalMask
   );
+  ORcudaKernelCheck;
 
   // Mark long-term unstable surfels for removal.
   ck_mark_for_removal_if_unstable<<<numBlocks,threadsPerBlock>>>(
@@ -297,6 +304,7 @@ void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::RemoveBadSurfels(ITMSurfe
     this->m_timestamp,
     surfelRemovalMask
   );
+  ORcudaKernelCheck;
 
 #if DEBUGGING
   scene->GetSurfels()->UpdateHostFromDevice();

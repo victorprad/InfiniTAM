@@ -13,6 +13,24 @@ namespace ITMLib
  * \brief TODO
  */
 _CPU_AND_GPU_CODE_
+inline void calculate_projected_surfel_bounds(int locId, int indexImageWidth, int indexImageHeight, float radius, float z,
+                                              int& cx, int& cy, int& projectedRadiusSquared, int& minX, int& minY, int& maxX, int& maxY)
+{
+  cx = locId % indexImageWidth, cy = locId / indexImageWidth;
+  int projectedRadius = static_cast<int>(radius / z + 0.5f);
+  projectedRadiusSquared = projectedRadius * projectedRadius;
+  minX = cx - projectedRadius, maxX = cx + projectedRadius;
+  minY = cy - projectedRadius, maxY = cy + projectedRadius;
+  if(minX < 0) minX = 0;
+  if(maxX >= indexImageWidth) maxX = indexImageWidth - 1;
+  if(minY < 0) minY = 0;
+  if(maxY >= indexImageHeight) maxY = indexImageHeight - 1;
+}
+
+/**
+ * \brief TODO
+ */
+_CPU_AND_GPU_CODE_
 inline Vector4u colourise_normal(const Vector3f& n)
 {
   // FIXME: Borrowed from drawPixelNormal - refactor.
@@ -133,7 +151,7 @@ inline bool project_surfel_to_index_image(const TSurfel& surfel, const Matrix4f&
 
   // If the point isn't in front of the viewer, early out.
   z = v.z;
-  if(z <= 0) return false;
+  if(z <= 0.0f) return false;
 
   // Project the point onto the image plane of the current frame.
   float ux = intrinsics.projectionParamsSimple.fx * v.x / z + intrinsics.projectionParamsSimple.px;
@@ -248,18 +266,52 @@ void shade_pixel_normal(int locId, const unsigned int *surfelIndexImage, const T
 template <typename TSurfel>
 _CPU_AND_GPU_CODE_
 inline void update_depth_buffer_for_surfel(int surfelId, const TSurfel *surfels, const Matrix4f& invT, const ITMIntrinsics& intrinsics,
-                                           int indexImageWidth, int indexImageHeight, int scaleFactor, int *depthBuffer)
+                                           int indexImageWidth, int indexImageHeight, int scaleFactor, bool useRadii, int *depthBuffer)
 {
+  const TSurfel surfel = surfels[surfelId];
   int locId, scaledZ;
   float z;
-  if(project_surfel_to_index_image(surfels[surfelId], invT, intrinsics, indexImageWidth, indexImageHeight, scaleFactor, locId, z, scaledZ))
+  if(project_surfel_to_index_image(surfel, invT, intrinsics, indexImageWidth, indexImageHeight, scaleFactor, locId, z, scaledZ))
   {
+    if(useRadii)
+    {
+      int cx, cy, minX, minY, maxX, maxY, projectedRadiusSquared;
+      calculate_projected_surfel_bounds(
+        locId, indexImageWidth, indexImageHeight, surfel.radius, z,
+        cx, cy, projectedRadiusSquared, minX, minY, maxX, maxY
+      );
+
+      for(int y = minY; y <= maxY; ++y)
+      {
+        int yOffset = y - cy;
+        int yOffsetSquared = yOffset * yOffset;
+
+        for(int x = minX; x <= maxX; ++x)
+        {
+          int xOffset = x - cx;
+          int xOffsetSquared = xOffset * xOffset;
+          if(xOffsetSquared + yOffsetSquared > projectedRadiusSquared) continue;
+
+          int offset = y * indexImageWidth + x;
+
 #if defined(__CUDACC__) && defined(__CUDA_ARCH__)
-    atomicMin(&depthBuffer[locId], scaledZ);
+          atomicMin(&depthBuffer[offset], scaledZ);
 #else
-    // Note: No synchronisation is needed for the CPU version because it's not parallelised.
-    if(scaledZ < depthBuffer[locId]) depthBuffer[locId] = scaledZ;
+          // Note: No synchronisation is needed for the CPU version because it's not parallelised.
+          if(scaledZ < depthBuffer[offset]) depthBuffer[offset] = scaledZ;
 #endif
+        }
+      }
+    }
+    else
+    {
+#if defined(__CUDACC__) && defined(__CUDA_ARCH__)
+      atomicMin(&depthBuffer[locId], scaledZ);
+#else
+      // Note: No synchronisation is needed for the CPU version because it's not parallelised.
+      if(scaledZ < depthBuffer[locId]) depthBuffer[locId] = scaledZ;
+#endif
+    }
   }
 }
 
@@ -269,24 +321,60 @@ inline void update_depth_buffer_for_surfel(int surfelId, const TSurfel *surfels,
 template <typename TSurfel>
 _CPU_AND_GPU_CODE_
 inline void update_index_image_for_surfel(int surfelId, const TSurfel *surfels, const Matrix4f& invT, const ITMIntrinsics& intrinsics,
-                                          int indexImageWidth, int indexImageHeight, int scaleFactor, const int *depthBuffer,
+                                          int indexImageWidth, int indexImageHeight, int scaleFactor, const int *depthBuffer, bool useRadii,
                                           unsigned int *surfelIndexImage)
 {
+  const TSurfel surfel = surfels[surfelId];
   int locId, scaledZ;
   float z;
-  if(project_surfel_to_index_image(surfels[surfelId], invT, intrinsics, indexImageWidth, indexImageHeight, scaleFactor, locId, z, scaledZ))
+  if(project_surfel_to_index_image(surfel, invT, intrinsics, indexImageWidth, indexImageHeight, scaleFactor, locId, z, scaledZ))
   {
-    if(depthBuffer[locId] == scaledZ)
-    {
-      // Write the surfel ID + 1 into the surfel index image.
-      unsigned int surfelIdPlusOne = static_cast<unsigned int>(surfelId + 1);
+    unsigned int surfelIdPlusOne = static_cast<unsigned int>(surfelId + 1);
 
+    if(useRadii)
+    {
+      int cx, cy, minX, minY, maxX, maxY, projectedRadiusSquared;
+      calculate_projected_surfel_bounds(
+        locId, indexImageWidth, indexImageHeight, surfel.radius, z,
+        cx, cy, projectedRadiusSquared, minX, minY, maxX, maxY
+      );
+
+      for(int y = minY; y <= maxY; ++y)
+      {
+        int yOffset = y - cy;
+        int yOffsetSquared = yOffset * yOffset;
+
+        for(int x = minX; x <= maxX; ++x)
+        {
+          int xOffset = x - cx;
+          int xOffsetSquared = xOffset * xOffset;
+          if(xOffsetSquared + yOffsetSquared > projectedRadiusSquared) continue;
+
+          int offset = y * indexImageWidth + x;
+
+          if(depthBuffer[offset] == scaledZ)
+          {
 #if defined(__CUDACC__) && defined(__CUDA_ARCH__)
-      atomicMax(&surfelIndexImage[locId], surfelIdPlusOne);
+            atomicMax(&surfelIndexImage[offset], surfelIdPlusOne);
 #else
-      // Note: No synchronisation is needed for the CPU version because it's not parallelised.
-      if(surfelIdPlusOne > surfelIndexImage[locId]) surfelIndexImage[locId] = surfelIdPlusOne;
+            // Note: No synchronisation is needed for the CPU version because it's not parallelised.
+            if(surfelIdPlusOne > surfelIndexImage[offset]) surfelIndexImage[offset] = surfelIdPlusOne;
 #endif
+          }
+        }
+      }
+    }
+    else
+    {
+      if(depthBuffer[locId] == scaledZ)
+      {
+#if defined(__CUDACC__) && defined(__CUDA_ARCH__)
+        atomicMax(&surfelIndexImage[locId], surfelIdPlusOne);
+#else
+        // Note: No synchronisation is needed for the CPU version because it's not parallelised.
+        if(surfelIdPlusOne > surfelIndexImage[locId]) surfelIndexImage[locId] = surfelIdPlusOne;
+#endif
+      }
     }
   }
 }

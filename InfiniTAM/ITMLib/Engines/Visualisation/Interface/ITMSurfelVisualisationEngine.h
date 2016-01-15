@@ -93,6 +93,7 @@ namespace ITMLib
      * \brief TODO
      */
     virtual void MakeIndexImage(const ITMSurfelScene<TSurfel> *scene, const ITMPose *pose, const ITMIntrinsics *intrinsics,
-                                int width, int height, int scaleFactor, unsigned int *surfelIndexImage, int *depthBuffer) const = 0;
+                                int width, int height, int scaleFactor, unsigned int *surfelIndexImage, bool useRadii,
+                                int *depthBuffer) const = 0;
   };
 }
