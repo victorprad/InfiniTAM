@@ -43,7 +43,7 @@ void ITMLocalSceneManager_instance<TVoxel,TIndex>::removeScene(int sceneID)
 }
 
 template<class TVoxel, class TIndex>
-void ITMLocalSceneManager_instance<TVoxel,TIndex>::addRelation(int fromScene, int toScene, const ITMPose & pose, int weight)
+void ITMLocalSceneManager_instance<TVoxel,TIndex>::addRelation(int fromScene, int toScene, const ORUtils::SE3Pose & pose, int weight)
 {
 	if ((fromScene < 0)||((unsigned)fromScene >= allData.size())) return;
 	if ((toScene < 0)||((unsigned)toScene >= allData.size())) return;
@@ -51,14 +51,14 @@ void ITMLocalSceneManager_instance<TVoxel,TIndex>::addRelation(int fromScene, in
 	ITMLocalScene<TVoxel,TIndex> *localScene = allData[fromScene];
 	localScene->relations[toScene].AddObservation(pose, weight);
 
-	ITMPose invPose(pose.GetInvM());
+	ORUtils::SE3Pose invPose(pose.GetInvM());
 	localScene = allData[toScene];
 	localScene->relations[fromScene].AddObservation(invPose, weight);
 	//fprintf(stderr, "createSceneRelation %i -> %i\n", fromScene, toScene);
 }
 
 template<class TVoxel, class TIndex>
-void ITMLocalSceneManager_instance<TVoxel,TIndex>::getRelation(int fromScene, int toScene, ITMPose *out_pose, int *out_weight) const
+void ITMLocalSceneManager_instance<TVoxel,TIndex>::getRelation(int fromScene, int toScene, ORUtils::SE3Pose *out_pose, int *out_weight) const
 {
 	if ((fromScene >= 0)&&((unsigned)fromScene < allData.size())) {
 		const std::map<int,ITMPoseConstraint> & m = getScene(fromScene)->relations;
@@ -69,12 +69,12 @@ void ITMLocalSceneManager_instance<TVoxel,TIndex>::getRelation(int fromScene, in
 			return;
 		}
 	}
-	if (out_pose) *out_pose = ITMPose();
+	if (out_pose) *out_pose = ORUtils::SE3Pose();
 	if (out_weight) *out_weight = 0;
 }
 
 template<class TVoxel, class TIndex>
-bool ITMLocalSceneManager_instance<TVoxel,TIndex>::resetTracking(int sceneID, const ITMPose & pose)
+bool ITMLocalSceneManager_instance<TVoxel,TIndex>::resetTracking(int sceneID, const ORUtils::SE3Pose & pose)
 {
 	if ((sceneID < 0)||((unsigned)sceneID >= allData.size())) return false;
 	allData[sceneID]->trackingState->pose_d->SetFrom(&pose);
@@ -152,10 +152,10 @@ std::vector<int> ITMLocalSceneManager_instance<TVoxel,TIndex>::getShortestLinkPa
 }
 
 template<class TVoxel, class TIndex>
-ITMPose ITMLocalSceneManager_instance<TVoxel,TIndex>::findTransformation(int fromSceneID, int toSceneID) const
+ORUtils::SE3Pose ITMLocalSceneManager_instance<TVoxel,TIndex>::findTransformation(int fromSceneID, int toSceneID) const
 {
 	std::vector<int> pathThroughScenes = getShortestLinkPath(fromSceneID, toSceneID);
-	ITMPose ret;
+	ORUtils::SE3Pose ret;
 
 	for (size_t i = 0; i+1 < pathThroughScenes.size(); ++i) {
 		int currentScene = pathThroughScenes[i];

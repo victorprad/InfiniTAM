@@ -15,6 +15,7 @@ MemoryBlock.h
 MemoryBlockPersister.h
 PlatformIndependence.h
 KeyValueConfig.h
+SE3Pose.h
 )
 
 #################################################################
@@ -23,6 +24,7 @@ KeyValueConfig.h
 
 set(ORUTILS_OBJECTS
 KeyValueConfig.cpp
+SE3Pose.cpp
 ${ORUTILS_HEADERS}
 )
 

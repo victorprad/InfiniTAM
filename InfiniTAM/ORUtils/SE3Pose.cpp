@@ -1,20 +1,18 @@
 // Copyright 2014-2015 Isis Innovation Limited and the authors of InfiniTAM
 
 #include <math.h>
-#include "ITMPose.h"
+#include "SE3Pose.h"
 
-#include <stdio.h>
+using namespace ORUtils;
 
-using namespace ITMLib;
+SE3Pose::SE3Pose(void) { this->SetFrom(0, 0, 0, 0, 0, 0); }
 
-ITMPose::ITMPose(void) { this->SetFrom(0, 0, 0, 0, 0, 0); }
-
-ITMPose::ITMPose(float tx, float ty, float tz, float rx, float ry, float rz) 
+SE3Pose::SE3Pose(float tx, float ty, float tz, float rx, float ry, float rz) 
 { this->SetFrom(tx, ty, tz, rx, ry, rz); }
-ITMPose::ITMPose(const float pose[6]) { this->SetFrom(pose); }
-ITMPose::ITMPose(const Matrix4f & src) { this->SetM(src); }
-ITMPose::ITMPose(const Vector6f & tangent) { this->SetFrom(tangent); }
-ITMPose::ITMPose(const ITMPose & src) { this->SetFrom(&src); }
+SE3Pose::SE3Pose(const float pose[6]) { this->SetFrom(pose); }
+SE3Pose::SE3Pose(const Matrix4<float> & src) { this->SetM(src); }
+SE3Pose::SE3Pose(const Vector6<float> & tangent) { this->SetFrom(tangent); }
+SE3Pose::SE3Pose(const SE3Pose & src) { this->SetFrom(&src); }
 
 #ifndef M_SQRT1_2
 #define M_SQRT1_2 0.707106781186547524401
@@ -28,7 +26,7 @@ ITMPose::ITMPose(const ITMPose & src) { this->SetFrom(&src); }
 #define M_PI_2 1.5707963267948966192E0
 #endif
 
-void ITMPose::SetFrom(float tx, float ty, float tz, float rx, float ry, float rz)
+void SE3Pose::SetFrom(float tx, float ty, float tz, float rx, float ry, float rz)
 {
 	this->params.each.tx = tx;
 	this->params.each.ty = ty;
@@ -40,7 +38,7 @@ void ITMPose::SetFrom(float tx, float ty, float tz, float rx, float ry, float rz
 	this->SetModelViewFromParams();
 }
 
-void ITMPose::SetFrom(const Vector3f &translation, const Vector3f &rotation)
+void SE3Pose::SetFrom(const Vector3<float> &translation, const Vector3<float> &rotation)
 {
 	this->params.each.tx = translation.x;
 	this->params.each.ty = translation.y;
@@ -52,7 +50,7 @@ void ITMPose::SetFrom(const Vector3f &translation, const Vector3f &rotation)
 	this->SetModelViewFromParams();
 }
 
-void ITMPose::SetFrom(const Vector6f &tangent)
+void SE3Pose::SetFrom(const Vector6<float> &tangent)
 {
 	this->params.each.tx = tangent[0];
 	this->params.each.ty = tangent[1];
@@ -64,12 +62,12 @@ void ITMPose::SetFrom(const Vector6f &tangent)
 	this->SetModelViewFromParams();
 }
 
-void ITMPose::SetFrom(const float pose[6])
+void SE3Pose::SetFrom(const float pose[6])
 {
 	SetFrom(pose[0], pose[1], pose[2], pose[3], pose[4], pose[5]);
 }
 
-void ITMPose::SetFrom(const ITMPose *pose)
+void SE3Pose::SetFrom(const SE3Pose *pose)
 {
 	this->params.each.tx = pose->params.each.tx;
 	this->params.each.ty = pose->params.each.ty;
@@ -81,22 +79,22 @@ void ITMPose::SetFrom(const ITMPose *pose)
 	M = pose->M;
 }
 
-void ITMPose::SetModelViewFromParams()
+void SE3Pose::SetModelViewFromParams()
 {
 	float one_6th = 1.0f/6.0f;
 	float one_20th = 1.0f/20.0f;
 
-	Vector3f w; w.x = params.each.rx; w.y = params.each.ry; w.z = params.each.rz;
-	Vector3f t; t.x = params.each.tx; t.y = params.each.ty; t.z = params.each.tz;
+	Vector3<float> w; w.x = params.each.rx; w.y = params.each.ry; w.z = params.each.rz;
+	Vector3<float> t; t.x = params.each.tx; t.y = params.each.ty; t.z = params.each.tz;
 
 	float theta_sq = dot(w, w);
 	float theta = sqrt(theta_sq);
 
 	float A, B;
 
-	Matrix3f R; Vector3f T;
+	Matrix3<float> R; Vector3<float> T;
 
-	Vector3f crossV = cross(w, t);
+	Vector3<float> crossV = cross(w, t);
 	if (theta_sq < 1e-8f)
 	{
 		A = 1.0f - one_6th * theta_sq; B = 0.5f;
@@ -119,7 +117,7 @@ void ITMPose::SetModelViewFromParams()
 			C = (1.0f - A) * (inv_theta * inv_theta);
 		}
 
-		Vector3f cross2 = cross(w, crossV);
+		Vector3<float> cross2 = cross(w, crossV);
 
 		T.x = t.x + B * crossV.x + C * cross2.x; T.y = t.y + B * crossV.y + C * cross2.y; T.z = t.z + B * crossV.z + C * cross2.z;
 	}
@@ -151,11 +149,11 @@ void ITMPose::SetModelViewFromParams()
 	M.m[3 + 4*0] = 0.0f; M.m[3 + 4*1] = 0.0f; M.m[3 + 4*2] = 0.0f; M.m[3 + 4*3] = 1.0f;
 }
 
-void ITMPose::SetParamsFromModelView()
+void SE3Pose::SetParamsFromModelView()
 {
-	Vector3f resultRot;
-	Matrix3f R = GetR();
-	Vector3f T = GetT();
+	Vector3<float> resultRot;
+	Matrix3<float> R = GetR();
+	Vector3<float> T = GetT();
 
 	float cos_angle = (R.m00  + R.m11 + R.m22 - 1.0f) * 0.5f;
 	resultRot.x = (R.m[2 + 3 * 1] - R.m[1 + 3 * 2]) * 0.5f;
@@ -186,7 +184,7 @@ void ITMPose::SetParamsFromModelView()
 			float d1 = R.m[1 + 3 * 1] - cos_angle;
 			float d2 = R.m[2 + 3 * 2] - cos_angle;
 
-			Vector3f r2;
+			Vector3<float> r2;
 
 			if(fabsf(d0) > fabsf(d1) && fabsf(d0) > fabsf(d2))
 			{ r2.x = d0; r2.y = (R.m[1 + 3 * 0] + R.m[0 + 3 * 1]) * 0.5f; r2.z = (R.m[0 + 3 * 2] + R.m[2 + 3 * 0]) * 0.5f; } 
@@ -210,9 +208,9 @@ void ITMPose::SetParamsFromModelView()
 
 	if (theta > 0.00001f) shtot = sinf(theta * 0.5f) / theta;
 
-	ITMPose halfrotor(0.0f, 0.0f, 0.0f, resultRot.x * -0.5f, resultRot.y * -0.5f, resultRot.z * -0.5f);
+	SE3Pose halfrotor(0.0f, 0.0f, 0.0f, resultRot.x * -0.5f, resultRot.y * -0.5f, resultRot.z * -0.5f);
 
-	Vector3f rottrans = halfrotor.GetR() * T;
+	Vector3<float> rottrans = halfrotor.GetR() * T;
 
 	if (theta > 0.001f)
 	{
@@ -233,20 +231,20 @@ void ITMPose::SetParamsFromModelView()
 	this->params.each.tx = rottrans.x; this->params.each.ty = rottrans.y; this->params.each.tz = rottrans.z; 
 }
 
-ITMPose ITMPose::exp(const Vector6f& tangent)
+SE3Pose SE3Pose::exp(const Vector6<float>& tangent)
 {
-	return ITMPose(tangent);
+	return SE3Pose(tangent);
 }
 
-void ITMPose::MultiplyWith(const ITMPose *pose)
+void SE3Pose::MultiplyWith(const SE3Pose *pose)
 {
 	M = M * pose->M;
 	this->SetParamsFromModelView();
 }
 
-Matrix3f ITMPose::GetR(void) const
+Matrix3<float> SE3Pose::GetR(void) const
 {
-	Matrix3f R;
+	Matrix3<float> R;
 	R.m[0 + 3*0] = M.m[0 + 4*0]; R.m[1 + 3*0] = M.m[1 + 4*0]; R.m[2 + 3*0] = M.m[2 + 4*0];
 	R.m[0 + 3*1] = M.m[0 + 4*1]; R.m[1 + 3*1] = M.m[1 + 4*1]; R.m[2 + 3*1] = M.m[2 + 4*1];
 	R.m[0 + 3*2] = M.m[0 + 4*2]; R.m[1 + 3*2] = M.m[1 + 4*2]; R.m[2 + 3*2] = M.m[2 + 4*2];
@@ -254,15 +252,15 @@ Matrix3f ITMPose::GetR(void) const
 	return R;
 }
 
-Vector3f ITMPose::GetT(void) const
+Vector3<float> SE3Pose::GetT(void) const
 {
-	Vector3f T;
+	Vector3<float> T;
 	T.v[0] = M.m[0 + 4*3]; T.v[1] = M.m[1 + 4*3]; T.v[2] = M.m[2 + 4*3];
 
 	return T;
 }
 
-void ITMPose::GetParams(Vector3f &translation, Vector3f &rotation)
+void SE3Pose::GetParams(Vector3<float> &translation, Vector3<float> &rotation)
 {
 	translation.x = this->params.each.tx;
 	translation.y = this->params.each.ty;
@@ -273,13 +271,13 @@ void ITMPose::GetParams(Vector3f &translation, Vector3f &rotation)
 	rotation.z = this->params.each.rz;
 }
 
-void ITMPose::SetM(const Matrix4f & src)
+void SE3Pose::SetM(const Matrix4<float> & src)
 {
 	M = src;
 	SetParamsFromModelView();
 }
 
-void ITMPose::SetR(const Matrix3f & R)
+void SE3Pose::SetR(const Matrix3<float> & R)
 {
 	M.m[0 + 4*0] = R.m[0 + 3*0]; M.m[1 + 4*0] = R.m[1 + 3*0]; M.m[2 + 4*0] = R.m[2 + 3*0];
 	M.m[0 + 4*1] = R.m[0 + 3*1]; M.m[1 + 4*1] = R.m[1 + 3*1]; M.m[2 + 4*1] = R.m[2 + 3*1];
@@ -288,14 +286,14 @@ void ITMPose::SetR(const Matrix3f & R)
 	SetParamsFromModelView();
 }
 
-void ITMPose::SetT(const Vector3f & t)
+void SE3Pose::SetT(const Vector3<float> & t)
 {
 	M.m[0 + 4*3] = t.v[0]; M.m[1 + 4*3] = t.v[1]; M.m[2 + 4*3] = t.v[2];
 
 	SetParamsFromModelView();
 }
 
-void ITMPose::SetRT(const Matrix3f & R, const Vector3f & t)
+void SE3Pose::SetRT(const Matrix3<float> & R, const Vector3<float> & t)
 {
 	M.m[0 + 4*0] = R.m[0 + 3*0]; M.m[1 + 4*0] = R.m[1 + 3*0]; M.m[2 + 4*0] = R.m[2 + 3*0];
 	M.m[0 + 4*1] = R.m[0 + 3*1]; M.m[1 + 4*1] = R.m[1 + 3*1]; M.m[2 + 4*1] = R.m[2 + 3*1];
@@ -306,20 +304,20 @@ void ITMPose::SetRT(const Matrix3f & R, const Vector3f & t)
 	SetParamsFromModelView();
 }
 
-Matrix4f ITMPose::GetInvM(void) const
+Matrix4<float> SE3Pose::GetInvM(void) const
 {
-	Matrix4f ret;
+	Matrix4<float> ret;
 	M.inv(ret);
 	return ret;
 }
 
-void ITMPose::SetInvM(const Matrix4f & invM)
+void SE3Pose::SetInvM(const Matrix4<float> & invM)
 {
 	invM.inv(M);
 	SetParamsFromModelView();
 }
 
-void ITMPose::Coerce(void)
+void SE3Pose::Coerce(void)
 {
 	SetParamsFromModelView();
 	SetModelViewFromParams();

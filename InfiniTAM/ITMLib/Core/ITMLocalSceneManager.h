@@ -22,11 +22,11 @@ namespace ITMLib
 		virtual void removeScene(int index) = 0;
 		virtual size_t numScenes(void) const = 0;
 
-		virtual void addRelation(int fromScene, int toScene, const ITMPose & pose, int weight) = 0;
-		virtual void getRelation(int fromScene, int toScene, ITMPose *out_pose = NULL, int *out_weight = NULL) const = 0;
-		virtual bool resetTracking(int sceneID, const ITMPose & pose) = 0;
+		virtual void addRelation(int fromScene, int toScene, const ORUtils::SE3Pose & pose, int weight) = 0;
+		virtual void getRelation(int fromScene, int toScene, ORUtils::SE3Pose *out_pose = NULL, int *out_weight = NULL) const = 0;
+		virtual bool resetTracking(int sceneID, const ORUtils::SE3Pose & pose) = 0;
 
-		virtual const ITMPose* getTrackingPose(int sceneID) const = 0;
+		virtual const ORUtils::SE3Pose* getTrackingPose(int sceneID) const = 0;
 		virtual int getSceneSize(int sceneID) const = 0;
 		virtual int countVisibleBlocks(int sceneID, int minBlockId, int maxBlockId, bool invertIDs) const = 0;
 	};
@@ -51,9 +51,9 @@ namespace ITMLib
 		size_t numScenes(void) const
 		{ return allData.size(); }
 
-		void addRelation(int fromScene, int toScene, const ITMPose & pose, int weight);
-		void getRelation(int fromScene, int toScene, ITMPose *out_pose, int *out_weight) const;
-		bool resetTracking(int sceneID, const ITMPose & pose);
+		void addRelation(int fromScene, int toScene, const ORUtils::SE3Pose & pose, int weight);
+		void getRelation(int fromScene, int toScene, ORUtils::SE3Pose *out_pose, int *out_weight) const;
+		bool resetTracking(int sceneID, const ORUtils::SE3Pose & pose);
 
 		const ITMLocalScene<TVoxel,TIndex>* getScene(int sceneID) const
 		{ return allData[sceneID]; }
@@ -61,12 +61,12 @@ namespace ITMLib
 		ITMLocalScene<TVoxel,TIndex>* getScene(int sceneID)
 		{ return allData[sceneID]; }
 
-		const ITMPose* getTrackingPose(int sceneID) const
+		const ORUtils::SE3Pose* getTrackingPose(int sceneID) const
 		{ return getScene(sceneID)->trackingState->pose_d; }
 		int getSceneSize(int sceneID) const;
 		int countVisibleBlocks(int sceneID, int minBlockId, int maxBlockId, bool invertIDs) const;
 
 		std::vector<int> getShortestLinkPath(int fromSceneID, int toSceneID) const;
-		ITMPose findTransformation(int fromSceneID, int toSceneID) const;
+		ORUtils::SE3Pose findTransformation(int fromSceneID, int toSceneID) const;
 	};
 }

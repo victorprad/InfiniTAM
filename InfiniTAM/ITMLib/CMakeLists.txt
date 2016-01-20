@@ -250,7 +250,6 @@ Engines/Visualisation/Shared/ITMVisualisationEngine_Shared.h
 ##
 SET(ITMLIB_OBJECTS_CAMERA_SOURCES
 Objects/Camera/ITMCalibIO.cpp
-Objects/Camera/ITMPose.cpp
 )
 
 SET(ITMLIB_OBJECTS_CAMERA_HEADERS
@@ -258,7 +257,6 @@ Objects/Camera/ITMCalibIO.h
 Objects/Camera/ITMDisparityCalib.h
 Objects/Camera/ITMExtrinsics.h
 Objects/Camera/ITMIntrinsics.h
-Objects/Camera/ITMPose.h
 Objects/Camera/ITMRGBDCalib.h
 )
 

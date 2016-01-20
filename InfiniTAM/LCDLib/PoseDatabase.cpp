@@ -10,7 +10,7 @@ PoseDatabase::PoseDatabase(void)
 PoseDatabase::~PoseDatabase(void)
 {}
 
-void PoseDatabase::storePose(int id, const ITMLib::ITMPose & pose, int sceneId)
+void PoseDatabase::storePose(int id, const ORUtils::SE3Pose & pose, int sceneId)
 {
 	if (id < 0) return;
 	if ((unsigned)id >= mPoses.size()) mPoses.resize(id+1);
@@ -36,6 +36,6 @@ PoseDatabase::PoseInScene PoseDatabase::retrieveWAPose(int k, int ids[], float d
 	}
 
 	m = m * (1.0f/sumWeights);
-	return PoseDatabase::PoseInScene(ITMLib::ITMPose(m), sceneID);
+	return PoseDatabase::PoseInScene(ORUtils::SE3Pose(m), sceneID);
 }
 
