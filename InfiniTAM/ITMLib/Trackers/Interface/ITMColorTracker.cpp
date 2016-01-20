@@ -7,7 +7,7 @@
 
 using namespace ITMLib;
 
-static inline bool minimizeLM(const ITMColorTracker & tracker, ITMPose & initialization);
+static inline bool minimizeLM(const ITMColorTracker & tracker, ORUtils::SE3Pose & initialization);
 
 ITMColorTracker::ITMColorTracker(Vector2i imgSize, TrackerIterationType *trackingRegime, int noHierarchyLevels,
 	const ITMLowLevelEngine *lowLevelEngine, MemoryDeviceType memoryType)
@@ -28,7 +28,7 @@ void ITMColorTracker::TrackCamera(ITMTrackingState *trackingState, const ITMView
 
 	this->PrepareForEvaluation(view);
 
-	ITMPose currentPara(view->calib->trafo_rgb_to_depth.calib_inv * trackingState->pose_d->GetM());
+	ORUtils::SE3Pose currentPara(view->calib->trafo_rgb_to_depth.calib_inv * trackingState->pose_d->GetM());
 	for (int levelId = viewHierarchy->noLevels - 1; levelId >= 0; levelId--)
 	{
 		this->levelId = levelId;
@@ -68,7 +68,7 @@ void ITMColorTracker::PrepareForEvaluation(const ITMView *view)
 	}
 }
 
-void ITMColorTracker::ApplyDelta(const ITMPose & para_old, const float *delta, ITMPose & para_new) const
+void ITMColorTracker::ApplyDelta(const ORUtils::SE3Pose & para_old, const float *delta, ORUtils::SE3Pose & para_new) const
 {
 	float paramVector[6];
 
@@ -102,7 +102,7 @@ void ITMColorTracker::EvaluationPoint::computeGradients(bool hessianRequired)
 	mParent->G_oneLevel(cacheNabla, cacheHessian, mPara);
 }
 
-ITMColorTracker::EvaluationPoint::EvaluationPoint(ITMPose *pos, const ITMColorTracker *f_parent)
+ITMColorTracker::EvaluationPoint::EvaluationPoint(ORUtils::SE3Pose *pos, const ITMColorTracker *f_parent)
 {
 	float localF[1];
 
@@ -133,7 +133,7 @@ static inline double stepQuality(ITMColorTracker::EvaluationPoint *x, ITMColorTr
 	return actual_reduction / predicted_reduction;
 }
 
-static inline bool minimizeLM(const ITMColorTracker & tracker, ITMPose & initialization)
+static inline bool minimizeLM(const ITMColorTracker & tracker, ORUtils::SE3Pose & initialization)
 {
 	// These are some sensible default parameters for Levenberg Marquardt.
 	// The first three control the convergence criteria, the others might
@@ -151,7 +151,7 @@ static inline bool minimizeLM(const ITMColorTracker & tracker, ITMPose & initial
 	float lambda = 0.01f;
 	int step_counter = 0;
 
-	ITMColorTracker::EvaluationPoint *x = tracker.evaluateAt(new ITMPose(initialization));
+	ITMColorTracker::EvaluationPoint *x = tracker.evaluateAt(new ORUtils::SE3Pose(initialization));
 	ITMColorTracker::EvaluationPoint *x2 = NULL;
 
 	if (!portable_finite(x->f())) { delete[] d; delete x; return false; }
@@ -192,7 +192,7 @@ static inline bool minimizeLM(const ITMColorTracker & tracker, ITMPose & initial
 			for (int i = 0; i < numPara; i++) d[i] = -d[i];
 
 			// make step
-			ITMPose *tmp_para = new ITMPose(x->getParameter());
+			ORUtils::SE3Pose *tmp_para = new ORUtils::SE3Pose(x->getParameter());
 			tracker.ApplyDelta(x->getParameter(), &(d[0]), *tmp_para);
 
 			// check whether step reduces error function and

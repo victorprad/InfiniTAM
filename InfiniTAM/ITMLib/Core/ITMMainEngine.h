@@ -70,7 +70,7 @@ namespace ITMLib
 		/// Get a result image as output
 		virtual Vector2i GetImageSize(void) const = 0;
 
-		virtual void GetImage(ITMUChar4Image *out, GetImageType getImageType, ITMPose *pose = NULL, ITMIntrinsics *intrinsics = NULL) = 0;
+		virtual void GetImage(ITMUChar4Image *out, GetImageType getImageType, ORUtils::SE3Pose *pose = NULL, ITMIntrinsics *intrinsics = NULL) = 0;
 
 		virtual ~ITMMainEngine() {}
 	};

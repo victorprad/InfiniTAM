@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "../Camera/ITMPose.h"
+#include "../../../ORUtils/SE3Pose.h"
 #include "../Misc/ITMPointCloud.h"
 
 namespace ITMLib
@@ -24,12 +24,12 @@ namespace ITMLib
 		ITMPointCloud *pointCloud;
 
 		/// The pose used to generate the point cloud.
-		ITMPose *pose_pointCloud;
+		ORUtils::SE3Pose *pose_pointCloud;
 
 		int age_pointCloud;
 
 		/// Current pose of the depth camera.
-		ITMPose *pose_d;
+		ORUtils::SE3Pose *pose_d;
 
 		/// Tracking quality: 1.0: success, 0.0: failure
 		float poseQuality;
@@ -58,12 +58,12 @@ namespace ITMLib
 		{
 			this->pointCloud = new ITMPointCloud(imgSize, memoryType);
 
-			this->pose_d = new ITMPose();
+			this->pose_d = new ORUtils::SE3Pose();
 			this->pose_d->SetFrom(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
 			this->poseQuality = 1.0f;
 
 			this->age_pointCloud = -1;
-			this->pose_pointCloud = new ITMPose();
+			this->pose_pointCloud = new ORUtils::SE3Pose();
 			this->pose_pointCloud->SetFrom(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
 		}
 

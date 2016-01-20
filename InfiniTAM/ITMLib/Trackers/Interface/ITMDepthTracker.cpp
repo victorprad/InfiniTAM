@@ -178,7 +178,7 @@ void ITMDepthTracker::TrackCamera(ITMTrackingState *trackingState, const ITMView
 		//noTotalPoints = viewHierarchy->levels[levelId]->depth->noDims.x * viewHierarchy->levels[levelId]->depth->noDims.y;
 
 		Matrix4f approxInvPose = trackingState->pose_d->GetInvM();
-		ITMPose lastKnownGoodPose(*(trackingState->pose_d));
+		ORUtils::SE3Pose lastKnownGoodPose(*(trackingState->pose_d));
 		f_old = 1e20f;
 		noValidPoints_old = 0;
 		float lambda = 1.0;

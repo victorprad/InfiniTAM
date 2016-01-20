@@ -113,7 +113,7 @@ void ITMBasicEngine<TVoxel,TIndex>::ProcessFrame(ITMUChar4Image *rgbImage, ITMSh
 	if (!mainProcessingActive) return;
 
 	// tracking
-	ITMPose oldPose(*(trackingState->pose_d));
+	ORUtils::SE3Pose oldPose(*(trackingState->pose_d));
 	if (trackingActive) trackingController->Track(trackingState, view);
 
 	int trackingSuccess = 0;
@@ -154,7 +154,7 @@ Vector2i ITMBasicEngine<TVoxel,TIndex>::GetImageSize(void) const
 }
 
 template <typename TVoxel, typename TIndex>
-void ITMBasicEngine<TVoxel,TIndex>::GetImage(ITMUChar4Image *out, GetImageType getImageType, ITMPose *pose, ITMIntrinsics *intrinsics)
+void ITMBasicEngine<TVoxel,TIndex>::GetImage(ITMUChar4Image *out, GetImageType getImageType, ORUtils::SE3Pose *pose, ITMIntrinsics *intrinsics)
 {
 	if (view == NULL) return;
 

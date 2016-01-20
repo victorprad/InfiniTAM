@@ -16,11 +16,11 @@ namespace ITMLib {
 	public:
 		ITMPoseConstraint(void);
 
-		void AddObservation(const ITMPose & relative_pose, int weight = 1);
-		ITMPose GetAccumulatedInfo(void) const { return accu_poses; }
+		void AddObservation(const ORUtils::SE3Pose & relative_pose, int weight = 1);
+		ORUtils::SE3Pose GetAccumulatedInfo(void) const { return accu_poses; }
 		int GetNumAccumulatedInfo(void) const { return accu_num; }
 	private:
-		ITMPose accu_poses;
+		ORUtils::SE3Pose accu_poses;
 		int accu_num;
 	};
 

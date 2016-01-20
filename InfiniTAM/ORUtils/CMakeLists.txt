@@ -21,6 +21,7 @@ INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseOpenMP.cmake)
 
 SET(sources
 KeyValueConfig.cpp
+SE3Pose.cpp
 )
 
 SET(headers
@@ -34,6 +35,7 @@ Matrix.h
 MemoryBlock.h
 MemoryBlockPersister.h
 PlatformIndependence.h
+SE3Pose.h
 Vector.h
 )
 

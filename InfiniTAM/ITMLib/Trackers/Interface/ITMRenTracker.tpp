@@ -161,7 +161,7 @@ void ITMRenTracker<TVoxel,TIndex>::TrackCamera(ITMTrackingState *trackingState, 
 }
 
 template<class TVoxel, class TIndex>
-void ITMRenTracker<TVoxel,TIndex>::applyDelta(const ITMPose & para_old, const float *delta, ITMPose & para_new) const
+void ITMRenTracker<TVoxel,TIndex>::applyDelta(const ORUtils::SE3Pose & para_old, const float *delta, ORUtils::SE3Pose & para_new) const
 {
 	float R[9];
 
@@ -196,7 +196,7 @@ static inline double stepQuality(typename ITMRenTracker<TVoxel,TIndex>::Evaluati
 }
 
 template<class TVoxel, class TIndex>
-static inline bool minimizeLM(const ITMRenTracker<TVoxel,TIndex> & tracker, ITMPose & initialization)
+static inline bool minimizeLM(const ITMRenTracker<TVoxel,TIndex> & tracker, ORUtils::SE3Pose & initialization)
 {
 	// These are some sensible default parameters for Levenberg Marquardt.
 	// The first three control the convergence criteria, the others might
@@ -214,7 +214,7 @@ static inline bool minimizeLM(const ITMRenTracker<TVoxel,TIndex> & tracker, ITMP
 	float lambda = 1000.0f;
 	int step_counter = 0;
 
-	typename ITMRenTracker<TVoxel,TIndex>::EvaluationPoint *x = tracker.evaluateAt(new ITMPose(initialization));
+	typename ITMRenTracker<TVoxel,TIndex>::EvaluationPoint *x = tracker.evaluateAt(new ORUtils::SE3Pose(initialization));
 	typename ITMRenTracker<TVoxel,TIndex>::EvaluationPoint *x2 = NULL;
 
 	if (!portable_finite(x->f())) { delete[] d; delete x; return false; }
@@ -255,7 +255,7 @@ static inline bool minimizeLM(const ITMRenTracker<TVoxel,TIndex> & tracker, ITMP
 			for (int i = 0; i < numPara; i++) d[i] = -d[i];
 
 			// make step
-			ITMPose *tmp_para = new ITMPose(x->getParameter());
+			ORUtils::SE3Pose *tmp_para = new ORUtils::SE3Pose(x->getParameter());
 			tracker.applyDelta(x->getParameter(), &(d[0]), *tmp_para);
 
 			// check whether step reduces error function and

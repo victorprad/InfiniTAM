@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "../Camera/ITMPose.h"
+#include "../../../ORUtils/SE3Pose.h"
 
 namespace ITMLib
 {
@@ -24,7 +24,7 @@ namespace ITMLib
 	class ITMIMUCalibrator_iPad : public ITMIMUCalibrator
 	{
 	private:
-		ITMPose *imuPose_imucoords, *imuPose_cameracoords;
+		ORUtils::SE3Pose *imuPose_imucoords, *imuPose_cameracoords;
 		Vector3f t_imu, r_imu;
 		Matrix3f inv_oldR_imu;
 		Matrix3f newR_imu, oldR_imu;
@@ -62,10 +62,10 @@ namespace ITMLib
 		{ 
 			hasTwoFrames = false;
 
-			imuPose_imucoords = new ITMPose();
+			imuPose_imucoords = new ORUtils::SE3Pose();
 			imuPose_imucoords->SetFrom(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
 
-			imuPose_cameracoords = new ITMPose();
+			imuPose_cameracoords = new ORUtils::SE3Pose();
 			imuPose_cameracoords->SetFrom(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
 
 			oldR_imu.setIdentity();
