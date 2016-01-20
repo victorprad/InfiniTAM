@@ -4,7 +4,8 @@
 using namespace ITMLib;
 
 ITMLibSettings::ITMLibSettings(void)
-	: sceneParams(0.02f, 100, 0.005f, 0.2f, 3.0f, false)
+:	sceneParams(0.02f, 100, 0.005f, 0.2f, 3.0f, false),
+	surfelSceneParams(10.0f)
 {
 	// skips every other point when using the colour renderer for creating a point cloud
 	skipPoints = true;

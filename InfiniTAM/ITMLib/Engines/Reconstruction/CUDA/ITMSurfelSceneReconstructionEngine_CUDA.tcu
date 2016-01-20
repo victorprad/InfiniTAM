@@ -98,12 +98,13 @@ __global__ void ck_fuse_matched_point(int pixelCount, const unsigned int *corres
 }
 
 template <typename TSurfel>
-__global__ void ck_mark_for_removal_if_unstable(int surfelCount, const TSurfel *surfels, int timestamp, unsigned int *surfelRemovalMask)
+__global__ void ck_mark_for_removal_if_unstable(int surfelCount, const TSurfel *surfels, int timestamp, float stableSurfelConfidence,
+                                                unsigned int *surfelRemovalMask)
 {
   int surfelId = threadIdx.x + blockDim.x * blockIdx.x;
   if(surfelId < surfelCount)
   {
-    mark_for_removal_if_unstable(surfelId, surfels, timestamp, surfelRemovalMask);
+    mark_for_removal_if_unstable(surfelId, surfels, timestamp, stableSurfelConfidence, surfelRemovalMask);
   }
 }
 
@@ -302,6 +303,7 @@ void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::RemoveBadSurfels(ITMSurfe
     surfelCount,
     surfels,
     this->m_timestamp,
+    scene->GetParams().stableSurfelConfidence,
     surfelRemovalMask
   );
   ORcudaKernelCheck;

@@ -5,6 +5,7 @@
 #include <cassert>
 
 #include "../../../ORUtils/MemoryBlock.h"
+#include "../../Utils/ITMSurfelSceneParams.h"
 
 namespace ITMLib
 {
@@ -26,6 +27,9 @@ namespace ITMLib
     /** The type of memory in which the scene is stored. */
     MemoryDeviceType m_memoryType;
 
+    /** The scene parameters. */
+    const ITMSurfelSceneParams *m_params;
+
     /** The number of surfels currently in the scene. */
     size_t m_surfelCount;
 
@@ -37,10 +41,12 @@ namespace ITMLib
     /**
      * \brief Constructs a surfel-based scene.
      *
+     * \param params      The scene parameters.
      * \param memoryType  The type of memory in which to store the scene.
      */
-    explicit ITMSurfelScene(MemoryDeviceType memoryType)
+    ITMSurfelScene(const ITMSurfelSceneParams *params, MemoryDeviceType memoryType)
       : m_memoryType(memoryType),
+        m_params(params),
         m_surfelCount(0),
         m_surfelsMB(new ORUtils::MemoryBlock<TSurfel>(MAX_SURFEL_COUNT, true, true))
     {}
@@ -83,7 +89,19 @@ namespace ITMLib
     }
 
     /**
-     * \brief TODO
+     * \brief Gets the scene parameters.
+     *
+     * \return  The scene parameters.
+     */
+    const ITMSurfelSceneParams& GetParams() const
+    {
+      return *m_params;
+    }
+
+    /**
+     * \brief Gets the number of surfels currently in the scene.
+     *
+     * \return  The number of surfels currently in the scene.
      */
     size_t GetSurfelCount() const
     {

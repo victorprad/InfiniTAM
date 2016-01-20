@@ -306,12 +306,11 @@ inline void fuse_matched_point(int locId, const unsigned int *correspondenceMap,
  */
 template <typename TSurfel>
 _CPU_AND_GPU_CODE_
-inline void mark_for_removal_if_unstable(int surfelId, const TSurfel *surfels, int timestamp, unsigned int *surfelRemovalMask)
+inline void mark_for_removal_if_unstable(int surfelId, const TSurfel *surfels, int timestamp, float stableSurfelConfidence,
+                                         unsigned int *surfelRemovalMask)
 {
-  // TEMPORARY
-  const float stableConfidence = 10.0f;
   TSurfel surfel = surfels[surfelId];
-  if(surfel.confidence < stableConfidence && timestamp - surfel.timestamp > 5)
+  if(surfel.confidence < stableSurfelConfidence && timestamp - surfel.timestamp > 5)
   {
     surfelRemovalMask[surfelId] = 1;
   }

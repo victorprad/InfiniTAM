@@ -434,6 +434,7 @@ Utils/ITMLibSettings.h
 Utils/ITMMath.h
 Utils/ITMPixelUtils.h
 Utils/ITMSceneParams.h
+Utils/ITMSurfelSceneParams.h
 )
 
 #################################################################
