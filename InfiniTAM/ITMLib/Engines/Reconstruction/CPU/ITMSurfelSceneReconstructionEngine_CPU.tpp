@@ -150,6 +150,7 @@ void ITMSurfelSceneReconstructionEngine_CPU<TSurfel>::RemoveBadSurfels(ITMSurfel
   // If the scene is empty, early out.
   if(surfelCount == 0) return;
 
+  const ITMSurfelSceneParams& sceneParams = scene->GetParams();
   unsigned int *surfelRemovalMask = this->m_surfelRemovalMaskMB->GetData(MEMORYDEVICE_CPU);
   const TSurfel *surfels = scene->GetSurfels()->GetData(MEMORYDEVICE_CPU);
 
@@ -162,15 +163,20 @@ void ITMSurfelSceneReconstructionEngine_CPU<TSurfel>::RemoveBadSurfels(ITMSurfel
     clear_removal_mask(surfelId, surfelRemovalMask);
   }
 
-  const float stableSurfelConfidence = scene->GetParams().stableSurfelConfidence;
-
   // Mark long-term unstable surfels for removal.
 #ifdef WITH_OPENMP
   #pragma omp parallel for
 #endif
   for(int surfelId = 0; surfelId < surfelCount; ++surfelId)
   {
-    mark_for_removal_if_unstable(surfelId, surfels, this->m_timestamp, stableSurfelConfidence, surfelRemovalMask);
+    mark_for_removal_if_unstable(
+      surfelId,
+      surfels,
+      this->m_timestamp,
+      sceneParams.stableSurfelConfidence,
+      sceneParams.unstableSurfelPeriod,
+      surfelRemovalMask
+    );
   }
 
   // Remove marked surfels from the scene.

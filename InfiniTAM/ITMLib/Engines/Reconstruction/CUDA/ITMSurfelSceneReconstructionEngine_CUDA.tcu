@@ -99,12 +99,12 @@ __global__ void ck_fuse_matched_point(int pixelCount, const unsigned int *corres
 
 template <typename TSurfel>
 __global__ void ck_mark_for_removal_if_unstable(int surfelCount, const TSurfel *surfels, int timestamp, float stableSurfelConfidence,
-                                                unsigned int *surfelRemovalMask)
+                                                int unstableSurfelPeriod, unsigned int *surfelRemovalMask)
 {
   int surfelId = threadIdx.x + blockDim.x * blockIdx.x;
   if(surfelId < surfelCount)
   {
-    mark_for_removal_if_unstable(surfelId, surfels, timestamp, stableSurfelConfidence, surfelRemovalMask);
+    mark_for_removal_if_unstable(surfelId, surfels, timestamp, stableSurfelConfidence, unstableSurfelPeriod, surfelRemovalMask);
   }
 }
 
@@ -285,6 +285,7 @@ void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::RemoveBadSurfels(ITMSurfe
   // If the scene is empty, early out.
   if(surfelCount == 0) return;
 
+  const ITMSurfelSceneParams& sceneParams = scene->GetParams();
   unsigned int *surfelRemovalMask = this->m_surfelRemovalMaskMB->GetData(MEMORYDEVICE_CUDA);
   TSurfel *surfels = scene->GetSurfels()->GetData(MEMORYDEVICE_CUDA);
 
@@ -303,7 +304,8 @@ void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::RemoveBadSurfels(ITMSurfe
     surfelCount,
     surfels,
     this->m_timestamp,
-    scene->GetParams().stableSurfelConfidence,
+    sceneParams.stableSurfelConfidence,
+    sceneParams.unstableSurfelPeriod,
     surfelRemovalMask
   );
   ORcudaKernelCheck;

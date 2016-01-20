@@ -2,8 +2,6 @@
 
 #pragma once
 
-#include "../../ORUtils/PlatformIndependence.h"
-
 namespace ITMLib
 {
   /**
@@ -16,6 +14,9 @@ namespace ITMLib
     /** The confidence value a surfel must have in order for it to be considered "stable". */
     float stableSurfelConfidence;
 
+    /** The number of time steps a surfel is allowed to be unstable without being updated before being removed. */
+    int unstableSurfelPeriod;
+
     //#################### CONSTRUCTORS ####################
 
     /**
@@ -23,9 +24,9 @@ namespace ITMLib
      *
      * \param stableSurfelConfidence_ The confidence value a surfel must have in order for it to be considered "stable".
      */
-    _CPU_AND_GPU_CODE_
-    explicit ITMSurfelSceneParams(float stableSurfelConfidence_)
-    : stableSurfelConfidence(stableSurfelConfidence_)
+    explicit ITMSurfelSceneParams(float stableSurfelConfidence_, int unstableSurfelPeriod_)
+    : stableSurfelConfidence(stableSurfelConfidence_),
+      unstableSurfelPeriod(unstableSurfelPeriod_)
     {}
   };
 }
