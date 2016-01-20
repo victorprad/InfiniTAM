@@ -104,6 +104,17 @@ void ITMSurfelVisualisationEngine_CPU<TSurfel>::RenderImage(const ITMSurfelScene
       }
       break;
     }
+    case Base::RENDER_CONFIDENCE:
+    {
+#ifdef WITH_OPENMP
+      #pragma omp parallel for
+#endif
+      for(int locId = 0; locId < pixelCount; ++locId)
+      {
+        shade_pixel_confidence(locId, surfelIndexImagePtr, surfels, outputImagePtr);
+      }
+      break;
+    }
     case Base::RENDER_LAMBERTIAN:
     {
       const Vector3f lightSource = -Vector3f(pose->GetInvM().getColumn(2));

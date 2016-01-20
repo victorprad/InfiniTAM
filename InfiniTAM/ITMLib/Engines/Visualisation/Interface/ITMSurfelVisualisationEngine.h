@@ -26,6 +26,7 @@ namespace ITMLib
     enum RenderImageType
     {
       RENDER_COLOUR,
+      RENDER_CONFIDENCE,
       RENDER_LAMBERTIAN,
       RENDER_NORMAL,
     };

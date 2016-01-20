@@ -180,13 +180,35 @@ template <typename TSurfel>
 _CPU_AND_GPU_CODE_
 void shade_pixel_colour(int locId, const unsigned int *surfelIndexImage, const TSurfel *surfels, Vector4u *outputImage)
 {
-  Vector4u col4(0, 0, 0, 255);
+  Vector4u col4(0, 255, 255, 255);
 
   int surfelIndex = surfelIndexImage[locId] - 1;
   if(surfelIndex >= 0)
   {
     Vector3u col3 = SurfelColourManipulator<TSurfel::hasColourInformation>::read(surfels[surfelIndex]);
     col4 = Vector4u(col3.x, col3.y, col3.z, 255);
+  }
+
+  outputImage[locId] = col4;
+}
+
+/**
+ * \brief TODO
+ */
+template <typename TSurfel>
+_CPU_AND_GPU_CODE_
+void shade_pixel_confidence(int locId, const unsigned int *surfelIndexImage, const TSurfel *surfels, Vector4u *outputImage)
+{
+  Vector4u col4(0, 0, 0, 255);
+
+  int surfelIndex = surfelIndexImage[locId] - 1;
+  if(surfelIndex >= 0)
+  {
+    float confidence = surfels[surfelIndex].confidence;
+    const float stableConfidence = 5.0f; // FIXME: This should be passed in rather than hard-coded.
+    if(confidence > stableConfidence) confidence = stableConfidence;
+    uchar g = (uchar)(255.0f * confidence / stableConfidence);
+    col4 = Vector4u(255 - g, g, 0, 255);
   }
 
   outputImage[locId] = col4;
