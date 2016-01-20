@@ -187,7 +187,7 @@ int ITMActiveSceneManager::findPrimarySceneIdx(void) const
 int ITMActiveSceneManager::findBestVisualisationDataIdx(void) const
 {
 	int bestIdx = -1;
-	for (size_t i = 0; i < activeData.size(); ++i) {
+	for (int i = 0; i < static_cast<int>(activeData.size()); ++i) {
 		if (activeData[i].type == PRIMARY_SCENE) return i;
 		else if (activeData[i].type == NEW_SCENE) bestIdx = i;
 		else if (activeData[i].type == RELOCALISATION) {
