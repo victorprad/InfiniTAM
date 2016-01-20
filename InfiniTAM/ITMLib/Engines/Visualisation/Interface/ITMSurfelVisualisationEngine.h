@@ -3,12 +3,12 @@
 #pragma once
 
 #include "../../../Objects/Camera/ITMIntrinsics.h"
-#include "../../../Objects/Camera/ITMPose.h"
 #include "../../../Objects/RenderStates/ITMSurfelRenderState.h"
 #include "../../../Objects/Scene/ITMSurfelScene.h"
 #include "../../../Objects/Tracking/ITMTrackingState.h"
 #include "../../../Objects/Views/ITMView.h"
 #include "../../../Utils/ITMImageTypes.h"
+#include "../../../../ORUtils/SE3Pose.h"
 
 namespace ITMLib
 {
@@ -60,13 +60,13 @@ namespace ITMLib
     /**
      * \brief TODO
      */
-    virtual void RenderDepthImage(const ITMSurfelScene<TSurfel> *scene, const ITMPose *pose, const ITMSurfelRenderState *renderState,
+    virtual void RenderDepthImage(const ITMSurfelScene<TSurfel> *scene, const ORUtils::SE3Pose *pose, const ITMSurfelRenderState *renderState,
                                   ITMFloatImage *outputImage) const = 0;
 
     /**
      * \brief TODO
      */
-    virtual void RenderImage(const ITMSurfelScene<TSurfel> *scene, const ITMPose *pose, const ITMSurfelRenderState *renderState,
+    virtual void RenderImage(const ITMSurfelScene<TSurfel> *scene, const ORUtils::SE3Pose *pose, const ITMSurfelRenderState *renderState,
                              ITMUChar4Image *outputImage, RenderImageType type = RENDER_LAMBERTIAN) const = 0;
 
     //#################### PUBLIC MEMBER FUNCTIONS ####################
@@ -74,13 +74,13 @@ namespace ITMLib
     /**
      * \brief TODO
      */
-    void FindSurface(const ITMSurfelScene<TSurfel> *scene, const ITMPose *pose, const ITMIntrinsics *intrinsics,
+    void FindSurface(const ITMSurfelScene<TSurfel> *scene, const ORUtils::SE3Pose *pose, const ITMIntrinsics *intrinsics,
                      ITMSurfelRenderState *renderState) const;
 
     /**
      * \brief TODO
      */
-    void FindSurfaceSuper(const ITMSurfelScene<TSurfel> *scene, const ITMPose *pose, const ITMIntrinsics *intrinsics,
+    void FindSurfaceSuper(const ITMSurfelScene<TSurfel> *scene, const ORUtils::SE3Pose *pose, const ITMIntrinsics *intrinsics,
                           ITMSurfelRenderState *renderState) const;
 
     //#################### PRIVATE ABSTRACT MEMBER FUNCTIONS ####################
@@ -93,7 +93,7 @@ namespace ITMLib
     /**
      * \brief TODO
      */
-    virtual void MakeIndexImage(const ITMSurfelScene<TSurfel> *scene, const ITMPose *pose, const ITMIntrinsics *intrinsics,
+    virtual void MakeIndexImage(const ITMSurfelScene<TSurfel> *scene, const ORUtils::SE3Pose *pose, const ITMIntrinsics *intrinsics,
                                 int width, int height, int scaleFactor, unsigned int *surfelIndexImage, bool useRadii,
                                 int *depthBuffer) const = 0;
   };

@@ -13,8 +13,8 @@ namespace ITMLib
 		Vector2f *f_host; float *g_host, *h_host;
 
 	public:
-		void F_oneLevel(float *f, ITMPose *pose);
-		void G_oneLevel(float *gradient, float *hessian, ITMPose *pose) const;
+		void F_oneLevel(float *f, ORUtils::SE3Pose *pose);
+		void G_oneLevel(float *gradient, float *hessian, ORUtils::SE3Pose *pose) const;
 
 		ITMColorTracker_CUDA(Vector2i imgSize, TrackerIterationType *trackingRegime, int noHierarchyLevels,
 			const ITMLowLevelEngine *lowLevelEngine);

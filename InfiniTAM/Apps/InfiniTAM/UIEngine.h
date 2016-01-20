@@ -55,7 +55,7 @@ namespace InfiniTAM
 
 			bool freeviewActive;
 			bool intergrationActive;
-			ITMLib::ITMPose freeviewPose;
+			ORUtils::SE3Pose freeviewPose;
 			ITMLib::ITMIntrinsics freeviewIntrinsics;
 
 			int mouseState;

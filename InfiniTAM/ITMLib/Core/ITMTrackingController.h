@@ -63,7 +63,7 @@ namespace ITMLib
 
 			if (requiresColourRendering)
 			{
-				ITMPose pose_rgb(view->calib->trafo_rgb_to_depth.calib_inv * trackingState->pose_d->GetM());
+				ORUtils::SE3Pose pose_rgb(view->calib->trafo_rgb_to_depth.calib_inv * trackingState->pose_d->GetM());
 				visualisationEngine->CreateExpectedDepths(scene, &pose_rgb, &(view->calib->intrinsics_rgb), renderState);
 				visualisationEngine->CreatePointCloud(scene, view, trackingState, renderState, settings->skipPoints);
 				trackingState->age_pointCloud = 0;

@@ -31,11 +31,11 @@ namespace ITMLib
     virtual void CreateICPMaps(const ITMSurfelScene<TSurfel> *scene, const ITMSurfelRenderState *renderState, ITMTrackingState *trackingState) const;
 
     /** Override */
-    virtual void RenderDepthImage(const ITMSurfelScene<TSurfel> *scene, const ITMPose *pose, const ITMSurfelRenderState *renderState,
+    virtual void RenderDepthImage(const ITMSurfelScene<TSurfel> *scene, const ORUtils::SE3Pose *pose, const ITMSurfelRenderState *renderState,
                                   ITMFloatImage *outputImage) const;
 
     /** Override */
-    virtual void RenderImage(const ITMSurfelScene<TSurfel> *scene, const ITMPose *pose, const ITMSurfelRenderState *renderState,
+    virtual void RenderImage(const ITMSurfelScene<TSurfel> *scene, const ORUtils::SE3Pose *pose, const ITMSurfelRenderState *renderState,
                              ITMUChar4Image *outputImage, RenderImageType type) const;
 
     //#################### PRIVATE MEMBER FUNCTIONS ####################
@@ -44,7 +44,7 @@ namespace ITMLib
     virtual MemoryDeviceType GetMemoryType() const;
 
     /** Override */
-    virtual void MakeIndexImage(const ITMSurfelScene<TSurfel> *scene, const ITMPose *pose, const ITMIntrinsics *intrinsics,
+    virtual void MakeIndexImage(const ITMSurfelScene<TSurfel> *scene, const ORUtils::SE3Pose *pose, const ITMIntrinsics *intrinsics,
                                 int width, int height, int scaleFactor, unsigned int *surfelIndexImage, bool useRadii,
                                 int *depthBuffer) const;
   };

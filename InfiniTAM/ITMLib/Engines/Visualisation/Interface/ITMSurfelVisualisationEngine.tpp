@@ -14,7 +14,7 @@ ITMSurfelVisualisationEngine<TSurfel>::~ITMSurfelVisualisationEngine()
 //#################### PUBLIC MEMBER FUNCTIONS ####################
 
 template <typename TSurfel>
-void ITMSurfelVisualisationEngine<TSurfel>::FindSurface(const ITMSurfelScene<TSurfel> *scene, const ITMPose *pose, const ITMIntrinsics *intrinsics,
+void ITMSurfelVisualisationEngine<TSurfel>::FindSurface(const ITMSurfelScene<TSurfel> *scene, const ORUtils::SE3Pose *pose, const ITMIntrinsics *intrinsics,
                                                         ITMSurfelRenderState *renderState) const
 {
   MemoryDeviceType memoryType = GetMemoryType();
@@ -32,7 +32,7 @@ void ITMSurfelVisualisationEngine<TSurfel>::FindSurface(const ITMSurfelScene<TSu
 }
 
 template <typename TSurfel>
-void ITMSurfelVisualisationEngine<TSurfel>::FindSurfaceSuper(const ITMSurfelScene<TSurfel> *scene, const ITMPose *pose, const ITMIntrinsics *intrinsics,
+void ITMSurfelVisualisationEngine<TSurfel>::FindSurfaceSuper(const ITMSurfelScene<TSurfel> *scene, const ORUtils::SE3Pose *pose, const ITMIntrinsics *intrinsics,
                                                              ITMSurfelRenderState *renderState) const
 {
   MemoryDeviceType memoryType = GetMemoryType();

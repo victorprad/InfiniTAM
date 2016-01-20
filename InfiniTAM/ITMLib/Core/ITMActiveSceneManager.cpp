@@ -35,7 +35,7 @@ void ITMActiveSceneManager::initiateNewScene(bool isPrimaryScene)
 	activeData.push_back(newLink);
 }
 
-int ITMActiveSceneManager::initiateNewLink(int sceneID, const ITMPose & pose, bool isRelocalisation)
+int ITMActiveSceneManager::initiateNewLink(int sceneID, const ORUtils::SE3Pose & pose, bool isRelocalisation)
 {
 	static const bool ensureUniqueLinks = true;
 
@@ -257,17 +257,17 @@ static float huber_weight(float residual, float b)
     out_numInliers and out_inlierPose is the number of inliers from amongst the
     new observations and the pose computed from them.
 */
-static ITMPose estimateRelativePose(const std::vector<Matrix4f> & observations, const ITMPose & previousEstimate, float previousEstimate_weight, int *out_numInliers, ITMPose *out_inlierPose)
+static ORUtils::SE3Pose estimateRelativePose(const std::vector<Matrix4f> & observations, const ORUtils::SE3Pose & previousEstimate, float previousEstimate_weight, int *out_numInliers, ORUtils::SE3Pose *out_inlierPose)
 {
 	static const float huber_b = 0.1f;
 	static const float weightsConverged = 0.01f;
 	static const int maxIter = 10;
 	static const float inlierThresholdForFinalResult = 0.8f;
 	std::vector<float> weights(observations.size()+1, 1.0f);
-	std::vector<ITMPose> poses;
+	std::vector<ORUtils::SE3Pose> poses;
 
 	for (size_t i = 0; i < observations.size(); ++i) {
-		poses.push_back(ITMPose(observations[i]));
+		poses.push_back(ORUtils::SE3Pose(observations[i]));
 	}
 
 	float params[6];
@@ -284,7 +284,7 @@ static ITMPose estimateRelativePose(const std::vector<Matrix4f> & observations, 
 		// compute new weights
 		float weightchanges = 0.0f;
 		for (size_t i = 0; i < weights.size(); ++i) {
-			const ITMPose *p;
+			const ORUtils::SE3Pose *p;
 			float w = 1.0f;
 			if (i < poses.size()) p = &(poses[i]);
 			else {
@@ -317,7 +317,7 @@ static ITMPose estimateRelativePose(const std::vector<Matrix4f> & observations, 
 	if (out_inlierPose) out_inlierPose->SetM(inlierTrafo / (float)MAX(inliers,1));
 	if (out_numInliers) *out_numInliers = inliers;
 
-	return ITMPose(params);
+	return ORUtils::SE3Pose(params);
 }
 
 int ITMActiveSceneManager::CheckSuccess_relocalisation(int dataID) const
@@ -336,25 +336,25 @@ int ITMActiveSceneManager::CheckSuccess_relocalisation(int dataID) const
 	return 0;
 }
 
-/*static void printPose(const ITMPose & p)
+/*static void printPose(const ORUtils::SE3Pose & p)
 {
 	fprintf(stderr, "%f %f %f %f\n%f %f %f %f\n%f %f %f %f\n", p.GetM().m00, p.GetM().m10, p.GetM().m20, p.GetM().m30, p.GetM().m01, p.GetM().m11, p.GetM().m21, p.GetM().m31, p.GetM().m02, p.GetM().m12, p.GetM().m22, p.GetM().m32);
 }*/
 
 
-int ITMActiveSceneManager::CheckSuccess_newlink(int dataID, int primaryDataID, int *inliers, ITMPose *inlierPose) const
+int ITMActiveSceneManager::CheckSuccess_newlink(int dataID, int primaryDataID, int *inliers, ORUtils::SE3Pose *inlierPose) const
 {
 	const ActiveDataDescriptor & link = activeData[dataID];
 
 	// take previous data from scene relations into account!
-	ITMPose previousEstimate;
+	ORUtils::SE3Pose previousEstimate;
 	int previousEstimate_weight = 0;
 	int primarySceneIndex = -1;
 	if (primaryDataID >= 0) primarySceneIndex = activeData[primaryDataID].sceneIndex;
 	localSceneManager->getRelation(primarySceneIndex, link.sceneIndex, &previousEstimate, &previousEstimate_weight);
 
 	int inliers_local;
-	ITMPose inlierPose_local;
+	ORUtils::SE3Pose inlierPose_local;
 	if (inliers == NULL) inliers = &inliers_local;
 	if (inlierPose == NULL) inlierPose = &inlierPose_local;
 
@@ -373,7 +373,7 @@ int ITMActiveSceneManager::CheckSuccess_newlink(int dataID, int primaryDataID, i
 	return 0;
 }
 
-void ITMActiveSceneManager::AcceptNewLink(int fromData, int toData, const ITMPose & pose, int weight)
+void ITMActiveSceneManager::AcceptNewLink(int fromData, int toData, const ORUtils::SE3Pose & pose, int weight)
 {
 	int fromSceneIdx = activeData[fromData].sceneIndex;
 	int toSceneIdx = activeData[toData].sceneIndex;
@@ -406,7 +406,7 @@ void ITMActiveSceneManager::maintainActiveData(void)
 		if ((link.type == LOOP_CLOSURE)||
 		    (link.type == NEW_SCENE))
 		{
-			ITMPose inlierPose; int inliers;
+			ORUtils::SE3Pose inlierPose; int inliers;
 			int success = CheckSuccess_newlink(i, primaryDataIdx, &inliers, &inlierPose);
 			if (success == 1)
 			{

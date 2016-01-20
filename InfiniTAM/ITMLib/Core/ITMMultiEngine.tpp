@@ -83,13 +83,13 @@ ITMMultiEngine<TVoxel,TIndex>::~ITMMultiEngine(void)
 }
 
 template <typename TVoxel, typename TIndex>
-void ITMMultiEngine<TVoxel,TIndex>::changeFreeviewSceneIdx(ITMPose *pose, int newIdx)
+void ITMMultiEngine<TVoxel,TIndex>::changeFreeviewSceneIdx(ORUtils::SE3Pose *pose, int newIdx)
 {
 //	if ((newIdx < 0)||((unsigned)newIdx >= sceneManager->numScenes())) return;
 	if (newIdx < 0) newIdx = (int)sceneManager->numScenes()-1;
 	if ((unsigned)newIdx >= sceneManager->numScenes()) newIdx = 0;
 
-	ITMPose trafo = sceneManager->findTransformation(freeviewSceneIdx, newIdx);
+	ORUtils::SE3Pose trafo = sceneManager->findTransformation(freeviewSceneIdx, newIdx);
 	pose->SetM(pose->GetM() * trafo.GetInvM());
 	pose->Coerce();
 	freeviewSceneIdx = newIdx;
@@ -210,7 +210,7 @@ void ITMMultiEngine<TVoxel,TIndex>::ProcessFrame(ITMUChar4Image *rgbImage, ITMSh
 			int blocksInUse = currentScene->scene->index.getNumAllocatedVoxelBlocks()-currentScene->scene->localVBA.lastFreeBlockId - 1;
 			fprintf(stderr, " %i%s (%i)", /*activeData[dataID].sceneIndex*/currentSceneIdx, (todoList[i].dataID==primaryDataIdx)?"*":"", blocksInUse);
 
-			ITMPose oldPose(*(currentScene->trackingState->pose_d));
+			ORUtils::SE3Pose oldPose(*(currentScene->trackingState->pose_d));
 			trackingController->Track(currentScene->trackingState, view);
 
 			int trackingSuccess = 0;
@@ -268,7 +268,7 @@ Vector2i ITMMultiEngine<TVoxel,TIndex>::GetImageSize(void) const
 }
 
 template <typename TVoxel, typename TIndex>
-void ITMMultiEngine<TVoxel,TIndex>::GetImage(ITMUChar4Image *out, GetImageType getImageType, ITMPose *pose, ITMIntrinsics *intrinsics)
+void ITMMultiEngine<TVoxel,TIndex>::GetImage(ITMUChar4Image *out, GetImageType getImageType, ORUtils::SE3Pose *pose, ITMIntrinsics *intrinsics)
 {
 	if (view == NULL) return;
 

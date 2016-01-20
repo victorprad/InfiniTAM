@@ -10,7 +10,7 @@ ITMColorTracker_CPU::ITMColorTracker_CPU(Vector2i imgSize, TrackerIterationType 
 
 ITMColorTracker_CPU::~ITMColorTracker_CPU(void) { }
 
-void ITMColorTracker_CPU::F_oneLevel(float *f, ITMPose *pose)
+void ITMColorTracker_CPU::F_oneLevel(float *f, ORUtils::SE3Pose *pose)
 {
 	int noTotalPoints = trackingState->pointCloud->noTotalPoints;
 
@@ -41,7 +41,7 @@ void ITMColorTracker_CPU::F_oneLevel(float *f, ITMPose *pose)
 	f[0] = final_f * scaleForOcclusions;
 }
 
-void ITMColorTracker_CPU::G_oneLevel(float *gradient, float *hessian, ITMPose *pose) const
+void ITMColorTracker_CPU::G_oneLevel(float *gradient, float *hessian, ORUtils::SE3Pose *pose) const
 {
 	int noTotalPoints = trackingState->pointCloud->noTotalPoints;
 
