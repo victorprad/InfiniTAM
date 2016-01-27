@@ -35,7 +35,8 @@ namespace ITMLib
 			}
 			else
 			{
-				visualisationEngine->FindSurface(scene, trackingState->pose_d, &view->calib->intrinsics_d, renderState);
+				const bool useRadii = false;
+				visualisationEngine->FindSurface(scene, trackingState->pose_d, &view->calib->intrinsics_d, useRadii, renderState);
 				trackingState->pose_pointCloud->SetFrom(trackingState->pose_d);
 
 				if(requiresFullRendering)

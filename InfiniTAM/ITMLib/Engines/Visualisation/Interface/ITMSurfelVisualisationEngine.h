@@ -75,7 +75,7 @@ namespace ITMLib
      * \brief TODO
      */
     void FindSurface(const ITMSurfelScene<TSurfel> *scene, const ORUtils::SE3Pose *pose, const ITMIntrinsics *intrinsics,
-                     ITMSurfelRenderState *renderState) const;
+                     bool useRadii, ITMSurfelRenderState *renderState) const;
 
     /**
      * \brief TODO

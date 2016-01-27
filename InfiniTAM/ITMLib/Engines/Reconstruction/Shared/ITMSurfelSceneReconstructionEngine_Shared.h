@@ -133,10 +133,10 @@ inline void calculate_normal(int locId, const Vector4f *vertexMap, int width, in
 
   bool ok = true;
   Vector3f xm, xp, ym, yp;
-  ok = ok && try_read_vertex(x - 1, y, vertexMap, width, height, xm);
-  ok = ok && try_read_vertex(x + 1, y, vertexMap, width, height, xp);
-  ok = ok && try_read_vertex(x, y - 1, vertexMap, width, height, ym);
-  ok = ok && try_read_vertex(x, y + 1, vertexMap, width, height, yp);
+  ok = ok && try_read_vertex(x - 2, y, vertexMap, width, height, xm);
+  ok = ok && try_read_vertex(x + 2, y, vertexMap, width, height, xp);
+  ok = ok && try_read_vertex(x, y - 2, vertexMap, width, height, ym);
+  ok = ok && try_read_vertex(x, y + 2, vertexMap, width, height, yp);
 
   if(ok)
   {

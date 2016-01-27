@@ -15,7 +15,7 @@ ITMSurfelVisualisationEngine<TSurfel>::~ITMSurfelVisualisationEngine()
 
 template <typename TSurfel>
 void ITMSurfelVisualisationEngine<TSurfel>::FindSurface(const ITMSurfelScene<TSurfel> *scene, const ORUtils::SE3Pose *pose, const ITMIntrinsics *intrinsics,
-                                                        ITMSurfelRenderState *renderState) const
+                                                        bool useRadii, ITMSurfelRenderState *renderState) const
 {
   MemoryDeviceType memoryType = GetMemoryType();
   MakeIndexImage(
@@ -26,7 +26,7 @@ void ITMSurfelVisualisationEngine<TSurfel>::FindSurface(const ITMSurfelScene<TSu
     renderState->GetIndexImage()->noDims.y,
     1,
     renderState->GetIndexImage()->GetData(memoryType),
-    true,
+    useRadii,
     renderState->GetDepthBuffer()->GetData(memoryType)
   );
 }

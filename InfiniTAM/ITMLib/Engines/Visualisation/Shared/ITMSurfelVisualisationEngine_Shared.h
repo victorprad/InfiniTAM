@@ -91,8 +91,9 @@ inline void copy_surfel_data_to_icp_maps(int locId, const TSurfel *surfels, cons
     TSurfel surfel = surfels[surfelIndex];
     const Vector3f& p = surfel.position;
     const Vector3f& n = surfel.normal;
+    const float stableConfidence = 5.0f; // FIXME: This should be passed in rather than hard-coded.
     Vector3f v = transform_point(invT, p);
-    if(v.z <= 1.0f)
+    if(v.z <= 1.0f || surfel.confidence >= stableConfidence)
     {
       pointsMap[locId] = Vector4f(p.x, p.y, p.z, 1.0f);
       normalsMap[locId] = Vector4f(n.x, n.y, n.z, 0.0f);
