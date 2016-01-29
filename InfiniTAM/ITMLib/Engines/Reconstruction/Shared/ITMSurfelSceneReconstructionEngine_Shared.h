@@ -124,12 +124,6 @@ inline void add_new_surfel(int locId, const Matrix4f& T, int timestamp, const un
     Vector3u colour = compute_colour(v, depthToRGB, projParamsRGB, colourMap, colourMapWidth, colourMapHeight);
     SurfelColourManipulator<TSurfel::hasColourInformation>::write(surfel, colour);
 
-#if DEBUG_CORRESPONDENCES
-    // Store the position of the corresponding surfel (if any).
-    int correspondingSurfelIndex = correspondenceMap[locId] - 1;
-    surfel.correspondingSurfelPosition = correspondingSurfelIndex >= 0 ? surfels[correspondingSurfelIndex].position : surfel.position;
-#endif
-
     newSurfels[newPointsPrefixSum[locId]] = surfel;
   }
 }
@@ -270,10 +264,6 @@ inline void find_corresponding_surfel(int locId, const Matrix4f& invT, const flo
   // Record any corresponding surfel found, together with a flag indicating whether or not we need to add a new surfel.
   correspondenceMap[locId] = bestSurfelIndex >= 0 ? bestSurfelIndex + 1 : 0;
   newPointsMask[locId] = bestSurfelIndex >= 0 ? 0 : 1;
-
-#if DEBUG_CORRESPONDENCES
-  newPointsMask[locId] = 1;
-#endif
 }
 
 /**
@@ -299,7 +289,14 @@ inline void fuse_matched_point(int locId, const unsigned int *correspondenceMap,
     if(r <= (1.0f + deltaRadius) * surfel.radius)
     {
       const Vector3f v = vertexMap[locId].toVector3();
-      surfel.position = (surfel.confidence * surfel.position + alpha * transform_point(T, v)) / newConfidence;
+      const Vector3f newPosition = transform_point(T, v);
+
+#if DEBUG_CORRESPONDENCES
+      surfel.newPosition = newPosition;
+      surfel.oldPosition = surfel.position;
+#endif
+
+      surfel.position = (surfel.confidence * surfel.position + alpha * newPosition) / newConfidence;
       surfel.normal = (surfel.confidence * surfel.normal + alpha * transform_normal(T, normalMap[locId])) / newConfidence;
       surfel.normal /= length(surfel.normal);
       surfel.radius = (surfel.confidence * surfel.radius + alpha * r) / newConfidence;

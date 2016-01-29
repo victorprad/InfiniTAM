@@ -18,17 +18,15 @@ __global__ void ck_clear_surfel_index_image(int pixelCount, unsigned int *surfel
   }
 }
 
-#if DEBUG_CORRESPONDENCES
 template <typename TSurfel>
-__global__ void ck_copy_correspondences_to_buffer(int surfelCount, const TSurfel *surfels, float *correspondences)
+__global__ void ck_copy_correspondences_to_buffers(int surfelCount, const TSurfel *surfels, float *newPositions, float *oldPositions, float *correspondences)
 {
   int surfelId = threadIdx.x + blockDim.x * blockIdx.x;
   if(surfelId < surfelCount)
   {
-    copy_correspondences_to_buffer(surfelId, surfels, correspondences);
+    copy_correspondences_to_buffers(surfelId, surfels, newPositions, oldPositions, correspondences);
   }
 }
-#endif
 
 template <typename TSurfel>
 __global__ void ck_copy_surfel_data_to_icp_maps(int pixelCount, const TSurfel *surfels, const unsigned int *surfelIndexImage, Matrix4f invT,
@@ -129,23 +127,23 @@ __global__ void ck_update_index_image_for_surfel(int surfelCount, const TSurfel 
 
 //#################### PUBLIC MEMBER FUNCTIONS ####################
 
-#if DEBUG_CORRESPONDENCES
 template <typename TSurfel>
-void ITMSurfelVisualisationEngine_CUDA<TSurfel>::CopyCorrespondencesToBuffer(const ITMSurfelScene<TSurfel> *scene, float *correspondences) const
+void ITMSurfelVisualisationEngine_CUDA<TSurfel>::CopyCorrespondencesToBuffers(const ITMSurfelScene<TSurfel> *scene, float *newPositions, float *oldPositions, float *correspondences) const
 {
   const int surfelCount = static_cast<int>(scene->GetSurfelCount());
 
   int threadsPerBlock = 256;
   int numBlocks = (surfelCount + threadsPerBlock - 1) / threadsPerBlock;
 
-  ck_copy_correspondences_to_buffer<<<numBlocks,threadsPerBlock>>>(
+  ck_copy_correspondences_to_buffers<<<numBlocks,threadsPerBlock>>>(
     surfelCount,
     scene->GetSurfels()->GetData(MEMORYDEVICE_CUDA),
+    newPositions,
+    oldPositions,
     correspondences
   );
   ORcudaKernelCheck;
 }
-#endif
 
 template <typename TSurfel>
 void ITMSurfelVisualisationEngine_CUDA<TSurfel>::CopySceneToBuffers(const ITMSurfelScene<TSurfel> *scene, float *positions, unsigned char *normals, unsigned char *colours) const

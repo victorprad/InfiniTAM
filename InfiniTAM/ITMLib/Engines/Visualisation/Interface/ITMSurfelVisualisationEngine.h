@@ -40,12 +40,10 @@ namespace ITMLib
 
     //#################### PUBLIC ABSTRACT MEMBER FUNCTIONS ####################
   public:
-#if DEBUG_CORRESPONDENCES
     /**
      * \brief TODO
      */
-    virtual void CopyCorrespondencesToBuffer(const ITMSurfelScene<TSurfel> *scene, float *correspondences) const = 0;
-#endif
+    virtual void CopyCorrespondencesToBuffers(const ITMSurfelScene<TSurfel> *scene, float *newPositions, float *oldPositions, float *correspondences) const = 0;
 
     /**
      * \brief TODO

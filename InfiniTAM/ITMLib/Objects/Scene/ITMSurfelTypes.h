@@ -4,7 +4,7 @@
 
 #include "../../Utils/ITMMath.h"
 
-#define DEBUG_CORRESPONDENCES 0
+#define DEBUG_CORRESPONDENCES 1
 
 namespace ITMLib
 {
@@ -33,8 +33,11 @@ namespace ITMLib
     int timestamp;
 
 #if DEBUG_CORRESPONDENCES
-    /** The position of the corresponding surfel. */
-    Vector3f correspondingSurfelPosition;
+    /** The new position of the surfel (prior to fusing). */
+    Vector3f newPosition;
+
+    /** The old position of the surfel (prior to fusing). */
+    Vector3f oldPosition;
 #endif
   };
 
@@ -66,8 +69,11 @@ namespace ITMLib
     int timestamp;
 
 #if DEBUG_CORRESPONDENCES
-    /** The position of the corresponding surfel. */
-    Vector3f correspondingSurfelPosition;
+    /** The new position of the surfel (prior to fusing). */
+    Vector3f newPosition;
+
+    /** The old position of the surfel (prior to fusing). */
+    Vector3f oldPosition;
 #endif
   };
 }

@@ -46,13 +46,9 @@ void ITMSurfelSceneReconstructionEngine<TSurfel>::IntegrateIntoScene(ITMSurfelSc
   const ORUtils::SE3Pose& pose = *trackingState->pose_d;
   PreprocessDepthMap(view);
   FindCorrespondingSurfels(scene, view, trackingState, renderState);
-#if !DEBUG_CORRESPONDENCES
   FuseMatchedPoints(scene, view, trackingState);
-#endif
   AddNewSurfels(scene, view, trackingState);
-#if !DEBUG_CORRESPONDENCES
   RemoveBadSurfels(scene);
-#endif
 
   ++m_timestamp;
 }

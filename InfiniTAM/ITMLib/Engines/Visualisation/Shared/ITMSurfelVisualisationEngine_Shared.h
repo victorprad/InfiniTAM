@@ -54,28 +54,35 @@ inline void clear_surfel_index_image(int locId, unsigned int *surfelIndexImage, 
   depthBuffer[locId] = INT_MAX;
 }
 
-#if DEBUG_CORRESPONDENCES
 /**
  * \brief TODO
  */
 template <typename TSurfel>
 _CPU_AND_GPU_CODE_
-inline void copy_correspondences_to_buffer(int surfelId, const TSurfel *surfels, float *correspondences)
+inline void copy_correspondences_to_buffers(int surfelId, const TSurfel *surfels, float *newPositions, float *oldPositions, float *correspondences)
 {
+#if DEBUG_CORRESPONDENCES
   TSurfel surfel = surfels[surfelId];
-  int offset = surfelId * 6;
+  Vector3f np = surfel.newPosition;
+  Vector3f op = surfel.oldPosition;
 
-  Vector3f p = surfel.position;
-  Vector3f cp = surfel.correspondingSurfelPosition;
+  int offset = surfelId * 3;
+  newPositions[offset] = np.x;
+  newPositions[offset+1] = np.y;
+  newPositions[offset+2] = np.z;
+  oldPositions[offset] = op.x;
+  oldPositions[offset+1] = op.y;
+  oldPositions[offset+2] = op.z;
 
-  correspondences[offset] = p.x;
-  correspondences[offset+1] = p.y;
-  correspondences[offset+2] = p.z;
-  correspondences[offset+3] = cp.x;
-  correspondences[offset+4] = cp.y;
-  correspondences[offset+5] = cp.z;
-}
+  offset = surfelId * 6;
+  correspondences[offset] = np.x;
+  correspondences[offset+1] = np.y;
+  correspondences[offset+2] = np.z;
+  correspondences[offset+3] = op.x;
+  correspondences[offset+4] = op.y;
+  correspondences[offset+5] = op.z;
 #endif
+}
 
 /**
  * \brief TODO
