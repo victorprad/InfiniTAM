@@ -850,4 +850,5 @@ namespace ORUtils {
 			rv[i] = max(lhs[i], rhs[i]);
 		return rv;
 	}
-};
+}
+
