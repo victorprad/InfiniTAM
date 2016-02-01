@@ -9,6 +9,7 @@ ITMPoseConstraint::ITMPoseConstraint(void)
 
 void ITMPoseConstraint::AddObservation(const ORUtils::SE3Pose & relative_pose, int weight)
 {
+	if (accu_num == 0) estimate = relative_pose;
 	Matrix4f tmp = accu_poses.GetM() * (float)accu_num + relative_pose.GetM() * (float)weight;
 	accu_num += weight;
 	accu_poses.SetM(tmp/(float)accu_num);

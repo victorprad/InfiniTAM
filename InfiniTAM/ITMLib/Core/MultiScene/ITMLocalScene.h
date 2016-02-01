@@ -4,11 +4,11 @@
 
 #include <map>
 
-#include "../Engines/Visualisation/Interface/ITMVisualisationEngine.h"
-#include "../Objects/RenderStates/ITMRenderState.h"
-#include "../Objects/Scene/ITMScene.h"
-#include "../Objects/Tracking/ITMTrackingState.h"
-#include "../Utils/ITMLibSettings.h"
+#include "../../Engines/Visualisation/Interface/ITMVisualisationEngine.h"
+#include "../../Objects/RenderStates/ITMRenderState.h"
+#include "../../Objects/Scene/ITMScene.h"
+#include "../../Objects/Tracking/ITMTrackingState.h"
+#include "../../Utils/ITMLibSettings.h"
 
 namespace ITMLib {
 	struct ITMPoseConstraint
@@ -17,9 +17,12 @@ namespace ITMLib {
 		ITMPoseConstraint(void);
 
 		void AddObservation(const ORUtils::SE3Pose & relative_pose, int weight = 1);
-		ORUtils::SE3Pose GetAccumulatedInfo(void) const { return accu_poses; }
-		int GetNumAccumulatedInfo(void) const { return accu_num; }
+		ORUtils::SE3Pose GetAccumulatedObservations(void) const { return accu_poses; }
+		int GetNumAccumulatedObservations(void) const { return accu_num; }
+
+		ORUtils::SE3Pose GetEstimate(void) const { return estimate; }
 	private:
+		ORUtils::SE3Pose estimate;
 		ORUtils::SE3Pose accu_poses;
 		int accu_num;
 	};

@@ -17,21 +17,21 @@ ITMLibDefines.h
 
 ##
 SET(ITMLIB_CORE_SOURCES
-Core/ITMActiveSceneManager.cpp
+Core/MultiScene/ITMActiveSceneManager.cpp
+Core/MultiScene/ITMLocalScene.cpp
+Core/MultiScene/ITMMultiSceneManager.tpp
 Core/ITMBasicEngine.tpp
 Core/ITMDenseMapper.tpp
-Core/ITMLocalScene.cpp
-Core/ITMLocalSceneManager.tpp
 Core/ITMMultiEngine.tpp
 Core/ITMTrackingController.cpp
 )
 
 SET(ITMLIB_CORE_HEADERS
-Core/ITMActiveSceneManager.h
+Core/MultiScene/ITMActiveSceneManager.h
+Core/MultiScene/ITMLocalScene.h
+Core/MultiScene/ITMMultiSceneManager.h
 Core/ITMBasicEngine.h
 Core/ITMDenseMapper.h
-Core/ITMLocalScene.h
-Core/ITMLocalSceneManager.h
 Core/ITMMainEngine.h
 Core/ITMMultiEngine.h
 Core/ITMTrackingController.h

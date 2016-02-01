@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "ITMLocalSceneManager.h"
+#include "ITMMultiSceneManager.h"
 
 namespace ITMLib
 {
@@ -22,7 +22,7 @@ namespace ITMLib
 			int trackingAttempts;
 		};
 
-		ITMLocalSceneManager *localSceneManager;
+		ITMMultiSceneManager *localSceneManager;
 		std::vector<ActiveDataDescriptor> activeData;
 
 		int CheckSuccess_relocalisation(int dataID) const;
@@ -53,7 +53,7 @@ namespace ITMLib
 		SceneActivity getSceneType(int dataIdx) const
 		{ return activeData[dataIdx].type; }
 
-		ITMActiveSceneManager(ITMLocalSceneManager *localSceneManager);
+		ITMActiveSceneManager(ITMMultiSceneManager *localSceneManager);
 		~ITMActiveSceneManager(void) {}
 	};
 }

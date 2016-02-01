@@ -4,26 +4,26 @@
 
 #include <vector>
 
-#include "ITMDenseMapper.h"
 #include "ITMLocalScene.h"
-#include "../Engines/Visualisation/Interface/ITMVisualisationEngine.h"
+#include "../ITMDenseMapper.h"
+#include "../../Engines/Visualisation/Interface/ITMVisualisationEngine.h"
 
 namespace ITMLib
 {
 	/* This helpful abstract interface alows you to ignore the fact that
 	   scenes are templates.
 	*/
-	class ITMLocalSceneManager
+	class ITMMultiSceneManager
 	{
 		public:
-		virtual ~ITMLocalSceneManager(void) {}
+		virtual ~ITMMultiSceneManager(void) {}
 
 		virtual int createNewScene(void) = 0;
 		virtual void removeScene(int index) = 0;
 		virtual size_t numScenes(void) const = 0;
 
-		virtual void addRelation(int fromScene, int toScene, const ORUtils::SE3Pose & pose, int weight) = 0;
-		virtual void getRelation(int fromScene, int toScene, ORUtils::SE3Pose *out_pose = NULL, int *out_weight = NULL) const = 0;
+		virtual const ITMPoseConstraint & getRelation(int fromScene, int toScene) const = 0;
+		virtual ITMPoseConstraint & getRelation(int fromScene, int toScene) = 0;
 		virtual bool resetTracking(int sceneID, const ORUtils::SE3Pose & pose) = 0;
 
 		virtual const ORUtils::SE3Pose* getTrackingPose(int sceneID) const = 0;
@@ -32,7 +32,7 @@ namespace ITMLib
 	};
 
 	template<class TVoxel, class TIndex>
-	class ITMLocalSceneManager_instance : public ITMLocalSceneManager
+	class ITMMultiSceneManager_instance : public ITMMultiSceneManager
 	{
 		private:
 		const ITMLibSettings *settings;
@@ -43,16 +43,16 @@ namespace ITMLib
 		std::vector<ITMLocalScene<TVoxel,TIndex>*> allData;
 
 		public:
-		ITMLocalSceneManager_instance(const ITMLibSettings *settings, const ITMVisualisationEngine<TVoxel,TIndex> *visualisationEngine, const ITMDenseMapper<TVoxel,TIndex> *denseMapper, const Vector2i & trackedImageSize);
-		~ITMLocalSceneManager_instance(void);
+		ITMMultiSceneManager_instance(const ITMLibSettings *settings, const ITMVisualisationEngine<TVoxel,TIndex> *visualisationEngine, const ITMDenseMapper<TVoxel,TIndex> *denseMapper, const Vector2i & trackedImageSize);
+		~ITMMultiSceneManager_instance(void);
 
 		int createNewScene(void);
 		void removeScene(int index);
 		size_t numScenes(void) const
 		{ return allData.size(); }
 
-		void addRelation(int fromScene, int toScene, const ORUtils::SE3Pose & pose, int weight);
-		void getRelation(int fromScene, int toScene, ORUtils::SE3Pose *out_pose, int *out_weight) const;
+		const ITMPoseConstraint & getRelation(int fromScene, int toScene) const;
+		ITMPoseConstraint & getRelation(int fromScene, int toScene);
 		bool resetTracking(int sceneID, const ORUtils::SE3Pose & pose);
 
 		const ITMLocalScene<TVoxel,TIndex>* getScene(int sceneID) const
