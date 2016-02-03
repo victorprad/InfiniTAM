@@ -31,7 +31,7 @@ namespace ITMLib
     /**
      * \brief TODO
      */
-    ITMSurfelRenderState(const Vector2i& indexImageSize);
+    ITMSurfelRenderState(const Vector2i& indexImageSize, int supersamplingFactor);
 
     //#################### DESTRUCTOR ####################
   public:
@@ -87,10 +87,5 @@ namespace ITMLib
      * \brief TODO
      */
     const ORUtils::Image<unsigned int> *GetIndexImageSuper() const;
-
-    /**
-     * \brief TODO
-     */
-    int GetSuperScaleFactor() const;
   };
 }

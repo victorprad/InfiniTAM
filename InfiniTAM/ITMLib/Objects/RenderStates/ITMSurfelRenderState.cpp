@@ -7,12 +7,12 @@ namespace ITMLib
 
 //#################### CONSTRUCTORS ####################
 
-ITMSurfelRenderState::ITMSurfelRenderState(const Vector2i& indexImageSize)
+ITMSurfelRenderState::ITMSurfelRenderState(const Vector2i& indexImageSize, int supersamplingFactor)
 {
   depthBuffer = new ORUtils::Image<int>(indexImageSize, true, true);
   surfelIndexImage = new ORUtils::Image<unsigned int>(indexImageSize, true, true);
 
-  Vector2i indexImageSizeSuper = indexImageSize * GetSuperScaleFactor();
+  Vector2i indexImageSizeSuper = indexImageSize * supersamplingFactor;
   depthBufferSuper = new ORUtils::Image<int>(indexImageSizeSuper, true, true);
   surfelIndexImageSuper = new ORUtils::Image<unsigned int>(indexImageSizeSuper, true, true);
 }
@@ -67,12 +67,6 @@ ORUtils::Image<unsigned int> *ITMSurfelRenderState::GetIndexImageSuper()
 const ORUtils::Image<unsigned int> *ITMSurfelRenderState::GetIndexImageSuper() const
 {
   return surfelIndexImageSuper;
-}
-
-int ITMSurfelRenderState::GetSuperScaleFactor() const
-{
-  // FIXME: This shouldn't be hard-coded.
-  return 4;
 }
 
 }

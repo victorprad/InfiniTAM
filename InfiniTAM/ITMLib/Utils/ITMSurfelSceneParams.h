@@ -14,6 +14,9 @@ namespace ITMLib
     /** The confidence value a surfel must have in order for it to be considered "stable". */
     float stableSurfelConfidence;
 
+    /** The factor by which to supersample (in each axis) the index image used for finding surfel correspondences. */
+    int supersamplingFactor;
+
     /** The maximum depth a surfel must have in order for it to be used for tracking. */
     float trackingSurfelMaxDepth;
 
@@ -29,12 +32,15 @@ namespace ITMLib
      * \brief Constructs a set of surfel scene parameters.
      *
      * \param stableSurfelConfidence_       The confidence value a surfel must have in order for it to be considered "stable".
+     * \param supersamplingFactor_          The factor by which to supersample (in each axis) the index image used for finding surfel correspondences.
      * \param trackingSurfelMaxDepth_       The maximum depth a surfel must have in order for it to be used for tracking.
      * \param trackingSurfelMinConfidence_  The minimum confidence value a surfel must have in order for it to be used for tracking.
      * \param unstableSurfelPeriod_         The number of time steps a surfel is allowed to be unstable without being updated before being removed.
      */
-    explicit ITMSurfelSceneParams(float stableSurfelConfidence_, float trackingSurfelMaxDepth_, float trackingSurfelMinConfidence_, int unstableSurfelPeriod_)
+    explicit ITMSurfelSceneParams(float stableSurfelConfidence_, int supersamplingFactor_, float trackingSurfelMaxDepth_,
+                                  float trackingSurfelMinConfidence_, int unstableSurfelPeriod_)
     : stableSurfelConfidence(stableSurfelConfidence_),
+      supersamplingFactor(supersamplingFactor_),
       trackingSurfelMaxDepth(trackingSurfelMaxDepth_),
       trackingSurfelMinConfidence(trackingSurfelMinConfidence_),
       unstableSurfelPeriod(unstableSurfelPeriod_)

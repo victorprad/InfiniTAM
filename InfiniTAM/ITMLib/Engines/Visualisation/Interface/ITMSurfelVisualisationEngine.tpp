@@ -42,7 +42,7 @@ void ITMSurfelVisualisationEngine<TSurfel>::FindSurfaceSuper(const ITMSurfelScen
     intrinsics,
     renderState->GetIndexImageSuper()->noDims.x,
     renderState->GetIndexImageSuper()->noDims.y,
-    renderState->GetSuperScaleFactor(),
+    scene->GetParams().supersamplingFactor,
     renderState->GetIndexImageSuper()->GetData(memoryType),
     false,
     renderState->GetDepthBufferSuper()->GetData(memoryType)
