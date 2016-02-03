@@ -32,12 +32,12 @@ __global__ void ck_copy_correspondences_to_buffer(int surfelCount, const TSurfel
 
 template <typename TSurfel>
 __global__ void ck_copy_surfel_data_to_icp_maps(int pixelCount, const TSurfel *surfels, const unsigned int *surfelIndexImage, Matrix4f invT,
-                                                Vector4f *pointsMap, Vector4f *normalsMap)
+                                                float trackingSurfelMaxDepth, float trackingSurfelMinConfidence, Vector4f *pointsMap, Vector4f *normalsMap)
 {
   int locId = threadIdx.x + blockDim.x * blockIdx.x;
   if(locId < pixelCount)
   {
-    copy_surfel_data_to_icp_maps(locId, surfels, surfelIndexImage, invT, pointsMap, normalsMap);
+    copy_surfel_data_to_icp_maps(locId, surfels, surfelIndexImage, invT, trackingSurfelMaxDepth, trackingSurfelMinConfidence, pointsMap, normalsMap);
   }
 }
 
@@ -62,12 +62,12 @@ __global__ void ck_shade_pixel_colour(int pixelCount, const unsigned int *surfel
 }
 
 template <typename TSurfel>
-__global__ void ck_shade_pixel_confidence(int pixelCount, const unsigned int *surfelIndexImage, const TSurfel *surfels, Vector4u *outputImage)
+__global__ void ck_shade_pixel_confidence(int pixelCount, const unsigned int *surfelIndexImage, const TSurfel *surfels, float stableSurfelConfidence, Vector4u *outputImage)
 {
   int locId = threadIdx.x + blockDim.x * blockIdx.x;
   if(locId < pixelCount)
   {
-    shade_pixel_confidence(locId, surfelIndexImage, surfels, outputImage);
+    shade_pixel_confidence(locId, surfelIndexImage, surfels, stableSurfelConfidence, outputImage);
   }
 }
 
@@ -170,6 +170,7 @@ void ITMSurfelVisualisationEngine_CUDA<TSurfel>::CreateICPMaps(const ITMSurfelSc
 {
   const Matrix4f& invT = trackingState->pose_d->GetM();
   const int pixelCount = static_cast<int>(renderState->GetIndexImage()->dataSize);
+  const ITMSurfelSceneParams& sceneParams = scene->GetParams();
 
   int threadsPerBlock = 256;
   int numBlocks = (pixelCount + threadsPerBlock - 1) / threadsPerBlock;
@@ -179,6 +180,8 @@ void ITMSurfelVisualisationEngine_CUDA<TSurfel>::CreateICPMaps(const ITMSurfelSc
     scene->GetSurfels()->GetData(MEMORYDEVICE_CUDA),
     renderState->GetIndexImage()->GetData(MEMORYDEVICE_CUDA),
     invT,
+    sceneParams.trackingSurfelMaxDepth,
+    sceneParams.trackingSurfelMinConfidence,
     trackingState->pointCloud->locations->GetData(MEMORYDEVICE_CUDA),
     trackingState->pointCloud->colours->GetData(MEMORYDEVICE_CUDA)
   );
@@ -217,6 +220,7 @@ void ITMSurfelVisualisationEngine_CUDA<TSurfel>::RenderImage(const ITMSurfelScen
 
   Vector4u *outputImagePtr = outputImage->GetData(MEMORYDEVICE_CUDA);
   const int pixelCount = static_cast<int>(outputImage->dataSize);
+  const ITMSurfelSceneParams& sceneParams = scene->GetParams();
   const unsigned int *surfelIndexImagePtr = renderState->GetIndexImage()->GetData(MEMORYDEVICE_CUDA);
   const TSurfel *surfels = scene->GetSurfels()->GetData(MEMORYDEVICE_CUDA);
 
@@ -233,7 +237,7 @@ void ITMSurfelVisualisationEngine_CUDA<TSurfel>::RenderImage(const ITMSurfelScen
     }
     case Base::RENDER_CONFIDENCE:
     {
-      ck_shade_pixel_confidence<<<numBlocks,threadsPerBlock>>>(pixelCount, surfelIndexImagePtr, surfels, outputImagePtr);
+      ck_shade_pixel_confidence<<<numBlocks,threadsPerBlock>>>(pixelCount, surfelIndexImagePtr, surfels, sceneParams.stableSurfelConfidence, outputImagePtr);
       ORcudaKernelCheck;
       break;
     }

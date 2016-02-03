@@ -48,6 +48,7 @@ void ITMSurfelVisualisationEngine_CPU<TSurfel>::CreateICPMaps(const ITMSurfelSce
   Vector4f *normalsMap = trackingState->pointCloud->colours->GetData(MEMORYDEVICE_CPU);
   const int pixelCount = static_cast<int>(renderState->GetIndexImage()->dataSize);
   Vector4f *pointsMap = trackingState->pointCloud->locations->GetData(MEMORYDEVICE_CPU);
+  const ITMSurfelSceneParams& sceneParams = scene->GetParams();
   const unsigned int *surfelIndexImage = renderState->GetIndexImage()->GetData(MEMORYDEVICE_CPU);
   const TSurfel *surfels = scene->GetSurfels()->GetData(MEMORYDEVICE_CPU);
 
@@ -56,7 +57,7 @@ void ITMSurfelVisualisationEngine_CPU<TSurfel>::CreateICPMaps(const ITMSurfelSce
 #endif
   for(int locId = 0; locId < pixelCount; ++locId)
   {
-    copy_surfel_data_to_icp_maps(locId, surfels, surfelIndexImage, invT, pointsMap, normalsMap);
+    copy_surfel_data_to_icp_maps(locId, surfels, surfelIndexImage, invT, sceneParams.trackingSurfelMaxDepth, sceneParams.trackingSurfelMinConfidence, pointsMap, normalsMap);
   }
 }
 
@@ -88,6 +89,7 @@ void ITMSurfelVisualisationEngine_CPU<TSurfel>::RenderImage(const ITMSurfelScene
 
   Vector4u *outputImagePtr = outputImage->GetData(MEMORYDEVICE_CPU);
   const int pixelCount = static_cast<int>(outputImage->dataSize);
+  const ITMSurfelSceneParams& sceneParams = scene->GetParams();
   const unsigned int *surfelIndexImagePtr = renderState->GetIndexImage()->GetData(MEMORYDEVICE_CPU);
   const TSurfel *surfels = scene->GetSurfels()->GetData(MEMORYDEVICE_CPU);
 
@@ -111,7 +113,7 @@ void ITMSurfelVisualisationEngine_CPU<TSurfel>::RenderImage(const ITMSurfelScene
 #endif
       for(int locId = 0; locId < pixelCount; ++locId)
       {
-        shade_pixel_confidence(locId, surfelIndexImagePtr, surfels, outputImagePtr);
+        shade_pixel_confidence(locId, surfelIndexImagePtr, surfels, sceneParams.stableSurfelConfidence, outputImagePtr);
       }
       break;
     }

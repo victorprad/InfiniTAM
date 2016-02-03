@@ -83,7 +83,7 @@ inline void copy_correspondences_to_buffer(int surfelId, const TSurfel *surfels,
 template <typename TSurfel>
 _CPU_AND_GPU_CODE_
 inline void copy_surfel_data_to_icp_maps(int locId, const TSurfel *surfels, const unsigned int *surfelIndexImage, const Matrix4f& invT,
-                                         Vector4f *pointsMap, Vector4f *normalsMap)
+                                         float trackingSurfelMaxDepth, float trackingSurfelMinConfidence, Vector4f *pointsMap, Vector4f *normalsMap)
 {
   int surfelIndex = surfelIndexImage[locId] - 1;
   if(surfelIndex >= 0)
@@ -91,9 +91,8 @@ inline void copy_surfel_data_to_icp_maps(int locId, const TSurfel *surfels, cons
     TSurfel surfel = surfels[surfelIndex];
     const Vector3f& p = surfel.position;
     const Vector3f& n = surfel.normal;
-    const float stableConfidence = 5.0f; // FIXME: This should be passed in rather than hard-coded.
     Vector3f v = transform_point(invT, p);
-    if(v.z <= 1.0f || surfel.confidence >= stableConfidence)
+    if(v.z <= trackingSurfelMaxDepth || surfel.confidence >= trackingSurfelMinConfidence)
     {
       pointsMap[locId] = Vector4f(p.x, p.y, p.z, 1.0f);
       normalsMap[locId] = Vector4f(n.x, n.y, n.z, 0.0f);
@@ -198,7 +197,7 @@ void shade_pixel_colour(int locId, const unsigned int *surfelIndexImage, const T
  */
 template <typename TSurfel>
 _CPU_AND_GPU_CODE_
-void shade_pixel_confidence(int locId, const unsigned int *surfelIndexImage, const TSurfel *surfels, Vector4u *outputImage)
+void shade_pixel_confidence(int locId, const unsigned int *surfelIndexImage, const TSurfel *surfels, float stableSurfelConfidence, Vector4u *outputImage)
 {
   Vector4u col4(0, 0, 0, 255);
 
@@ -206,9 +205,8 @@ void shade_pixel_confidence(int locId, const unsigned int *surfelIndexImage, con
   if(surfelIndex >= 0)
   {
     float confidence = surfels[surfelIndex].confidence;
-    const float stableConfidence = 5.0f; // FIXME: This should be passed in rather than hard-coded.
-    if(confidence > stableConfidence) confidence = stableConfidence;
-    uchar g = (uchar)(255.0f * confidence / stableConfidence);
+    if(confidence > stableSurfelConfidence) confidence = stableSurfelConfidence;
+    uchar g = (uchar)(255.0f * confidence / stableSurfelConfidence);
     col4 = Vector4u(255 - g, g, 0, 255);
   }
 
