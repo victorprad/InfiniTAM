@@ -214,7 +214,7 @@ inline void clear_removal_mask(int surfelId, unsigned int *surfelRemovalMask)
 template <typename TSurfel>
 _CPU_AND_GPU_CODE_
 inline void find_corresponding_surfel(int locId, const Matrix4f& invT, const float *depthMap, int depthMapWidth, const Vector3f *normalMap, const unsigned int *indexMap,
-                                      const TSurfel *surfels, unsigned int *correspondenceMap, unsigned short *newPointsMask)
+                                      int supersamplingFactor, const TSurfel *surfels, unsigned int *correspondenceMap, unsigned short *newPointsMask)
 {
   // If the depth pixel or normal is invalid, early out.
   const float EPSILON = 1e-3f;
@@ -230,13 +230,13 @@ inline void find_corresponding_surfel(int locId, const Matrix4f& invT, const flo
   int bestSurfelIndex = -1;
   float bestSurfelConfidence = 0.0f;
   int ux = locId % depthMapWidth, uy = locId / depthMapWidth;
-  for(int dy = 0; dy < 4; ++dy)
+  for(int dy = 0; dy < supersamplingFactor; ++dy)
   {
-    for(int dx = 0; dx < 4; ++dx)
+    for(int dx = 0; dx < supersamplingFactor; ++dx)
     {
-      int x = ux * 4 + dx;
-      int y = uy * 4 + dy;
-      int surfelIndex = indexMap[y * depthMapWidth * 4 + x] - 1;
+      int x = ux * supersamplingFactor + dx;
+      int y = uy * supersamplingFactor + dy;
+      int surfelIndex = indexMap[y * depthMapWidth * supersamplingFactor + x] - 1;
       if(surfelIndex >= 0)
       {
         // TODO: Make this slightly more sophisticated, as per the paper.
