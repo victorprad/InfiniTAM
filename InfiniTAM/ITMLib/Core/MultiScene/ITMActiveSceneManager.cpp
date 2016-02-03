@@ -392,12 +392,21 @@ void ITMActiveSceneManager::AcceptNewLink(int fromData, int toData, const ORUtil
 	int toSceneIdx = activeData[toData].sceneIndex;
 
 	//localSceneManager->addRelation(fromSceneIdx, toSceneIdx, pose, weight);
-	ITMPoseConstraint & c = localSceneManager->getRelation(fromSceneIdx, toSceneIdx);
-	c.AddObservation(pose, weight);
+	{
+		ITMPoseConstraint & c = localSceneManager->getRelation(fromSceneIdx, toSceneIdx);
+		c.AddObservation(pose, weight);
+	}
+	{
+		ORUtils::SE3Pose invPose(pose.GetInvM());
+		ITMPoseConstraint & c = localSceneManager->getRelation(toSceneIdx, fromSceneIdx);
+		c.AddObservation(invPose, weight);
+	}
 }
 
-void ITMActiveSceneManager::maintainActiveData(void)
+bool ITMActiveSceneManager::maintainActiveData(void)
 {
+	bool scenegraphChanged = false;
+
 	int primaryDataIdx = findPrimaryDataIdx();
 	int moveToDataIdx = -1;
 	for (int i = 0; i < (int)activeData.size(); ++i)
@@ -429,6 +438,7 @@ void ITMActiveSceneManager::maintainActiveData(void)
 				link.constraints.clear();
 				link.trackingAttempts = 0;
 				if (shouldMovePrimaryScene(i, moveToDataIdx, primaryDataIdx)) moveToDataIdx = i;
+				scenegraphChanged = true;
 			}
 			else if (success == -1)
 			{
@@ -475,4 +485,6 @@ void ITMActiveSceneManager::maintainActiveData(void)
 
 	// NOTE: this has to be done AFTER removing any previous new scene
 	if (shouldStartNewArea()) initiateNewScene();
+
+	return scenegraphChanged;
 }

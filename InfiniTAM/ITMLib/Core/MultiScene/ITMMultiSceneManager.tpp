@@ -37,9 +37,16 @@ template<class TVoxel, class TIndex>
 void ITMMultiSceneManager_instance<TVoxel,TIndex>::removeScene(int sceneID)
 {
 	if ((sceneID < 0)||((unsigned)sceneID >= allData.size())) return;
+
+	// make sure there are no relations anywhere pointing to the scene
+	const ConstraintList & l = getConstraints(sceneID);
+	for (ConstraintList::const_iterator it = l.begin(); it != l.end(); ++it) {
+		eraseRelation(it->first, sceneID);
+	}
+
+	// delete the scene
 	delete allData[sceneID];
 	allData.erase(allData.begin() + sceneID);
-	// TODO: make sure there are no relations anywhere pointing to the scene just deleted
 }
 
 /*template<class TVoxel, class TIndex>
@@ -93,6 +100,15 @@ const ITMPoseConstraint & ITMMultiSceneManager_instance<TVoxel,TIndex>::getRelat
 	if (it == m.end()) return invalidPoseConstraint;
 
 	return it->second;
+}
+
+template<class TVoxel, class TIndex>
+void ITMMultiSceneManager_instance<TVoxel,TIndex>::eraseRelation(int fromScene, int toScene)
+{
+	if ((fromScene < 0)||(fromScene >= (int)allData.size())) return;
+
+	std::map<int,ITMPoseConstraint> & m = getScene(fromScene)->relations;
+	m.erase(toScene);
 }
 
 template<class TVoxel, class TIndex>
@@ -176,6 +192,7 @@ std::vector<int> ITMMultiSceneManager_instance<TVoxel,TIndex>::getShortestLinkPa
 template<class TVoxel, class TIndex>
 ORUtils::SE3Pose ITMMultiSceneManager_instance<TVoxel,TIndex>::findTransformation(int fromSceneID, int toSceneID) const
 {
+#if 0
 	std::vector<int> pathThroughScenes = getShortestLinkPath(fromSceneID, toSceneID);
 	ORUtils::SE3Pose ret;
 
@@ -190,6 +207,9 @@ ORUtils::SE3Pose ITMMultiSceneManager_instance<TVoxel,TIndex>::findTransformatio
 	}
 
 	return ret;
+#else
+	return ORUtils::SE3Pose(allData[toSceneID]->estimatedGlobalPose.GetM() * allData[fromSceneID]->estimatedGlobalPose.GetInvM());
+#endif
 }
 
 }

@@ -20,12 +20,12 @@ namespace ITMLib {
 		ORUtils::SE3Pose GetAccumulatedObservations(void) const { return accu_poses; }
 		int GetNumAccumulatedObservations(void) const { return accu_num; }
 
-		ORUtils::SE3Pose GetEstimate(void) const { return estimate; }
 	private:
-		ORUtils::SE3Pose estimate;
 		ORUtils::SE3Pose accu_poses;
 		int accu_num;
 	};
+
+	typedef std::map<int,ITMPoseConstraint> ConstraintList;
 
 	template<class TVoxel,class TIndex>
 	class ITMLocalScene
@@ -34,7 +34,8 @@ namespace ITMLib {
 		ITMScene<TVoxel,TIndex> *scene;
 		ITMRenderState *renderState;
 		ITMTrackingState *trackingState;
-		std::map<int,ITMPoseConstraint> relations;
+		ConstraintList relations;
+		ORUtils::SE3Pose estimatedGlobalPose;
 
 		ITMLocalScene(const ITMLibSettings *settings, const ITMVisualisationEngine<TVoxel,TIndex> *visualisationEngine, const Vector2i & trackedImageSize)
 		{
@@ -49,14 +50,6 @@ namespace ITMLib {
 			delete renderState;
 			delete trackingState;
 		}
-
-		/** Check whether this is a new scene that has not been
-		    completely localised relative to any others.
-		*/
-/*		bool isNewScene(void) const
-		{
-			return (relations.size() == 0);
-		}*/
 	};
 }
 

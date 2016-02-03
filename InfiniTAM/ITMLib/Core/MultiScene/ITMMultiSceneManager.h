@@ -10,7 +10,7 @@
 
 namespace ITMLib
 {
-	/* This helpful abstract interface alows you to ignore the fact that
+	/* This helpful abstract interface allows you to ignore the fact that
 	   scenes are templates.
 	*/
 	class ITMMultiSceneManager
@@ -24,6 +24,12 @@ namespace ITMLib
 
 		virtual const ITMPoseConstraint & getRelation(int fromScene, int toScene) const = 0;
 		virtual ITMPoseConstraint & getRelation(int fromScene, int toScene) = 0;
+		virtual void eraseRelation(int fromScene, int toScene) = 0;
+		virtual const ConstraintList & getConstraints(int sceneId) const = 0;
+
+		virtual void setEstimatedGlobalPose(int sceneID, const ORUtils::SE3Pose & pose) = 0;
+		virtual const ORUtils::SE3Pose & getEstimatedGlobalPose(int sceneID) const = 0;
+
 		virtual bool resetTracking(int sceneID, const ORUtils::SE3Pose & pose) = 0;
 
 		virtual const ORUtils::SE3Pose* getTrackingPose(int sceneID) const = 0;
@@ -51,16 +57,24 @@ namespace ITMLib
 		size_t numScenes(void) const
 		{ return allData.size(); }
 
-		const ITMPoseConstraint & getRelation(int fromScene, int toScene) const;
-		ITMPoseConstraint & getRelation(int fromScene, int toScene);
-		bool resetTracking(int sceneID, const ORUtils::SE3Pose & pose);
-
 		const ITMLocalScene<TVoxel,TIndex>* getScene(int sceneID) const
 		{ return allData[sceneID]; }
 
 		ITMLocalScene<TVoxel,TIndex>* getScene(int sceneID)
 		{ return allData[sceneID]; }
 
+		const ITMPoseConstraint & getRelation(int fromScene, int toScene) const;
+		ITMPoseConstraint & getRelation(int fromScene, int toScene);
+		void eraseRelation(int fromScene, int toScene);
+		const ConstraintList & getConstraints(int sceneId) const
+		{ return allData[sceneId]->relations; }
+
+		void setEstimatedGlobalPose(int sceneID, const ORUtils::SE3Pose & pose)
+		{ allData[sceneID]->estimatedGlobalPose = pose; }
+		const ORUtils::SE3Pose & getEstimatedGlobalPose(int sceneID) const
+		{ return allData[sceneID]->estimatedGlobalPose; }
+
+		bool resetTracking(int sceneID, const ORUtils::SE3Pose & pose);
 		const ORUtils::SE3Pose* getTrackingPose(int sceneID) const
 		{ return getScene(sceneID)->trackingState->pose_d; }
 		int getSceneSize(int sceneID) const;

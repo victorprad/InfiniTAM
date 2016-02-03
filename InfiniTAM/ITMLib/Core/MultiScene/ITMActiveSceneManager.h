@@ -38,7 +38,8 @@ namespace ITMLib
 		int initiateNewLink(int sceneID, const ORUtils::SE3Pose & pose, bool isRelocalisation);
 
 		void recordTrackingResult(int dataID, int trackingSuccess, bool primaryTrackingSuccess);
-		void maintainActiveData(void);
+		// return whether or not the scene graph has changed
+		bool maintainActiveData(void);
 
 		int findPrimaryDataIdx(void) const;
 		int findPrimarySceneIdx(void) const;
