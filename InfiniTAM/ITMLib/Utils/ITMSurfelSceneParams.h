@@ -11,6 +11,9 @@ namespace ITMLib
   {
     //#################### PUBLIC VARIABLES ####################
 
+    /** The maximum fraction by which a new surfel can have a larger radius than the surfel into which it is being fused if full fusion is to occur. */
+    float deltaRadius;
+
     /** The confidence value a surfel must have in order for it to be considered "stable". */
     float stableSurfelConfidence;
 
@@ -31,15 +34,17 @@ namespace ITMLib
     /**
      * \brief Constructs a set of surfel scene parameters.
      *
+     * \param deltaRadius_                  The maximum fraction by which a new surfel can have a larger radius than the surfel into which it is being fused if full fusion is to occur.
      * \param stableSurfelConfidence_       The confidence value a surfel must have in order for it to be considered "stable".
      * \param supersamplingFactor_          The factor by which to supersample (in each axis) the index image used for finding surfel correspondences.
      * \param trackingSurfelMaxDepth_       The maximum depth a surfel must have in order for it to be used for tracking.
      * \param trackingSurfelMinConfidence_  The minimum confidence value a surfel must have in order for it to be used for tracking.
      * \param unstableSurfelPeriod_         The number of time steps a surfel is allowed to be unstable without being updated before being removed.
      */
-    explicit ITMSurfelSceneParams(float stableSurfelConfidence_, int supersamplingFactor_, float trackingSurfelMaxDepth_,
+    explicit ITMSurfelSceneParams(float deltaRadius_, float stableSurfelConfidence_, int supersamplingFactor_, float trackingSurfelMaxDepth_,
                                   float trackingSurfelMinConfidence_, int unstableSurfelPeriod_)
-    : stableSurfelConfidence(stableSurfelConfidence_),
+    : deltaRadius(deltaRadius_),
+      stableSurfelConfidence(stableSurfelConfidence_),
       supersamplingFactor(supersamplingFactor_),
       trackingSurfelMaxDepth(trackingSurfelMaxDepth_),
       trackingSurfelMinConfidence(trackingSurfelMinConfidence_),

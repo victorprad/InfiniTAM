@@ -269,8 +269,8 @@ template <typename TSurfel>
 _CPU_AND_GPU_CODE_
 inline void fuse_matched_point(int locId, const unsigned int *correspondenceMap, const Matrix4f& T, const Vector4f *vertexMap,
                                const Vector3f *normalMap, const float *radiusMap, const Vector4u *colourMap, int timestamp,
-                               TSurfel *surfels, int colourMapWidth, int colourMapHeight, const Matrix4f& depthToRGB,
-                               const Vector4f& projParamsRGB)
+                               TSurfel *surfels, float deltaRadius, int colourMapWidth, int colourMapHeight,
+                               const Matrix4f& depthToRGB, const Vector4f& projParamsRGB)
 {
   // TEMPORARY
   const float alpha = 1.0f;
@@ -278,21 +278,24 @@ inline void fuse_matched_point(int locId, const unsigned int *correspondenceMap,
   int surfelIndex = correspondenceMap[locId] - 1;
   if(surfelIndex >= 0)
   {
-    const Vector3f v = vertexMap[locId].toVector3();
-
     TSurfel surfel = surfels[surfelIndex];
-
     const float newConfidence = surfel.confidence + alpha;
-    surfel.position = (surfel.confidence * surfel.position + alpha * transform_point(T, v)) / newConfidence;
-    surfel.normal = (surfel.confidence * surfel.normal + alpha * transform_normal(T, normalMap[locId])) / newConfidence;
-    surfel.normal /= length(surfel.normal);
-    surfel.radius = (surfel.confidence * surfel.radius + alpha * radiusMap[locId]) / newConfidence;
 
-    Vector3u oldColour = SurfelColourManipulator<TSurfel::hasColourInformation>::read(surfel);
-    Vector3u newColour = compute_colour(v, depthToRGB, projParamsRGB, colourMap, colourMapWidth, colourMapHeight);
+    const float r = radiusMap[locId];
+    if(r <= (1.0f + deltaRadius) * surfel.radius)
+    {
+      const Vector3f v = vertexMap[locId].toVector3();
+      surfel.position = (surfel.confidence * surfel.position + alpha * transform_point(T, v)) / newConfidence;
+      surfel.normal = (surfel.confidence * surfel.normal + alpha * transform_normal(T, normalMap[locId])) / newConfidence;
+      surfel.normal /= length(surfel.normal);
+      surfel.radius = (surfel.confidence * surfel.radius + alpha * r) / newConfidence;
 
-    Vector3u colour = ((surfel.confidence * oldColour.toFloat() + alpha * newColour.toFloat()) / newConfidence).toUChar();
-    SurfelColourManipulator<TSurfel::hasColourInformation>::write(surfel, colour);
+      Vector3u oldColour = SurfelColourManipulator<TSurfel::hasColourInformation>::read(surfel);
+      Vector3u newColour = compute_colour(v, depthToRGB, projParamsRGB, colourMap, colourMapWidth, colourMapHeight);
+
+      Vector3u colour = ((surfel.confidence * oldColour.toFloat() + alpha * newColour.toFloat()) / newConfidence).toUChar();
+      SurfelColourManipulator<TSurfel::hasColourInformation>::write(surfel, colour);
+    }
 
     surfel.confidence = newConfidence;
     surfel.timestamp = timestamp;
