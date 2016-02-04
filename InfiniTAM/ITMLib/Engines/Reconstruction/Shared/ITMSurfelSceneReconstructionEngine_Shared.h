@@ -103,10 +103,11 @@ inline bool try_read_vertex(int x, int y, const Vector4f *vertexMap, int width, 
  */
 template <typename TSurfel>
 _CPU_AND_GPU_CODE_
-inline void add_new_surfel(int locId, const Matrix4f& T, const unsigned short *newPointsMask, const unsigned int *newPointsPrefixSum,
+inline void add_new_surfel(int locId, const Matrix4f& T, int timestamp, const unsigned short *newPointsMask, const unsigned int *newPointsPrefixSum,
                            const Vector4f *vertexMap, const Vector3f *normalMap, const float *radiusMap, const Vector4u *colourMap,
-                           int timestamp, TSurfel *newSurfels, const TSurfel *surfels, const unsigned int *correspondenceMap,
-                           int colourMapWidth, int colourMapHeight, const Matrix4f& depthToRGB, const Vector4f& projParamsRGB)
+                           int depthMapWidth, int depthMapHeight, int colourMapWidth, int colourMapHeight, const Matrix4f& depthToRGB,
+                           const Vector4f& projParamsRGB, bool useGaussianSampleConfidence, float gaussianConfidenceSigma, TSurfel *newSurfels,
+                           const TSurfel *surfels, const unsigned int *correspondenceMap)
 {
   if(newPointsMask[locId])
   {
@@ -116,7 +117,7 @@ inline void add_new_surfel(int locId, const Matrix4f& T, const unsigned short *n
     surfel.position = transform_point(T, v);
     surfel.normal = transform_normal(T, normalMap[locId]);
     surfel.radius = radiusMap[locId];
-    surfel.confidence = 1.0f;                     // TEMPORARY
+    surfel.confidence = useGaussianSampleConfidence ? calculate_gaussian_sample_confidence(locId, depthMapWidth, depthMapHeight, gaussianConfidenceSigma) : 1.0f;
     surfel.timestamp = timestamp;
 
     // Store a colour if the surfel type can support it.

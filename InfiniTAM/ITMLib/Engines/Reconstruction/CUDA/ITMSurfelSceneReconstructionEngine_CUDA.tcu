@@ -26,15 +26,21 @@ namespace ITMLib
 //#################### CUDA KERNELS ####################
 
 template <typename TSurfel>
-__global__ void ck_add_new_surfel(int pixelCount, Matrix4f T, const unsigned short *newPointsMask, const unsigned int *newPointsPrefixSum,
+__global__ void ck_add_new_surfel(int pixelCount, Matrix4f T, int timestamp, const unsigned short *newPointsMask, const unsigned int *newPointsPrefixSum,
                                   const Vector4f *vertexMap, const Vector3f *normalMap, const float *radiusMap, const Vector4u *colourMap,
-                                  int timestamp, TSurfel *newSurfels, const TSurfel *surfels, const unsigned int *correspondenceMap,
-                                  int colourMapWidth, int colourMapHeight, Matrix4f depthToRGB, Vector4f projParamsRGB)
+                                  int depthMapWidth, int depthMapHeight, int colourMapWidth, int colourMapHeight,
+                                  Matrix4f depthToRGB, Vector4f projParamsRGB, bool useGaussianSampleConfidence, float gaussianConfidenceSigma,
+                                  TSurfel *newSurfels, const TSurfel *surfels, const unsigned int *correspondenceMap)
 {
   int locId = threadIdx.x + blockDim.x * blockIdx.x;
   if(locId < pixelCount)
   {
-    add_new_surfel(locId, T, newPointsMask, newPointsPrefixSum, vertexMap, normalMap, radiusMap, colourMap, timestamp, newSurfels, surfels, correspondenceMap, colourMapWidth, colourMapHeight, depthToRGB, projParamsRGB);
+    add_new_surfel(
+      locId, T, timestamp, newPointsMask, newPointsPrefixSum, vertexMap, normalMap, radiusMap, colourMap,
+      depthMapWidth, depthMapHeight, colourMapWidth, colourMapHeight,
+      depthToRGB, projParamsRGB, useGaussianSampleConfidence, gaussianConfidenceSigma,
+      newSurfels, surfels, correspondenceMap
+    );
   }
 }
 
@@ -140,6 +146,7 @@ void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::AddNewSurfels(ITMSurfelSc
   // Add the new surfels to the scene.
   const size_t newSurfelCount = static_cast<size_t>(this->m_newPointsPrefixSumMB->GetElement(pixelCount, MEMORYDEVICE_CUDA));
   TSurfel *newSurfels = scene->AllocateSurfels(newSurfelCount);
+  const ITMSurfelSceneParams& sceneParams = scene->GetParams();
   if(newSurfels == NULL) return;
 
   int threadsPerBlock = 256;
@@ -148,20 +155,24 @@ void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::AddNewSurfels(ITMSurfelSc
   ck_add_new_surfel<<<numBlocks,threadsPerBlock>>>(
     pixelCount,
     trackingState->pose_d->GetInvM(),
+    this->m_timestamp,
     newPointsMask,
     newPointsPrefixSum,
     this->m_vertexMapMB->GetData(MEMORYDEVICE_CUDA),
     this->m_normalMapMB->GetData(MEMORYDEVICE_CUDA),
     this->m_radiusMapMB->GetData(MEMORYDEVICE_CUDA),
     view->rgb->GetData(MEMORYDEVICE_CUDA),
-    this->m_timestamp,
-    newSurfels,
-    scene->GetSurfels()->GetData(MEMORYDEVICE_CUDA),
-    this->m_correspondenceMapMB->GetData(MEMORYDEVICE_CUDA),
+    view->depth->noDims.x,
+    view->depth->noDims.y,
     view->rgb->noDims.x,
     view->rgb->noDims.y,
     view->calib->trafo_rgb_to_depth.calib_inv,
-    view->calib->intrinsics_rgb.projectionParamsSimple.all
+    view->calib->intrinsics_rgb.projectionParamsSimple.all,
+    sceneParams.useGaussianSampleConfidence,
+    sceneParams.gaussianConfidenceSigma,
+    newSurfels,
+    scene->GetSurfels()->GetData(MEMORYDEVICE_CUDA),
+    this->m_correspondenceMapMB->GetData(MEMORYDEVICE_CUDA)
   );
   ORcudaKernelCheck;
 
