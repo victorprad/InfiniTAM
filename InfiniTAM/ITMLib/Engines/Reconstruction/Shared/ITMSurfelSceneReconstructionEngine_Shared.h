@@ -31,6 +31,19 @@ inline float calculate_depth_from_pose(const Matrix4f& invT, const Vector3f& p)
  * \brief TODO
  */
 _CPU_AND_GPU_CODE_
+inline float calculate_gaussian_sample_confidence(int locId, int width, int height, float sigma)
+{
+  const int x = locId % width, y = locId / width;
+  const float halfW = width / 2.0f, halfH = height / 2.0f;
+  const float dx = abs(x - halfW), dy = abs(y - halfH);
+  const float gamma = sqrtf((dx * dx + dy * dy) / (halfW * halfW + halfH * halfH));
+  return expf(-gamma*gamma) / (2*sigma*sigma);
+}
+
+/**
+ * \brief TODO
+ */
+_CPU_AND_GPU_CODE_
 inline Vector3u compute_colour(const Vector3f& v, const Matrix4f& depthToRGB, const Vector4f& projParamsRGB,
                                const Vector4u *colourMap, int colourMapWidth, int colourMapHeight)
 {
@@ -267,13 +280,13 @@ inline void find_corresponding_surfel(int locId, const Matrix4f& invT, const flo
  */
 template <typename TSurfel>
 _CPU_AND_GPU_CODE_
-inline void fuse_matched_point(int locId, const unsigned int *correspondenceMap, const Matrix4f& T, const Vector4f *vertexMap,
-                               const Vector3f *normalMap, const float *radiusMap, const Vector4u *colourMap, int timestamp,
-                               TSurfel *surfels, float deltaRadius, int colourMapWidth, int colourMapHeight,
-                               const Matrix4f& depthToRGB, const Vector4f& projParamsRGB)
+inline void fuse_matched_point(int locId, const unsigned int *correspondenceMap, const Matrix4f& T, int timestamp,
+                               const Vector4f *vertexMap, const Vector3f *normalMap, const float *radiusMap, const Vector4u *colourMap,
+                               int depthMapWidth, int depthMapHeight, int colourMapWidth, int colourMapHeight,
+                               const Matrix4f& depthToRGB, const Vector4f& projParamsRGB, float deltaRadius,
+                               bool useGaussianSampleConfidence, float gaussianConfidenceSigma, TSurfel *surfels)
 {
-  // TEMPORARY
-  const float alpha = 1.0f;
+  const float alpha = useGaussianSampleConfidence ? calculate_gaussian_sample_confidence(locId, depthMapWidth, depthMapHeight, gaussianConfidenceSigma) : 1.0f;
 
   int surfelIndex = correspondenceMap[locId] - 1;
   if(surfelIndex >= 0)
@@ -292,7 +305,6 @@ inline void fuse_matched_point(int locId, const unsigned int *correspondenceMap,
 
       Vector3u oldColour = SurfelColourManipulator<TSurfel::hasColourInformation>::read(surfel);
       Vector3u newColour = compute_colour(v, depthToRGB, projParamsRGB, colourMap, colourMapWidth, colourMapHeight);
-
       Vector3u colour = ((surfel.confidence * oldColour.toFloat() + alpha * newColour.toFloat()) / newConfidence).toUChar();
       SurfelColourManipulator<TSurfel::hasColourInformation>::write(surfel, colour);
     }

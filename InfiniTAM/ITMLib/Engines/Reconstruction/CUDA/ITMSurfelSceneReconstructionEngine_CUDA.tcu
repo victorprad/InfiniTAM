@@ -86,14 +86,19 @@ __global__ void ck_find_corresponding_surfel(int pixelCount, Matrix4f invT, cons
 }
 
 template <typename TSurfel>
-__global__ void ck_fuse_matched_point(int pixelCount, const unsigned int *correspondenceMap, Matrix4f T, const Vector4f *vertexMap, const Vector3f *normalMap,
-                                      const float *radiusMap, const Vector4u *colourMap, int timestamp, TSurfel *surfels, float deltaRadius,
-                                      int colourMapWidth, int colourMapHeight, Matrix4f depthToRGB, Vector4f projParamsRGB)
+__global__ void ck_fuse_matched_point(int pixelCount, const unsigned int *correspondenceMap, Matrix4f T, int timestamp,
+                                      const Vector4f *vertexMap, const Vector3f *normalMap, const float *radiusMap, const Vector4u *colourMap,
+                                      int depthMapWidth, int depthMapHeight, int colourMapWidth, int colourMapHeight,
+                                      Matrix4f depthToRGB, Vector4f projParamsRGB, float deltaRadius,
+                                      bool useGaussianSampleConfidence, float gaussianConfidenceSigma, TSurfel *surfels)
 {
   int locId = threadIdx.x + blockDim.x * blockIdx.x;
   if(locId < pixelCount)
   {
-    fuse_matched_point(locId, correspondenceMap, T, vertexMap, normalMap, radiusMap, colourMap, timestamp, surfels, deltaRadius, colourMapWidth, colourMapHeight, depthToRGB, projParamsRGB);
+    fuse_matched_point(
+      locId, correspondenceMap, T, timestamp, vertexMap, normalMap, radiusMap, colourMap, depthMapWidth, depthMapHeight, colourMapWidth, colourMapHeight,
+      depthToRGB, projParamsRGB, deltaRadius, useGaussianSampleConfidence, gaussianConfidenceSigma, surfels
+    );
   }
 }
 
@@ -202,21 +207,27 @@ void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::FuseMatchedPoints(ITMSurf
   int threadsPerBlock = 256;
   int numBlocks = (pixelCount + threadsPerBlock - 1) / threadsPerBlock;
 
+  const ITMSurfelSceneParams& sceneParams = scene->GetParams();
+
   ck_fuse_matched_point<<<numBlocks,threadsPerBlock>>>(
     pixelCount,
     this->m_correspondenceMapMB->GetData(MEMORYDEVICE_CUDA),
     trackingState->pose_d->GetInvM(),
+    this->m_timestamp,
     this->m_vertexMapMB->GetData(MEMORYDEVICE_CUDA),
     this->m_normalMapMB->GetData(MEMORYDEVICE_CUDA),
     this->m_radiusMapMB->GetData(MEMORYDEVICE_CUDA),
     view->rgb->GetData(MEMORYDEVICE_CUDA),
-    this->m_timestamp,
-    scene->GetSurfels()->GetData(MEMORYDEVICE_CUDA),
-    scene->GetParams().deltaRadius,
+    view->depth->noDims.x,
+    view->depth->noDims.y,
     view->rgb->noDims.x,
     view->rgb->noDims.y,
     view->calib->trafo_rgb_to_depth.calib_inv,
-    view->calib->intrinsics_rgb.projectionParamsSimple.all
+    view->calib->intrinsics_rgb.projectionParamsSimple.all,
+    sceneParams.deltaRadius,
+    sceneParams.useGaussianSampleConfidence,
+    sceneParams.gaussianConfidenceSigma,
+    scene->GetSurfels()->GetData(MEMORYDEVICE_CUDA)
   );
   ORcudaKernelCheck;
 }
