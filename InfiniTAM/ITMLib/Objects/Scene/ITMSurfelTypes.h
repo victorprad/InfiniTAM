@@ -4,7 +4,7 @@
 
 #include "../../Utils/ITMMath.h"
 
-#define DEBUG_CORRESPONDENCES 1
+#define DEBUG_CORRESPONDENCES 0
 
 namespace ITMLib
 {
