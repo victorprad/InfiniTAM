@@ -158,8 +158,12 @@ void ITMSurfelSceneReconstructionEngine_CPU<TSurfel>::MergeSimilarSurfels(ITMSur
 {
   const unsigned int *correspondenceMap = this->m_correspondenceMapMB->GetData(MEMORYDEVICE_CPU);
   const unsigned int *indexImage = renderState->GetIndexImage()->GetData(MEMORYDEVICE_CPU);
+  const int indexImageHeight = renderState->GetIndexImage()->noDims.y;
+  const int indexImageWidth = renderState->GetIndexImage()->noDims.x;
   unsigned int *mergeSourceMap = this->m_mergeSourceMapMB->GetData(MEMORYDEVICE_CPU);
   const int pixelCount = static_cast<int>(renderState->GetIndexImage()->dataSize);
+  const ITMSurfelSceneParams& sceneParams = scene->GetParams();
+  const TSurfel *surfels = scene->GetSurfels()->GetData(MEMORYDEVICE_CPU);
   unsigned int *surfelRemovalMask = this->m_surfelRemovalMaskMB->GetData(MEMORYDEVICE_CPU);
 
   // Clear the merge source map.
@@ -177,7 +181,11 @@ void ITMSurfelSceneReconstructionEngine_CPU<TSurfel>::MergeSimilarSurfels(ITMSur
 #endif
   for(int locId = 0; locId < pixelCount; ++locId)
   {
-    // TODO
+    find_mergeable_surfel(
+      locId, indexImage, indexImageWidth, indexImageHeight, correspondenceMap, surfels,
+      sceneParams.stableSurfelConfidence, sceneParams.maxMergeDist, sceneParams.maxMergeAngle,
+      mergeSourceMap
+    );
   }
 
   // Prevent any merge chains.

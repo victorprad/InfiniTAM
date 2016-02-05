@@ -280,11 +280,11 @@ inline void find_corresponding_surfel(int locId, const Matrix4f& invT, const flo
  */
 template <typename TSurfel>
 _CPU_AND_GPU_CODE_
-inline void find_mergeable_surfel(int locId, const unsigned int *indexMap, int indexMapWidth, int indexMapHeight, const unsigned int *correspondenceMap, const TSurfel *surfels,
-                                  float stableSurfelConfidence, unsigned int *mergeSourceMap)
+inline void find_mergeable_surfel(int locId, const unsigned int *indexImage, int indexImageWidth, int indexImageHeight, const unsigned int *correspondenceMap, const TSurfel *surfels,
+                                  float stableSurfelConfidence, float maxMergeDist, float maxMergeAngle, unsigned int *mergeSourceMap)
 {
   // Look up the surfel at the current location. If there isn't one, early out.
-  int surfelIndex = indexMap[locId] - 1;
+  int surfelIndex = indexImage[locId] - 1;
   if(surfelIndex == -1) return;
   const TSurfel surfel = surfels[surfelIndex];
 
@@ -292,7 +292,7 @@ inline void find_mergeable_surfel(int locId, const unsigned int *indexMap, int i
   bool surfelCanJustify = surfel.confidence >= stableSurfelConfidence && correspondenceMap[locId] > 0;
 
   // For each neighbour of the current location that has a higher raster index:
-  int x = locId % indexMapWidth, y = locId / indexMapWidth;
+  int x = locId % indexImageWidth, y = locId / indexImageWidth;
   int neighbourX[] = { x + 1, x - 1, x, x + 1 };
   int neighbourY[] = { y, y + 1, y + 1, y + 1 };
   int bestMergeSource = -1;
@@ -300,19 +300,24 @@ inline void find_mergeable_surfel(int locId, const unsigned int *indexMap, int i
   for(int i = 0; i < 4; ++i)
   {
     // If the neighbour is out of range, continue.
-    if(neighbourX[i] >= indexMapWidth || neighbourY[i] >= indexMapHeight) continue;
+    if(neighbourX[i] >= indexImageWidth || neighbourY[i] >= indexImageHeight) continue;
 
     // Look up the surfel (if any) at the neighbour. If there isn't one, continue.
-    int neighbourLocId = neighbourY[i] * indexMapWidth + neighbourX[i];
-    int neighbourSurfelIndex = indexMap[neighbourLocId] - 1;
+    int neighbourLocId = neighbourY[i] * indexImageWidth + neighbourX[i];
+    int neighbourSurfelIndex = indexImage[neighbourLocId] - 1;
     if(neighbourSurfelIndex == -1) continue;
     const TSurfel neighbourSurfel = surfels[neighbourSurfelIndex];
 
-    // If the merge is unjustified, continue.
+    // If the merge cannot be justified, continue.
     if(!surfelCanJustify && !(neighbourSurfel.confidence >= stableSurfelConfidence && correspondenceMap[neighbourLocId] > 0)) continue;
 
-    // Check the positions, normals and radii, and update the best merge source if the check passes.
-    // TODO
+    // If the difference in positions and the angle between the normals are sufficiently small, and the radii overlap, update the best merge source.
+    float dist = length(surfel.position - neighbourSurfel.position);
+    float angle = acosf(dot(surfel.normal, neighbourSurfel.normal));
+    if(dist <= maxMergeDist && angle <= maxMergeAngle/* && dist <= surfel.radius + neighbourSurfel.radius*/) // FIXME: This will only work if the surfel radii are calculated correctly.
+    {
+      bestMergeSource = neighbourLocId;
+    }
   }
 
   // If there was a best merge source, write it into the merge source map.
