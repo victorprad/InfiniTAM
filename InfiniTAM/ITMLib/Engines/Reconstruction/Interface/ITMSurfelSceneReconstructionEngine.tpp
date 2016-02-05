@@ -13,7 +13,7 @@ ITMSurfelSceneReconstructionEngine<TSurfel>::ITMSurfelSceneReconstructionEngine(
 {
   size_t pixelCount = depthImageSize.x * depthImageSize.y;
   m_correspondenceMapMB = new ORUtils::MemoryBlock<unsigned int>(pixelCount, true, true);
-  m_mergeMapMB = new ORUtils::MemoryBlock<unsigned int>(pixelCount, true, true);
+  m_mergeSourceMapMB = new ORUtils::MemoryBlock<unsigned int>(pixelCount, true, true);
   m_newPointsMaskMB = new ORUtils::MemoryBlock<unsigned short>(pixelCount + 1, true, true);
   m_newPointsPrefixSumMB = new ORUtils::MemoryBlock<unsigned int>(pixelCount + 1, true, true);
   m_normalMapMB = new ORUtils::MemoryBlock<Vector3f>(pixelCount, true, true);
@@ -32,7 +32,7 @@ template <typename TSurfel>
 ITMSurfelSceneReconstructionEngine<TSurfel>::~ITMSurfelSceneReconstructionEngine()
 {
   delete m_correspondenceMapMB;
-  delete m_mergeMapMB;
+  delete m_mergeSourceMapMB;
   delete m_newPointsMaskMB;
   delete m_newPointsPrefixSumMB;
   delete m_normalMapMB;

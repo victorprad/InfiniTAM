@@ -272,23 +272,23 @@ inline void find_corresponding_surfel(int locId, const Matrix4f& invT, const flo
 template <typename TSurfel>
 _CPU_AND_GPU_CODE_
 inline void find_mergeable_surfel(int locId, const unsigned int *indexMap, int indexMapWidth, int indexMapHeight, const unsigned int *correspondenceMap, const TSurfel *surfels,
-                                  float stableSurfelConfidence)
+                                  float stableSurfelConfidence, unsigned int *mergeSourceMap)
 {
   // Look up the surfel at the current location. If there isn't one, early out.
   int surfelIndex = indexMap[locId] - 1;
   if(surfelIndex == -1) return;
   const TSurfel surfel = surfels[surfelIndex];
 
-  // Determine whether the surfel itself can be the merge target (it needs to be stable and to have been updated this frame).
-  bool surfelIsMergeTarget = surfel.confidence >= stableSurfelConfidence && correspondenceMap[locId] > 0;
+  // Determine whether the surfel itself can justify the merge (it needs to be stable and to have been updated this frame).
+  bool surfelCanJustify = surfel.confidence >= stableSurfelConfidence && correspondenceMap[locId] > 0;
 
   // For each neighbour of the current location that has a higher raster index:
   int x = locId % indexMapWidth, y = locId / indexMapWidth;
-  int neighbourX[] = { x + 1, x, x + 1 };
-  int neighbourY[] = { y, y + 1, y + 1 };
-  int bestNeighbourIndex = -1;
+  int neighbourX[] = { x + 1, x - 1, x, x + 1 };
+  int neighbourY[] = { y, y + 1, y + 1, y + 1 };
+  int bestMergeSource = -1;
 
-  for(int i = 0; i < 3; ++i)
+  for(int i = 0; i < 4; ++i)
   {
     // If the neighbour is out of range, continue.
     if(neighbourX[i] >= indexMapWidth || neighbourY[i] >= indexMapHeight) continue;
@@ -299,18 +299,15 @@ inline void find_mergeable_surfel(int locId, const unsigned int *indexMap, int i
     if(neighbourSurfelIndex == -1) continue;
     const TSurfel neighbourSurfel = surfels[neighbourSurfelIndex];
 
-    // If we don't have a valid merge target, continue.
-    if(!surfelIsMergeTarget && !(neighbourSurfel.confidence >= stableSurfelConfidence && correspondenceMap[neighbourLocId] > 0)) continue;
+    // If the merge is unjustified, continue.
+    if(!surfelCanJustify && !(neighbourSurfel.confidence >= stableSurfelConfidence && correspondenceMap[neighbourLocId] > 0)) continue;
 
-    // Check the positions, normals and radii, and update the best neighbour index if the check passes.
+    // Check the positions, normals and radii, and update the best merge source if the check passes.
     // TODO
   }
 
-  // If there was a best neighbour:
-  if(bestNeighbourIndex != -1)
-  {
-    // Set the lower-indexed entry in the merge map to the higher index.
-  }
+  // If there was a best merge source, write it into the merge source map.
+  mergeSourceMap[locId] = bestMergeSource >= 0 ? bestMergeSource + 1 : 0;
 }
 
 /**
@@ -373,6 +370,25 @@ inline void mark_for_removal_if_unstable(int surfelId, const TSurfel *surfels, i
   if(surfel.confidence < stableSurfelConfidence && timestamp - surfel.timestamp > unstableSurfelPeriod)
   {
     surfelRemovalMask[surfelId] = 1;
+  }
+}
+
+/**
+ * \brief Prevents the source of any merge at the specified location in the merge source map from being the target of a separate merge.
+ *
+ * In other words, if surfel b is due to be merged into surfel a, prevent any other surfel c from being merged into b, since that will
+ * cease to exist after being merged into a.
+ *
+ * \param locId           The location in the merge source map for which to prevent a merge chain.
+ * \param mergeSourceMap  The merge source map.
+ */
+_CPU_AND_GPU_CODE_
+inline void prevent_merge_chain(int locId, unsigned int *mergeSourceMap)
+{
+  int mergeSource = mergeSourceMap[locId] - 1;
+  if(mergeSource >= 0)
+  {
+    mergeSourceMap[mergeSource] = 0;
   }
 }
 

@@ -21,7 +21,7 @@ namespace ITMLib
     ORUtils::MemoryBlock<unsigned int> *m_correspondenceMapMB;
 
     /** TODO */
-    ORUtils::MemoryBlock<unsigned int> *m_mergeMapMB;
+    ORUtils::MemoryBlock<unsigned int> *m_mergeSourceMapMB;
 
     /** A mask whose values denote whether the corresponding points in the vertex map need to be added to the scene as new points. */
     ORUtils::MemoryBlock<unsigned short> *m_newPointsMaskMB;
