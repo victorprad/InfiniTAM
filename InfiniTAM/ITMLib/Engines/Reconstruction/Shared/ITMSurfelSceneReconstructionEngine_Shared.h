@@ -211,6 +211,15 @@ inline void calculate_vertex_position(int locId, int width, const ITMIntrinsics&
  * \brief TODO
  */
 _CPU_AND_GPU_CODE_
+inline void clear_merge_source(int locId, unsigned int *mergeSourceMap)
+{
+  mergeSourceMap[locId] = 0;
+}
+
+/**
+ * \brief TODO
+ */
+_CPU_AND_GPU_CODE_
 inline void clear_removal_mask(int surfelId, unsigned int *surfelRemovalMask)
 {
   surfelRemovalMask[surfelId] = 0;
