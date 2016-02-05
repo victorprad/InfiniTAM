@@ -244,6 +244,51 @@ void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::FuseMatchedPoints(ITMSurf
 }
 
 template <typename TSurfel>
+void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::MarkBadSurfels(ITMSurfelScene<TSurfel> *scene) const
+{
+  const int surfelCount = static_cast<int>(scene->GetSurfelCount());
+
+  // If the scene is empty, early out.
+  if(surfelCount == 0) return;
+
+  const ITMSurfelSceneParams& sceneParams = scene->GetParams();
+  unsigned int *surfelRemovalMask = this->m_surfelRemovalMaskMB->GetData(MEMORYDEVICE_CUDA);
+  TSurfel *surfels = scene->GetSurfels()->GetData(MEMORYDEVICE_CUDA);
+
+  int threadsPerBlock = 256;
+  int numBlocks = (surfelCount + threadsPerBlock - 1) / threadsPerBlock;
+
+  // Clear the surfel removal mask.
+  ck_clear_removal_mask<<<numBlocks,threadsPerBlock>>>(
+    surfelCount,
+    surfelRemovalMask
+  );
+  ORcudaKernelCheck;
+
+  // Mark long-term unstable surfels for removal.
+  ck_mark_for_removal_if_unstable<<<numBlocks,threadsPerBlock>>>(
+    surfelCount,
+    surfels,
+    this->m_timestamp,
+    sceneParams.stableSurfelConfidence,
+    sceneParams.unstableSurfelPeriod,
+    surfelRemovalMask
+  );
+  ORcudaKernelCheck;
+
+#if DEBUGGING
+  scene->GetSurfels()->UpdateHostFromDevice();
+  this->m_surfelRemovalMaskMB->UpdateHostFromDevice();
+#endif
+}
+
+template <typename TSurfel>
+void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::MergeSimilarSurfels(ITMSurfelScene<TSurfel> *scene) const
+{
+  // TODO
+}
+
+template <typename TSurfel>
 void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::PreprocessDepthMap(const ITMView *view) const
 {
   const float *depthMap = view->depth->GetData(MEMORYDEVICE_CUDA);
@@ -302,44 +347,16 @@ void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::PreprocessDepthMap(const 
 }
 
 template <typename TSurfel>
-void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::RemoveBadSurfels(ITMSurfelScene<TSurfel> *scene) const
+void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::RemoveMarkedSurfels(ITMSurfelScene<TSurfel> *scene) const
 {
   const int surfelCount = static_cast<int>(scene->GetSurfelCount());
 
   // If the scene is empty, early out.
   if(surfelCount == 0) return;
 
-  const ITMSurfelSceneParams& sceneParams = scene->GetParams();
   unsigned int *surfelRemovalMask = this->m_surfelRemovalMaskMB->GetData(MEMORYDEVICE_CUDA);
   TSurfel *surfels = scene->GetSurfels()->GetData(MEMORYDEVICE_CUDA);
 
-  int threadsPerBlock = 256;
-  int numBlocks = (surfelCount + threadsPerBlock - 1) / threadsPerBlock;
-
-  // Clear the surfel removal mask.
-  ck_clear_removal_mask<<<numBlocks,threadsPerBlock>>>(
-    surfelCount,
-    surfelRemovalMask
-  );
-  ORcudaKernelCheck;
-
-  // Mark long-term unstable surfels for removal.
-  ck_mark_for_removal_if_unstable<<<numBlocks,threadsPerBlock>>>(
-    surfelCount,
-    surfels,
-    this->m_timestamp,
-    sceneParams.stableSurfelConfidence,
-    sceneParams.unstableSurfelPeriod,
-    surfelRemovalMask
-  );
-  ORcudaKernelCheck;
-
-#if DEBUGGING
-  scene->GetSurfels()->UpdateHostFromDevice();
-  this->m_surfelRemovalMaskMB->UpdateHostFromDevice();
-#endif
-
-  // Remove marked surfels from the scene.
   thrust::device_ptr<unsigned int> surfelRemovalMaskBegin(surfelRemovalMask);
   thrust::device_ptr<unsigned int> surfelRemovalMaskEnd = surfelRemovalMaskBegin + surfelCount;
   thrust::device_ptr<TSurfel> surfelsBegin(surfels);

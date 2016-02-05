@@ -32,9 +32,15 @@ namespace ITMLib
     virtual void FuseMatchedPoints(ITMSurfelScene<TSurfel> *scene, const ITMView *view, const ITMTrackingState *trackingState) const;
 
     /** Override */
+    virtual void MarkBadSurfels(ITMSurfelScene<TSurfel> *scene) const;
+
+    /** Override */
+    virtual void MergeSimilarSurfels(ITMSurfelScene<TSurfel> *scene) const;
+
+    /** Override */
     virtual void PreprocessDepthMap(const ITMView *view) const;
 
     /** Override */
-    virtual void RemoveBadSurfels(ITMSurfelScene<TSurfel> *scene) const;
+    virtual void RemoveMarkedSurfels(ITMSurfelScene<TSurfel> *scene) const;
   };
 }

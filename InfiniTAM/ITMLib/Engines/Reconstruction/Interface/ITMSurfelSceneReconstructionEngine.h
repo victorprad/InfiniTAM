@@ -83,14 +83,32 @@ namespace ITMLib
     virtual void FuseMatchedPoints(ITMSurfelScene<TSurfel> *scene, const ITMView *view, const ITMTrackingState *trackingState) const = 0;
 
     /**
+     * \brief Marks surfels that should be removed from the scene.
+     *
+     * \param scene The surfel scene.
+     */
+    virtual void MarkBadSurfels(ITMSurfelScene<TSurfel> *scene) const = 0;
+
+    /**
+     * \brief Merges together surfels in the current index image that have sufficiently similar positions and normals, and whose radii overlap.
+     *
+     * Surfels that need to be removed as a result of the merging process will be removed alongside any bad surfels that already been marked.
+     *
+     * \param scene The surfel scene.
+     */
+    virtual void MergeSimilarSurfels(ITMSurfelScene<TSurfel> *scene) const = 0;
+
+    /**
      * \brief TODO
      */
     virtual void PreprocessDepthMap(const ITMView *view) const = 0;
 
     /**
-     * \brief TODO
+     * \brief Removes any surfels that have been marked from the scene.
+     *
+     * \param scene The surfel scene.
      */
-    virtual void RemoveBadSurfels(ITMSurfelScene<TSurfel> *scene) const = 0;
+    virtual void RemoveMarkedSurfels(ITMSurfelScene<TSurfel> *scene) const = 0;
 
     //#################### PUBLIC MEMBER FUNCTIONS ####################
   public:

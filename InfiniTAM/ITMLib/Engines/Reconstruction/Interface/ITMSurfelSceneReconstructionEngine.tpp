@@ -48,7 +48,9 @@ void ITMSurfelSceneReconstructionEngine<TSurfel>::IntegrateIntoScene(ITMSurfelSc
   FindCorrespondingSurfels(scene, view, trackingState, renderState);
   FuseMatchedPoints(scene, view, trackingState);
   AddNewSurfels(scene, view, trackingState);
-  RemoveBadSurfels(scene);
+  MarkBadSurfels(scene);
+  MergeSimilarSurfels(scene);
+  RemoveMarkedSurfels(scene);
 
   ++m_timestamp;
 }
