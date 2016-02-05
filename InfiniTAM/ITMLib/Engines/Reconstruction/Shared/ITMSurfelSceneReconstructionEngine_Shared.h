@@ -271,6 +271,53 @@ inline void find_corresponding_surfel(int locId, const Matrix4f& invT, const flo
  */
 template <typename TSurfel>
 _CPU_AND_GPU_CODE_
+inline void find_mergeable_surfel(int locId, const unsigned int *indexMap, int indexMapWidth, int indexMapHeight, const unsigned int *correspondenceMap, const TSurfel *surfels,
+                                  float stableSurfelConfidence)
+{
+  // Look up the surfel at the current location. If there isn't one, early out.
+  int surfelIndex = indexMap[locId] - 1;
+  if(surfelIndex == -1) return;
+  const TSurfel surfel = surfels[surfelIndex];
+
+  // Determine whether the surfel itself can be the merge target (it needs to be stable and to have been updated this frame).
+  bool surfelIsMergeTarget = surfel.confidence >= stableSurfelConfidence && correspondenceMap[locId] > 0;
+
+  // For each neighbour of the current location that has a higher raster index:
+  int x = locId % indexMapWidth, y = locId / indexMapWidth;
+  int neighbourX[] = { x + 1, x, x + 1 };
+  int neighbourY[] = { y, y + 1, y + 1 };
+  int bestNeighbourIndex = -1;
+
+  for(int i = 0; i < 3; ++i)
+  {
+    // If the neighbour is out of range, continue.
+    if(neighbourX[i] >= indexMapWidth || neighbourY[i] >= indexMapHeight) continue;
+
+    // Look up the surfel (if any) at the neighbour. If there isn't one, continue.
+    int neighbourLocId = neighbourY[i] * indexMapWidth + neighbourX[i];
+    int neighbourSurfelIndex = indexMap[neighbourLocId] - 1;
+    if(neighbourSurfelIndex == -1) continue;
+    const TSurfel neighbourSurfel = surfels[neighbourSurfelIndex];
+
+    // If we don't have a valid merge target, continue.
+    if(!surfelIsMergeTarget && !(neighbourSurfel.confidence >= stableSurfelConfidence && correspondenceMap[neighbourLocId] > 0)) continue;
+
+    // Check the positions, normals and radii, and update the best neighbour index if the check passes.
+    // TODO
+  }
+
+  // If there was a best neighbour:
+  if(bestNeighbourIndex != -1)
+  {
+    // Set the lower-indexed entry in the merge map to the higher index.
+  }
+}
+
+/**
+ * \brief TODO
+ */
+template <typename TSurfel>
+_CPU_AND_GPU_CODE_
 inline void fuse_matched_point(int locId, const unsigned int *correspondenceMap, const Matrix4f& T, int timestamp,
                                const Vector4f *vertexMap, const Vector3f *normalMap, const float *radiusMap, const Vector4u *colourMap,
                                int depthMapWidth, int depthMapHeight, int colourMapWidth, int colourMapHeight,

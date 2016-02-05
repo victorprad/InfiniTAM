@@ -160,6 +160,7 @@ void ITMSurfelSceneReconstructionEngine_CPU<TSurfel>::MergeSimilarSurfels(ITMSur
   const unsigned int *indexImage = renderState->GetIndexImage()->GetData(MEMORYDEVICE_CPU);
   const unsigned int *mergeMap = this->m_mergeMapMB->GetData(MEMORYDEVICE_CPU);
   const int pixelCount = static_cast<int>(renderState->GetIndexImage()->dataSize);
+  unsigned int *surfelRemovalMask = this->m_surfelRemovalMaskMB->GetData(MEMORYDEVICE_CPU);
 
   // For each surfel in the index map:
 #ifdef WITH_OPENMP
@@ -167,10 +168,7 @@ void ITMSurfelSceneReconstructionEngine_CPU<TSurfel>::MergeSimilarSurfels(ITMSur
 #endif
   for(int locId = 0; locId < pixelCount; ++locId)
   {
-    // For each of its neighbours that has a higher raster index:
-      // If either the surfel or its neighbour has been updated this frame (has a non-null entry in the correspondence map) and is stable:
-        // Check the positions and normals and update the best neighbour raster index if the check passes.
-    // If there was a best neighbour, set the lower-indexed entry in the merge map to the higher index.
+    // TODO
   }
 
   // For each entry in the merge map:
@@ -180,6 +178,7 @@ void ITMSurfelSceneReconstructionEngine_CPU<TSurfel>::MergeSimilarSurfels(ITMSur
   for(int locId = 0; locId < pixelCount; ++locId)
   {
     // Set the entry indexed by the value at that entry (if any) to 0 (to avoid the a <- b, b <- c problem).
+    // TODO
   }
 
   // For each entry in the merge map:
@@ -188,7 +187,8 @@ void ITMSurfelSceneReconstructionEngine_CPU<TSurfel>::MergeSimilarSurfels(ITMSur
 #endif
   for(int locId = 0; locId < pixelCount; ++locId)
   {
-    // If the value at that entry indicates a merge, perform it and clear the entry.
+    // If the value at that entry indicates a merge, perform it, mark the merge source for removal and clear the entry.
+    // TODO
   }
 }
 
