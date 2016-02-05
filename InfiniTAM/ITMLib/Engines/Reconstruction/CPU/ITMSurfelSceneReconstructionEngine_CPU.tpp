@@ -156,6 +156,14 @@ void ITMSurfelSceneReconstructionEngine_CPU<TSurfel>::MarkBadSurfels(ITMSurfelSc
 template <typename TSurfel>
 void ITMSurfelSceneReconstructionEngine_CPU<TSurfel>::MergeSimilarSurfels(ITMSurfelScene<TSurfel> *scene) const
 {
+  // For each surfel in the index map:
+    // For each of its neighbours that has a higher index:
+      // If either the surfel or its neighbour has been updated this frame (has a non-null entry in the correspondence map) and is stable:
+        // Check the positions and normals and set the lower-indexed entry in the merge map to the higher index if the check passes.
+  // For each entry in the merge map:
+    // Set the entry indexed by the value at that entry (if any) to 0 (to avoid the a <- b, b <- c problem).
+  // For each entry in the merge map:
+    // If the value at that entry indicates a merge, perform it.
   // TODO
 }
 
