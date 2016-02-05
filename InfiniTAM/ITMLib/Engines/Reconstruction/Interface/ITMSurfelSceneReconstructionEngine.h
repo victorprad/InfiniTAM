@@ -20,6 +20,9 @@ namespace ITMLib
     /** TODO */
     ORUtils::MemoryBlock<unsigned int> *m_correspondenceMapMB;
 
+    /** TODO */
+    ORUtils::MemoryBlock<unsigned int> *m_mergeMapMB;
+
     /** A mask whose values denote whether the corresponding points in the vertex map need to be added to the scene as new points. */
     ORUtils::MemoryBlock<unsigned short> *m_newPointsMaskMB;
 
@@ -94,9 +97,10 @@ namespace ITMLib
      *
      * Surfels that need to be removed as a result of the merging process will be removed alongside any bad surfels that already been marked.
      *
-     * \param scene The surfel scene.
+     * \param scene       The surfel scene.
+     * \param renderState The render state corresponding to the camera from which the scene is being viewed.
      */
-    virtual void MergeSimilarSurfels(ITMSurfelScene<TSurfel> *scene) const = 0;
+    virtual void MergeSimilarSurfels(ITMSurfelScene<TSurfel> *scene, const ITMSurfelRenderState *renderState) const = 0;
 
     /**
      * \brief TODO
