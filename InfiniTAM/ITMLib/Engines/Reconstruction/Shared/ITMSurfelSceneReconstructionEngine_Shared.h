@@ -61,6 +61,65 @@ inline Vector3u compute_colour(const Vector3f& v, const Matrix4f& depthToRGB, co
 /**
  * \brief TODO
  */
+template <typename TSurfel>
+_CPU_AND_GPU_CODE_
+inline TSurfel make_surfel(int locId, const Matrix4f& T, const Vector4f *vertexMap, const Vector3f *normalMap, const float *radiusMap, const Vector4u *colourMap,
+                           int depthMapWidth, int depthMapHeight, int colourMapWidth, int colourMapHeight, const Matrix4f& depthToRGB,
+                           const Vector4f& projParamsRGB, bool useGaussianSampleConfidence, float gaussianConfidenceSigma, int timestamp)
+{
+  TSurfel surfel;
+  const Vector3f v = vertexMap[locId].toVector3();
+  surfel.position = transform_point(T, v);
+  surfel.normal = transform_normal(T, normalMap[locId]);
+  surfel.radius = radiusMap[locId];
+  SurfelColourManipulator<TSurfel::hasColourInformation>::write(surfel, compute_colour(v, depthToRGB, projParamsRGB, colourMap, colourMapWidth, colourMapHeight));
+  surfel.confidence = useGaussianSampleConfidence ? calculate_gaussian_sample_confidence(locId, depthMapWidth, depthMapHeight, gaussianConfidenceSigma) : 1.0f;
+  surfel.timestamp = timestamp;
+  return surfel;
+}
+
+/**
+ * \brief Calculates the result of merging one surfel into another.
+ *
+ * \param target      The target surfel.
+ * \param source      The source surfel.
+ * \param deltaRadius The maximum fraction by which the source surfel can have a larger radius than the target surfel if a full merge is to occur.
+ * \return            The surfel resulting from the merge.
+ */
+template <typename TSurfel>
+_CPU_AND_GPU_CODE_
+inline TSurfel merge_surfels(const TSurfel& target, const TSurfel& source, float deltaRadius)
+{
+  TSurfel result = target;
+  const float confidence = result.confidence + source.confidence;
+
+  if(source.radius <= (1.0f + deltaRadius) * result.radius)
+  {
+#if DEBUG_CORRESPONDENCES
+    result.newPosition = source.position;
+    result.oldPosition = result.position;
+#endif
+
+    result.position = (result.confidence * result.position + source.confidence * source.position) / confidence;
+    result.normal = (result.confidence * result.normal + source.confidence * source.normal) / confidence;
+    result.normal /= length(result.normal);
+    result.radius = (result.confidence * result.radius + source.confidence * source.radius) / confidence;
+
+    Vector3u resultColour = SurfelColourManipulator<TSurfel::hasColourInformation>::read(result);
+    Vector3u sourceColour = SurfelColourManipulator<TSurfel::hasColourInformation>::read(source);
+    Vector3u colour = ((result.confidence * resultColour.toFloat() + source.confidence * sourceColour.toFloat()) / confidence).toUChar();
+    SurfelColourManipulator<TSurfel::hasColourInformation>::write(result, colour);
+  }
+
+  result.confidence = confidence;
+  if(source.timestamp > result.timestamp) result.timestamp = source.timestamp;
+
+  return result;
+}
+
+/**
+ * \brief TODO
+ */
 _CPU_AND_GPU_CODE_
 inline Vector3f transform_normal(const Matrix4f& T, const Vector3f& n)
 {
@@ -111,18 +170,10 @@ inline void add_new_surfel(int locId, const Matrix4f& T, int timestamp, const un
 {
   if(newPointsMask[locId])
   {
-    const Vector3f v = vertexMap[locId].toVector3();
-
-    TSurfel surfel;
-    surfel.position = transform_point(T, v);
-    surfel.normal = transform_normal(T, normalMap[locId]);
-    surfel.radius = radiusMap[locId];
-    surfel.confidence = useGaussianSampleConfidence ? calculate_gaussian_sample_confidence(locId, depthMapWidth, depthMapHeight, gaussianConfidenceSigma) : 1.0f;
-    surfel.timestamp = timestamp;
-
-    // Store a colour if the surfel type can support it.
-    Vector3u colour = compute_colour(v, depthToRGB, projParamsRGB, colourMap, colourMapWidth, colourMapHeight);
-    SurfelColourManipulator<TSurfel::hasColourInformation>::write(surfel, colour);
+    TSurfel surfel = make_surfel<TSurfel>(
+      locId, T, vertexMap, normalMap, radiusMap, colourMap, depthMapWidth, depthMapHeight, colourMapWidth, colourMapHeight,
+      depthToRGB, projParamsRGB, useGaussianSampleConfidence, gaussianConfidenceSigma, timestamp
+    );
 
     newSurfels[newPointsPrefixSum[locId]] = surfel;
   }
@@ -338,16 +389,11 @@ inline void fuse_matched_point(int locId, const unsigned int *correspondenceMap,
   int surfelIndex = correspondenceMap[locId] - 1;
   if(surfelIndex >= 0)
   {
-    TSurfel newSurfel;
-    const Vector3f v = vertexMap[locId].toVector3();
-    newSurfel.position = transform_point(T, v);
-    newSurfel.normal = transform_normal(T, normalMap[locId]);
-    newSurfel.radius = radiusMap[locId];
-    SurfelColourManipulator<TSurfel::hasColourInformation>::write(newSurfel, compute_colour(v, depthToRGB, projParamsRGB, colourMap, colourMapWidth, colourMapHeight));
-    newSurfel.confidence = useGaussianSampleConfidence ? calculate_gaussian_sample_confidence(locId, depthMapWidth, depthMapHeight, gaussianConfidenceSigma) : 1.0f;
-    newSurfel.timestamp = timestamp;
-
     TSurfel surfel = surfels[surfelIndex];
+    TSurfel newSurfel = make_surfel<TSurfel>(
+      locId, T, vertexMap, normalMap, radiusMap, colourMap, depthMapWidth, depthMapHeight, colourMapWidth, colourMapHeight,
+      depthToRGB, projParamsRGB, useGaussianSampleConfidence, gaussianConfidenceSigma, timestamp
+    );
     surfel = merge_surfels(surfel, newSurfel, deltaRadius);
     surfels[surfelIndex] = surfel;
   }
@@ -366,45 +412,6 @@ inline void mark_for_removal_if_unstable(int surfelId, const TSurfel *surfels, i
   {
     surfelRemovalMask[surfelId] = 1;
   }
-}
-
-/**
- * \brief Calculates the result of merging one surfel into another.
- *
- * \param target      The target surfel.
- * \param source      The source surfel.
- * \param deltaRadius The maximum fraction by which the source surfel can have a larger radius than the target surfel if a full merge is to occur.
- * \return            The surfel resulting from the merge.
- */
-template <typename TSurfel>
-_CPU_AND_GPU_CODE_
-inline TSurfel merge_surfels(const TSurfel& target, const TSurfel& source, float deltaRadius)
-{
-  TSurfel result = target;
-  const float confidence = result.confidence + source.confidence;
-
-  if(source.radius <= (1.0f + deltaRadius) * result.radius)
-  {
-#if DEBUG_CORRESPONDENCES
-    result.newPosition = source.position;
-    result.oldPosition = result.position;
-#endif
-
-    result.position = (result.confidence * result.position + source.confidence * source.position) / confidence;
-    result.normal = (result.confidence * result.normal + source.confidence * source.normal) / confidence;
-    result.normal /= length(result.normal);
-    result.radius = (result.confidence * result.radius + source.confidence * source.radius) / confidence;
-
-    Vector3u resultColour = SurfelColourManipulator<TSurfel::hasColourInformation>::read(result);
-    Vector3u sourceColour = SurfelColourManipulator<TSurfel::hasColourInformation>::read(source);
-    Vector3u colour = ((result.confidence * resultColour.toFloat() + source.confidence * sourceColour.toFloat()) / confidence).toUChar();
-    SurfelColourManipulator<TSurfel::hasColourInformation>::write(result, colour);
-  }
-
-  result.confidence = confidence;
-  if(source.timestamp > result.timestamp) result.timestamp = source.timestamp;
-
-  return result;
 }
 
 /**
