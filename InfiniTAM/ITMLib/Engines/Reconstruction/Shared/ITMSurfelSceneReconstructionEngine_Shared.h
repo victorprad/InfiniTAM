@@ -211,9 +211,9 @@ inline void calculate_vertex_position(int locId, int width, const ITMIntrinsics&
  * \brief TODO
  */
 _CPU_AND_GPU_CODE_
-inline void clear_merge_source(int locId, unsigned int *mergeSourceMap)
+inline void clear_merge_target(int locId, unsigned int *mergeTargetMap)
 {
-  mergeSourceMap[locId] = 0;
+  mergeTargetMap[locId] = 0;
 }
 
 /**
@@ -281,7 +281,7 @@ inline void find_corresponding_surfel(int locId, const Matrix4f& invT, const flo
 template <typename TSurfel>
 _CPU_AND_GPU_CODE_
 inline void find_mergeable_surfel(int locId, const unsigned int *indexImage, int indexImageWidth, int indexImageHeight, const unsigned int *correspondenceMap, const TSurfel *surfels,
-                                  float stableSurfelConfidence, float maxMergeDist, float maxMergeAngle, unsigned int *mergeSourceMap)
+                                  float stableSurfelConfidence, float maxMergeDist, float maxMergeAngle, unsigned int *mergeTargetMap)
 {
   // Look up the surfel at the current location. If there isn't one, early out.
   int surfelIndex = indexImage[locId] - 1;
@@ -320,8 +320,8 @@ inline void find_mergeable_surfel(int locId, const unsigned int *indexImage, int
     }
   }
 
-  // If there was a best merge source, write it into the merge source map.
-  mergeSourceMap[locId] = bestMergeSource >= 0 ? bestMergeSource + 1 : 0;
+  // If there was a best merge source, record the current location as its merge target.
+  if(bestMergeSource != -1) mergeTargetMap[bestMergeSource] = locId + 1;
 }
 
 /**
@@ -388,21 +388,20 @@ inline void mark_for_removal_if_unstable(int surfelId, const TSurfel *surfels, i
 }
 
 /**
- * \brief Prevents the source of any merge at the specified location in the merge source map from being the target of a separate merge.
+ * \brief Prevents the target of any merge at the specified location in the merge target map from being the source of a separate merge.
  *
- * In other words, if surfel b is due to be merged into surfel a, prevent any other surfel c from being merged into b, since that will
- * cease to exist after being merged into a.
+ * In other words, if surfel a is due to be merged into surfel b, prevent b from merging into any other surfel c.
  *
- * \param locId           The location in the merge source map for which to prevent a merge chain.
- * \param mergeSourceMap  The merge source map.
+ * \param locId           The location in the merge target map for which to prevent a merge chain.
+ * \param mergeTargetMap  The merge target map.
  */
 _CPU_AND_GPU_CODE_
-inline void prevent_merge_chain(int locId, unsigned int *mergeSourceMap)
+inline void prevent_merge_chain(int locId, unsigned int *mergeTargetMap)
 {
-  int mergeSource = mergeSourceMap[locId] - 1;
-  if(mergeSource >= 0)
+  int mergeTarget = mergeTargetMap[locId] - 1;
+  if(mergeTarget >= 0)
   {
-    mergeSourceMap[mergeSource] = 0;
+    mergeTargetMap[mergeTarget] = 0;
   }
 }
 

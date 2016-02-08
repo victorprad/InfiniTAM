@@ -160,19 +160,19 @@ void ITMSurfelSceneReconstructionEngine_CPU<TSurfel>::MergeSimilarSurfels(ITMSur
   const unsigned int *indexImage = renderState->GetIndexImage()->GetData(MEMORYDEVICE_CPU);
   const int indexImageHeight = renderState->GetIndexImage()->noDims.y;
   const int indexImageWidth = renderState->GetIndexImage()->noDims.x;
-  unsigned int *mergeSourceMap = this->m_mergeSourceMapMB->GetData(MEMORYDEVICE_CPU);
+  unsigned int *mergeTargetMap = this->m_mergeTargetMapMB->GetData(MEMORYDEVICE_CPU);
   const int pixelCount = static_cast<int>(renderState->GetIndexImage()->dataSize);
   const ITMSurfelSceneParams& sceneParams = scene->GetParams();
   const TSurfel *surfels = scene->GetSurfels()->GetData(MEMORYDEVICE_CPU);
   unsigned int *surfelRemovalMask = this->m_surfelRemovalMaskMB->GetData(MEMORYDEVICE_CPU);
 
-  // Clear the merge source map.
+  // Clear the merge target map.
 #ifdef WITH_OPENMP
   //#pragma omp parallel for
 #endif
   for(int locId = 0; locId < pixelCount; ++locId)
   {
-    clear_merge_source(locId, mergeSourceMap);
+    clear_merge_target(locId, mergeTargetMap);
   }
 
   // Find pairs of surfels that can be merged.
@@ -184,7 +184,7 @@ void ITMSurfelSceneReconstructionEngine_CPU<TSurfel>::MergeSimilarSurfels(ITMSur
     find_mergeable_surfel(
       locId, indexImage, indexImageWidth, indexImageHeight, correspondenceMap, surfels,
       sceneParams.stableSurfelConfidence, sceneParams.maxMergeDist, sceneParams.maxMergeAngle,
-      mergeSourceMap
+      mergeTargetMap
     );
   }
 
@@ -194,10 +194,10 @@ void ITMSurfelSceneReconstructionEngine_CPU<TSurfel>::MergeSimilarSurfels(ITMSur
 #endif
   for(int locId = 0; locId < pixelCount; ++locId)
   {
-    prevent_merge_chain(locId, mergeSourceMap);
+    prevent_merge_chain(locId, mergeTargetMap);
   }
 
-  // For each entry in the merge source map:
+  // For each entry in the merge target map:
 #ifdef WITH_OPENMP
   //#pragma omp parallel for
 #endif
