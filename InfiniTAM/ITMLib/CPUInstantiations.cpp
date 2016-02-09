@@ -19,9 +19,9 @@ namespace ITMLib
 
 template class ITMBasicEngine<ITMVoxel, ITMVoxelIndex>;
 template class ITMDenseMapper<ITMVoxel, ITMVoxelIndex>;
-template class ITMMultiSceneManager_instance<ITMVoxel, ITMVoxelIndex>;
 template class ITMMeshingEngine_CPU<ITMVoxel, ITMVoxelIndex>;
 template class ITMMultiEngine<ITMVoxel, ITMVoxelIndex>;
+template class ITMMultiSceneManager_instance<ITMVoxel, ITMVoxelIndex>;
 template class ITMRenTracker<ITMVoxel, ITMVoxelIndex>;
 template class ITMRenTracker_CPU<ITMVoxel, ITMVoxelIndex>;
 template class ITMSceneReconstructionEngine_CPU<ITMVoxel, ITMVoxelIndex>;
