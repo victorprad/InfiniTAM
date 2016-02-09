@@ -163,7 +163,7 @@ void ITMSurfelSceneReconstructionEngine_CPU<TSurfel>::MergeSimilarSurfels(ITMSur
   unsigned int *mergeTargetMap = this->m_mergeTargetMapMB->GetData(MEMORYDEVICE_CPU);
   const int pixelCount = static_cast<int>(renderState->GetIndexImage()->dataSize);
   const ITMSurfelSceneParams& sceneParams = scene->GetParams();
-  const TSurfel *surfels = scene->GetSurfels()->GetData(MEMORYDEVICE_CPU);
+  TSurfel *surfels = scene->GetSurfels()->GetData(MEMORYDEVICE_CPU);
   unsigned int *surfelRemovalMask = this->m_surfelRemovalMaskMB->GetData(MEMORYDEVICE_CPU);
 
   // Clear the merge target map.
@@ -197,14 +197,13 @@ void ITMSurfelSceneReconstructionEngine_CPU<TSurfel>::MergeSimilarSurfels(ITMSur
     prevent_merge_chain(locId, mergeTargetMap);
   }
 
-  // For each entry in the merge target map:
+  // Merge the relevant surfels.
 #ifdef WITH_OPENMP
   //#pragma omp parallel for
 #endif
   for(int locId = 0; locId < pixelCount; ++locId)
   {
-    // If the value at that entry indicates a merge, perform it, mark the merge source for removal and clear the entry.
-    // TODO
+    perform_surfel_merge(locId, mergeTargetMap, surfels, surfelRemovalMask, indexImage);
   }
 }
 

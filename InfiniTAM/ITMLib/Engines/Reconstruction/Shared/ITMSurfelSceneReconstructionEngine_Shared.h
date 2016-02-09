@@ -415,6 +415,30 @@ inline void mark_for_removal_if_unstable(int surfelId, const TSurfel *surfels, i
 }
 
 /**
+ * \brief TODO
+ */
+template <typename TSurfel>
+_CPU_AND_GPU_CODE_
+inline void perform_surfel_merge(int locId, unsigned int *mergeTargetMap, TSurfel *surfels, unsigned int *surfelRemovalMask, const unsigned int *indexImage)
+{
+  // If there's no target for the merge, early out.
+  int mergeTarget = mergeTargetMap[locId] - 1;
+  if(mergeTarget == -1) return;
+
+  // Look up the source and target surfels. They should always exist, but if they don't then ignore it and early out.
+  int sourceSurfelIndex = indexImage[locId] - 1, targetSurfelIndex = indexImage[mergeTarget] - 1;
+  if(sourceSurfelIndex == -1 || targetSurfelIndex == -1) return;
+
+  // Merge the source surfel into the target surfel.
+  TSurfel source = surfels[sourceSurfelIndex], target = surfels[targetSurfelIndex];
+  TSurfel merged = merge_surfels(target, source, static_cast<float>(INT_MAX));
+  surfels[targetSurfelIndex] = merged;
+
+  // Mark the source surfel for removal.
+  surfelRemovalMask[sourceSurfelIndex] = 1;
+}
+
+/**
  * \brief Prevents the target of any merge at the specified location in the merge target map from being the source of a separate merge.
  *
  * In other words, if surfel a is due to be merged into surfel b, prevent b from merging into any other surfel c.

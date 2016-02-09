@@ -139,6 +139,16 @@ __global__ void ck_mark_for_removal_if_unstable(int surfelCount, const TSurfel *
   }
 }
 
+template <typename TSurfel>
+__global__ void ck_perform_surfel_merge(int pixelCount, unsigned int *mergeTargetMap, TSurfel *surfels, unsigned int *surfelRemovalMask, const unsigned int *indexImage)
+{
+  int locId = threadIdx.x + blockDim.x * blockIdx.x;
+  if(locId < pixelCount)
+  {
+    perform_surfel_merge(locId, mergeTargetMap, surfels, surfelRemovalMask, indexImage);
+  }
+}
+
 __global__ void ck_prevent_merge_chain(int pixelCount, unsigned int *mergeTargetMap)
 {
   int locId = threadIdx.x + blockDim.x * blockIdx.x;
@@ -321,7 +331,8 @@ void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::MergeSimilarSurfels(ITMSu
   unsigned int *mergeTargetMap = this->m_mergeTargetMapMB->GetData(MEMORYDEVICE_CUDA);
   const int pixelCount = static_cast<int>(renderState->GetIndexImage()->dataSize);
   const ITMSurfelSceneParams& sceneParams = scene->GetParams();
-  const TSurfel *surfels = scene->GetSurfels()->GetData(MEMORYDEVICE_CUDA);
+  TSurfel *surfels = scene->GetSurfels()->GetData(MEMORYDEVICE_CUDA);
+  unsigned int *surfelRemovalMask = this->m_surfelRemovalMaskMB->GetData(MEMORYDEVICE_CUDA);
 
   // Clear the merge target map.
   int threadsPerBlock = 256;
@@ -350,7 +361,8 @@ void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::MergeSimilarSurfels(ITMSu
   ORcudaKernelCheck;
 
   // Merge the relevant surfels.
-  // TODO
+  ck_perform_surfel_merge<<<numBlocks,threadsPerBlock>>>(pixelCount, mergeTargetMap, surfels, surfelRemovalMask, indexImage);
+  ORcudaKernelCheck;
 }
 
 template <typename TSurfel>
