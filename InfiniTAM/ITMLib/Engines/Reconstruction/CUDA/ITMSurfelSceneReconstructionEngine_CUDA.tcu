@@ -71,6 +71,15 @@ __global__ void ck_calculate_vertex_position(int pixelCount, int width, ITMIntri
   }
 }
 
+__global__ void ck_clear_merge_target(int pixelCount, unsigned int *mergeTargetMap)
+{
+  int locId = threadIdx.x + blockDim.x * blockIdx.x;
+  if(locId < pixelCount)
+  {
+    clear_merge_target(locId, mergeTargetMap);
+  }
+}
+
 __global__ void ck_clear_removal_mask(int surfelCount, unsigned int *surfelRemovalMask)
 {
   int surfelId = threadIdx.x + blockDim.x * blockIdx.x;
@@ -88,6 +97,17 @@ __global__ void ck_find_corresponding_surfel(int pixelCount, Matrix4f invT, cons
   if(locId < pixelCount)
   {
     find_corresponding_surfel(locId, invT, depthMap, depthMapWidth, normalMap, indexMap, supersamplingFactor, surfels, correspondenceMap, newPointsMask);
+  }
+}
+
+template <typename TSurfel>
+__global__ void ck_find_mergeable_surfel(int pixelCount, const unsigned int *indexImage, int indexImageWidth, int indexImageHeight, const unsigned int *correspondenceMap,
+                                         const TSurfel *surfels, float stableSurfelConfidence, float maxMergeDist, float maxMergeAngle, unsigned int *mergeTargetMap)
+{
+  int locId = threadIdx.x + blockDim.x * blockIdx.x;
+  if(locId < pixelCount)
+  {
+    find_mergeable_surfel(locId, indexImage, indexImageWidth, indexImageHeight, correspondenceMap, surfels, stableSurfelConfidence, maxMergeDist, maxMergeAngle, mergeTargetMap);
   }
 }
 
@@ -116,6 +136,15 @@ __global__ void ck_mark_for_removal_if_unstable(int surfelCount, const TSurfel *
   if(surfelId < surfelCount)
   {
     mark_for_removal_if_unstable(surfelId, surfels, timestamp, stableSurfelConfidence, unstableSurfelPeriod, surfelRemovalMask);
+  }
+}
+
+__global__ void ck_prevent_merge_chain(int pixelCount, unsigned int *mergeTargetMap)
+{
+  int locId = threadIdx.x + blockDim.x * blockIdx.x;
+  if(locId < pixelCount)
+  {
+    prevent_merge_chain(locId, mergeTargetMap);
   }
 }
 
@@ -285,6 +314,42 @@ void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::MarkBadSurfels(ITMSurfelS
 template <typename TSurfel>
 void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::MergeSimilarSurfels(ITMSurfelScene<TSurfel> *scene, const ITMSurfelRenderState *renderState) const
 {
+  const unsigned int *correspondenceMap = this->m_correspondenceMapMB->GetData(MEMORYDEVICE_CUDA);
+  const unsigned int *indexImage = renderState->GetIndexImage()->GetData(MEMORYDEVICE_CUDA);
+  const int indexImageHeight = renderState->GetIndexImage()->noDims.y;
+  const int indexImageWidth = renderState->GetIndexImage()->noDims.x;
+  unsigned int *mergeTargetMap = this->m_mergeTargetMapMB->GetData(MEMORYDEVICE_CUDA);
+  const int pixelCount = static_cast<int>(renderState->GetIndexImage()->dataSize);
+  const ITMSurfelSceneParams& sceneParams = scene->GetParams();
+  const TSurfel *surfels = scene->GetSurfels()->GetData(MEMORYDEVICE_CUDA);
+
+  // Clear the merge target map.
+  int threadsPerBlock = 256;
+  int numBlocks = (pixelCount + threadsPerBlock - 1) / threadsPerBlock;
+
+  ck_clear_merge_target<<<numBlocks,threadsPerBlock>>>(pixelCount, mergeTargetMap);
+  ORcudaKernelCheck;
+
+  // Find pairs of surfels that can be merged.
+  ck_find_mergeable_surfel<<<numBlocks,threadsPerBlock>>>(
+    pixelCount,
+    indexImage,
+    indexImageWidth,
+    indexImageHeight,
+    correspondenceMap,
+    surfels,
+    sceneParams.stableSurfelConfidence,
+    sceneParams.maxMergeDist,
+    sceneParams.maxMergeAngle,
+    mergeTargetMap
+  );
+  ORcudaKernelCheck;
+
+  // Prevent any merge chains.
+  ck_prevent_merge_chain<<<numBlocks,threadsPerBlock>>>(pixelCount, mergeTargetMap);
+  ORcudaKernelCheck;
+
+  // Merge the relevant surfels.
   // TODO
 }
 
