@@ -81,19 +81,19 @@ inline TSurfel make_surfel(int locId, const Matrix4f& T, const Vector4f *vertexM
 /**
  * \brief Calculates the result of merging one surfel into another.
  *
- * \param target      The target surfel.
- * \param source      The source surfel.
- * \param deltaRadius The maximum fraction by which the source surfel can have a larger radius than the target surfel if a full merge is to occur.
- * \return            The surfel resulting from the merge.
+ * \param target                The target surfel.
+ * \param source                The source surfel.
+ * \param shouldMergeProperties Whether or not to merge the surfels' properties (position, normal, radius and colour) rather than just the confidence values and timestamps.
+ * \return                      The surfel resulting from the merge.
  */
 template <typename TSurfel>
 _CPU_AND_GPU_CODE_
-inline TSurfel merge_surfels(const TSurfel& target, const TSurfel& source, float deltaRadius)
+inline TSurfel merge_surfels(const TSurfel& target, const TSurfel& source, bool shouldMergeProperties)
 {
   TSurfel result = target;
   const float confidence = result.confidence + source.confidence;
 
-  if(source.radius <= (1.0f + deltaRadius) * result.radius)
+  if(shouldMergeProperties)
   {
 #if DEBUG_CORRESPONDENCES
     result.newPosition = source.position;
@@ -394,7 +394,10 @@ inline void fuse_matched_point(int locId, const unsigned int *correspondenceMap,
       locId, T, vertexMap, normalMap, radiusMap, colourMap, depthMapWidth, depthMapHeight, colourMapWidth, colourMapHeight,
       depthToRGB, projParamsRGB, useGaussianSampleConfidence, gaussianConfidenceSigma, timestamp
     );
-    surfel = merge_surfels(surfel, newSurfel, deltaRadius);
+
+    bool shouldMergeProperties = newSurfel.radius <= (1.0f + deltaRadius) * surfel.radius;
+    surfel = merge_surfels(surfel, newSurfel, shouldMergeProperties);
+
     surfels[surfelIndex] = surfel;
   }
 }
@@ -430,8 +433,9 @@ inline void perform_surfel_merge(int locId, unsigned int *mergeTargetMap, TSurfe
   if(sourceSurfelIndex == -1 || targetSurfelIndex == -1) return;
 
   // Merge the source surfel into the target surfel.
+  bool shouldMergeProperties = true;
   TSurfel source = surfels[sourceSurfelIndex], target = surfels[targetSurfelIndex];
-  TSurfel merged = merge_surfels(target, source, static_cast<float>(INT_MAX));
+  TSurfel merged = merge_surfels(target, source, shouldMergeProperties);
   surfels[targetSurfelIndex] = merged;
 
   // Mark the source surfel for removal.
