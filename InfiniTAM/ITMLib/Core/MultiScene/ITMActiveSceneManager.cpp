@@ -19,7 +19,7 @@ static const int N_maxblocknum = 10000;
 static const int N_originalblocks = 2000;
 static const float F_originalBlocksThreshold = 0.1f;
 
-ITMActiveSceneManager::ITMActiveSceneManager(ITMLocalSceneManager *_localSceneManager)
+ITMActiveSceneManager::ITMActiveSceneManager(ITMMultiSceneManager *_localSceneManager)
 {
 	localSceneManager = _localSceneManager;
 }
@@ -347,11 +347,24 @@ int ITMActiveSceneManager::CheckSuccess_newlink(int dataID, int primaryDataID, i
 	const ActiveDataDescriptor & link = activeData[dataID];
 
 	// take previous data from scene relations into account!
-	ORUtils::SE3Pose previousEstimate;
-	int previousEstimate_weight = 0;
+	//ORUtils::SE3Pose previousEstimate;
+	//int previousEstimate_weight = 0;
 	int primarySceneIndex = -1;
 	if (primaryDataID >= 0) primarySceneIndex = activeData[primaryDataID].sceneIndex;
-	localSceneManager->getRelation(primarySceneIndex, link.sceneIndex, &previousEstimate, &previousEstimate_weight);
+	const ITMPoseConstraint & previousInformation = localSceneManager->getRelation(primarySceneIndex, link.sceneIndex);
+	/* hmm... do we want the "Estimate" (i.e. the pose corrected by pose
+	   graph optimization) or the "Observations" (i.e. the accumulated
+	   poses seen in previous frames?
+	   This should only really make a difference, if there is a large
+	   disagreement between the two, in which case one might argue that
+	   most likely something went wrong with a loop-closure, and we are
+	   not really sure the "Estimate" is true or just based on an erroneous
+	   loop closure. We therefore want to be consistent with previous
+	   observations not estimations...
+	*/
+	//ORUtils::SE3Pose previousEstimate = previousInformation.GetEstimate();
+	ORUtils::SE3Pose previousEstimate = previousInformation.GetAccumulatedObservations();
+	int previousEstimate_weight = previousInformation.GetNumAccumulatedObservations();
 
 	int inliers_local;
 	ORUtils::SE3Pose inlierPose_local;
@@ -378,11 +391,22 @@ void ITMActiveSceneManager::AcceptNewLink(int fromData, int toData, const ORUtil
 	int fromSceneIdx = activeData[fromData].sceneIndex;
 	int toSceneIdx = activeData[toData].sceneIndex;
 
-	localSceneManager->addRelation(fromSceneIdx, toSceneIdx, pose, weight);
+	//localSceneManager->addRelation(fromSceneIdx, toSceneIdx, pose, weight);
+	{
+		ITMPoseConstraint & c = localSceneManager->getRelation(fromSceneIdx, toSceneIdx);
+		c.AddObservation(pose, weight);
+	}
+	{
+		ORUtils::SE3Pose invPose(pose.GetInvM());
+		ITMPoseConstraint & c = localSceneManager->getRelation(toSceneIdx, fromSceneIdx);
+		c.AddObservation(invPose, weight);
+	}
 }
 
-void ITMActiveSceneManager::maintainActiveData(void)
+bool ITMActiveSceneManager::maintainActiveData(void)
 {
+	bool scenegraphChanged = false;
+
 	int primaryDataIdx = findPrimaryDataIdx();
 	int moveToDataIdx = -1;
 	for (int i = 0; i < (int)activeData.size(); ++i)
@@ -414,6 +438,7 @@ void ITMActiveSceneManager::maintainActiveData(void)
 				link.constraints.clear();
 				link.trackingAttempts = 0;
 				if (shouldMovePrimaryScene(i, moveToDataIdx, primaryDataIdx)) moveToDataIdx = i;
+				scenegraphChanged = true;
 			}
 			else if (success == -1)
 			{
@@ -460,4 +485,6 @@ void ITMActiveSceneManager::maintainActiveData(void)
 
 	// NOTE: this has to be done AFTER removing any previous new scene
 	if (shouldStartNewArea()) initiateNewScene();
+
+	return scenegraphChanged;
 }

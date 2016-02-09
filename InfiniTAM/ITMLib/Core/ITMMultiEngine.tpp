@@ -47,7 +47,7 @@ ITMMultiEngine<TVoxel,TIndex>::ITMMultiEngine(const ITMLibSettings *settings, co
 	trackedImageSize = trackingController->GetTrackedImageSize(imgSize_rgb, imgSize_d);
 
 	freeviewSceneIdx = 0;
-	sceneManager = new ITMLocalSceneManager_instance<TVoxel,TIndex>(settings, visualisationEngine, denseMapper, trackedImageSize);
+	sceneManager = new ITMMultiSceneManager_instance<TVoxel,TIndex>(settings, visualisationEngine, denseMapper, trackedImageSize);
 	activeDataManager = new ITMActiveSceneManager(sceneManager);
 	activeDataManager->initiateNewScene(true);
 

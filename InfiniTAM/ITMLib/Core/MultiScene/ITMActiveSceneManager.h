@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "ITMLocalSceneManager.h"
+#include "ITMMultiSceneManager.h"
 
 namespace ITMLib
 {
@@ -22,7 +22,7 @@ namespace ITMLib
 			int trackingAttempts;
 		};
 
-		ITMLocalSceneManager *localSceneManager;
+		ITMMultiSceneManager *localSceneManager;
 		std::vector<ActiveDataDescriptor> activeData;
 
 		int CheckSuccess_relocalisation(int dataID) const;
@@ -38,7 +38,8 @@ namespace ITMLib
 		int initiateNewLink(int sceneID, const ORUtils::SE3Pose & pose, bool isRelocalisation);
 
 		void recordTrackingResult(int dataID, int trackingSuccess, bool primaryTrackingSuccess);
-		void maintainActiveData(void);
+		// return whether or not the scene graph has changed
+		bool maintainActiveData(void);
 
 		int findPrimaryDataIdx(void) const;
 		int findPrimarySceneIdx(void) const;
@@ -53,7 +54,7 @@ namespace ITMLib
 		SceneActivity getSceneType(int dataIdx) const
 		{ return activeData[dataIdx].type; }
 
-		ITMActiveSceneManager(ITMLocalSceneManager *localSceneManager);
+		ITMActiveSceneManager(ITMMultiSceneManager *localSceneManager);
 		~ITMActiveSceneManager(void) {}
 	};
 }

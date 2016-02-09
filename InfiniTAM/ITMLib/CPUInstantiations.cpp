@@ -4,8 +4,8 @@
 #include "Core/ITMBasicEngine.tpp"
 #include "Core/ITMDenseMapper.tpp"
 #include "Core/ITMDenseSurfelMapper.tpp"
-#include "Core/ITMLocalSceneManager.tpp"
 #include "Core/ITMMultiEngine.tpp"
+#include "Core/MultiScene/ITMMultiSceneManager.tpp"
 #include "Engines/Meshing/CPU/ITMMeshingEngine_CPU.tpp"
 #include "Engines/Reconstruction/ITMSurfelSceneReconstructionEngineFactory.tpp"
 #include "Engines/Reconstruction/CPU/ITMSceneReconstructionEngine_CPU.tpp"
@@ -28,9 +28,9 @@ template class ITMBasicEngine<ITMVoxel, ITMVoxelIndex>;
 template class ITMDenseMapper<ITMVoxel, ITMVoxelIndex>;
 template class ITMDenseSurfelMapper<ITMSurfel>;
 template class ITMDenseSurfelMapper<ITMSurfel_rgb>;
-template class ITMLocalSceneManager_instance<ITMVoxel, ITMVoxelIndex>;
 template class ITMMeshingEngine_CPU<ITMVoxel, ITMVoxelIndex>;
 template class ITMMultiEngine<ITMVoxel, ITMVoxelIndex>;
+template class ITMMultiSceneManager_instance<ITMVoxel, ITMVoxelIndex>;
 template class ITMRenTracker<ITMVoxel, ITMVoxelIndex>;
 template class ITMRenTracker_CPU<ITMVoxel, ITMVoxelIndex>;
 template class ITMSceneReconstructionEngine_CPU<ITMVoxel, ITMVoxelIndex>;

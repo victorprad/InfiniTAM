@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include "ITMLocalScene.h"
 #include "ITMMainEngine.h"
 #include "ITMTrackingController.h"
 #include "../Engines/LowLevel/Interface/ITMLowLevelEngine.h"
@@ -11,7 +10,8 @@
 #include "../../LCDLib/LoopClosureDetector.h"
 #include "../../LCDLib/PoseDatabase.h"
 
-#include "ITMActiveSceneManager.h"
+#include "MultiScene/ITMLocalScene.h"
+#include "MultiScene/ITMActiveSceneManager.h"
 
 #include <vector>
 
@@ -47,7 +47,7 @@ namespace ITMLib
 
 /*		std::vector<ITMLocalScene<ITMVoxel,ITMVoxelIndex>*> allData;
 		std::vector<ActiveDataDescriptor> activeData;*/
-		ITMLocalSceneManager_instance<TVoxel,TIndex> *sceneManager;
+		ITMMultiSceneManager_instance<TVoxel,TIndex> *sceneManager;
 		ITMActiveSceneManager *activeDataManager;
 
 		Vector2i trackedImageSize;
