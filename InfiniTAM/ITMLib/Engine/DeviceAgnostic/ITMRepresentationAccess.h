@@ -345,7 +345,7 @@ struct VoxelColorReader<false,TVoxel,TIndex> {
 	{ return Vector4f(0.0f,0.0f,0.0f,0.0f); }
 
 	_CPU_AND_GPU_CODE_ static Vector4f uninterpolate(const CONSTPTR(TVoxel) *voxelData, const CONSTPTR(typename TIndex::IndexData) *voxelIndex,
-		const THREADPTR(Vector3f) & point)
+		const THREADPTR(Vector3i) & point)
 	{
 		return Vector4f(0.0f, 0.0f, 0.0f, 0.0f);
 	}
