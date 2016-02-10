@@ -55,7 +55,7 @@ void ITMSurfelSceneReconstructionEngine_CPU<TSurfel>::AddNewSurfels(ITMSurfelSce
       locId, T, this->m_timestamp, newPointsMask, newPointsPrefixSum, vertexMap, normalMap, radiusMap, colourMap,
       view->depth->noDims.x, view->depth->noDims.y, view->rgb->noDims.x, view->rgb->noDims.y,
       depthToRGB, projParamsRGB, sceneParams.useGaussianSampleConfidence, sceneParams.gaussianConfidenceSigma,
-      newSurfels, surfels, correspondenceMap
+      sceneParams.maxSurfelRadius, newSurfels, surfels, correspondenceMap
     );
   }
 }
@@ -110,7 +110,8 @@ void ITMSurfelSceneReconstructionEngine_CPU<TSurfel>::FuseMatchedPoints(ITMSurfe
   {
     fuse_matched_point(
       locId, correspondenceMap, T, this->m_timestamp, vertexMap, normalMap, radiusMap, colourMap, depthMapWidth, depthMapHeight, colourMapWidth, colourMapHeight,
-      depthToRGB, projParamsRGB, sceneParams.deltaRadius, sceneParams.useGaussianSampleConfidence, sceneParams.gaussianConfidenceSigma, surfels
+      depthToRGB, projParamsRGB, sceneParams.deltaRadius, sceneParams.useGaussianSampleConfidence, sceneParams.gaussianConfidenceSigma, sceneParams.maxSurfelRadius,
+      surfels
     );
   }
 }
@@ -203,7 +204,7 @@ void ITMSurfelSceneReconstructionEngine_CPU<TSurfel>::MergeSimilarSurfels(ITMSur
 #endif
   for(int locId = 0; locId < pixelCount; ++locId)
   {
-    perform_surfel_merge(locId, mergeTargetMap, surfels, surfelRemovalMask, indexImage);
+    perform_surfel_merge(locId, mergeTargetMap, surfels, surfelRemovalMask, indexImage, sceneParams.maxSurfelRadius);
   }
 }
 
@@ -243,7 +244,7 @@ void ITMSurfelSceneReconstructionEngine_CPU<TSurfel>::PreprocessDepthMap(const I
 #endif
   for(int locId = 0; locId < pixelCount; ++locId)
   {
-    calculate_radius(locId, depthMap, normalMap, intrinsics, sceneParams.maxSurfelRadius, radiusMap);
+    calculate_radius(locId, depthMap, normalMap, intrinsics, radiusMap);
   }
 }
 

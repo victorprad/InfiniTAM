@@ -30,7 +30,7 @@ __global__ void ck_add_new_surfel(int pixelCount, Matrix4f T, int timestamp, con
                                   const Vector4f *vertexMap, const Vector3f *normalMap, const float *radiusMap, const Vector4u *colourMap,
                                   int depthMapWidth, int depthMapHeight, int colourMapWidth, int colourMapHeight,
                                   Matrix4f depthToRGB, Vector4f projParamsRGB, bool useGaussianSampleConfidence, float gaussianConfidenceSigma,
-                                  TSurfel *newSurfels, const TSurfel *surfels, const unsigned int *correspondenceMap)
+                                  float maxSurfelRadius, TSurfel *newSurfels, const TSurfel *surfels, const unsigned int *correspondenceMap)
 {
   int locId = threadIdx.x + blockDim.x * blockIdx.x;
   if(locId < pixelCount)
@@ -39,7 +39,7 @@ __global__ void ck_add_new_surfel(int pixelCount, Matrix4f T, int timestamp, con
       locId, T, timestamp, newPointsMask, newPointsPrefixSum, vertexMap, normalMap, radiusMap, colourMap,
       depthMapWidth, depthMapHeight, colourMapWidth, colourMapHeight,
       depthToRGB, projParamsRGB, useGaussianSampleConfidence, gaussianConfidenceSigma,
-      newSurfels, surfels, correspondenceMap
+      maxSurfelRadius, newSurfels, surfels, correspondenceMap
     );
   }
 }
@@ -53,12 +53,12 @@ __global__ void ck_calculate_normal(int pixelCount, const Vector4f *vertexMap, i
   }
 }
 
-__global__ void ck_calculate_radius(int pixelCount, const float *depthMap, const Vector3f *normalMap, ITMIntrinsics intrinsics, float maxSurfelRadius, float *radiusMap)
+__global__ void ck_calculate_radius(int pixelCount, const float *depthMap, const Vector3f *normalMap, ITMIntrinsics intrinsics, float *radiusMap)
 {
   int locId = threadIdx.x + blockDim.x * blockIdx.x;
   if(locId < pixelCount)
   {
-    calculate_radius(locId, depthMap, normalMap, intrinsics, maxSurfelRadius, radiusMap);
+    calculate_radius(locId, depthMap, normalMap, intrinsics, radiusMap);
   }
 }
 
@@ -116,14 +116,15 @@ __global__ void ck_fuse_matched_point(int pixelCount, const unsigned int *corres
                                       const Vector4f *vertexMap, const Vector3f *normalMap, const float *radiusMap, const Vector4u *colourMap,
                                       int depthMapWidth, int depthMapHeight, int colourMapWidth, int colourMapHeight,
                                       Matrix4f depthToRGB, Vector4f projParamsRGB, float deltaRadius,
-                                      bool useGaussianSampleConfidence, float gaussianConfidenceSigma, TSurfel *surfels)
+                                      bool useGaussianSampleConfidence, float gaussianConfidenceSigma, float maxSurfelRadius,
+                                      TSurfel *surfels)
 {
   int locId = threadIdx.x + blockDim.x * blockIdx.x;
   if(locId < pixelCount)
   {
     fuse_matched_point(
       locId, correspondenceMap, T, timestamp, vertexMap, normalMap, radiusMap, colourMap, depthMapWidth, depthMapHeight, colourMapWidth, colourMapHeight,
-      depthToRGB, projParamsRGB, deltaRadius, useGaussianSampleConfidence, gaussianConfidenceSigma, surfels
+      depthToRGB, projParamsRGB, deltaRadius, useGaussianSampleConfidence, gaussianConfidenceSigma, maxSurfelRadius, surfels
     );
   }
 }
@@ -140,12 +141,13 @@ __global__ void ck_mark_for_removal_if_unstable(int surfelCount, const TSurfel *
 }
 
 template <typename TSurfel>
-__global__ void ck_perform_surfel_merge(int pixelCount, unsigned int *mergeTargetMap, TSurfel *surfels, unsigned int *surfelRemovalMask, const unsigned int *indexImage)
+__global__ void ck_perform_surfel_merge(int pixelCount, unsigned int *mergeTargetMap, TSurfel *surfels, unsigned int *surfelRemovalMask, const unsigned int *indexImage,
+                                        float maxSurfelRadius)
 {
   int locId = threadIdx.x + blockDim.x * blockIdx.x;
   if(locId < pixelCount)
   {
-    perform_surfel_merge(locId, mergeTargetMap, surfels, surfelRemovalMask, indexImage);
+    perform_surfel_merge(locId, mergeTargetMap, surfels, surfelRemovalMask, indexImage, maxSurfelRadius);
   }
 }
 
@@ -209,6 +211,7 @@ void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::AddNewSurfels(ITMSurfelSc
     view->calib->intrinsics_rgb.projectionParamsSimple.all,
     sceneParams.useGaussianSampleConfidence,
     sceneParams.gaussianConfidenceSigma,
+    sceneParams.maxSurfelRadius,
     newSurfels,
     scene->GetSurfels()->GetData(MEMORYDEVICE_CUDA),
     this->m_correspondenceMapMB->GetData(MEMORYDEVICE_CUDA)
@@ -277,6 +280,7 @@ void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::FuseMatchedPoints(ITMSurf
     sceneParams.deltaRadius,
     sceneParams.useGaussianSampleConfidence,
     sceneParams.gaussianConfidenceSigma,
+    sceneParams.maxSurfelRadius,
     scene->GetSurfels()->GetData(MEMORYDEVICE_CUDA)
   );
   ORcudaKernelCheck;
@@ -361,7 +365,7 @@ void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::MergeSimilarSurfels(ITMSu
   ORcudaKernelCheck;
 
   // Merge the relevant surfels.
-  ck_perform_surfel_merge<<<numBlocks,threadsPerBlock>>>(pixelCount, mergeTargetMap, surfels, surfelRemovalMask, indexImage);
+  ck_perform_surfel_merge<<<numBlocks,threadsPerBlock>>>(pixelCount, mergeTargetMap, surfels, surfelRemovalMask, indexImage, sceneParams.maxSurfelRadius);
   ORcudaKernelCheck;
 }
 
@@ -414,7 +418,6 @@ void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::PreprocessDepthMap(const 
     depthMap,
     normalMap,
     intrinsics,
-    sceneParams.maxSurfelRadius,
     radiusMap
   );
   ORcudaKernelCheck;
