@@ -41,6 +41,9 @@ namespace ITMLib
     /** Whether or not to use a Gaussian-weighted sample confidence as described in the Keller paper. */
     bool useGaussianSampleConfidence;
 
+    /** Whether or not to use surfel merging. */
+    bool useSurfelMerging;
+
     //#################### CONSTRUCTORS ####################
 
     /**
@@ -56,10 +59,11 @@ namespace ITMLib
      * \param trackingSurfelMinConfidence_  The minimum confidence value a surfel must have in order for it to be used for tracking.
      * \param unstableSurfelPeriod_         The number of time steps a surfel is allowed to be unstable without being updated before being removed.
      * \param useGaussianSampleConfidence_  Whether or not to use a Gaussian-weighted sample confidence as described in the Keller paper.
+     * \param useSurfelMerging_             Whether or not to use surfel merging.
      */
     explicit ITMSurfelSceneParams(float deltaRadius_, float gaussianConfidenceSigma_, float maxMergeAngle_, float maxMergeDist_, float stableSurfelConfidence_,
                                   int supersamplingFactor_, float trackingSurfelMaxDepth_, float trackingSurfelMinConfidence_, int unstableSurfelPeriod_,
-                                  bool useGaussianSampleConfidence_)
+                                  bool useGaussianSampleConfidence_, bool useSurfelMerging_)
     : deltaRadius(deltaRadius_),
       gaussianConfidenceSigma(gaussianConfidenceSigma_),
       maxMergeAngle(maxMergeAngle_),
@@ -69,7 +73,8 @@ namespace ITMLib
       trackingSurfelMaxDepth(trackingSurfelMaxDepth_),
       trackingSurfelMinConfidence(trackingSurfelMinConfidence_),
       unstableSurfelPeriod(unstableSurfelPeriod_),
-      useGaussianSampleConfidence(useGaussianSampleConfidence_)
+      useGaussianSampleConfidence(useGaussianSampleConfidence_),
+      useSurfelMerging(useSurfelMerging_)
     {}
   };
 }
