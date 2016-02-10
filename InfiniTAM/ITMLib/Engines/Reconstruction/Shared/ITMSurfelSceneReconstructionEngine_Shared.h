@@ -366,7 +366,7 @@ inline void find_mergeable_surfel(int locId, const unsigned int *indexImage, int
     // If the difference in positions and the angle between the normals are sufficiently small, and the radii overlap, update the best merge source.
     float dist = length(surfel.position - neighbourSurfel.position);
     float angle = acosf(dot(surfel.normal, neighbourSurfel.normal));
-    if(dist <= maxMergeDist && angle <= maxMergeAngle/* && dist <= surfel.radius + neighbourSurfel.radius*/) // FIXME: This will only work if the surfel radii are calculated correctly.
+    if(dist <= maxMergeDist && angle <= maxMergeAngle && dist <= surfel.radius + neighbourSurfel.radius)
     {
       bestMergeSource = neighbourLocId;
     }
