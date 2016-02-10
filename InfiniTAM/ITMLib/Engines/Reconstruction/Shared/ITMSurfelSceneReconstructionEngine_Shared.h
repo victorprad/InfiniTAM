@@ -221,7 +221,10 @@ inline void calculate_radius(int locId, const float *depthMap, const Vector3f *n
 
   if(length(n) > 0.0f)
   {
-    // TODO: Write an explanatory comment.
+    // The intuition behind the radius calculation is that you want the surfel to fully cover a single pixel on the image plane (at distance f).
+    // To do this, it needs to have a projected radius of sqrt(2). Projecting it down onto the image plane from distance d means multiplying its
+    // radius by f / d, hence its unprojected radius should be sqrt(2) / (f / d) = sqrt(2) * d / f. Note that this is the radius calculation used
+    // in the Dense Planar SLAM paper, rather than the one used in the original Keller paper.
     float d = depthMap[locId];
     if(d > 10.0f) d = 10.0f;
     float f = 0.5f * (intrinsics.projectionParamsSimple.fx + intrinsics.projectionParamsSimple.fy);
