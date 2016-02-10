@@ -13,12 +13,15 @@ namespace ITMLib
  * \brief TODO
  */
 _CPU_AND_GPU_CODE_
-inline void calculate_projected_surfel_bounds(int locId, int indexImageWidth, int indexImageHeight, float radius, float z,
+inline void calculate_projected_surfel_bounds(int locId, int indexImageWidth, int indexImageHeight, const ITMIntrinsics& intrinsics, float radius, float z,
                                               int& cx, int& cy, int& projectedRadiusSquared, int& minX, int& minY, int& maxX, int& maxY)
 {
   cx = locId % indexImageWidth, cy = locId / indexImageWidth;
-  int projectedRadius = static_cast<int>(radius / z + 0.5f);
+
+  float f = 0.5f * (intrinsics.projectionParamsSimple.fx + intrinsics.projectionParamsSimple.fy);
+  int projectedRadius = static_cast<int>(radius * f / z + 0.5f);
   projectedRadiusSquared = projectedRadius * projectedRadius;
+
   minX = cx - projectedRadius, maxX = cx + projectedRadius;
   minY = cy - projectedRadius, maxY = cy + projectedRadius;
   if(minX < 0) minX = 0;
@@ -305,7 +308,7 @@ inline void update_depth_buffer_for_surfel(int surfelId, const TSurfel *surfels,
     {
       int cx, cy, minX, minY, maxX, maxY, projectedRadiusSquared;
       calculate_projected_surfel_bounds(
-        locId, indexImageWidth, indexImageHeight, surfel.radius, z,
+        locId, indexImageWidth, indexImageHeight, intrinsics, surfel.radius, z,
         cx, cy, projectedRadiusSquared, minX, minY, maxX, maxY
       );
 
@@ -363,7 +366,7 @@ inline void update_index_image_for_surfel(int surfelId, const TSurfel *surfels, 
     {
       int cx, cy, minX, minY, maxX, maxY, projectedRadiusSquared;
       calculate_projected_surfel_bounds(
-        locId, indexImageWidth, indexImageHeight, surfel.radius, z,
+        locId, indexImageWidth, indexImageHeight, intrinsics, surfel.radius, z,
         cx, cy, projectedRadiusSquared, minX, minY, maxX, maxY
       );
 

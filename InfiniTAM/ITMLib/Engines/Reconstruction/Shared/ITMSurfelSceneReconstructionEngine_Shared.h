@@ -221,10 +221,11 @@ inline void calculate_radius(int locId, const float *depthMap, const Vector3f *n
 
   if(length(n) > 0.0f)
   {
-    // FIXME: This is currently a total hack.
+    // TODO: Write an explanatory comment.
     float d = depthMap[locId];
     if(d > 10.0f) d = 10.0f;
-    r = sqrt(2.0f) * d;
+    float f = 0.5f * (intrinsics.projectionParamsSimple.fx + intrinsics.projectionParamsSimple.fy);
+    r = sqrt(2.0f) * d / f;
   }
 
   radiusMap[locId] = r;
