@@ -23,6 +23,9 @@ namespace ITMLib
     /** The maximum distance allowed between a pair of surfels if they are to be merged. */
     float maxMergeDist;
 
+    /** The maximum radius a surfel is allowed to have. */
+    float maxSurfelRadius;
+
     /** The confidence value a surfel must have in order for it to be considered "stable". */
     float stableSurfelConfidence;
 
@@ -53,6 +56,7 @@ namespace ITMLib
      * \param gaussianConfidenceSigma_      The sigma value for the Gaussian used when calculating the sample confidence.
      * \param maxMergeAngle_                The maximum angle allowed between the normals of a pair of surfels if they are to be merged.
      * \param maxMergeDist_                 The maximum distance allowed between a pair of surfels if they are to be merged.
+     * \param maxSurfelRadius_              The maximum radius a surfel is allowed to have.
      * \param stableSurfelConfidence_       The confidence value a surfel must have in order for it to be considered "stable".
      * \param supersamplingFactor_          The factor by which to supersample (in each axis) the index image used for finding surfel correspondences.
      * \param trackingSurfelMaxDepth_       The maximum depth a surfel must have in order for it to be used for tracking.
@@ -61,13 +65,14 @@ namespace ITMLib
      * \param useGaussianSampleConfidence_  Whether or not to use a Gaussian-weighted sample confidence as described in the Keller paper.
      * \param useSurfelMerging_             Whether or not to use surfel merging.
      */
-    explicit ITMSurfelSceneParams(float deltaRadius_, float gaussianConfidenceSigma_, float maxMergeAngle_, float maxMergeDist_, float stableSurfelConfidence_,
-                                  int supersamplingFactor_, float trackingSurfelMaxDepth_, float trackingSurfelMinConfidence_, int unstableSurfelPeriod_,
-                                  bool useGaussianSampleConfidence_, bool useSurfelMerging_)
+    explicit ITMSurfelSceneParams(float deltaRadius_, float gaussianConfidenceSigma_, float maxMergeAngle_, float maxMergeDist_, float maxSurfelRadius_,
+                                  float stableSurfelConfidence_, int supersamplingFactor_, float trackingSurfelMaxDepth_, float trackingSurfelMinConfidence_,
+                                  int unstableSurfelPeriod_, bool useGaussianSampleConfidence_, bool useSurfelMerging_)
     : deltaRadius(deltaRadius_),
       gaussianConfidenceSigma(gaussianConfidenceSigma_),
       maxMergeAngle(maxMergeAngle_),
       maxMergeDist(maxMergeDist_),
+      maxSurfelRadius(maxSurfelRadius_),
       stableSurfelConfidence(stableSurfelConfidence_),
       supersamplingFactor(supersamplingFactor_),
       trackingSurfelMaxDepth(trackingSurfelMaxDepth_),

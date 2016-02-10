@@ -208,7 +208,7 @@ void ITMSurfelSceneReconstructionEngine_CPU<TSurfel>::MergeSimilarSurfels(ITMSur
 }
 
 template <typename TSurfel>
-void ITMSurfelSceneReconstructionEngine_CPU<TSurfel>::PreprocessDepthMap(const ITMView *view) const
+void ITMSurfelSceneReconstructionEngine_CPU<TSurfel>::PreprocessDepthMap(const ITMView *view, const ITMSurfelSceneParams& sceneParams) const
 {
   const float *depthMap = view->depth->GetData(MEMORYDEVICE_CPU);
   const int height = view->depth->noDims.y;
@@ -243,7 +243,7 @@ void ITMSurfelSceneReconstructionEngine_CPU<TSurfel>::PreprocessDepthMap(const I
 #endif
   for(int locId = 0; locId < pixelCount; ++locId)
   {
-    calculate_radius(locId, depthMap, normalMap, intrinsics, radiusMap);
+    calculate_radius(locId, depthMap, normalMap, intrinsics, sceneParams.maxSurfelRadius, radiusMap);
   }
 }
 

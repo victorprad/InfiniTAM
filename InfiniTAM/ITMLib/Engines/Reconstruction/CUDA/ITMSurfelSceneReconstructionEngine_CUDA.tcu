@@ -53,12 +53,12 @@ __global__ void ck_calculate_normal(int pixelCount, const Vector4f *vertexMap, i
   }
 }
 
-__global__ void ck_calculate_radius(int pixelCount, const float *depthMap, const Vector3f *normalMap, ITMIntrinsics intrinsics, float *radiusMap)
+__global__ void ck_calculate_radius(int pixelCount, const float *depthMap, const Vector3f *normalMap, ITMIntrinsics intrinsics, float maxSurfelRadius, float *radiusMap)
 {
   int locId = threadIdx.x + blockDim.x * blockIdx.x;
   if(locId < pixelCount)
   {
-    calculate_radius(locId, depthMap, normalMap, intrinsics, radiusMap);
+    calculate_radius(locId, depthMap, normalMap, intrinsics, maxSurfelRadius, radiusMap);
   }
 }
 
@@ -366,7 +366,7 @@ void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::MergeSimilarSurfels(ITMSu
 }
 
 template <typename TSurfel>
-void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::PreprocessDepthMap(const ITMView *view) const
+void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::PreprocessDepthMap(const ITMView *view, const ITMSurfelSceneParams& sceneParams) const
 {
   const float *depthMap = view->depth->GetData(MEMORYDEVICE_CUDA);
   const int height = view->depth->noDims.y;
@@ -414,6 +414,7 @@ void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::PreprocessDepthMap(const 
     depthMap,
     normalMap,
     intrinsics,
+    sceneParams.maxSurfelRadius,
     radiusMap
   );
   ORcudaKernelCheck;

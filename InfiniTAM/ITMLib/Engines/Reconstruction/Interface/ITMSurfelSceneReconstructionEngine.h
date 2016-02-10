@@ -105,7 +105,7 @@ namespace ITMLib
     /**
      * \brief TODO
      */
-    virtual void PreprocessDepthMap(const ITMView *view) const = 0;
+    virtual void PreprocessDepthMap(const ITMView *view, const ITMSurfelSceneParams& sceneParams) const = 0;
 
     /**
      * \brief Removes any surfels that have been marked from the scene.

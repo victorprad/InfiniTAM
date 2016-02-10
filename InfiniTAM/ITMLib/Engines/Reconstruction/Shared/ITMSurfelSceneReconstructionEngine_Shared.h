@@ -214,7 +214,7 @@ inline void calculate_normal(int locId, const Vector4f *vertexMap, int width, in
  */
 _CPU_AND_GPU_CODE_
 inline void calculate_radius(int locId, const float *depthMap, const Vector3f *normalMap, const ITMIntrinsics& intrinsics,
-                             float *radiusMap)
+                             float maxSurfelRadius, float *radiusMap)
 {
   float r = 0.0f;
   Vector3f n = normalMap[locId];
@@ -226,9 +226,11 @@ inline void calculate_radius(int locId, const float *depthMap, const Vector3f *n
     // radius by f / d, hence its unprojected radius should be sqrt(2) / (f / d) = sqrt(2) * d / f. Note that this is the radius calculation used
     // in the Dense Planar SLAM paper, rather than the one used in the original Keller paper.
     float d = depthMap[locId];
-    if(d > 10.0f) d = 10.0f;
     float f = 0.5f * (intrinsics.projectionParamsSimple.fx + intrinsics.projectionParamsSimple.fy);
     r = sqrt(2.0f) * d / f;
+
+    // Clamp the radius to make sure it doesn't get too large.
+    if(r > maxSurfelRadius) r = maxSurfelRadius;
   }
 
   radiusMap[locId] = r;
