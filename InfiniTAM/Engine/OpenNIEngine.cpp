@@ -66,6 +66,24 @@ static openni::VideoMode findBestMode(const openni::SensorInfo *sensorInfo, int 
 	return bestMode;
 }
 
+template <typename T>
+void mirrorHorizontally(ORUtils::Image<T> *img)
+{
+	T *data = img->GetData(MEMORYDEVICE_CPU);
+	const int width = img->noDims.x, height = img->noDims.y;
+	const int halfWidth = width / 2;
+
+	int rowOffset = 0;
+	for (int y = 0; y < height; ++y)
+	{
+		for (int x = 0; x < halfWidth; ++x)
+		{
+			std::swap(data[rowOffset + x], data[rowOffset + width - 1 - x]);
+		}
+		rowOffset += width;
+	}
+}
+
 OpenNIEngine::OpenNIEngine(const char *calibFilename, const char *deviceURI, const bool useInternalCalibration,
 	Vector2i requested_imageSize_rgb, Vector2i requested_imageSize_d)
 	: ImageSourceEngine(calibFilename)
@@ -269,6 +287,12 @@ void OpenNIEngine::getImages(ITMUChar4Image *rgbImage, ITMShortImage *rawDepthIm
 		memcpy(depth, depthImagePix, rawDepthImage->dataSize * sizeof(short));
 	}
 	else memset(depth, 0, rawDepthImage->dataSize * sizeof(short));
+
+#if USE_INPUT_MIRRORING
+	// Mirror the input images horizontally (this is sometimes required when using a Kinect).
+	if (colorAvailable) mirrorHorizontally(rgbImage);
+	if (depthAvailable) mirrorHorizontally(rawDepthImage);
+#endif
 
 	return /*true*/;
 }

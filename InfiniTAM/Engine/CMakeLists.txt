@@ -28,6 +28,8 @@ IF(WITH_REALSENSE)
   add_definitions(-DCOMPILE_WITH_RealSenseWindows)
 ENDIF()
 
+INCLUDE(${PROJECT_SOURCE_DIR}/cmake/OfferInputMirroring.cmake)
+
 add_library(Engine
 ImageSourceEngine.cpp
 ImageSourceEngine.h
