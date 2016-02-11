@@ -8,6 +8,12 @@
 
 SET(targetname Engine)
 
+#####################################
+# Offer support for input mirroring #
+#####################################
+
+INCLUDE(${PROJECT_SOURCE_DIR}/cmake/OfferInputMirroring.cmake)
+
 ################################
 # Specify the libraries to use #
 ################################
