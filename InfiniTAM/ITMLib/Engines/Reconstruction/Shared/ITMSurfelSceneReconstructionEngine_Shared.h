@@ -42,33 +42,56 @@ inline float calculate_depth_from_pose(const Matrix4f& invT, const Vector3f& p)
 }
 
 /**
- * \brief TODO
+ * \brief Calculates a Gaussian-based confidence value for a depth sample.
+ *
+ * See p.4 of "Real-time 3D Reconstruction in Dynamic Scenes using Point-based Fusion" (Keller et al.).
+ *
+ * \param locId   The raster position of the sample in the depth image.
+ * \param width   The width of the depth image.
+ * \param height  The height of the depth image.
+ * \param sigma   The standard deviation of the Gaussian.
+ * \return        The calculated confidence value.
  */
 _CPU_AND_GPU_CODE_
 inline float calculate_gaussian_sample_confidence(int locId, int width, int height, float sigma)
 {
+  // Calculate the normalised radial distance of the depth sample from the camera centre.
   const int x = locId % width, y = locId / width;
   const float halfW = width / 2.0f, halfH = height / 2.0f;
   const float dx = abs(x - halfW), dy = abs(y - halfH);
   const float gamma = sqrtf((dx * dx + dy * dy) / (halfW * halfW + halfH * halfH));
+
+  // Calculate and return the confidence value itself.
   return expf(-gamma*gamma) / (2*sigma*sigma);
 }
 
 /**
- * \brief TODO
+ * \brief Calculates the colour to assign to a surfel.
+ *
+ * \param depthPos3D      The 3D position of the surfel in live 3D depth coordinates, as calculated by back-projecting from the live 2D depth image.
+ * \param depthToRGB      A transformation mapping from live 3D depth coordinates to live 3D RGB coordinates.
+ * \param projParamsRGB   The intrinsic parameters of the RGB camera.
+ * \param colourMap       The live 2D RGB image.
+ * \param colourMapWidth  The width of the colour map.
+ * \param colourMapHeight The height of the colour map.
+ * \return                The colour to assign to the surfel.
  */
 _CPU_AND_GPU_CODE_
-inline Vector3u compute_colour(const Vector3f& v, const Matrix4f& depthToRGB, const Vector4f& projParamsRGB,
-                               const Vector4u *colourMap, int colourMapWidth, int colourMapHeight)
+inline Vector3u compute_surfel_colour(const Vector3f& depthPos3D, const Matrix4f& depthToRGB, const Vector4f& projParamsRGB,
+                                      const Vector4u *colourMap, int colourMapWidth, int colourMapHeight)
 {
-  Vector3f cv = transform_point(depthToRGB, v);
-  int x = static_cast<int>(projParamsRGB.x * cv.x / cv.z + projParamsRGB.z + 0.5f);
-  int y = static_cast<int>(projParamsRGB.y * cv.y / cv.z + projParamsRGB.w + 0.5f);
+  // Transform the surfel's position into live 3D RGB coordinates and project it onto the colour map.
+  Vector3f rgbPos3D = transform_point(depthToRGB, depthPos3D);
+  int x = static_cast<int>(projParamsRGB.x * rgbPos3D.x / rgbPos3D.z + projParamsRGB.z + 0.5f);
+  int y = static_cast<int>(projParamsRGB.y * rgbPos3D.y / rgbPos3D.z + projParamsRGB.w + 0.5f);
+
+  // If the projected position is within the bounds of the colour map, read the colour value for the surfel; if not, default to black.
   Vector3u colour((uchar)0);
   if(x >= 0 && x < colourMapWidth && y >= 0 && y < colourMapHeight)
   {
     colour = colourMap[y * colourMapWidth + x].toVector3();
   }
+
   return colour;
 }
 
@@ -88,7 +111,7 @@ inline TSurfel make_surfel(int locId, const Matrix4f& T, const Vector4f *vertexM
   surfel.normal = transform_normal(T, normalMap[locId]);
   surfel.radius = radiusMap[locId];
   if(surfel.radius > maxSurfelRadius) surfel.radius = maxSurfelRadius;
-  SurfelColourManipulator<TSurfel::hasColourInformation>::write(surfel, compute_colour(v, depthToRGB, projParamsRGB, colourMap, colourMapWidth, colourMapHeight));
+  SurfelColourManipulator<TSurfel::hasColourInformation>::write(surfel, compute_surfel_colour(v, depthToRGB, projParamsRGB, colourMap, colourMapWidth, colourMapHeight));
   surfel.confidence = useGaussianSampleConfidence ? calculate_gaussian_sample_confidence(locId, depthMapWidth, depthMapHeight, gaussianConfidenceSigma) : 1.0f;
   surfel.timestamp = timestamp;
   return surfel;
