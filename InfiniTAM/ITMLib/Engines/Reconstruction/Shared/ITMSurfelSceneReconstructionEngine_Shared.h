@@ -159,10 +159,13 @@ inline TSurfel merge_surfels(const TSurfel& target, const TSurfel& source, float
     result.oldPosition = result.position;
 #endif
 
+    // Compute confidence-weighted averages of the positions and normals of the input surfels. Note that this can
+    // result in a combined normal that is no longer unit length, so we must renormalise it accordingly.
     result.position = (result.confidence * result.position + source.confidence * source.position) / confidence;
     result.normal = (result.confidence * result.normal + source.confidence * source.normal) / confidence;
     result.normal /= length(result.normal);
 
+    // Compute the radius of the combined surfel.
     switch(radiusCombinationMode)
     {
       case RCM_DISTANCE:
@@ -174,8 +177,10 @@ inline TSurfel merge_surfels(const TSurfel& target, const TSurfel& source, float
         break;
     }
 
+    // Ensure that the radius of the combined surfel does not exceed the maximum permitted radius.
     if(result.radius > maxSurfelRadius) result.radius = maxSurfelRadius;
 
+    // Compute a confidence-weighted average of the colours of the input surfels.
     Vector3u resultColour = SurfelColourManipulator<TSurfel::hasColourInformation>::read(result);
     Vector3u sourceColour = SurfelColourManipulator<TSurfel::hasColourInformation>::read(source);
     Vector3u colour = ((result.confidence * resultColour.toFloat() + source.confidence * sourceColour.toFloat()) / confidence).toUChar();
