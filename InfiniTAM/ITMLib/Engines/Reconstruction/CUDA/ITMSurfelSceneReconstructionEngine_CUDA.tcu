@@ -30,7 +30,7 @@ __global__ void ck_add_new_surfel(int pixelCount, Matrix4f T, int timestamp, con
                                   const Vector4f *vertexMap, const Vector3f *normalMap, const float *radiusMap, const Vector4u *colourMap,
                                   int depthMapWidth, int depthMapHeight, int colourMapWidth, int colourMapHeight,
                                   Matrix4f depthToRGB, Vector4f projParamsRGB, bool useGaussianSampleConfidence, float gaussianConfidenceSigma,
-                                  float maxSurfelRadius, TSurfel *newSurfels, const TSurfel *surfels, const unsigned int *correspondenceMap)
+                                  float maxSurfelRadius, TSurfel *newSurfels)
 {
   int locId = threadIdx.x + blockDim.x * blockIdx.x;
   if(locId < pixelCount)
@@ -39,7 +39,7 @@ __global__ void ck_add_new_surfel(int pixelCount, Matrix4f T, int timestamp, con
       locId, T, timestamp, newPointsMask, newPointsPrefixSum, vertexMap, normalMap, radiusMap, colourMap,
       depthMapWidth, depthMapHeight, colourMapWidth, colourMapHeight,
       depthToRGB, projParamsRGB, useGaussianSampleConfidence, gaussianConfidenceSigma,
-      maxSurfelRadius, newSurfels, surfels, correspondenceMap
+      maxSurfelRadius, newSurfels
     );
   }
 }
@@ -212,9 +212,7 @@ void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::AddNewSurfels(ITMSurfelSc
     sceneParams.useGaussianSampleConfidence,
     sceneParams.gaussianConfidenceSigma,
     sceneParams.maxSurfelRadius,
-    newSurfels,
-    scene->GetSurfels()->GetData(MEMORYDEVICE_CUDA),
-    this->m_correspondenceMapMB->GetData(MEMORYDEVICE_CUDA)
+    newSurfels
   );
   ORcudaKernelCheck;
 

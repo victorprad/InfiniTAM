@@ -36,13 +36,11 @@ void ITMSurfelSceneReconstructionEngine_CPU<TSurfel>::AddNewSurfels(ITMSurfelSce
   if(newSurfels == NULL) return;
 
   const Vector4u *colourMap = view->rgb->GetData(MEMORYDEVICE_CPU);
-  const unsigned int *correspondenceMap = this->m_correspondenceMapMB->GetData(MEMORYDEVICE_CPU);
   const Matrix4f& depthToRGB = view->calib->trafo_rgb_to_depth.calib_inv;
   const Vector3f *normalMap = this->m_normalMapMB->GetData(MEMORYDEVICE_CPU);
   const Vector4f& projParamsRGB = view->calib->intrinsics_rgb.projectionParamsSimple.all;
   const float *radiusMap = this->m_radiusMapMB->GetData(MEMORYDEVICE_CPU);
   const ITMSurfelSceneParams& sceneParams = scene->GetParams();
-  const TSurfel *surfels = scene->GetSurfels()->GetData(MEMORYDEVICE_CPU);
   const Matrix4f T = trackingState->pose_d->GetInvM();
   const Vector4f *vertexMap = this->m_vertexMapMB->GetData(MEMORYDEVICE_CPU);
 
@@ -55,7 +53,7 @@ void ITMSurfelSceneReconstructionEngine_CPU<TSurfel>::AddNewSurfels(ITMSurfelSce
       locId, T, this->m_timestamp, newPointsMask, newPointsPrefixSum, vertexMap, normalMap, radiusMap, colourMap,
       view->depth->noDims.x, view->depth->noDims.y, view->rgb->noDims.x, view->rgb->noDims.y,
       depthToRGB, projParamsRGB, sceneParams.useGaussianSampleConfidence, sceneParams.gaussianConfidenceSigma,
-      sceneParams.maxSurfelRadius, newSurfels, surfels, correspondenceMap
+      sceneParams.maxSurfelRadius, newSurfels
     );
   }
 }

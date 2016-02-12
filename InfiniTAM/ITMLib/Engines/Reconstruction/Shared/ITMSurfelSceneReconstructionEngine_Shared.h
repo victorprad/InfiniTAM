@@ -256,7 +256,27 @@ inline bool try_read_vertex(int x, int y, const Vector4f *vertexMap, int width, 
 //#################### MAIN FUNCTIONS ####################
 
 /**
- * \brief TODO
+ * \brief Adds a new surfel (corresponding to a pixel in the live 2D depth image) to the scene.
+ *
+ * \param locId                       The raster position of the pixel in the live 2D depth image.
+ * \param T                           A transformation from live 3D depth coordinates to global coordinates.
+ * \param timestamp                   The current timestamp (i.e. frame number).
+ * \param newPointsMask               A mask indicating the pixels in the live 2D depth image for which new surfels are to be added.
+ * \param newPointsPrefixSum          A prefix sum computed from the new points mask (this tells us the array locations into which to write the new surfels).
+ * \param vertexMap                   The live point cloud, created by back-projecting the pixels in the live 2D depth image.
+ * \param normalMap                   The normals computed for the points in the live point cloud.
+ * \param radiusMap                   The radii computed for the points in the live point cloud.
+ * \param colourMap                   The live 2D colour image.
+ * \param depthMapWidth               The width of the live 2D depth image.
+ * \param depthMapHeight              The height of the live 2D depth image.
+ * \param colourMapWidth              The width of the live 2D colour image.
+ * \param colourMapHeight             The height of the live 2D colour image.
+ * \param depthToRGB                  A transformation mapping live 3D depth coordinates to live 3D RGB coordinates.
+ * \param projParamsRGB               The intrinsic parameters of the colour camera.
+ * \param useGaussianSampleConfidence Whether or not to use a Gaussian-weighted sample confidence as described in the Keller paper.
+ * \param gaussianConfidenceSigma     The sigma value for the Gaussian used when calculating the sample confidence.
+ * \param maxSurfelRadius             The maximum radius a surfel is allowed to have.
+ * \param newSurfels                  The start of the chunk of memory allocated for the new surfels in the surfel scene.
  */
 template <typename TSurfel>
 _CPU_AND_GPU_CODE_
@@ -264,15 +284,18 @@ inline void add_new_surfel(int locId, const Matrix4f& T, int timestamp, const un
                            const Vector4f *vertexMap, const Vector3f *normalMap, const float *radiusMap, const Vector4u *colourMap,
                            int depthMapWidth, int depthMapHeight, int colourMapWidth, int colourMapHeight, const Matrix4f& depthToRGB,
                            const Vector4f& projParamsRGB, bool useGaussianSampleConfidence, float gaussianConfidenceSigma, float maxSurfelRadius,
-                           TSurfel *newSurfels, const TSurfel *surfels, const unsigned int *correspondenceMap)
+                           TSurfel *newSurfels)
 {
+  // If a new surfel is to be added for this pixel in the live 2D depth image:
   if(newPointsMask[locId])
   {
+    // Make the surfel.
     TSurfel surfel = make_surfel<TSurfel>(
       locId, T, vertexMap, normalMap, radiusMap, colourMap, depthMapWidth, depthMapHeight, colourMapWidth, colourMapHeight,
       depthToRGB, projParamsRGB, useGaussianSampleConfidence, gaussianConfidenceSigma, maxSurfelRadius, timestamp
     );
 
+    // Write it into the correct position in the chunk of memory allocated for new surfels.
     newSurfels[newPointsPrefixSum[locId]] = surfel;
   }
 }
