@@ -26,7 +26,7 @@ namespace ITMLib
     /** A mask whose values denote whether the corresponding points in the vertex map need to be added to the scene as new points. */
     ORUtils::MemoryBlock<unsigned short> *m_newPointsMaskMB;
 
-    /** TODO */
+    /** A prefix sum of the new points mask whose values denote the offsets in a new surfels chunk at which new points should be written. */
     ORUtils::MemoryBlock<unsigned int> *m_newPointsPrefixSumMB;
 
     /** The normal map corresponding to the live depth image. */
@@ -35,14 +35,14 @@ namespace ITMLib
     /** The radius map corresponding to the live depth image. */
     ORUtils::MemoryBlock<float> *m_radiusMapMB;
 
-    /** TODO */
+    /** A mask whose values denote whether the corresponding surfels in the scene should be removed. */
     ORUtils::MemoryBlock<unsigned int> *m_surfelRemovalMaskMB;
 
-    /** TODO */
+    /** The current timestamp (i.e. frame number). */
     int m_timestamp;
 
     /**
-     * The vertex map corresponding to the live depth image (obtained by unprojecting the points in the depth image).
+     * The vertex map corresponding to the live depth image (obtained by back-projecting the points in the depth image).
      * The w component of each vertex is set to 1 if the corresponding depth pixel was valid, and -1 otherwise.
      */
     ORUtils::MemoryBlock<Vector4f> *m_vertexMapMB;
