@@ -331,7 +331,13 @@ inline void calculate_normal(int locId, const Vector4f *vertexMap, int width, in
 }
 
 /**
- * \brief TODO
+ * \brief Calculates the radius to give a point in the live point cloud corresponding to a pixel in the live 2D depth image.
+ *
+ * \param locId       The raster position of the pixel in the live 2D depth image.
+ * \param depthMap    The live 2D depth image.
+ * \param normalMap   The normals computed for the points in the live point cloud.
+ * \param intrinsics  The intrinsic parameters of the depth camera.
+ * \param radiusMap   A map into which to write the radii computed for the points in the live point cloud.
  */
 _CPU_AND_GPU_CODE_
 inline void calculate_radius(int locId, const float *depthMap, const Vector3f *normalMap, const ITMIntrinsics& intrinsics, float *radiusMap)
@@ -344,7 +350,7 @@ inline void calculate_radius(int locId, const float *depthMap, const Vector3f *n
     // The intuition behind the radius calculation is that you want the surfel to fully cover a single pixel on the image plane (at distance f).
     // To do this, it needs to have a projected radius of sqrt(2). Projecting it down onto the image plane from distance d means multiplying its
     // radius by f / d, hence its unprojected radius should be sqrt(2) / (f / d) = sqrt(2) * d / f. Note that this is the radius calculation used
-    // in the Dense Planar SLAM paper, rather than the one used in the original Keller paper.
+    // in the "Dense Planar SLAM" paper, rather than the one used in the original Keller paper.
     float d = depthMap[locId];
     float f = 0.5f * (intrinsics.projectionParamsSimple.fx + intrinsics.projectionParamsSimple.fy);
     r = sqrt(2.0f) * d / f;
