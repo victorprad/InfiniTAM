@@ -117,14 +117,15 @@ void ITMSurfelVisualisationEngine_CPU<TSurfel>::RenderImage(const ITMSurfelScene
     }
     case Base::RENDER_LAMBERTIAN:
     {
-      const Vector3f lightSource = -Vector3f(pose->GetInvM().getColumn(2));
+      const Vector3f lightPos = Vector3f(0.0f, -10.0f, -10.0f);
+      const Vector3f viewerPos = Vector3f(pose->GetInvM().getColumn(3));
 
 #ifdef WITH_OPENMP
       #pragma omp parallel for
 #endif
       for(int locId = 0; locId < pixelCount; ++locId)
       {
-        shade_pixel_grey(locId, surfelIndexImagePtr, surfels, lightSource, outputImagePtr);
+        shade_pixel_grey(locId, surfelIndexImagePtr, surfels, lightPos, viewerPos, outputImagePtr);
       }
       break;
     }

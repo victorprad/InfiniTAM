@@ -252,11 +252,15 @@ void shade_pixel_depth(int locId, const unsigned int *surfelIndexImage, const TS
  */
 template <typename TSurfel>
 _CPU_AND_GPU_CODE_
-void shade_pixel_grey(int locId, const unsigned int *surfelIndexImage, const TSurfel *surfels, const Vector3f& lightSource,
+void shade_pixel_grey(int locId, const unsigned int *surfelIndexImage, const TSurfel *surfels, const Vector3f& lightPos, const Vector3f& viewerPos,
                       Vector4u *outputImage)
 {
-  const float ambient = 0.2f;
-  const float lambertianCoefficient = 0.8f;
+  bool usePhong = true;
+
+  const float ambient = usePhong ? 0.3f : 0.2f;
+  const float lambertianCoefficient = usePhong ? 0.35f : 0.8f;
+  const float phongCoefficient = 0.35f;
+  const float phongExponent = 20.0f;
 
   Vector4u value((uchar)0);
 
@@ -264,10 +268,32 @@ void shade_pixel_grey(int locId, const unsigned int *surfelIndexImage, const TSu
   if(surfelIndex >= 0)
   {
     TSurfel surfel = surfels[surfelIndex];
-    float NdotL = ORUtils::dot(surfel.normal, lightSource);
+
+    // Calculate the Lambertian lighting term.
+    Vector3f L = normalize(lightPos - surfel.position);
+    Vector3f N = surfel.normal;
+    float NdotL = ORUtils::dot(N, L);
     float lambertian = CLAMP(NdotL, 0.0f, 1.0f);
+
+    // Determine the intensity of the pixel using the Lambertian lighting equation.
     float intensity = ambient + lambertianCoefficient * lambertian;
+
+    // If we're using Phong lighting:
+    if(usePhong)
+    {
+      // Calculate the Phong lighting term.
+      Vector3f R = 2.0f * N * NdotL - L;
+      Vector3f V = normalize(viewerPos - surfel.position);
+      float phong = pow(CLAMP(dot(R,V), 0.0f, 1.0f), phongExponent);
+
+      // Add the Phong lighting term to the intensity.
+      intensity += phongCoefficient * phong;
+    }
+
+    // Fill in the final value for the pixel.
     value = Vector4u((uchar)(intensity * 255.0f));
+
+    //if(surfel.confidence < 25.0f) value = Vector4u((uchar)0);
   }
 
   outputImage[locId] = value;
@@ -306,6 +332,8 @@ inline void update_depth_buffer_for_surfel(int surfelId, const TSurfel *surfels,
   {
     if(useRadii)
     {
+      if(surfel.confidence < 25.0f) return;
+
       int cx, cy, minX, minY, maxX, maxY, projectedRadiusSquared;
       calculate_projected_surfel_bounds(
         locId, indexImageWidth, indexImageHeight, intrinsics, surfel.radius, z,
