@@ -194,7 +194,11 @@ inline TSurfel merge_surfels(const TSurfel& target, const TSurfel& source, float
 }
 
 /**
- * \brief TODO
+ * \brief Applies a rigid-body transformation to a normal vector.
+ *
+ * \param T The 4x4 matrix representing the transformation.
+ * \param n The normal vector to which to apply the transformation.
+ * \return  The result of applying the transformation to the normal vector.
  */
 _CPU_AND_GPU_CODE_
 inline Vector3f transform_normal(const Matrix4f& T, const Vector3f& n)
@@ -204,7 +208,11 @@ inline Vector3f transform_normal(const Matrix4f& T, const Vector3f& n)
 }
 
 /**
- * \brief TODO
+ * \brief Applies a rigid-body transformation to a point vector.
+ *
+ * \param T The 4x4 matrix representing the transformation.
+ * \param p The point vector to which to apply the transformation.
+ * \return  The result of applying the transformation to the point vector.
  */
 _CPU_AND_GPU_CODE_
 inline Vector3f transform_point(const Matrix4f& T, const Vector3f& p)
@@ -214,20 +222,34 @@ inline Vector3f transform_point(const Matrix4f& T, const Vector3f& p)
 }
 
 /**
- * \brief TODO
+ * \brief Attempts to read the point in the live point cloud that was created by back-projecting from pixel (x,y) in the live 2D depth image.
+ *
+ * \param x         The x coordinate of the depth image pixel.
+ * \param y         The y coordinate of the depth image pixel.
+ * \param vertexMap The live point cloud, created by back-projecting the pixels in the live 2D depth image.
+ * \param width     The width of the depth image.
+ * \param height    The height of the depth image.
+ * \param result    A point into which to store the result, if available.
+ * \return          true, if the (x,y) coordinates are within the bounds of the depth image and there was a
+ *                  valid depth value at that point, or false otherwise.
  */
 _CPU_AND_GPU_CODE_
 inline bool try_read_vertex(int x, int y, const Vector4f *vertexMap, int width, int height, Vector3f& result)
 {
+  // If the (x,y) coordinates are within the bounds of the depth image:
   if(x >= 0 && x < width && y >= 0 && y < height)
   {
+    // Look up the back-projected point in the point cloud.
     Vector4f v = vertexMap[y * width + x];
+
+    // If it's valid (if its w component is > 0), return it.
     if(v.w > 0.0f)
     {
       result = v.toVector3();
       return true;
     }
   }
+
   return false;
 }
 
