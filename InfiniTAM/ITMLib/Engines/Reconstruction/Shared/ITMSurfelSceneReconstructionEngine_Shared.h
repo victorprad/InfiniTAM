@@ -69,9 +69,9 @@ inline float calculate_gaussian_sample_confidence(int locId, int width, int heig
  * \brief Calculates the colour to assign to a surfel.
  *
  * \param depthPos3D      The 3D position of the surfel in live 3D depth coordinates, as calculated by back-projecting from the live 2D depth image.
- * \param depthToRGB      A transformation mapping from live 3D depth coordinates to live 3D RGB coordinates.
- * \param projParamsRGB   The intrinsic parameters of the RGB camera.
- * \param colourMap       The live 2D RGB image.
+ * \param depthToRGB      A transformation mapping live 3D depth coordinates to live 3D colour coordinates.
+ * \param projParamsRGB   The intrinsic parameters of the colour camera.
+ * \param colourMap       The live 2D colour image.
  * \param colourMapWidth  The width of the colour map.
  * \param colourMapHeight The height of the colour map.
  * \return                The colour to assign to the surfel.
@@ -80,7 +80,7 @@ _CPU_AND_GPU_CODE_
 inline Vector3u compute_surfel_colour(const Vector3f& depthPos3D, const Matrix4f& depthToRGB, const Vector4f& projParamsRGB,
                                       const Vector4u *colourMap, int colourMapWidth, int colourMapHeight)
 {
-  // Transform the surfel's position into live 3D RGB coordinates and project it onto the colour map.
+  // Transform the surfel's position into live 3D colour coordinates and project it onto the colour map.
   Vector3f rgbPos3D = transform_point(depthToRGB, depthPos3D);
   int x = static_cast<int>(projParamsRGB.x * rgbPos3D.x / rgbPos3D.z + projParamsRGB.z + 0.5f);
   int y = static_cast<int>(projParamsRGB.y * rgbPos3D.y / rgbPos3D.z + projParamsRGB.w + 0.5f);
@@ -96,7 +96,25 @@ inline Vector3u compute_surfel_colour(const Vector3f& depthPos3D, const Matrix4f
 }
 
 /**
- * \brief TODO
+ * \brief Makes a surfel corresponding to a pixel in the live 2D depth image.
+ *
+ * \param locId                       The raster position of the pixel in the live 2D depth image.
+ * \param T                           A transformation from live 3D depth coordinates to global coordinates.
+ * \param vertexMap                   The live point cloud, created by back-projecting the pixels in the live 2D depth image.
+ * \param normalMap                   The normals computed for the points in the live point cloud.
+ * \param radiusMap                   The radii computed for the points in the live point cloud.
+ * \param colourMap                   The live 2D colour image.
+ * \param depthMapWidth               The width of the live 2D depth image.
+ * \param depthMapHeight              The height of the live 2D depth image.
+ * \param colourMapWidth              The width of the live 2D colour image.
+ * \param colourMapHeight             The height of the live 2D colour image.
+ * \param depthToRGB                  A transformation mapping live 3D depth coordinates to live 3D RGB coordinates.
+ * \param projParamsRGB               The intrinsic parameters of the colour camera.
+ * \param useGaussianSampleConfidence Whether or not to use a Gaussian-weighted sample confidence as described in the Keller paper.
+ * \param gaussianConfidenceSigma     The sigma value for the Gaussian used when calculating the sample confidence.
+ * \param maxSurfelRadius             The maximum radius a surfel is allowed to have.
+ * \param timestamp                   The current timestamp (i.e. frame number).
+ * \return                            The constructed surfel.
  */
 template <typename TSurfel>
 _CPU_AND_GPU_CODE_
