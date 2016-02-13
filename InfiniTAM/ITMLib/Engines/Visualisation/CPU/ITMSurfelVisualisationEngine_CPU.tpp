@@ -115,8 +115,14 @@ void ITMSurfelVisualisationEngine_CPU<TSurfel>::RenderImage(const ITMSurfelScene
       }
       break;
     }
+    case Base::RENDER_FLAT:
     case Base::RENDER_LAMBERTIAN:
+    case Base::RENDER_PHONG:
     {
+      SurfelLightingType lightingType = SLT_LAMBERTIAN;
+      if(type == Base::RENDER_FLAT) lightingType = SLT_FLAT;
+      else if(type == Base::RENDER_PHONG) lightingType = SLT_PHONG;
+
       const Vector3f lightPos = Vector3f(0.0f, -10.0f, -10.0f);
       const Vector3f viewerPos = Vector3f(pose->GetInvM().getColumn(3));
 
@@ -125,7 +131,7 @@ void ITMSurfelVisualisationEngine_CPU<TSurfel>::RenderImage(const ITMSurfelScene
 #endif
       for(int locId = 0; locId < pixelCount; ++locId)
       {
-        shade_pixel_grey(locId, surfelIndexImagePtr, surfels, lightPos, viewerPos, outputImagePtr);
+        shade_pixel_grey(locId, surfelIndexImagePtr, surfels, lightPos, viewerPos, lightingType, outputImagePtr);
       }
       break;
     }

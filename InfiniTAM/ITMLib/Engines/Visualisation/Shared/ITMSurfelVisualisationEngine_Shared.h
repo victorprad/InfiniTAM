@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "ITMSurfelVisualisationEngine_Settings.h"
 #include "../../../Objects/Scene/ITMRepresentationAccess.h"
 
 namespace ITMLib
@@ -253,12 +254,10 @@ void shade_pixel_depth(int locId, const unsigned int *surfelIndexImage, const TS
 template <typename TSurfel>
 _CPU_AND_GPU_CODE_
 void shade_pixel_grey(int locId, const unsigned int *surfelIndexImage, const TSurfel *surfels, const Vector3f& lightPos, const Vector3f& viewerPos,
-                      Vector4u *outputImage)
+                      SurfelLightingType lightingType, Vector4u *outputImage)
 {
-  bool usePhong = true;
-
-  const float ambient = usePhong ? 0.3f : 0.2f;
-  const float lambertianCoefficient = usePhong ? 0.35f : 0.8f;
+  const float ambient = lightingType == SLT_PHONG ? 0.3f : 0.2f;
+  const float lambertianCoefficient = lightingType == SLT_PHONG ? 0.35f : 0.8f;
   const float phongCoefficient = 0.35f;
   const float phongExponent = 20.0f;
 
@@ -276,10 +275,10 @@ void shade_pixel_grey(int locId, const unsigned int *surfelIndexImage, const TSu
     float lambertian = CLAMP(NdotL, 0.0f, 1.0f);
 
     // Determine the intensity of the pixel using the Lambertian lighting equation.
-    float intensity = ambient + lambertianCoefficient * lambertian;
+    float intensity = lightingType != SLT_FLAT ? ambient + lambertianCoefficient * lambertian : 1.0f;
 
     // If we're using Phong lighting:
-    if(usePhong)
+    if(lightingType == SLT_PHONG)
     {
       // Calculate the Phong lighting term.
       Vector3f R = 2.0f * N * NdotL - L;
@@ -292,8 +291,6 @@ void shade_pixel_grey(int locId, const unsigned int *surfelIndexImage, const TSu
 
     // Fill in the final value for the pixel.
     value = Vector4u((uchar)(intensity * 255.0f));
-
-    //if(surfel.confidence < 25.0f) value = Vector4u((uchar)0);
   }
 
   outputImage[locId] = value;

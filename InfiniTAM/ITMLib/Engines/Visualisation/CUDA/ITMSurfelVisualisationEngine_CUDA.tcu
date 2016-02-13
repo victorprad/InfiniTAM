@@ -82,12 +82,12 @@ __global__ void ck_shade_pixel_depth(int pixelCount, const unsigned int *surfelI
 
 template <typename TSurfel>
 __global__ void ck_shade_pixel_grey(int pixelCount, const unsigned int *surfelIndexImage, const TSurfel *surfels, Vector3f lightPos, Vector3f viewerPos,
-                                    Vector4u *outputImage)
+                                    SurfelLightingType lightingType, Vector4u *outputImage)
 {
   int locId = threadIdx.x + blockDim.x * blockIdx.x;
   if(locId < pixelCount)
   {
-    shade_pixel_grey(locId, surfelIndexImage, surfels, lightPos, viewerPos, outputImage);
+    shade_pixel_grey(locId, surfelIndexImage, surfels, lightPos, viewerPos, lightingType, outputImage);
   }
 }
 
@@ -239,11 +239,17 @@ void ITMSurfelVisualisationEngine_CUDA<TSurfel>::RenderImage(const ITMSurfelScen
       ORcudaKernelCheck;
       break;
     }
+    case Base::RENDER_FLAT:
     case Base::RENDER_LAMBERTIAN:
+    case Base::RENDER_PHONG:
     {
+      SurfelLightingType lightingType = SLT_LAMBERTIAN;
+      if(type == Base::RENDER_FLAT) lightingType = SLT_FLAT;
+      else if(type == Base::RENDER_PHONG) lightingType = SLT_PHONG;
+
       const Vector3f lightPos = Vector3f(0.0f, -10.0f, -10.0f);
       const Vector3f viewerPos = Vector3f(pose->GetInvM().getColumn(3));
-      ck_shade_pixel_grey<<<numBlocks,threadsPerBlock>>>(pixelCount, surfelIndexImagePtr,surfels, lightPos, viewerPos, outputImagePtr);
+      ck_shade_pixel_grey<<<numBlocks,threadsPerBlock>>>(pixelCount, surfelIndexImagePtr,surfels, lightPos, viewerPos, lightingType, outputImagePtr);
       ORcudaKernelCheck;
       break;
     }

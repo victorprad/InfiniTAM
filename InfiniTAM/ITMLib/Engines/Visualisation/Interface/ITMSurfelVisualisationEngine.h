@@ -27,8 +27,10 @@ namespace ITMLib
     {
       RENDER_COLOUR,
       RENDER_CONFIDENCE,
+      RENDER_FLAT,
       RENDER_LAMBERTIAN,
       RENDER_NORMAL,
+      RENDER_PHONG,
     };
 
     //#################### DESTRUCTOR ####################

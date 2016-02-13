@@ -296,6 +296,7 @@ Engines/Visualisation/Interface/ITMVisualisationEngine.h
 
 ##
 SET(ITMLIB_ENGINES_VISUALISATION_SHARED_HEADERS
+Engines/Visualisation/Shared/ITMSurfelVisualisationEngine_Settings.h
 Engines/Visualisation/Shared/ITMSurfelVisualisationEngine_Shared.h
 Engines/Visualisation/Shared/ITMVisualisationEngine_Shared.h
 )
