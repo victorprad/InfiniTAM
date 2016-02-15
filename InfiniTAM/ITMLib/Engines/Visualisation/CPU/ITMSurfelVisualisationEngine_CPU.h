@@ -44,6 +44,6 @@ namespace ITMLib
     /** Override */
     virtual void MakeIndexImage(const ITMSurfelScene<TSurfel> *scene, const ORUtils::SE3Pose *pose, const ITMIntrinsics *intrinsics,
                                 int width, int height, int scaleFactor, unsigned int *surfelIndexImage, bool useRadii,
-                                int *depthBuffer) const;
+                                UnstableSurfelRenderingMode unstableSurfelRenderingMode, int *depthBuffer) const;
   };
 }

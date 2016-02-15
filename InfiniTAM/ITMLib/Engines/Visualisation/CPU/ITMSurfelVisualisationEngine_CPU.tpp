@@ -165,7 +165,7 @@ MemoryDeviceType ITMSurfelVisualisationEngine_CPU<TSurfel>::GetMemoryType() cons
 template <typename TSurfel>
 void ITMSurfelVisualisationEngine_CPU<TSurfel>::MakeIndexImage(const ITMSurfelScene<TSurfel> *scene, const ORUtils::SE3Pose *pose, const ITMIntrinsics *intrinsics,
                                                                int width, int height, int scaleFactor, unsigned int *surfelIndexImage, bool useRadii,
-                                                               int *depthBuffer) const
+                                                               UnstableSurfelRenderingMode unstableSurfelRenderingMode, int *depthBuffer) const
 {
   const int pixelCount = width * height;
 
@@ -178,19 +178,26 @@ void ITMSurfelVisualisationEngine_CPU<TSurfel>::MakeIndexImage(const ITMSurfelSc
   }
 
   const Matrix4f& invT = pose->GetM();
+  const ITMSurfelSceneParams& sceneParams = scene->GetParams();
   const int surfelCount = static_cast<int>(scene->GetSurfelCount());
   const TSurfel *surfels = scene->GetSurfels()->GetData(MEMORYDEVICE_CPU);
 
   // Note: This is deliberately not parallelised (it would be slower due to the synchronisation needed).
   for(int surfelId = 0; surfelId < surfelCount; ++surfelId)
   {
-    update_depth_buffer_for_surfel(surfelId, surfels, invT, *intrinsics, width, height, scaleFactor, useRadii, depthBuffer);
+    update_depth_buffer_for_surfel(
+      surfelId, surfels, invT, *intrinsics, width, height, scaleFactor, useRadii, unstableSurfelRenderingMode,
+      sceneParams.stableSurfelConfidence, sceneParams.unstableSurfelZOffset, depthBuffer
+    );
   }
 
   // Note: This is deliberately not parallelised (it would be slower due to the synchronisation needed).
   for(int surfelId = 0; surfelId < surfelCount; ++surfelId)
   {
-    update_index_image_for_surfel(surfelId, surfels, invT, *intrinsics, width, height, scaleFactor, depthBuffer, useRadii, surfelIndexImage);
+    update_index_image_for_surfel(
+      surfelId, surfels, invT, *intrinsics, width, height, scaleFactor, depthBuffer, useRadii, unstableSurfelRenderingMode,
+      sceneParams.stableSurfelConfidence, sceneParams.unstableSurfelZOffset, surfelIndexImage
+    );
   }
 }
 

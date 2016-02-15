@@ -15,7 +15,7 @@ ITMSurfelVisualisationEngine<TSurfel>::~ITMSurfelVisualisationEngine()
 
 template <typename TSurfel>
 void ITMSurfelVisualisationEngine<TSurfel>::FindSurface(const ITMSurfelScene<TSurfel> *scene, const ORUtils::SE3Pose *pose, const ITMIntrinsics *intrinsics,
-                                                        bool useRadii, ITMSurfelRenderState *renderState) const
+                                                        bool useRadii, UnstableSurfelRenderingMode unstableSurfelRenderingMode, ITMSurfelRenderState *renderState) const
 {
   MemoryDeviceType memoryType = GetMemoryType();
   MakeIndexImage(
@@ -27,13 +27,14 @@ void ITMSurfelVisualisationEngine<TSurfel>::FindSurface(const ITMSurfelScene<TSu
     1,
     renderState->GetIndexImage()->GetData(memoryType),
     useRadii,
+    unstableSurfelRenderingMode,
     renderState->GetDepthBuffer()->GetData(memoryType)
   );
 }
 
 template <typename TSurfel>
 void ITMSurfelVisualisationEngine<TSurfel>::FindSurfaceSuper(const ITMSurfelScene<TSurfel> *scene, const ORUtils::SE3Pose *pose, const ITMIntrinsics *intrinsics,
-                                                             ITMSurfelRenderState *renderState) const
+                                                             UnstableSurfelRenderingMode unstableSurfelRenderingMode, ITMSurfelRenderState *renderState) const
 {
   MemoryDeviceType memoryType = GetMemoryType();
   MakeIndexImage(
@@ -45,6 +46,7 @@ void ITMSurfelVisualisationEngine<TSurfel>::FindSurfaceSuper(const ITMSurfelScen
     scene->GetParams().supersamplingFactor,
     renderState->GetIndexImageSuper()->GetData(memoryType),
     false,
+    unstableSurfelRenderingMode,
     renderState->GetDepthBufferSuper()->GetData(memoryType)
   );
 }

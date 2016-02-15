@@ -320,13 +320,21 @@ void shade_pixel_normal(int locId, const unsigned int *surfelIndexImage, const T
 template <typename TSurfel>
 _CPU_AND_GPU_CODE_
 inline void update_depth_buffer_for_surfel(int surfelId, const TSurfel *surfels, const Matrix4f& invT, const ITMIntrinsics& intrinsics,
-                                           int indexImageWidth, int indexImageHeight, int scaleFactor, bool useRadii, int *depthBuffer)
+                                           int indexImageWidth, int indexImageHeight, int scaleFactor, bool useRadii,
+                                           UnstableSurfelRenderingMode unstableSurfelRenderingMode, float stableSurfelConfidence,
+                                           int unstableSurfelZOffset, int *depthBuffer)
 {
   const TSurfel surfel = surfels[surfelId];
+
+  bool unstableSurfel = surfel.confidence < stableSurfelConfidence;
+  if(unstableSurfel && unstableSurfelRenderingMode == USR_DONOTRENDER) return;
+
   int locId, scaledZ;
   float z;
   if(project_surfel_to_index_image(surfel, invT, intrinsics, indexImageWidth, indexImageHeight, scaleFactor, locId, z, scaledZ))
   {
+    if(unstableSurfel && unstableSurfelRenderingMode == USR_FAUTEDEMIEUX) scaledZ += unstableSurfelZOffset;
+
     if(useRadii)
     {
       int cx, cy, minX, minY, maxX, maxY, projectedRadiusSquared;
@@ -376,14 +384,20 @@ template <typename TSurfel>
 _CPU_AND_GPU_CODE_
 inline void update_index_image_for_surfel(int surfelId, const TSurfel *surfels, const Matrix4f& invT, const ITMIntrinsics& intrinsics,
                                           int indexImageWidth, int indexImageHeight, int scaleFactor, const int *depthBuffer, bool useRadii,
-                                          unsigned int *surfelIndexImage)
+                                          UnstableSurfelRenderingMode unstableSurfelRenderingMode, float stableSurfelConfidence,
+                                          int unstableSurfelZOffset, unsigned int *surfelIndexImage)
 {
   const TSurfel surfel = surfels[surfelId];
+
+  bool unstableSurfel = surfel.confidence < stableSurfelConfidence;
+  if(unstableSurfel && unstableSurfelRenderingMode == USR_DONOTRENDER) return;
+
   int locId, scaledZ;
   float z;
   if(project_surfel_to_index_image(surfel, invT, intrinsics, indexImageWidth, indexImageHeight, scaleFactor, locId, z, scaledZ))
   {
     unsigned int surfelIdPlusOne = static_cast<unsigned int>(surfelId + 1);
+    if(unstableSurfel && unstableSurfelRenderingMode == USR_FAUTEDEMIEUX) scaledZ += unstableSurfelZOffset;
 
     if(useRadii)
     {

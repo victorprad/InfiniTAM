@@ -104,24 +104,32 @@ __global__ void ck_shade_pixel_normal(int pixelCount, const unsigned int *surfel
 template <typename TSurfel>
 __global__ void ck_update_depth_buffer_for_surfel(int surfelCount, const TSurfel *surfels, Matrix4f invT, ITMIntrinsics intrinsics,
                                                   int indexImageWidth, int indexImageHeight, int scaleFactor, bool useRadii,
-                                                  int *depthBuffer)
+                                                  UnstableSurfelRenderingMode unstableSurfelRenderingMode, float stableSurfelConfidence,
+                                                  int unstableSurfelZOffset, int *depthBuffer)
 {
   int surfelId = threadIdx.x + blockDim.x * blockIdx.x;
   if(surfelId < surfelCount)
   {
-    update_depth_buffer_for_surfel(surfelId, surfels, invT, intrinsics, indexImageWidth, indexImageHeight, scaleFactor, useRadii, depthBuffer);
+    update_depth_buffer_for_surfel(
+      surfelId, surfels, invT, intrinsics, indexImageWidth, indexImageHeight, scaleFactor, useRadii, unstableSurfelRenderingMode,
+      stableSurfelConfidence, unstableSurfelZOffset, depthBuffer
+    );
   }
 }
 
 template <typename TSurfel>
 __global__ void ck_update_index_image_for_surfel(int surfelCount, const TSurfel *surfels, Matrix4f invT, ITMIntrinsics intrinsics,
-                                                 int indexImageWidth, int indexImageHeight, int scaleFactor, const int *depthBuffer,
-                                                 bool useRadii, unsigned int *surfelIndexImage)
+                                                 int indexImageWidth, int indexImageHeight, int scaleFactor, const int *depthBuffer, bool useRadii,
+                                                 UnstableSurfelRenderingMode unstableSurfelRenderingMode, float stableSurfelConfidence,
+                                                 int unstableSurfelZOffset, unsigned int *surfelIndexImage)
 {
   int surfelId = threadIdx.x + blockDim.x * blockIdx.x;
   if(surfelId < surfelCount)
   {
-    update_index_image_for_surfel(surfelId, surfels, invT, intrinsics, indexImageWidth, indexImageHeight, scaleFactor, depthBuffer, useRadii, surfelIndexImage);
+    update_index_image_for_surfel(
+      surfelId, surfels, invT, intrinsics, indexImageWidth, indexImageHeight, scaleFactor, depthBuffer, useRadii,
+      unstableSurfelRenderingMode, stableSurfelConfidence, unstableSurfelZOffset, surfelIndexImage
+    );
   }
 }
 
@@ -278,7 +286,7 @@ MemoryDeviceType ITMSurfelVisualisationEngine_CUDA<TSurfel>::GetMemoryType() con
 template <typename TSurfel>
 void ITMSurfelVisualisationEngine_CUDA<TSurfel>::MakeIndexImage(const ITMSurfelScene<TSurfel> *scene, const ORUtils::SE3Pose *pose, const ITMIntrinsics *intrinsics,
                                                                 int width, int height, int scaleFactor, unsigned int *surfelIndexImage, bool useRadii,
-                                                                int *depthBuffer) const
+                                                                UnstableSurfelRenderingMode unstableSurfelRenderingMode, int *depthBuffer) const
 {
   const int pixelCount = width * height;
 
@@ -292,6 +300,7 @@ void ITMSurfelVisualisationEngine_CUDA<TSurfel>::MakeIndexImage(const ITMSurfelS
   );
   ORcudaKernelCheck;
 
+  const ITMSurfelSceneParams& sceneParams = scene->GetParams();
   const int surfelCount = static_cast<int>(scene->GetSurfelCount());
   numBlocks = (surfelCount + threadsPerBlock - 1) / threadsPerBlock;
 
@@ -304,6 +313,9 @@ void ITMSurfelVisualisationEngine_CUDA<TSurfel>::MakeIndexImage(const ITMSurfelS
     height,
     scaleFactor,
     useRadii,
+    unstableSurfelRenderingMode,
+    sceneParams.stableSurfelConfidence,
+    sceneParams.unstableSurfelZOffset,
     depthBuffer
   );
   ORcudaKernelCheck;
@@ -318,6 +330,9 @@ void ITMSurfelVisualisationEngine_CUDA<TSurfel>::MakeIndexImage(const ITMSurfelS
     scaleFactor,
     depthBuffer,
     useRadii,
+    unstableSurfelRenderingMode,
+    sceneParams.stableSurfelConfidence,
+    sceneParams.unstableSurfelZOffset,
     surfelIndexImage
   );
   ORcudaKernelCheck;

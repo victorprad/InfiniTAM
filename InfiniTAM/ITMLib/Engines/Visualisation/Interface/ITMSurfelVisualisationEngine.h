@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "../Shared/ITMSurfelVisualisationEngine_Settings.h"
 #include "../../../Objects/Camera/ITMIntrinsics.h"
 #include "../../../Objects/RenderStates/ITMSurfelRenderState.h"
 #include "../../../Objects/Scene/ITMSurfelScene.h"
@@ -75,13 +76,13 @@ namespace ITMLib
      * \brief TODO
      */
     void FindSurface(const ITMSurfelScene<TSurfel> *scene, const ORUtils::SE3Pose *pose, const ITMIntrinsics *intrinsics,
-                     bool useRadii, ITMSurfelRenderState *renderState) const;
+                     bool useRadii, UnstableSurfelRenderingMode unstableSurfelRenderingMode, ITMSurfelRenderState *renderState) const;
 
     /**
      * \brief TODO
      */
     void FindSurfaceSuper(const ITMSurfelScene<TSurfel> *scene, const ORUtils::SE3Pose *pose, const ITMIntrinsics *intrinsics,
-                          ITMSurfelRenderState *renderState) const;
+                          UnstableSurfelRenderingMode unstableSurfelRenderingMode, ITMSurfelRenderState *renderState) const;
 
     //#################### PRIVATE ABSTRACT MEMBER FUNCTIONS ####################
   private:
@@ -95,6 +96,6 @@ namespace ITMLib
      */
     virtual void MakeIndexImage(const ITMSurfelScene<TSurfel> *scene, const ORUtils::SE3Pose *pose, const ITMIntrinsics *intrinsics,
                                 int width, int height, int scaleFactor, unsigned int *surfelIndexImage, bool useRadii,
-                                int *depthBuffer) const = 0;
+                                UnstableSurfelRenderingMode unstableSurfelRenderingMode, int *depthBuffer) const = 0;
   };
 }
