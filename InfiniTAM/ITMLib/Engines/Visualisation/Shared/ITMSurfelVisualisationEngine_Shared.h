@@ -329,8 +329,6 @@ inline void update_depth_buffer_for_surfel(int surfelId, const TSurfel *surfels,
   {
     if(useRadii)
     {
-      if(surfel.confidence < 25.0f) return;
-
       int cx, cy, minX, minY, maxX, maxY, projectedRadiusSquared;
       calculate_projected_surfel_bounds(
         locId, indexImageWidth, indexImageHeight, intrinsics, surfel.radius, z,
