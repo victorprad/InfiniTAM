@@ -11,20 +11,42 @@ namespace ITMLib
 //#################### HELPERS ####################
 
 /**
- * \brief TODO
+ * \brief Calculates the bounds within an index image within which to draw a projected surfel.
+ *
+ * Note that a circular surfel should really project to an ellipse, but we use a circle for simplicity.
+ * The difference in rendering quality this makes looks relatively minor in the literature.
+ *
+ * \param locId                   The raster position of the pixel in the index image to which the surfel's centre projects.
+ * \param indexImageWidth         The width of the index image.
+ * \param indexImageHeight        The height of the index image.
+ * \param intrinsics              The intrinsic parameters of the depth camera.
+ * \param radius                  The radius of the surfel.
+ * \param z                       The depth value of the surfel's centre in the live camera frame.
+ * \param cx                      The x coordinate of the pixel in the index image to which the surfel's centre projects.
+ * \param cy                      The y coordinate of the pixel in the index image to which the surfel's centre projects.
+ * \param projectedRadiusSquared  The square of the radius of the circle to use to represent the projected surfel in the index image.
+ * \param minX                    The lower x bound of a bounding box around the circle in the index image (clamped to the image bounds).
+ * \param minY                    The lower y bound of a bounding box around the circle in the index image (clamped to the image bounds).
+ * \param maxX                    The upper x bound of a bounding box around the circle in the index image (clamped to the image bounds).
+ * \param maxY                    The upper y bound of a bounding box around the circle in the index image (clamped to the image bounds).
  */
 _CPU_AND_GPU_CODE_
 inline void calculate_projected_surfel_bounds(int locId, int indexImageWidth, int indexImageHeight, const ITMIntrinsics& intrinsics, float radius, float z,
                                               int& cx, int& cy, int& projectedRadiusSquared, int& minX, int& minY, int& maxX, int& maxY)
 {
+  // Calculate the (x,y) coordinates of the pixel in the index image to which the surfel's centre projects.
   cx = locId % indexImageWidth, cy = locId / indexImageWidth;
 
+  // Calculate the square of the radius of the circle to use to represent the projected surfel in the index image.
   float f = 0.5f * (intrinsics.projectionParamsSimple.fx + intrinsics.projectionParamsSimple.fy);
   int projectedRadius = static_cast<int>(radius * f / z + 0.5f);
   projectedRadiusSquared = projectedRadius * projectedRadius;
 
+  // Calculate the lower and upper bounds of a bounding box around the circle in the index image.
   minX = cx - projectedRadius, maxX = cx + projectedRadius;
   minY = cy - projectedRadius, maxY = cy + projectedRadius;
+
+  // Clamp these bounds to the image bounds.
   if(minX < 0) minX = 0;
   if(maxX >= indexImageWidth) maxX = indexImageWidth - 1;
   if(minY < 0) minY = 0;
@@ -44,6 +66,44 @@ inline Vector4u colourise_normal(const Vector3f& n)
     (uchar)((0.3f + (-n.z + 1.0f)*0.35f)*255.0f),
     255
   );
+}
+
+/**
+ * \brief TODO
+ */
+template <typename TSurfel>
+_CPU_AND_GPU_CODE_
+inline bool project_surfel_to_index_image(const TSurfel& surfel, const Matrix4f& invT, const ITMIntrinsics& intrinsics,
+                                          int indexImageWidth, int indexImageHeight, int scaleFactor,
+                                          int& locId, float& z, int& scaledZ)
+{
+  // Convert the surfel point into the coordinates of the current frame using v_i = T_i^{-1} v_i^g.
+  Vector3f p = surfel.position;
+  Vector4f vg(p.x, p.y, p.z, 1.0f);
+  Vector4f v = invT * vg;
+
+  // If the point isn't in front of the viewer, early out.
+  z = v.z;
+  if(z <= 0.0f) return false;
+
+  // Project the point onto the image plane of the current frame.
+  float ux = intrinsics.projectionParamsSimple.fx * v.x / z + intrinsics.projectionParamsSimple.px;
+  float uy = intrinsics.projectionParamsSimple.fy * v.y / z + intrinsics.projectionParamsSimple.py;
+
+  // Convert the projected point into index map coordinates.
+  int x = static_cast<int>(ux * scaleFactor + 0.5f);
+  int y = static_cast<int>(uy * scaleFactor + 0.5f);
+
+  // If the resulting point is outside the index map, early out.
+  if(x < 0 || x >= indexImageWidth || y < 0 || y >= indexImageHeight) return false;
+
+  // Calculate the raster position of the point in the index map.
+  locId = y * indexImageWidth + x;
+
+  // Calculate an integer depth value for the point for storage in the depth buffer.
+  scaledZ = static_cast<int>(z * 100000);
+
+  return true;
 }
 
 //#################### MAIN FUNCTIONS ####################
@@ -144,44 +204,6 @@ inline void copy_surfel_to_buffers(int surfelId, const TSurfel *surfels, float *
     colours[offset+1] = c.g;
     colours[offset+2] = c.b;
   }
-}
-
-/**
- * \brief TODO
- */
-template <typename TSurfel>
-_CPU_AND_GPU_CODE_
-inline bool project_surfel_to_index_image(const TSurfel& surfel, const Matrix4f& invT, const ITMIntrinsics& intrinsics,
-                                          int indexImageWidth, int indexImageHeight, int scaleFactor,
-                                          int& locId, float& z, int& scaledZ)
-{
-  // Convert the surfel point into the coordinates of the current frame using v_i = T_i^{-1} v_i^g.
-  Vector3f p = surfel.position;
-  Vector4f vg(p.x, p.y, p.z, 1.0f);
-  Vector4f v = invT * vg;
-
-  // If the point isn't in front of the viewer, early out.
-  z = v.z;
-  if(z <= 0.0f) return false;
-
-  // Project the point onto the image plane of the current frame.
-  float ux = intrinsics.projectionParamsSimple.fx * v.x / z + intrinsics.projectionParamsSimple.px;
-  float uy = intrinsics.projectionParamsSimple.fy * v.y / z + intrinsics.projectionParamsSimple.py;
-
-  // Convert the projected point into index map coordinates.
-  int x = static_cast<int>(ux * scaleFactor + 0.5f);
-  int y = static_cast<int>(uy * scaleFactor + 0.5f);
-
-  // If the resulting point is outside the index map, early out.
-  if(x < 0 || x >= indexImageWidth || y < 0 || y >= indexImageHeight) return false;
-
-  // Calculate the raster position of the point in the index map.
-  locId = y * indexImageWidth + x;
-
-  // Calculate an integer depth value for the point for storage in the depth buffer.
-  scaledZ = static_cast<int>(z * 100000);
-
-  return true;
 }
 
 /**
