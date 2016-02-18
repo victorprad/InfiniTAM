@@ -307,7 +307,15 @@ void shade_pixel_depth(int locId, const unsigned int *surfelIndexImage, const TS
 }
 
 /**
- * \brief TODO
+ * \brief Writes a value for the light intensity at the surfel at a particular raster position in the index image to an output image.
+ *
+ * \param locId             The raster position in the index image.
+ * \param surfelIndexImage  The index image.
+ * \param surfels           The surfels in the scene.
+ * \param lightPos          The position of the light (in global coordinates).
+ * \param viewerPos         The position of the viewer (in global coordinates).
+ * \param lightingType      The type of lighting model to use (e.g. Lambertian or Phong).
+ * \param outputImage       The output image.
  */
 template <typename TSurfel>
 _CPU_AND_GPU_CODE_
