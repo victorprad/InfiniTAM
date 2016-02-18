@@ -49,7 +49,7 @@ namespace ITMLib
 				{
 					for (uint i = 0; i < noTotalTriangles; i++)
 					{
-                        const auto& clr = triangleArray[i].clr;
+                        const Vector3f clr = triangleArray[i].clr;
                         fprintf(f, "v %f %f %f %f %f %f\n", triangleArray[i].p0.x, triangleArray[i].p0.y, triangleArray[i].p0.z, clr.r, clr.g, clr.b);
                         fprintf(f, "v %f %f %f %f %f %f\n", triangleArray[i].p1.x, triangleArray[i].p1.y, triangleArray[i].p1.z, clr.r, clr.g, clr.b);
                         fprintf(f, "v %f %f %f %f %f %f\n", triangleArray[i].p2.x, triangleArray[i].p2.y, triangleArray[i].p2.z, clr.r, clr.g, clr.b);
