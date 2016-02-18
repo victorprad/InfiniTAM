@@ -21,7 +21,7 @@ namespace ITMLib
  * \param indexImageHeight        The height of the index image.
  * \param intrinsics              The intrinsic parameters of the depth camera.
  * \param radius                  The radius of the surfel.
- * \param z                       The depth value of the surfel's centre in the live camera frame.
+ * \param z                       The depth value of the surfel's centre in live 3D depth coordinates.
  * \param cx                      The x coordinate of the pixel in the index image to which the surfel's centre projects.
  * \param cy                      The y coordinate of the pixel in the index image to which the surfel's centre projects.
  * \param projectedRadiusSquared  The square of the radius of the circle to use to represent the projected surfel in the index image.
@@ -69,7 +69,18 @@ inline Vector4u colourise_normal(const Vector3f& n)
 }
 
 /**
- * \brief TODO
+ * \brief Projects a surfel into an index image.
+ *
+ * \param surfel            The surfel to project.
+ * \param invT              A transformation mapping global coordinates to live 3D depth coordinates.
+ * \param intrinsics        The intrinsic parameters of the depth camera.
+ * \param indexImageWidth   The width of the index image.
+ * \param indexImageHeight  The height of the index image.
+ * \param scaleFactor       The scale factor by which the index image is supersampled with respect to the depth image.
+ * \param locId             The raster position of the pixel in the index image to which the surfel's centre projects.
+ * \param z                 The depth value of the surfel's centre in live 3D depth coordinates.
+ * \param scaledZ           An integer representation of the depth value for storage in the depth buffer.
+ * \return                  true, if the surfel projected to a pixel within the bounds of the index image, or false otherwise.
  */
 template <typename TSurfel>
 _CPU_AND_GPU_CODE_
@@ -90,14 +101,14 @@ inline bool project_surfel_to_index_image(const TSurfel& surfel, const Matrix4f&
   float ux = intrinsics.projectionParamsSimple.fx * v.x / z + intrinsics.projectionParamsSimple.px;
   float uy = intrinsics.projectionParamsSimple.fy * v.y / z + intrinsics.projectionParamsSimple.py;
 
-  // Convert the projected point into index map coordinates.
+  // Convert the projected point into index image coordinates.
   int x = static_cast<int>(ux * scaleFactor + 0.5f);
   int y = static_cast<int>(uy * scaleFactor + 0.5f);
 
-  // If the resulting point is outside the index map, early out.
+  // If the resulting point is outside the index image, early out.
   if(x < 0 || x >= indexImageWidth || y < 0 || y >= indexImageHeight) return false;
 
-  // Calculate the raster position of the point in the index map.
+  // Calculate the raster position of the point in the index image.
   locId = y * indexImageWidth + x;
 
   // Calculate an integer depth value for the point for storage in the depth buffer.
