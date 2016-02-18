@@ -414,23 +414,30 @@ inline void update_depth_buffer_for_surfel(int surfelId, const TSurfel *surfels,
 {
   const TSurfel surfel = surfels[surfelId];
 
+  // Check whether the surfel is unstable. If it is, and we're not rendering unstable surfels, early out.
   bool unstableSurfel = surfel.confidence < stableSurfelConfidence;
   if(unstableSurfel && unstableSurfelRenderingMode == USR_DONOTRENDER) return;
 
+  // If the projection of the surfel falls within the bounds of the index image:
   int locId, scaledZ;
   float z;
   if(project_surfel_to_index_image(surfel, invT, intrinsics, indexImageWidth, indexImageHeight, scaleFactor, locId, z, scaledZ))
   {
+    // If the surfel's unstable and we're giving preference to stable surfels, add a z offset to ensure that
+    // it will only be rendered if there's no stable alternative along the same ray.
     if(unstableSurfel && unstableSurfelRenderingMode == USR_FAUTEDEMIEUX) scaledZ += unstableSurfelZOffset;
 
     if(useRadii)
     {
+      // If we're rendering the surfel as a circle rather than a point, calculate the radius of the projected
+      // surfel and its bounds within the index image.
       int cx, cy, minX, minY, maxX, maxY, projectedRadiusSquared;
       calculate_projected_surfel_bounds(
         locId, indexImageWidth, indexImageHeight, intrinsics, surfel.radius, z,
         cx, cy, projectedRadiusSquared, minX, minY, maxX, maxY
       );
 
+      // Rasterise the circle into the depth buffer.
       for(int y = minY; y <= maxY; ++y)
       {
         int yOffset = y - cy;
@@ -455,6 +462,7 @@ inline void update_depth_buffer_for_surfel(int surfelId, const TSurfel *surfels,
     }
     else
     {
+      // If we're rendering the surfel as a point, simply update the corresponding pixel in the depth buffer as necessary.
 #if defined(__CUDACC__) && defined(__CUDA_ARCH__)
       atomicMin(&depthBuffer[locId], scaledZ);
 #else
