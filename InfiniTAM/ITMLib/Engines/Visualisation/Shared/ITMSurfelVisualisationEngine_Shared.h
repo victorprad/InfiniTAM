@@ -189,7 +189,13 @@ inline void copy_surfel_data_to_icp_maps(int locId, const TSurfel *surfels, cons
 }
 
 /**
- * \brief TODO
+ * \brief Copies a surfel's information into property-specific buffers (these can be used for rendering the surfel scene using OpenGL).
+ *
+ * \param surfelId  The ID of the surfel whose information is to be copied.
+ * \param surfels   The surfels in the scene.
+ * \param positions A buffer into which to write the surfel's position.
+ * \param normals   A buffer into which to write the surfel's normal.
+ * \param colours   A buffer into which to write the surfel's colour.
  */
 template <typename TSurfel>
 _CPU_AND_GPU_CODE_
@@ -218,7 +224,12 @@ inline void copy_surfel_to_buffers(int surfelId, const TSurfel *surfels, float *
 }
 
 /**
- * \brief TODO
+ * \brief Writes the colour of the surfel at a particular raster position in the index image to an output image.
+ *
+ * \param locId             The raster position in the index image.
+ * \param surfelIndexImage  The index image.
+ * \param surfels           The surfels in the scene.
+ * \param outputImage       The output image.
  */
 template <typename TSurfel>
 _CPU_AND_GPU_CODE_
@@ -237,7 +248,13 @@ void shade_pixel_colour(int locId, const unsigned int *surfelIndexImage, const T
 }
 
 /**
- * \brief TODO
+ * \brief Writes (a colourised version of) the confidence value of the surfel at a particular raster position in the index image to an output image.
+ *
+ * \param locId                   The raster position in the index image.
+ * \param surfelIndexImage        The index image.
+ * \param surfels                 The surfels in the scene.
+ * \param stableSurfelConfidence  The confidence value a surfel must have in order for it to be considered "stable".
+ * \param outputImage             The output image.
  */
 template <typename TSurfel>
 _CPU_AND_GPU_CODE_
@@ -250,6 +267,8 @@ void shade_pixel_confidence(int locId, const unsigned int *surfelIndexImage, con
   {
     float confidence = surfels[surfelIndex].confidence;
     if(confidence > stableSurfelConfidence) confidence = stableSurfelConfidence;
+
+    // Colourise the surfel's confidence value (red = unstable, green = stable).
     uchar g = (uchar)(255.0f * confidence / stableSurfelConfidence);
     col4 = Vector4u(255 - g, g, 0, 255);
   }
@@ -258,7 +277,13 @@ void shade_pixel_confidence(int locId, const unsigned int *surfelIndexImage, con
 }
 
 /**
- * \brief TODO
+ * \brief Writes the distance from a camera position of the surfel at a particular raster position in the index image to an output image.
+ *
+ * \param locId             The raster position in the index image.
+ * \param surfelIndexImage  The index image.
+ * \param surfels           The surfels in the scene.
+ * \param cameraPosition    The camera position.
+ * \param outputImage       The output image.
  */
 template <typename TSurfel>
 _CPU_AND_GPU_CODE_
@@ -330,7 +355,12 @@ void shade_pixel_grey(int locId, const unsigned int *surfelIndexImage, const TSu
 }
 
 /**
- * \brief TODO
+ * \brief Writes (a colourised version of) the normal of the surfel at a particular raster position in the index image to an output image.
+ *
+ * \param locId             The raster position in the index image.
+ * \param surfelIndexImage  The index image.
+ * \param surfels           The surfels in the scene.
+ * \param outputImage       The output image.
  */
 template <typename TSurfel>
 _CPU_AND_GPU_CODE_
