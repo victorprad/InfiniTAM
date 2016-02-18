@@ -386,7 +386,24 @@ void shade_pixel_normal(int locId, const unsigned int *surfelIndexImage, const T
 }
 
 /**
- * \brief TODO
+ * \brief Updates the depth buffer for an index image by projecting a surfel into the coordinate system of the index image and
+ *        writing its depth value into the depth buffer if it is closer than the current nearest surfel along its ray.
+ *
+ * Note that this does not change the index image itself, it merely fills in the depth buffer so that the index image can then
+ * be efficiently updated in parallel.
+ *
+ * \param surfelId                    The ID of the surfel being projected.
+ * \param surfels                     The surfels in the scene.
+ * \param invT                        A transformation mapping global coordinates to live 3D depth coordinates.
+ * \param intrinsics                  The intrinsic parameters of the depth camera.
+ * \param indexImageWidth             The width of the index image.
+ * \param indexImageHeight            The height of the index image.
+ * \param scaleFactor                 The scale factor by which the index image is supersampled with respect to the depth image.
+ * \param useRadii                    Whether or not to render each surfel as a circle rather than a point.
+ * \param unstableSurfelRenderingMode Whether to always/never render unstable surfels, or render them only if there's no stable alternative.
+ * \param stableSurfelConfidence      The confidence value a surfel must have in order for it to be considered "stable".
+ * \param unstableSurfelZOffset       The z offset to apply to unstable surfels when trying to ensure that they are only rendered if there is no stable alternative.
+ * \param depthBuffer                 The depth buffer for the index image.
  */
 template <typename TSurfel>
 _CPU_AND_GPU_CODE_
