@@ -160,7 +160,16 @@ inline void copy_correspondences_to_buffers(int surfelId, const TSurfel *surfels
 }
 
 /**
- * \brief TODO
+ * \brief Copies a surfel's position and normal into buffers that will be used for ICP tracking.
+ *
+ * \param locId                       The raster position of the surfel in the index image.
+ * \param surfels                     The surfels in the scene.
+ * \param surfelIndexImage            The index image.
+ * \param invT                        A transformation mapping global coordinates to live 3D depth coordinates.
+ * \param trackingSurfelMaxDepth      The maximum depth a surfel must have in order for it to be used for tracking.
+ * \param trackingSurfelMinConfidence The minimum confidence value a surfel must have in order for it to be used for tracking.
+ * \param pointsMap                   A buffer into which to write the surfel's position.
+ * \param normalsMap                  A buffer into which to write the surfel's normal.
  */
 template <typename TSurfel>
 _CPU_AND_GPU_CODE_
@@ -168,20 +177,26 @@ inline void copy_surfel_data_to_icp_maps(int locId, const TSurfel *surfels, cons
                                          float trackingSurfelMaxDepth, float trackingSurfelMinConfidence, Vector4f *pointsMap, Vector4f *normalsMap)
 {
   int surfelIndex = surfelIndexImage[locId] - 1;
+
+  // If the specified raster position in the index image refers to a valid surfel:
   if(surfelIndex >= 0)
   {
     TSurfel surfel = surfels[surfelIndex];
     const Vector3f& p = surfel.position;
     const Vector3f& n = surfel.normal;
+
+    // If the surfel is sufficiently close to the camera and has a sufficiently high confidence value:
     Vector3f v = transform_point(invT, p);
     if(v.z <= trackingSurfelMaxDepth || surfel.confidence >= trackingSurfelMinConfidence)
     {
+      // Write the surfel's position and normal into the buffers.
       pointsMap[locId] = Vector4f(p.x, p.y, p.z, 1.0f);
       normalsMap[locId] = Vector4f(n.x, n.y, n.z, 0.0f);
       return;
     }
   }
 
+  // Otherwise, write a dummy position and normal into the buffers.
   Vector4f dummy;
   dummy.x = dummy.y = dummy.z = 0.0f; dummy.w = -1.0f;
   pointsMap[locId] = dummy;
