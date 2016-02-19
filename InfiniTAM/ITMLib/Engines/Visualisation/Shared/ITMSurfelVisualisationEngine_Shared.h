@@ -120,7 +120,11 @@ inline bool project_surfel_to_index_image(const TSurfel& surfel, const Matrix4f&
 //#################### MAIN FUNCTIONS ####################
 
 /**
- * \brief TODO
+ * \brief Clears the specified pixel of the surfel index image and the corresponding pixel in its depth buffer.
+ *
+ * \param locId             The raster position of the pixel in the index image.
+ * \param surfelIndexImage  The index image.
+ * \param depthBuffer       The depth buffer for the index image.
  */
 _CPU_AND_GPU_CODE_
 inline void clear_surfel_index_image(int locId, unsigned int *surfelIndexImage, int *depthBuffer)
