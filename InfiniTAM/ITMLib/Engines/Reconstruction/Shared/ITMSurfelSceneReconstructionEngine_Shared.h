@@ -575,7 +575,14 @@ inline void mark_for_removal_if_unstable(int surfelId, const TSurfel *surfels, i
 }
 
 /**
- * \brief TODO
+ * \brief Performs the surfel merge (if any) indicated by an entry in the merge target map.
+ *
+ * \param locId             The raster position of the entry in the merge target map.
+ * \param mergeTargetMap    The merge target map.
+ * \param surfels           The surfels in the scene.
+ * \param surfelRemovalMask A mask used to indicate which surfels should be removed in the next removal pass.
+ * \param indexImage        The index image.
+ * \param maxSurfelRadius   The maximum radius a surfel is allowed to have.
  */
 template <typename TSurfel>
 _CPU_AND_GPU_CODE_
