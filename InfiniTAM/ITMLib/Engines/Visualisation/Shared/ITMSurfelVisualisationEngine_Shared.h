@@ -54,7 +54,10 @@ inline void calculate_projected_surfel_bounds(int locId, int indexImageWidth, in
 }
 
 /**
- * \brief TODO
+ * \brief Computes a colour to represent the specified normal vector.
+ *
+ * \param n The normal vector.
+ * \return  A colour representation of the normal vector.
  */
 _CPU_AND_GPU_CODE_
 inline Vector4u colourise_normal(const Vector3f& n)
@@ -134,7 +137,13 @@ inline void clear_surfel_index_image(int locId, unsigned int *surfelIndexImage, 
 }
 
 /**
- * \brief TODO
+ * \brief Copies a surfel's correspondence information into buffers in order to support correspondence debugging using OpenGL.
+ *
+ * \param surfelId        The ID of the surfel.
+ * \param surfels         The surfels in the scene.
+ * \param newPositions    The buffer into which to store the "new" position of the surfel from its most recent merge.
+ * \param oldPositions    The buffer into which to store the "old" position of the surfel from its most recent merge.
+ * \param correspondences The buffer into which to store the "new" and "old" positions of the surfel for the purpose of rendering a line segment between them.
  */
 template <typename TSurfel>
 _CPU_AND_GPU_CODE_
