@@ -30,6 +30,11 @@ find_package(PNG QUIET)
 CANONIFY_BOOL(PNG_FOUND)
 message(STATUS "libpng found: ${PNG_FOUND}")
 
+find_package(FFmpeg QUIET)
+CANONIFY_BOOL(FFMPEG_FOUND)
+message(STATUS "FFmpeg found: ${FFMPEG_FOUND}")
+OPTION(WITH_FFMPEG "Build with FFmpeg support?" ${FFMPEG_FOUND})
+
 OPTION(WITH_CUDA "Build with CUDA support?" ${CUDA_FOUND})
 INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseOpenMP.cmake)
 INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseRealSense.cmake)
