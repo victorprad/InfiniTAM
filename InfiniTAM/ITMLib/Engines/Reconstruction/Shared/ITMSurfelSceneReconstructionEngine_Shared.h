@@ -505,7 +505,27 @@ inline void find_mergeable_surfel(int locId, const unsigned int *indexImage, int
 }
 
 /**
- * \brief TODO
+ * \brief Fuses a point in the live point cloud into the surfel in the scene with which it has been matched.
+ *
+ * \param locId                       The raster position of the point in the correspondence map.
+ * \param correspondenceMap           The correspondence map, each pixel of which indicates the surfel (if any) with which the relevant point in the live point cloud has been matched.
+ * \param T                           A transformation from live 3D depth coordinates to global coordinates.
+ * \param timestamp                   The current timestamp (i.e. frame number).
+ * \param vertexMap                   The live point cloud, created by back-projecting the pixels in the live 2D depth image.
+ * \param normalMap                   The normals computed for the points in the live point cloud.
+ * \param radiusMap                   The radii computed for the points in the live point cloud.
+ * \param colourMap                   The live 2D colour image.
+ * \param depthMapWidth               The width of the depth map.
+ * \param depthMapHeight              The height of the depth map.
+ * \param colourMapWidth              The width of the colour map.
+ * \param colourMapHeight             The height of the colour map.
+ * \param depthToRGB                  A transformation mapping live 3D depth coordinates to live 3D colour coordinates.
+ * \param projParamsRGB               The intrinsic parameters of the colour camera.
+ * \param deltaRadius                 The maximum fraction by which a new surfel can have a larger radius than the surfel into which it is being fused if full fusion is to occur.
+ * \param useGaussianSampleConfidence Whether or not to use a Gaussian-weighted sample confidence as described in the Keller paper.
+ * \param gaussianConfidenceSigma     The sigma value for the Gaussian used when calculating the sample confidence.
+ * \param maxSurfelRadius             The maximum radius a surfel is allowed to have.
+ * \param surfels                     The surfels in the scene.
  */
 template <typename TSurfel>
 _CPU_AND_GPU_CODE_
