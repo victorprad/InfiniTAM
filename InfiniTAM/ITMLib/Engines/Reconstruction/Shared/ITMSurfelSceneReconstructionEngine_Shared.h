@@ -533,7 +533,14 @@ inline void fuse_matched_point(int locId, const unsigned int *correspondenceMap,
 }
 
 /**
- * \brief TODO
+ * \brief Marks a surfel for removal if it has been unstable for longer than a specified period of time.
+ *
+ * \param surfelId                The ID of the surfel.
+ * \param surfels                 The surfels in the scene.
+ * \param timestamp               The current timestamp (i.e. frame number).
+ * \param stableSurfelConfidence  The confidence value a surfel must have in order for it to be considered "stable".
+ * \param unstableSurfelPeriod    The number of time steps a surfel is allowed to be unstable without being updated before being removed.
+ * \param surfelRemovalMask       A mask used to indicate which surfels should be removed in the next removal pass.
  */
 template <typename TSurfel>
 _CPU_AND_GPU_CODE_
