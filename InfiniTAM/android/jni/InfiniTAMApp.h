@@ -24,9 +24,12 @@ class InfiniTAMApp {
 
 	void StartProcessing(int useLiveCamera);
 	bool ProcessFrame(void);
+	void StopProcessing(void);
 
 	bool IsInitialized(void) const
 	{ return mIsInitialized; }
+
+	float getAverageTime(void);
 
 	private:
 	static InfiniTAMApp *globalInstance;

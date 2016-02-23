@@ -26,6 +26,9 @@ InfiniTAMApp::InfiniTAMApp(void)
 	winImageType[0] = ITMMainEngine::InfiniTAM_IMAGE_SCENERAYCAST;
 	winImageType[1] = ITMMainEngine::InfiniTAM_IMAGE_ORIGINAL_DEPTH;
 	winImageType[2] = ITMMainEngine::InfiniTAM_IMAGE_ORIGINAL_RGB;
+
+	sdkCreateTimer(&timer_instant);
+	sdkCreateTimer(&timer_average);
 }
 
 void InfiniTAMApp::InitGL(void)
@@ -148,8 +151,7 @@ void InfiniTAMApp::StartProcessing(int useLiveCamera)
 	ORcudaSafeCall(cudaThreadSynchronize());
 #endif
 
-	sdkCreateTimer(&timer_instant);
-	sdkCreateTimer(&timer_average);
+	sdkResetTimer(&timer_instant);
 	sdkResetTimer(&timer_average);
 
 	mIsInitialized = true;
@@ -178,5 +180,29 @@ bool InfiniTAMApp::ProcessFrame(void)
 	__android_log_print(ANDROID_LOG_VERBOSE, "InfiniTAM", "Process Frame finished: %f %f", sdkGetTimerValue(&timer_instant), sdkGetAverageTimerValue(&timer_average));
 
 	return true;
+}
+
+void InfiniTAMApp::StopProcessing(void)
+{
+	if (!mIsInitialized) return;
+	mIsInitialized = false;
+
+	if (mImageSource) delete mImageSource;
+	if (mImuSource) delete mImuSource;
+	if (mInternalSettings) delete mInternalSettings;
+	if (mMainEngine) delete mMainEngine;
+
+	for (int w = 0; w < NUM_WIN; w++) {
+		if (outImage[w] != NULL) delete outImage[w];
+	}
+
+	if (inputRGBImage!=NULL) delete inputRGBImage;
+	if (inputRawDepthImage!=NULL) delete inputRawDepthImage;
+	if (inputIMUMeasurement!=NULL) delete inputIMUMeasurement;
+}
+
+float InfiniTAMApp::getAverageTime(void)
+{
+	return sdkGetAverageTimerValue(&timer_average);
 }
 
