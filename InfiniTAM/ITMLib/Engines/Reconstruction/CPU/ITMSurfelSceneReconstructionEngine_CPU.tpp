@@ -183,7 +183,7 @@ void ITMSurfelSceneReconstructionEngine_CPU<TSurfel>::MergeSimilarSurfels(ITMSur
     find_mergeable_surfel(
       locId, indexImage, indexImageWidth, indexImageHeight, correspondenceMap, surfels,
       sceneParams.stableSurfelConfidence, sceneParams.maxMergeDist, sceneParams.maxMergeAngle,
-      mergeTargetMap
+      sceneParams.minRadiusOverlapFactor, mergeTargetMap
     );
   }
 

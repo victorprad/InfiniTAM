@@ -102,12 +102,13 @@ __global__ void ck_find_corresponding_surfel(int pixelCount, Matrix4f invT, cons
 
 template <typename TSurfel>
 __global__ void ck_find_mergeable_surfel(int pixelCount, const unsigned int *indexImage, int indexImageWidth, int indexImageHeight, const unsigned int *correspondenceMap,
-                                         const TSurfel *surfels, float stableSurfelConfidence, float maxMergeDist, float maxMergeAngle, unsigned int *mergeTargetMap)
+                                         const TSurfel *surfels, float stableSurfelConfidence, float maxMergeDist, float maxMergeAngle, float minRadiusOverlapFactor,
+                                         unsigned int *mergeTargetMap)
 {
   int locId = threadIdx.x + blockDim.x * blockIdx.x;
   if(locId < pixelCount)
   {
-    find_mergeable_surfel(locId, indexImage, indexImageWidth, indexImageHeight, correspondenceMap, surfels, stableSurfelConfidence, maxMergeDist, maxMergeAngle, mergeTargetMap);
+    find_mergeable_surfel(locId, indexImage, indexImageWidth, indexImageHeight, correspondenceMap, surfels, stableSurfelConfidence, maxMergeDist, maxMergeAngle, minRadiusOverlapFactor, mergeTargetMap);
   }
 }
 
@@ -354,6 +355,7 @@ void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::MergeSimilarSurfels(ITMSu
     sceneParams.stableSurfelConfidence,
     sceneParams.maxMergeDist,
     sceneParams.maxMergeAngle,
+    sceneParams.minRadiusOverlapFactor,
     mergeTargetMap
   );
   ORcudaKernelCheck;

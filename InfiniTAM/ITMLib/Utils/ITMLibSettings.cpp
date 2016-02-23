@@ -8,7 +8,7 @@ using namespace ITMLib;
 
 ITMLibSettings::ITMLibSettings(void)
 :	sceneParams(0.02f, 100, 0.005f, 0.2f, 3.0f, false),
-	surfelSceneParams(0.5f, 0.6f, static_cast<float>(20 * M_PI / 180), 0.01f, 0.004f, 10.0f, 4, 1.0f, 5.0f, 5, 10000000, true, true)
+	surfelSceneParams(0.5f, 0.6f, static_cast<float>(20 * M_PI / 180), 0.01f, 0.004f, 3.5f, 25.0f, 4, 1.0f, 5.0f, 20, 10000000, true, true)
 {
 	// skips every other point when using the colour renderer for creating a point cloud
 	skipPoints = true;
