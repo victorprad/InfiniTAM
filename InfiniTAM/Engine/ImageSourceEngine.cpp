@@ -40,7 +40,7 @@ ImageListPathGenerator::ImageListPathGenerator(const std::vector<std::string>& r
 	: depthImagePaths(depthImagePaths_),
 	  rgbImagePaths(rgbImagePaths_)
 {
-	if(rgbImagePaths.size() != depthImagePaths.size()) throw std::runtime_error("error: the rgb and depth image path lists do not have the same size");
+	if(rgbImagePaths.size() != depthImagePaths.size()) DIEWITHEXCEPTION("error: the rgb and depth image path lists do not have the same size");
 }
 
 std::string ImageListPathGenerator::getRgbImagePath(size_t currentFrameNo) const

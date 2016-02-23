@@ -1,5 +1,10 @@
 // Copyright 2016 Isis Innovation Limited and the authors of InfiniTAM
 
+// this hack is required on android
+#define __STDC_CONSTANT_MACROS
+#define __STDC_LIMIT_MACROS
+#include <stdint.h>
+
 #include "FFMPEGWriter.h"
 
 #ifdef COMPILE_WITH_FFMPEG
@@ -93,7 +98,7 @@ int FFMPEGWriter::PrivateData::open(const char *filename, int size_x, int size_y
 		return ret;
 	}
 	if (ofmt_ctx->oformat->flags & AVFMT_GLOBALHEADER) {
-		enc_ctx->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
+		enc_ctx->flags |= /*AV_*/CODEC_FLAG_GLOBAL_HEADER;
 	}
 //	av_dump_format(ofmt_ctx, 0, filename, 1);
 	if (!(ofmt_ctx->oformat->flags & AVFMT_NOFILE)) {
@@ -268,7 +273,7 @@ int FFMPEGWriter::PrivateData::flush_encoder(unsigned int stream_index)
 {
 	int ret;
 	int got_frame;
-	if (!(ofmt_ctx->streams[stream_index]->codec->codec->capabilities & AV_CODEC_CAP_DELAY)) return 0;
+	if (!(ofmt_ctx->streams[stream_index]->codec->codec->capabilities & /*AV_*/CODEC_CAP_DELAY)) return 0;
 
 	while (1) {
 		ret = encode_write_frame(NULL, stream_index, &got_frame);

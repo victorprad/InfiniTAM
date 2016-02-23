@@ -4,6 +4,9 @@
 #include "../../Engine/OpenNIEngine.h"
 #include "../../Engine/IMUSourceEngine.h"
 
+#include "../../ITMLib/Core/ITMBasicEngine.h"
+#include "../../ITMLib/ITMLibDefines.h"
+
 #include <GLES/gl.h>
 
 #include <android/log.h>
@@ -120,14 +123,15 @@ void InfiniTAMApp::StartProcessing(int useLiveCamera)
 	mInternalSettings = new ITMLibSettings();
 	mImuSource = NULL; //new IMUSourceEngine;
 	if (useLiveCamera == 0) {
-		mImageSource = new InfiniTAM::Engine::ImageFileReader(calibFile, imagesource_part1, imagesource_part2);
+		InfiniTAM::Engine::ImageMaskPathGenerator pathGenerator(imagesource_part1, imagesource_part2);
+		mImageSource = new InfiniTAM::Engine::ImageFileReader<InfiniTAM::Engine::ImageMaskPathGenerator>(calibFile, pathGenerator);
 		//mImageSource = new InfiniTAM::Engine::RawFileReader(calibFile, imagesource_part1, imagesource_part2, Vector2i(320, 240), 0.5f);
 		//mImuSource = new InfiniTAM::Engine::IMUSourceEngine(imagesource_part3);
 		//mImageSource = new InfiniTAM::Engine::OpenNIEngine(calibFile, "/storage/sdcard0/InfiniTAM/50Hz_closeup.oni");
 	} else {
 		mImageSource = new InfiniTAM::Engine::OpenNIEngine(calibFile);
 	}
-	mMainEngine = new ITMMainEngine(mInternalSettings, &mImageSource->calib, mImageSource->getRGBImageSize(), mImageSource->getDepthImageSize());
+	mMainEngine = new ITMBasicEngine<ITMVoxel,ITMVoxelIndex>(mInternalSettings, &mImageSource->calib, mImageSource->getRGBImageSize(), mImageSource->getDepthImageSize());
 
 	bool allocateGPU = false;
 	if (mInternalSettings->deviceType == ITMLibSettings::DEVICE_CUDA) allocateGPU = true;

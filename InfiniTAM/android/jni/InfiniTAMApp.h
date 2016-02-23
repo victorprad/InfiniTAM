@@ -4,7 +4,7 @@
 
 #include "../../Engine/IMUSourceEngine.h"
 #include "../../Engine/ImageSourceEngine.h"
-#include "../../ITMLib/ITMLib.h"
+#include "../../ITMLib/Core/ITMMainEngine.h"
 #include "../../Utils/NVTimer.h"
 
 class InfiniTAMApp {

@@ -1,5 +1,10 @@
 // Copyright 2016 Isis Innovation Limited and the authors of InfiniTAM
 
+// this hack is required on android
+#define __STDC_CONSTANT_MACROS
+#define __STDC_LIMIT_MACROS
+#include <stdint.h>
+
 #include "FFMPEGReader.h"
 
 #ifdef COMPILE_WITH_FFMPEG
