@@ -91,6 +91,10 @@ int FFMPEGWriter::PrivateData::open(const char *filename, int size_x, int size_y
 	/* Third parameter can be used to pass settings to encoder */
 	AVDictionary *dict = NULL;
 	av_dict_set(&dict, "coder", "1", 0);
+	av_dict_set(&dict, "context", "0", 0);
+	av_dict_set(&dict, "level", "3", 0);
+	av_dict_set(&dict, "threads", "8", 0);
+	av_dict_set(&dict, "slices", "16", 0);
 	ret = avcodec_open2(enc_ctx, encoder, &dict);
 	av_dict_free(&dict);
 	if (ret < 0) {
@@ -145,6 +149,8 @@ int FFMPEGWriter::PrivateData::init_filter(FilteringContext* fctx, AVCodecContex
 	}
 	snprintf(args, sizeof(args),
 		"video_size=%dx%d:pix_fmt=%d:time_base=%d/%d:pixel_aspect=%d/%d",
+		// TODO: depending on host endianness, the desired format should
+		//       maybe be set to AV_PIX_FMT_GRAY16BE
 		enc_ctx->width, enc_ctx->height, (enc_ctx->pix_fmt==AV_PIX_FMT_GRAY16LE)?AV_PIX_FMT_GRAY16LE:AV_PIX_FMT_RGBA /*RGB24*/ /*AV_PIX_FMT_RGBA */,
 		enc_ctx->time_base.num, enc_ctx->time_base.den,
 		enc_ctx->sample_aspect_ratio.num,
@@ -159,7 +165,6 @@ int FFMPEGWriter::PrivateData::init_filter(FilteringContext* fctx, AVCodecContex
 		std::cerr << "Cannot create buffer sink" << std::endl;
 		goto end;
 	}
-	// TODO ???
 	ret = av_opt_set_bin(buffersink_ctx, "pix_fmts",
 		(uint8_t*)&enc_ctx->pix_fmt, sizeof(enc_ctx->pix_fmt),
 		AV_OPT_SEARCH_CHILDREN);
@@ -410,13 +415,12 @@ bool FFMPEGWriter::writeFrame(ITMShortImage *depthImage)
 	}
 
 	short *depth = depthImage->GetData(MEMORYDEVICE_CPU);
-	for (int y = 0; y < frame->height; ++y) for (int x = 0; x < frame->width; ++x) {
-		frame->data[0][x*2+y*frame->linesize[0] + 0] = (unsigned char)(depth[x+y*depthImage->noDims.x] >> 8);
-		frame->data[0][x*2+y*frame->linesize[0] + 1] = (unsigned char)(depth[x+y*depthImage->noDims.x] & 255);
-	}
+	unsigned char *tmp = frame->data[0];
+	frame->data[0] = (unsigned char*)depth;
 
 	frame->pts = counter++;
 	int ret = mData->filter_encode_write_frame(frame, /*stream_index*/0);
+	frame->data[0] = tmp;
 	return (ret>=0);
 }
 

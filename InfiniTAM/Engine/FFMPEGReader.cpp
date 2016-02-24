@@ -182,6 +182,8 @@ int FFMPEGReader::PrivateData::init_filter(FilteringContext* fctx, AVCodecContex
 	AVFilterInOut *inputs  = avfilter_inout_alloc();
 	AVFilterGraph *filter_graph = avfilter_graph_alloc();
 
+	// TODO: depending on endianness, requiredOutput should maybe be set to
+	//       AV_PIX_FMT_GRAY16BE
 	AVPixelFormat requiredOutput = isDepth?AV_PIX_FMT_GRAY16LE:AV_PIX_FMT_RGBA;
 
 	if (!outputs || !inputs || !filter_graph) {
@@ -459,11 +461,7 @@ static void copyRgba(const AVFrame *frame, Vector4u *rgb)
 
 static void copyDepth(const AVFrame *frame, short *depth)
 {
-	for (int y = 0; y < frame->height; ++y) for (int x = 0; x < frame->width; ++x) {
-		short tmp = (frame->data[0][x*2+frame->linesize[0]*y+0] << 8) |
-		            (frame->data[0][x*2+frame->linesize[0]*y+1] & 255);
-		depth[x+y*frame->width] = tmp;
-	}
+	memcpy(depth, frame->data[0], frame->height*frame->width*2);
 }
 
 void FFMPEGReader::getImages(ITMUChar4Image *rgbImage, ITMShortImage *depthImage)
