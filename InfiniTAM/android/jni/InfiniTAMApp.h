@@ -7,6 +7,8 @@
 #include "../../ITMLib/Core/ITMMainEngine.h"
 #include "../../Utils/NVTimer.h"
 
+#include "../../Engine/FFMPEGWriter.h"
+
 class InfiniTAMApp {
 	public:
 	static InfiniTAMApp* Instance(void)
@@ -28,6 +30,8 @@ class InfiniTAMApp {
 
 	bool IsInitialized(void) const
 	{ return mIsInitialized; }
+
+	void toggleRecordingMode(void);
 
 	float getAverageTime(void);
 
@@ -53,6 +57,9 @@ class InfiniTAMApp {
 
 	Vector2i mNewWindowSize;
 	bool mIsInitialized;
+	bool mRecordingMode;
+
+	InfiniTAM::FFMPEGWriter *depthVideoWriter;
 };
 
 

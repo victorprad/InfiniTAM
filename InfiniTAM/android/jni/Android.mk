@@ -44,7 +44,7 @@ FFMPEG_ROOT:=/local/olaf/compile/ffmpeg-android/
 ifneq ($(FFMPEG_ROOT),)
 MY_FFMPEG_BASEDIR := $(FFMPEG_ROOT)/build/armeabi-v7a-neon/
 MY_FFMPEG_LIBDIR := $(MY_FFMPEG_BASEDIR)lib/
-MY_FFMPEG_MODULE := avcodec avformat avfilter avutil
+MY_FFMPEG_MODULE := avformat avfilter avcodec swresample swscale avutil
 
 include $(CLEAR_VARS)
 LOCAL_MODULE := avcodec
@@ -65,6 +65,18 @@ LOCAL_EXPORT_C_INCLUDES := $(MY_FFMPEG_BASEDIR)/include
 include $(PREBUILT_STATIC_LIBRARY)
 
 include $(CLEAR_VARS)
+LOCAL_MODULE := swresample
+LOCAL_SRC_FILES := $(MY_FFMPEG_LIBDIR)libswresample.a
+LOCAL_EXPORT_C_INCLUDES := $(MY_FFMPEG_BASEDIR)/include
+include $(PREBUILT_STATIC_LIBRARY)
+
+include $(CLEAR_VARS)
+LOCAL_MODULE := swscale
+LOCAL_SRC_FILES := $(MY_FFMPEG_LIBDIR)libswscale.a
+LOCAL_EXPORT_C_INCLUDES := $(MY_FFMPEG_BASEDIR)/include
+include $(PREBUILT_STATIC_LIBRARY)
+
+include $(CLEAR_VARS)
 LOCAL_MODULE := avutil
 LOCAL_SRC_FILES := $(MY_FFMPEG_LIBDIR)libavutil.a
 LOCAL_EXPORT_C_INCLUDES := $(MY_FFMPEG_BASEDIR)/include
@@ -77,7 +89,7 @@ include $(CLEAR_VARS)
 LOCAL_MODULE    := InfiniTAM
 LOCAL_SRC_FILES := InfiniTAMApp.cpp jniExport.cpp
 LOCAL_CFLAGS := -Werror #-DCOMPILE_WITHOUT_CUDA
-LOCAL_LDLIBS := -landroid -lGLESv1_CM -llog
+LOCAL_LDLIBS := -landroid -lGLESv1_CM -llog -lz
 LOCAL_STATIC_LIBRARIES := Engine Utils ITMLib LCDLib ORUtils cudart_static
 
 include $(BUILD_SHARED_LIBRARY)

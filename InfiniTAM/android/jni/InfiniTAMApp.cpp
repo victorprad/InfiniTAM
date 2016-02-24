@@ -22,6 +22,8 @@ InfiniTAMApp::InfiniTAMApp(void)
 	mImuSource = NULL;
 	mMainEngine = NULL;
 	mIsInitialized = false;
+	mRecordingMode = false;
+	depthVideoWriter = NULL;
 
 	winImageType[0] = ITMMainEngine::InfiniTAM_IMAGE_SCENERAYCAST;
 	winImageType[1] = ITMMainEngine::InfiniTAM_IMAGE_ORIGINAL_DEPTH;
@@ -65,6 +67,9 @@ void InfiniTAMApp::RenderGL(void)
 
 		mNewWindowSize.x = mNewWindowSize.y = -1;
 	}
+
+	if (mRecordingMode) winImageType[0] = ITMMainEngine::InfiniTAM_IMAGE_ORIGINAL_DEPTH;
+	else winImageType[0] = ITMMainEngine::InfiniTAM_IMAGE_SCENERAYCAST;
 
 	int localNumWin = 1;//NUM_WIN
 	for (int w = 0; w < localNumWin; w++) mMainEngine->GetImage(outImage[w], winImageType[w]);
@@ -167,12 +172,29 @@ bool InfiniTAMApp::ProcessFrame(void)
 		else mImuSource->getMeasurement(inputIMUMeasurement);
 	}
 
+	if (mRecordingMode) ((ITMBasicEngine<ITMVoxel,ITMVoxelIndex>*)mMainEngine)->turnOffMainProcessing();
+	else ((ITMBasicEngine<ITMVoxel,ITMVoxelIndex>*)mMainEngine)->turnOnMainProcessing();
+
 	sdkResetTimer(&timer_instant);
 	sdkStartTimer(&timer_instant); sdkStartTimer(&timer_average);
 
 	//actual processing on the mainEngine
 	if (mImuSource != NULL) mMainEngine->ProcessFrame(inputRGBImage, inputRawDepthImage, inputIMUMeasurement);
 	else mMainEngine->ProcessFrame(inputRGBImage, inputRawDepthImage);
+
+	if (mRecordingMode) {
+		if (depthVideoWriter == NULL) {
+			depthVideoWriter = new InfiniTAM::FFMPEGWriter();
+			depthVideoWriter->open("/sdcard/InfiniTAM/out_depth.avi", inputRawDepthImage->noDims.x, inputRawDepthImage->noDims.y, true, 30);
+			//depthVideoWriter->open("out_rgb.avi", inputRGBImage->noDims.x, inputRGBImage->noDims.y, false, 30);
+		}
+		depthVideoWriter->writeFrame(inputRawDepthImage);
+	} else {
+		if (depthVideoWriter != NULL) {
+			delete depthVideoWriter;
+			depthVideoWriter = NULL;
+		}
+	}
 
 	ORcudaSafeCall(cudaDeviceSynchronize());
 	sdkStopTimer(&timer_instant); sdkStopTimer(&timer_average);
@@ -204,5 +226,10 @@ void InfiniTAMApp::StopProcessing(void)
 float InfiniTAMApp::getAverageTime(void)
 {
 	return sdkGetAverageTimerValue(&timer_average);
+}
+
+void InfiniTAMApp::toggleRecordingMode(void)
+{
+	mRecordingMode = !mRecordingMode;
 }
 

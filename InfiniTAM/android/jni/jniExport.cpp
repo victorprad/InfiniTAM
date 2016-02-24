@@ -50,5 +50,10 @@ JNIEXPORT jfloat JNICALL Java_uk_ac_ox_robots_InfiniTAM_InfiniTAMProcessor_getAv
 	return (InfiniTAMApp::Instance())->getAverageTime();
 }
 
+JNIEXPORT void JNICALL Java_uk_ac_ox_robots_InfiniTAM_InfiniTAMProcessor_toggleRecordingMode(JNIEnv *env, jobject thiz)
+{
+	(InfiniTAMApp::Instance())->toggleRecordingMode();
+}
+
 }
 

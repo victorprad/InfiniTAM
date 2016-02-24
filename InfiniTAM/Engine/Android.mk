@@ -7,7 +7,7 @@ LOCAL_SRC_FILES := ImageSourceEngine.cpp IMUSourceEngine.cpp OpenNIEngine.cpp FF
 LOCAL_CFLAGS := -Werror
 ifneq ($(FFMPEG_ROOT),)
 LOCAL_CFLAGS += -DCOMPILE_WITH_FFMPEG
-LOCAL_STATIC_LIBRARIES += avcodec avformat avfilter avutil
+LOCAL_STATIC_LIBRARIES += $(MY_FFMPEG_MODULE)
 endif
 ifneq ($(OPENNI2_ROOT),)
 LOCAL_SHARED_LIBRARIES += $(MY_OPENNI2_MODULE)

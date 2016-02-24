@@ -82,6 +82,7 @@ class InfiniTAMProcessor implements Runnable
 	public static native int ProcessFrame();
 	public static native void StopProcessing();
 
+	public static native void toggleRecordingMode();
 	public static native float getAverageTime();
 }
 

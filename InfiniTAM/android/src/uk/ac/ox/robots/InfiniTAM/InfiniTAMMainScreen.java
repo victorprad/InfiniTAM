@@ -68,6 +68,16 @@ public class InfiniTAMMainScreen extends Activity
 		}
 		{
 			Button button = new Button(this);
+			button.setText("Record Video");
+			button.setOnClickListener(new View.OnClickListener() {
+				public void onClick(View v) {
+					getProcessor().toggleRecordingMode();
+				}
+			});
+			rowOfButtons.addView(button);
+		}
+		{
+			Button button = new Button(this);
 			button.setText("Exit");
 			button.setOnClickListener(new View.OnClickListener() {
 				public void onClick(View v) {
