@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "../Engines/Visualisation/Interface/ITMSurfelVisualisationEngine.h"
 #include "../Engines/Visualisation/Interface/ITMVisualisationEngine.h"
 #include "../Trackers/Interface/ITMTracker.h"
 #include "../Utils/ITMLibSettings.h"
@@ -18,6 +19,40 @@ namespace ITMLib
 
 	public:
 		void Track(ITMTrackingState *trackingState, const ITMView *view);
+
+		template <typename TSurfel>
+		void Prepare(ITMTrackingState *trackingState, const ITMSurfelScene<TSurfel> *scene, const ITMView *view,
+			const ITMSurfelVisualisationEngine<TSurfel> *visualisationEngine, ITMSurfelRenderState *renderState)
+		{
+			//render for tracking
+			bool requiresColourRendering = tracker->requiresColourRendering();
+			bool requiresFullRendering = trackingState->TrackerFarFromPointCloud() || !settings->useApproximateRaycast;
+
+			if(requiresColourRendering)
+			{
+				// TODO
+				throw 23;
+			}
+			else
+			{
+				const bool useRadii = true;
+				visualisationEngine->FindSurface(scene, trackingState->pose_d, &view->calib->intrinsics_d, useRadii, USR_FAUTEDEMIEUX, renderState);
+				trackingState->pose_pointCloud->SetFrom(trackingState->pose_d);
+
+				if(requiresFullRendering)
+				{
+					visualisationEngine->CreateICPMaps(scene, renderState, trackingState);
+					trackingState->pose_pointCloud->SetFrom(trackingState->pose_d);
+					if (trackingState->age_pointCloud==-1) trackingState->age_pointCloud=-2;
+					else trackingState->age_pointCloud = 0;
+				}
+				else
+				{
+					//visualisationEngine->ForwardRender(scene, view, trackingState, renderState);
+					trackingState->age_pointCloud++;
+				}
+			}
+		}
 
 		template <typename TVoxel, typename TIndex>
 		void Prepare(ITMTrackingState *trackingState, const ITMScene<TVoxel,TIndex> *scene, const ITMView *view,

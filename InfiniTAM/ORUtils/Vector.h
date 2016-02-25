@@ -353,15 +353,6 @@ namespace ORUtils {
 		// dimension specific operations
 		////////////////////////////////////////////////////////////////////////////////
 
-		// cross product
-		_CPU_AND_GPU_CODE_ friend Vector3<T> cross(const Vector3<T> &lhs, const Vector3<T> &rhs) {
-			Vector3<T> r;
-			r.x = lhs.y * rhs.z - lhs.z * rhs.y;
-			r.y = lhs.z * rhs.x - lhs.x * rhs.z;
-			r.z = lhs.x * rhs.y - lhs.y * rhs.x;
-			return r;
-		}
-
 		friend std::ostream& operator<<(std::ostream& os, const Vector3<T>& dt){
 			os << dt.x << ", " << dt.y << ", " << dt.z;
 			return os;
@@ -375,6 +366,19 @@ namespace ORUtils {
 	// equality
 	template <typename T1, typename T2> _CPU_AND_GPU_CODE_ inline bool operator == (const Vector3<T1> &lhs, const Vector3<T2> &rhs){
 		return (lhs.x == rhs.x) && (lhs.y == rhs.y) && (lhs.z == rhs.z);
+	}
+
+	////////////////////////////////////////////////////////
+	//  Non-member functions
+	////////////////////////////////////////////////////////
+
+	// cross product
+	template <typename T> _CPU_AND_GPU_CODE_ Vector3<T> cross(const Vector3<T> &lhs, const Vector3<T> &rhs) {
+		Vector3<T> r;
+		r.x = lhs.y * rhs.z - lhs.z * rhs.y;
+		r.y = lhs.z * rhs.x - lhs.x * rhs.z;
+		r.z = lhs.x * rhs.y - lhs.y * rhs.x;
+		return r;
 	}
 
 	template <class T> class Vector4 : public Vector4_ < T >

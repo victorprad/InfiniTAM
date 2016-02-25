@@ -5,6 +5,7 @@
 #include "../Engines/LowLevel/ITMLowLevelEngineFactory.h"
 #include "../Engines/Meshing/ITMMeshingEngineFactory.h"
 #include "../Engines/ViewBuilding/ITMViewBuilderFactory.h"
+#include "../Engines/Visualisation/ITMSurfelVisualisationEngineFactory.h"
 #include "../Engines/Visualisation/ITMVisualisationEngineFactory.h"
 #include "../Trackers/ITMTrackerFactory.h"
 using namespace ITMLib;
@@ -22,10 +23,12 @@ ITMBasicEngine<TVoxel,TIndex>::ITMBasicEngine(const ITMLibSettings *settings, co
 
 	MemoryDeviceType memoryType = settings->deviceType == ITMLibSettings::DEVICE_CUDA ? MEMORYDEVICE_CUDA : MEMORYDEVICE_CPU;
 	this->scene = new ITMScene<TVoxel,TIndex>(&settings->sceneParams, settings->useSwapping, memoryType);
+	this->surfelScene = new ITMSurfelScene<TSurfel>(&settings->surfelSceneParams, memoryType);
 
 	const ITMLibSettings::DeviceType deviceType = settings->deviceType;
 
 	lowLevelEngine = ITMLowLevelEngineFactory::MakeLowLevelEngine(deviceType);
+	surfelVisualisationEngine = ITMSurfelVisualisationEngineFactory<TSurfel>::make_surfel_visualisation_engine(deviceType);
 	viewBuilder = ITMViewBuilderFactory::MakeViewBuilder(calib, deviceType);
 	visualisationEngine = ITMVisualisationEngineFactory::MakeVisualisationEngine<TVoxel,TIndex>(deviceType);
 
@@ -40,6 +43,8 @@ ITMBasicEngine<TVoxel,TIndex>::ITMBasicEngine(const ITMLibSettings *settings, co
 	denseMapper = new ITMDenseMapper<TVoxel,TIndex>(settings);
 	denseMapper->ResetScene(scene);
 
+	denseSurfelMapper = new ITMDenseSurfelMapper<TSurfel>(imgSize_d, settings->deviceType);
+
 	imuCalibrator = new ITMIMUCalibrator_iPad();
 	tracker = ITMTrackerFactory<TVoxel,TIndex>::Instance().Make(imgSize_rgb, imgSize_d, settings, lowLevelEngine, imuCalibrator, scene);
 	trackingController = new ITMTrackingController(tracker, settings);
@@ -48,6 +53,7 @@ ITMBasicEngine<TVoxel,TIndex>::ITMBasicEngine(const ITMLibSettings *settings, co
 
 	renderState_live = visualisationEngine->CreateRenderState(scene, trackedImageSize);
 	renderState_freeview = NULL; //will be created by the visualisation engine
+	surfelRenderState_live = new ITMSurfelRenderState(trackedImageSize, settings->surfelSceneParams.supersamplingFactor);
 
 	trackingState = new ITMTrackingState(trackedImageSize, memoryType);
 	tracker->UpdateInitialPose(trackingState);
@@ -65,10 +71,13 @@ ITMBasicEngine<TVoxel,TIndex>::~ITMBasicEngine()
 {
 	delete renderState_live;
 	if (renderState_freeview!=NULL) delete renderState_freeview;
+	delete surfelRenderState_live;
 
 	delete scene;
+	delete surfelScene;
 
 	delete denseMapper;
+	delete denseSurfelMapper;
 	delete trackingController;
 
 	delete tracker;
@@ -80,6 +89,7 @@ ITMBasicEngine<TVoxel,TIndex>::~ITMBasicEngine()
 	delete trackingState;
 	if (view != NULL) delete view;
 
+	delete surfelVisualisationEngine;
 	delete visualisationEngine;
 
 	if (meshingEngine != NULL) delete meshingEngine;
@@ -107,6 +117,7 @@ void ITMBasicEngine<TVoxel,TIndex>::ProcessFrame(ITMUChar4Image *rgbImage, ITMSh
 {
 	// prepare image and turn it into a depth image
 	bool modelSensorNoise = tracker->requiresDepthReliability();
+	modelSensorNoise = true; // we always need a normal map for surfel-based fusion
 	if (imuMeasurement == NULL) viewBuilder->UpdateView(&view, rgbImage, rawDepthImage, settings->useBilateralFilter, modelSensorNoise);
 	else viewBuilder->UpdateView(&view, rgbImage, rawDepthImage, settings->useBilateralFilter, imuMeasurement);
 
@@ -132,6 +143,7 @@ void ITMBasicEngine<TVoxel,TIndex>::ProcessFrame(ITMUChar4Image *rgbImage, ITMSh
 	if ((trackingSuccess >= 2 || !trackingInitialised) && (fusionActive)) {
 		// fusion
 		denseMapper->ProcessFrame(view, trackingState, scene, renderState_live);
+		denseSurfelMapper->ProcessFrame(view, trackingState, surfelScene, surfelRenderState_live);
 		didFusion = true;
 		trackingInitialised = true;
 	}
@@ -141,6 +153,8 @@ void ITMBasicEngine<TVoxel,TIndex>::ProcessFrame(ITMUChar4Image *rgbImage, ITMSh
 
 		// raycast to renderState_live for tracking and free visualisation
 		trackingController->Prepare(trackingState, scene, view, visualisationEngine, renderState_live);
+		// TODO: Tracking against the surfel scene.
+		surfelVisualisationEngine->FindSurfaceSuper(surfelScene, trackingState->pose_d, &view->calib->intrinsics_d, USR_RENDER, surfelRenderState_live);
 	}
 	else {
 		*trackingState->pose_d = oldPose;
@@ -182,6 +196,18 @@ void ITMBasicEngine<TVoxel,TIndex>::GetImage(ITMUChar4Image *out, GetImageType g
 		}
 
 		break;
+	case ITMBasicEngine::InfiniTAM_IMAGE_COLOUR_FROM_NORMAL:
+	{
+		visualisationEngine->FindVisibleBlocks(scene, trackingState->pose_d, &view->calib->intrinsics_d, renderState_live);
+		visualisationEngine->CreateExpectedDepths(scene, trackingState->pose_d, &view->calib->intrinsics_d, renderState_live);
+		visualisationEngine->RenderImage(scene, trackingState->pose_d, &view->calib->intrinsics_d, renderState_live, renderState_live->raycastImage, IITMVisualisationEngine::RENDER_COLOUR_FROM_NORMAL);
+
+		if (settings->deviceType == ITMLibSettings::DEVICE_CUDA)
+			out->SetFrom(renderState_live->raycastImage, ORUtils::MemoryBlock<Vector4u>::CUDA_TO_CPU);
+		else out->SetFrom(renderState_live->raycastImage, ORUtils::MemoryBlock<Vector4u>::CPU_TO_CPU);
+
+		break;
+	}
 	case ITMBasicEngine::InfiniTAM_IMAGE_SCENERAYCAST:
 	{
 		ORUtils::Image<Vector4u> *srcImage = renderState_live->raycastImage;

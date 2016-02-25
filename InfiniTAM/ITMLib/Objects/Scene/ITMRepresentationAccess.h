@@ -354,3 +354,50 @@ struct VoxelColorReader<true,TVoxel,TIndex> {
 		return readFromSDF_color4u_interpolated<TVoxel,TIndex>(voxelData, voxelIndex, point, cache);
 	}
 };
+
+/**
+ * \brief TODO
+ */
+template <bool hasColour> struct SurfelColourManipulator;
+
+/**
+ * \brief TODO
+ */
+template <>
+struct SurfelColourManipulator<false>
+{
+	template <typename TSurfel>
+	_CPU_AND_GPU_CODE_
+	static Vector3u read(const TSurfel& surfel)
+	{
+		return Vector3u((uchar)0);
+	}
+
+	template <typename TSurfel>
+	_CPU_AND_GPU_CODE_
+	static void write(TSurfel& surfel, const Vector3u& colour)
+	{
+		// No-op
+	}
+};
+
+/**
+ * \brief TODO
+ */
+template <>
+struct SurfelColourManipulator<true>
+{
+	template <typename TSurfel>
+	_CPU_AND_GPU_CODE_
+	static Vector3u read(const TSurfel& surfel)
+	{
+		return surfel.colour;
+	}
+
+	template <typename TSurfel>
+	_CPU_AND_GPU_CODE_
+	static void write(TSurfel& surfel, const Vector3u& colour)
+	{
+		surfel.colour = colour;
+	}
+};

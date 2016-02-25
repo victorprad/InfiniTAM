@@ -1,0 +1,341 @@
+// Copyright 2014-2015 Isis Innovation Limited and the authors of InfiniTAM
+
+#include "ITMSurfelVisualisationEngine_CUDA.h"
+
+#include "../Shared/ITMSurfelVisualisationEngine_Shared.h"
+
+namespace ITMLib
+{
+
+//#################### CUDA KERNELS ####################
+
+__global__ void ck_clear_surfel_index_image(int pixelCount, unsigned int *surfelIndexImage, int *depthBuffer)
+{
+  int locId = threadIdx.x + blockDim.x * blockIdx.x;
+  if(locId < pixelCount)
+  {
+    clear_surfel_index_image(locId, surfelIndexImage, depthBuffer);
+  }
+}
+
+template <typename TSurfel>
+__global__ void ck_copy_correspondences_to_buffers(int surfelCount, const TSurfel *surfels, float *newPositions, float *oldPositions, float *correspondences)
+{
+  int surfelId = threadIdx.x + blockDim.x * blockIdx.x;
+  if(surfelId < surfelCount)
+  {
+    copy_correspondences_to_buffers(surfelId, surfels, newPositions, oldPositions, correspondences);
+  }
+}
+
+template <typename TSurfel>
+__global__ void ck_copy_surfel_data_to_icp_maps(int pixelCount, const TSurfel *surfels, const unsigned int *surfelIndexImage, Matrix4f invT,
+                                                float trackingSurfelMaxDepth, float trackingSurfelMinConfidence, Vector4f *pointsMap, Vector4f *normalsMap)
+{
+  int locId = threadIdx.x + blockDim.x * blockIdx.x;
+  if(locId < pixelCount)
+  {
+    copy_surfel_data_to_icp_maps(locId, surfels, surfelIndexImage, invT, trackingSurfelMaxDepth, trackingSurfelMinConfidence, pointsMap, normalsMap);
+  }
+}
+
+template <typename TSurfel>
+__global__ void ck_copy_scene_to_buffers(int surfelCount, const TSurfel *surfels, float *positions, unsigned char *normals, unsigned char *colours)
+{
+  int surfelId = threadIdx.x + blockDim.x * blockIdx.x;
+  if(surfelId < surfelCount)
+  {
+    copy_surfel_to_buffers(surfelId, surfels, positions, normals, colours);
+  }
+}
+
+template <typename TSurfel>
+__global__ void ck_shade_pixel_colour(int pixelCount, const unsigned int *surfelIndexImage, const TSurfel *surfels, Vector4u *outputImage)
+{
+  int locId = threadIdx.x + blockDim.x * blockIdx.x;
+  if(locId < pixelCount)
+  {
+    shade_pixel_colour(locId, surfelIndexImage, surfels, outputImage);
+  }
+}
+
+template <typename TSurfel>
+__global__ void ck_shade_pixel_confidence(int pixelCount, const unsigned int *surfelIndexImage, const TSurfel *surfels, float stableSurfelConfidence, Vector4u *outputImage)
+{
+  int locId = threadIdx.x + blockDim.x * blockIdx.x;
+  if(locId < pixelCount)
+  {
+    shade_pixel_confidence(locId, surfelIndexImage, surfels, stableSurfelConfidence, outputImage);
+  }
+}
+
+template <typename TSurfel>
+__global__ void ck_shade_pixel_depth(int pixelCount, const unsigned int *surfelIndexImage, const TSurfel *surfels, Vector3f cameraPosition,
+                                     float *outputImage)
+{
+  int locId = threadIdx.x + blockDim.x * blockIdx.x;
+  if(locId < pixelCount)
+  {
+    shade_pixel_depth(locId, surfelIndexImage, surfels, cameraPosition, outputImage);
+  }
+}
+
+template <typename TSurfel>
+__global__ void ck_shade_pixel_grey(int pixelCount, const unsigned int *surfelIndexImage, const TSurfel *surfels, Vector3f lightPos, Vector3f viewerPos,
+                                    SurfelLightingType lightingType, Vector4u *outputImage)
+{
+  int locId = threadIdx.x + blockDim.x * blockIdx.x;
+  if(locId < pixelCount)
+  {
+    shade_pixel_grey(locId, surfelIndexImage, surfels, lightPos, viewerPos, lightingType, outputImage);
+  }
+}
+
+template <typename TSurfel>
+__global__ void ck_shade_pixel_normal(int pixelCount, const unsigned int *surfelIndexImage, const TSurfel *surfels, Vector4u *outputImage)
+{
+  int locId = threadIdx.x + blockDim.x * blockIdx.x;
+  if(locId < pixelCount)
+  {
+    shade_pixel_normal(locId, surfelIndexImage, surfels, outputImage);
+  }
+}
+
+template <typename TSurfel>
+__global__ void ck_update_depth_buffer_for_surfel(int surfelCount, const TSurfel *surfels, Matrix4f invT, ITMIntrinsics intrinsics,
+                                                  int indexImageWidth, int indexImageHeight, int scaleFactor, bool useRadii,
+                                                  UnstableSurfelRenderingMode unstableSurfelRenderingMode, float stableSurfelConfidence,
+                                                  int unstableSurfelZOffset, int *depthBuffer)
+{
+  int surfelId = threadIdx.x + blockDim.x * blockIdx.x;
+  if(surfelId < surfelCount)
+  {
+    update_depth_buffer_for_surfel(
+      surfelId, surfels, invT, intrinsics, indexImageWidth, indexImageHeight, scaleFactor, useRadii, unstableSurfelRenderingMode,
+      stableSurfelConfidence, unstableSurfelZOffset, depthBuffer
+    );
+  }
+}
+
+template <typename TSurfel>
+__global__ void ck_update_index_image_for_surfel(int surfelCount, const TSurfel *surfels, Matrix4f invT, ITMIntrinsics intrinsics,
+                                                 int indexImageWidth, int indexImageHeight, int scaleFactor, const int *depthBuffer, bool useRadii,
+                                                 UnstableSurfelRenderingMode unstableSurfelRenderingMode, float stableSurfelConfidence,
+                                                 int unstableSurfelZOffset, unsigned int *surfelIndexImage)
+{
+  int surfelId = threadIdx.x + blockDim.x * blockIdx.x;
+  if(surfelId < surfelCount)
+  {
+    update_index_image_for_surfel(
+      surfelId, surfels, invT, intrinsics, indexImageWidth, indexImageHeight, scaleFactor, depthBuffer, useRadii,
+      unstableSurfelRenderingMode, stableSurfelConfidence, unstableSurfelZOffset, surfelIndexImage
+    );
+  }
+}
+
+//#################### PUBLIC MEMBER FUNCTIONS ####################
+
+template <typename TSurfel>
+void ITMSurfelVisualisationEngine_CUDA<TSurfel>::CopyCorrespondencesToBuffers(const ITMSurfelScene<TSurfel> *scene, float *newPositions, float *oldPositions, float *correspondences) const
+{
+  const int surfelCount = static_cast<int>(scene->GetSurfelCount());
+
+  int threadsPerBlock = 256;
+  int numBlocks = (surfelCount + threadsPerBlock - 1) / threadsPerBlock;
+
+  ck_copy_correspondences_to_buffers<<<numBlocks,threadsPerBlock>>>(
+    surfelCount,
+    scene->GetSurfels()->GetData(MEMORYDEVICE_CUDA),
+    newPositions,
+    oldPositions,
+    correspondences
+  );
+  ORcudaKernelCheck;
+}
+
+template <typename TSurfel>
+void ITMSurfelVisualisationEngine_CUDA<TSurfel>::CopySceneToBuffers(const ITMSurfelScene<TSurfel> *scene, float *positions, unsigned char *normals, unsigned char *colours) const
+{
+  const int surfelCount = static_cast<int>(scene->GetSurfelCount());
+
+  int threadsPerBlock = 256;
+  int numBlocks = (surfelCount + threadsPerBlock - 1) / threadsPerBlock;
+
+  ck_copy_scene_to_buffers<<<numBlocks,threadsPerBlock>>>(
+    surfelCount,
+    scene->GetSurfels()->GetData(MEMORYDEVICE_CUDA),
+    positions,
+    normals,
+    colours
+  );
+  ORcudaKernelCheck;
+}
+
+template <typename TSurfel>
+void ITMSurfelVisualisationEngine_CUDA<TSurfel>::CreateICPMaps(const ITMSurfelScene<TSurfel> *scene, const ITMSurfelRenderState *renderState, ITMTrackingState *trackingState) const
+{
+  const Matrix4f& invT = trackingState->pose_d->GetM();
+  const int pixelCount = static_cast<int>(renderState->GetIndexImage()->dataSize);
+  const ITMSurfelSceneParams& sceneParams = scene->GetParams();
+
+  int threadsPerBlock = 256;
+  int numBlocks = (pixelCount + threadsPerBlock - 1) / threadsPerBlock;
+
+  ck_copy_surfel_data_to_icp_maps<<<numBlocks,threadsPerBlock>>>(
+    pixelCount,
+    scene->GetSurfels()->GetData(MEMORYDEVICE_CUDA),
+    renderState->GetIndexImage()->GetData(MEMORYDEVICE_CUDA),
+    invT,
+    sceneParams.trackingSurfelMaxDepth,
+    sceneParams.trackingSurfelMinConfidence,
+    trackingState->pointCloud->locations->GetData(MEMORYDEVICE_CUDA),
+    trackingState->pointCloud->colours->GetData(MEMORYDEVICE_CUDA)
+  );
+  ORcudaKernelCheck;
+}
+
+template <typename TSurfel>
+void ITMSurfelVisualisationEngine_CUDA<TSurfel>::RenderDepthImage(const ITMSurfelScene<TSurfel> *scene, const ORUtils::SE3Pose *pose,
+                                                                  const ITMSurfelRenderState *renderState, ITMFloatImage *outputImage) const
+{
+  const Vector3f cameraPosition = pose->GetT();
+  float *outputImagePtr = outputImage->GetData(MEMORYDEVICE_CUDA);
+  const int pixelCount = static_cast<int>(outputImage->dataSize);
+  const unsigned int *surfelIndexImagePtr = renderState->GetIndexImage()->GetData(MEMORYDEVICE_CUDA);
+  const TSurfel *surfels = scene->GetSurfels()->GetData(MEMORYDEVICE_CUDA);
+
+  int threadsPerBlock = 256;
+  int numBlocks = (pixelCount + threadsPerBlock - 1) / threadsPerBlock;
+
+  ck_shade_pixel_depth<<<numBlocks,threadsPerBlock>>>(
+    pixelCount,
+    surfelIndexImagePtr,
+    surfels,
+    cameraPosition,
+    outputImagePtr
+  );
+  ORcudaKernelCheck;
+}
+
+template <typename TSurfel>
+void ITMSurfelVisualisationEngine_CUDA<TSurfel>::RenderImage(const ITMSurfelScene<TSurfel> *scene, const ORUtils::SE3Pose *pose, const ITMSurfelRenderState *renderState,
+                                                             ITMUChar4Image *outputImage, RenderImageType type) const
+{
+  // Prevent colour rendering if the surfels don't store colour information.
+  if(type == Base::RENDER_COLOUR && !TSurfel::hasColourInformation) type = Base::RENDER_LAMBERTIAN;
+
+  Vector4u *outputImagePtr = outputImage->GetData(MEMORYDEVICE_CUDA);
+  const int pixelCount = static_cast<int>(outputImage->dataSize);
+  const ITMSurfelSceneParams& sceneParams = scene->GetParams();
+  const unsigned int *surfelIndexImagePtr = renderState->GetIndexImage()->GetData(MEMORYDEVICE_CUDA);
+  const TSurfel *surfels = scene->GetSurfels()->GetData(MEMORYDEVICE_CUDA);
+
+  int threadsPerBlock = 256;
+  int numBlocks = (pixelCount + threadsPerBlock - 1) / threadsPerBlock;
+
+  switch(type)
+  {
+    case Base::RENDER_COLOUR:
+    {
+      ck_shade_pixel_colour<<<numBlocks,threadsPerBlock>>>(pixelCount, surfelIndexImagePtr, surfels, outputImagePtr);
+      ORcudaKernelCheck;
+      break;
+    }
+    case Base::RENDER_CONFIDENCE:
+    {
+      ck_shade_pixel_confidence<<<numBlocks,threadsPerBlock>>>(pixelCount, surfelIndexImagePtr, surfels, sceneParams.stableSurfelConfidence, outputImagePtr);
+      ORcudaKernelCheck;
+      break;
+    }
+    case Base::RENDER_FLAT:
+    case Base::RENDER_LAMBERTIAN:
+    case Base::RENDER_PHONG:
+    {
+      SurfelLightingType lightingType = SLT_LAMBERTIAN;
+      if(type == Base::RENDER_FLAT) lightingType = SLT_FLAT;
+      else if(type == Base::RENDER_PHONG) lightingType = SLT_PHONG;
+
+      const Vector3f lightPos = Vector3f(0.0f, -10.0f, -10.0f);
+      const Vector3f viewerPos = Vector3f(pose->GetInvM().getColumn(3));
+      ck_shade_pixel_grey<<<numBlocks,threadsPerBlock>>>(pixelCount, surfelIndexImagePtr,surfels, lightPos, viewerPos, lightingType, outputImagePtr);
+      ORcudaKernelCheck;
+      break;
+    }
+    case Base::RENDER_NORMAL:
+    {
+      ck_shade_pixel_normal<<<numBlocks,threadsPerBlock>>>(pixelCount, surfelIndexImagePtr, surfels, outputImagePtr);
+      ORcudaKernelCheck;
+      break;
+    }
+    default:
+    {
+      // TODO
+      break;
+    }
+  }
+}
+
+//#################### PRIVATE MEMBER FUNCTIONS ####################
+
+template <typename TSurfel>
+MemoryDeviceType ITMSurfelVisualisationEngine_CUDA<TSurfel>::GetMemoryType() const
+{
+  return MEMORYDEVICE_CUDA;
+}
+
+template <typename TSurfel>
+void ITMSurfelVisualisationEngine_CUDA<TSurfel>::MakeIndexImage(const ITMSurfelScene<TSurfel> *scene, const ORUtils::SE3Pose *pose, const ITMIntrinsics *intrinsics,
+                                                                int width, int height, int scaleFactor, unsigned int *surfelIndexImage, bool useRadii,
+                                                                UnstableSurfelRenderingMode unstableSurfelRenderingMode, int *depthBuffer) const
+{
+  const int pixelCount = width * height;
+
+  int threadsPerBlock = 256;
+  int numBlocks = (pixelCount + threadsPerBlock - 1) / threadsPerBlock;
+
+  ck_clear_surfel_index_image<<<numBlocks,threadsPerBlock>>>(
+    pixelCount,
+    surfelIndexImage,
+    depthBuffer
+  );
+  ORcudaKernelCheck;
+
+  const ITMSurfelSceneParams& sceneParams = scene->GetParams();
+  const int surfelCount = static_cast<int>(scene->GetSurfelCount());
+  numBlocks = (surfelCount + threadsPerBlock - 1) / threadsPerBlock;
+
+  ck_update_depth_buffer_for_surfel<<<numBlocks,threadsPerBlock>>>(
+    surfelCount,
+    scene->GetSurfels()->GetData(MEMORYDEVICE_CUDA),
+    pose->GetM(),
+    *intrinsics,
+    width,
+    height,
+    scaleFactor,
+    useRadii,
+    unstableSurfelRenderingMode,
+    sceneParams.stableSurfelConfidence,
+    sceneParams.unstableSurfelZOffset,
+    depthBuffer
+  );
+  ORcudaKernelCheck;
+
+  ck_update_index_image_for_surfel<<<numBlocks,threadsPerBlock>>>(
+    surfelCount,
+    scene->GetSurfels()->GetData(MEMORYDEVICE_CUDA),
+    pose->GetM(),
+    *intrinsics,
+    width,
+    height,
+    scaleFactor,
+    depthBuffer,
+    useRadii,
+    unstableSurfelRenderingMode,
+    sceneParams.stableSurfelConfidence,
+    sceneParams.unstableSurfelZOffset,
+    surfelIndexImage
+  );
+  ORcudaKernelCheck;
+}
+
+}
