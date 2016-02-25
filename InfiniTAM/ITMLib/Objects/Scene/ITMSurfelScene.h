@@ -63,7 +63,7 @@ namespace ITMLib
 
     //#################### COPY CONSTRUCTOR & ASSIGNMENT OPERATOR ####################
   private:
-    // Deliberately private and unimplemented
+    // Deliberately private and unimplemented.
     ITMSurfelScene(const ITMSurfelScene&);
     ITMSurfelScene& operator=(const ITMSurfelScene&);
 
