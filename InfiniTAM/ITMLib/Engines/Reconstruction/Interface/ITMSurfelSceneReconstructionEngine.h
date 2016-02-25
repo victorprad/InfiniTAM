@@ -85,7 +85,12 @@ namespace ITMLib
     virtual void AddNewSurfels(ITMSurfelScene<TSurfel> *scene, const ITMView *view, const ITMTrackingState *trackingState) const = 0;
 
     /**
-     * \brief TODO
+     * \brief Finds the indices of the surfels (if any) in the scene to which different points in the live 3D depth image map correspond.
+     *
+     * \param scene           The scene.
+     * \param view            The current view (containing the live input images from the current image source).
+     * \param trackingState   The current tracking state.
+     * \param renderState     The render state corresponding to the camera from which the scene is being viewed.
      */
     virtual void FindCorrespondingSurfels(const ITMSurfelScene<TSurfel> *scene, const ITMView *view, const ITMTrackingState *trackingState,
                                           const ITMSurfelRenderState *renderState) const = 0;
@@ -117,7 +122,10 @@ namespace ITMLib
     virtual void MergeSimilarSurfels(ITMSurfelScene<TSurfel> *scene, const ITMSurfelRenderState *renderState) const = 0;
 
     /**
-     * \brief TODO
+     * \brief Calculates the position, normal and radius of the surfel that would be constructed for each point in the live 3D depth image.
+     *
+     * \param view          The current view (containing the live input images from the current image source).
+     * \param sceneParams   The parameters associated with the surfel scene.
      */
     virtual void PreprocessDepthMap(const ITMView *view, const ITMSurfelSceneParams& sceneParams) const = 0;
 
@@ -136,7 +144,7 @@ namespace ITMLib
      * \param scene         The scene to update.
      * \param view          The current view (containing the live input images from the current image source).
      * \param trackingState The current tracking state.
-     * \param renderState   The current render state.
+     * \param renderState   The render state corresponding to the camera from which the scene is being viewed.
      */
     void IntegrateIntoScene(ITMSurfelScene<TSurfel> *scene, const ITMView *view, const ITMTrackingState *trackingState, const ITMSurfelRenderState *renderState);
 
