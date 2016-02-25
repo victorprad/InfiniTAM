@@ -10,7 +10,7 @@
 namespace ITMLib
 {
   /**
-   * \brief An instance of an instantiation of this class template can be used to make a surfel-based reconstruction of a 3D scene.
+   * \brief An instance of an instantiation of a class template derived from this one can be used to make a surfel-based reconstruction of a 3D scene.
    */
   template <typename TSurfel>
   class ITMSurfelSceneReconstructionEngine

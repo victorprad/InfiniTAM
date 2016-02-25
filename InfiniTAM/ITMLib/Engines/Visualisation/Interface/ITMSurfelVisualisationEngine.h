@@ -14,7 +14,7 @@
 namespace ITMLib
 {
   /**
-   * \brief TODO
+   * \brief An instance of an instantiation of a class template derived from this one can be used to render a surfel-based 3D scene.
    */
   template <typename TSurfel>
   class ITMSurfelVisualisationEngine
@@ -22,7 +22,7 @@ namespace ITMLib
     //#################### ENUMERATIONS ####################
   public:
     /**
-     * \brief TODO
+     * \brief The types of scene visualisation that the engine supports.
      */
     enum RenderImageType
     {
@@ -65,7 +65,13 @@ namespace ITMLib
                                   ITMFloatImage *outputImage) const = 0;
 
     /**
-     * \brief TODO
+     * \brief Renders a visualisation of the scene (as viewed from a particular camera) to an image.
+     *
+     * \param scene         The scene.
+     * \param pose          The pose of the camera from which to render.
+     * \param renderState   The render state corresponding to the camera from which to render.
+     * \param outputImage   The image into which to write the result.
+     * \param type          The type of visualisation to render.
      */
     virtual void RenderImage(const ITMSurfelScene<TSurfel> *scene, const ORUtils::SE3Pose *pose, const ITMSurfelRenderState *renderState,
                              ITMUChar4Image *outputImage, RenderImageType type = RENDER_LAMBERTIAN) const = 0;
