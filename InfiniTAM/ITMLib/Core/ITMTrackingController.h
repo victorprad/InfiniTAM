@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include <stdexcept>
+
 #include "../Engines/Visualisation/Interface/ITMSurfelVisualisationEngine.h"
 #include "../Engines/Visualisation/Interface/ITMVisualisationEngine.h"
 #include "../Trackers/Interface/ITMTracker.h"
@@ -30,8 +32,8 @@ namespace ITMLib
 
 			if(requiresColourRendering)
 			{
-				// TODO
-				throw 23;
+				// TODO: This should be implemented at some point.
+				throw std::runtime_error("The surfel engine doesn't yet support colour trackers");
 			}
 			else
 			{
@@ -48,7 +50,6 @@ namespace ITMLib
 				}
 				else
 				{
-					//visualisationEngine->ForwardRender(scene, view, trackingState, renderState);
 					trackingState->age_pointCloud++;
 				}
 			}

@@ -17,10 +17,14 @@ namespace ITMLib
   {
     //#################### PROTECTED VARIABLES ####################
   protected:
-    /** TODO */
+    /** A map containing the indices of the surfels (if any) in the scene to which different points in the vertex map correspond. */
     ORUtils::MemoryBlock<unsigned int> *m_correspondenceMapMB;
 
-    /** TODO */
+    /**
+     * A map representing the targets of the surfel merges that should be performed. Each element is a raster position in the index image,
+     * e.g. if the merge target of the surfel specified at raster position 51 in the index image is 7, that means it should be merged into
+     * the surfel specified at raster position 7 in the index image.
+     */
     ORUtils::MemoryBlock<unsigned int> *m_mergeTargetMapMB;
 
     /** A mask whose values denote whether the corresponding points in the vertex map need to be added to the scene as new points. */
@@ -50,13 +54,15 @@ namespace ITMLib
     //#################### CONSTRUCTORS ####################
   protected:
     /**
-     * \brief TODO
+     * \brief Constructs a surfel scene reconstruction engine.
+     *
+     * \param depthImageSize  The size of the depth images that are being fused into the scene.
      */
     explicit ITMSurfelSceneReconstructionEngine(const Vector2i& depthImageSize);
 
     //#################### COPY CONSTRUCTOR & ASSIGNMENT OPERATOR ####################
   private:
-    // Deliberately private and unimplemented
+    // Deliberately private and unimplemented.
     ITMSurfelSceneReconstructionEngine(const ITMSurfelSceneReconstructionEngine&);
     ITMSurfelSceneReconstructionEngine& operator=(const ITMSurfelSceneReconstructionEngine&);
 
@@ -70,18 +76,31 @@ namespace ITMLib
     //#################### PRIVATE ABSTRACT MEMBER FUNCTIONS ####################
   private:
     /**
-     * \brief TODO
+     * \brief Adds surfels to the scene for any points in the live 3D depth image that do not correspond to an existing surfel.
+     *
+     * \param scene           The scene.
+     * \param view            The current view (containing the live input images from the current image source).
+     * \param trackingState   The current tracking state.
      */
     virtual void AddNewSurfels(ITMSurfelScene<TSurfel> *scene, const ITMView *view, const ITMTrackingState *trackingState) const = 0;
 
     /**
-     * \brief TODO
+     * \brief Finds the indices of the surfels (if any) in the scene to which different points in the live 3D depth image map correspond.
+     *
+     * \param scene           The scene.
+     * \param view            The current view (containing the live input images from the current image source).
+     * \param trackingState   The current tracking state.
+     * \param renderState     The render state corresponding to the camera from which the scene is being viewed.
      */
     virtual void FindCorrespondingSurfels(const ITMSurfelScene<TSurfel> *scene, const ITMView *view, const ITMTrackingState *trackingState,
                                           const ITMSurfelRenderState *renderState) const = 0;
 
     /**
-     * \brief TODO
+     * \brief Fuses points in the live point cloud into the surfels in the scene with which they have been matched.
+     *
+     * \param scene           The scene.
+     * \param view            The current view (containing the live input images from the current image source).
+     * \param trackingState   The current tracking state.
      */
     virtual void FuseMatchedPoints(ITMSurfelScene<TSurfel> *scene, const ITMView *view, const ITMTrackingState *trackingState) const = 0;
 
@@ -103,12 +122,15 @@ namespace ITMLib
     virtual void MergeSimilarSurfels(ITMSurfelScene<TSurfel> *scene, const ITMSurfelRenderState *renderState) const = 0;
 
     /**
-     * \brief TODO
+     * \brief Calculates the position, normal and radius of the surfel that would be constructed for each point in the live 3D depth image.
+     *
+     * \param view          The current view (containing the live input images from the current image source).
+     * \param sceneParams   The parameters associated with the surfel scene.
      */
     virtual void PreprocessDepthMap(const ITMView *view, const ITMSurfelSceneParams& sceneParams) const = 0;
 
     /**
-     * \brief Removes any surfels that have been marked from the scene.
+     * \brief Removes from the scene any surfels that have been marked by previous stages of the pipeline.
      *
      * \param scene The surfel scene.
      */
@@ -122,7 +144,7 @@ namespace ITMLib
      * \param scene         The scene to update.
      * \param view          The current view (containing the live input images from the current image source).
      * \param trackingState The current tracking state.
-     * \param renderState   The current render state.
+     * \param renderState   The render state corresponding to the camera from which the scene is being viewed.
      */
     void IntegrateIntoScene(ITMSurfelScene<TSurfel> *scene, const ITMView *view, const ITMTrackingState *trackingState, const ITMSurfelRenderState *renderState);
 

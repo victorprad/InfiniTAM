@@ -15,7 +15,9 @@ namespace ITMLib
     //#################### CONSTRUCTORS ####################
   public:
     /**
-     * \brief TODO
+     * \brief Constructs a CUDA-based surfel scene reconstruction engine.
+     *
+     * \param depthImageSize  The size of the depth images that are being fused into the scene.
      */
     explicit ITMSurfelSceneReconstructionEngine_CUDA(const Vector2i& depthImageSize);
 
