@@ -64,7 +64,11 @@ namespace ITMLib
     virtual void CopySceneToBuffers(const ITMSurfelScene<TSurfel> *scene, float *positions, unsigned char *normals, unsigned char *colours) const = 0;
 
     /**
-     * \brief TODO
+     * \brief Copies the positions and normals of the surfels in the index image into buffers that can be passed to the ICP tracker.
+     *
+     * \param scene           The scene.
+     * \param renderState     The render state corresponding to the live camera.
+     * \param trackingState   The current tracking state.
      */
     virtual void CreateICPMaps(const ITMSurfelScene<TSurfel> *scene, const ITMSurfelRenderState *renderState, ITMTrackingState *trackingState) const = 0;
 

@@ -18,8 +18,8 @@ namespace ITMLib
     /**
      * \brief Makes a surfel visualisation engine.
      *
-     * \param deviceType  TODO
-     * \return            TODO
+     * \param deviceType  The device on which the surfel visualisation engine should operate.
+     * \return            The surfel visualisation engine.
      */
     static ITMSurfelVisualisationEngine<TSurfel> *make_surfel_visualisation_engine(ITMLib::ITMLibSettings::DeviceType deviceType);
   };
