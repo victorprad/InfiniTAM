@@ -14,7 +14,7 @@
 namespace ITMLib
 {
   /**
-   * \brief TODO
+   * \brief An instance of an instantiation of a class template deriving from this one can be used to render a surfel-based 3D scene.
    */
   template <typename TSurfel>
   class ITMSurfelVisualisationEngine
@@ -22,7 +22,7 @@ namespace ITMLib
     //#################### ENUMERATIONS ####################
   public:
     /**
-     * \brief TODO
+     * \brief The types of scene visualisation that the engine supports.
      */
     enum RenderImageType
     {
@@ -44,12 +44,22 @@ namespace ITMLib
     //#################### PUBLIC ABSTRACT MEMBER FUNCTIONS ####################
   public:
     /**
-     * \brief TODO
+     * \brief Copies the correspondence information of all the surfels in the scene into buffers in order to support correspondence debugging using OpenGL.
+     *
+     * \param scene           The scene.
+     * \param newPositions    The buffer into which to store the "new" positions of the surfels from their most recent merges.
+     * \param oldPositions    The buffer into which to store the "old" position of the surfels from their most recent merges.
+     * \param correspondences The buffer into which to store the "new" and "old" positions of the surfels for the purpose of rendering line segments between them.
      */
     virtual void CopyCorrespondencesToBuffers(const ITMSurfelScene<TSurfel> *scene, float *newPositions, float *oldPositions, float *correspondences) const = 0;
 
     /**
-     * \brief TODO
+     * \brief Copies the properties of all the surfels in the scene into property-specific buffers (these can be used for rendering the scene using OpenGL).
+     *
+     * \param scene     The scene.
+     * \param positions A buffer into which to write the surfels' positions.
+     * \param normals   A buffer into which to write the surfels' normals.
+     * \param colours   A buffer into which to write the surfels' colours.
      */
     virtual void CopySceneToBuffers(const ITMSurfelScene<TSurfel> *scene, float *positions, unsigned char *normals, unsigned char *colours) const = 0;
 
@@ -59,13 +69,24 @@ namespace ITMLib
     virtual void CreateICPMaps(const ITMSurfelScene<TSurfel> *scene, const ITMSurfelRenderState *renderState, ITMTrackingState *trackingState) const = 0;
 
     /**
-     * \brief TODO
+     * \brief Renders a depth visualisation of the scene (as viewed from a particular camera) to an image.
+     *
+     * \param scene         The scene.
+     * \param pose          The pose of the camera from which to render.
+     * \param renderState   The render state corresponding to the camera from which to render.
+     * \param outputImage   The image into which to write the result.
      */
     virtual void RenderDepthImage(const ITMSurfelScene<TSurfel> *scene, const ORUtils::SE3Pose *pose, const ITMSurfelRenderState *renderState,
                                   ITMFloatImage *outputImage) const = 0;
 
     /**
-     * \brief TODO
+     * \brief Renders a visualisation of the scene (as viewed from a particular camera) to an image.
+     *
+     * \param scene         The scene.
+     * \param pose          The pose of the camera from which to render.
+     * \param renderState   The render state corresponding to the camera from which to render.
+     * \param outputImage   The image into which to write the result.
+     * \param type          The type of visualisation to render.
      */
     virtual void RenderImage(const ITMSurfelScene<TSurfel> *scene, const ORUtils::SE3Pose *pose, const ITMSurfelRenderState *renderState,
                              ITMUChar4Image *outputImage, RenderImageType type = RENDER_LAMBERTIAN) const = 0;
@@ -87,7 +108,9 @@ namespace ITMLib
     //#################### PRIVATE ABSTRACT MEMBER FUNCTIONS ####################
   private:
     /**
-     * \brief TODO
+     * \brief Gets the type of device on which the visualisation engine is operating.
+     *
+     * \return  The type of device on which the visualisation engine is operating.
      */
     virtual MemoryDeviceType GetMemoryType() const = 0;
 

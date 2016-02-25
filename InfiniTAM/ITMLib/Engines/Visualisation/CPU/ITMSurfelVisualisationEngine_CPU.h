@@ -7,7 +7,7 @@
 namespace ITMLib
 {
   /**
-   * \brief TODO
+   * \brief An instance of an instantiation of a class template deriving from this one can be used to render a surfel-based 3D scene using the CPU.
    */
   template <typename TSurfel>
   class ITMSurfelVisualisationEngine_CPU : public ITMSurfelVisualisationEngine<TSurfel>
