@@ -78,9 +78,9 @@ namespace ITMLib
     /**
      * \brief Adds surfels to the scene for any points in the live 3D depth image that do not correspond to an existing surfel.
      *
-     * \param scene         The scene.
-     * \param view          The current view (containing the live input images from the current image source).
-     * \param trackingState The current tracking state.
+     * \param scene           The scene.
+     * \param view            The current view (containing the live input images from the current image source).
+     * \param trackingState   The current tracking state.
      */
     virtual void AddNewSurfels(ITMSurfelScene<TSurfel> *scene, const ITMView *view, const ITMTrackingState *trackingState) const = 0;
 
@@ -91,7 +91,11 @@ namespace ITMLib
                                           const ITMSurfelRenderState *renderState) const = 0;
 
     /**
-     * \brief TODO
+     * \brief Fuses points in the live point cloud into the surfels in the scene with which they have been matched.
+     *
+     * \param scene           The scene.
+     * \param view            The current view (containing the live input images from the current image source).
+     * \param trackingState   The current tracking state.
      */
     virtual void FuseMatchedPoints(ITMSurfelScene<TSurfel> *scene, const ITMView *view, const ITMTrackingState *trackingState) const = 0;
 
@@ -118,7 +122,7 @@ namespace ITMLib
     virtual void PreprocessDepthMap(const ITMView *view, const ITMSurfelSceneParams& sceneParams) const = 0;
 
     /**
-     * \brief Removes any surfels that have been marked from the scene.
+     * \brief Removes from the scene any surfels that have been marked by previous stages of the pipeline.
      *
      * \param scene The surfel scene.
      */
