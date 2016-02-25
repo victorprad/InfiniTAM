@@ -68,8 +68,7 @@ static void CreateICPMaps_common_metal(const ITMScene<TVoxel,TIndex> *scene, con
     params->voxelSizes.x = scene->sceneParams->voxelSize;
     params->voxelSizes.y = 1.0f / scene->sceneParams->voxelSize;
     params->invM = trackingState->pose_d->GetInvM();
-    params->invProjParams = view->calib->intrinsics_d.projectionParamsSimple.all;
-    params->invProjParams.x = 1.0f / params->invProjParams.x; params->invProjParams.y = 1.0f / params->invProjParams.y;
+    params->invProjParams = InvertProjectionParams(view->calib->intrinsics_d.projectionParamsSimple.all);
     params->lightSource.x = -Vector3f(params->invM.getColumn(2)).x;
     params->lightSource.y = -Vector3f(params->invM.getColumn(2)).y;
     params->lightSource.z = -Vector3f(params->invM.getColumn(2)).z;
