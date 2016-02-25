@@ -17,10 +17,14 @@ namespace ITMLib
   {
     //#################### PROTECTED VARIABLES ####################
   protected:
-    /** TODO */
+    /** A map containing the indices of the surfels (if any) in the scene to which different points in the vertex map correspond. */
     ORUtils::MemoryBlock<unsigned int> *m_correspondenceMapMB;
 
-    /** TODO */
+    /**
+     * A map representing the targets of the surfel merges that should be performed. Each element is a raster position in the index image,
+     * e.g. if the merge target of the surfel specified at raster position 51 in the index image is 7, that means it should be merged into
+     * the surfel specified at raster position 7 in the index image.
+     */
     ORUtils::MemoryBlock<unsigned int> *m_mergeTargetMapMB;
 
     /** A mask whose values denote whether the corresponding points in the vertex map need to be added to the scene as new points. */
@@ -50,7 +54,9 @@ namespace ITMLib
     //#################### CONSTRUCTORS ####################
   protected:
     /**
-     * \brief TODO
+     * \brief Constructs a surfel scene reconstruction engine.
+     *
+     * \param depthImageSize  The size of the depth images that are being fused into the scene.
      */
     explicit ITMSurfelSceneReconstructionEngine(const Vector2i& depthImageSize);
 
@@ -70,7 +76,11 @@ namespace ITMLib
     //#################### PRIVATE ABSTRACT MEMBER FUNCTIONS ####################
   private:
     /**
-     * \brief TODO
+     * \brief Adds surfels to the scene for any points in the live 3D depth image that do not correspond to an existing surfel.
+     *
+     * \param scene         The scene.
+     * \param view          The current view (containing the live input images from the current image source).
+     * \param trackingState The current tracking state.
      */
     virtual void AddNewSurfels(ITMSurfelScene<TSurfel> *scene, const ITMView *view, const ITMTrackingState *trackingState) const = 0;
 
