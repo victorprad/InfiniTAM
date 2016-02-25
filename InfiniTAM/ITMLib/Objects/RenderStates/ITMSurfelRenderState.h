@@ -8,28 +8,31 @@
 namespace ITMLib
 {
   /**
-   * \brief TODO
+   * \brief An instance of this class can be used to hold surfel index images.
    */
   class ITMSurfelRenderState
   {
     //#################### PRIVATE VARIABLES ####################
   private:
-    /** TODO */
+    /** The depth buffer for the normal index image. */
     ORUtils::Image<int> *depthBuffer;
 
-    /** TODO */
+    /** The depth buffer for the supersampled index image. */
     ORUtils::Image<int> *depthBufferSuper;
 
-    /** TODO */
+    /** The normal index image. */
     ORUtils::Image<unsigned int> *surfelIndexImage;
 
-    /** TODO */
+    /** The supersampled index image. */
     ORUtils::Image<unsigned int> *surfelIndexImageSuper;
 
     //#################### CONSTRUCTORS ####################
   public:
     /**
-     * \brief TODO
+     * \brief Constructs a surfel render state.
+     *
+     * \param indexImageSize      The size of the normal index image.
+     * \param supersamplingFactor The supersampling scaling factor (applied to each axis separately).
      */
     ITMSurfelRenderState(const Vector2i& indexImageSize, int supersamplingFactor);
 
@@ -49,42 +52,58 @@ namespace ITMLib
     //#################### PUBLIC MEMBER FUNCTIONS ####################
   public:
     /**
-     * \brief TODO
+     * \brief Gets the depth buffer for the normal index image.
+     *
+     * \return  The depth buffer for the normal index image.
      */
     ORUtils::Image<int> *GetDepthBuffer();
 
     /**
-     * \brief TODO
+     * \brief Gets the depth buffer for the normal index image.
+     *
+     * \return  The depth buffer for the normal index image.
      */
     const ORUtils::Image<int> *GetDepthBuffer() const;
 
     /**
-     * \brief TODO
+     * \brief Gets the depth buffer for the supersampled index image.
+     *
+     * \return  The depth buffer for the supersampled index image.
      */
     ORUtils::Image<int> *GetDepthBufferSuper();
 
     /**
-     * \brief TODO
+     * \brief Gets the depth buffer for the supersampled index image.
+     *
+     * \return  The depth buffer for the supersampled index image.
      */
     const ORUtils::Image<int> *GetDepthBufferSuper() const;
 
     /**
-     * \brief TODO
+     * \brief Gets the normal index image.
+     *
+     * \return  The normal index image.
      */
     ORUtils::Image<unsigned int> *GetIndexImage();
 
     /**
-     * \brief TODO
+     * \brief Gets the normal index image.
+     *
+     * \return  The normal index image.
      */
     const ORUtils::Image<unsigned int> *GetIndexImage() const;
 
     /**
-     * \brief TODO
+     * \brief Gets the supersampled index image.
+     *
+     * \return  The supersampled index image.
      */
     ORUtils::Image<unsigned int> *GetIndexImageSuper();
 
     /**
-     * \brief TODO
+     * \brief Gets the supersampled index image.
+     *
+     * \return  The supersampled index image.
      */
     const ORUtils::Image<unsigned int> *GetIndexImageSuper() const;
   };
