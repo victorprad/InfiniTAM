@@ -28,20 +28,6 @@ _CPU_AND_GPU_CODE_ Vector3f transform_normal(const Matrix4f& T, const Vector3f& 
 _CPU_AND_GPU_CODE_ Vector3f transform_point(const Matrix4f& T, const Vector3f& p);
 
 /**
- * \brief TODO
- *
- * \param invT  A transformation from global coordinates to pose coordinates.
- * \param p     The point whose depth we want to calculate.
- */
-_CPU_AND_GPU_CODE_
-inline float calculate_depth_from_pose(const Matrix4f& invT, const Vector3f& p)
-{
-  Vector4f vg(p.x, p.y, p.z, 1.0f);
-  Vector4f v = invT * vg;
-  return v.z;
-}
-
-/**
  * \brief Calculates a Gaussian-based confidence value for a depth sample.
  *
  * See p.4 of "Real-time 3D Reconstruction in Dynamic Scenes using Point-based Fusion" (Keller et al.).
@@ -402,7 +388,10 @@ inline void calculate_vertex_position(int locId, int width, const ITMIntrinsics&
 }
 
 /**
- * \brief TODO
+ * \brief Clears the surfel merge indicated by the specified entry in the merge target map.
+ *
+ * \param locId           The raster position of the entry in the merge target map.
+ * \param mergeTargetMap  The merge target map.
  */
 _CPU_AND_GPU_CODE_
 inline void clear_merge_target(int locId, unsigned int *mergeTargetMap)
@@ -455,7 +444,8 @@ inline void find_corresponding_surfel(int locId, const Matrix4f& invT, const flo
       {
         // TODO: Make this slightly more sophisticated, as per the paper.
         TSurfel surfel = surfels[surfelIndex];
-        float surfelDepth = calculate_depth_from_pose(invT, surfel.position);
+        Vector3f liveSurfelPos = transform_point(invT, surfel.position);
+        float surfelDepth = liveSurfelPos.z;
 
         const float deltaDepth = 0.01f;
         if(surfel.confidence > bestSurfelConfidence && fabs(surfelDepth - depth) <= deltaDepth)
@@ -473,7 +463,19 @@ inline void find_corresponding_surfel(int locId, const Matrix4f& invT, const flo
 }
 
 /**
- * \brief TODO
+ * \brief Attempts to find a surfel in the scene that can be merged into the surfel (if any) denoted by the specified raster position in the surfel index image.
+ *
+ * \param locId                   The raster position in the surfel index image for whose surfel (if any) we want to find a merge source.
+ * \param indexImage              The index image.
+ * \param indexImageWidth         The width of the index image.
+ * \param indexImageHeight        The height of the index image.
+ * \param correspondenceMap       The correspondence map, each pixel of which indicates the surfel (if any) with which the relevant point in the live point cloud has been matched.
+ * \param surfels                 The surfels in the scene.
+ * \param stableSurfelConfidence  The confidence value a surfel must have in order for it to be considered "stable".
+ * \param maxMergeDist            The maximum distance allowed between a pair of surfels if they are to be merged.
+ * \param maxMergeAngle           The maximum angle allowed between the normals of a pair of surfels if they are to be merged.
+ * \param minRadiusOverlapFactor  The minimum factor by which the radii of a pair of surfels must overlap if they are to be merged.
+ * \param mergeTargetMap          The merge target map.
  */
 template <typename TSurfel>
 _CPU_AND_GPU_CODE_
@@ -598,7 +600,7 @@ inline void mark_for_removal_if_unstable(int surfelId, const TSurfel *surfels, i
  * \param mergeTargetMap    The merge target map.
  * \param surfels           The surfels in the scene.
  * \param surfelRemovalMask A mask used to indicate which surfels should be removed in the next removal pass.
- * \param indexImage        The index image.
+ * \param indexImage        The surfel index image.
  * \param maxSurfelRadius   The maximum radius a surfel is allowed to have.
  */
 template <typename TSurfel>
