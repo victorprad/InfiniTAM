@@ -417,7 +417,7 @@ inline void clear_merge_target(int locId, unsigned int *mergeTargetMap)
  * \param surfelRemovalMask   A mask used to indicate which surfels should be removed in the next removal pass.
  */
 _CPU_AND_GPU_CODE_
-inline void clear_removal_mask(int surfelId, unsigned int *surfelRemovalMask)
+inline void clear_removal_mask_entry(int surfelId, unsigned int *surfelRemovalMask)
 {
   surfelRemovalMask[surfelId] = 0;
 }
