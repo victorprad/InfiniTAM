@@ -98,13 +98,25 @@ namespace ITMLib
     //#################### PUBLIC MEMBER FUNCTIONS ####################
   public:
     /**
-     * \brief TODO
+     * \brief Makes a non-supersampled index image in which each pixel contains the index of the surfel that projects to that point.
+     *
+     * \param scene                         The surfel scene.
+     * \param pose                          The camera pose.
+     * \param intrinsics                    The intrinsic parameters of the depth camera.
+     * \param unstableSurfelRenderingMode   Whether to always/never render unstable surfels, or render them only if there's no stable alternative.
+     * \param renderState                   The render state in which to store the index image.
      */
     void FindSurface(const ITMSurfelScene<TSurfel> *scene, const ORUtils::SE3Pose *pose, const ITMIntrinsics *intrinsics,
                      bool useRadii, UnstableSurfelRenderingMode unstableSurfelRenderingMode, ITMSurfelRenderState *renderState) const;
 
     /**
-     * \brief TODO
+     * \brief Makes a supersampled index image in which each pixel contains the index of the surfel that projects to that point.
+     *
+     * \param scene                         The surfel scene.
+     * \param pose                          The camera pose.
+     * \param intrinsics                    The intrinsic parameters of the depth camera.
+     * \param unstableSurfelRenderingMode   Whether to always/never render unstable surfels, or render them only if there's no stable alternative.
+     * \param renderState                   The render state in which to store the index image.
      */
     void FindSurfaceSuper(const ITMSurfelScene<TSurfel> *scene, const ORUtils::SE3Pose *pose, const ITMIntrinsics *intrinsics,
                           UnstableSurfelRenderingMode unstableSurfelRenderingMode, ITMSurfelRenderState *renderState) const;
