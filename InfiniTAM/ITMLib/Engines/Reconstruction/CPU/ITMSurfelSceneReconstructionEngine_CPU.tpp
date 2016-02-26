@@ -132,7 +132,7 @@ void ITMSurfelSceneReconstructionEngine_CPU<TSurfel>::MarkBadSurfels(ITMSurfelSc
 #endif
   for(int surfelId = 0; surfelId < surfelCount; ++surfelId)
   {
-    clear_removal_mask(surfelId, surfelRemovalMask);
+    clear_removal_mask_entry(surfelId, surfelRemovalMask);
   }
 
   // Mark long-term unstable surfels for removal.

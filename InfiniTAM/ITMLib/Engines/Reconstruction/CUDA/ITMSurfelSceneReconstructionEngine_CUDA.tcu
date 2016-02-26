@@ -80,12 +80,12 @@ __global__ void ck_clear_merge_target(int pixelCount, unsigned int *mergeTargetM
   }
 }
 
-__global__ void ck_clear_removal_mask(int surfelCount, unsigned int *surfelRemovalMask)
+__global__ void ck_clear_removal_mask_entry(int surfelCount, unsigned int *surfelRemovalMask)
 {
   int surfelId = threadIdx.x + blockDim.x * blockIdx.x;
   if(surfelId < surfelCount)
   {
-    clear_removal_mask(surfelId, surfelRemovalMask);
+    clear_removal_mask_entry(surfelId, surfelRemovalMask);
   }
 }
 
@@ -301,7 +301,7 @@ void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::MarkBadSurfels(ITMSurfelS
   int numBlocks = (surfelCount + threadsPerBlock - 1) / threadsPerBlock;
 
   // Clear the surfel removal mask.
-  ck_clear_removal_mask<<<numBlocks,threadsPerBlock>>>(
+  ck_clear_removal_mask_entry<<<numBlocks,threadsPerBlock>>>(
     surfelCount,
     surfelRemovalMask
   );
