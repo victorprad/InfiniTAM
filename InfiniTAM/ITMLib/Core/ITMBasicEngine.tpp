@@ -151,8 +151,8 @@ void ITMBasicEngine<TVoxel,TIndex>::ProcessFrame(ITMUChar4Image *rgbImage, ITMSh
 		if (!didFusion) denseMapper->UpdateVisibleList(view, trackingState, scene, renderState_live);
 
 		// raycast to renderState_live for tracking and free visualisation
-		trackingController->Prepare(trackingState, scene, view, visualisationEngine, renderState_live);
-		// TODO: Tracking against the surfel scene.
+		//trackingController->Prepare(trackingState, scene, view, visualisationEngine, renderState_live);
+		trackingController->Prepare(trackingState, surfelScene, view, surfelVisualisationEngine, surfelRenderState_live);
 		surfelVisualisationEngine->FindSurfaceSuper(surfelScene, trackingState->pose_d, &view->calib->intrinsics_d, USR_RENDER, surfelRenderState_live);
 	}
 	else {
