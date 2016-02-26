@@ -119,7 +119,18 @@ namespace ITMLib
     virtual MemoryDeviceType GetMemoryType() const = 0;
 
     /**
-     * \brief TODO
+     * \brief Forward projects all the surfels in the scene to make an image in which each pixel contains the index of the surfel that projected to that point.
+     *
+     * \param scene                         The surfel scene.
+     * \param pose                          The camera pose.
+     * \param intrinsics                    The intrinsic parameters of the depth camera.
+     * \param width                         The width of the index image.
+     * \param height                        The height of the index image.
+     * \param scaleFactor                   The scale factor by which the index image is supersampled with respect to the depth image.
+     * \param surfelIndexImage              The surfel index image.
+     * \param useRadii                      Whether or not to render each surfel as a circle rather than a point.
+     * \param unstableSurfelRenderingMode   Whether to always/never render unstable surfels, or render them only if there's no stable alternative.
+     * \param depthBuffer                   The depth buffer for the index image.
      */
     virtual void MakeIndexImage(const ITMSurfelScene<TSurfel> *scene, const ORUtils::SE3Pose *pose, const ITMIntrinsics *intrinsics,
                                 int width, int height, int scaleFactor, unsigned int *surfelIndexImage, bool useRadii,
