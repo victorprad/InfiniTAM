@@ -301,12 +301,18 @@ inline void add_new_surfel(int locId, const Matrix4f& T, int timestamp, const un
 }
 
 /**
- * \brief TODO
+ * \brief Calculates an estimate of the surface normal for the point at the specified raster position in the vertex map.
+ *
+ * \param locId       The raster position in the vertex map of the point for which to estimate the surface normal.
+ * \param vertexMap   The live point cloud, created by back-projecting the pixels in the live 2D depth image.
+ * \param width       The width of the vertex map.
+ * \param height      The height of the vertex map.
+ * \param normalMap   A map in which to store the estimated surface normals.
  */
 _CPU_AND_GPU_CODE_
 inline void calculate_normal(int locId, const Vector4f *vertexMap, int width, int height, Vector3f *normalMap)
 {
-  // FIXME: This is a bit of a quick hack at the moment - it can be improved in due course.
+  // Note: This approach works for the moment, but there may be ways of improving it.
   int x = locId % width, y = locId / width;
 
   Vector3f n(0.0f);
@@ -360,7 +366,13 @@ inline void calculate_radius(int locId, const float *depthMap, const Vector3f *n
 }
 
 /**
- * \brief TODO
+ * \brief Back-projects a point in the live 2D depth image to find its position in live 3D depth coordinates.
+ *
+ * \param locId       The raster position in the live 2D depth image of the point to back-project.
+ * \param width       The width of the depth image.
+ * \param intrinsics  The intrinsic parameters of the depth camera.
+ * \param depthMap    The live 2D depth image.
+ * \param vertexMap   A map in which to store the back-projections of the pixels in the live 2D depth image.
  */
 _CPU_AND_GPU_CODE_
 inline void calculate_vertex_position(int locId, int width, const ITMIntrinsics& intrinsics, const float *depthMap, Vector4f *vertexMap)
@@ -373,9 +385,10 @@ inline void calculate_vertex_position(int locId, int width, const ITMIntrinsics&
   */
   int ux = locId % width, uy = locId / width;
   Vector4f value(0.0f, 0.0f, 0.0f, -1.0f);
+
   const float depth = depthMap[locId];
   const float EPSILON = 1e-3f;
-  if(fabs(depth + 1) > EPSILON)
+  if(fabs(depth + 1) > EPSILON) // i.e. if(depth != -1)
   {
     value = Vector4f(
       depth * (ux - intrinsics.projectionParamsSimple.px) / intrinsics.projectionParamsSimple.fx,
@@ -384,6 +397,7 @@ inline void calculate_vertex_position(int locId, int width, const ITMIntrinsics&
       1.0f
     );
   }
+
   vertexMap[locId] = value;
 }
 
@@ -397,7 +411,10 @@ inline void clear_merge_target(int locId, unsigned int *mergeTargetMap)
 }
 
 /**
- * \brief TODO
+ * \brief Clears the entry of the specified surfel in the surfel removal mask.
+ *
+ * \param surfelId            The ID of the surfel whose entry in the surfel removal mask is to be cleared.
+ * \param surfelRemovalMask   A mask used to indicate which surfels should be removed in the next removal pass.
  */
 _CPU_AND_GPU_CODE_
 inline void clear_removal_mask(int surfelId, unsigned int *surfelRemovalMask)
