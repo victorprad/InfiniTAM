@@ -28,20 +28,6 @@ _CPU_AND_GPU_CODE_ Vector3f transform_normal(const Matrix4f& T, const Vector3f& 
 _CPU_AND_GPU_CODE_ Vector3f transform_point(const Matrix4f& T, const Vector3f& p);
 
 /**
- * \brief TODO
- *
- * \param invT  A transformation from global coordinates to pose coordinates.
- * \param p     The point whose depth we want to calculate.
- */
-_CPU_AND_GPU_CODE_
-inline float calculate_depth_from_pose(const Matrix4f& invT, const Vector3f& p)
-{
-  Vector4f vg(p.x, p.y, p.z, 1.0f);
-  Vector4f v = invT * vg;
-  return v.z;
-}
-
-/**
  * \brief Calculates a Gaussian-based confidence value for a depth sample.
  *
  * See p.4 of "Real-time 3D Reconstruction in Dynamic Scenes using Point-based Fusion" (Keller et al.).
@@ -458,7 +444,8 @@ inline void find_corresponding_surfel(int locId, const Matrix4f& invT, const flo
       {
         // TODO: Make this slightly more sophisticated, as per the paper.
         TSurfel surfel = surfels[surfelIndex];
-        float surfelDepth = calculate_depth_from_pose(invT, surfel.position);
+        Vector3f liveSurfelPos = transform_point(invT, surfel.position);
+        float surfelDepth = liveSurfelPos.z;
 
         const float deltaDepth = 0.01f;
         if(surfel.confidence > bestSurfelConfidence && fabs(surfelDepth - depth) <= deltaDepth)
