@@ -12,7 +12,7 @@ namespace ITMLib
   //#################### CONSTANTS ####################
 
   /** The maximum number of surfels that we can store in a scene. */
-  const size_t MAX_SURFEL_COUNT = 5000000;/*67108864;*/ // 2^26
+  const size_t MAX_SURFEL_COUNT = 5000000;
 
   //#################### TYPES ####################
 
@@ -70,7 +70,10 @@ namespace ITMLib
     //#################### PUBLIC MEMBER FUNCTIONS ####################
   public:
     /**
-     * \brief TODO
+     * \brief Allocates a contiguous block of memory to store the specified number of new surfels.
+     *
+     * \param newSurfelCount  The number of new surfels for which to allocate space.
+     * \return                A pointer to the start of the allocated memory.
      */
     TSurfel *AllocateSurfels(size_t newSurfelCount)
     {
@@ -81,7 +84,12 @@ namespace ITMLib
     }
 
     /**
-     * \brief TODO
+     * \brief Deallocates the specified number of "removed" surfels.
+     *
+     * Surfel removal is implemented by moving the surfels to remove to the end of the surfel array.
+     * Deallocation thus simply involves decreasing our count of the number of surfels allocated.
+     *
+     * \param removedSurfelCount  The number of "removed" surfels that should be deallocated.
      */
     void DeallocateRemovedSurfels(size_t removedSurfelCount)
     {
@@ -109,7 +117,9 @@ namespace ITMLib
     }
 
     /**
-     * \brief TODO
+     * \brief Gets the memory block containing the surfels in the scene.
+     *
+     * \return  The memory block containing the surfels in the scene.
      */
     ORUtils::MemoryBlock<TSurfel> *GetSurfels()
     {
@@ -117,7 +127,9 @@ namespace ITMLib
     }
 
     /**
-     * \brief TODO
+     * \brief Gets the memory block containing the surfels in the scene.
+     *
+     * \return  The memory block containing the surfels in the scene.
      */
     const ORUtils::MemoryBlock<TSurfel> *GetSurfels() const
     {

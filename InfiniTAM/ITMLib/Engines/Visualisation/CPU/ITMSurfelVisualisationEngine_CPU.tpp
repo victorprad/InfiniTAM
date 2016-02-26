@@ -2,6 +2,8 @@
 
 #include "ITMSurfelVisualisationEngine_CPU.h"
 
+#include <stdexcept>
+
 #include "../Shared/ITMSurfelVisualisationEngine_Shared.h"
 
 namespace ITMLib
@@ -148,8 +150,8 @@ void ITMSurfelVisualisationEngine_CPU<TSurfel>::RenderImage(const ITMSurfelScene
     }
     default:
     {
-      // TODO
-      break;
+      // This should never happen.
+      throw std::runtime_error("Unsupported surfel visualisation type");
     }
   }
 }
