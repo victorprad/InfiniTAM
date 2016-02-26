@@ -11,7 +11,7 @@ namespace ITMLib
   /**
    * \brief An instance of this struct represents a surfel that does not contain colour information.
    */
-  struct ITMSurfel
+  struct ITMSurfel_grey
   {
     static const CONSTPTR(bool) hasColourInformation = false;
 
