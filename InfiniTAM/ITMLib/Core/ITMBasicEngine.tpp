@@ -117,7 +117,6 @@ void ITMBasicEngine<TVoxel,TIndex>::ProcessFrame(ITMUChar4Image *rgbImage, ITMSh
 {
 	// prepare image and turn it into a depth image
 	bool modelSensorNoise = tracker->requiresDepthReliability();
-	modelSensorNoise = true; // we always need a normal map for surfel-based fusion
 	if (imuMeasurement == NULL) viewBuilder->UpdateView(&view, rgbImage, rawDepthImage, settings->useBilateralFilter, modelSensorNoise);
 	else viewBuilder->UpdateView(&view, rgbImage, rawDepthImage, settings->useBilateralFilter, imuMeasurement);
 
