@@ -402,7 +402,10 @@ inline void calculate_vertex_position(int locId, int width, const ITMIntrinsics&
 }
 
 /**
- * \brief TODO
+ * \brief Clears the surfel merge indicated by the specified entry in the merge target map.
+ *
+ * \param locId           The raster position of the entry in the merge target map.
+ * \param mergeTargetMap  The merge target map.
  */
 _CPU_AND_GPU_CODE_
 inline void clear_merge_target(int locId, unsigned int *mergeTargetMap)
@@ -473,7 +476,19 @@ inline void find_corresponding_surfel(int locId, const Matrix4f& invT, const flo
 }
 
 /**
- * \brief TODO
+ * \brief Attempts to find a surfel in the scene that can be merged into the surfel (if any) denoted by the specified raster position in the surfel index image.
+ *
+ * \param locId                   The raster position in the surfel index image for whose surfel (if any) we want to find a merge source.
+ * \param indexImage              The index image.
+ * \param indexImageWidth         The width of the index image.
+ * \param indexImageHeight        The height of the index image.
+ * \param correspondenceMap       The correspondence map, each pixel of which indicates the surfel (if any) with which the relevant point in the live point cloud has been matched.
+ * \param surfels                 The surfels in the scene.
+ * \param stableSurfelConfidence  The confidence value a surfel must have in order for it to be considered "stable".
+ * \param maxMergeDist            The maximum distance allowed between a pair of surfels if they are to be merged.
+ * \param maxMergeAngle           The maximum angle allowed between the normals of a pair of surfels if they are to be merged.
+ * \param minRadiusOverlapFactor  The minimum factor by which the radii of a pair of surfels must overlap if they are to be merged.
+ * \param mergeTargetMap          The merge target map.
  */
 template <typename TSurfel>
 _CPU_AND_GPU_CODE_
@@ -598,7 +613,7 @@ inline void mark_for_removal_if_unstable(int surfelId, const TSurfel *surfels, i
  * \param mergeTargetMap    The merge target map.
  * \param surfels           The surfels in the scene.
  * \param surfelRemovalMask A mask used to indicate which surfels should be removed in the next removal pass.
- * \param indexImage        The index image.
+ * \param indexImage        The surfel index image.
  * \param maxSurfelRadius   The maximum radius a surfel is allowed to have.
  */
 template <typename TSurfel>
