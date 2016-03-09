@@ -412,11 +412,24 @@ inline void clear_removal_mask_entry(int surfelId, unsigned int *surfelRemovalMa
 }
 
 /**
- * \brief TODO
+ * \brief Attempts to find a surfel in the scene into which the point denoted by the specified raster position in the live point cloud can be fused.
+ *
+ * If no corresponding surfel can be found for a point, it will be marked as a new point in the new points mask, and a new surfel will be created for it.
+ *
+ * \param locId                 The raster position in the live point cloud for whose point we want to try to find a corresponding surfel in the scene.
+ * \param invT                  A transformation mapping global coordinates to live 3D depth coordinates.
+ * \param depthMap              The live 2D depth image.
+ * \param depthMapWidth         The width of the live 2D depth image.
+ * \param normalMap             The normals computed for the points in the live point cloud.
+ * \param indexImage            The surfel index image.
+ * \param supersamplingFactor   The factor by which to supersample (in each axis) the index image used for finding surfel correspondences.
+ * \param surfels               The surfels in the scene.
+ * \param correspondenceMap     The correspondence map, each pixel of which indicates the surfel (if any) with which the relevant point in the live point cloud has been matched.
+ * \param newPointsMask         A mask indicating the pixels in the live 2D depth image for which new surfels are to be added.
  */
 template <typename TSurfel>
 _CPU_AND_GPU_CODE_
-inline void find_corresponding_surfel(int locId, const Matrix4f& invT, const float *depthMap, int depthMapWidth, const Vector3f *normalMap, const unsigned int *indexMap,
+inline void find_corresponding_surfel(int locId, const Matrix4f& invT, const float *depthMap, int depthMapWidth, const Vector3f *normalMap, const unsigned int *indexImage,
                                       int supersamplingFactor, const TSurfel *surfels, unsigned int *correspondenceMap, unsigned short *newPointsMask)
 {
   // If the depth pixel or normal is invalid, early out.
@@ -439,7 +452,7 @@ inline void find_corresponding_surfel(int locId, const Matrix4f& invT, const flo
     {
       int x = ux * supersamplingFactor + dx;
       int y = uy * supersamplingFactor + dy;
-      int surfelIndex = indexMap[y * depthMapWidth * supersamplingFactor + x] - 1;
+      int surfelIndex = indexImage[y * depthMapWidth * supersamplingFactor + x] - 1;
       if(surfelIndex >= 0)
       {
         // TODO: Make this slightly more sophisticated, as per the paper.
