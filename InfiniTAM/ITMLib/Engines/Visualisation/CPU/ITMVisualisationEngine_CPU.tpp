@@ -174,11 +174,8 @@ void ITMVisualisationEngine_CPU<TVoxel,ITMVoxelBlockHash>::CreateExpectedDepths(
 }
 
 template<class TVoxel, class TIndex>
-static void GenericRaycast(const ITMScene<TVoxel,TIndex> *scene, const Vector2i& imgSize, const Matrix4f& invM, Vector4f projParams, const ITMRenderState *renderState)
+static void GenericRaycast(const ITMScene<TVoxel,TIndex> *scene, const Vector2i& imgSize, const Matrix4f& invM, const Vector4f& projParams, const ITMRenderState *renderState)
 {
-	projParams.x = 1.0f / projParams.x;
-	projParams.y = 1.0f / projParams.y;
-
 	const Vector2f *minmaximg = renderState->renderingRangeImage->GetData(MEMORYDEVICE_CPU);
 	float mu = scene->sceneParams->mu;
 	float oneOverVoxelSize = 1.0f / scene->sceneParams->voxelSize;
@@ -201,7 +198,7 @@ static void GenericRaycast(const ITMScene<TVoxel,TIndex> *scene, const Vector2i&
 			voxelData,
 			voxelIndex,
 			invM,
-			projParams,
+			InvertProjectionParams(projParams),
 			oneOverVoxelSize,
 			mu,
 			minmaximg[locId2]
@@ -314,10 +311,7 @@ static void ForwardRender_common(const ITMScene<TVoxel, TIndex> *scene, const IT
 	Vector2i imgSize = renderState->raycastResult->noDims;
 	Matrix4f M = trackingState->pose_d->GetM();
 	Matrix4f invM = trackingState->pose_d->GetInvM();
-	Vector4f projParams = view->calib->intrinsics_d.projectionParamsSimple.all;
-	Vector4f invProjParams = view->calib->intrinsics_d.projectionParamsSimple.all;
-	invProjParams.x = 1.0f / invProjParams.x;
-	invProjParams.y = 1.0f / invProjParams.y;
+	const Vector4f& projParams = view->calib->intrinsics_d.projectionParamsSimple.all;
 
 	Vector3f lightSource = -Vector3f(invM.getColumn(2));
 	const Vector4f *pointsRay = renderState->raycastResult->GetData(MEMORYDEVICE_CPU);
@@ -360,6 +354,7 @@ static void ForwardRender_common(const ITMScene<TVoxel, TIndex> *scene, const IT
 	}
 
 	renderState->noFwdProjMissingPoints = noMissingPoints;
+	const Vector4f invProjParams = InvertProjectionParams(projParams);
     
 	for (int pointId = 0; pointId < noMissingPoints; pointId++)
 	{
