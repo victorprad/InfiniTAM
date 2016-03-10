@@ -4,6 +4,7 @@
 
 #include "../../Engine/ImageSourceEngine.h"
 #include "../../Engine/IMUSourceEngine.h"
+#include "../../Engine/FFMPEGWriter.h"
 #include "../../ITMLib/Core/ITMMainEngine.h"
 #include "../../ITMLib/Utils/ITMLibSettings.h"
 #include "../../Utils/FileUtils.h"
@@ -62,6 +63,8 @@ namespace InfiniTAM
 			Vector2i mouseLastClick;
 
 			int currentFrameNo; bool isRecording;
+			FFMPEGWriter *rgbVideoWriter;
+			FFMPEGWriter *depthVideoWriter;
 		public:
 			static UIEngine* Instance(void) {
 				if (instance == NULL) instance = new UIEngine();

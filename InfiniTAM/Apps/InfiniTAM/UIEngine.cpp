@@ -22,6 +22,7 @@
 #include "../../ITMLib/Core/ITMMultiEngine.h"
 
 #include "../../Utils/FileUtils.h"
+#include "../../Engine/FFMPEGWriter.h"
 
 using namespace InfiniTAM::Engine;
 using namespace ITMLib;
@@ -176,6 +177,22 @@ void UIEngine::glutKeyUpFunction(unsigned char key, int x, int y)
 			printf("started recoding disk ...\n");
 			uiEngine->currentFrameNo = 0;
 			uiEngine->isRecording = true;
+		}
+		break;
+	case 'v':
+		if ((uiEngine->rgbVideoWriter!=NULL)||(uiEngine->depthVideoWriter!=NULL))
+		{
+			printf("stop recoding video\n");
+			delete uiEngine->rgbVideoWriter;
+			delete uiEngine->depthVideoWriter;
+			uiEngine->rgbVideoWriter = NULL;
+			uiEngine->depthVideoWriter = NULL;
+		}
+		else
+		{
+			printf("start recoding video\n");
+			uiEngine->rgbVideoWriter = new FFMPEGWriter();
+			uiEngine->depthVideoWriter = new FFMPEGWriter();
 		}
 		break;
 	case 'e':
@@ -401,6 +418,8 @@ void UIEngine::Initialise(int & argc, char** argv, ImageSourceEngine *imageSourc
 
 	this->isRecording = false;
 	this->currentFrameNo = 0;
+	this->rgbVideoWriter = NULL;
+	this->depthVideoWriter = NULL;
 
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE);
@@ -491,6 +510,14 @@ void UIEngine::ProcessFrame()
 			SaveImageToFile(inputRGBImage, str);
 		}
 	}
+	if ((rgbVideoWriter != NULL)&&(inputRGBImage->noDims.x != 0)) {
+		if (!rgbVideoWriter->isOpen()) rgbVideoWriter->open("out_rgb.avi", inputRGBImage->noDims.x, inputRGBImage->noDims.y, false, 30);
+		rgbVideoWriter->writeFrame(inputRGBImage);
+	}
+	if ((depthVideoWriter != NULL)&&(inputRawDepthImage->noDims.x != 0)) {
+		if (!depthVideoWriter->isOpen()) depthVideoWriter->open("out_d.avi", inputRawDepthImage->noDims.x, inputRawDepthImage->noDims.y, true, 30);
+		depthVideoWriter->writeFrame(inputRawDepthImage);
+	}
 
 	sdkResetTimer(&timer_instant);
 	sdkStartTimer(&timer_instant); sdkStartTimer(&timer_average);
@@ -515,6 +542,9 @@ void UIEngine::Shutdown()
 {
 	sdkDeleteTimer(&timer_instant);
 	sdkDeleteTimer(&timer_average);
+
+	if (rgbVideoWriter != NULL) delete rgbVideoWriter;
+	if (depthVideoWriter != NULL) delete depthVideoWriter;
 
 	for (int w = 0; w < NUM_WIN; w++)
 		delete outImage[w];

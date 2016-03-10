@@ -13,6 +13,7 @@ SET(targetname InfiniTAM)
 ################################
 
 INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseCUDA.cmake)
+INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseFFmpeg.cmake)
 INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseGLUT.cmake)
 INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseOpenGL.cmake)
 INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseOpenMP.cmake)
@@ -51,6 +52,7 @@ INCLUDE(${PROJECT_SOURCE_DIR}/cmake/SetCUDAAppTarget.cmake)
 #################################
 
 TARGET_LINK_LIBRARIES(${targetname} Engine ITMLib LCDLib ORUtils Utils)
+INCLUDE(${PROJECT_SOURCE_DIR}/cmake/LinkFFmpeg.cmake)
 INCLUDE(${PROJECT_SOURCE_DIR}/cmake/LinkGLUT.cmake)
 INCLUDE(${PROJECT_SOURCE_DIR}/cmake/LinkOpenGL.cmake)
 INCLUDE(${PROJECT_SOURCE_DIR}/cmake/LinkOpenNI.cmake)

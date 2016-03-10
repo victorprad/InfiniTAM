@@ -5,6 +5,7 @@
 
 #include "UIEngine.h"
 
+#include "../../Engine/FFMPEGReader.h"
 #include "../../Engine/OpenNIEngine.h"
 #include "../../Engine/Kinect2Engine.h"
 #include "../../Engine/LibUVCEngine.h"
@@ -32,7 +33,17 @@ static void CreateDefaultImageSource(ImageSourceEngine* & imageSource, IMUSource
 
 	printf("using calibration file: %s\n", calibFile);
 
-	if (filename2 != NULL)
+	if ((filename1 != NULL)&&(filename_imu == NULL))
+	{
+		imageSource = new InfiniTAM::FFMPEGReader(calibFile, filename1, filename2);
+		if (imageSource->getDepthImageSize().x == 0)
+		{
+			delete imageSource;
+			imageSource = NULL;
+		}
+	}
+
+	if ((imageSource == NULL) && (filename2 != NULL))
 	{
 		printf("using rgb images: %s\nusing depth images: %s\n", filename1, filename2);
 		if (filename_imu == NULL)

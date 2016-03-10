@@ -38,7 +38,7 @@ __global__ void findMissingPoints_device(int *fwdProjMissingPoints, uint *noMiss
 
 template<class TVoxel, class TIndex>
 __global__ void genericRaycast_device(Vector4f *out_ptsRay, const TVoxel *voxelData, const typename TIndex::IndexData *voxelIndex,
-	Vector2i imgSize, Matrix4f invM, Vector4f projParams, float oneOverVoxelSize, const Vector2f *minmaxdata, float mu);
+	Vector2i imgSize, Matrix4f invM, Vector4f invProjParams, float oneOverVoxelSize, const Vector2f *minmaxdata, float mu);
 
 template<class TVoxel, class TIndex>
 __global__ void genericRaycastMissingPoints_device(Vector4f *forwardProjection, const TVoxel *voxelData, const typename TIndex::IndexData *voxelIndex,
@@ -243,13 +243,10 @@ void ITMVisualisationEngine_CUDA<TVoxel, ITMVoxelBlockHash>::CreateExpectedDepth
 }
 
 template <class TVoxel, class TIndex>
-static void GenericRaycast(const ITMScene<TVoxel, TIndex> *scene, const Vector2i& imgSize, const Matrix4f& invM, Vector4f projParams, const ITMRenderState *renderState)
+static void GenericRaycast(const ITMScene<TVoxel, TIndex> *scene, const Vector2i& imgSize, const Matrix4f& invM, const Vector4f& projParams, const ITMRenderState *renderState)
 {
 	float voxelSize = scene->sceneParams->voxelSize;
 	float oneOverVoxelSize = 1.0f / voxelSize;
-
-	projParams.x = 1.0f / projParams.x;
-	projParams.y = 1.0f / projParams.y;
 
 	dim3 cudaBlockSize(16, 12);
 	dim3 gridSize((int)ceil((float)imgSize.x / (float)cudaBlockSize.x), (int)ceil((float)imgSize.y / (float)cudaBlockSize.y));
@@ -259,7 +256,7 @@ static void GenericRaycast(const ITMScene<TVoxel, TIndex> *scene, const Vector2i
 		scene->index.getIndexData(),
 		imgSize,
 		invM,
-		projParams,
+		InvertProjectionParams(projParams),
 		oneOverVoxelSize,
 		renderState->renderingRangeImage->GetData(MEMORYDEVICE_CUDA),
 		scene->sceneParams->mu
@@ -362,10 +359,7 @@ static void ForwardRender_common(const ITMScene<TVoxel, TIndex> *scene, const IT
 	Vector2i imgSize = renderState->raycastResult->noDims;
 	Matrix4f M = trackingState->pose_d->GetM();
 	Matrix4f invM = trackingState->pose_d->GetInvM();
-	Vector4f projParams = view->calib->intrinsics_d.projectionParamsSimple.all;
-	Vector4f invProjParams = view->calib->intrinsics_d.projectionParamsSimple.all;
-	invProjParams.x = 1.0f / invProjParams.x;
-	invProjParams.y = 1.0f / invProjParams.y;
+	const Vector4f& projParams = view->calib->intrinsics_d.projectionParamsSimple.all;
 
 	Vector3f lightSource = -Vector3f(invM.getColumn(2));
 	const Vector4f *pointsRay = renderState->raycastResult->GetData(MEMORYDEVICE_CUDA);
@@ -409,7 +403,7 @@ static void ForwardRender_common(const ITMScene<TVoxel, TIndex> *scene, const IT
 		gridSize = dim3((int)ceil((float)renderState->noFwdProjMissingPoints / blockSize.x));
 
 		genericRaycastMissingPoints_device<TVoxel, TIndex> << <gridSize, blockSize >> >(forwardProjection, voxelData, voxelIndex, imgSize, invM,
-			invProjParams, oneOverVoxelSize, fwdProjMissingPoints, renderState->noFwdProjMissingPoints, minmaximg, scene->sceneParams->mu);
+			InvertProjectionParams(projParams), oneOverVoxelSize, fwdProjMissingPoints, renderState->noFwdProjMissingPoints, minmaximg, scene->sceneParams->mu);
 		ORcudaKernelCheck;
 	}
 

@@ -19,6 +19,7 @@ INCLUDE(${PROJECT_SOURCE_DIR}/cmake/OfferInputMirroring.cmake)
 ################################
 
 INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseCUDA.cmake)
+INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseFFmpeg.cmake)
 INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseGLUT.cmake)
 INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseKinect2.cmake)
 INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseOpenGL.cmake)
@@ -32,6 +33,8 @@ INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseUVC.cmake)
 #############################
 
 SET(sources
+FFMPEGReader.cpp
+FFMPEGWriter.cpp
 ImageSourceEngine.cpp
 IMUSourceEngine.cpp
 Kinect2Engine.cpp
@@ -41,6 +44,8 @@ RealSenseEngine.cpp
 )
 
 SET(headers
+FFMPEGReader.h
+FFMPEGWriter.h
 ImageSourceEngine.h
 IMUSourceEngine.h
 Kinect2Engine.h
