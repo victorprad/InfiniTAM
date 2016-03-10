@@ -167,7 +167,7 @@ void ITMSurfelSceneReconstructionEngine_CPU<TSurfel>::MergeSimilarSurfels(ITMSur
 
   // Clear the merge target map.
 #ifdef WITH_OPENMP
-  //#pragma omp parallel for
+  #pragma omp parallel for
 #endif
   for(int locId = 0; locId < pixelCount; ++locId)
   {
@@ -176,7 +176,7 @@ void ITMSurfelSceneReconstructionEngine_CPU<TSurfel>::MergeSimilarSurfels(ITMSur
 
   // Find pairs of surfels that can be merged.
 #ifdef WITH_OPENMP
-  //#pragma omp parallel for
+  #pragma omp parallel for
 #endif
   for(int locId = 0; locId < pixelCount; ++locId)
   {
@@ -189,7 +189,7 @@ void ITMSurfelSceneReconstructionEngine_CPU<TSurfel>::MergeSimilarSurfels(ITMSur
 
   // Prevent any merge chains.
 #ifdef WITH_OPENMP
-  //#pragma omp parallel for
+  #pragma omp parallel for
 #endif
   for(int locId = 0; locId < pixelCount; ++locId)
   {
@@ -198,7 +198,7 @@ void ITMSurfelSceneReconstructionEngine_CPU<TSurfel>::MergeSimilarSurfels(ITMSur
 
   // Merge the relevant surfels.
 #ifdef WITH_OPENMP
-  //#pragma omp parallel for
+  #pragma omp parallel for
 #endif
   for(int locId = 0; locId < pixelCount; ++locId)
   {
@@ -250,7 +250,8 @@ template <typename TSurfel>
 void ITMSurfelSceneReconstructionEngine_CPU<TSurfel>::RemoveMarkedSurfels(ITMSurfelScene<TSurfel> *scene) const
 {
   // Remove marked surfels from the scene.
-  // TODO
+  // TODO: This is is currently unimplemented on CPU. It's not worth implementing it at the moment,
+  // because we're going to need to change the scene representation to something better anyway.
 }
 
 }
