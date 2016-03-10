@@ -3,13 +3,11 @@
 #pragma once
 
 #include "ITMDenseMapper.h"
-#include "ITMDenseSurfelMapper.h"
 #include "ITMMainEngine.h"
 #include "ITMTrackingController.h"
 #include "../Engines/LowLevel/Interface/ITMLowLevelEngine.h"
 #include "../Engines/Meshing/Interface/ITMMeshingEngine.h"
 #include "../Engines/ViewBuilding/Interface/ITMViewBuilder.h"
-#include "../Engines/Visualisation/Interface/ITMSurfelVisualisationEngine.h"
 #include "../Engines/Visualisation/Interface/ITMVisualisationEngine.h"
 #include "../Objects/Misc/ITMIMUCalibrator.h"
 
@@ -19,14 +17,11 @@ namespace ITMLib
 	class ITMBasicEngine : public ITMMainEngine
 	{
 	private:
-		typedef ITMSurfel_rgb TSurfel;
-
 		const ITMLibSettings *settings;
 
 		bool trackingActive, fusionActive, mainProcessingActive, trackingInitialised;
 
 		ITMLowLevelEngine *lowLevelEngine;
-		ITMSurfelVisualisationEngine<TSurfel> *surfelVisualisationEngine;
 		ITMVisualisationEngine<TVoxel,TIndex> *visualisationEngine;
 
 		ITMMeshingEngine<TVoxel,TIndex> *meshingEngine;
@@ -34,14 +29,11 @@ namespace ITMLib
 
 		ITMViewBuilder *viewBuilder;
 		ITMDenseMapper<TVoxel,TIndex> *denseMapper;
-		ITMDenseSurfelMapper<TSurfel> *denseSurfelMapper;
 		ITMTrackingController *trackingController;
 
 		ITMScene<TVoxel,TIndex> *scene;
-		ITMSurfelScene<TSurfel> *surfelScene;
 		ITMRenderState *renderState_live;
 		ITMRenderState *renderState_freeview;
-		ITMSurfelRenderState *surfelRenderState_live;
 
 		ITMTracker *tracker;
 		ITMIMUCalibrator *imuCalibrator;

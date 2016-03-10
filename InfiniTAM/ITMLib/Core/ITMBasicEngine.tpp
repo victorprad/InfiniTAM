@@ -5,7 +5,6 @@
 #include "../Engines/LowLevel/ITMLowLevelEngineFactory.h"
 #include "../Engines/Meshing/ITMMeshingEngineFactory.h"
 #include "../Engines/ViewBuilding/ITMViewBuilderFactory.h"
-#include "../Engines/Visualisation/ITMSurfelVisualisationEngineFactory.h"
 #include "../Engines/Visualisation/ITMVisualisationEngineFactory.h"
 #include "../Trackers/ITMTrackerFactory.h"
 using namespace ITMLib;
@@ -23,12 +22,10 @@ ITMBasicEngine<TVoxel,TIndex>::ITMBasicEngine(const ITMLibSettings *settings, co
 
 	MemoryDeviceType memoryType = settings->deviceType == ITMLibSettings::DEVICE_CUDA ? MEMORYDEVICE_CUDA : MEMORYDEVICE_CPU;
 	this->scene = new ITMScene<TVoxel,TIndex>(&settings->sceneParams, settings->useSwapping, memoryType);
-	this->surfelScene = new ITMSurfelScene<TSurfel>(&settings->surfelSceneParams, memoryType);
 
 	const ITMLibSettings::DeviceType deviceType = settings->deviceType;
 
 	lowLevelEngine = ITMLowLevelEngineFactory::MakeLowLevelEngine(deviceType);
-	surfelVisualisationEngine = ITMSurfelVisualisationEngineFactory<TSurfel>::make_surfel_visualisation_engine(deviceType);
 	viewBuilder = ITMViewBuilderFactory::MakeViewBuilder(calib, deviceType);
 	visualisationEngine = ITMVisualisationEngineFactory::MakeVisualisationEngine<TVoxel,TIndex>(deviceType);
 
@@ -43,8 +40,6 @@ ITMBasicEngine<TVoxel,TIndex>::ITMBasicEngine(const ITMLibSettings *settings, co
 	denseMapper = new ITMDenseMapper<TVoxel,TIndex>(settings);
 	denseMapper->ResetScene(scene);
 
-	denseSurfelMapper = new ITMDenseSurfelMapper<TSurfel>(imgSize_d, settings->deviceType);
-
 	imuCalibrator = new ITMIMUCalibrator_iPad();
 	tracker = ITMTrackerFactory<TVoxel,TIndex>::Instance().Make(imgSize_rgb, imgSize_d, settings, lowLevelEngine, imuCalibrator, scene);
 	trackingController = new ITMTrackingController(tracker, settings);
@@ -53,7 +48,6 @@ ITMBasicEngine<TVoxel,TIndex>::ITMBasicEngine(const ITMLibSettings *settings, co
 
 	renderState_live = visualisationEngine->CreateRenderState(scene, trackedImageSize);
 	renderState_freeview = NULL; //will be created by the visualisation engine
-	surfelRenderState_live = new ITMSurfelRenderState(trackedImageSize, settings->surfelSceneParams.supersamplingFactor);
 
 	trackingState = new ITMTrackingState(trackedImageSize, memoryType);
 	tracker->UpdateInitialPose(trackingState);
@@ -71,13 +65,10 @@ ITMBasicEngine<TVoxel,TIndex>::~ITMBasicEngine()
 {
 	delete renderState_live;
 	if (renderState_freeview!=NULL) delete renderState_freeview;
-	delete surfelRenderState_live;
 
 	delete scene;
-	delete surfelScene;
 
 	delete denseMapper;
-	delete denseSurfelMapper;
 	delete trackingController;
 
 	delete tracker;
@@ -89,7 +80,6 @@ ITMBasicEngine<TVoxel,TIndex>::~ITMBasicEngine()
 	delete trackingState;
 	if (view != NULL) delete view;
 
-	delete surfelVisualisationEngine;
 	delete visualisationEngine;
 
 	if (meshingEngine != NULL) delete meshingEngine;
@@ -142,7 +132,6 @@ void ITMBasicEngine<TVoxel,TIndex>::ProcessFrame(ITMUChar4Image *rgbImage, ITMSh
 	if ((trackingSuccess >= 2 || !trackingInitialised) && (fusionActive)) {
 		// fusion
 		denseMapper->ProcessFrame(view, trackingState, scene, renderState_live);
-		denseSurfelMapper->ProcessFrame(view, trackingState, surfelScene, surfelRenderState_live);
 		didFusion = true;
 		trackingInitialised = true;
 	}
@@ -151,9 +140,7 @@ void ITMBasicEngine<TVoxel,TIndex>::ProcessFrame(ITMUChar4Image *rgbImage, ITMSh
 		if (!didFusion) denseMapper->UpdateVisibleList(view, trackingState, scene, renderState_live);
 
 		// raycast to renderState_live for tracking and free visualisation
-		//trackingController->Prepare(trackingState, scene, view, visualisationEngine, renderState_live);
-		trackingController->Prepare(trackingState, surfelScene, view, surfelVisualisationEngine, surfelRenderState_live);
-		surfelVisualisationEngine->FindSurfaceSuper(surfelScene, trackingState->pose_d, &view->calib->intrinsics_d, USR_RENDER, surfelRenderState_live);
+		trackingController->Prepare(trackingState, scene, view, visualisationEngine, renderState_live);
 	}
 	else {
 		*trackingState->pose_d = oldPose;
