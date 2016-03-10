@@ -25,6 +25,11 @@ static const CONSTPTR(int) MAX_RENDERING_BLOCKS = 65536*4;
 //static const int MAX_RENDERING_BLOCKS = 16384;
 static const CONSTPTR(int) minmaximg_subsample = 8;
 
+inline Vector4f InvertProjectionParams(const Vector4f& projParams)
+{
+	return Vector4f(1.0f / projParams.x, 1.0f / projParams.y, -projParams.z, -projParams.w);
+}
+
 _CPU_AND_GPU_CODE_ inline bool ProjectSingleBlock(const THREADPTR(Vector3s) & blockPos, const THREADPTR(Matrix4f) & pose, const THREADPTR(Vector4f) & intrinsics, 
 	const THREADPTR(Vector2i) & imgSize, float voxelSize, THREADPTR(Vector2i) & upperLeft, THREADPTR(Vector2i) & lowerRight, THREADPTR(Vector2f) & zRange)
 {
@@ -91,7 +96,7 @@ _CPU_AND_GPU_CODE_ inline void CreateRenderingBlocks(DEVICEPTR(RenderingBlock) *
 
 template<class TVoxel, class TIndex>
 _CPU_AND_GPU_CODE_ inline bool castRay(DEVICEPTR(Vector4f) &pt_out, int x, int y, const CONSTPTR(TVoxel) *voxelData,
-	const CONSTPTR(typename TIndex::IndexData) *voxelIndex, Matrix4f invM, Vector4f projParams, float oneOverVoxelSize, 
+	const CONSTPTR(typename TIndex::IndexData) *voxelIndex, Matrix4f invM, Vector4f invProjParams, float oneOverVoxelSize,
 	float mu, const CONSTPTR(Vector2f) & viewFrustum_minmax)
 {
 	Vector4f pt_camera_f; Vector3f pt_block_s, pt_block_e, rayDirection, pt_result;
@@ -102,15 +107,15 @@ _CPU_AND_GPU_CODE_ inline bool castRay(DEVICEPTR(Vector4f) &pt_out, int x, int y
 	stepScale = mu * oneOverVoxelSize;
 
 	pt_camera_f.z = viewFrustum_minmax.x;
-	pt_camera_f.x = pt_camera_f.z * ((float(x) - projParams.z) * projParams.x);
-	pt_camera_f.y = pt_camera_f.z * ((float(y) - projParams.w) * projParams.y);
+	pt_camera_f.x = pt_camera_f.z * ((float(x) + invProjParams.z) * invProjParams.x);
+	pt_camera_f.y = pt_camera_f.z * ((float(y) + invProjParams.w) * invProjParams.y);
 	pt_camera_f.w = 1.0f;
 	totalLength = length(TO_VECTOR3(pt_camera_f)) * oneOverVoxelSize;
 	pt_block_s = TO_VECTOR3(invM * pt_camera_f) * oneOverVoxelSize;
 
 	pt_camera_f.z = viewFrustum_minmax.y;
-	pt_camera_f.x = pt_camera_f.z * ((float(x) - projParams.z) * projParams.x);
-	pt_camera_f.y = pt_camera_f.z * ((float(y) - projParams.w) * projParams.y);
+	pt_camera_f.x = pt_camera_f.z * ((float(x) + invProjParams.z) * invProjParams.x);
+	pt_camera_f.y = pt_camera_f.z * ((float(y) + invProjParams.w) * invProjParams.y);
 	pt_camera_f.w = 1.0f;
 	totalLengthMax = length(TO_VECTOR3(pt_camera_f)) * oneOverVoxelSize;
 	pt_block_e = TO_VECTOR3(invM * pt_camera_f) * oneOverVoxelSize;

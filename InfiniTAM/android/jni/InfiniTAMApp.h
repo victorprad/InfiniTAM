@@ -4,8 +4,10 @@
 
 #include "../../Engine/IMUSourceEngine.h"
 #include "../../Engine/ImageSourceEngine.h"
-#include "../../ITMLib/ITMLib.h"
+#include "../../ITMLib/Core/ITMMainEngine.h"
 #include "../../Utils/NVTimer.h"
+
+#include "../../Engine/FFMPEGWriter.h"
 
 class InfiniTAMApp {
 	public:
@@ -24,9 +26,14 @@ class InfiniTAMApp {
 
 	void StartProcessing(int useLiveCamera);
 	bool ProcessFrame(void);
+	void StopProcessing(void);
 
 	bool IsInitialized(void) const
 	{ return mIsInitialized; }
+
+	void toggleRecordingMode(void);
+
+	float getAverageTime(void);
 
 	private:
 	static InfiniTAMApp *globalInstance;
@@ -50,6 +57,9 @@ class InfiniTAMApp {
 
 	Vector2i mNewWindowSize;
 	bool mIsInitialized;
+	bool mRecordingMode;
+
+	InfiniTAM::FFMPEGWriter *depthVideoWriter;
 };
 
 
