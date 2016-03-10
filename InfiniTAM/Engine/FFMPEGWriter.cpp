@@ -7,6 +7,11 @@
 
 #include "FFMPEGWriter.h"
 
+// If we're using a version of Visual Studio prior to 2015, snprintf isn't supported, so fall back to the non-standard _snprintf instead.
+#if defined(_MSC_VER) && _MSC_VER < 1900
+	#define snprintf _snprintf
+#endif
+
 #ifdef COMPILE_WITH_FFMPEG
 
 extern "C" {
@@ -77,7 +82,7 @@ int FFMPEGWriter::PrivateData::open(const char *filename, int size_x, int size_y
 	enc_ctx = out_stream->codec;
 	encoder = avcodec_find_encoder(AV_CODEC_ID_FFV1);
 	if (!encoder) {
-		std::cerr << "Necessary encoder not found in ffmpeg" << std::cerr;
+		std::cerr << "Necessary encoder not found in ffmpeg" << std::endl;
 		return -1;
 	}
 	enc_ctx->width = size_x;
@@ -330,7 +335,7 @@ void FFMPEGWriter::PrivateData::allocFrame(bool isDepth)
 
 	frame = av_frame_alloc();
 	if (!frame) {
-		std::cerr << "Could not allocate video frame" << std::cerr;
+		std::cerr << "Could not allocate video frame" << std::endl;
 		return;
 	}
 	frame->format = isDepth?AV_PIX_FMT_GRAY16LE:AV_PIX_FMT_RGBA;

@@ -7,6 +7,11 @@
 
 #include "FFMPEGReader.h"
 
+// If we're using a version of Visual Studio prior to 2015, snprintf isn't supported, so fall back to the non-standard _snprintf instead.
+#if defined(_MSC_VER) && _MSC_VER < 1900
+	#define snprintf _snprintf
+#endif
+
 #ifdef COMPILE_WITH_FFMPEG
 
 extern "C" {
