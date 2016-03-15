@@ -47,7 +47,6 @@ template <typename TSurfel>
 void ITMSurfelSceneReconstructionEngine<TSurfel>::IntegrateIntoScene(ITMSurfelScene<TSurfel> *scene, const ITMView *view, const ITMTrackingState *trackingState,
                                                                      const ITMSurfelRenderState *renderState)
 {
-  const ORUtils::SE3Pose& pose = *trackingState->pose_d;
   PreprocessDepthMap(view, scene->GetParams());
   FindCorrespondingSurfels(scene, view, trackingState, renderState);
   FuseMatchedPoints(scene, view, trackingState);
