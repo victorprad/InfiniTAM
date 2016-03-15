@@ -13,6 +13,12 @@
 #define _CPU_AND_GPU_CODE_ 
 #endif
 
+#if defined(__CUDACC__)
+#define _CPU_AND_GPU_CODE_TEMPLATE_ __device__ // for CUDA device code
+#else
+#define _CPU_AND_GPU_CODE_TEMPLATE_
+#endif
+
 #if defined(__CUDACC__) && defined(__CUDA_ARCH__)
 #define _CPU_AND_GPU_CONSTANT_ __constant__	// for CUDA device code
 #else

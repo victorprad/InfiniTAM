@@ -434,7 +434,7 @@ void shade_pixel_normal(int locId, const unsigned int *surfelIndexImage, const T
  * \param depthBuffer                 The depth buffer for the index image.
  */
 template <typename TSurfel>
-_CPU_AND_GPU_CODE_
+_CPU_AND_GPU_CODE_TEMPLATE_
 inline void update_depth_buffer_for_surfel(int surfelId, const TSurfel *surfels, const Matrix4f& invT, const ITMIntrinsics& intrinsics,
                                            int indexImageWidth, int indexImageHeight, int scaleFactor, bool useRadii,
                                            UnstableSurfelRenderingMode unstableSurfelRenderingMode, float stableSurfelConfidence,
@@ -519,7 +519,7 @@ inline void update_depth_buffer_for_surfel(int surfelId, const TSurfel *surfels,
  * \param surfelIndexImage            The index image.
  */
 template <typename TSurfel>
-_CPU_AND_GPU_CODE_
+_CPU_AND_GPU_CODE_TEMPLATE_
 inline void update_index_image_for_surfel(int surfelId, const TSurfel *surfels, const Matrix4f& invT, const ITMIntrinsics& intrinsics,
                                           int indexImageWidth, int indexImageHeight, int scaleFactor, const int *depthBuffer, bool useRadii,
                                           UnstableSurfelRenderingMode unstableSurfelRenderingMode, float stableSurfelConfidence,
