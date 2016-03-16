@@ -1,12 +1,46 @@
-IF(WITH_CUDA)
-  include_directories(${CUDA_INCLUDE_DIRS})
-ELSE()
-  add_definitions(-DCOMPILE_WITHOUT_CUDA)
-ENDIF()
+#############################
+# CMakeLists.txt for LCDLib #
+#############################
 
-add_library(LCDLib
-PoseDatabase.h PoseDatabase.cpp
-LCDDatabase.h LCDDatabase.cpp
-FernConservatory.h FernConservatory.cpp
-LoopClosureDetector.h LoopClosureDetector.cpp
+###########################
+# Specify the target name #
+###########################
+
+SET(targetname LCDLib)
+
+################################
+# Specify the libraries to use #
+################################
+
+INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseCUDA.cmake)
+INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseOpenMP.cmake)
+
+#############################
+# Specify the project files #
+#############################
+
+SET(sources
+FernConservatory.cpp
+LCDDatabase.cpp
+LoopClosureDetector.h
+PoseDatabase.cpp
 )
+
+SET(headers
+FernConservatory.h
+LCDDatabase.h
+LoopClosureDetector.cpp
+PoseDatabase.h
+)
+
+#############################
+# Specify the source groups #
+#############################
+
+SOURCE_GROUP("" FILES ${sources} ${headers})
+
+##########################################
+# Specify the target and where to put it #
+##########################################
+
+INCLUDE(${PROJECT_SOURCE_DIR}/cmake/SetCUDALibTarget.cmake)

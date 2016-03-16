@@ -1,56 +1,52 @@
+##############################
+# CMakeLists.txt for ORUtils #
+##############################
+
+###########################
+# Specify the target name #
+###########################
+
+SET(targetname ORUtils)
+
+################################
+# Specify the libraries to use #
+################################
+
+INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseCUDA.cmake)
+INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseOpenMP.cmake)
+
 #############################
 # Specify the project files #
 #############################
 
-##
-SET(ORUTILS_HEADERS
-Vector.h
-Matrix.h
+SET(sources
+KeyValueConfig.cpp
+SE3Pose.cpp
+)
+
+SET(headers
 Cholesky.h
-MathUtils.h
-Image.h
 CUDADefines.h
+Image.h
+KeyValueConfig.h
 LexicalCast.h
+MathUtils.h
+Matrix.h
 MemoryBlock.h
 MemoryBlockPersister.h
 PlatformIndependence.h
-KeyValueConfig.h
 SE3Pose.h
-)
-
-#################################################################
-# Collect the project files into common, CPU-only and CUDA-only #
-#################################################################
-
-set(ORUTILS_OBJECTS
-KeyValueConfig.cpp
-SE3Pose.cpp
-${ORUTILS_HEADERS}
+Vector.h
 )
 
 #############################
 # Specify the source groups #
 #############################
 
-SOURCE_GROUP("" FILES ${ORUTILS_OBJECTS} ${ORUTILS_HEADERS})
+SOURCE_GROUP("" FILES ${sources} ${headers})
 
-##############################################################
-# Specify the include directories, target and link libraries #
-##############################################################
+##########################################
+# Specify the target and where to put it #
+##########################################
 
-add_library(ORUtils ${ORUTILS_OBJECTS})
-
-IF(WITH_CUDA)
-#  include_directories(${CUDA_INCLUDE_DIRS})
-#  cuda_add_library(ITMLib
-#	${ITMLIB_CPU_OBJECTS}
-#	${ITMLIB_CUDA_OBJECTS}
-#	${ITMLIB_COMMON_OBJECTS}
-#	OPTIONS -gencode arch=compute_11,code=compute_11 -gencode arch=compute_30,code=compute_30)
-#  target_link_libraries(ITMLib ${CUDA_LIBRARY})
-ELSE()
-#  add_definitions(-DCOMPILE_WITHOUT_CUDA)
-#  add_library(ITMLib ${ITMLIB_CPU_OBJECTS} ${ITMLIB_COMMON_OBJECTS})
-ENDIF()
-
-#target_link_libraries(ITMLib Utils)
+INCLUDE(${PROJECT_SOURCE_DIR}/cmake/SetCUDALibTarget.cmake)
