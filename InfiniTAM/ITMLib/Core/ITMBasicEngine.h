@@ -27,7 +27,7 @@ namespace ITMLib
 		ITMMeshingEngine<TVoxel,TIndex> *meshingEngine;
 		ITMMesh *mesh;
 
-		ITMViewBuilder *viewBuilder;		
+		ITMViewBuilder *viewBuilder;
 		ITMDenseMapper<TVoxel,TIndex> *denseMapper;
 		ITMTrackingController *trackingController;
 

@@ -182,6 +182,18 @@ void ITMBasicEngine<TVoxel,TIndex>::GetImage(ITMUChar4Image *out, GetImageType g
 		}
 
 		break;
+	case ITMBasicEngine::InfiniTAM_IMAGE_COLOUR_FROM_NORMAL:
+	{
+		visualisationEngine->FindVisibleBlocks(scene, trackingState->pose_d, &view->calib->intrinsics_d, renderState_live);
+		visualisationEngine->CreateExpectedDepths(scene, trackingState->pose_d, &view->calib->intrinsics_d, renderState_live);
+		visualisationEngine->RenderImage(scene, trackingState->pose_d, &view->calib->intrinsics_d, renderState_live, renderState_live->raycastImage, IITMVisualisationEngine::RENDER_COLOUR_FROM_NORMAL);
+
+		if (settings->deviceType == ITMLibSettings::DEVICE_CUDA)
+			out->SetFrom(renderState_live->raycastImage, ORUtils::MemoryBlock<Vector4u>::CUDA_TO_CPU);
+		else out->SetFrom(renderState_live->raycastImage, ORUtils::MemoryBlock<Vector4u>::CPU_TO_CPU);
+
+		break;
+	}
 	case ITMBasicEngine::InfiniTAM_IMAGE_SCENERAYCAST:
 	{
 		ORUtils::Image<Vector4u> *srcImage = renderState_live->raycastImage;

@@ -3,6 +3,7 @@
 #pragma once
 
 #include "Objects/Scene/ITMPlainVoxelArray.h"
+#include "Objects/Scene/ITMSurfelTypes.h"
 #include "Objects/Scene/ITMVoxelBlockHash.h"
 #include "Objects/Scene/ITMVoxelTypes.h"
 
