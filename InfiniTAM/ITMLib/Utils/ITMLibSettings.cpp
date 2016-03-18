@@ -39,7 +39,7 @@ ITMLibSettings::ITMLibSettings(void)
 	/// enable or disable tracking failure detection
 	useTrackingFailureDetection = true;
 
-	trackerConfig = "type=icp,levels=rrrbb,minstep=1e-3,outlierC=0.01,outlierF=0.002,numiterC=10,numiterF=2";
+	trackerConfig = "type=icp,levels=rrrbb,minstep=1e-3,outlierC=0.01,outlierF=0.002,numiterC=10,numiterF=2,failureDec=3.0";
 	//trackerConfig = "type=rgb,levels=rrrbb";
 	//trackerConfig = "type=ren,levels=bb";
 	//trackerConfig = "type=wicp,levels=rrrbb,minstep=1e-3,outlier=0.01";

@@ -35,6 +35,7 @@ class Relocaliser {
 	float mKeyframeHarvestingThreshold;
 	FernConservatory *mEncoding;
 	RelocDatabase *mDatabase;
+	ORUtils::Image<float> *processedImage1, *processedImage2;
 };
 
 }

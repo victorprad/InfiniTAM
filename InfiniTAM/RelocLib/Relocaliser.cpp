@@ -12,12 +12,17 @@ Relocaliser::Relocaliser(ORUtils::Vector2<int> imgSize, ORUtils::Vector2<float> 
 	mEncoding = new FernConservatory(numFerns, imgSize / (1 << levels), range, numDecisionsPerFern);
 	mDatabase = new RelocDatabase(numFerns, mEncoding->getNumCodes());
 	mKeyframeHarvestingThreshold = harvestingThreshold;
+
+	processedImage1 = new ORUtils::Image<float>(imgSize, MEMORYDEVICE_CPU);
+	processedImage2 = new ORUtils::Image<float>(imgSize, MEMORYDEVICE_CPU);
 }
 
 Relocaliser::~Relocaliser(void)
 {
 	delete mEncoding;
 	delete mDatabase;
+	delete processedImage1;
+	delete processedImage2;
 }
 
 void createGaussianFilter(int masksize, float sigma, float *coeff)
@@ -100,7 +105,7 @@ void filterSubsample(const ORUtils::Image<float> *input, ORUtils::Image<float> *
 {
 	ORUtils::Vector2<int> imgSize_in = input->noDims;
 	ORUtils::Vector2<int> imgSize_out(imgSize_in.x/2, imgSize_in.y/2);
-	output->ChangeDims(imgSize_out);
+	output->ChangeDims(imgSize_out, true);
 
 	const float *imageData_in = input->GetData(MEMORYDEVICE_CPU);
 	float *imageData_out = output->GetData(MEMORYDEVICE_CPU);
@@ -139,17 +144,18 @@ void filterSubsample(const ORUtils::Image<float> *input, ORUtils::Image<float> *
 int Relocaliser::ProcessFrame(const ORUtils::Image<float> *img_d, int k, int nearestNeighbours[], float *distances, bool harvestKeyframes) const
 {
 	// downsample and preprocess image => processedImage1
-	ORUtils::Image<float> processedImage1(ORUtils::Vector2<int>(1,1), MEMORYDEVICE_CPU), processedImage2(ORUtils::Vector2<int>(1,1), MEMORYDEVICE_CPU);
-	filterSubsample(img_d, &processedImage1); // 320x240
-	filterSubsample(&processedImage1, &processedImage2); // 160x120
-	filterSubsample(&processedImage2, &processedImage1); // 80x60
-	filterSubsample(&processedImage1, &processedImage2); // 40x30
-	filterGaussian(&processedImage2, &processedImage1, 2.5f);
+	//ORUtils::Image<float> processedImage1(ORUtils::Vector2<int>(1,1), MEMORYDEVICE_CPU), processedImage2(ORUtils::Vector2<int>(1,1), MEMORYDEVICE_CPU);
+	filterSubsample(img_d, processedImage1); // 320x240
+	filterSubsample(processedImage1, processedImage2); // 160x120
+	filterSubsample(processedImage2, processedImage1); // 80x60
+	filterSubsample(processedImage1, processedImage2); // 40x30
+	
+	filterGaussian(processedImage2, processedImage1, 2.5f);
 
 	// compute code
 	int codeLength = mEncoding->getNumFerns();
 	char *code = new char[codeLength];
-	mEncoding->computeCode(&processedImage1, code);
+	mEncoding->computeCode(processedImage1, code);
 	//for (int i = 0; i < codeLength; ++i) fprintf(stderr, "%i ", code[i]);
 	//fprintf(stderr, "\n");
 

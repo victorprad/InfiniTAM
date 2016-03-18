@@ -9,6 +9,8 @@
 #include "../Trackers/ITMTrackerFactory.h"
 using namespace ITMLib;
 
+#include "../../ORUtils/NVTimer.h"
+
 template <typename TVoxel, typename TIndex>
 ITMBasicEngine<TVoxel,TIndex>::ITMBasicEngine(const ITMLibSettings *settings, const ITMRGBDCalib *calib, Vector2i imgSize_rgb, Vector2i imgSize_d)
 {
@@ -143,10 +145,10 @@ void ITMBasicEngine<TVoxel,TIndex>::ProcessFrame(ITMUChar4Image *rgbImage, ITMSh
 
 		int NN; float distances;
 		addKeyframeIdx = relocaliser->ProcessFrame(view->depth, 1, &NN, &distances, trackingSuccess == 2 && relocalisationCount == 0);
-
-		// add keyframe, if necessary
-		if (addKeyframeIdx >= 0) poseDatabase.storePose(addKeyframeIdx, *(trackingState->pose_d), 0);
 		
+		// add keyframe, if necessary
+		if (addKeyframeIdx >= 0)
+			poseDatabase.storePose(addKeyframeIdx, *(trackingState->pose_d), 0);
 		else if (trackingSuccess == 0) {
 			relocalisationCount = 10;
 
@@ -154,7 +156,7 @@ void ITMBasicEngine<TVoxel,TIndex>::ProcessFrame(ITMUChar4Image *rgbImage, ITMSh
 			trackingState->pose_d->SetFrom(&keyframe.pose);
 
 			denseMapper->UpdateVisibleList(view, trackingState, scene, renderState_live, true);
-			trackingController->Prepare(trackingState, scene, view, visualisationEngine, renderState_live);
+			trackingController->Prepare(trackingState, scene, view, visualisationEngine, renderState_live); 
 			trackingController->Track(trackingState, view);
 
 			trackingSuccess = 0;

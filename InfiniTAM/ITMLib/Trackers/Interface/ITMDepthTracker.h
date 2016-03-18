@@ -66,7 +66,8 @@ namespace ITMLib
 		void SetupLevels(int numIterCoarse, int numIterFine, float distThreshCoarse, float distThreshFine);
 
 		ITMDepthTracker(Vector2i imgSize, TrackerIterationType *trackingRegime, int noHierarchyLevels,
-			float terminationThreshold, const ITMLowLevelEngine *lowLevelEngine, MemoryDeviceType memoryType);
+			float terminationThreshold, float failureDetectorThreshold, 
+			const ITMLowLevelEngine *lowLevelEngine, MemoryDeviceType memoryType);
 		virtual ~ITMDepthTracker(void);
 	};
 }
