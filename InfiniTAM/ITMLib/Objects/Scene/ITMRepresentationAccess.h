@@ -354,3 +354,82 @@ struct VoxelColorReader<true,TVoxel,TIndex> {
 		return readFromSDF_color4u_interpolated<TVoxel,TIndex>(voxelData, voxelIndex, point, cache);
 	}
 };
+
+/**
+ * \brief The specialisations of this struct template can be used to write/read colours to/from surfels.
+ *
+ * \tparam hasColour  Whether or not the surfel type can store colour information.
+ */
+template <bool hasColour> struct SurfelColourManipulator;
+
+/**
+ * \brief This template specialisation can be used to write/read dummy colours to/from surfels.
+ *
+ * It is intended for use with surfel types that cannot store colour information.
+ */
+template <>
+struct SurfelColourManipulator<false>
+{
+	/**
+	 * \brief Simulates the reading of a colour from the specified surfel.
+	 *
+	 * \param surfel  The surfel.
+	 * \return        A dummy colour (black).
+	 */
+	template <typename TSurfel>
+	_CPU_AND_GPU_CODE_
+	static Vector3u read(const TSurfel& surfel)
+	{
+		return Vector3u((uchar)0);
+	}
+
+	/**
+	 * \brief Simulates the writing of a colour to the specified surfel.
+	 *
+	 * In practice, this is just a no-op, since the surfel can't store a colour.
+	 *
+	 * \param surfel  The surfel.
+	 * \param colour  The colour.
+	 */
+	template <typename TSurfel>
+	_CPU_AND_GPU_CODE_
+	static void write(TSurfel& surfel, const Vector3u& colour)
+	{
+		// No-op
+	}
+};
+
+/**
+ * \brief This template specialisation can be used to write/read actual colours to/from surfels.
+ *
+ * It is intended for use with surfel types that can store colour information.
+ */
+template <>
+struct SurfelColourManipulator<true>
+{
+	/**
+	 * \brief Gets the colour of the specified surfel.
+	 *
+	 * \param surfel  The surfel.
+	 * \return        The surfel's colour.
+	 */
+	template <typename TSurfel>
+	_CPU_AND_GPU_CODE_
+	static Vector3u read(const TSurfel& surfel)
+	{
+		return surfel.colour;
+	}
+
+	/**
+	 * \brief Sets the colour of the specified surfel.
+	 *
+	 * \param surfel  The surfel.
+	 * \param colour  The surfel's new colour.
+	 */
+	template <typename TSurfel>
+	_CPU_AND_GPU_CODE_
+	static void write(TSurfel& surfel, const Vector3u& colour)
+	{
+		surfel.colour = colour;
+	}
+};

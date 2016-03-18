@@ -3,6 +3,7 @@
 #pragma once
 
 #include "ITMSceneParams.h"
+#include "ITMSurfelSceneParams.h"
 
 namespace ITMLib
 {
@@ -38,7 +39,8 @@ namespace ITMLib
 		const char *trackerConfig;
 
 		/// Further, scene specific parameters such as voxel size
-		ITMLib::ITMSceneParams sceneParams;
+		ITMSceneParams sceneParams;
+		ITMSurfelSceneParams surfelSceneParams;
 
 		ITMLibSettings(void);
 		~ITMLibSettings(void) {}

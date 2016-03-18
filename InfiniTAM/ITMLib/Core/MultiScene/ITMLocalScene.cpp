@@ -7,7 +7,7 @@ ITMPoseConstraint::ITMPoseConstraint(void)
 	accu_num = 0;
 }
 
-void ITMPoseConstraint::AddObservation(const ITMPose & relative_pose, int weight)
+void ITMPoseConstraint::AddObservation(const ORUtils::SE3Pose & relative_pose, int weight)
 {
 	Matrix4f tmp = accu_poses.GetM() * (float)accu_num + relative_pose.GetM() * (float)weight;
 	accu_num += weight;
@@ -19,7 +19,7 @@ void ITMPoseConstraint::AddObservation(const ITMPose & relative_pose, int weight
 
 /*Matrix4f ITMPoseConstraint::GetAccumulatedInfo(void) const
 {
-	ITMPose tmp_pose;
+	ORUtils::SE3Pose tmp_pose;
 	tmp_pose.SetM(accu_poses);
 	tmp_pose.Coerce();
 	return tmp_pose.GetM();

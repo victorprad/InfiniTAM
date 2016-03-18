@@ -28,6 +28,7 @@ MemoryBlockPersister.h
 PlatformIndependence.h
 KeyValueConfig.h
 NVTimer.h
+SE3Pose.h
 FileUtils.h
 HomkerMap.h
 SVMClassifier.h
@@ -40,6 +41,7 @@ SVMClassifier.h
 set(ORUTILS_OBJECTS
 KeyValueConfig.cpp
 FileUtils.cpp
+SE3Pose.cpp
 ${ORUTILS_HEADERS}
 )
 

@@ -123,7 +123,7 @@ void ITMBasicEngine<TVoxel,TIndex>::ProcessFrame(ITMUChar4Image *rgbImage, ITMSh
 	if (!mainProcessingActive) return;
 
 	// tracking
-	ITMPose oldPose(*(trackingState->pose_d));
+	ORUtils::SE3Pose oldPose(*(trackingState->pose_d));
 	if (trackingActive) trackingController->Track(trackingState, view);
 
 	int trackingSuccess = 0;
@@ -195,7 +195,7 @@ Vector2i ITMBasicEngine<TVoxel,TIndex>::GetImageSize(void) const
 }
 
 template <typename TVoxel, typename TIndex>
-void ITMBasicEngine<TVoxel,TIndex>::GetImage(ITMUChar4Image *out, GetImageType getImageType, ITMPose *pose, ITMIntrinsics *intrinsics)
+void ITMBasicEngine<TVoxel,TIndex>::GetImage(ITMUChar4Image *out, GetImageType getImageType, ORUtils::SE3Pose *pose, ITMIntrinsics *intrinsics)
 {
 	if (view == NULL) return;
 
@@ -223,6 +223,18 @@ void ITMBasicEngine<TVoxel,TIndex>::GetImage(ITMUChar4Image *out, GetImageType g
 		}
 
 		break;
+	case ITMBasicEngine::InfiniTAM_IMAGE_COLOUR_FROM_NORMAL:
+	{
+		visualisationEngine->FindVisibleBlocks(scene, trackingState->pose_d, &view->calib->intrinsics_d, renderState_live);
+		visualisationEngine->CreateExpectedDepths(scene, trackingState->pose_d, &view->calib->intrinsics_d, renderState_live);
+		visualisationEngine->RenderImage(scene, trackingState->pose_d, &view->calib->intrinsics_d, renderState_live, renderState_live->raycastImage, IITMVisualisationEngine::RENDER_COLOUR_FROM_NORMAL);
+
+		if (settings->deviceType == ITMLibSettings::DEVICE_CUDA)
+			out->SetFrom(renderState_live->raycastImage, ORUtils::MemoryBlock<Vector4u>::CUDA_TO_CPU);
+		else out->SetFrom(renderState_live->raycastImage, ORUtils::MemoryBlock<Vector4u>::CPU_TO_CPU);
+
+		break;
+	}
 	case ITMBasicEngine::InfiniTAM_IMAGE_SCENERAYCAST:
 	{
 		ORUtils::Image<Vector4u> *srcImage = NULL;

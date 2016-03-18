@@ -30,12 +30,18 @@ find_package(PNG QUIET)
 CANONIFY_BOOL(PNG_FOUND)
 message(STATUS "libpng found: ${PNG_FOUND}")
 
+find_package(FFmpeg QUIET)
+CANONIFY_BOOL(FFMPEG_FOUND)
+message(STATUS "FFmpeg found: ${FFMPEG_FOUND}")
+OPTION(WITH_FFMPEG "Build with FFmpeg support?" ${FFMPEG_FOUND})
+
 OPTION(WITH_CUDA "Build with CUDA support?" ${CUDA_FOUND})
 INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseOpenMP.cmake)
 INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseRealSense.cmake)
 
 IF(MSVC_IDE)
   add_definitions(-D_CRT_SECURE_NO_WARNINGS)
+  add_definitions(-D_USE_MATH_DEFINES)
   add_definitions(-DUSING_CMAKE=1)
 ELSE(MSVC_IDE)
   set(CFLAGS_WARN "-Wall -Wextra -Wno-unused-parameter -Wno-strict-aliasing")

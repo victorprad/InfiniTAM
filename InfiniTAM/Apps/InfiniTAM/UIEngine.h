@@ -4,6 +4,7 @@
 
 #include "../../InputSource/ImageSourceEngine.h"
 #include "../../InputSource/IMUSourceEngine.h"
+#include "../../InputSource/FFMPEGWriter.h"
 #include "../../ITMLib/Core/ITMMainEngine.h"
 #include "../../ITMLib/Utils/ITMLibSettings.h"
 #include "../../ORUtils/FileUtils.h"
@@ -55,13 +56,15 @@ namespace InfiniTAM
 
 			bool freeviewActive;
 			bool intergrationActive;
-			ITMLib::ITMPose freeviewPose;
+			ORUtils::SE3Pose freeviewPose;
 			ITMLib::ITMIntrinsics freeviewIntrinsics;
 
 			int mouseState;
 			Vector2i mouseLastClick;
 
 			int currentFrameNo; bool isRecording;
+			FFMPEGWriter *rgbVideoWriter;
+			FFMPEGWriter *depthVideoWriter;
 		public:
 			static UIEngine* Instance(void) {
 				if (instance == NULL) instance = new UIEngine();

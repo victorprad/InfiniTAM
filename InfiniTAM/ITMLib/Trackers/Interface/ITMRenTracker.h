@@ -45,7 +45,7 @@ namespace ITMLib
 
 	public:
 
-		void applyDelta(const ITMPose & para_old, const float *delta, ITMPose & para_new) const;
+		void applyDelta(const ORUtils::SE3Pose & para_old, const float *delta, ORUtils::SE3Pose & para_new) const;
 		int numParameters(void) const { return 6; }
 
 		void TrackCamera(ITMTrackingState *trackingState, const ITMView *view);

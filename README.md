@@ -4,6 +4,8 @@ This is the software bundle "InfiniTAM",  the current version is maintained by:
 
   Victor Adrian Prisacariu <victor@robots.ox.ac.uk>  
   Olaf Kaehler <olaf@robots.ox.ac.uk>  
+  Stuart Golodetz <smg@robots.ox.ac.uk>  
+  Michael Sapienza <michael.sapienza@eng.ox.ac.uk>  
   Carl Yuheng Ren <carl@robots.ox.ac.uk>  
   Ming Ming Cheng <cmm.thu@gmail.com>  
   Xin Sun <xin.sun@st-hughs.ox.ac.uk>  
@@ -44,6 +46,10 @@ Several 3rd party libraries are needed for compiling InfiniTAM. The given versio
   - libpng (e.g. version 1.6)
     OPTIONAL, allows to read PNG input files
     available at http://libpng.org
+
+  - FFMPEG (e.g. version 2.8.6)
+    OPTIONAL, allows writing and playback of lossless FFV1 encoded videos
+    available at https://www.ffmpeg.org/
 
   - libuvc (e.g. github version from 2015-OCT-27)
     OPTIONAL, allows to get live images from Intel Realsense cameras

@@ -55,7 +55,7 @@ namespace ITMLib
 		appropriate visualisation state object, created
 		previously using allocateInternalState().
 		*/
-		virtual void FindVisibleBlocks(const ITMScene<TVoxel,TIndex> *scene, const ITMPose *pose, const ITMIntrinsics *intrinsics,
+		virtual void FindVisibleBlocks(const ITMScene<TVoxel,TIndex> *scene, const ORUtils::SE3Pose *pose, const ITMIntrinsics *intrinsics,
 			ITMRenderState *renderState) const = 0;
 
 		/** Given a render state, Count the number of visible blocks
@@ -67,15 +67,15 @@ namespace ITMLib
 		of the minimum and maximum depths at each pixel of
 		an image.
 		*/
-		virtual void CreateExpectedDepths(const ITMScene<TVoxel,TIndex> *scene, const ITMPose *pose, const ITMIntrinsics *intrinsics, 
+		virtual void CreateExpectedDepths(const ITMScene<TVoxel,TIndex> *scene, const ORUtils::SE3Pose *pose, const ITMIntrinsics *intrinsics,
 			ITMRenderState *renderState) const = 0;
 
 		/** This will render an image using raycasting. */
-		virtual void RenderImage(const ITMScene<TVoxel,TIndex> *scene, const ITMPose *pose, const ITMIntrinsics *intrinsics,
+		virtual void RenderImage(const ITMScene<TVoxel,TIndex> *scene, const ORUtils::SE3Pose *pose, const ITMIntrinsics *intrinsics,
 			const ITMRenderState *renderState, ITMUChar4Image *outputImage, RenderImageType type = RENDER_SHADED_GREYSCALE) const = 0;
 
 		/** Finds the scene surface using raycasting. */
-		virtual void FindSurface(const ITMScene<TVoxel,TIndex> *scene, const ITMPose *pose, const ITMIntrinsics *intrinsics,
+		virtual void FindSurface(const ITMScene<TVoxel,TIndex> *scene, const ORUtils::SE3Pose *pose, const ITMIntrinsics *intrinsics,
 			const ITMRenderState *renderState) const = 0;
 
 		/** Create a point cloud as required by the

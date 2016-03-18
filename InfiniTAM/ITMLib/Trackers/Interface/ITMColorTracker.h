@@ -37,9 +37,9 @@ namespace ITMLib
 			const float* nabla_f(void) { if (cacheNabla == NULL) computeGradients(false); return cacheNabla; }
 
 			const float* hessian_GN(void) { if (cacheHessian == NULL) computeGradients(true); return cacheHessian; }
-			const ITMPose & getParameter(void) const { return *mPara; }
+			const ORUtils::SE3Pose & getParameter(void) const { return *mPara; }
 
-			EvaluationPoint(ITMPose *pos, const ITMColorTracker *f_parent);
+			EvaluationPoint(ORUtils::SE3Pose *pos, const ITMColorTracker *f_parent);
 			~EvaluationPoint(void)
 			{
 				delete mPara;
@@ -50,7 +50,7 @@ namespace ITMLib
 		protected:
 			void computeGradients(bool requiresHessian);
 
-			ITMPose *mPara;
+			ORUtils::SE3Pose *mPara;
 			const ITMColorTracker *mParent;
 
 			float cacheF;
@@ -58,17 +58,17 @@ namespace ITMLib
 			float *cacheHessian;
 		};
 
-		EvaluationPoint* evaluateAt(ITMPose *para) const
+		EvaluationPoint* evaluateAt(ORUtils::SE3Pose *para) const
 		{
 			return new EvaluationPoint(para, this);
 		}
 
 		int numParameters(void) const { return (iterationType == TRACKER_ITERATION_ROTATION) ? 3 : 6; }
 
-		virtual void F_oneLevel(float *f, ITMPose *pose) = 0;
-		virtual void G_oneLevel(float *gradient, float *hessian, ITMPose *pose) const = 0;
+		virtual void F_oneLevel(float *f, ORUtils::SE3Pose *pose) = 0;
+		virtual void G_oneLevel(float *gradient, float *hessian, ORUtils::SE3Pose *pose) const = 0;
 
-		void ApplyDelta(const ITMPose & para_old, const float *delta, ITMPose & para_new) const;
+		void ApplyDelta(const ORUtils::SE3Pose & para_old, const float *delta, ORUtils::SE3Pose & para_new) const;
 
 		void TrackCamera(ITMTrackingState *trackingState, const ITMView *view);
 

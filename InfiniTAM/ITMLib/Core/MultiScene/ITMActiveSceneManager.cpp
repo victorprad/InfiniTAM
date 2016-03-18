@@ -19,7 +19,7 @@ static const int N_maxblocknum = 10000;
 static const int N_originalblocks = 2000;
 static const float F_originalBlocksThreshold = 0.1f;
 
-ITMActiveSceneManager::ITMActiveSceneManager(ITMLocalSceneManager *_localSceneManager)
+ITMActiveSceneManager::ITMActiveSceneManager(ITMMultiSceneManager *_localSceneManager)
 {
 	localSceneManager = _localSceneManager;
 }
@@ -35,7 +35,7 @@ void ITMActiveSceneManager::initiateNewScene(bool isPrimaryScene)
 	activeData.push_back(newLink);
 }
 
-int ITMActiveSceneManager::initiateNewLink(int sceneID, const ITMPose & pose, bool isRelocalisation)
+int ITMActiveSceneManager::initiateNewLink(int sceneID, const ORUtils::SE3Pose & pose, bool isRelocalisation)
 {
 	static const bool ensureUniqueLinks = true;
 
@@ -184,6 +184,28 @@ int ITMActiveSceneManager::findPrimarySceneIdx(void) const
 	return activeData[id].sceneIndex;
 }
 
+int ITMActiveSceneManager::findBestVisualisationDataIdx(void) const
+{
+	int bestIdx = -1;
+	for (int i = 0; i < static_cast<int>(activeData.size()); ++i) {
+		if (activeData[i].type == PRIMARY_SCENE) return i;
+		else if (activeData[i].type == NEW_SCENE) bestIdx = i;
+		else if (activeData[i].type == RELOCALISATION) {
+			if (bestIdx<0) { bestIdx = i; continue; }
+			if (activeData[bestIdx].type == NEW_SCENE) continue;
+			if (activeData[bestIdx].constraints.size() < activeData[i].constraints.size()) bestIdx = i;
+		}
+	}
+	return bestIdx;
+}
+
+int ITMActiveSceneManager::findBestVisualisationSceneIdx(void) const
+{
+	int id = findBestVisualisationDataIdx();
+	if (id < 0) return -1;
+	return activeData[id].sceneIndex;
+}
+
 void ITMActiveSceneManager::recordTrackingResult(int dataID, int trackingSuccess, bool primaryTrackingSuccess)
 {
 	ActiveDataDescriptor & data = activeData[dataID];
@@ -235,17 +257,17 @@ static float huber_weight(float residual, float b)
     out_numInliers and out_inlierPose is the number of inliers from amongst the
     new observations and the pose computed from them.
 */
-static ITMPose estimateRelativePose(const std::vector<Matrix4f> & observations, const ITMPose & previousEstimate, float previousEstimate_weight, int *out_numInliers, ITMPose *out_inlierPose)
+static ORUtils::SE3Pose estimateRelativePose(const std::vector<Matrix4f> & observations, const ORUtils::SE3Pose & previousEstimate, float previousEstimate_weight, int *out_numInliers, ORUtils::SE3Pose *out_inlierPose)
 {
 	static const float huber_b = 0.1f;
 	static const float weightsConverged = 0.01f;
 	static const int maxIter = 10;
 	static const float inlierThresholdForFinalResult = 0.8f;
 	std::vector<float> weights(observations.size()+1, 1.0f);
-	std::vector<ITMPose> poses;
+	std::vector<ORUtils::SE3Pose> poses;
 
 	for (size_t i = 0; i < observations.size(); ++i) {
-		poses.push_back(ITMPose(observations[i]));
+		poses.push_back(ORUtils::SE3Pose(observations[i]));
 	}
 
 	float params[6];
@@ -262,7 +284,7 @@ static ITMPose estimateRelativePose(const std::vector<Matrix4f> & observations, 
 		// compute new weights
 		float weightchanges = 0.0f;
 		for (size_t i = 0; i < weights.size(); ++i) {
-			const ITMPose *p;
+			const ORUtils::SE3Pose *p;
 			float w = 1.0f;
 			if (i < poses.size()) p = &(poses[i]);
 			else {
@@ -295,7 +317,7 @@ static ITMPose estimateRelativePose(const std::vector<Matrix4f> & observations, 
 	if (out_inlierPose) out_inlierPose->SetM(inlierTrafo / (float)MAX(inliers,1));
 	if (out_numInliers) *out_numInliers = inliers;
 
-	return ITMPose(params);
+	return ORUtils::SE3Pose(params);
 }
 
 int ITMActiveSceneManager::CheckSuccess_relocalisation(int dataID) const
@@ -314,25 +336,38 @@ int ITMActiveSceneManager::CheckSuccess_relocalisation(int dataID) const
 	return 0;
 }
 
-/*static void printPose(const ITMPose & p)
+/*static void printPose(const ORUtils::SE3Pose & p)
 {
 	fprintf(stderr, "%f %f %f %f\n%f %f %f %f\n%f %f %f %f\n", p.GetM().m00, p.GetM().m10, p.GetM().m20, p.GetM().m30, p.GetM().m01, p.GetM().m11, p.GetM().m21, p.GetM().m31, p.GetM().m02, p.GetM().m12, p.GetM().m22, p.GetM().m32);
 }*/
 
 
-int ITMActiveSceneManager::CheckSuccess_newlink(int dataID, int primaryDataID, int *inliers, ITMPose *inlierPose) const
+int ITMActiveSceneManager::CheckSuccess_newlink(int dataID, int primaryDataID, int *inliers, ORUtils::SE3Pose *inlierPose) const
 {
 	const ActiveDataDescriptor & link = activeData[dataID];
 
 	// take previous data from scene relations into account!
-	ITMPose previousEstimate;
-	int previousEstimate_weight = 0;
+	//ORUtils::SE3Pose previousEstimate;
+	//int previousEstimate_weight = 0;
 	int primarySceneIndex = -1;
 	if (primaryDataID >= 0) primarySceneIndex = activeData[primaryDataID].sceneIndex;
-	localSceneManager->getRelation(primarySceneIndex, link.sceneIndex, &previousEstimate, &previousEstimate_weight);
+	const ITMPoseConstraint & previousInformation = localSceneManager->getRelation(primarySceneIndex, link.sceneIndex);
+	/* hmm... do we want the "Estimate" (i.e. the pose corrected by pose
+	   graph optimization) or the "Observations" (i.e. the accumulated
+	   poses seen in previous frames?
+	   This should only really make a difference, if there is a large
+	   disagreement between the two, in which case one might argue that
+	   most likely something went wrong with a loop-closure, and we are
+	   not really sure the "Estimate" is true or just based on an erroneous
+	   loop closure. We therefore want to be consistent with previous
+	   observations not estimations...
+	*/
+	//ORUtils::SE3Pose previousEstimate = previousInformation.GetEstimate();
+	ORUtils::SE3Pose previousEstimate = previousInformation.GetAccumulatedObservations();
+	int previousEstimate_weight = previousInformation.GetNumAccumulatedObservations();
 
 	int inliers_local;
-	ITMPose inlierPose_local;
+	ORUtils::SE3Pose inlierPose_local;
 	if (inliers == NULL) inliers = &inliers_local;
 	if (inlierPose == NULL) inlierPose = &inlierPose_local;
 
@@ -351,16 +386,27 @@ int ITMActiveSceneManager::CheckSuccess_newlink(int dataID, int primaryDataID, i
 	return 0;
 }
 
-void ITMActiveSceneManager::AcceptNewLink(int fromData, int toData, const ITMPose & pose, int weight)
+void ITMActiveSceneManager::AcceptNewLink(int fromData, int toData, const ORUtils::SE3Pose & pose, int weight)
 {
 	int fromSceneIdx = activeData[fromData].sceneIndex;
 	int toSceneIdx = activeData[toData].sceneIndex;
 
-	localSceneManager->addRelation(fromSceneIdx, toSceneIdx, pose, weight);
+	//localSceneManager->addRelation(fromSceneIdx, toSceneIdx, pose, weight);
+	{
+		ITMPoseConstraint & c = localSceneManager->getRelation(fromSceneIdx, toSceneIdx);
+		c.AddObservation(pose, weight);
+	}
+	{
+		ORUtils::SE3Pose invPose(pose.GetInvM());
+		ITMPoseConstraint & c = localSceneManager->getRelation(toSceneIdx, fromSceneIdx);
+		c.AddObservation(invPose, weight);
+	}
 }
 
-void ITMActiveSceneManager::maintainActiveData(void)
+bool ITMActiveSceneManager::maintainActiveData(void)
 {
+	bool scenegraphChanged = false;
+
 	int primaryDataIdx = findPrimaryDataIdx();
 	int moveToDataIdx = -1;
 	for (int i = 0; i < (int)activeData.size(); ++i)
@@ -384,7 +430,7 @@ void ITMActiveSceneManager::maintainActiveData(void)
 		if ((link.type == LOOP_CLOSURE)||
 		    (link.type == NEW_SCENE))
 		{
-			ITMPose inlierPose; int inliers;
+			ORUtils::SE3Pose inlierPose; int inliers;
 			int success = CheckSuccess_newlink(i, primaryDataIdx, &inliers, &inlierPose);
 			if (success == 1)
 			{
@@ -392,6 +438,7 @@ void ITMActiveSceneManager::maintainActiveData(void)
 				link.constraints.clear();
 				link.trackingAttempts = 0;
 				if (shouldMovePrimaryScene(i, moveToDataIdx, primaryDataIdx)) moveToDataIdx = i;
+				scenegraphChanged = true;
 			}
 			else if (success == -1)
 			{
@@ -438,4 +485,6 @@ void ITMActiveSceneManager::maintainActiveData(void)
 
 	// NOTE: this has to be done AFTER removing any previous new scene
 	if (shouldStartNewArea()) initiateNewScene();
+
+	return scenegraphChanged;
 }

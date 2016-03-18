@@ -86,12 +86,15 @@ int ITMDepthTracker_CUDA::ComputeGandH(float &f, float *nabla, float *hessian, M
 	{
 	case TRACKER_ITERATION_ROTATION:
 		depthTrackerOneLevel_g_rt_device<true, true> << <gridSize, blockSize >> >(args);
+		ORcudaKernelCheck;
 		break;
 	case TRACKER_ITERATION_TRANSLATION:
 		depthTrackerOneLevel_g_rt_device<true, false> << <gridSize, blockSize >> >(args);
+		ORcudaKernelCheck;
 		break;
 	case TRACKER_ITERATION_BOTH:
 		depthTrackerOneLevel_g_rt_device<false, false> << <gridSize, blockSize >> >(args);
+		ORcudaKernelCheck;
 		break;
 	default: break;
 	}

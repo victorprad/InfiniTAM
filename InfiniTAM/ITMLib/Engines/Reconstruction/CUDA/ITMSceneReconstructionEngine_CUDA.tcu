@@ -144,11 +144,16 @@ void ITMSceneReconstructionEngine_CUDA<TVoxel, ITMVoxelBlockHash>::AllocateScene
 
 	ORcudaSafeCall(cudaMemsetAsync(entriesAllocType_device, 0, sizeof(unsigned char)* noTotalEntries));
 
-	if (gridSizeVS.x > 0) setToType3 << <gridSizeVS, cudaBlockSizeVS >> > (entriesVisibleType, visibleEntryIDs, renderState_vh->noVisibleEntries);
+	if (gridSizeVS.x > 0)
+	{
+		setToType3 << <gridSizeVS, cudaBlockSizeVS >> > (entriesVisibleType, visibleEntryIDs, renderState_vh->noVisibleEntries);
+		ORcudaKernelCheck;
+	}
 
 	buildHashAllocAndVisibleType_device << <gridSizeHV, cudaBlockSizeHV >> >(entriesAllocType_device, entriesVisibleType, 
 		blockCoords_device, depth, invM_d, invProjParams_d, mu, depthImgSize, oneOverVoxelSize, hashTable,
 		scene->sceneParams->viewFrustum_min, scene->sceneParams->viewFrustum_max);
+	ORcudaKernelCheck;
 
 	bool useSwapping = scene->useSwapping;
 	if (onlyUpdateVisibleList) useSwapping = false;
@@ -157,19 +162,27 @@ void ITMSceneReconstructionEngine_CUDA<TVoxel, ITMVoxelBlockHash>::AllocateScene
 		allocateVoxelBlocksList_device << <gridSizeAL, cudaBlockSizeAL >> >(voxelAllocationList, excessAllocationList, hashTable,
 			noTotalEntries, (AllocationTempData*)allocationTempData_device, entriesAllocType_device, entriesVisibleType,
 			blockCoords_device);
+		ORcudaKernelCheck;
 	}
 
 	if (useSwapping)
+	{
 		buildVisibleList_device<true> << <gridSizeAL, cudaBlockSizeAL >> >(hashTable, swapStates, noTotalEntries, visibleEntryIDs,
 			(AllocationTempData*)allocationTempData_device, entriesVisibleType, M_d, projParams_d, depthImgSize, voxelSize);
+		ORcudaKernelCheck;
+	}
 	else
+	{
 		buildVisibleList_device<false> << <gridSizeAL, cudaBlockSizeAL >> >(hashTable, swapStates, noTotalEntries, visibleEntryIDs,
 			(AllocationTempData*)allocationTempData_device, entriesVisibleType, M_d, projParams_d, depthImgSize, voxelSize);
+		ORcudaKernelCheck;
+	}
 
 	if (useSwapping)
 	{
 		reAllocateSwappedOutVoxelBlocks_device << <gridSizeAL, cudaBlockSizeAL >> >(voxelAllocationList, hashTable, noTotalEntries, 
 			(AllocationTempData*)allocationTempData_device, entriesVisibleType);
+		ORcudaKernelCheck;
 	}
 
 	ORcudaSafeCall(cudaMemcpy(tempData, allocationTempData_device, sizeof(AllocationTempData), cudaMemcpyDeviceToHost));
@@ -190,6 +203,7 @@ void ITMSceneReconstructionEngine_CUDA<TVoxel, ITMVoxelBlockHash>::IntegrateInto
 	Vector4f projParams_d, projParams_rgb;
 
 	ITMRenderState_VH *renderState_vh = (ITMRenderState_VH*)renderState;
+	if(renderState_vh->noVisibleEntries == 0) return;
 
 	M_d = trackingState->pose_d->GetM();
 	if (TVoxel::hasColorInformation) M_rgb = view->calib->trafo_rgb_to_depth.calib_inv * M_d;
@@ -210,11 +224,17 @@ void ITMSceneReconstructionEngine_CUDA<TVoxel, ITMVoxelBlockHash>::IntegrateInto
 	dim3 gridSize(renderState_vh->noVisibleEntries);
 
 	if (scene->sceneParams->stopIntegratingAtMaxW)
+	{
 		integrateIntoScene_device<TVoxel, true> << <gridSize, cudaBlockSize >> >(localVBA, hashTable, visibleEntryIDs,
 			rgb, rgbImgSize, depth, depthImgSize, M_d, M_rgb, projParams_d, projParams_rgb, voxelSize, mu, maxW);
+		ORcudaKernelCheck;
+	}
 	else
+	{
 		integrateIntoScene_device<TVoxel, false> << <gridSize, cudaBlockSize >> >(localVBA, hashTable, visibleEntryIDs,
 			rgb, rgbImgSize, depth, depthImgSize, M_d, M_rgb, projParams_d, projParams_rgb, voxelSize, mu, maxW);
+		ORcudaKernelCheck;
+	}
 }
 
 // plain voxel array
@@ -266,11 +286,17 @@ void ITMSceneReconstructionEngine_CUDA<TVoxel, ITMPlainVoxelArray>::IntegrateInt
 	dim3 gridSize(scene->index.getVolumeSize().x / cudaBlockSize.x, scene->index.getVolumeSize().y / cudaBlockSize.y, scene->index.getVolumeSize().z / cudaBlockSize.z);
 
 	if (scene->sceneParams->stopIntegratingAtMaxW)
+	{
 		integrateIntoScene_device < TVoxel, true> << <gridSize, cudaBlockSize >> >(localVBA, arrayInfo,
 			rgb, rgbImgSize, depth, depthImgSize, M_d, M_rgb, projParams_d, projParams_rgb, voxelSize, mu, maxW);
+		ORcudaKernelCheck;
+	}
 	else
+	{
 		integrateIntoScene_device < TVoxel, false> << <gridSize, cudaBlockSize >> >(localVBA, arrayInfo,
 			rgb, rgbImgSize, depth, depthImgSize, M_d, M_rgb, projParams_d, projParams_rgb, voxelSize, mu, maxW);
+		ORcudaKernelCheck;
+	}
 }
 
 namespace

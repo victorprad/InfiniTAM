@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include "ITMLocalScene.h"
 #include "ITMMainEngine.h"
 #include "ITMTrackingController.h"
 #include "../Engines/LowLevel/Interface/ITMLowLevelEngine.h"
@@ -11,7 +10,8 @@
 #include "../../RelocLib/Relocaliser.h"
 #include "../../RelocLib/PoseDatabase.h"
 
-#include "ITMActiveSceneManager.h"
+#include "MultiScene/ITMLocalScene.h"
+#include "MultiScene/ITMActiveSceneManager.h"
 
 #include <vector>
 
@@ -21,7 +21,7 @@ namespace ITMLib
 		int sceneIndex;
 		enum { PRIMARY_SCENE, NEW_SCENE, LOOP_CLOSURE, RELOCALISATION, LOST, LOST_NEW } type;
 		std::vector<Matrix4f> constraints;
-		ITMPose estimatedPose;
+		ORUtils::SE3Pose estimatedPose;
 		int trackingAttempts;
 	};*/
 
@@ -47,7 +47,7 @@ namespace ITMLib
 
 /*		std::vector<ITMLocalScene<ITMVoxel,ITMVoxelIndex>*> allData;
 		std::vector<ActiveDataDescriptor> activeData;*/
-		ITMLocalSceneManager_instance<TVoxel,TIndex> *sceneManager;
+		ITMMultiSceneManager_instance<TVoxel,TIndex> *sceneManager;
 		ITMActiveSceneManager *activeDataManager;
 
 		Vector2i trackedImageSize;
@@ -67,19 +67,19 @@ namespace ITMLib
 		/// Get a result image as output
 		Vector2i GetImageSize(void) const;
 
-		void GetImage(ITMUChar4Image *out, GetImageType getImageType, ITMPose *pose = NULL, ITMIntrinsics *intrinsics = NULL);
+		void GetImage(ITMUChar4Image *out, GetImageType getImageType, ORUtils::SE3Pose *pose = NULL, ITMIntrinsics *intrinsics = NULL);
 
 /*		bool shouldStartNewArea(void) const;
 		bool shouldMovePrimaryScene(int newDataIdx, int bestDataIdx, int primaryDataIdx) const;
 		void AddNewLocalScene(int primarySceneIdx);
-		bool AddNewRelocalisationScene(int sceneID, int primarySceneIdx, const ITMPose & pose);
+		bool AddNewRelocalisationScene(int sceneID, int primarySceneIdx, const ORUtils::SE3Pose & pose);
 		int CheckSuccess_relocalisation(int dataID) const;
-		int CheckSuccess_newlink(int dataID, int *inliers, ITMPose *inlierPose) const;
-		void AcceptNewLink(int dataId, int primaryDataId, ITMPose pose, int weight);
+		int CheckSuccess_newlink(int dataID, int *inliers, ORUtils::SE3Pose *inlierPose) const;
+		void AcceptNewLink(int dataId, int primaryDataId, ORUtils::SE3Pose pose, int weight);
 		void DiscardLocalScene(int sceneID);
-		static ITMPose EstimateRelativePose(const std::vector<Matrix4f> & observations, int *out_numInliers, ITMPose *out_inlierPose);
+		static ORUtils::SE3Pose EstimateRelativePose(const std::vector<Matrix4f> & observations, int *out_numInliers, ORUtils::SE3Pose *out_inlierPose);
 */
-		void changeFreeviewSceneIdx(ITMPose *pose, int newIdx);
+		void changeFreeviewSceneIdx(ORUtils::SE3Pose *pose, int newIdx);
 		void setFreeviewSceneIdx(int newIdx)
 		{ freeviewSceneIdx = newIdx; }
 		int getFreeviewSceneIdx(void) const

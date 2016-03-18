@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "ITMLocalSceneManager.h"
+#include "ITMMultiSceneManager.h"
 
 namespace ITMLib
 {
@@ -18,16 +18,16 @@ namespace ITMLib
 			int sceneIndex;
 			SceneActivity type;
 			std::vector<Matrix4f> constraints;
-			ITMPose estimatedPose;
+			ORUtils::SE3Pose estimatedPose;
 			int trackingAttempts;
 		};
 
-		ITMLocalSceneManager *localSceneManager;
+		ITMMultiSceneManager *localSceneManager;
 		std::vector<ActiveDataDescriptor> activeData;
 
 		int CheckSuccess_relocalisation(int dataID) const;
-		int CheckSuccess_newlink(int dataID, int primaryDataID, int *inliers, ITMPose *inlierPose) const;
-		void AcceptNewLink(int dataId, int primaryDataId, const ITMPose & pose, int weight);
+		int CheckSuccess_newlink(int dataID, int primaryDataID, int *inliers, ORUtils::SE3Pose *inlierPose) const;
+		void AcceptNewLink(int dataId, int primaryDataId, const ORUtils::SE3Pose & pose, int weight);
 
 		float visibleOriginalBlocks(int dataID) const;
 		bool shouldStartNewArea(void) const;
@@ -35,13 +35,17 @@ namespace ITMLib
 
 	public:
 		void initiateNewScene(bool isPrimaryScene = false);
-		int initiateNewLink(int sceneID, const ITMPose & pose, bool isRelocalisation);
+		int initiateNewLink(int sceneID, const ORUtils::SE3Pose & pose, bool isRelocalisation);
 
 		void recordTrackingResult(int dataID, int trackingSuccess, bool primaryTrackingSuccess);
-		void maintainActiveData(void);
+		// return whether or not the scene graph has changed
+		bool maintainActiveData(void);
 
 		int findPrimaryDataIdx(void) const;
 		int findPrimarySceneIdx(void) const;
+
+		int findBestVisualisationDataIdx(void) const;
+		int findBestVisualisationSceneIdx(void) const;
 
 		int numActiveScenes(void) const
 		{ return static_cast<int>(activeData.size()); }
@@ -50,7 +54,7 @@ namespace ITMLib
 		SceneActivity getSceneType(int dataIdx) const
 		{ return activeData[dataIdx].type; }
 
-		ITMActiveSceneManager(ITMLocalSceneManager *localSceneManager);
+		ITMActiveSceneManager(ITMMultiSceneManager *localSceneManager);
 		~ITMActiveSceneManager(void) {}
 	};
 }

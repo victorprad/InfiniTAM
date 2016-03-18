@@ -4,6 +4,9 @@
 #include "../../Engine/OpenNIEngine.h"
 #include "../../Engine/IMUSourceEngine.h"
 
+#include "../../ITMLib/Core/ITMBasicEngine.h"
+#include "../../ITMLib/ITMLibDefines.h"
+
 #include <GLES/gl.h>
 
 #include <android/log.h>
@@ -19,10 +22,15 @@ InfiniTAMApp::InfiniTAMApp(void)
 	mImuSource = NULL;
 	mMainEngine = NULL;
 	mIsInitialized = false;
+	mRecordingMode = false;
+	depthVideoWriter = NULL;
 
 	winImageType[0] = ITMMainEngine::InfiniTAM_IMAGE_SCENERAYCAST;
 	winImageType[1] = ITMMainEngine::InfiniTAM_IMAGE_ORIGINAL_DEPTH;
 	winImageType[2] = ITMMainEngine::InfiniTAM_IMAGE_ORIGINAL_RGB;
+
+	sdkCreateTimer(&timer_instant);
+	sdkCreateTimer(&timer_average);
 }
 
 void InfiniTAMApp::InitGL(void)
@@ -59,6 +67,9 @@ void InfiniTAMApp::RenderGL(void)
 
 		mNewWindowSize.x = mNewWindowSize.y = -1;
 	}
+
+	if (mRecordingMode) winImageType[0] = ITMMainEngine::InfiniTAM_IMAGE_ORIGINAL_DEPTH;
+	else winImageType[0] = ITMMainEngine::InfiniTAM_IMAGE_SCENERAYCAST;
 
 	int localNumWin = 1;//NUM_WIN
 	for (int w = 0; w < localNumWin; w++) mMainEngine->GetImage(outImage[w], winImageType[w]);
@@ -120,14 +131,15 @@ void InfiniTAMApp::StartProcessing(int useLiveCamera)
 	mInternalSettings = new ITMLibSettings();
 	mImuSource = NULL; //new IMUSourceEngine;
 	if (useLiveCamera == 0) {
-		mImageSource = new InfiniTAM::Engine::ImageFileReader(calibFile, imagesource_part1, imagesource_part2);
+		InfiniTAM::Engine::ImageMaskPathGenerator pathGenerator(imagesource_part1, imagesource_part2);
+		mImageSource = new InfiniTAM::Engine::ImageFileReader<InfiniTAM::Engine::ImageMaskPathGenerator>(calibFile, pathGenerator);
 		//mImageSource = new InfiniTAM::Engine::RawFileReader(calibFile, imagesource_part1, imagesource_part2, Vector2i(320, 240), 0.5f);
 		//mImuSource = new InfiniTAM::Engine::IMUSourceEngine(imagesource_part3);
 		//mImageSource = new InfiniTAM::Engine::OpenNIEngine(calibFile, "/storage/sdcard0/InfiniTAM/50Hz_closeup.oni");
 	} else {
 		mImageSource = new InfiniTAM::Engine::OpenNIEngine(calibFile);
 	}
-	mMainEngine = new ITMMainEngine(mInternalSettings, &mImageSource->calib, mImageSource->getRGBImageSize(), mImageSource->getDepthImageSize());
+	mMainEngine = new ITMBasicEngine<ITMVoxel,ITMVoxelIndex>(mInternalSettings, &mImageSource->calib, mImageSource->getRGBImageSize(), mImageSource->getDepthImageSize());
 
 	bool allocateGPU = false;
 	if (mInternalSettings->deviceType == ITMLibSettings::DEVICE_CUDA) allocateGPU = true;
@@ -144,8 +156,7 @@ void InfiniTAMApp::StartProcessing(int useLiveCamera)
 	ORcudaSafeCall(cudaThreadSynchronize());
 #endif
 
-	sdkCreateTimer(&timer_instant);
-	sdkCreateTimer(&timer_average);
+	sdkResetTimer(&timer_instant);
 	sdkResetTimer(&timer_average);
 
 	mIsInitialized = true;
@@ -161,6 +172,9 @@ bool InfiniTAMApp::ProcessFrame(void)
 		else mImuSource->getMeasurement(inputIMUMeasurement);
 	}
 
+	if (mRecordingMode) ((ITMBasicEngine<ITMVoxel,ITMVoxelIndex>*)mMainEngine)->turnOffMainProcessing();
+	else ((ITMBasicEngine<ITMVoxel,ITMVoxelIndex>*)mMainEngine)->turnOnMainProcessing();
+
 	sdkResetTimer(&timer_instant);
 	sdkStartTimer(&timer_instant); sdkStartTimer(&timer_average);
 
@@ -168,11 +182,54 @@ bool InfiniTAMApp::ProcessFrame(void)
 	if (mImuSource != NULL) mMainEngine->ProcessFrame(inputRGBImage, inputRawDepthImage, inputIMUMeasurement);
 	else mMainEngine->ProcessFrame(inputRGBImage, inputRawDepthImage);
 
+	if (mRecordingMode) {
+		if (depthVideoWriter == NULL) {
+			depthVideoWriter = new InfiniTAM::FFMPEGWriter();
+			depthVideoWriter->open("/sdcard/InfiniTAM/out_depth.avi", inputRawDepthImage->noDims.x, inputRawDepthImage->noDims.y, true, 30);
+			//depthVideoWriter->open("out_rgb.avi", inputRGBImage->noDims.x, inputRGBImage->noDims.y, false, 30);
+		}
+		depthVideoWriter->writeFrame(inputRawDepthImage);
+	} else {
+		if (depthVideoWriter != NULL) {
+			delete depthVideoWriter;
+			depthVideoWriter = NULL;
+		}
+	}
+
 	ORcudaSafeCall(cudaDeviceSynchronize());
 	sdkStopTimer(&timer_instant); sdkStopTimer(&timer_average);
 
 	__android_log_print(ANDROID_LOG_VERBOSE, "InfiniTAM", "Process Frame finished: %f %f", sdkGetTimerValue(&timer_instant), sdkGetAverageTimerValue(&timer_average));
 
 	return true;
+}
+
+void InfiniTAMApp::StopProcessing(void)
+{
+	if (!mIsInitialized) return;
+	mIsInitialized = false;
+
+	if (mImageSource) delete mImageSource;
+	if (mImuSource) delete mImuSource;
+	if (mInternalSettings) delete mInternalSettings;
+	if (mMainEngine) delete mMainEngine;
+
+	for (int w = 0; w < NUM_WIN; w++) {
+		if (outImage[w] != NULL) delete outImage[w];
+	}
+
+	if (inputRGBImage!=NULL) delete inputRGBImage;
+	if (inputRawDepthImage!=NULL) delete inputRawDepthImage;
+	if (inputIMUMeasurement!=NULL) delete inputIMUMeasurement;
+}
+
+float InfiniTAMApp::getAverageTime(void)
+{
+	return sdkGetAverageTimerValue(&timer_average);
+}
+
+void InfiniTAMApp::toggleRecordingMode(void)
+{
+	mRecordingMode = !mRecordingMode;
 }
 

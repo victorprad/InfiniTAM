@@ -2,6 +2,7 @@
 
 package uk.ac.ox.robots.InfiniTAM;
 
+import java.lang.String;
 import android.opengl.GLSurfaceView;
 import android.opengl.GLSurfaceView.Renderer;
 import javax.microedition.khronos.opengles.GL10;
@@ -32,23 +33,27 @@ class InfiniTAMRenderer implements GLSurfaceView.Renderer
 
 class InfiniTAMProcessor implements Runnable
 {
-	private InfiniTAMView view;
-	boolean stopRequested;
+	private InfiniTAMGLView mView;
+	private UpdatableTextView mFPSDisplay;
+	private boolean stopRequested;
 
 	InfiniTAMProcessor()
 	{
-		view = null;
+		mFPSDisplay = null;
+		mView = null;
 		stopRequested = false;
 	}
 
-	public void attachVisualisation(InfiniTAMView _view)
+	public void attachVisualisation(InfiniTAMGLView _view, UpdatableTextView _fpsDisplay)
 	{
-		view = _view;
+		mView = _view;
+		mFPSDisplay = _fpsDisplay;
 	}
 
-	public void detachVisualisation(InfiniTAMView _view)
+	public void detachVisualisation(InfiniTAMGLView _view, UpdatableTextView _fpsDisplay)
 	{
-		view = null;
+		mView = null;
+		mFPSDisplay = null;
 	}
 
 	public void requestStop()
@@ -64,13 +69,20 @@ class InfiniTAMProcessor implements Runnable
 
 		while (true) {
 			int ret = ProcessFrame();
-			if (view != null) view.requestRender();
+			if (mView != null) mView.requestRender();
+			if (mFPSDisplay != null) mFPSDisplay.setText(new String(""+getAverageTime()+"ms"));
 			if (ret == 0) break;
 			if (stopRequested) break;
 		}
+
+		StopProcessing();
 	}
 
 	public static native void StartProcessing(int useLiveCamera);
 	public static native int ProcessFrame();
+	public static native void StopProcessing();
+
+	public static native void toggleRecordingMode();
+	public static native float getAverageTime();
 }
 

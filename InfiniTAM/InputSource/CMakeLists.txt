@@ -28,6 +28,13 @@ IF(WITH_REALSENSE)
   add_definitions(-DCOMPILE_WITH_RealSenseWindows)
 ENDIF()
 
+IF(WITH_FFMPEG)
+  include_directories(${FFMPEG_INCLUDE_DIR})
+  add_definitions(-DCOMPILE_WITH_FFMPEG)
+ENDIF()
+
+INCLUDE(${PROJECT_SOURCE_DIR}/cmake/OfferInputMirroring.cmake)
+
 add_library(InputSource
 ImageSourceEngine.cpp
 ImageSourceEngine.h
@@ -41,6 +48,10 @@ LibUVCEngine.cpp
 LibUVCEngine.h
 RealSenseEngine.cpp
 RealSenseEngine.h
+FFMPEGReader.cpp
+FFMPEGReader.h
+FFMPEGWriter.cpp
+FFMPEGWriter.h
 )
 
 target_link_libraries(InputSource ${GLUT_LIBRARIES})
@@ -58,5 +69,8 @@ IF(DEFINED libuvc_LIBRARIES)
 ENDIF()
 IF(WITH_REALSENSE)
   TARGET_LINK_LIBRARIES(InputSource ${RealSense_LIBRARY})
+ENDIF()
+IF(WITH_FFMPEG)
+  target_link_libraries(InputSource ${FFMPEG_LIBRARIES})
 ENDIF()
 

@@ -4,11 +4,11 @@
 
 #include <map>
 
-#include "../Engines/Visualisation/Interface/ITMVisualisationEngine.h"
-#include "../Objects/RenderStates/ITMRenderState.h"
-#include "../Objects/Scene/ITMScene.h"
-#include "../Objects/Tracking/ITMTrackingState.h"
-#include "../Utils/ITMLibSettings.h"
+#include "../../Engines/Visualisation/Interface/ITMVisualisationEngine.h"
+#include "../../Objects/RenderStates/ITMRenderState.h"
+#include "../../Objects/Scene/ITMScene.h"
+#include "../../Objects/Tracking/ITMTrackingState.h"
+#include "../../Utils/ITMLibSettings.h"
 
 namespace ITMLib {
 	struct ITMPoseConstraint
@@ -16,13 +16,16 @@ namespace ITMLib {
 	public:
 		ITMPoseConstraint(void);
 
-		void AddObservation(const ITMPose & relative_pose, int weight = 1);
-		ITMPose GetAccumulatedInfo(void) const { return accu_poses; }
-		int GetNumAccumulatedInfo(void) const { return accu_num; }
+		void AddObservation(const ORUtils::SE3Pose & relative_pose, int weight = 1);
+		ORUtils::SE3Pose GetAccumulatedObservations(void) const { return accu_poses; }
+		int GetNumAccumulatedObservations(void) const { return accu_num; }
+
 	private:
-		ITMPose accu_poses;
+		ORUtils::SE3Pose accu_poses;
 		int accu_num;
 	};
+
+	typedef std::map<int,ITMPoseConstraint> ConstraintList;
 
 	template<class TVoxel,class TIndex>
 	class ITMLocalScene
@@ -31,7 +34,8 @@ namespace ITMLib {
 		ITMScene<TVoxel,TIndex> *scene;
 		ITMRenderState *renderState;
 		ITMTrackingState *trackingState;
-		std::map<int,ITMPoseConstraint> relations;
+		ConstraintList relations;
+		ORUtils::SE3Pose estimatedGlobalPose;
 
 		ITMLocalScene(const ITMLibSettings *settings, const ITMVisualisationEngine<TVoxel,TIndex> *visualisationEngine, const Vector2i & trackedImageSize)
 		{
@@ -46,14 +50,6 @@ namespace ITMLib {
 			delete renderState;
 			delete trackingState;
 		}
-
-		/** Check whether this is a new scene that has not been
-		    completely localised relative to any others.
-		*/
-/*		bool isNewScene(void) const
-		{
-			return (relations.size() == 0);
-		}*/
 	};
 }
 

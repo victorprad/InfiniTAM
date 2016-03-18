@@ -70,6 +70,7 @@ void ITMRenTracker_CUDA<TVoxel,TIndex>::F_oneLevel(float *f, Matrix4f invM)
 
 	renTrackerOneLevel_f_device<TVoxel,TIndex> << <gridSize, blockSize >> >(f_device, this->viewHierarchy->levels[this->levelId]->depth->GetData(MEMORYDEVICE_CUDA), 
 		count, voxelBlocks, index, oneOverVoxelSize, invM);
+	ORcudaKernelCheck;
 
 	ORcudaSafeCall(cudaMemcpy(f_host, f_device, sizeof(float)* gridSize.x, cudaMemcpyDeviceToHost));
 
@@ -102,6 +103,7 @@ void ITMRenTracker_CUDA<TVoxel,TIndex>::G_oneLevel(float *gradient, float *hessi
 	ORcudaSafeCall(cudaMemset(h_device, 0, sizeof(float) * gridSize.x * noParaSQ));
 
 	renTrackerOneLevel_g_device<TVoxel,TIndex> << <gridSize, blockSize >> >(g_device, h_device, ptList, count, voxelBlocks, index, oneOverVoxelSize, invM);
+	ORcudaKernelCheck;
 
 	ORcudaSafeCall(cudaMemcpy(g_host, g_device, sizeof(float)* gridSize.x * noPara, cudaMemcpyDeviceToHost));
 	ORcudaSafeCall(cudaMemcpy(h_host, h_device, sizeof(float)* gridSize.x * noParaSQ, cudaMemcpyDeviceToHost));
@@ -142,6 +144,7 @@ void ITMRenTracker_CUDA<TVoxel,TIndex>::UnprojectDepthToCam(ITMFloatImage *depth
 	dim3 gridSize((int)ceil((float)imgSize.x / (float)blockSize.x), (int)ceil((float)imgSize.y / (float)blockSize.y));
 
 	unprojectDepthToCam_device << <gridSize, blockSize >> >(camPoints, depthMap, imgSize, ooIntrinsics);
+	ORcudaKernelCheck;
 }
 
 namespace

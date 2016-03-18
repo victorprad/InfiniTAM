@@ -9,7 +9,9 @@
 #include "../../InputSource/Kinect2Engine.h"
 #include "../../InputSource/LibUVCEngine.h"
 #include "../../InputSource/RealSenseEngine.h"
-
+#include "../../InputSource/LibUVCEngine.h"
+#include "../../InputSource/RealSenseEngine.h"
+#include "../../InputSource/FFMPEGReader.h"
 #include "../../ITMLib/ITMLibDefines.h"
 #include "../../ITMLib/Core/ITMBasicEngine.h"
 #include "../../ITMLib/Core/ITMMultiEngine.h"
@@ -32,7 +34,17 @@ static void CreateDefaultImageSource(ImageSourceEngine* & imageSource, IMUSource
 
 	printf("using calibration file: %s\n", calibFile);
 
-	if (filename2 != NULL)
+	if ((filename1 != NULL) && (filename_imu == NULL))
+	{
+		imageSource = new InfiniTAM::FFMPEGReader(calibFile, filename1, filename2);
+		if (imageSource->getDepthImageSize().x == 0)
+		{
+			delete imageSource;
+			imageSource = NULL;
+		}
+	}
+
+	if ((imageSource == NULL) && (filename2 != NULL))
 	{
 		printf("using rgb images: %s\nusing depth images: %s\n", filename1, filename2);
 		if (filename_imu == NULL)
@@ -50,7 +62,7 @@ static void CreateDefaultImageSource(ImageSourceEngine* & imageSource, IMUSource
 
 	if (imageSource == NULL)
 	{
-		printf("trying OpenNI device: %s\n", (filename1==NULL)?"<OpenNI default device>":filename1);
+		printf("trying OpenNI device: %s\n", (filename1 == NULL) ? "<OpenNI default device>" : filename1);
 		imageSource = new OpenNIEngine(calibFile, filename1);
 		if (imageSource->getDepthImageSize().x == 0)
 		{
@@ -94,7 +106,7 @@ static void CreateDefaultImageSource(ImageSourceEngine* & imageSource, IMUSource
 	if (imageSource->calib.disparityCalib.params == Vector2f(0.0f, 0.0f))
 	{
 		imageSource->calib.disparityCalib.type = ITMDisparityCalib::TRAFO_AFFINE;
-		imageSource->calib.disparityCalib.params = Vector2f(1.0f/1000.0f, 0.0f);
+		imageSource->calib.disparityCalib.params = Vector2f(1.0f / 1000.0f, 0.0f);
 	}
 }
 
@@ -140,10 +152,8 @@ try
 	}
 
 	ITMLibSettings *internalSettings = new ITMLibSettings();
-	//ITMMainEngine *mainEngine = new ITMMultiEngine(internalSettings, &imageSource->calib, imageSource->getRGBImageSize(), imageSource->getDepthImageSize());
-	ITMMainEngine *mainEngine = new ITMBasicEngine<ITMVoxel,ITMVoxelIndex>(
-		internalSettings, &imageSource->calib, imageSource->getRGBImageSize(), imageSource->getDepthImageSize()
-	);
+	//ITMMainEngine *mainEngine = new ITMMultiEngine<ITMVoxel,ITMVoxelIndex>(internalSettings, &imageSource->calib, imageSource->getRGBImageSize(), imageSource->getDepthImageSize());
+	ITMMainEngine *mainEngine = new ITMBasicEngine<ITMVoxel,ITMVoxelIndex>( internalSettings, &imageSource->calib, imageSource->getRGBImageSize(), imageSource->getDepthImageSize());
 
 	UIEngine::Instance()->Initialise(argc, argv, imageSource, imuSource, mainEngine, "./Files/Out", internalSettings->deviceType);
 	UIEngine::Instance()->Run();

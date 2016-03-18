@@ -43,7 +43,7 @@ ITMColorTracker_CUDA::~ITMColorTracker_CUDA(void)
 	delete[] h_host;
 }
 
-void ITMColorTracker_CUDA::F_oneLevel(float *f, ITMPose *pose)
+void ITMColorTracker_CUDA::F_oneLevel(float *f, ORUtils::SE3Pose *pose)
 {
 	int noTotalPoints = trackingState->pointCloud->noTotalPoints;
 
@@ -67,6 +67,7 @@ void ITMColorTracker_CUDA::F_oneLevel(float *f, ITMPose *pose)
 	ORcudaSafeCall(cudaMemset(f_device, 0, sizeof(Vector2f) * gridSize.x));
 
 	colorTrackerOneLevel_f_device << <gridSize, blockSize >> >(f_device, locations, colours, rgb, noTotalPoints, M, projParams, imgSize);
+	ORcudaKernelCheck;
 
 	ORcudaSafeCall(cudaMemcpy(f_host, f_device, sizeof(Vector2f)* gridSize.x, cudaMemcpyDeviceToHost));
 
@@ -79,7 +80,7 @@ void ITMColorTracker_CUDA::F_oneLevel(float *f, ITMPose *pose)
 	f[0] = final_f * scaleForOcclusions;
 }
 
-void ITMColorTracker_CUDA::G_oneLevel(float *gradient, float *hessian, ITMPose *pose) const
+void ITMColorTracker_CUDA::G_oneLevel(float *gradient, float *hessian, ORUtils::SE3Pose *pose) const
 {
 	int noTotalPoints = trackingState->pointCloud->noTotalPoints;
 
@@ -116,6 +117,7 @@ void ITMColorTracker_CUDA::G_oneLevel(float *gradient, float *hessian, ITMPose *
 
 		colorTrackerOneLevel_g_ro_device << <gridSize, blockSize >> >(g_device, h_device, locations, colours, gx, gy, rgb, noTotalPoints, 
 			M, projParams, imgSize);
+		ORcudaKernelCheck;
 	}
 	else
 	{
@@ -124,6 +126,7 @@ void ITMColorTracker_CUDA::G_oneLevel(float *gradient, float *hessian, ITMPose *
 
 		colorTrackerOneLevel_g_rt_device << <gridSize, blockSize >> >(g_device, h_device, locations, colours, gx, gy, rgb, noTotalPoints, 
 			M, projParams, imgSize);
+		ORcudaKernelCheck;
 	}
 
 	ORcudaSafeCall(cudaMemcpy(g_host, g_device, sizeof(float)* gridSize.x * numPara, cudaMemcpyDeviceToHost));

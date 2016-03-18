@@ -4,7 +4,7 @@
 
 #include <vector>
 
-#include "../ITMLib/Objects/Camera/ITMPose.h"
+#include "../ORUtils/SE3Pose.h"
 
 namespace RelocLib {
 
@@ -12,16 +12,16 @@ class PoseDatabase {
 	public:
 	struct PoseInScene {
 		PoseInScene(void) {}
-		PoseInScene(const ITMLib::ITMPose & _pose, int _sceneIdx)
+		PoseInScene(const ORUtils::SE3Pose & _pose, int _sceneIdx)
 		  : pose(_pose), sceneIdx(_sceneIdx) {}
-		ITMLib::ITMPose pose;
+		ORUtils::SE3Pose pose;
 		int sceneIdx;
 	};
 
 	PoseDatabase(void);
 	~PoseDatabase(void);
 
-	void storePose(int id, const ITMLib::ITMPose & pose, int sceneId);
+	void storePose(int id, const ORUtils::SE3Pose & pose, int sceneId);
 	int numPoses(void) const { return (int)mPoses.size(); }
 
 	const PoseInScene & retrievePose(int id) const { return mPoses[id]; }
