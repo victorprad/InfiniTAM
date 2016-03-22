@@ -9,14 +9,16 @@
 
 #ifdef COMPILE_WITH_RealSenseWindows
 
-#include <pxcsensemanager.h>
+#include "librealsense/rs.hpp"
 
 using namespace InfiniTAM::Engine;
 
 class RealSenseEngine::PrivateData {
 public:
-	PrivateData(void) : pxcSenseManager(NULL){}
-	PXCSenseManager *pxcSenseManager = NULL;
+	PrivateData(void) : dev(NULL){}
+    rs::device *dev = NULL;
+    rs::context ctx;
+
 };
 
 RealSenseEngine::RealSenseEngine(const char *calibFilename, Vector2i requested_imageSize_rgb, Vector2i requested_imageSize_d)
@@ -33,28 +35,37 @@ RealSenseEngine::RealSenseEngine(const char *calibFilename, Vector2i requested_i
 	this->imageSize_rgb = requested_imageSize_rgb;
 
 	data = new RealSenseEngine::PrivateData();
+    printf("There are %d connected RealSense devices.\n", data->ctx.get_device_count());
+    if (data->ctx.get_device_count() == 0) {
+      dataAvailable = false;
+      delete data;
+      data = NULL;
+      return;
+    }
 
-	data->pxcSenseManager = PXCSenseManager::CreateInstance();
+    data->dev = data->ctx.get_device(0);
 
-	//data->pxcSenseManager->EnableStream(PXCCapture::STREAM_TYPE_COLOR, requested_imageSize_rgb.x, requested_imageSize_rgb.y, 30);
-	data->pxcSenseManager->EnableStream(PXCCapture::STREAM_TYPE_DEPTH, requested_imageSize_d.x, requested_imageSize_d.y, 90);
+    data->dev->enable_stream(rs::stream::depth, imageSize_d.x, imageSize_d.y, rs::format::z16, 60);
+    data->dev->enable_stream(rs::stream::color, imageSize_rgb.x, imageSize_rgb.y, rs::format::rgb8, 60);
 
-	if (data->pxcSenseManager->Init()<PXC_STATUS_NO_ERROR) 
-	{
-		wprintf_s(L"Failed to locate any video stream(s)\n");
-		dataAvailable = false;
+    rs::intrinsics intrinsics_depth = data->dev->get_stream_intrinsics(rs::stream::depth);
+    rs::intrinsics intrinsics_rgb = data->dev->get_stream_intrinsics(rs::stream::color);
 
-		data->pxcSenseManager->Release();
-		delete data;
-		data = NULL;
-	}
+    this->calib.intrinsics_d.SetFrom(intrinsics_depth.fx, intrinsics_depth.fy,
+                                     intrinsics_depth.ppx, intrinsics_depth.ppy,
+                                     requested_imageSize_d.x, requested_imageSize_d.y);
+    this->calib.intrinsics_d.SetFrom(intrinsics_rgb.fx, intrinsics_rgb.fy,
+                                     intrinsics_rgb.ppx, intrinsics_rgb.ppy,
+                                     requested_imageSize_rgb.x, requested_imageSize_rgb.y);
+
+    data->dev->start();
 }
 
 RealSenseEngine::~RealSenseEngine()
 {
 	if (data != NULL)
 	{
-		data->pxcSenseManager->Release();
+        data->dev->stop();
 	}
 	delete data;
 }
@@ -64,42 +75,30 @@ void RealSenseEngine::getImages(ITMUChar4Image *rgbImage, ITMShortImage *rawDept
 {
 	dataAvailable = false;
 
-	if (data->pxcSenseManager->AcquireFrame(false) < PXC_STATUS_NO_ERROR) return;
+    // get frames
+    data->dev->wait_for_frames();
+    const uint16_t * depth_frame = reinterpret_cast<const uint16_t *>(data->dev->get_frame_data(rs::stream::depth));
+    const uint8_t * color_frame = reinterpret_cast<const uint8_t*>(data->dev->get_frame_data(rs::stream::color));
 
-	PXCCapture::Sample *sample = data->pxcSenseManager->QuerySample();
+    // setup infinitam frames
+    short *rawDepth = rawDepthImage->GetData(MEMORYDEVICE_CPU);
+	Vector4u *rgb = rgbImage->GetData(MEMORYDEVICE_CPU);
 
-	if (sample)
-	{
-		//if (sample->color)
-		//{
-		//	PXCImage::ImageData imageData;
-		//	sample->color->AcquireAccess(PXCImage::ACCESS_READ, &imageData);
-		//	sample->color->ReleaseAccess(&imageData);
-		//}
+    Vector2i noDims = rawDepthImage->noDims;
+    rawDepthImage->Clear();
+    rgbImage->Clear();
 
-		if (sample->depth)
-		{
-			PXCImage::ImageData imageData;
-			sample->depth->AcquireAccess(PXCImage::ACCESS_READ, PXCImage::PixelFormat::PIXEL_FORMAT_DEPTH, &imageData);
-			
+    for (int y = 0; y < noDims.y; y++) for (int x = 0; x < noDims.x; x++)
+      rawDepth[x + y * noDims.x] = *depth_frame++;
 
-			short *rawDepth = rawDepthImage->GetData(MEMORYDEVICE_CPU);
+    for (int i = 0; i < rgbImage->noDims.x * 3 * rgbImage->noDims.y ; i+=3) {
+        Vector4u newPix;
+        newPix.x = color_frame[i]; newPix.y = color_frame[i+1]; newPix.z = color_frame[i+2];
+        newPix.w = 255;
+        rgb[i/3] = newPix;
+    }
 
-			rawDepthImage->Clear();
-
-			short *rsData = (short*)imageData.planes[0];
-			Vector2i noDims = rawDepthImage->noDims;
-			int stride = imageData.pitches[0] / sizeof(short);
-
-			for (int y = 0; y < noDims.y; y++) for (int x = 0; x < noDims.x; x++)
-				rawDepth[x + y * noDims.x] = rsData[x + y * stride];
-
-			sample->depth->ReleaseAccess(&imageData);
-		}
-		dataAvailable = true;
-	}
-
-	data->pxcSenseManager->ReleaseFrame();
+    dataAvailable = true;
 }
 
 bool RealSenseEngine::hasMoreImages(void) { return (data!=NULL); }
