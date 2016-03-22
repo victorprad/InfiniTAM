@@ -106,10 +106,6 @@ typedef uchar4 Vector4u;
 #define TO_INT_FLOOR3(inted, coeffs, in) { Vector3f flored(floor(in.x), floor(in.y), floor(in.z)); coeffs = in - flored; inted = Vector3i((int)flored.x, (int)flored.y, (int)flored.z); }
 #endif
 
-#ifndef CLAMP
-#define CLAMP(x,a,b) MAX((a), MIN((b), (x)))
-#endif
-
 #ifndef TO_SHORT_FLOOR3
 #define TO_SHORT_FLOOR3(x) (static_cast<short3>(floor(x)))
 #endif

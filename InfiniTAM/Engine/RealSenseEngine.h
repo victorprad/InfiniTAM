@@ -24,7 +24,7 @@ namespace InfiniTAM
 
 			Vector2i imageSize_rgb, imageSize_d;
 		public:
-			RealSenseEngine(const char *calibFilename, Vector2i imageSize_rgb = Vector2i(1920, 1080), Vector2i imageSize_d = Vector2i(628, 468));
+			RealSenseEngine(const char *calibFilename, Vector2i imageSize_rgb = Vector2i(640, 480), Vector2i imageSize_d = Vector2i(640, 480));
 			~RealSenseEngine();
 
 			bool hasMoreImages(void);

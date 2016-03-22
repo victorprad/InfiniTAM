@@ -6,6 +6,7 @@
 #include <ostream>
 
 #include "PlatformIndependence.h"
+#include "MathUtils.h"
 
 namespace ORUtils {
 	//////////////////////////////////////////////////////////////////////////
