@@ -25,7 +25,9 @@ IF(DEFINED libuvc_INCLUDE_DIRS)
 ENDIF()
 
 IF(WITH_REALSENSE)
-  add_definitions(-DCOMPILE_WITH_RealSenseWindows)
+  include_directories(${RealSense_INCLUDE_DIR})
+  add_definitions(-DCOMPILE_WITH_RealSense)
+  SET_PROPERTY(SOURCE RealSenseEngine.cpp PROPERTY COMPILE_FLAGS -std=c++11)
 ENDIF()
 
 IF(WITH_FFMPEG)

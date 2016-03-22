@@ -7,6 +7,7 @@
 
 #include "MathUtils.h"
 #include "PlatformIndependence.h"
+#include "MathUtils.h"
 
 namespace ORUtils {
 	//////////////////////////////////////////////////////////////////////////

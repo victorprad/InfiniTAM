@@ -26,6 +26,10 @@ find_package(libuvc QUIET)
 CANONIFY_BOOL(libuvc_FOUND)
 message(STATUS "libuvc found: ${libuvc_FOUND}")
 
+find_package(RealSense QUIET)
+CANONIFY_BOOL(REALSENSE_FOUND)
+message(STATUS "librealsense found: ${REALSENSE_FOUND}")
+
 find_package(PNG QUIET)
 CANONIFY_BOOL(PNG_FOUND)
 message(STATUS "libpng found: ${PNG_FOUND}")
@@ -37,7 +41,7 @@ OPTION(WITH_FFMPEG "Build with FFmpeg support?" ${FFMPEG_FOUND})
 
 OPTION(WITH_CUDA "Build with CUDA support?" ${CUDA_FOUND})
 INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseOpenMP.cmake)
-INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseRealSense.cmake)
+OPTION(WITH_REALSENSE "Build with Intel RealSense support?" ${REALSENSE_FOUND})
 
 IF(MSVC_IDE)
   add_definitions(-D_CRT_SECURE_NO_WARNINGS)
