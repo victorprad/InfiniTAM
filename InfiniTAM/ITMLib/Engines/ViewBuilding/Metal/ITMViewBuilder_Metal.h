@@ -16,7 +16,7 @@ namespace ITMLib
 			void ConvertDisparityToDepth(ITMFloatImage *depth_out, const ITMShortImage *disp_in, const ITMIntrinsics *depthIntrinsics,
 				const ITMDisparityCalib *disparityCalib);
 
-			ITMViewBuilder_Metal(const ITMRGBDCalib *calib);
+			ITMViewBuilder_Metal(const ITMRGBDCalib *calib, const Vector2i &paddingSize);
 			~ITMViewBuilder_Metal(void);
 		};
 	}

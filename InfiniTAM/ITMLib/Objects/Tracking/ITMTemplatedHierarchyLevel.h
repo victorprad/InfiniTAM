@@ -37,7 +37,7 @@ namespace ITMLib
 
 		void UpdateDeviceFromHost()
 		{ 
-			this->depth->UpdateHostFromDevice();
+			this->depth->UpdateDeviceFromHost();
 		}
 
 		~ITMTemplatedHierarchyLevel(void)

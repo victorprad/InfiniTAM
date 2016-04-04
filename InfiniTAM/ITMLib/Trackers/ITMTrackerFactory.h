@@ -7,6 +7,7 @@
 
 #include "CPU/ITMColorTracker_CPU.h"
 #include "CPU/ITMDepthTracker_CPU.h"
+#include "CPU/ITMExtendedTracker_CPU.h"
 #include "CPU/ITMRenTracker_CPU.h"
 #include "CPU/ITMWeightedICPTracker_CPU.h"
 #include "Interface/ITMCompositeTracker.h"
@@ -18,6 +19,7 @@
 #ifndef COMPILE_WITHOUT_CUDA
 #include "CUDA/ITMColorTracker_CUDA.h"
 #include "CUDA/ITMDepthTracker_CUDA.h"
+#include "CUDA/ITMExtendedTracker_CUDA.h"
 #include "CUDA/ITMWeightedICPTracker_CUDA.h"
 #include "CUDA/ITMRenTracker_CUDA.h"
 #endif
@@ -46,6 +48,8 @@ namespace ITMLib
 			TRACKER_COLOR,
 			//! Identifies a tracker based on depth image
 			TRACKER_ICP,
+			//! Identifies a tracker based on depth and color image with various extensions
+			TRACKER_EXTENDED,
 			//! Identifies a tracker based on depth image (Ren et al, 2012)
 			TRACKER_REN,
 			//! Identifies a tracker based on depth image and IMU measurement
@@ -77,6 +81,7 @@ namespace ITMLib
 		{
 			makers.push_back(Maker("rgb", "Colour based tracker", TRACKER_COLOR, &MakeColourTracker));
 			makers.push_back(Maker("icp", "Depth based ICP tracker", TRACKER_ICP, &MakeICPTracker));
+			makers.push_back(Maker("extended", "Depth + colour based tracker", TRACKER_EXTENDED, &MakeExtendedTracker));
 			makers.push_back(Maker("wicp", "Depth based ICP tracker respecting reliability of depth measurements", TRACKER_WICP, &MakeWeightedICPTracker));
 			makers.push_back(Maker("imuicp", "Combined IMU and depth based ICP tracker", TRACKER_IMU, &MakeIMUTracker));
 			makers.push_back(Maker("ren", "Depth based SDF tracker", TRACKER_REN, &MakeRenTracker));
@@ -241,6 +246,59 @@ namespace ITMLib
 		if (ret == NULL) DIEWITHEXCEPTION("Failed to make ICP tracker");
 		ret->SetupLevels(numIterationsCoarse, numIterationsFine,
 			outlierDistanceCoarse, outlierDistanceFine);
+		return ret;
+	}
+
+	/**
+	* \brief Makes an Extended tracker.
+	*/
+	static ITMTracker *MakeExtendedTracker(const Vector2i& imgSize_rgb, const Vector2i& imgSize_d, ITMLibSettings::DeviceType deviceType, const ORUtils::KeyValueConfig & cfg,
+		const ITMLowLevelEngine *lowLevelEngine, ITMIMUCalibrator *imuCalibrator, ITMScene<TVoxel, TIndex> *scene)
+	{
+		const char *levelSetup = "rrrbb";
+		float smallStepSizeCriterion = 1e-3f;
+		float outlierSpaceDistanceFine = 0.002f;
+		float outlierSpaceDistanceCoarse = 0.01f;
+		float outlierAngleDistanceFine = 0.002f;
+		float outlierAngleDistanceCoarse = 0.01f;
+		float failureDetectorThd = 3.0f;
+		int numIterationsCoarse = 10;
+		int numIterationsFine = 2;
+
+		int verbose = 0;
+		if (cfg.getProperty("help") != NULL) if (verbose < 10) verbose = 10;
+		cfg.parseStrProperty("levels", "resolution hierarchy levels", levelSetup, verbose);
+		std::vector<TrackerIterationType> levels = parseLevelConfig(levelSetup);
+
+		cfg.parseFltProperty("minstep", "step size threshold for convergence", smallStepSizeCriterion, verbose);
+		cfg.parseFltProperty("outlierSpaceC", "space outlier threshold at coarsest level", outlierSpaceDistanceCoarse, verbose);
+		cfg.parseFltProperty("outlierSpaceF", "space outlier threshold at finest level", outlierSpaceDistanceFine, verbose);
+		cfg.parseFltProperty("angleSpaceC", "angle outlier threshold at coarsest level", outlierAngleDistanceCoarse, verbose);
+		cfg.parseFltProperty("anglerSpaceF", "angle outlier threshold at finest level", outlierAngleDistanceFine, verbose);
+		cfg.parseIntProperty("numiterC", "maximum number of iterations at coarsest level", numIterationsCoarse, verbose);
+		cfg.parseIntProperty("numiterF", "maximum number of iterations at finest level", numIterationsFine, verbose);
+		cfg.parseFltProperty("failureDec", "threshold for the failure detection", failureDetectorThd, verbose);
+
+		ITMExtendedTracker *ret = NULL;
+		switch (deviceType)
+		{
+		case ITMLibSettings::DEVICE_CPU:
+			ret = new ITMExtendedTracker_CPU(imgSize_d, &(levels[0]), static_cast<int>(levels.size()), smallStepSizeCriterion, failureDetectorThd, lowLevelEngine);
+			break;
+		case ITMLibSettings::DEVICE_CUDA:
+#ifndef COMPILE_WITHOUT_CUDA
+			ret = new ITMExtendedTracker_CUDA(imgSize_d, &(levels[0]), static_cast<int>(levels.size()), smallStepSizeCriterion, failureDetectorThd, lowLevelEngine);
+#endif
+			break;
+		case ITMLibSettings::DEVICE_METAL:
+#ifdef COMPILE_WITH_METAL
+			ret = new ITMExtendedTracker_Metal(imgSize_d, &(levels[0]), static_cast<int>(levels.size()), smallStepSizeCriterion, failureDetectorThd, lowLevelEngine);
+#endif
+			break;
+		}
+
+		if (ret == NULL) DIEWITHEXCEPTION("Failed to make extended tracker");
+		ret->SetupLevels(numIterationsCoarse, numIterationsFine, outlierSpaceDistanceCoarse, outlierSpaceDistanceFine, sin(30.f * 3.14159254f / 180.f), sin(20.f * 3.14159254f / 180.f));
 		return ret;
 	}
 

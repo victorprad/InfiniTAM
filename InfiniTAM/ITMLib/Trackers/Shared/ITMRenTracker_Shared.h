@@ -46,21 +46,21 @@ _CPU_AND_GPU_CODE_ inline Vector3f computeDDT(const CONSTPTR(Vector3f) &pt_f, co
 
 	bool isFound; float dt1, dt2;
 
-	dt1 = TVoxel::SDF_valueToFloat(readVoxel(voxelBlocks, index, pt + Vector3i(1, 0, 0), isFound).sdf);
+	dt1 = TVoxel::valueToFloat(readVoxel(voxelBlocks, index, pt + Vector3i(1, 0, 0), isFound).sdf);
 	if (!isFound || dt1 == 1.0f) { ddtFound = false; return Vector3f(0.0f); }
-	dt2 = TVoxel::SDF_valueToFloat(readVoxel(voxelBlocks, index, pt + Vector3i(-1, 0, 0), isFound).sdf);
+	dt2 = TVoxel::valueToFloat(readVoxel(voxelBlocks, index, pt + Vector3i(-1, 0, 0), isFound).sdf);
 	if (!isFound || dt2 == 1.0f) { ddtFound = false; return Vector3f(0.0f); }
 	ddt.x = (dt1 - dt2) * 0.5f;
 
-	dt1 = TVoxel::SDF_valueToFloat(readVoxel(voxelBlocks, index, pt + Vector3i(0, 1, 0), isFound).sdf);
+	dt1 = TVoxel::valueToFloat(readVoxel(voxelBlocks, index, pt + Vector3i(0, 1, 0), isFound).sdf);
 	if (!isFound || dt1 == 1.0f) { ddtFound = false; return Vector3f(0.0f); }
-	dt2 = TVoxel::SDF_valueToFloat(readVoxel(voxelBlocks, index, pt + Vector3i(0, -1, 0), isFound).sdf);
+	dt2 = TVoxel::valueToFloat(readVoxel(voxelBlocks, index, pt + Vector3i(0, -1, 0), isFound).sdf);
 	if (!isFound || dt2 == 1.0f) { ddtFound = false; return Vector3f(0.0f); }
 	ddt.y = (dt1 - dt2) * 0.5f;
 
-	dt1 = TVoxel::SDF_valueToFloat(readVoxel(voxelBlocks, index, pt + Vector3i(0, 0, 1), isFound).sdf);
+	dt1 = TVoxel::valueToFloat(readVoxel(voxelBlocks, index, pt + Vector3i(0, 0, 1), isFound).sdf);
 	if (!isFound || dt1 == 1.0f) { ddtFound = false; return Vector3f(0.0f); }
-	dt2 = TVoxel::SDF_valueToFloat(readVoxel(voxelBlocks, index, pt + Vector3i(0, 0, -1), isFound).sdf);
+	dt2 = TVoxel::valueToFloat(readVoxel(voxelBlocks, index, pt + Vector3i(0, 0, -1), isFound).sdf);
 	if (!isFound || dt2 == 1.0f) { ddtFound = false; return Vector3f(0.0f); }
 	ddt.z = (dt1 - dt2) * 0.5f;
 

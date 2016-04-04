@@ -146,7 +146,7 @@ _CPU_AND_GPU_CODE_ inline float readFromSDF_float_uninterpolated(const CONSTPTR(
 	const CONSTPTR(TIndex) *voxelIndex, Vector3f point, THREADPTR(bool) &isFound)
 {
 	TVoxel res = readVoxel(voxelData, voxelIndex, Vector3i((int)ROUND(point.x), (int)ROUND(point.y), (int)ROUND(point.z)), isFound);
-	return TVoxel::SDF_valueToFloat(res.sdf);
+	return TVoxel::valueToFloat(res.sdf);
 }
 
 template<class TVoxel, class TIndex, class TCache>
@@ -154,7 +154,7 @@ _CPU_AND_GPU_CODE_ inline float readFromSDF_float_uninterpolated(const CONSTPTR(
 	const CONSTPTR(TIndex) *voxelIndex, Vector3f point, THREADPTR(bool) &isFound, THREADPTR(TCache) & cache)
 {
 	TVoxel res = readVoxel(voxelData, voxelIndex, Vector3i((int)ROUND(point.x), (int)ROUND(point.y), (int)ROUND(point.z)), isFound, cache);
-	return TVoxel::SDF_valueToFloat(res.sdf);
+	return TVoxel::valueToFloat(res.sdf);
 }
 
 template<class TVoxel, class TIndex, class TCache>
@@ -181,8 +181,47 @@ _CPU_AND_GPU_CODE_ inline float readFromSDF_float_interpolated(const CONSTPTR(TV
 	res2 = (1.0f - coeff.y) * res2 + coeff.y * ((1.0f - coeff.x) * v1 + coeff.x * v2);
 
 	isFound = true;
-	return TVoxel::SDF_valueToFloat((1.0f - coeff.z) * res1 + coeff.z * res2);
+	return TVoxel::valueToFloat((1.0f - coeff.z) * res1 + coeff.z * res2);
 }
+
+template<class TVoxel, class TIndex, class TCache>
+_CPU_AND_GPU_CODE_ inline float readWithConfidenceFromSDF_float_interpolated(THREADPTR(float) &confidence, const CONSTPTR(TVoxel) *voxelData,
+	const CONSTPTR(TIndex) *voxelIndex, Vector3f point, THREADPTR(bool) &isFound, THREADPTR(TCache) & cache)
+{
+	float res1, res2, v1, v2;
+	float res1_c, res2_c, v1_c, v2_c;
+	TVoxel voxel;
+
+	Vector3f coeff; Vector3i pos; TO_INT_FLOOR3(pos, coeff, point);
+
+	voxel = readVoxel(voxelData, voxelIndex, pos + Vector3i(0, 0, 0), isFound, cache); v1 = voxel.sdf; v1_c = voxel.w_depth;
+	voxel = readVoxel(voxelData, voxelIndex, pos + Vector3i(1, 0, 0), isFound, cache); v2 = voxel.sdf; v2_c = voxel.w_depth;
+	res1 = (1.0f - coeff.x) * v1 + coeff.x * v2; 
+	res1_c = (1.0f - coeff.x) * v1_c + coeff.x * v2_c;
+
+	voxel = readVoxel(voxelData, voxelIndex, pos + Vector3i(0, 1, 0), isFound, cache); v1 = voxel.sdf; v1_c = voxel.w_depth;
+	voxel = readVoxel(voxelData, voxelIndex, pos + Vector3i(1, 1, 0), isFound, cache); v2 = voxel.sdf; v2_c = voxel.w_depth;
+	res1 = (1.0f - coeff.y) * res1 + coeff.y * ((1.0f - coeff.x) * v1 + coeff.x * v2);
+	res1_c = (1.0f - coeff.y) * res1_c + coeff.y * ((1.0f - coeff.x) * v1_c + coeff.x * v2_c);
+
+	voxel = readVoxel(voxelData, voxelIndex, pos + Vector3i(0, 0, 1), isFound, cache); v1 = voxel.sdf; v1_c = voxel.w_depth;
+	voxel = readVoxel(voxelData, voxelIndex, pos + Vector3i(1, 0, 1), isFound, cache); v2 = voxel.sdf; v2_c = voxel.w_depth;
+	res2 = (1.0f - coeff.x) * v1 + coeff.x * v2; 
+	res2_c = (1.0f - coeff.x) * v1_c + coeff.x * v2_c;
+
+	voxel = readVoxel(voxelData, voxelIndex, pos + Vector3i(0, 1, 1), isFound, cache); v1 = voxel.sdf; v1_c = voxel.w_depth;
+	voxel = readVoxel(voxelData, voxelIndex, pos + Vector3i(1, 1, 1), isFound, cache); v2 = voxel.sdf; v2_c = voxel.w_depth;
+	res2 = (1.0f - coeff.y) * res2 + coeff.y * ((1.0f - coeff.x) * v1 + coeff.x * v2);
+	res2_c = (1.0f - coeff.y) * res2_c + coeff.y * ((1.0f - coeff.x) * v1_c + coeff.x * v2_c);
+
+	isFound = true;
+
+	confidence = TVoxel::valueToFloat((1.0f - coeff.z) * res1_c + coeff.z * res2_c);
+	//printf("%f\n", confidence);
+
+	return TVoxel::valueToFloat((1.0f - coeff.z) * res1 + coeff.z * res2);
+}
+
 
 template<class TVoxel, class TIndex>
 _CPU_AND_GPU_CODE_ inline Vector4f readFromSDF_color4u_interpolated(const CONSTPTR(TVoxel) *voxelData,
@@ -271,7 +310,7 @@ _CPU_AND_GPU_CODE_ inline Vector3f computeSingleNormalFromSDF(const CONSTPTR(TVo
 	     tmp.z * ncoeff.y *  coeff.z +
 	     tmp.w *  coeff.y *  coeff.z;
 
-	ret.x = TVoxel::SDF_valueToFloat(p1 * ncoeff.x + p2 * coeff.x - v1);
+	ret.x = TVoxel::valueToFloat(p1 * ncoeff.x + p2 * coeff.x - v1);
 
 	// gradient y
 	p1 = front.x * ncoeff.x * ncoeff.z +
@@ -301,7 +340,7 @@ _CPU_AND_GPU_CODE_ inline Vector3f computeSingleNormalFromSDF(const CONSTPTR(TVo
 	     tmp.z * ncoeff.x *  coeff.z +
 	     tmp.w *  coeff.x *  coeff.z;
 
-	ret.y = TVoxel::SDF_valueToFloat(p1 * ncoeff.y + p2 * coeff.y - v1);
+	ret.y = TVoxel::valueToFloat(p1 * ncoeff.y + p2 * coeff.y - v1);
 
 	// gradient z
 	p1 = front.x * ncoeff.x * ncoeff.y +
@@ -331,7 +370,7 @@ _CPU_AND_GPU_CODE_ inline Vector3f computeSingleNormalFromSDF(const CONSTPTR(TVo
 	     tmp.z * ncoeff.x *  coeff.y +
 	     tmp.w *  coeff.x *  coeff.y;
 
-	ret.z = TVoxel::SDF_valueToFloat(p1 * ncoeff.z + p2 * coeff.z - v1);
+	ret.z = TVoxel::valueToFloat(p1 * ncoeff.z + p2 * coeff.z - v1);
 
 	return ret;
 }

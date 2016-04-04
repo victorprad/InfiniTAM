@@ -18,8 +18,8 @@ namespace ITMLib
 		{
 			this->noTotalPoints = 0;
 
-			locations = new ORUtils::Image<Vector4f>(imgSize, memoryType);
-			colours = new ORUtils::Image<Vector4f>(imgSize, memoryType);
+			locations = new ORUtils::Image<Vector4f>(imgSize, true, true);
+			colours = new ORUtils::Image<Vector4f>(imgSize, true, true);
 		}
 
 		void UpdateHostFromDevice()

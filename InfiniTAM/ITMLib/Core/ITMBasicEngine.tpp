@@ -10,17 +10,22 @@
 using namespace ITMLib;
 
 #include "../../ORUtils/NVTimer.h"
+#include "../../ORUtils/FileUtils.h"
 
 template <typename TVoxel, typename TIndex>
 ITMBasicEngine<TVoxel,TIndex>::ITMBasicEngine(const ITMLibSettings *settings, const ITMRGBDCalib *calib, Vector2i imgSize_rgb, Vector2i imgSize_d)
 {
+	this->settings = settings;
+
 	// create all the things required for marching cubes and mesh extraction
 	// - uses additional memory (lots!)
 	static const bool createMeshingEngine = true;
 
 	if ((imgSize_d.x == -1) || (imgSize_d.y == -1)) imgSize_d = imgSize_rgb;
 
-	this->settings = settings;
+	Vector2i paddingSize(settings->imagePadding, settings->imagePadding);
+
+	imgSize_d += 2 * paddingSize; imgSize_rgb += 2 * paddingSize;
 
 	MemoryDeviceType memoryType = settings->deviceType == ITMLibSettings::DEVICE_CUDA ? MEMORYDEVICE_CUDA : MEMORYDEVICE_CPU;
 	this->scene = new ITMScene<TVoxel,TIndex>(&settings->sceneParams, settings->useSwapping, memoryType);
@@ -28,7 +33,7 @@ ITMBasicEngine<TVoxel,TIndex>::ITMBasicEngine(const ITMLibSettings *settings, co
 	const ITMLibSettings::DeviceType deviceType = settings->deviceType;
 
 	lowLevelEngine = ITMLowLevelEngineFactory::MakeLowLevelEngine(deviceType);
-	viewBuilder = ITMViewBuilderFactory::MakeViewBuilder(calib, deviceType);
+	viewBuilder = ITMViewBuilderFactory::MakeViewBuilder(calib, deviceType, paddingSize);
 	visualisationEngine = ITMVisualisationEngineFactory::MakeVisualisationEngine<TVoxel,TIndex>(deviceType);
 
 	mesh = NULL;
@@ -56,7 +61,7 @@ ITMBasicEngine<TVoxel,TIndex>::ITMBasicEngine(const ITMLibSettings *settings, co
 
 	view = NULL; // will be allocated by the view builder
 	
-	relocaliser = new RelocLib::Relocaliser(imgSize_d, Vector2f(settings->sceneParams.viewFrustum_min, settings->sceneParams.viewFrustum_max), 0.1f, 500, 4);
+	relocaliser = new RelocLib::Relocaliser(imgSize_d, Vector2f(settings->sceneParams.viewFrustum_min, settings->sceneParams.viewFrustum_max), 0.2f, 500, 4);
 	kfRaycast = new ITMUChar4Image(imgSize_d, memoryType);
 
 	trackingActive = true;
@@ -130,6 +135,8 @@ void ITMBasicEngine<TVoxel,TIndex>::ProcessFrame(ITMUChar4Image *rgbImage, ITMSh
 	if (trackingState->poseQuality > settings->goodTrackingThreshold) trackingSuccess = 2;
 	else if (trackingState->poseQuality > settings->poorTrackingThreshold) trackingSuccess = 1;
 
+	if (!settings->useTrackingFailureDetection) trackingSuccess = 2;
+
 	static int trackingSuccess_prev = -1;
 	if (trackingSuccess != trackingSuccess_prev) {
 		if (trackingSuccess == 2) fprintf(stderr, "tracking good\n");
@@ -186,6 +193,8 @@ void ITMBasicEngine<TVoxel,TIndex>::ProcessFrame(ITMUChar4Image *rgbImage, ITMSh
 		if (addKeyframeIdx >= 0) kfRaycast->SetFrom(renderState_live->raycastImage, memoryCopyDirection);
 	}
 	else { *trackingState->pose_d = oldPose; }
+
+	printf("%d\n", framesProcessed);
 }
 
 template <typename TVoxel, typename TIndex>
@@ -214,7 +223,9 @@ void ITMBasicEngine<TVoxel,TIndex>::GetImage(ITMUChar4Image *out, GetImageType g
 		if (tracker->requiresDepthReliability())
 		{
 			if (settings->deviceType == ITMLibSettings::DEVICE_CUDA) view->depthUncertainty->UpdateHostFromDevice();
-			ITMVisualisationEngine<TVoxel,TIndex>::WeightToUchar4(out, view->depthUncertainty);
+			ITMVisualisationEngine<TVoxel, TIndex>::DepthToUchar4(out, view->depthUncertainty);
+
+			WriteToBIN(view->depthUncertainty->GetData(MEMORYDEVICE_CPU), 640 * 480, "c:/temp/frame.bin");
 		}
 		else
 		{

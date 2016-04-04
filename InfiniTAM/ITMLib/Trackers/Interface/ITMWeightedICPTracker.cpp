@@ -42,23 +42,6 @@ ITMWeightedICPTracker::ITMWeightedICPTracker(Vector2i imgSize, TrackerIterationT
 	this->noICPLevel = noICPRunTillLevel;
 
 	this->terminationThreshold = terminationThreshold;
-
-	map = new ORUtils::HomkerMap(2);
-	svmClassifier = new ORUtils::SVMClassifier(map->getDescriptorSize(4));
-
-	//all below obtained from dataset in matlab
-	float w[20];
-	w[0] = -3.15813f; w[1] = -2.38038f; w[2] = 1.93359f; w[3] = 1.56642f; w[4] = 1.76306f;
-	w[5] = -0.747641f; w[6] = 4.41852f; w[7] = 1.72048f; w[8] = -0.482545f; w[9] = -5.07793f;
-	w[10] = 1.98676f; w[11] = -0.45688f; w[12] = 2.53969f; w[13] = -3.50527f; w[14] = -1.68725f;
-	w[15] = 2.31608f; w[16] = 5.14778f; w[17] = 2.31334f; w[18] = -14.128f; w[19] = 6.76423f;
-
-	float b = 9.334260e-01f + 2.5f; //2.5f is manual threshold on bias
-
-	mu = Vector4f(-34.9470512137603f, -33.1379108518478f, 0.195948598235857f, 0.611027292662361f);
-	sigma = Vector4f(68.1654461020426f, 60.6607826748643f, 0.00343068557187040f, 0.0402595570918749f);
-
-	svmClassifier->SetVectors(w, b);
 }
 
 ITMWeightedICPTracker::~ITMWeightedICPTracker(void)
@@ -176,57 +159,59 @@ void ITMWeightedICPTracker::ApplyDelta(const Matrix4f & para_old, const float *d
 
 void ITMWeightedICPTracker::UpdatePoseQuality(int noValidPoints_old, float *hessian_good, float f_old)
 {
-	int noTotalPoints = viewHierarchy->levels[0]->depth->noDims.x * viewHierarchy->levels[0]->depth->noDims.y;
+	//int noTotalPoints = viewHierarchy->levels[0]->depth->noDims.x * viewHierarchy->levels[0]->depth->noDims.y;
 
-	int noValidPointsMax = lowLevelEngine->CountValidDepths(view->depth);
+	//int noValidPointsMax = lowLevelEngine->CountValidDepths(view->depth);
 
-	float normFactor_v1 = (float)noValidPoints_old / (float)noTotalPoints;
-	float normFactor_v2 = (float)noValidPoints_old / (float)noValidPointsMax;
+	//float normFactor_v1 = (float)noValidPoints_old / (float)noTotalPoints;
+	//float normFactor_v2 = (float)noValidPoints_old / (float)noValidPointsMax;
 
-	float det = 0.0f;
-	if (iterationType == TRACKER_ITERATION_BOTH) {
-		ORUtils::Cholesky cholA(hessian_good, 6);
-		det = cholA.Determinant();
-		if (isnan(det)) det = 0.0f;
-	}
+	//float det = 0.0f;
+	//if (iterationType == TRACKER_ITERATION_BOTH) {
+	//	ORUtils::Cholesky cholA(hessian_good, 6);
+	//	det = cholA.Determinant();
+	//	if (isnan(det)) det = 0.0f;
+	//}
 
-	float det_norm_v1 = 0.0f;
-	if (iterationType == TRACKER_ITERATION_BOTH) {
-		float h[6 * 6];
-		for (int i = 0; i < 6 * 6; ++i) h[i] = hessian_good[i] * normFactor_v1;
-		ORUtils::Cholesky cholA(h, 6);
-		det_norm_v1 = cholA.Determinant();
-		if (isnan(det_norm_v1)) det_norm_v1 = 0.0f;
-	}
+	//float det_norm_v1 = 0.0f;
+	//if (iterationType == TRACKER_ITERATION_BOTH) {
+	//	float h[6 * 6];
+	//	for (int i = 0; i < 6 * 6; ++i) h[i] = hessian_good[i] * normFactor_v1;
+	//	ORUtils::Cholesky cholA(h, 6);
+	//	det_norm_v1 = cholA.Determinant();
+	//	if (isnan(det_norm_v1)) det_norm_v1 = 0.0f;
+	//}
 
-	float det_norm_v2 = 0.0f;
-	if (iterationType == TRACKER_ITERATION_BOTH) {
-		float h[6 * 6];
-		for (int i = 0; i < 6 * 6; ++i) h[i] = hessian_good[i] * normFactor_v2;
-		ORUtils::Cholesky cholA(h, 6);
-		det_norm_v2 = cholA.Determinant();
-		if (isnan(det_norm_v2)) det_norm_v2 = 0.0f;
-	}
+	//float det_norm_v2 = 0.0f;
+	//if (iterationType == TRACKER_ITERATION_BOTH) {
+	//	float h[6 * 6];
+	//	for (int i = 0; i < 6 * 6; ++i) h[i] = hessian_good[i] * normFactor_v2;
+	//	ORUtils::Cholesky cholA(h, 6);
+	//	det_norm_v2 = cholA.Determinant();
+	//	if (isnan(det_norm_v2)) det_norm_v2 = 0.0f;
+	//}
 
-	float finalResidual_v2 = sqrt(((float)noValidPoints_old * f_old + (float)(noValidPointsMax - noValidPoints_old) * distThresh[0]) / (float)noValidPointsMax);
-	float percentageInliers_v2 = (float)noValidPoints_old / (float)noValidPointsMax;
+	//float finalResidual_v2 = sqrt(((float)noValidPoints_old * f_old + (float)(noValidPointsMax - noValidPoints_old) * distThresh[0]) / (float)noValidPointsMax);
+	//float percentageInliers_v2 = (float)noValidPoints_old / (float)noValidPointsMax;
 
-	if (noValidPointsMax != 0 && noTotalPoints != 0 && det_norm_v1 > 0 && det_norm_v2 > 0) {
-		Vector4f inputVector(log(det_norm_v1), log(det_norm_v2), finalResidual_v2, percentageInliers_v2);
+	//if (noValidPointsMax != 0 && noTotalPoints != 0 && det_norm_v1 > 0 && det_norm_v2 > 0) {
+	//	Vector4f inputVector(log(det_norm_v1), log(det_norm_v2), finalResidual_v2, percentageInliers_v2);
 
-		Vector4f normalisedVector = (inputVector - mu) / sigma;
+	//	Vector4f normalisedVector = (inputVector - mu) / sigma;
 
-		float mapped[20];
-		map->evaluate(mapped, normalisedVector.v, 4);
+	//	float mapped[20];
+	//	map->evaluate(mapped, normalisedVector.v, 4);
 
-		float score = svmClassifier->Classify(mapped);
+	//	float score = svmClassifier->Classify(mapped);
 
-		if (score > 0) trackingState->poseQuality = 1.0f;
-		else if (score > -10.0f) trackingState->poseQuality = 0.5f;
-		else trackingState->poseQuality = 0.2f;
+	//	if (score > 0) trackingState->poseQuality = 1.0f;
+	//	else if (score > -10.0f) trackingState->poseQuality = 0.5f;
+	//	else trackingState->poseQuality = 0.2f;
 
-		printf("score: %f\n", score);
-	}
+	//	printf("score: %f\n", score);
+	//}
+
+	trackingState->poseQuality = 1.0f;
 }
 
 void ITMWeightedICPTracker::TrackCamera(ITMTrackingState *trackingState, const ITMView *view)

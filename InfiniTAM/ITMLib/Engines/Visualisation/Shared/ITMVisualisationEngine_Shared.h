@@ -101,7 +101,7 @@ _CPU_AND_GPU_CODE_ inline bool castRay(DEVICEPTR(Vector4f) &pt_out, int x, int y
 {
 	Vector4f pt_camera_f; Vector3f pt_block_s, pt_block_e, rayDirection, pt_result;
 	bool pt_found, hash_found;
-	float sdfValue = 1.0f;
+	float sdfValue = 1.0f, confidence;
 	float totalLength, stepLength, totalLengthMax, stepScale;
 
 	stepScale = mu * oneOverVoxelSize;
@@ -149,7 +149,8 @@ _CPU_AND_GPU_CODE_ inline bool castRay(DEVICEPTR(Vector4f) &pt_out, int x, int y
 		stepLength = sdfValue * stepScale;
 		pt_result += stepLength * rayDirection;
 
-		sdfValue = readFromSDF_float_interpolated(voxelData, voxelIndex, pt_result, hash_found, cache);
+		sdfValue = readWithConfidenceFromSDF_float_interpolated(confidence, voxelData, voxelIndex, pt_result, hash_found, cache);
+
 		stepLength = sdfValue * stepScale;
 		pt_result += stepLength * rayDirection;
 
@@ -157,7 +158,7 @@ _CPU_AND_GPU_CODE_ inline bool castRay(DEVICEPTR(Vector4f) &pt_out, int x, int y
 	} else pt_found = false;
 
 	pt_out.x = pt_result.x; pt_out.y = pt_result.y; pt_out.z = pt_result.z;
-	if (pt_found) pt_out.w = 1.0f; else pt_out.w = 0.0f;
+	if (pt_found) pt_out.w = confidence + 1.0f; else pt_out.w = 0.0f;
 
 	return pt_found;
 }
@@ -264,6 +265,33 @@ _CPU_AND_GPU_CODE_ inline void drawPixelGrey(DEVICEPTR(Vector4u) & dest, const T
 	dest = Vector4u((uchar)outRes);
 }
 
+_CPU_AND_GPU_CODE_ inline float interpolateCol(float val, float y0, float x0, float y1, float x1) {
+	return (val - x0)*(y1 - y0) / (x1 - x0) + y0;
+}
+
+_CPU_AND_GPU_CODE_ inline float baseCol(float val) {
+	if (val <= -0.75f) return 0.0f;
+	else if (val <= -0.25f) return interpolateCol(val, 0.0f, -0.75f, 1.0f, -0.25f);
+	else if (val <= 0.25f) return 1.0f;
+	else if (val <= 0.75f) return interpolateCol(val, 1.0f, 0.25f, 0.0f, 0.75f);
+	else return 0.0;
+}
+
+_CPU_AND_GPU_CODE_ inline void drawPixelConfidence(DEVICEPTR(Vector4u) & dest, const THREADPTR(float) & angle, const THREADPTR(float) & confidence)
+{
+	//Vector4f color_red(255, 0, 0, 255), color_green(0, 255, 0, 255);
+	float confidenceNorm = CLAMP(confidence, 0, 100.f) / 100.0f;
+
+	Vector4f color;
+	color.r = (uchar)(baseCol(confidenceNorm) * 255.0f);
+	color.g = (uchar)(baseCol(confidenceNorm - 0.5f) * 255.0f); 
+	color.b = (uchar)(baseCol(confidenceNorm + 0.5f) * 255.0f);
+	color.a = 255;
+
+	Vector4f outRes = (0.8f * angle + 0.2f) * color;
+	dest = outRes.toUChar();
+}
+
 _CPU_AND_GPU_CODE_ inline void drawPixelNormal(DEVICEPTR(Vector4u) & dest, const THREADPTR(Vector3f) & normal_obj)
 {
 	dest.r = (uchar)((0.3f + (-normal_obj.r + 1.0f)*0.35f)*255.0f);
@@ -297,6 +325,7 @@ _CPU_AND_GPU_CODE_ inline void processPixelICP(DEVICEPTR(Vector4u) &outRendering
 	if (foundPoint)
 	{
 		drawPixelGrey(outRendering, angle);
+		//drawPixelConfidence(outRendering, angle);
 
 		Vector4f outPoint4;
 		outPoint4.x = point.x * voxelSize; outPoint4.y = point.y * voxelSize;
@@ -333,11 +362,15 @@ _CPU_AND_GPU_CODE_ inline void processPixelICP(DEVICEPTR(Vector4u) *outRendering
 
 	if (foundPoint)
 	{
-		drawPixelGrey(outRendering[locId], angle);
+		//drawPixelGrey(outRendering[locId], angle);
+		drawPixelConfidence(outRendering[locId], angle, point.w - 1.0f);
+
+		//if (point.w > 5.0f)
+		//	printf("%f\n", point.w);
 
 		Vector4f outPoint4;
 		outPoint4.x = point.x * voxelSize; outPoint4.y = point.y * voxelSize;
-		outPoint4.z = point.z * voxelSize; outPoint4.w = 1.0f;
+		outPoint4.z = point.z * voxelSize; outPoint4.w = point.w;//outPoint4.w = 1.0f;
 		pointsMap[locId] = outPoint4;
 
 		Vector4f outNormal4;

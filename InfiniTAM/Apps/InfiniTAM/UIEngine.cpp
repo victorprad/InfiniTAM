@@ -377,7 +377,7 @@ void UIEngine::glutMouseWheelFunction(int button, int dir, int x, int y)
 }
 
 void UIEngine::Initialise(int & argc, char** argv, ImageSourceEngine *imageSource, IMUSourceEngine *imuSource, ITMMainEngine *mainEngine,
-	const char *outFolder, ITMLibSettings::DeviceType deviceType)
+	const char *outFolder, ITMLibSettings::DeviceType deviceType, int imagePadding)
 {
 	this->freeviewActive = false;
 	this->intergrationActive = true;
@@ -409,8 +409,8 @@ void UIEngine::Initialise(int & argc, char** argv, ImageSourceEngine *imageSourc
 	int textHeight = 30; // Height of text area
 	//winSize.x = (int)(1.5f * (float)MAX(imageSource->getImageSize().x, imageSource->getDepthImageSize().x));
 	//winSize.y = MAX(imageSource->getRGBImageSize().y, imageSource->getDepthImageSize().y) + textHeight;
-	winSize.x = (int)(1.5f * (float)(imageSource->getDepthImageSize().x));
-	winSize.y = imageSource->getDepthImageSize().y + textHeight;
+	winSize.x = (int)(1.5f * (float)(imageSource->getDepthImageSize().x)) + 2 * imagePadding;
+	winSize.y = imageSource->getDepthImageSize().y + textHeight + 2 * imagePadding;
 	float h1 = textHeight / (float)winSize.y, h2 = (1.f + h1) / 2;
 	winReg[0] = Vector4f(0.0f, h1, 0.665f, 1.0f);   // Main render
 	winReg[1] = Vector4f(0.665f, h2, 1.0f, 1.0f);   // Side sub window 0

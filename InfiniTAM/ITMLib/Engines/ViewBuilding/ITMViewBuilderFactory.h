@@ -21,7 +21,7 @@ struct ITMViewBuilderFactory
    * \param calib       The joint RGBD calibration parameters.
    * \param deviceType  The device on which the view builder should operate.
    */
-  static ITMViewBuilder *MakeViewBuilder(const ITMRGBDCalib *calib, ITMLibSettings::DeviceType deviceType);
+	static ITMViewBuilder *MakeViewBuilder(const ITMRGBDCalib *calib, ITMLibSettings::DeviceType deviceType, Vector2i paddingSize);
 };
 
 }

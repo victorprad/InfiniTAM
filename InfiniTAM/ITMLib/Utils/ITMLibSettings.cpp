@@ -7,7 +7,7 @@ using namespace ITMLib;
 #include <cmath>
 
 ITMLibSettings::ITMLibSettings(void)
-:	sceneParams(0.02f, 100, 0.005f, 0.2f, 3.0f, false),
+:	sceneParams(0.02f, 100, 0.004f, 0.2f, 3.0f, false),
 	surfelSceneParams(0.5f, 0.6f, static_cast<float>(20 * M_PI / 180), 0.01f, 0.004f, 3.5f, 25.0f, 4, 1.0f, 5.0f, 20, 10000000, true, true)
 {
 	// skips every other point when using the colour renderer for creating a point cloud
@@ -28,6 +28,8 @@ ITMLibSettings::ITMLibSettings(void)
 	goodTrackingThreshold = 0.8f;
 	poorTrackingThreshold = 0.4f;
 
+	imagePadding = 64;
+
 	/// enables or disables swapping. HERE BE DRAGONS: It should work, but requires more testing
 	useSwapping = false;
 
@@ -41,12 +43,12 @@ ITMLibSettings::ITMLibSettings(void)
 	useRelocalisation = true;
 
 	/// enable or disable tracking failure detection
-	useTrackingFailureDetection = true;
+	useTrackingFailureDetection = false;
 
-	trackerConfig = "type=icp,levels=rrrbb,minstep=1e-3,outlierC=0.01,outlierF=0.002,numiterC=10,numiterF=2,failureDec=3.0";
+	//trackerConfig = "type=icp,levels=rrrbb,minstep=1e-2,outlierC=0.1,outlierF=0.005,numiterC=10,numiterF=2,failureDec=3.0";
+	trackerConfig = "type=extended,levels=rrrbb,minstep=1e-2,outlierSpaceC=0.1,outlierSpaceF=0.005,outlierAngleC=0.01,outlierAngleF=0.002,numiterC=10,numiterF=2,failureDec=3.0";
 	//trackerConfig = "type=rgb,levels=rrrbb";
 	//trackerConfig = "type=ren,levels=bb";
-	//trackerConfig = "type=wicp,levels=rrrbb,minstep=1e-3,outlier=0.01";
+	//trackerConfig = "type=wicp,levels=rrrbb,minstep=1e-3,outlier=0.005";
 	//trackerConfig = "type=imuicp,levels=tb,minstep=1e-3,outlierC=0.01,outlierF=0.005,numiterC=4,numiterF=2";
 }
-

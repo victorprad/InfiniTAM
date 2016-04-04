@@ -156,35 +156,35 @@ _CPU_AND_GPU_CODE_ inline bool findPointNeighbors(THREADPTR(Vector3f) *p, THREAD
 	bool isFound; Vector3i localBlockLocation;
 
 	localBlockLocation = blockLocation + Vector3i(0, 0, 0); p[0] = localBlockLocation.toFloat();
-	sdf[0] = TVoxel::SDF_valueToFloat(readVoxel(localVBA, hashTable, localBlockLocation, isFound).sdf);
+	sdf[0] = TVoxel::valueToFloat(readVoxel(localVBA, hashTable, localBlockLocation, isFound).sdf);
 	if (!isFound || sdf[0] == 1.0f) return false;
 
 	localBlockLocation = blockLocation + Vector3i(1, 0, 0); p[1] = localBlockLocation.toFloat();
-	sdf[1] = TVoxel::SDF_valueToFloat(readVoxel(localVBA, hashTable, localBlockLocation, isFound).sdf);
+	sdf[1] = TVoxel::valueToFloat(readVoxel(localVBA, hashTable, localBlockLocation, isFound).sdf);
 	if (!isFound || sdf[1] == 1.0f) return false;
 
 	localBlockLocation = blockLocation + Vector3i(1, 1, 0); p[2] = localBlockLocation.toFloat();
-	sdf[2] = TVoxel::SDF_valueToFloat(readVoxel(localVBA, hashTable, localBlockLocation, isFound).sdf);
+	sdf[2] = TVoxel::valueToFloat(readVoxel(localVBA, hashTable, localBlockLocation, isFound).sdf);
 	if (!isFound || sdf[2] == 1.0f) return false;
 
 	localBlockLocation = blockLocation + Vector3i(0, 1, 0); p[3] = localBlockLocation.toFloat();
-	sdf[3] = TVoxel::SDF_valueToFloat(readVoxel(localVBA, hashTable, localBlockLocation, isFound).sdf);
+	sdf[3] = TVoxel::valueToFloat(readVoxel(localVBA, hashTable, localBlockLocation, isFound).sdf);
 	if (!isFound || sdf[3] == 1.0f) return false;
 
 	localBlockLocation = blockLocation + Vector3i(0, 0, 1); p[4] = localBlockLocation.toFloat();
-	sdf[4] = TVoxel::SDF_valueToFloat(readVoxel(localVBA, hashTable, localBlockLocation, isFound).sdf);
+	sdf[4] = TVoxel::valueToFloat(readVoxel(localVBA, hashTable, localBlockLocation, isFound).sdf);
 	if (!isFound || sdf[4] == 1.0f) return false;
 
 	localBlockLocation = blockLocation + Vector3i(1, 0, 1); p[5] = localBlockLocation.toFloat();
-	sdf[5] = TVoxel::SDF_valueToFloat(readVoxel(localVBA, hashTable, localBlockLocation, isFound).sdf);
+	sdf[5] = TVoxel::valueToFloat(readVoxel(localVBA, hashTable, localBlockLocation, isFound).sdf);
 	if (!isFound || sdf[5] == 1.0f) return false;
 
 	localBlockLocation = blockLocation + Vector3i(1, 1, 1); p[6] = localBlockLocation.toFloat();
-	sdf[6] = TVoxel::SDF_valueToFloat(readVoxel(localVBA, hashTable, localBlockLocation, isFound).sdf);
+	sdf[6] = TVoxel::valueToFloat(readVoxel(localVBA, hashTable, localBlockLocation, isFound).sdf);
 	if (!isFound || sdf[6] == 1.0f) return false;
 
 	localBlockLocation = blockLocation + Vector3i(0, 1, 1); p[7] = localBlockLocation.toFloat();
-	sdf[7] = TVoxel::SDF_valueToFloat(readVoxel(localVBA, hashTable, localBlockLocation, isFound).sdf);
+	sdf[7] = TVoxel::valueToFloat(readVoxel(localVBA, hashTable, localBlockLocation, isFound).sdf);
 	if (!isFound || sdf[7] == 1.0f) return false;
 
 	return true;

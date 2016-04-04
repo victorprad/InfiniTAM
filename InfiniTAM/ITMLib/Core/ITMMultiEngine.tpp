@@ -28,13 +28,17 @@ static const float F_maxdistattemptreloc = 0.2f;
 template <typename TVoxel, typename TIndex>
 ITMMultiEngine<TVoxel,TIndex>::ITMMultiEngine(const ITMLibSettings *settings, const ITMRGBDCalib *calib, Vector2i imgSize_rgb, Vector2i imgSize_d)
 {
+	this->settings = settings;
+
 	if ((imgSize_d.x == -1) || (imgSize_d.y == -1)) imgSize_d = imgSize_rgb;
 
-	this->settings = settings;
+	Vector2i paddingSize(settings->imagePadding, settings->imagePadding);
+
+	imgSize_d += paddingSize; imgSize_rgb += paddingSize;
 
 	const ITMLibSettings::DeviceType deviceType = settings->deviceType;
 	lowLevelEngine = ITMLowLevelEngineFactory::MakeLowLevelEngine(deviceType);
-	viewBuilder = ITMViewBuilderFactory::MakeViewBuilder(calib, deviceType);
+	viewBuilder = ITMViewBuilderFactory::MakeViewBuilder(calib, deviceType, paddingSize);
 	visualisationEngine = ITMVisualisationEngineFactory::MakeVisualisationEngine<TVoxel,TIndex>(deviceType);
 
 	renderState_freeview = NULL; //will be created by the visualisation engine

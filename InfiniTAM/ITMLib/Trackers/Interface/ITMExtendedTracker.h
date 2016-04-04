@@ -5,9 +5,12 @@
 #include "ITMTracker.h"
 #include "../../Engines/LowLevel/Interface/ITMLowLevelEngine.h"
 #include "../../Objects/Tracking/ITMImageHierarchy.h"
+#include "../../Objects/Tracking/ITMExtendedHierarchyLevel.h"
 #include "../../Objects/Tracking/ITMSceneHierarchyLevel.h"
-#include "../../Objects/Tracking/ITMTemplatedHierarchyLevel.h"
 #include "../../Objects/Tracking/TrackerIterationType.h"
+
+#include "../../../ORUtils/HomkerMap.h"
+#include "../../../ORUtils/SVMClassifier.h"
 
 namespace ITMLib
 {
@@ -15,24 +18,18 @@ namespace ITMLib
 	    A typical example would be the original KinectFusion
 	    tracking algorithm.
 	*/
-	class ITMWeightedICPTracker : public ITMTracker
+	class ITMExtendedTracker : public ITMTracker
 	{
 	private:
 		const ITMLowLevelEngine *lowLevelEngine;
 		ITMImageHierarchy<ITMSceneHierarchyLevel> *sceneHierarchy;
-		ITMImageHierarchy<ITMTemplatedHierarchyLevel<ITMFloatImage> > *viewHierarchy;
-		ITMImageHierarchy<ITMTemplatedHierarchyLevel<ITMFloatImage> > *weightHierarchy;
+		ITMImageHierarchy<ITMExtendHierarchyLevel> *viewHierarchy;
 
 		ITMTrackingState *trackingState; const ITMView *view;
 
 		int *noIterationsPerLevel;
-		int noICPLevel;
 
 		float terminationThreshold;
-
-		float hessian[6 * 6];
-		float nabla[6];
-		float step[6];
 
 		void PrepareForEvaluation();
 		void SetEvaluationParams(int levelId);
@@ -44,16 +41,22 @@ namespace ITMLib
 		void SetEvaluationData(ITMTrackingState *trackingState, const ITMView *view);
 
 		void UpdatePoseQuality(int noValidPoints_old, float *hessian_good, float f_old);
+
+		ORUtils::HomkerMap *map;
+		ORUtils::SVMClassifier *svmClassifier;
+		Vector4f mu, sigma;
 	protected:
-		float *distThresh;
+		float *spaceThresh;
+		float *angleThresh;
 
 		int levelId;
 		TrackerIterationType iterationType;
 
 		Matrix4f scenePose;
 		ITMSceneHierarchyLevel *sceneHierarchyLevel;
-		ITMTemplatedHierarchyLevel<ITMFloatImage> *viewHierarchyLevel;
-		ITMTemplatedHierarchyLevel<ITMFloatImage> *weightHierarchyLevel;
+		ITMExtendHierarchyLevel *viewHierarchyLevel;
+
+		int currentFrameNo;
 
 		virtual int ComputeGandH(float &f, float *nabla, float *hessian, Matrix4f approxInvPose) = 0;
 
@@ -63,9 +66,11 @@ namespace ITMLib
 		bool requiresColourRendering(void) const { return false; }
 		bool requiresDepthReliability(void) const { return true; }
 
-		ITMWeightedICPTracker(Vector2i imgSize, TrackerIterationType *trackingRegime, int noHierarchyLevels, int noICPRunTillLevel, float distThresh,
-			float terminationThreshold, const ITMLowLevelEngine *lowLevelEngine, MemoryDeviceType memoryType);
-		virtual ~ITMWeightedICPTracker(void);
+		void SetupLevels(int numIterCoarse, int numIterFine, float spaceThreshCoarse, float spaceThreshFine, float angleThreshCoarse, float angleThreshFine);
+
+		ITMExtendedTracker(Vector2i imgSize, TrackerIterationType *trackingRegime, int noHierarchyLevels,
+			float terminationThreshold, float failureDetectorThreshold, 
+			const ITMLowLevelEngine *lowLevelEngine, MemoryDeviceType memoryType);
+		virtual ~ITMExtendedTracker(void);
 	};
 }
-
