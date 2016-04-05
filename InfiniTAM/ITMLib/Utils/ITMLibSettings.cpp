@@ -47,7 +47,7 @@ ITMLibSettings::ITMLibSettings(void)
 
 	//trackerConfig = "type=icp,levels=rrrbb,minstep=1e-3,outlierC=0.01,outlierF=0.002,numiterC=10,numiterF=2,failureDec=3.0";
 	//trackerConfig = "type=icp,levels=rrrbb,minstep=1e-2,outlierC=0.1,outlierF=0.005,numiterC=10,numiterF=2,failureDec=3.0";
-	trackerConfig = "type=extended,levels=rrbb,minstep=1e-4,outlierSpaceC=0.1,outlierSpaceF=0.005,numiterC=10,numiterF=2,failureDec=3.0";
+	trackerConfig = "type=extended,levels=rrbb,minstep=1e-4,outlierSpaceC=0.1,outlierSpaceF=0.004,numiterC=20,numiterF=20,failureDec=3.0";
 	//trackerConfig = "type=rgb,levels=rrrbb";
 	//trackerConfig = "type=ren,levels=bb";
 	//trackerConfig = "type=wicp,levels=rrrbb,minstep=1e-3,outlier=0.005";

@@ -37,6 +37,11 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exDepth_Ab(THREADPTR(float) *A,
 
 	curr3Dpoint = interpolateBilinear_withHoles(pointsMap, tmp2Dpoint, sceneImageSize);
 	if (curr3Dpoint.w < 0.0f) return false;
+	
+	if (useWeights)
+	{
+		if (curr3Dpoint.w < 50) return false;
+	}
 
 	ptDiff.x = curr3Dpoint.x - tmp3Dpoint.x;
 	ptDiff.y = curr3Dpoint.y - tmp3Dpoint.y;
@@ -46,14 +51,38 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exDepth_Ab(THREADPTR(float) *A,
 	if (dist > spaceThresh) return false;
 
 	corr3Dnormal = interpolateBilinear_withHoles(normalsMap, tmp2Dpoint, sceneImageSize);
-	//	if (corr3Dnormal.w < 0.0f) return false;
+	//if (corr3Dnormal.w < 0.0f) return false;
 
 	b = corr3Dnormal.x * ptDiff.x + corr3Dnormal.y * ptDiff.y + corr3Dnormal.z * ptDiff.z;
 
-	if (useWeights)
-	{
-		if (curr3Dpoint.w < 50) return false;
-	}
+	//corr3Dnormal = corr3Dnormal * depthWeight;
+
+	//float minDist = 1e10; Vector2f found2DPoint;
+	//for (int offY = -2; offY <= 2; offY++) for (int offX = -2; offX <= 2; offX++)
+	//{
+	//	Vector2f new2DPoint = tmp2Dpoint + Vector2f(offX, offY); Vector3f ptDiffCand;
+
+	//	if (!((new2DPoint.x >= 0.0f) && (new2DPoint.x <= sceneImageSize.x - 2) && (new2DPoint.y >= 0.0f) && (new2DPoint.y <= sceneImageSize.y - 2)))
+	//		continue;
+
+	//	curr3Dpoint = interpolateBilinear_withHoles(pointsMap, new2DPoint, sceneImageSize);
+
+	//	ptDiffCand.x = curr3Dpoint.x - tmp3Dpoint.x;
+	//	ptDiffCand.y = curr3Dpoint.y - tmp3Dpoint.y;
+	//	ptDiffCand.z = curr3Dpoint.z - tmp3Dpoint.z;
+	//	float dist = ptDiffCand.x * ptDiffCand.x + ptDiffCand.y * ptDiffCand.y + ptDiffCand.z * ptDiffCand.z;
+
+	//	if (dist < minDist)
+	//	{
+	//		minDist = dist;
+	//		ptDiff = ptDiffCand;
+	//		found2DPoint = new2DPoint;
+	//	}
+	//}
+
+	//if (minDist > spaceThresh) return false;
+
+	//corr3Dnormal = interpolateBilinear_withHoles(normalsMap, found2DPoint, sceneImageSize);
 
 	//depthWeight = depth;
 
