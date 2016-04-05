@@ -205,7 +205,7 @@ _CPU_AND_GPU_CODE_ inline void buildHHashAllocAndVisibleTypePP(DEVICEPTR(uchar) 
 	float oneOverSmallestBlockSize, DEVICEPTR(ITMHHashEntry) *globalHashTable, float viewFrustum_min, float viewFrustum_max)
 {
 	float depth_measure; unsigned int hashIdx; int noSteps;
-	Vector4f pt_camera_f; Vector3f point, point_e, direction; Vector3s blockPos;
+	Vector3f pt_camera_f, point, point_e, direction; Vector3s blockPos;
 
 	depth_measure = depth[x + y * imgSize.x];
 	if (depth_measure <= 0 || (depth_measure - mu) < 0 || (depth_measure - mu) < viewFrustum_min || (depth_measure + mu) > viewFrustum_max) return;
@@ -214,12 +214,11 @@ _CPU_AND_GPU_CODE_ inline void buildHHashAllocAndVisibleTypePP(DEVICEPTR(uchar) 
 	pt_camera_f.z = depth_measure;
 	pt_camera_f.x = pt_camera_f.z * ((float(x) - projParams_d.z) * projParams_d.x);
 	pt_camera_f.y = pt_camera_f.z * ((float(y) - projParams_d.w) * projParams_d.y);
-	pt_camera_f.w = 1.0f;
 
 	float norm = sqrtf(pt_camera_f.x * pt_camera_f.x + pt_camera_f.y * pt_camera_f.y + pt_camera_f.z * pt_camera_f.z);
 
-	point   = TO_VECTOR3(invM_d * (pt_camera_f * (1.0f - mu/norm))) * oneOverSmallestBlockSize;
-	point_e = TO_VECTOR3(invM_d * (pt_camera_f * (1.0f + mu/norm))) * oneOverSmallestBlockSize;
+	point   = (invM_d * (pt_camera_f * (1.0f - mu/norm))) * oneOverSmallestBlockSize;
+	point_e = (invM_d * (pt_camera_f * (1.0f + mu/norm))) * oneOverSmallestBlockSize;
 
 	direction = point_e - point;
 	norm = sqrtf(direction.x * direction.x + direction.y * direction.y + direction.z * direction.z);
