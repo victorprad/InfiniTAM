@@ -28,7 +28,6 @@ struct ITMExtendedTracker_KernelParameters {
 	Vector4f viewIntrinsics;
 	Vector2i viewImageSize;
 	float spaceThresh;
-	float angleThresh;
 };
 
 template<bool shortIteration, bool rotationOnly, bool useWeights>
@@ -80,7 +79,6 @@ int ITMExtendedTracker_CUDA::ComputeGandH(float &f, float *nabla, float *hessian
 	args.viewIntrinsics = viewHierarchyLevel->intrinsics;
 	args.viewImageSize = viewHierarchyLevel->depth->noDims;
 	args.spaceThresh = spaceThresh[levelId];
-	args.angleThresh = angleThresh[levelId];
 
 	if (currentFrameNo < 100)
 	{
@@ -137,7 +135,7 @@ int ITMExtendedTracker_CUDA::ComputeGandH(float &f, float *nabla, float *hessian
 template<bool shortIteration, bool rotationOnly, bool useWeights>
 __device__ void exDepthTrackerOneLevel_g_rt_device_main(ITMExtendedTracker_CUDA::AccuCell *accu, float *depth, Vector4f *depthNormals, float *depthUncertainty, 
 	Matrix4f approxInvPose, Vector4f *pointsMap, Vector4f *normalsMap, Vector4f sceneIntrinsics, Vector2i sceneImageSize, Matrix4f scenePose, 
-	Vector4f viewIntrinsics, Vector2i viewImageSize, float spaceThresh, float angleThresh)
+	Vector4f viewIntrinsics, Vector2i viewImageSize, float spaceThresh)
 {
 	int x = threadIdx.x + blockIdx.x * blockDim.x, y = threadIdx.y + blockIdx.y * blockDim.y;
 
@@ -154,28 +152,6 @@ __device__ void exDepthTrackerOneLevel_g_rt_device_main(ITMExtendedTracker_CUDA:
 	const int noPara = shortIteration ? 3 : 6;
 	const int noParaSQ = shortIteration ? 3 + 2 + 1 : 6 + 5 + 4 + 3 + 2 + 1;
 	float A[noPara]; float b;
-	//float isValidPoint = -1.0f;
-	//Vector3f ptDiff; Vector2f tmp2Dpoint; Vector4f tmp3Dpoint;
-
-	//if (x < viewImageSize.x && y < viewImageSize.y)
-	//{
-	//	int locId_image = x + y * viewImageSize.x;
-
-	//	isValidPoint = isMatchPerPointGH_exDepth_Ab<useWeights>(ptDiff, tmp2Dpoint, tmp3Dpoint, x, y, depth[locId_image], depthNormals[locId_image], depthUncertainty[locId_image],
-	//		viewIntrinsics, sceneImageSize, sceneIntrinsics, approxInvPose, scenePose, pointsMap, normalsMap, spaceThresh, angleThresh);
-
-	//	if (isValidPoint > 0.0f)
-	//	{
-	//		computePerPointGH_exDepth_Ab<shortIteration, rotationOnly>(A, b, ptDiff, tmp2Dpoint, tmp3Dpoint, sceneImageSize, normalsMap);
-	//		should_prefix = true;
-	//	}
-	//}
-
-	//if (isValidPoint <= 0.0f) 
-	//{
-	//	for (int i = 0; i < noPara; i++) A[i] = 0.0f;
-	//	b = 0.0f;
-	//}
 
 	bool isValidPoint = false;
 
@@ -184,7 +160,7 @@ __device__ void exDepthTrackerOneLevel_g_rt_device_main(ITMExtendedTracker_CUDA:
 		int locId_image = x + y * viewImageSize.x;
 
 		isValidPoint = computePerPointGH_exDepth_Ab<shortIteration, rotationOnly, useWeights>(A, b, x, y, depth[x + y * viewImageSize.x], depthNormals[locId_image], depthUncertainty[locId_image],
-			viewImageSize, viewIntrinsics, sceneImageSize, sceneIntrinsics, approxInvPose, scenePose, pointsMap, normalsMap, spaceThresh, angleThresh);
+			viewImageSize, viewIntrinsics, sceneImageSize, sceneIntrinsics, approxInvPose, scenePose, pointsMap, normalsMap, spaceThresh);
 		
 		if (isValidPoint) should_prefix = true;
 	}
@@ -318,6 +294,6 @@ __global__ void exDepthTrackerOneLevel_g_rt_device(ITMExtendedTracker_KernelPara
 {
 	exDepthTrackerOneLevel_g_rt_device_main<shortIteration, rotationOnly, useWeights>(para.accu, para.depth, para.depthNormals, para.depthUncertainty,
 		para.approxInvPose, para.pointsMap, para.normalsMap, para.sceneIntrinsics, para.sceneImageSize, para.scenePose, 
-		para.viewIntrinsics, para.viewImageSize, para.spaceThresh, para.angleThresh);
+		para.viewIntrinsics, para.viewImageSize, para.spaceThresh);
 }
 

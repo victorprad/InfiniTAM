@@ -255,12 +255,10 @@ namespace ITMLib
 	static ITMTracker *MakeExtendedTracker(const Vector2i& imgSize_rgb, const Vector2i& imgSize_d, ITMLibSettings::DeviceType deviceType, const ORUtils::KeyValueConfig & cfg,
 		const ITMLowLevelEngine *lowLevelEngine, ITMIMUCalibrator *imuCalibrator, ITMScene<TVoxel, TIndex> *scene)
 	{
-		const char *levelSetup = "rrrbb";
-		float smallStepSizeCriterion = 1e-3f;
+		const char *levelSetup = "rrbb";
+		float smallStepSizeCriterion = 1e-4f;
 		float outlierSpaceDistanceFine = 0.002f;
 		float outlierSpaceDistanceCoarse = 0.01f;
-		float outlierAngleDistanceFine = 0.002f;
-		float outlierAngleDistanceCoarse = 0.01f;
 		float failureDetectorThd = 3.0f;
 		int numIterationsCoarse = 10;
 		int numIterationsFine = 2;
@@ -273,8 +271,6 @@ namespace ITMLib
 		cfg.parseFltProperty("minstep", "step size threshold for convergence", smallStepSizeCriterion, verbose);
 		cfg.parseFltProperty("outlierSpaceC", "space outlier threshold at coarsest level", outlierSpaceDistanceCoarse, verbose);
 		cfg.parseFltProperty("outlierSpaceF", "space outlier threshold at finest level", outlierSpaceDistanceFine, verbose);
-		cfg.parseFltProperty("angleSpaceC", "angle outlier threshold at coarsest level", outlierAngleDistanceCoarse, verbose);
-		cfg.parseFltProperty("anglerSpaceF", "angle outlier threshold at finest level", outlierAngleDistanceFine, verbose);
 		cfg.parseIntProperty("numiterC", "maximum number of iterations at coarsest level", numIterationsCoarse, verbose);
 		cfg.parseIntProperty("numiterF", "maximum number of iterations at finest level", numIterationsFine, verbose);
 		cfg.parseFltProperty("failureDec", "threshold for the failure detection", failureDetectorThd, verbose);
@@ -298,7 +294,7 @@ namespace ITMLib
 		}
 
 		if (ret == NULL) DIEWITHEXCEPTION("Failed to make extended tracker");
-		ret->SetupLevels(numIterationsCoarse, numIterationsFine, outlierSpaceDistanceCoarse, outlierSpaceDistanceFine, sin(30.f * 3.14159254f / 180.f), sin(20.f * 3.14159254f / 180.f));
+		ret->SetupLevels(numIterationsCoarse, numIterationsFine, outlierSpaceDistanceCoarse, outlierSpaceDistanceFine);
 		return ret;
 	}
 

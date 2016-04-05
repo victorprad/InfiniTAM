@@ -23,7 +23,7 @@ ITMBasicEngine<TVoxel,TIndex>::ITMBasicEngine(const ITMLibSettings *settings, co
 
 	if ((imgSize_d.x == -1) || (imgSize_d.y == -1)) imgSize_d = imgSize_rgb;
 
-	Vector2i paddingSize(settings->imagePadding, settings->imagePadding);
+	Vector2i paddingSize(0, 0);
 
 	imgSize_d += 2 * paddingSize; imgSize_rgb += 2 * paddingSize;
 
@@ -117,6 +117,77 @@ void ITMBasicEngine<TVoxel,TIndex>::SaveSceneToMesh(const char *objFileName)
 	mesh->WriteSTL(objFileName);
 }
 
+static int QuaternionFromRotationMatrix_variant(const double *matrix)
+{
+	int variant = 0;
+	if
+		((matrix[4]>-matrix[8]) && (matrix[0]>-matrix[4]) && (matrix[0]>-matrix[8]))
+	{
+		variant = 0;
+	}
+	else if ((matrix[4]<-matrix[8]) && (matrix[0]>
+		matrix[4]) && (matrix[0]> matrix[8])) {
+		variant = 1;
+	}
+	else if ((matrix[4]> matrix[8]) && (matrix[0]<
+		matrix[4]) && (matrix[0]<-matrix[8])) {
+		variant = 2;
+	}
+	else if ((matrix[4]<
+		matrix[8]) && (matrix[0]<-matrix[4]) && (matrix[0]< matrix[8])) {
+		variant = 3;
+	}
+	return variant;
+}
+
+void QuaternionFromRotationMatrix(const double *matrix, double *q) {
+	/* taken from "James Diebel. Representing Attitude: Euler
+	Angles, Quaternions, and Rotation Vectors. Technical Report, Stanford
+	University, Palo Alto, CA."
+	*/
+
+	// choose the numerically best variant...
+	int variant = QuaternionFromRotationMatrix_variant(matrix);
+	double denom = 1.0;
+	if (variant == 0) {
+		denom += matrix[0] + matrix[4] + matrix[8];
+	}
+	else {
+		int tmp = variant * 4;
+		denom += matrix[tmp - 4];
+		denom -= matrix[tmp % 12];
+		denom -= matrix[(tmp + 4) % 12];
+	}
+	denom = sqrt(denom);
+	q[variant] = 0.5*denom;
+
+	denom *= 2.0;
+	switch (variant) {
+	case 0:
+		q[1] = (matrix[5] - matrix[7]) / denom;
+		q[2] = (matrix[6] - matrix[2]) / denom;
+		q[3] = (matrix[1] - matrix[3]) / denom;
+		break;
+	case 1:
+		q[0] = (matrix[5] - matrix[7]) / denom;
+		q[2] = (matrix[1] + matrix[3]) / denom;
+		q[3] = (matrix[6] + matrix[2]) / denom;
+		break;
+	case 2:
+		q[0] = (matrix[6] - matrix[2]) / denom;
+		q[1] = (matrix[1] + matrix[3]) / denom;
+		q[3] = (matrix[5] + matrix[7]) / denom;
+		break;
+	case 3:
+		q[0] = (matrix[1] - matrix[3]) / denom;
+		q[1] = (matrix[6] + matrix[2]) / denom;
+		q[2] = (matrix[5] + matrix[7]) / denom;
+		break;
+	}
+
+	if (q[0] < 0.0f) for (int i = 0; i < 4; ++i) q[i] *= -1.0f;
+}
+
 template <typename TVoxel, typename TIndex>
 void ITMBasicEngine<TVoxel,TIndex>::ProcessFrame(ITMUChar4Image *rgbImage, ITMShortImage *rawDepthImage, ITMIMUMeasurement *imuMeasurement)
 {
@@ -193,6 +264,17 @@ void ITMBasicEngine<TVoxel,TIndex>::ProcessFrame(ITMUChar4Image *rgbImage, ITMSh
 		if (addKeyframeIdx >= 0) kfRaycast->SetFrom(renderState_live->raycastImage, memoryCopyDirection);
 	}
 	else { *trackingState->pose_d = oldPose; }
+
+	const ORUtils::SE3Pose *p = trackingState->pose_d;
+	double t[3];
+	double R[9];
+	double q[4];
+	for (int i = 0; i < 3; ++i) t[i] = p->GetInvM().m[3 * 4 + i];
+	for (int r = 0; r < 3; ++r) for (int c = 0; c < 3; ++c)
+		R[r * 3 + c] = p->GetM().m[c * 4 + r];
+	QuaternionFromRotationMatrix(R, q);
+	fprintf(stderr, "%f %f %f %f %f %f %f\n", t[0],
+		t[1], t[2], q[1], q[2], q[3], q[0]);
 
 	printf("%d\n", framesProcessed);
 }

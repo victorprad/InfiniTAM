@@ -47,7 +47,6 @@ namespace ITMLib
 		Vector4f mu, sigma;
 	protected:
 		float *spaceThresh;
-		float *angleThresh;
 
 		int levelId;
 		TrackerIterationType iterationType;
@@ -66,7 +65,7 @@ namespace ITMLib
 		bool requiresColourRendering(void) const { return false; }
 		bool requiresDepthReliability(void) const { return true; }
 
-		void SetupLevels(int numIterCoarse, int numIterFine, float spaceThreshCoarse, float spaceThreshFine, float angleThreshCoarse, float angleThreshFine);
+		void SetupLevels(int numIterCoarse, int numIterFine, float spaceThreshCoarse, float spaceThreshFine);
 
 		ITMExtendedTracker(Vector2i imgSize, TrackerIterationType *trackingRegime, int noHierarchyLevels,
 			float terminationThreshold, float failureDetectorThreshold, 

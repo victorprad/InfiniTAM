@@ -152,6 +152,10 @@ try
 	}
 
 	ITMLibSettings *internalSettings = new ITMLibSettings();
+
+	imageSource->calib.intrinsics_d.ResizePrincipalPoint(1.0f);
+	imageSource->calib.intrinsics_rgb.ResizePrincipalPoint(1.0f);
+
 	//ITMMainEngine *mainEngine = new ITMMultiEngine<ITMVoxel,ITMVoxelIndex>(internalSettings, &imageSource->calib, imageSource->getRGBImageSize(), imageSource->getDepthImageSize());
 	ITMMainEngine *mainEngine = new ITMBasicEngine<ITMVoxel,ITMVoxelIndex>( internalSettings, &imageSource->calib, imageSource->getRGBImageSize(), imageSource->getDepthImageSize());
 

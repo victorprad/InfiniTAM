@@ -80,19 +80,19 @@ void ITMViewBuilder_CUDA::UpdateView(ITMView **view_ptr, ITMUChar4Image *in_rgbI
 		break;
 	}
 
-	// set confidence --> should move to GPU
-	float *confidence = view->depthConfidence->GetData(MEMORYDEVICE_CPU);
-	const float halfW = rawDepthImage->noDims.x / 2.0f, halfH = rawDepthImage->noDims.y / 2.0f;
-	const float sigma = 0.6f;
-	for (int y = 0; y < rawDepthImage->noDims.y; y++) for (int x = 0; x < rawDepthImage->noDims.x; x++)
-	{
-		//const float dx = abs(x - halfW), dy = abs(y - halfH);
-		//const float gamma = sqrtf((dx * dx + dy * dy) / (halfW * halfW + halfH * halfH));
+	//// set confidence --> should move to GPU
+	//float *confidence = view->depthConfidence->GetData(MEMORYDEVICE_CPU);
+	//const float halfW = rawDepthImage->noDims.x / 2.0f, halfH = rawDepthImage->noDims.y / 2.0f;
+	//const float sigma = 0.6f;
+	//for (int y = 0; y < rawDepthImage->noDims.y; y++) for (int x = 0; x < rawDepthImage->noDims.x; x++)
+	//{
+	//	//const float dx = abs(x - halfW), dy = abs(y - halfH);
+	//	//const float gamma = sqrtf((dx * dx + dy * dy) / (halfW * halfW + halfH * halfH));
 
-		// Calculate and return the confidence value itself.
-		confidence[x + y * rawDepthImage->noDims.x] = 1.0f;// expf(-gamma*gamma) / (2 * sigma*sigma);
-	}
-	view->depthConfidence->UpdateDeviceFromHost();
+	//	// Calculate and return the confidence value itself.
+	//	confidence[x + y * rawDepthImage->noDims.x] = 1.0f;// expf(-gamma*gamma) / (2 * sigma*sigma);
+	//}
+	//view->depthConfidence->UpdateDeviceFromHost();
 
 	if (useBilateralFilter)
 	{

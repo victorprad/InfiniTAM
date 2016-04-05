@@ -61,11 +61,11 @@ void ITMViewBuilder_CPU::UpdateView(ITMView **view_ptr, ITMUChar4Image *in_rgbIm
 		break;
 	}
 
-	float *confidence = view->depthConfidence->GetData(MEMORYDEVICE_CPU);
-	for (int y = 0; y < rawDepthImage->noDims.y; y++) for (int x = 0; x < rawDepthImage->noDims.x; x++)
-	{
-		confidence[x + y * rawDepthImage->noDims.x] = 1.0f;
-	}
+	//float *confidence = view->depthConfidence->GetData(MEMORYDEVICE_CPU);
+	//for (int y = 0; y < rawDepthImage->noDims.y; y++) for (int x = 0; x < rawDepthImage->noDims.x; x++)
+	//{
+	//	confidence[x + y * rawDepthImage->noDims.x] = 1.0f;
+	//}
 
 	if (useBilateralFilter)
 	{
