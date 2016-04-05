@@ -200,8 +200,13 @@ _CPU_AND_GPU_CODE_ inline void buildHashAllocAndVisibleTypePP(DEVICEPTR(uchar) *
 
 	float norm = sqrt(pt_camera_f.x * pt_camera_f.x + pt_camera_f.y * pt_camera_f.y + pt_camera_f.z * pt_camera_f.z);
 
-	point = TO_VECTOR3(invM_d * (pt_camera_f * (1.0f - mu / norm))) * oneOverVoxelSize;
-	point_e = TO_VECTOR3(invM_d * (pt_camera_f * (1.0f + mu / norm))) * oneOverVoxelSize;
+	Vector4f pt_buff;
+	
+	pt_buff = pt_camera_f * (1.0f - mu / norm); pt_buff.w = 1.0f;
+	point = TO_VECTOR3(invM_d * pt_buff) * oneOverVoxelSize;
+
+	pt_buff = pt_camera_f * (1.0f + mu / norm); pt_buff.w = 1.0f;
+	point_e = TO_VECTOR3(invM_d * pt_buff) * oneOverVoxelSize;
 
 	direction = point_e - point;
 	norm = sqrt(direction.x * direction.x + direction.y * direction.y + direction.z * direction.z);

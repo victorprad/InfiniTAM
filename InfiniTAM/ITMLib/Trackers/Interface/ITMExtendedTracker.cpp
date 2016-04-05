@@ -89,6 +89,7 @@ void ITMExtendedTracker::SetupLevels(int numIterCoarse, int numIterFine, float s
 		}
 	}
 }
+
 inline float ComputeCovarianceDet(Vector3f X_sum, float *XXT_triangle, int noNormals)
 {
 	X_sum *= 1.0f / (float)noNormals;

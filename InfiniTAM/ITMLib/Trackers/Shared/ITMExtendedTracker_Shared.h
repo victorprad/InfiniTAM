@@ -55,6 +55,8 @@ _CPU_AND_GPU_CODE_ inline float computePerPointGH_exDepth_Ab(THREADPTR(float) *A
 		if (curr3Dpoint.w < 50) return false;
 	}
 
+	//depthWeight = depth;
+
 	//Vector3f cross; 
 	//cross.x = corr3Dnormal.y*depthNormal.z - corr3Dnormal.x*depthNormal.y;
 	//cross.y = corr3Dnormal.x*depthNormal.x - corr3Dnormal.x*depthNormal.z;
