@@ -101,7 +101,7 @@ _CPU_AND_GPU_CODE_ inline bool castRay(DEVICEPTR(Vector4f) &pt_out, DEVICEPTR(uc
 {
 	Vector4f pt_camera_f; Vector3f pt_block_s, pt_block_e, rayDirection, pt_result;
 	bool pt_found;
-	int hash_found;
+	int vmIndex;
 	float sdfValue = 1.0f, confidence;
 	float totalLength, stepLength, totalLengthMax, stepScale;
 
@@ -130,19 +130,18 @@ _CPU_AND_GPU_CODE_ inline bool castRay(DEVICEPTR(Vector4f) &pt_out, DEVICEPTR(uc
 	typename TIndex::IndexCache cache;
 
 	while (totalLength < totalLengthMax) {
-		sdfValue = readFromSDF_float_uninterpolated(voxelData, voxelIndex, pt_result, hash_found, cache);
+		sdfValue = readFromSDF_float_uninterpolated(voxelData, voxelIndex, pt_result, vmIndex, cache);
 
 		if (modifyVisibleEntries)
 		{
-			if (hash_found)
-				entriesVisibleType[hash_found - 1] = 1;
+			if (vmIndex) entriesVisibleType[vmIndex - 1] = 1;
 		}
 
-		if (!hash_found) {
+		if (!vmIndex) {
 			stepLength = SDF_BLOCK_SIZE;
 		} else {
 			if ((sdfValue <= 0.1f) && (sdfValue >= -0.5f)) {
-				sdfValue = readFromSDF_float_interpolated(voxelData, voxelIndex, pt_result, hash_found, cache);
+				sdfValue = readFromSDF_float_interpolated(voxelData, voxelIndex, pt_result, vmIndex, cache);
 			}
 			if (sdfValue <= 0.0f) break;
 			stepLength = MAX(sdfValue * stepScale, 1.0f);
@@ -156,7 +155,7 @@ _CPU_AND_GPU_CODE_ inline bool castRay(DEVICEPTR(Vector4f) &pt_out, DEVICEPTR(uc
 		stepLength = sdfValue * stepScale;
 		pt_result += stepLength * rayDirection;
 
-		sdfValue = readWithConfidenceFromSDF_float_interpolated(confidence, voxelData, voxelIndex, pt_result, hash_found, cache);
+		sdfValue = readWithConfidenceFromSDF_float_interpolated(confidence, voxelData, voxelIndex, pt_result, vmIndex, cache);
 
 		stepLength = sdfValue * stepScale;
 		pt_result += stepLength * rayDirection;

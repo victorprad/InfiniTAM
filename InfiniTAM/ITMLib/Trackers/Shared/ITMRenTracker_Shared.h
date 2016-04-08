@@ -43,24 +43,24 @@ _CPU_AND_GPU_CODE_ inline Vector3f computeDDT(const CONSTPTR(Vector3f) &pt_f, co
 
 	Vector3i pt = TO_INT_ROUND3(pt_f);
 
-	int isFound; float dt1, dt2;
+	int vmIndex; float dt1, dt2;
 
-	dt1 = TVoxel::valueToFloat(readVoxel(voxelBlocks, index, pt + Vector3i(1, 0, 0), isFound).sdf);
-	if (!isFound || dt1 == 1.0f) { ddtFound = false; return Vector3f(0.0f); }
-	dt2 = TVoxel::valueToFloat(readVoxel(voxelBlocks, index, pt + Vector3i(-1, 0, 0), isFound).sdf);
-	if (!isFound || dt2 == 1.0f) { ddtFound = false; return Vector3f(0.0f); }
+	dt1 = TVoxel::valueToFloat(readVoxel(voxelBlocks, index, pt + Vector3i(1, 0, 0), vmIndex).sdf);
+	if (!vmIndex || dt1 == 1.0f) { ddtFound = false; return Vector3f(0.0f); }
+	dt2 = TVoxel::valueToFloat(readVoxel(voxelBlocks, index, pt + Vector3i(-1, 0, 0), vmIndex).sdf);
+	if (!vmIndex || dt2 == 1.0f) { ddtFound = false; return Vector3f(0.0f); }
 	ddt.x = (dt1 - dt2) * 0.5f;
 
-	dt1 = TVoxel::valueToFloat(readVoxel(voxelBlocks, index, pt + Vector3i(0, 1, 0), isFound).sdf);
-	if (!isFound || dt1 == 1.0f) { ddtFound = false; return Vector3f(0.0f); }
-	dt2 = TVoxel::valueToFloat(readVoxel(voxelBlocks, index, pt + Vector3i(0, -1, 0), isFound).sdf);
-	if (!isFound || dt2 == 1.0f) { ddtFound = false; return Vector3f(0.0f); }
+	dt1 = TVoxel::valueToFloat(readVoxel(voxelBlocks, index, pt + Vector3i(0, 1, 0), vmIndex).sdf);
+	if (!vmIndex || dt1 == 1.0f) { ddtFound = false; return Vector3f(0.0f); }
+	dt2 = TVoxel::valueToFloat(readVoxel(voxelBlocks, index, pt + Vector3i(0, -1, 0), vmIndex).sdf);
+	if (!vmIndex || dt2 == 1.0f) { ddtFound = false; return Vector3f(0.0f); }
 	ddt.y = (dt1 - dt2) * 0.5f;
 
-	dt1 = TVoxel::valueToFloat(readVoxel(voxelBlocks, index, pt + Vector3i(0, 0, 1), isFound).sdf);
-	if (!isFound || dt1 == 1.0f) { ddtFound = false; return Vector3f(0.0f); }
-	dt2 = TVoxel::valueToFloat(readVoxel(voxelBlocks, index, pt + Vector3i(0, 0, -1), isFound).sdf);
-	if (!isFound || dt2 == 1.0f) { ddtFound = false; return Vector3f(0.0f); }
+	dt1 = TVoxel::valueToFloat(readVoxel(voxelBlocks, index, pt + Vector3i(0, 0, 1), vmIndex).sdf);
+	if (!vmIndex || dt1 == 1.0f) { ddtFound = false; return Vector3f(0.0f); }
+	dt2 = TVoxel::valueToFloat(readVoxel(voxelBlocks, index, pt + Vector3i(0, 0, -1), vmIndex).sdf);
+	if (!vmIndex || dt2 == 1.0f) { ddtFound = false; return Vector3f(0.0f); }
 	ddt.z = (dt1 - dt2) * 0.5f;
 
 	ddtFound = true; return ddt;
@@ -70,7 +70,7 @@ template<class TVoxel, class TIndex>
 _CPU_AND_GPU_CODE_ inline bool computePerPixelJacobian(THREADPTR(float) *jacobian, const THREADPTR(Vector4f) &inpt, 
 	const CONSTPTR(TVoxel) *voxelBlocks, const CONSTPTR(typename TIndex::IndexData) *index, float oneOverVoxelSize, Matrix4f invM)
 {
-	int isFound; bool ddtFound;
+	int vmIndex; bool ddtFound;
 
 	Vector3f cPt, dDt, pt;
 
@@ -79,11 +79,11 @@ _CPU_AND_GPU_CODE_ inline bool computePerPixelJacobian(THREADPTR(float) *jacobia
 	pt = cPt * oneOverVoxelSize;
 
 	//typename TIndex::IndexCache cache;
-	//float dt = readFromSDF_float_interpolated(voxelBlocks, index, pt, isFound, cache);
+	//float dt = readFromSDF_float_interpolated(voxelBlocks, index, pt, vmIndex, cache);
 
-	float dt = readFromSDF_float_uninterpolated(voxelBlocks, index, pt, isFound);
+	float dt = readFromSDF_float_uninterpolated(voxelBlocks, index, pt, vmIndex);
 
-	if (dt == 1.0f || !isFound) return false;
+	if (dt == 1.0f || !vmIndex) return false;
 
 	dDt = computeDDT<TVoxel, TIndex>(pt, voxelBlocks, index, oneOverVoxelSize, ddtFound);
 	if (!ddtFound) return false;
