@@ -25,7 +25,7 @@ namespace ITMLib
 
 		/// surface normal of depth image
 		// allocated when needed
-		ITMFloat4Image *depthNormals;
+		ITMFloat4Image *depthNormal;
 
 		/// uncertainty (std) in each pixel of depth value based on sensor noise model
 		/// allocated when needed
@@ -39,7 +39,7 @@ namespace ITMLib
 			this->calib = new ITMRGBDCalib(*calibration);
 			this->rgb = new ITMUChar4Image(imgSize_rgb, true, useGPU);
 			this->depth = new ITMFloatImage(imgSize_d, true, useGPU);
-			this->depthNormals = NULL;
+			this->depthNormal = NULL;
 			this->depthUncertainty = NULL;
 			this->depthConfidence = new ITMFloatImage(imgSize_d, true, useGPU);
 		}
@@ -52,7 +52,7 @@ namespace ITMLib
 			delete depth;
 			delete depthConfidence;
 
-			if (depthNormals != NULL) delete depthNormals;
+			if (depthNormal != NULL) delete depthNormal;
 			if (depthUncertainty != NULL) delete depthUncertainty;
 		}
 

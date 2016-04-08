@@ -9,7 +9,6 @@
 #include "CPU/ITMDepthTracker_CPU.h"
 #include "CPU/ITMExtendedTracker_CPU.h"
 #include "CPU/ITMRenTracker_CPU.h"
-#include "CPU/ITMWeightedICPTracker_CPU.h"
 #include "Interface/ITMCompositeTracker.h"
 #include "Interface/ITMIMUTracker.h"
 #include "Interface/ITMTracker.h"
@@ -20,7 +19,6 @@
 #include "CUDA/ITMColorTracker_CUDA.h"
 #include "CUDA/ITMDepthTracker_CUDA.h"
 #include "CUDA/ITMExtendedTracker_CUDA.h"
-#include "CUDA/ITMWeightedICPTracker_CUDA.h"
 #include "CUDA/ITMRenTracker_CUDA.h"
 #endif
 
@@ -54,8 +52,6 @@ namespace ITMLib
 			TRACKER_REN,
 			//! Identifies a tracker based on depth image and IMU measurement
 			TRACKER_IMU,
-			//! Identifies a tracker that use weighted ICP only on depth image
-			TRACKER_WICP
 		} TrackerType;
 
 		struct Maker {
@@ -82,7 +78,6 @@ namespace ITMLib
 			makers.push_back(Maker("rgb", "Colour based tracker", TRACKER_COLOR, &MakeColourTracker));
 			makers.push_back(Maker("icp", "Depth based ICP tracker", TRACKER_ICP, &MakeICPTracker));
 			makers.push_back(Maker("extended", "Depth + colour based tracker", TRACKER_EXTENDED, &MakeExtendedTracker));
-			makers.push_back(Maker("wicp", "Depth based ICP tracker respecting reliability of depth measurements", TRACKER_WICP, &MakeWeightedICPTracker));
 			makers.push_back(Maker("imuicp", "Combined IMU and depth based ICP tracker", TRACKER_IMU, &MakeIMUTracker));
 			makers.push_back(Maker("ren", "Depth based SDF tracker", TRACKER_REN, &MakeRenTracker));
 		}
@@ -297,47 +292,7 @@ namespace ITMLib
 		ret->SetupLevels(numIterationsCoarse, numIterationsFine, outlierSpaceDistanceCoarse, outlierSpaceDistanceFine);
 		return ret;
 	}
-
-	/**
-	 * \brief Makes an WICP tracker.
-	 */
-	static ITMTracker *MakeWeightedICPTracker(const Vector2i& imgSize_rgb, const Vector2i& imgSize_d, ITMLibSettings::DeviceType deviceType, const ORUtils::KeyValueConfig & cfg,
-		const ITMLowLevelEngine *lowLevelEngine, ITMIMUCalibrator *imuCalibrator, ITMScene<TVoxel, TIndex> *scene)
-	{
-		const char *levelSetup = "rrrbb";
-		float smallStepSizeCriterion = 1e-3f;
-		float outlierDistance = 0.1f * 0.1f;
-
-		int verbose = 0;
-		if (cfg.getProperty("help") != NULL) if (verbose < 10) verbose = 10;
-		cfg.parseStrProperty("levels", "resolution hierarchy levels", levelSetup, verbose);
-		std::vector<TrackerIterationType> levels = parseLevelConfig(levelSetup);
-
-		cfg.parseFltProperty("minstep", "step size threshold for convergence", smallStepSizeCriterion, verbose);
-		cfg.parseFltProperty("outlier", "outlier distance threshold", outlierDistance, verbose);
-
-		switch (deviceType)
-		{
-		case ITMLibSettings::DEVICE_CPU:
-			return new ITMWeightedICPTracker_CPU(imgSize_d, &(levels[0]), static_cast<int>(levels.size()), 0/* settings->noICPRunTillLevel*/, outlierDistance, smallStepSizeCriterion, lowLevelEngine);
-		case ITMLibSettings::DEVICE_CUDA:
-#ifndef COMPILE_WITHOUT_CUDA
-			return new ITMWeightedICPTracker_CUDA(imgSize_d, &(levels[0]), static_cast<int>(levels.size()), 0/* settings->noICPRunTillLevel*/, outlierDistance, smallStepSizeCriterion, lowLevelEngine);
-#else
-			break;
-#endif
-		case ITMLibSettings::DEVICE_METAL:
-#ifdef COMPILE_WITH_METAL
-			return new ITMDepthTracker_Metal(imgSize_d, &(levels[0]), levels.size(), smallStepSizeCriterion, lowLevelEngine);
-#else
-			break;
-#endif
-		default: break;
-		}
-
-		throw std::runtime_error("Failed to make ICP tracker");
-	}
-
+	
 	/**
 	 * \brief Makes an IMU tracker.
 	 */

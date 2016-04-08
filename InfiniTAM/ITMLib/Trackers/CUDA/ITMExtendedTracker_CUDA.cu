@@ -17,8 +17,6 @@ struct ITMExtendedTracker_CUDA::AccuCell {
 struct ITMExtendedTracker_KernelParameters {
 	ITMExtendedTracker_CUDA::AccuCell *accu;
 	float *depth;
-	Vector4f *depthNormals;
-	float *depthUncertainty;
 	Matrix4f approxInvPose;
 	Vector4f *pointsMap;
 	Vector4f *normalsMap;
@@ -68,8 +66,6 @@ int ITMExtendedTracker_CUDA::ComputeGandH(float &f, float *nabla, float *hessian
 	struct ITMExtendedTracker_KernelParameters args;
 	args.accu = accu_device;
 	args.depth = viewHierarchyLevel->depth->GetData(MEMORYDEVICE_CUDA);
-	args.depthNormals = viewHierarchyLevel->depthNormals->GetData(MEMORYDEVICE_CUDA);
-	args.depthUncertainty = viewHierarchyLevel->depthUncertainty->GetData(MEMORYDEVICE_CUDA);
 	args.approxInvPose = approxInvPose;
 	args.pointsMap = sceneHierarchyLevel->pointsMap->GetData(MEMORYDEVICE_CUDA);
 	args.normalsMap = sceneHierarchyLevel->normalsMap->GetData(MEMORYDEVICE_CUDA);
@@ -132,8 +128,28 @@ int ITMExtendedTracker_CUDA::ComputeGandH(float &f, float *nabla, float *hessian
 
 // device functions
 
+// huber norm
+
+__device__ float rho(float r, float huber_b)
+{
+	float tmp = fabs(r) - huber_b;
+	tmp = MAX(tmp, 0.0f);
+	return r*r - tmp*tmp;
+}
+
+__device__ float rho_deriv(float r, float huber_b)
+{
+	return 2.0f*CLAMP(r, -huber_b, huber_b);
+}
+
+__device__ float rho_deriv2(float r, float huber_b)
+{
+	if (fabs(r) < huber_b) return 2.0f;
+	return 0.0f;
+}
+
 template<bool shortIteration, bool rotationOnly, bool useWeights>
-__device__ void exDepthTrackerOneLevel_g_rt_device_main(ITMExtendedTracker_CUDA::AccuCell *accu, float *depth, Vector4f *depthNormals, float *depthUncertainty, 
+__device__ void exDepthTrackerOneLevel_g_rt_device_main(ITMExtendedTracker_CUDA::AccuCell *accu, float *depth,
 	Matrix4f approxInvPose, Vector4f *pointsMap, Vector4f *normalsMap, Vector4f sceneIntrinsics, Vector2i sceneImageSize, Matrix4f scenePose, 
 	Vector4f viewIntrinsics, Vector2i viewImageSize, float spaceThresh)
 {
@@ -151,15 +167,13 @@ __device__ void exDepthTrackerOneLevel_g_rt_device_main(ITMExtendedTracker_CUDA:
 
 	const int noPara = shortIteration ? 3 : 6;
 	const int noParaSQ = shortIteration ? 3 + 2 + 1 : 6 + 5 + 4 + 3 + 2 + 1;
-	float A[noPara]; float b;
+	float A[noPara]; float b; float depthWeight = 1.0f;
 
 	bool isValidPoint = false;
 
 	if (x < viewImageSize.x && y < viewImageSize.y)
 	{
-		int locId_image = x + y * viewImageSize.x;
-
-		isValidPoint = computePerPointGH_exDepth_Ab<shortIteration, rotationOnly, useWeights>(A, b, x, y, depth[x + y * viewImageSize.x], depthNormals[locId_image], depthUncertainty[locId_image],
+		isValidPoint = computePerPointGH_exDepth_Ab<shortIteration, rotationOnly, useWeights>(A, b, x, y, depth[x + y * viewImageSize.x], depthWeight,
 			viewImageSize, viewIntrinsics, sceneImageSize, sceneIntrinsics, approxInvPose, scenePose, pointsMap, normalsMap, spaceThresh);
 		
 		if (isValidPoint) should_prefix = true;
@@ -189,7 +203,7 @@ __device__ void exDepthTrackerOneLevel_g_rt_device_main(ITMExtendedTracker_CUDA:
 	}
 
 	{ //reduction for energy function value
-		dim_shared1[locId_local] = b * b;
+		dim_shared1[locId_local] = rho(b, spaceThresh) * depthWeight;
 		__syncthreads();
 
 		if (locId_local < 128) dim_shared1[locId_local] += dim_shared1[locId_local + 128];
@@ -207,9 +221,9 @@ __device__ void exDepthTrackerOneLevel_g_rt_device_main(ITMExtendedTracker_CUDA:
 	//reduction for nabla
 	for (unsigned char paraId = 0; paraId < noPara; paraId+=3)
 	{
-		dim_shared1[locId_local] = b*A[paraId+0];
-		dim_shared2[locId_local] = b*A[paraId+1];
-		dim_shared3[locId_local] = b*A[paraId+2];
+		dim_shared1[locId_local] = rho_deriv(b, spaceThresh) * depthWeight * A[paraId + 0];
+		dim_shared2[locId_local] = rho_deriv(b, spaceThresh) * depthWeight * A[paraId + 1];
+		dim_shared3[locId_local] = rho_deriv(b, spaceThresh) * depthWeight * A[paraId + 2];
 		__syncthreads();
 
 		if (locId_local < 128) {
@@ -250,7 +264,7 @@ __device__ void exDepthTrackerOneLevel_g_rt_device_main(ITMExtendedTracker_CUDA:
 #if (defined(__CUDACC__) && defined(__CUDA_ARCH__)) || (defined(__METALC__))
 #pragma unroll
 #endif
-		for (int c = 0; c <= r; c++, counter++) localHessian[counter] = A[r] * A[c];
+		for (int c = 0; c <= r; c++, counter++) localHessian[counter] = rho_deriv2(b, spaceThresh) * depthWeight * A[r] * A[c];
 	}
 
 	//reduction for hessian
@@ -292,7 +306,7 @@ __device__ void exDepthTrackerOneLevel_g_rt_device_main(ITMExtendedTracker_CUDA:
 template<bool shortIteration, bool rotationOnly, bool useWeights>
 __global__ void exDepthTrackerOneLevel_g_rt_device(ITMExtendedTracker_KernelParameters para)
 {
-	exDepthTrackerOneLevel_g_rt_device_main<shortIteration, rotationOnly, useWeights>(para.accu, para.depth, para.depthNormals, para.depthUncertainty,
+	exDepthTrackerOneLevel_g_rt_device_main<shortIteration, rotationOnly, useWeights>(para.accu, para.depth,
 		para.approxInvPose, para.pointsMap, para.normalsMap, para.sceneIntrinsics, para.sceneImageSize, para.scenePose, 
 		para.viewIntrinsics, para.viewImageSize, para.spaceThresh);
 }

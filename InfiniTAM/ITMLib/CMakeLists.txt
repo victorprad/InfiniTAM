@@ -361,7 +361,6 @@ Trackers/CPU/ITMColorTracker_CPU.cpp
 Trackers/CPU/ITMDepthTracker_CPU.cpp
 Trackers/CPU/ITMExtendedTracker_CPU.cpp
 Trackers/CPU/ITMRenTracker_CPU.tpp
-Trackers/CPU/ITMWeightedICPTracker_CPU.cpp
 )
 
 SET(ITMLIB_TRACKERS_CPU_HEADERS
@@ -369,7 +368,6 @@ Trackers/CPU/ITMColorTracker_CPU.h
 Trackers/CPU/ITMDepthTracker_CPU.h
 Trackers/CPU/ITMExtendedTracker_CPU.h
 Trackers/CPU/ITMRenTracker_CPU.h
-Trackers/CPU/ITMWeightedICPTracker_CPU.h
 )
 
 ##
@@ -378,7 +376,7 @@ Trackers/CUDA/ITMColorTracker_CUDA.cu
 Trackers/CUDA/ITMDepthTracker_CUDA.cu
 Trackers/CUDA/ITMExtendedTracker_CUDA.cu
 Trackers/CUDA/ITMRenTracker_CUDA.tcu
-Trackers/CUDA/ITMWeightedICPTracker_CUDA.cu
+
 )
 
 SET(ITMLIB_TRACKERS_CUDA_HEADERS
@@ -386,7 +384,6 @@ Trackers/CUDA/ITMColorTracker_CUDA.h
 Trackers/CUDA/ITMDepthTracker_CUDA.h
 Trackers/CUDA/ITMExtendedTracker_CUDA.h
 Trackers/CUDA/ITMRenTracker_CUDA.h
-Trackers/CUDA/ITMWeightedICPTracker_CUDA.h
 )
 
 ##
@@ -396,7 +393,6 @@ Trackers/Interface/ITMDepthTracker.cpp
 Trackers/Interface/ITMExtendedTracker.cpp
 Trackers/Interface/ITMIMUTracker.cpp
 Trackers/Interface/ITMRenTracker.tpp
-Trackers/Interface/ITMWeightedICPTracker.cpp
 )
 
 SET(ITMLIB_TRACKERS_INTERFACE_HEADERS
@@ -407,7 +403,6 @@ Trackers/Interface/ITMExtendedTracker.h
 Trackers/Interface/ITMIMUTracker.h
 Trackers/Interface/ITMRenTracker.h
 Trackers/Interface/ITMTracker.h
-Trackers/Interface/ITMWeightedICPTracker.h
 )
 
 ##
@@ -416,7 +411,6 @@ Trackers/Shared/ITMColorTracker_Shared.h
 Trackers/Shared/ITMDepthTracker_Shared.h
 Trackers/Shared/ITMExtendedTracker_Shared.h
 Trackers/Shared/ITMRenTracker_Shared.h
-Trackers/Shared/ITMWeightedICPTracker_Shared.h
 )
 
 ##

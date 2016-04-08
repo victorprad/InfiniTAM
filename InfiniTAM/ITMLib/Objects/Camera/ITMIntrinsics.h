@@ -38,16 +38,6 @@ namespace ITMLib
 			projectionParamsSimple.all.z = cx; projectionParamsSimple.all.w = cy;
 		}
 
-		void ResizePrincipalPoint(float ratio)
-		{
-			//projectionParamsSimple.fx *= ratio; projectionParamsSimple.fy *= ratio;
-			projectionParamsSimple.px *= ratio; projectionParamsSimple.py *= ratio;
-			//projectionParamsSimple.all.x = projectionParamsSimple.fx;
-			//projectionParamsSimple.all.y = projectionParamsSimple.fy;
-			projectionParamsSimple.all.z = projectionParamsSimple.px; 
-			projectionParamsSimple.all.w = projectionParamsSimple.py;
-		}
-
 		ITMIntrinsics(void)
 		{
 			// standard calibration parameters for Kinect RGB camera. Not at all

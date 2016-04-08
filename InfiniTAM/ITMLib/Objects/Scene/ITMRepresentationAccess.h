@@ -216,8 +216,7 @@ _CPU_AND_GPU_CODE_ inline float readWithConfidenceFromSDF_float_interpolated(THR
 
 	isFound = true;
 
-	confidence = TVoxel::valueToFloat((1.0f - coeff.z) * res1_c + coeff.z * res2_c);
-	//printf("%f\n", confidence);
+	confidence = (1.0f - coeff.z) * res1_c + coeff.z * res2_c;
 
 	return TVoxel::valueToFloat((1.0f - coeff.z) * res1 + coeff.z * res2);
 }

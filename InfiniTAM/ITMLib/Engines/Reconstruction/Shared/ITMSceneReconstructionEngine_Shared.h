@@ -119,9 +119,7 @@ _CPU_AND_GPU_CODE_ inline void computeUpdatedVoxelColorInfo(DEVICEPTR(TVoxel) &v
 	newC /= newW;
 	newW = MIN(newW, maxW);
 
-	buffV3u = TO_UCHAR3(newC * 255.0f);
-
-	voxel.clr = buffV3u;
+	voxel.clr = TO_UCHAR3(newC * 255.0f);
 	voxel.w_color = (uchar)newW;
 }
 

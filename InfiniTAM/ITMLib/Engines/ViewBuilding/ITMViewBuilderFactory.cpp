@@ -13,30 +13,30 @@
 namespace ITMLib
 {
 
-	//#################### PUBLIC STATIC MEMBER FUNCTIONS ####################
+//#################### PUBLIC STATIC MEMBER FUNCTIONS ####################
 
-	ITMViewBuilder *ITMViewBuilderFactory::MakeViewBuilder(const ITMRGBDCalib *calib, ITMLibSettings::DeviceType deviceType, Vector2i paddingSize)
-	{
-		ITMViewBuilder *viewBuilder = NULL;
+ITMViewBuilder *ITMViewBuilderFactory::MakeViewBuilder(const ITMRGBDCalib *calib, ITMLibSettings::DeviceType deviceType)
+{
+  ITMViewBuilder *viewBuilder = NULL;
 
-		switch (deviceType)
-		{
-		case ITMLibSettings::DEVICE_CPU:
-			viewBuilder = new ITMViewBuilder_CPU(calib, paddingSize);
-			break;
-		case ITMLibSettings::DEVICE_CUDA:
+  switch(deviceType)
+  {
+    case ITMLibSettings::DEVICE_CPU:
+      viewBuilder = new ITMViewBuilder_CPU(calib);
+      break;
+    case ITMLibSettings::DEVICE_CUDA:
 #ifndef COMPILE_WITHOUT_CUDA
-			viewBuilder = new ITMViewBuilder_CUDA(calib, paddingSize);
+      viewBuilder = new ITMViewBuilder_CUDA(calib);
 #endif
-			break;
-		case ITMLibSettings::DEVICE_METAL:
+      break;
+    case ITMLibSettings::DEVICE_METAL:
 #ifdef COMPILE_WITH_METAL
-			viewBuilder = new ITMViewBuilder_Metal(calib, paddingSize);
+      viewBuilder = new ITMViewBuilder_Metal(calib);
 #endif
-			break;
-		}
+      break;
+  }
 
-		return viewBuilder;
-	}
+  return viewBuilder;
+}
 
 }

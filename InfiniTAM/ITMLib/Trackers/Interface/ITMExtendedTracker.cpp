@@ -79,78 +79,8 @@ void ITMExtendedTracker::SetupLevels(int numIterCoarse, int numIterFine, float s
 	}
 }
 
-inline float ComputeCovarianceDet(Vector3f X_sum, float *XXT_triangle, int noNormals)
-{
-	X_sum *= 1.0f / (float)noNormals;
-
-	Matrix3f S;
-	S.m00 = XXT_triangle[0] / (float)noNormals - X_sum.x * X_sum.x;
-	S.m01 = XXT_triangle[1] / (float)noNormals - X_sum.x * X_sum.y;
-	S.m02 = XXT_triangle[2] / (float)noNormals - X_sum.x * X_sum.z;
-	S.m10 = S.m01;
-	S.m11 = XXT_triangle[3] / (float)noNormals - X_sum.y * X_sum.y;
-	S.m12 = XXT_triangle[4] / (float)noNormals - X_sum.y * X_sum.z;
-	S.m20 = S.m02;
-	S.m21 = S.m12;
-	S.m22 = XXT_triangle[5] / (float)noNormals - X_sum.z * X_sum.z;
-
-	return S.det();
-}
-
 void ITMExtendedTracker::SetEvaluationData(ITMTrackingState *trackingState, const ITMView *view)
 {
-	//// complexity
-	//trackingState->pointCloud->colours->UpdateHostFromDevice();
-	//trackingState->pointCloud->locations->UpdateHostFromDevice();
-
-	//Vector4f *points = trackingState->pointCloud->locations->GetData(MEMORYDEVICE_CPU);
-	//Vector4f *normals = trackingState->pointCloud->colours->GetData(MEMORYDEVICE_CPU);
-	//Vector2i imgSize = view->depth->noDims;
-
-	//view->depthUncertainty->Clear();
-
-	//view->depthConfidence->UpdateHostFromDevice();
-
-	////float *dc = view->depthConfidence->GetData(MEMORYDEVICE_CPU);
-
-	//float *du = view->depthUncertainty->GetData(MEMORYDEVICE_CPU);
-	//for (int y = 2; y < imgSize.y - 3; y++) for (int x = 2; x < imgSize.x - 3; x++)
-	//{
-	//	float XXT_triangle[5]; Vector3f sum(0.0f, 0.0f, 0.0f);
-	//	int noNormals = 0;
-
-	//	for (int i = 0; i < 5; i++) XXT_triangle[i] = 0;
-
-	//	for (int offY = -2; offY <= 2; offY++) for (int offX = -2; offX <= 2; offX++)
-	//	{
-	//		Vector4f X = normals[(x + offX) + (y + offY) * imgSize.x];
-
-	//		if (X.w > -1.0f)
-	//		{
-	//			XXT_triangle[0] += X.x * X.x; XXT_triangle[1] += X.x * X.y; XXT_triangle[2] += X.x * X.z;
-	//			XXT_triangle[3] += X.y * X.y; XXT_triangle[4] += X.y * X.z;
-	//			XXT_triangle[5] += X.z * X.z;
-
-	//			sum += X.toVector3();
-
-	//			noNormals++;
-	//		}
-	//	}
-
-	//	float det = 0;
-	//	if (noNormals > 0)
-	//		det = ComputeCovarianceDet(sum, XXT_triangle, noNormals);
-
-	//	//if (det > 0) printf("%f\n", det);
-
-	//	//du[x + y * imgSize.x] = points[x + y * imgSize.x].w > 10 ? det : 0.2f;
-	//	du[x + y * imgSize.x] = det;
-	//}
-
-	//WriteToBIN(view->depthUncertainty->GetData(MEMORYDEVICE_CPU), 640 * 480, "c:/temp/file.bin");
-
-	//view->depthUncertainty->UpdateDeviceFromHost();
-
 	this->trackingState = trackingState;
 	this->view = view;
 
@@ -159,8 +89,6 @@ void ITMExtendedTracker::SetEvaluationData(ITMTrackingState *trackingState, cons
 
 	// the image hierarchy allows pointers to external data at level 0
 	viewHierarchy->levels[0]->depth = view->depth;
-	viewHierarchy->levels[0]->depthUncertainty = view->depthUncertainty;
-	viewHierarchy->levels[0]->depthNormals = view->depthNormals;
 
 	sceneHierarchy->levels[0]->pointsMap = trackingState->pointCloud->locations;
 	sceneHierarchy->levels[0]->normalsMap = trackingState->pointCloud->colours;
@@ -175,8 +103,6 @@ void ITMExtendedTracker::PrepareForEvaluation()
 		ITMExtendHierarchyLevel *currentLevelView = viewHierarchy->levels[i], *previousLevelView = viewHierarchy->levels[i - 1];
 		
 		lowLevelEngine->FilterSubsampleWithHoles(currentLevelView->depth, previousLevelView->depth);
-		lowLevelEngine->FilterSubsampleWithHoles(currentLevelView->depthUncertainty, previousLevelView->depthUncertainty);
-		lowLevelEngine->FilterSubsampleWithHoles(currentLevelView->depthNormals, previousLevelView->depthNormals);
 
 		currentLevelView->intrinsics = previousLevelView->intrinsics * 0.5f;
 

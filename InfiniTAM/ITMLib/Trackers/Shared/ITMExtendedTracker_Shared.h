@@ -6,12 +6,13 @@
 
 template<bool shortIteration, bool rotationOnly, bool useWeights>
 _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exDepth_Ab(THREADPTR(float) *A, THREADPTR(float) &b,
-	const THREADPTR(int) & x, const THREADPTR(int) & y,
-	const CONSTPTR(float) &depth, const CONSTPTR(Vector4f) &depthNormal, CONSTPTR(float) &depthWeight, 
+	const THREADPTR(int) & x, const THREADPTR(int) & y, const CONSTPTR(float) &depth, CONSTPTR(float) &depthWeight, 
 	const CONSTPTR(Vector2i) & viewImageSize, const CONSTPTR(Vector4f) & viewIntrinsics, const CONSTPTR(Vector2i) & sceneImageSize,
 	const CONSTPTR(Vector4f) & sceneIntrinsics, const CONSTPTR(Matrix4f) & approxInvPose, const CONSTPTR(Matrix4f) & scenePose, const CONSTPTR(Vector4f) *pointsMap,
 	const CONSTPTR(Vector4f) *normalsMap, float spaceThresh)
 {
+	depthWeight = 0;
+
 	if (depth <= 1e-8f) return false; //check if valid -- != 0.0f
 
 	Vector4f tmp3Dpoint, tmp3Dpoint_reproj; Vector3f ptDiff;
@@ -38,62 +39,26 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exDepth_Ab(THREADPTR(float) *A,
 	curr3Dpoint = interpolateBilinear_withHoles(pointsMap, tmp2Dpoint, sceneImageSize);
 	if (curr3Dpoint.w < 0.0f) return false;
 	
-	if (useWeights)
-	{
-		if (curr3Dpoint.w < 50) return false;
-	}
-
 	ptDiff.x = curr3Dpoint.x - tmp3Dpoint.x;
 	ptDiff.y = curr3Dpoint.y - tmp3Dpoint.y;
 	ptDiff.z = curr3Dpoint.z - tmp3Dpoint.z;
 	float dist = ptDiff.x * ptDiff.x + ptDiff.y * ptDiff.y + ptDiff.z * ptDiff.z;
 
-	if (dist > spaceThresh) return false;
+	if (dist > 8 * spaceThresh) return false;
 
 	corr3Dnormal = interpolateBilinear_withHoles(normalsMap, tmp2Dpoint, sceneImageSize);
 	//if (corr3Dnormal.w < 0.0f) return false;
 
+	depthWeight = MAX(0.0f, 1.0f - (depth - 0.2f) / (3.0f - 0.2f));
+	depthWeight *= depthWeight;
+
+	if (useWeights)
+	{
+		if (curr3Dpoint.w < 20) return false;
+		depthWeight *= (curr3Dpoint.w - 20) / 50;
+	}
+
 	b = corr3Dnormal.x * ptDiff.x + corr3Dnormal.y * ptDiff.y + corr3Dnormal.z * ptDiff.z;
-
-	//corr3Dnormal = corr3Dnormal * depthWeight;
-
-	//float minDist = 1e10; Vector2f found2DPoint;
-	//for (int offY = -2; offY <= 2; offY++) for (int offX = -2; offX <= 2; offX++)
-	//{
-	//	Vector2f new2DPoint = tmp2Dpoint + Vector2f(offX, offY); Vector3f ptDiffCand;
-
-	//	if (!((new2DPoint.x >= 0.0f) && (new2DPoint.x <= sceneImageSize.x - 2) && (new2DPoint.y >= 0.0f) && (new2DPoint.y <= sceneImageSize.y - 2)))
-	//		continue;
-
-	//	curr3Dpoint = interpolateBilinear_withHoles(pointsMap, new2DPoint, sceneImageSize);
-
-	//	ptDiffCand.x = curr3Dpoint.x - tmp3Dpoint.x;
-	//	ptDiffCand.y = curr3Dpoint.y - tmp3Dpoint.y;
-	//	ptDiffCand.z = curr3Dpoint.z - tmp3Dpoint.z;
-	//	float dist = ptDiffCand.x * ptDiffCand.x + ptDiffCand.y * ptDiffCand.y + ptDiffCand.z * ptDiffCand.z;
-
-	//	if (dist < minDist)
-	//	{
-	//		minDist = dist;
-	//		ptDiff = ptDiffCand;
-	//		found2DPoint = new2DPoint;
-	//	}
-	//}
-
-	//if (minDist > spaceThresh) return false;
-
-	//corr3Dnormal = interpolateBilinear_withHoles(normalsMap, found2DPoint, sceneImageSize);
-
-	//depthWeight = depth;
-
-	//Vector3f cross; 
-	//cross.x = corr3Dnormal.y*depthNormal.z - corr3Dnormal.x*depthNormal.y;
-	//cross.y = corr3Dnormal.x*depthNormal.x - corr3Dnormal.x*depthNormal.z;
-	//cross.z = corr3Dnormal.x*depthNormal.y - corr3Dnormal.y*depthNormal.x;
-	//dist = cross.x * cross.x + cross.y * cross.y + cross.z * cross.z;
-	//
-	//if (sqrt(dist) > sin(50 * DEGTORAD))
-	//	return false;
 
 	// TODO check whether normal matches normal from image, done in the original paper, but does not seem to be required
 	if (shortIteration)
@@ -119,16 +84,15 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exDepth_Ab(THREADPTR(float) *A,
 
 template<bool shortIteration, bool rotationOnly, bool useWeights>
 _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exDepth(THREADPTR(float) *localNabla, THREADPTR(float) *localHessian, THREADPTR(float) &localF,
-	const THREADPTR(int) & x, const THREADPTR(int) & y,
-	const CONSTPTR(float) &depth, const CONSTPTR(Vector4f) &depthNormals, CONSTPTR(float) &depthUncertainty, const CONSTPTR(Vector2i) & viewImageSize, const CONSTPTR(Vector4f) & viewIntrinsics, const CONSTPTR(Vector2i) & sceneImageSize,
-	const CONSTPTR(Vector4f) & sceneIntrinsics, const CONSTPTR(Matrix4f) & approxInvPose, const CONSTPTR(Matrix4f) & scenePose, const CONSTPTR(Vector4f) *pointsMap,
-	const CONSTPTR(Vector4f) *normalsMap, float spaceThreash)
+	const THREADPTR(int) & x, const THREADPTR(int) & y, const CONSTPTR(float) &depth, THREADPTR(float) &depthWeight, CONSTPTR(Vector2i) & viewImageSize, const CONSTPTR(Vector4f) & viewIntrinsics, 
+	const CONSTPTR(Vector2i) & sceneImageSize, const CONSTPTR(Vector4f) & sceneIntrinsics, const CONSTPTR(Matrix4f) & approxInvPose, const CONSTPTR(Matrix4f) & scenePose, 
+	const CONSTPTR(Vector4f) *pointsMap, const CONSTPTR(Vector4f) *normalsMap, float spaceThreash)
 {
 	const int noPara = shortIteration ? 3 : 6;
 	float A[noPara];
 	float b;
 
-	bool ret = computePerPointGH_exDepth_Ab<shortIteration, rotationOnly, useWeights>(A, b, x, y, depth, depthNormals, depthUncertainty, viewImageSize, viewIntrinsics, sceneImageSize, sceneIntrinsics, 
+	bool ret = computePerPointGH_exDepth_Ab<shortIteration, rotationOnly, useWeights>(A, b, x, y, depth, depthWeight, viewImageSize, viewIntrinsics, sceneImageSize, sceneIntrinsics,
 		approxInvPose, scenePose, pointsMap, normalsMap, spaceThreash);
 
 	if (!ret) return false;
