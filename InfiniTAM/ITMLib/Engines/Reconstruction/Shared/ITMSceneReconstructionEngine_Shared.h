@@ -23,7 +23,7 @@ _CPU_AND_GPU_CODE_ inline float computeUpdatedVoxelDepthInfo(DEVICEPTR(TVoxel) &
 
 	// get measured depth from image
 	depth_measure = depth[(int)(pt_image.x + 0.5f) + (int)(pt_image.y + 0.5f) * imgSize.x];
-	if (depth_measure <= 0.0) return -1;
+	if (depth_measure <= 0.0f) return -1;
 
 	// check whether voxel needs updating
 	eta = depth_measure - pt_camera.z;

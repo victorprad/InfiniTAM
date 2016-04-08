@@ -10,7 +10,8 @@
 using namespace ITMLib;
 
 ITMExtendedTracker::ITMExtendedTracker(Vector2i imgSize, TrackerIterationType *trackingRegime, int noHierarchyLevels,
-	float terminationThreshold, float failureDetectorThreshold, const ITMLowLevelEngine *lowLevelEngine, MemoryDeviceType memoryType)
+	float terminationThreshold, float failureDetectorThreshold, float viewFrustum_min, float viewFrustum_max,
+	float tukeyCutOff, float framesToSkip, float framesToWeight, const ITMLowLevelEngine *lowLevelEngine, MemoryDeviceType memoryType)
 {
 	viewHierarchy = new ITMImageHierarchy<ITMExtendHierarchyLevel>(imgSize, trackingRegime, noHierarchyLevels, memoryType, true);
 	sceneHierarchy = new ITMImageHierarchy<ITMSceneHierarchyLevel>(imgSize, trackingRegime, noHierarchyLevels, memoryType, true);
@@ -23,6 +24,12 @@ ITMExtendedTracker::ITMExtendedTracker(Vector2i imgSize, TrackerIterationType *t
 	this->lowLevelEngine = lowLevelEngine;
 
 	this->terminationThreshold = terminationThreshold;
+
+	this->viewFrustum_min = viewFrustum_min;
+	this->viewFrustum_max = viewFrustum_max;
+	this->tukeyCutOff = tukeyCutOff;
+	this->framesToSkip = framesToSkip;
+	this->framesToWeight = framesToWeight;
 
 	map = new ORUtils::HomkerMap(2);
 	svmClassifier = new ORUtils::SVMClassifier(map->getDescriptorSize(4));

@@ -9,7 +9,7 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exDepth_Ab(THREADPTR(float) *A,
 	const THREADPTR(int) & x, const THREADPTR(int) & y, const CONSTPTR(float) &depth, CONSTPTR(float) &depthWeight, 
 	const CONSTPTR(Vector2i) & viewImageSize, const CONSTPTR(Vector4f) & viewIntrinsics, const CONSTPTR(Vector2i) & sceneImageSize,
 	const CONSTPTR(Vector4f) & sceneIntrinsics, const CONSTPTR(Matrix4f) & approxInvPose, const CONSTPTR(Matrix4f) & scenePose, const CONSTPTR(Vector4f) *pointsMap,
-	const CONSTPTR(Vector4f) *normalsMap, float spaceThresh)
+	const CONSTPTR(Vector4f) *normalsMap, float spaceThresh, float viewFrustum_min, float viewFrustum_max, float tukeyCutOff, float framesToSkip, float framesToWeight)
 {
 	depthWeight = 0;
 
@@ -44,18 +44,18 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exDepth_Ab(THREADPTR(float) *A,
 	ptDiff.z = curr3Dpoint.z - tmp3Dpoint.z;
 	float dist = ptDiff.x * ptDiff.x + ptDiff.y * ptDiff.y + ptDiff.z * ptDiff.z;
 
-	if (dist > 8 * spaceThresh) return false;
+	if (dist > tukeyCutOff * spaceThresh) return false;
 
 	corr3Dnormal = interpolateBilinear_withHoles(normalsMap, tmp2Dpoint, sceneImageSize);
 	//if (corr3Dnormal.w < 0.0f) return false;
 
-	depthWeight = MAX(0.0f, 1.0f - (depth - 0.2f) / (3.0f - 0.2f));
+	depthWeight = MAX(0.0f, 1.0f - (depth - viewFrustum_min) / (viewFrustum_max - viewFrustum_min));
 	depthWeight *= depthWeight;
 
 	if (useWeights)
 	{
-		if (curr3Dpoint.w < 20) return false;
-		depthWeight *= (curr3Dpoint.w - 20) / 50;
+		if (curr3Dpoint.w < framesToSkip) return false;
+		depthWeight *= (curr3Dpoint.w - framesToSkip) / framesToWeight;
 	}
 
 	b = corr3Dnormal.x * ptDiff.x + corr3Dnormal.y * ptDiff.y + corr3Dnormal.z * ptDiff.z;
@@ -86,14 +86,14 @@ template<bool shortIteration, bool rotationOnly, bool useWeights>
 _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exDepth(THREADPTR(float) *localNabla, THREADPTR(float) *localHessian, THREADPTR(float) &localF,
 	const THREADPTR(int) & x, const THREADPTR(int) & y, const CONSTPTR(float) &depth, THREADPTR(float) &depthWeight, CONSTPTR(Vector2i) & viewImageSize, const CONSTPTR(Vector4f) & viewIntrinsics, 
 	const CONSTPTR(Vector2i) & sceneImageSize, const CONSTPTR(Vector4f) & sceneIntrinsics, const CONSTPTR(Matrix4f) & approxInvPose, const CONSTPTR(Matrix4f) & scenePose, 
-	const CONSTPTR(Vector4f) *pointsMap, const CONSTPTR(Vector4f) *normalsMap, float spaceThreash)
+	const CONSTPTR(Vector4f) *pointsMap, const CONSTPTR(Vector4f) *normalsMap, float spaceThreash, float viewFrustum_min, float viewFrustum_max, float tukeyCutOff, float framesToSkip, float framesToWeight)
 {
 	const int noPara = shortIteration ? 3 : 6;
 	float A[noPara];
 	float b;
 
 	bool ret = computePerPointGH_exDepth_Ab<shortIteration, rotationOnly, useWeights>(A, b, x, y, depth, depthWeight, viewImageSize, viewIntrinsics, sceneImageSize, sceneIntrinsics,
-		approxInvPose, scenePose, pointsMap, normalsMap, spaceThreash);
+		approxInvPose, scenePose, pointsMap, normalsMap, spaceThreash, viewFrustum_min, viewFrustum_max, tukeyCutOff, framesToSkip, framesToWeight);
 
 	if (!ret) return false;
 

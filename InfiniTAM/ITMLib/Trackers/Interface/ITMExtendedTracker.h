@@ -57,6 +57,9 @@ namespace ITMLib
 
 		int currentFrameNo;
 
+		float viewFrustum_min, viewFrustum_max;
+		float tukeyCutOff, framesToSkip, framesToWeight;
+
 		virtual int ComputeGandH(float &f, float *nabla, float *hessian, Matrix4f approxInvPose) = 0;
 
 	public:
@@ -69,6 +72,7 @@ namespace ITMLib
 
 		ITMExtendedTracker(Vector2i imgSize, TrackerIterationType *trackingRegime, int noHierarchyLevels,
 			float terminationThreshold, float failureDetectorThreshold, 
+			float viewFrustum_min, float viewFrustum_max, float tukeyCutOff, float framesToSkip, float framesToWeight,
 			const ITMLowLevelEngine *lowLevelEngine, MemoryDeviceType memoryType);
 		virtual ~ITMExtendedTracker(void);
 	};

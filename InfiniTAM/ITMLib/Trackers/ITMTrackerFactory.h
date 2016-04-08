@@ -252,11 +252,14 @@ namespace ITMLib
 	{
 		const char *levelSetup = "rrbb";
 		float smallStepSizeCriterion = 1e-4f;
-		float outlierSpaceDistanceFine = 0.002f;
-		float outlierSpaceDistanceCoarse = 0.01f;
+		float outlierSpaceDistanceFine = 0.004f;
+		float outlierSpaceDistanceCoarse = 0.1f;
 		float failureDetectorThd = 3.0f;
-		int numIterationsCoarse = 10;
-		int numIterationsFine = 2;
+		float tukeyCutOff = 8.0f;
+		float framesToSkip = 20.0f;
+		float framesToWeight = 50.0f;
+		int numIterationsCoarse = 20;
+		int numIterationsFine = 20;
 
 		int verbose = 0;
 		if (cfg.getProperty("help") != NULL) if (verbose < 10) verbose = 10;
@@ -268,22 +271,28 @@ namespace ITMLib
 		cfg.parseFltProperty("outlierSpaceF", "space outlier threshold at finest level", outlierSpaceDistanceFine, verbose);
 		cfg.parseIntProperty("numiterC", "maximum number of iterations at coarsest level", numIterationsCoarse, verbose);
 		cfg.parseIntProperty("numiterF", "maximum number of iterations at finest level", numIterationsFine, verbose);
+		cfg.parseIntProperty("tukeyCutOff", "cutff for the tukey m-estimator", numIterationsFine, verbose);
+		cfg.parseIntProperty("framesToSkip", "number of frames to skip before depth pixel is used for tracking", numIterationsFine, verbose);
+		cfg.parseIntProperty("framesToWeight", "number of frames to weight each depth pixel for before using it fully", numIterationsFine, verbose);
 		cfg.parseFltProperty("failureDec", "threshold for the failure detection", failureDetectorThd, verbose);
 
 		ITMExtendedTracker *ret = NULL;
 		switch (deviceType)
 		{
 		case ITMLibSettings::DEVICE_CPU:
-			ret = new ITMExtendedTracker_CPU(imgSize_d, &(levels[0]), static_cast<int>(levels.size()), smallStepSizeCriterion, failureDetectorThd, lowLevelEngine);
+			ret = new ITMExtendedTracker_CPU(imgSize_d, &(levels[0]), static_cast<int>(levels.size()), smallStepSizeCriterion, failureDetectorThd, 
+				scene->sceneParams->viewFrustum_min, scene->sceneParams->viewFrustum_max, tukeyCutOff, framesToSkip, framesToWeight, lowLevelEngine);
 			break;
 		case ITMLibSettings::DEVICE_CUDA:
 #ifndef COMPILE_WITHOUT_CUDA
-			ret = new ITMExtendedTracker_CUDA(imgSize_d, &(levels[0]), static_cast<int>(levels.size()), smallStepSizeCriterion, failureDetectorThd, lowLevelEngine);
+			ret = new ITMExtendedTracker_CUDA(imgSize_d, &(levels[0]), static_cast<int>(levels.size()), smallStepSizeCriterion, failureDetectorThd, 
+				scene->sceneParams->viewFrustum_min, scene->sceneParams->viewFrustum_max, tukeyCutOff, framesToSkip, framesToWeight, lowLevelEngine);
 #endif
 			break;
 		case ITMLibSettings::DEVICE_METAL:
 #ifdef COMPILE_WITH_METAL
-			ret = new ITMExtendedTracker_Metal(imgSize_d, &(levels[0]), static_cast<int>(levels.size()), smallStepSizeCriterion, failureDetectorThd, lowLevelEngine);
+			ret = new ITMExtendedTracker_Metal(imgSize_d, &(levels[0]), static_cast<int>(levels.size()), smallStepSizeCriterion, failureDetectorThd, 
+				scene->sceneParams->viewFrustum_min, scene->sceneParams->viewFrustum_max, tukeyCutOff, framesToSkip, framesToWeight,  lowLevelEngine);
 #endif
 			break;
 		}

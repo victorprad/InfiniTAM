@@ -26,6 +26,8 @@ struct ITMExtendedTracker_KernelParameters {
 	Vector4f viewIntrinsics;
 	Vector2i viewImageSize;
 	float spaceThresh;
+	float viewFrustum_min, viewFrustum_max;
+	float tukeyCutOff, framesToSkip, framesToWeight;
 };
 
 template<bool shortIteration, bool rotationOnly, bool useWeights>
@@ -34,8 +36,10 @@ __global__ void exDepthTrackerOneLevel_g_rt_device(ITMExtendedTracker_KernelPara
 // host methods
 
 ITMExtendedTracker_CUDA::ITMExtendedTracker_CUDA(Vector2i imgSize, TrackerIterationType *trackingRegime, int noHierarchyLevels,
-	float terminationThreshold, float failureDetectorThreshold, const ITMLowLevelEngine *lowLevelEngine)
- : ITMExtendedTracker(imgSize, trackingRegime, noHierarchyLevels, terminationThreshold, failureDetectorThreshold, lowLevelEngine, MEMORYDEVICE_CUDA)
+	float terminationThreshold, float failureDetectorThreshold, float viewFrustum_min, float viewFrustum_max, float tukeyCutOff, float framesToSkip, float framesToWeight,
+	const ITMLowLevelEngine *lowLevelEngine)
+	: ITMExtendedTracker(imgSize, trackingRegime, noHierarchyLevels, terminationThreshold, failureDetectorThreshold, viewFrustum_min, viewFrustum_max, 
+	tukeyCutOff, framesToSkip, framesToWeight, lowLevelEngine, MEMORYDEVICE_CUDA)
 {
 	ORcudaSafeCall(cudaMallocHost((void**)&accu_host, sizeof(AccuCell)));
 	ORcudaSafeCall(cudaMalloc((void**)&accu_device, sizeof(AccuCell)));
@@ -75,6 +79,13 @@ int ITMExtendedTracker_CUDA::ComputeGandH(float &f, float *nabla, float *hessian
 	args.viewIntrinsics = viewHierarchyLevel->intrinsics;
 	args.viewImageSize = viewHierarchyLevel->depth->noDims;
 	args.spaceThresh = spaceThresh[levelId];
+	args.viewFrustum_min = viewFrustum_min;
+	args.viewFrustum_max = viewFrustum_max;
+	args.tukeyCutOff = tukeyCutOff;
+	args.framesToSkip = framesToSkip;
+	args.framesToWeight = framesToWeight;
+
+	//printf("%f %f\n", viewFrustum_min, viewFrustum_max);
 
 	if (currentFrameNo < 100)
 	{
@@ -139,7 +150,7 @@ __device__ float rho(float r, float huber_b)
 
 __device__ float rho_deriv(float r, float huber_b)
 {
-	return 2.0f*CLAMP(r, -huber_b, huber_b);
+	return 2.0f * CLAMP(r, -huber_b, huber_b);
 }
 
 __device__ float rho_deriv2(float r, float huber_b)
@@ -151,7 +162,8 @@ __device__ float rho_deriv2(float r, float huber_b)
 template<bool shortIteration, bool rotationOnly, bool useWeights>
 __device__ void exDepthTrackerOneLevel_g_rt_device_main(ITMExtendedTracker_CUDA::AccuCell *accu, float *depth,
 	Matrix4f approxInvPose, Vector4f *pointsMap, Vector4f *normalsMap, Vector4f sceneIntrinsics, Vector2i sceneImageSize, Matrix4f scenePose, 
-	Vector4f viewIntrinsics, Vector2i viewImageSize, float spaceThresh)
+	Vector4f viewIntrinsics, Vector2i viewImageSize, float spaceThresh, float viewFrustum_min, float viewFrustum_max, 
+	float tukeyCutOff, float framesToSkip, float framesToWeight)
 {
 	int x = threadIdx.x + blockIdx.x * blockDim.x, y = threadIdx.y + blockIdx.y * blockDim.y;
 
@@ -174,7 +186,8 @@ __device__ void exDepthTrackerOneLevel_g_rt_device_main(ITMExtendedTracker_CUDA:
 	if (x < viewImageSize.x && y < viewImageSize.y)
 	{
 		isValidPoint = computePerPointGH_exDepth_Ab<shortIteration, rotationOnly, useWeights>(A, b, x, y, depth[x + y * viewImageSize.x], depthWeight,
-			viewImageSize, viewIntrinsics, sceneImageSize, sceneIntrinsics, approxInvPose, scenePose, pointsMap, normalsMap, spaceThresh);
+			viewImageSize, viewIntrinsics, sceneImageSize, sceneIntrinsics, approxInvPose, scenePose, pointsMap, normalsMap, spaceThresh, 
+			viewFrustum_min, viewFrustum_max, tukeyCutOff, framesToSkip, framesToWeight);
 		
 		if (isValidPoint) should_prefix = true;
 	}
@@ -308,6 +321,7 @@ __global__ void exDepthTrackerOneLevel_g_rt_device(ITMExtendedTracker_KernelPara
 {
 	exDepthTrackerOneLevel_g_rt_device_main<shortIteration, rotationOnly, useWeights>(para.accu, para.depth,
 		para.approxInvPose, para.pointsMap, para.normalsMap, para.sceneIntrinsics, para.sceneImageSize, para.scenePose, 
-		para.viewIntrinsics, para.viewImageSize, para.spaceThresh);
+		para.viewIntrinsics, para.viewImageSize, para.spaceThresh, para.viewFrustum_min, para.viewFrustum_max, 
+		para.tukeyCutOff, para.framesToSkip, para.framesToWeight);
 }
 

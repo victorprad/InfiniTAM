@@ -6,8 +6,10 @@
 using namespace ITMLib;
 
 ITMExtendedTracker_CPU::ITMExtendedTracker_CPU(Vector2i imgSize, TrackerIterationType *trackingRegime, int noHierarchyLevels,
-	float terminationThreshold, float failureDetectorThreshold, const ITMLowLevelEngine *lowLevelEngine)
- : ITMExtendedTracker(imgSize, trackingRegime, noHierarchyLevels, terminationThreshold,  failureDetectorThreshold, lowLevelEngine, MEMORYDEVICE_CPU)
+	float terminationThreshold, float failureDetectorThreshold, float viewFrustum_min, float viewFrustum_max, float tukeyCutOff, float framesToSkip, float framesToWeight,
+	const ITMLowLevelEngine *lowLevelEngine)
+	: ITMExtendedTracker(imgSize, trackingRegime, noHierarchyLevels, terminationThreshold, failureDetectorThreshold, viewFrustum_min, viewFrustum_max, tukeyCutOff, framesToSkip, 
+	framesToWeight, lowLevelEngine, MEMORYDEVICE_CPU)
 { }
 
 ITMExtendedTracker_CPU::~ITMExtendedTracker_CPU(void) { }
@@ -51,15 +53,18 @@ int ITMExtendedTracker_CPU::ComputeGandH(float &f, float *nabla, float *hessian,
 		{
 		case TRACKER_ITERATION_ROTATION:
 			isValidPoint = computePerPointGH_exDepth<true, true, false>(localNabla, localHessian, localF, x, y, depth[x + y * viewImageSize.x], depthWeight,
-				viewImageSize, viewIntrinsics, sceneImageSize, sceneIntrinsics, approxInvPose, scenePose, pointsMap, normalsMap, spaceThresh[levelId]);
+				viewImageSize, viewIntrinsics, sceneImageSize, sceneIntrinsics, approxInvPose, scenePose, pointsMap, normalsMap, spaceThresh[levelId], 
+				viewFrustum_min, viewFrustum_max, tukeyCutOff, framesToSkip, framesToWeight);
 			break;
 		case TRACKER_ITERATION_TRANSLATION:
 			isValidPoint = computePerPointGH_exDepth<true, false, false>(localNabla, localHessian, localF, x, y, depth[x + y * viewImageSize.x], depthWeight,
-				viewImageSize, viewIntrinsics, sceneImageSize, sceneIntrinsics, approxInvPose, scenePose, pointsMap, normalsMap, spaceThresh[levelId]);
+				viewImageSize, viewIntrinsics, sceneImageSize, sceneIntrinsics, approxInvPose, scenePose, pointsMap, normalsMap, spaceThresh[levelId],
+				viewFrustum_min, viewFrustum_max, tukeyCutOff, framesToSkip, framesToWeight);
 			break;
 		case TRACKER_ITERATION_BOTH:
 			isValidPoint = computePerPointGH_exDepth<false, false, false>(localNabla, localHessian, localF, x, y, depth[x + y * viewImageSize.x], depthWeight,
-				viewImageSize, viewIntrinsics, sceneImageSize, sceneIntrinsics, approxInvPose, scenePose, pointsMap, normalsMap, spaceThresh[levelId]);
+				viewImageSize, viewIntrinsics, sceneImageSize, sceneIntrinsics, approxInvPose, scenePose, pointsMap, normalsMap, spaceThresh[levelId],
+				viewFrustum_min, viewFrustum_max, tukeyCutOff, framesToSkip, framesToWeight);
 			break;
 		default:
 			isValidPoint = false;

@@ -13,7 +13,8 @@ namespace ITMLib
 
 	public:
 		ITMExtendedTracker_CPU(Vector2i imgSize, TrackerIterationType *trackingRegime, int noHierarchyLevels,
-			float terminationThreshold, float failureDetectorThreshold, const ITMLowLevelEngine *lowLevelEngine);
+			float terminationThreshold, float failureDetectorThreshold, float viewFrustum_min, float viewFrustum_max, 
+			float tukeyCutOff, float framesToSkip, float framesToWeight, const ITMLowLevelEngine *lowLevelEngine);
 		~ITMExtendedTracker_CPU(void);
 	};
 }

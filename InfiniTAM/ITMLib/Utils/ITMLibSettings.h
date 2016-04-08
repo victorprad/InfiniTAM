@@ -38,8 +38,6 @@ namespace ITMLib
 
 		const char *trackerConfig;
 
-		int imagePadding;
-
 		/// Further, scene specific parameters such as voxel size
 		ITMSceneParams sceneParams;
 		ITMSurfelSceneParams surfelSceneParams;
