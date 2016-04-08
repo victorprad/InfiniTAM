@@ -153,7 +153,7 @@ template<class TVoxel>
 _CPU_AND_GPU_CODE_ inline bool findPointNeighbors(THREADPTR(Vector3f) *p, THREADPTR(float) *sdf, Vector3i blockLocation, const CONSTPTR(TVoxel) *localVBA, 
 	const CONSTPTR(ITMHashEntry) *hashTable)
 {
-	bool isFound; Vector3i localBlockLocation;
+	int isFound; Vector3i localBlockLocation;
 
 	localBlockLocation = blockLocation + Vector3i(0, 0, 0); p[0] = localBlockLocation.toFloat();
 	sdf[0] = TVoxel::valueToFloat(readVoxel(localVBA, hashTable, localBlockLocation, isFound).sdf);

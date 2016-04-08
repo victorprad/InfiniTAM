@@ -173,15 +173,16 @@ void ITMVisualisationEngine_CPU<TVoxel,ITMVoxelBlockHash>::CreateExpectedDepths(
 	}
 }
 
-template<class TVoxel, class TIndex>
-static void GenericRaycast(const ITMScene<TVoxel,TIndex> *scene, const Vector2i& imgSize, const Matrix4f& invM, const Vector4f& projParams, const ITMRenderState *renderState)
+template<class TVoxel>
+static void GenericRaycast(const ITMScene<TVoxel, ITMVoxelBlockHash> *scene, const Vector2i& imgSize, const Matrix4f& invM, const Vector4f& projParams, const ITMRenderState *renderState)
 {
 	const Vector2f *minmaximg = renderState->renderingRangeImage->GetData(MEMORYDEVICE_CPU);
 	float mu = scene->sceneParams->mu;
 	float oneOverVoxelSize = 1.0f / scene->sceneParams->voxelSize;
 	Vector4f *pointsRay = renderState->raycastResult->GetData(MEMORYDEVICE_CPU);
 	const TVoxel *voxelData = scene->localVBA.GetVoxelBlocks();
-	const typename TIndex::IndexData *voxelIndex = scene->index.getIndexData();
+	const typename ITMVoxelBlockHash::IndexData *voxelIndex = scene->index.getIndexData();
+	ITMRenderState_VH *renderState_vh = (ITMRenderState_VH*)renderState;
 
 #ifdef WITH_OPENMP
 	#pragma omp parallel for
@@ -192,8 +193,9 @@ static void GenericRaycast(const ITMScene<TVoxel,TIndex> *scene, const Vector2i&
 		int x = locId - y*imgSize.x;
 		int locId2 = (int)floor((float)x / minmaximg_subsample) + (int)floor((float)y / minmaximg_subsample) * imgSize.x;
 
-		castRay<TVoxel, TIndex>(
+		castRay<TVoxel, ITMVoxelBlockHash, true>(
 			pointsRay[locId],
+			renderState_vh->GetEntriesVisibleType(),
 			x, y,
 			voxelData,
 			voxelIndex,
@@ -205,6 +207,41 @@ static void GenericRaycast(const ITMScene<TVoxel,TIndex> *scene, const Vector2i&
 		);
 	}
 }
+
+template<class TVoxel>
+static void GenericRaycast(const ITMScene<TVoxel, ITMPlainVoxelArray> *scene, const Vector2i& imgSize, const Matrix4f& invM, const Vector4f& projParams, const ITMRenderState *renderState)
+{
+	const Vector2f *minmaximg = renderState->renderingRangeImage->GetData(MEMORYDEVICE_CPU);
+	float mu = scene->sceneParams->mu;
+	float oneOverVoxelSize = 1.0f / scene->sceneParams->voxelSize;
+	Vector4f *pointsRay = renderState->raycastResult->GetData(MEMORYDEVICE_CPU);
+	const ITMPlainVoxelArray *voxelData = scene->localVBA.GetVoxelBlocks();
+	const typename ITMPlainVoxelArray::IndexData *voxelIndex = scene->index.getIndexData();
+
+#ifdef WITH_OPENMP
+#pragma omp parallel for
+#endif
+	for (int locId = 0; locId < imgSize.x*imgSize.y; ++locId)
+	{
+		int y = locId / imgSize.x;
+		int x = locId - y*imgSize.x;
+		int locId2 = (int)floor((float)x / minmaximg_subsample) + (int)floor((float)y / minmaximg_subsample) * imgSize.x;
+
+		castRay<TVoxel, ITMPlainVoxelArray, false>(
+			pointsRay[locId],
+			NULL,
+			x, y,
+			voxelData,
+			voxelIndex,
+			invM,
+			InvertProjectionParams(projParams),
+			oneOverVoxelSize,
+			mu,
+			minmaximg[locId2]
+			);
+	}
+}
+
 
 template<class TVoxel, class TIndex>
 static void RenderImage_common(const ITMScene<TVoxel,TIndex> *scene, const ORUtils::SE3Pose *pose, const ITMIntrinsics *intrinsics,
@@ -362,7 +399,7 @@ static void ForwardRender_common(const ITMScene<TVoxel, TIndex> *scene, const IT
 		int y = locId / imgSize.x, x = locId - y*imgSize.x;
 		int locId2 = (int)floor((float)x / minmaximg_subsample) + (int)floor((float)y / minmaximg_subsample) * imgSize.x;
 
-		castRay<TVoxel, TIndex>(forwardProjection[locId], x, y, voxelData, voxelIndex, invM, invProjParams,
+		castRay<TVoxel, TIndex, false>(forwardProjection[locId], NULL, x, y, voxelData, voxelIndex, invM, invProjParams,
 			1.0f / scene->sceneParams->voxelSize, scene->sceneParams->mu, minmaximg[locId2]);
 	}
 

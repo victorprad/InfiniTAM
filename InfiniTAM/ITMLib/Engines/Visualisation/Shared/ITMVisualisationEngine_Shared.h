@@ -94,13 +94,14 @@ _CPU_AND_GPU_CODE_ inline void CreateRenderingBlocks(DEVICEPTR(RenderingBlock) *
 	}
 }
 
-template<class TVoxel, class TIndex>
-_CPU_AND_GPU_CODE_ inline bool castRay(DEVICEPTR(Vector4f) &pt_out, int x, int y, const CONSTPTR(TVoxel) *voxelData,
-	const CONSTPTR(typename TIndex::IndexData) *voxelIndex, Matrix4f invM, Vector4f invProjParams, float oneOverVoxelSize,
-	float mu, const CONSTPTR(Vector2f) & viewFrustum_minmax)
+template<class TVoxel, class TIndex, bool modifyVisibleEntries>
+_CPU_AND_GPU_CODE_ inline bool castRay(DEVICEPTR(Vector4f) &pt_out, DEVICEPTR(uchar) *entriesVisibleType, 
+	int x, int y, const CONSTPTR(TVoxel) *voxelData, const CONSTPTR(typename TIndex::IndexData) *voxelIndex, 
+	Matrix4f invM, Vector4f invProjParams, float oneOverVoxelSize, float mu, const CONSTPTR(Vector2f) & viewFrustum_minmax)
 {
 	Vector4f pt_camera_f; Vector3f pt_block_s, pt_block_e, rayDirection, pt_result;
-	bool pt_found, hash_found;
+	bool pt_found;
+	int hash_found;
 	float sdfValue = 1.0f, confidence;
 	float totalLength, stepLength, totalLengthMax, stepScale;
 
@@ -130,6 +131,12 @@ _CPU_AND_GPU_CODE_ inline bool castRay(DEVICEPTR(Vector4f) &pt_out, int x, int y
 
 	while (totalLength < totalLengthMax) {
 		sdfValue = readFromSDF_float_uninterpolated(voxelData, voxelIndex, pt_result, hash_found, cache);
+
+		if (modifyVisibleEntries)
+		{
+			if (hash_found)
+				entriesVisibleType[hash_found - 1] = 1;
+		}
 
 		if (!hash_found) {
 			stepLength = SDF_BLOCK_SIZE;

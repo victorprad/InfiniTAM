@@ -20,7 +20,7 @@ template<class TVoxel, class TIndex>
 _CPU_AND_GPU_CODE_ inline float computePerPixelEnergy(const THREADPTR(Vector4f) &inpt, const CONSTPTR(TVoxel) *voxelBlocks,
 	const CONSTPTR(typename TIndex::IndexData) *index, float oneOverVoxelSize, Matrix4f invM)
 {
-	Vector3f pt; bool dtIsFound;
+	Vector3f pt; int dtIsFound;
 	pt = TO_VECTOR3(invM * inpt) * oneOverVoxelSize;
 
 	// faster but theoretically worse
@@ -39,12 +39,11 @@ template<class TVoxel, class TIndex>
 _CPU_AND_GPU_CODE_ inline Vector3f computeDDT(const CONSTPTR(Vector3f) &pt_f, const THREADPTR(TVoxel) *voxelBlocks,
 	const THREADPTR(typename TIndex::IndexData) *index, float oneOverVoxelSize, DEVICEPTR(bool) &ddtFound)
 {
-	
 	Vector3f ddt;
 
 	Vector3i pt = TO_INT_ROUND3(pt_f);
 
-	bool isFound; float dt1, dt2;
+	int isFound; float dt1, dt2;
 
 	dt1 = TVoxel::valueToFloat(readVoxel(voxelBlocks, index, pt + Vector3i(1, 0, 0), isFound).sdf);
 	if (!isFound || dt1 == 1.0f) { ddtFound = false; return Vector3f(0.0f); }
@@ -71,8 +70,7 @@ template<class TVoxel, class TIndex>
 _CPU_AND_GPU_CODE_ inline bool computePerPixelJacobian(THREADPTR(float) *jacobian, const THREADPTR(Vector4f) &inpt, 
 	const CONSTPTR(TVoxel) *voxelBlocks, const CONSTPTR(typename TIndex::IndexData) *index, float oneOverVoxelSize, Matrix4f invM)
 {
-
-	bool isFound;
+	int isFound; bool ddtFound;
 
 	Vector3f cPt, dDt, pt;
 
@@ -87,9 +85,8 @@ _CPU_AND_GPU_CODE_ inline bool computePerPixelJacobian(THREADPTR(float) *jacobia
 
 	if (dt == 1.0f || !isFound) return false;
 
-
-	dDt = computeDDT<TVoxel, TIndex>(pt, voxelBlocks, index, oneOverVoxelSize, isFound);
-	if (!isFound) return false;
+	dDt = computeDDT<TVoxel, TIndex>(pt, voxelBlocks, index, oneOverVoxelSize, ddtFound);
+	if (!ddtFound) return false;
 
 	float expdt = exp(-dt * DTUNE);
 	float deto = expdt + 1;
