@@ -86,8 +86,6 @@ template<class TVoxel>
 _CPU_AND_GPU_CODE_ inline TVoxel readVoxel(const CONSTPTR(TVoxel) *voxelData, const CONSTPTR(ITMLib::ITMVoxelBlockHash::IndexData) *voxelIndex,
 	const THREADPTR(Vector3i) & point, THREADPTR(int) &vmIndex, THREADPTR(ITMLib::ITMVoxelBlockHash::IndexCache) & cache)
 {
-//	int voxelAddress = findVoxel(voxelIndex, point, vmIndex, cache);
-//	return vmIndex ? voxelData[voxelAddress] : TVoxel();
 	Vector3i blockPos;
 	int linearIdx = pointToVoxelBlockPos(point, blockPos);
 
