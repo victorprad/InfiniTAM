@@ -467,16 +467,6 @@ static void copyRgba(const AVFrame *frame, Vector4u *rgb)
 
 static void copyDepth(const AVFrame *frame, short *depth)
 {
-	//Vector2i paddedSize = Vector2i(frame->width + 128, frame->height + 96);
-
-	//memset(depth, 0, paddedSize.x * paddedSize.y * sizeof(short));
-
-	//short *img = (short*)frame->data[0];
-
-	//for (int y = 0; y < frame->height; ++y) for (int x = 0; x < frame->width; ++x) {
-	//	depth[(x + 64) + (y + 48) * paddedSize.x] = img[x + y * frame->width];
-	//}
-
 	memcpy(depth, frame->data[0], frame->height*frame->width*2);
 }
 

@@ -248,7 +248,7 @@ static bool pnm_writedata(FILE *f, int xsize, int ysize, FormatType type, const 
 	return true;
 }
 
-void SaveImageToFile(const ORUtils::Image<ORUtils::Vector4<unsigned char>> * image, const char* fileName, bool flipVertical)
+void SaveImageToFile(const ORUtils::Image<ORUtils::Vector4<unsigned char> > * image, const char* fileName, bool flipVertical)
 {
 	FILE *f = fopen(fileName, "wb");
 	if (!pnm_writeheader(f, image->noDims.x, image->noDims.y, RGB_8u)) {
@@ -321,7 +321,7 @@ void SaveImageToFile(const ORUtils::Image<float>* image, const char* fileName)
 	delete[] data;
 }
 
-bool ReadImageFromFile(ORUtils::Image<ORUtils::Vector4<unsigned char>> * image, const char* fileName)
+bool ReadImageFromFile(ORUtils::Image<ORUtils::Vector4<unsigned char> > * image, const char* fileName)
 {
 	PNGReaderData pngData;
 	bool usepng = false;

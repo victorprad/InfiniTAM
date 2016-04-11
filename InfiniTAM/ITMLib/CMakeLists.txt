@@ -423,7 +423,6 @@ Utils/ITMCUDAUtils.h
 Utils/ITMImageTypes.h
 Utils/ITMLibSettings.h
 Utils/ITMMath.h
-Utils/ITMMEstimator.h
 Utils/ITMPixelUtils.h
 Utils/ITMSceneParams.h
 Utils/ITMSurfelSceneParams.h

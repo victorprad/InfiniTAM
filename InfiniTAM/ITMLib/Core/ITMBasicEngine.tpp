@@ -7,10 +7,13 @@
 #include "../Engines/ViewBuilding/ITMViewBuilderFactory.h"
 #include "../Engines/Visualisation/ITMVisualisationEngineFactory.h"
 #include "../Trackers/ITMTrackerFactory.h"
-using namespace ITMLib;
 
 #include "../../ORUtils/NVTimer.h"
 #include "../../ORUtils/FileUtils.h"
+
+//#define OUTPUT_TRAJECTORY_QUATERNIONS
+
+using namespace ITMLib;
 
 template <typename TVoxel, typename TIndex>
 ITMBasicEngine<TVoxel,TIndex>::ITMBasicEngine(const ITMLibSettings *settings, const ITMRGBDCalib *calib, Vector2i imgSize_rgb, Vector2i imgSize_d)
@@ -113,6 +116,7 @@ void ITMBasicEngine<TVoxel,TIndex>::SaveSceneToMesh(const char *objFileName)
 	mesh->WriteSTL(objFileName);
 }
 
+#ifdef OUTPUT_TRAJECTORY_QUATERNIONS
 static int QuaternionFromRotationMatrix_variant(const double *matrix)
 {
 	int variant = 0;
@@ -136,7 +140,7 @@ static int QuaternionFromRotationMatrix_variant(const double *matrix)
 	return variant;
 }
 
-void QuaternionFromRotationMatrix(const double *matrix, double *q) {
+static void QuaternionFromRotationMatrix(const double *matrix, double *q) {
 	/* taken from "James Diebel. Representing Attitude: Euler
 	Angles, Quaternions, and Rotation Vectors. Technical Report, Stanford
 	University, Palo Alto, CA."
@@ -183,6 +187,7 @@ void QuaternionFromRotationMatrix(const double *matrix, double *q) {
 
 	if (q[0] < 0.0f) for (int i = 0; i < 4; ++i) q[i] *= -1.0f;
 }
+#endif
 
 template <typename TVoxel, typename TIndex>
 void ITMBasicEngine<TVoxel,TIndex>::ProcessFrame(ITMUChar4Image *rgbImage, ITMShortImage *rawDepthImage, ITMIMUMeasurement *imuMeasurement)
@@ -221,8 +226,9 @@ void ITMBasicEngine<TVoxel,TIndex>::ProcessFrame(ITMUChar4Image *rgbImage, ITMSh
 		if (trackerResult == ITMTrackingState::TRACKING_GOOD && relocalisationCount > 0) relocalisationCount--;
 
 		int NN; float distances;
+		view->depth->UpdateHostFromDevice();
 		addKeyframeIdx = relocaliser->ProcessFrame(view->depth, 1, &NN, &distances, trackerResult == ITMTrackingState::TRACKING_GOOD && relocalisationCount == 0);
-		
+
 		// add keyframe, if necessary
 		if (addKeyframeIdx >= 0) poseDatabase.storePose(addKeyframeIdx, *(trackingState->pose_d), 0);
 		else if (trackerResult == ITMTrackingState::TRACKING_FAILED) 
@@ -262,6 +268,7 @@ void ITMBasicEngine<TVoxel,TIndex>::ProcessFrame(ITMUChar4Image *rgbImage, ITMSh
 	}
 	else { *trackingState->pose_d = oldPose; }
 
+#ifdef OUTPUT_TRAJECTORY_QUATERNIONS
 	const ORUtils::SE3Pose *p = trackingState->pose_d;
 	double t[3];
 	double R[9];
@@ -272,8 +279,9 @@ void ITMBasicEngine<TVoxel,TIndex>::ProcessFrame(ITMUChar4Image *rgbImage, ITMSh
 	QuaternionFromRotationMatrix(R, q);
 	fprintf(stderr, "%f %f %f %f %f %f %f\n", t[0],
 		t[1], t[2], q[1], q[2], q[3], q[0]);
+#endif
 
-	printf("%d\n", framesProcessed);
+	//printf("%d\n", framesProcessed);
 }
 
 template <typename TVoxel, typename TIndex>
