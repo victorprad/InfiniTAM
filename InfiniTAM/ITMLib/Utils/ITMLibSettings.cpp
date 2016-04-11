@@ -41,11 +41,11 @@ ITMLibSettings::ITMLibSettings(void)
 	useRelocalisation = true;
 
 	/// enable or disable tracking failure detection
-	useTrackingFailureDetection = false;
+	useTrackingFailureDetection = true;
 
 	//trackerConfig = "type=icp,levels=rrrbb,minstep=1e-3,outlierC=0.01,outlierF=0.002,numiterC=10,numiterF=2,failureDec=3.0";
 	//trackerConfig = "type=icp,levels=rrrbb,minstep=1e-2,outlierC=0.1,outlierF=0.005,numiterC=10,numiterF=2,failureDec=3.0";
-	trackerConfig = "type=extended,levels=rrbb,minstep=1e-4,outlierSpaceC=0.1,outlierSpaceF=0.004,numiterC=20,numiterF=20,tukeyCutOff=8,framesToSkip=20,framesToWeight=50,failureDec=3.0";
+	trackerConfig = "type=extended,levels=rrbb,minstep=1e-4,outlierSpaceC=0.1,outlierSpaceF=0.004,numiterC=20,numiterF=20,tukeyCutOff=8,framesToSkip=20,framesToWeight=50,failureDec=20.0";
 	//trackerConfig = "type=rgb,levels=rrrbb";
 	//trackerConfig = "type=ren,levels=bb";
 	//trackerConfig = "type=wicp,levels=rrrbb,minstep=1e-3,outlier=0.005";

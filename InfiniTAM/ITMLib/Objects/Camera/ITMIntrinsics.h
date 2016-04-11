@@ -32,10 +32,15 @@ namespace ITMLib
 		*/
 		void SetFrom(float fx, float fy, float cx, float cy, float sizeX, float sizeY)
 		{
-			projectionParamsSimple.fx = fx; projectionParamsSimple.fy = fy;
-			projectionParamsSimple.px = cx; projectionParamsSimple.py = cy;
-			projectionParamsSimple.all.x = fx; projectionParamsSimple.all.y = fy;
-			projectionParamsSimple.all.z = cx; projectionParamsSimple.all.w = cy;
+			projectionParamsSimple.fx = fx; 
+			projectionParamsSimple.fy = fy;
+			projectionParamsSimple.px = cx; 
+			projectionParamsSimple.py = cy;
+
+			projectionParamsSimple.all.x = fx; 
+			projectionParamsSimple.all.y = fy;
+			projectionParamsSimple.all.z = cx; 
+			projectionParamsSimple.all.w = cy;
 		}
 
 		ITMIntrinsics(void)

@@ -62,6 +62,7 @@ class FFMPEGReader::PrivateData {
 		if (!providesDepth()) return Vector2i(0,0);
 		AVCodecContext *dec_ctx = ifmt_ctx->streams[depthStreamIdx]->codec;
 		return Vector2i(dec_ctx->width, dec_ctx->height);
+		//return Vector2i(dec_ctx->width + 128, dec_ctx->height + 96);
 	}
 
 	Vector2i getColorImageSize(void) const
@@ -466,14 +467,14 @@ static void copyRgba(const AVFrame *frame, Vector4u *rgb)
 
 static void copyDepth(const AVFrame *frame, short *depth)
 {
-	//Vector2i paddedSize = Vector2i(frame->width, frame->height);
+	//Vector2i paddedSize = Vector2i(frame->width + 128, frame->height + 96);
 
 	//memset(depth, 0, paddedSize.x * paddedSize.y * sizeof(short));
 
 	//short *img = (short*)frame->data[0];
 
 	//for (int y = 0; y < frame->height; ++y) for (int x = 0; x < frame->width; ++x) {
-	//	depth[(x) + (y) * paddedSize.x] = img[x + y * frame->width];
+	//	depth[(x + 64) + (y + 48) * paddedSize.x] = img[x + y * frame->width];
 	//}
 
 	memcpy(depth, frame->data[0], frame->height*frame->width*2);
