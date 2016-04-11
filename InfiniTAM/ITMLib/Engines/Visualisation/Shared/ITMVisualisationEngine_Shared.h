@@ -405,7 +405,7 @@ _CPU_AND_GPU_CODE_ inline void processPixelForwardRender(DEVICEPTR(Vector4u) *ou
 	bool foundPoint = point.w > 0.0f;
 	computeNormalAndAngle<useSmoothing>(foundPoint, x, y, pointsRay, lightSource, voxelSize, imgSize, outNormal, angle);
 
-	if (foundPoint) drawPixelGrey(outRendering[locId], angle);
+	if (foundPoint) drawPixelConfidence(outRendering[locId], angle, point.w - 1.0f);// drawPixelGrey(outRendering[locId], angle);
 	else outRendering[locId] = Vector4u((uchar)0);
 }
 

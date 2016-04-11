@@ -32,7 +32,7 @@ ITMLibSettings::ITMLibSettings(void)
 	useSwapping = false;
 
 	/// enables or disables approximate raycast
-	useApproximateRaycast = false;
+	useApproximateRaycast = true;
 
 	/// enable or disable bilateral depth filtering;
 	useBilateralFilter = false;
