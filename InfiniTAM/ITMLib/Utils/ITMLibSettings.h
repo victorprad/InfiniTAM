@@ -33,9 +33,6 @@ namespace ITMLib
 		bool useRelocalisation;
 		bool useTrackingFailureDetection;
 
-		float goodTrackingThreshold;
-		float poorTrackingThreshold;
-
 		const char *trackerConfig;
 
 		/// Further, scene specific parameters such as voxel size

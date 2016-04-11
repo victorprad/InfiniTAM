@@ -214,8 +214,8 @@ void ITMMultiEngine<TVoxel,TIndex>::ProcessFrame(ITMUChar4Image *rgbImage, ITMSh
 			trackingController->Track(currentScene->trackingState, view);
 
 			int trackingSuccess = 0;
-			if (currentScene->trackingState->poseQuality>0.8f) trackingSuccess = 2;
-			else if (currentScene->trackingState->poseQuality>0.4f) trackingSuccess = 1;
+			if (currentScene->trackingState->trackerResult == ITMTrackingState::TRACKING_GOOD) trackingSuccess = 2;
+			else if (currentScene->trackingState->trackerResult == ITMTrackingState::TRACKING_POOR) trackingSuccess = 1;
 
 			if (trackingSuccess < 2)
 			{

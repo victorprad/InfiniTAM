@@ -220,11 +220,9 @@ void ITMDepthTracker::UpdatePoseQuality(int noValidPoints_old, float *hessian_go
 
 		float score = svmClassifier->Classify(mapped);
 
-		if (score > 0) trackingState->poseQuality = 1.0f;
-		else if (score > -10.0f) trackingState->poseQuality = 0.5f;
-		else trackingState->poseQuality = 0.2f;
-
-		//printf("score: %f\n", score);
+		if (score > 0) trackingState->trackerResult = ITMTrackingState::TRACKING_GOOD;
+		else if (score > -10.0f) trackingState->trackerResult = ITMTrackingState::TRACKING_POOR;
+		else trackingState->trackerResult = ITMTrackingState::TRACKING_FAILED;
 	}
 }
 

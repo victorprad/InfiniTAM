@@ -197,32 +197,36 @@ void ITMBasicEngine<TVoxel,TIndex>::ProcessFrame(ITMUChar4Image *rgbImage, ITMSh
 	ORUtils::SE3Pose oldPose(*(trackingState->pose_d));
 	if (trackingActive) trackingController->Track(trackingState, view);
 
-	int trackingSuccess = 0;
-	if (trackingState->poseQuality > settings->goodTrackingThreshold) trackingSuccess = 2;
-	else if (trackingState->poseQuality > settings->poorTrackingThreshold) trackingSuccess = 1;
+	ITMTrackingState::TrackingResult trackerResult;
+	if (!settings->useTrackingFailureDetection) trackerResult = ITMTrackingState::TRACKING_GOOD;
+	else trackerResult = trackingState->trackerResult;
 
-	if (!settings->useTrackingFailureDetection) trackingSuccess = 2;
-
-	static int trackingSuccess_prev = -1;
-	if (trackingSuccess != trackingSuccess_prev) {
-		if (trackingSuccess == 2) fprintf(stderr, "tracking good\n");
-		if (trackingSuccess == 1) fprintf(stderr, "tracking poor\n");
-		if (trackingSuccess == 0) fprintf(stderr, "tracking LOST\n");
-		trackingSuccess_prev = trackingSuccess;
+	static ITMTrackingState::TrackingResult trackerResult_prev = ITMTrackingState::TRACKING_GOOD;
+	if (trackerResult != trackerResult_prev) {
+		switch (trackerResult)
+		{
+		case ITMTrackingState::TRACKING_GOOD: fprintf(stderr, "tracking good\n");
+		case ITMTrackingState::TRACKING_POOR: fprintf(stderr, "tracking good\n");
+		case ITMTrackingState::TRACKING_FAILED: fprintf(stderr, "tracking failed\n");
+		default:
+			break;
+		}
+		trackerResult_prev = trackerResult;
 	}
 
 	//relocalisation
 	int addKeyframeIdx = -1;
-	if (settings->useRelocalisation && settings->useTrackingFailureDetection) {
-		if (trackingSuccess == 2 && relocalisationCount > 0) relocalisationCount--;
+	if (settings->useRelocalisation && settings->useTrackingFailureDetection) 
+	{
+		if (trackerResult == ITMTrackingState::TRACKING_GOOD && relocalisationCount > 0) relocalisationCount--;
 
 		int NN; float distances;
-		addKeyframeIdx = relocaliser->ProcessFrame(view->depth, 1, &NN, &distances, trackingSuccess == 2 && relocalisationCount == 0);
+		addKeyframeIdx = relocaliser->ProcessFrame(view->depth, 1, &NN, &distances, trackerResult == ITMTrackingState::TRACKING_GOOD && relocalisationCount == 0);
 		
 		// add keyframe, if necessary
-		if (addKeyframeIdx >= 0)
-			poseDatabase.storePose(addKeyframeIdx, *(trackingState->pose_d), 0);
-		else if (trackingSuccess == 0) {
+		if (addKeyframeIdx >= 0) poseDatabase.storePose(addKeyframeIdx, *(trackingState->pose_d), 0);
+		else if (trackerResult == ITMTrackingState::TRACKING_FAILED) 
+		{
 			relocalisationCount = 10;
 
 			const RelocLib::PoseDatabase::PoseInScene & keyframe = poseDatabase.retrievePose(NN);
@@ -232,14 +236,12 @@ void ITMBasicEngine<TVoxel,TIndex>::ProcessFrame(ITMUChar4Image *rgbImage, ITMSh
 			trackingController->Prepare(trackingState, scene, view, visualisationEngine, renderState_live); 
 			trackingController->Track(trackingState, view);
 
-			trackingSuccess = 0;
-			if (trackingState->poseQuality > settings->goodTrackingThreshold) trackingSuccess = 2;
-			else if (trackingState->poseQuality > settings->poorTrackingThreshold) trackingSuccess = 1;
+			trackerResult = trackingState->trackerResult;
 		}
 	}
 
 	bool didFusion = false;
-	if ((trackingSuccess >= 2 || !trackingInitialised) && (fusionActive) && (relocalisationCount == 0)) {
+	if ((trackerResult == ITMTrackingState::TRACKING_GOOD || !trackingInitialised) && (fusionActive) && (relocalisationCount == 0)) {
 		// fusion
 		denseMapper->ProcessFrame(view, trackingState, scene, renderState_live);
 		didFusion = true;
@@ -248,7 +250,7 @@ void ITMBasicEngine<TVoxel,TIndex>::ProcessFrame(ITMUChar4Image *rgbImage, ITMSh
 		framesProcessed++;
 	}
 
-	if (trackingSuccess >= 1) {
+	if (trackerResult == ITMTrackingState::TRACKING_GOOD || trackerResult == ITMTrackingState::TRACKING_POOR) {
 		if (!didFusion) denseMapper->UpdateVisibleList(view, trackingState, scene, renderState_live);
 
 		// raycast to renderState_live for tracking and free visualisation
