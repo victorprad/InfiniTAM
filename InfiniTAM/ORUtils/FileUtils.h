@@ -7,10 +7,10 @@
 #include "Image.h"
 #include "Vector.h"
 
-void SaveImageToFile(const ORUtils::Image<ORUtils::Vector4<unsigned char>>* image, const char* fileName, bool flipVertical = false);
+void SaveImageToFile(const ORUtils::Image<ORUtils::Vector4<unsigned char> >* image, const char* fileName, bool flipVertical = false);
 void SaveImageToFile(const ORUtils::Image<short>* image, const char* fileName);
 void SaveImageToFile(const ORUtils::Image<float>* image, const char* fileName);
-bool ReadImageFromFile(ORUtils::Image<ORUtils::Vector4<unsigned char>>* image, const char* fileName);
+bool ReadImageFromFile(ORUtils::Image<ORUtils::Vector4<unsigned char> >* image, const char* fileName);
 bool ReadImageFromFile(ORUtils::Image<short> *image, const char *fileName);
 
 template <typename T> void ReadFromBIN(T *data, int dataSize, const char *fileName)

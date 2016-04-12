@@ -234,7 +234,6 @@ void ITMDepthTracker::TrackCamera(ITMTrackingState *trackingState, const ITMView
 	float f_old = 1e10, f_new;
 	int noValidPoints_new;
 	int noValidPoints_old = 0;
-	int noTotalPoints = 0;
 
 	float hessian_good[6 * 6], hessian_new[6 * 6], A[6 * 6];
 	float nabla_good[6], nabla_new[6];
@@ -247,8 +246,6 @@ void ITMDepthTracker::TrackCamera(ITMTrackingState *trackingState, const ITMView
 	{
 		this->SetEvaluationParams(levelId);
 		if (iterationType == TRACKER_ITERATION_NONE) continue;
-
-		noTotalPoints = viewHierarchy->levels[levelId]->depth->noDims.x * viewHierarchy->levels[levelId]->depth->noDims.y;
 
 		Matrix4f approxInvPose = trackingState->pose_d->GetInvM();
 		ORUtils::SE3Pose lastKnownGoodPose(*(trackingState->pose_d));

@@ -22,8 +22,6 @@ int ITMExtendedTracker_CPU::ComputeGandH(float &f, float *nabla, float *hessian,
 	Vector2i sceneImageSize = sceneHierarchyLevel->pointsMap->noDims;
 
 	float *depth = viewHierarchyLevel->depth->GetData(MEMORYDEVICE_CPU);
-	Vector4f *depthNormals = viewHierarchyLevel->depthNormals->GetData(MEMORYDEVICE_CPU);
-	float *depthUncertainty = viewHierarchyLevel->depthUncertainty->GetData(MEMORYDEVICE_CPU);
 	Vector4f viewIntrinsics = viewHierarchyLevel->intrinsics;
 	Vector2i viewImageSize = viewHierarchyLevel->depth->noDims;
 
