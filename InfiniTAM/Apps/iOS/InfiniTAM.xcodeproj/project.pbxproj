@@ -1,0 +1,1459 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		01FAFAF21964A14700BF040D /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 01FAFAF11964A14700BF040D /* QuartzCore.framework */; };
+		2DFFE049199142E800761886 /* CoreMotion.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2DFFE048199142E800761886 /* CoreMotion.framework */; };
+		431C6F5318455ABD00EDB38B /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 431C6F5218455ABD00EDB38B /* AVFoundation.framework */; };
+		6F1239081862A59D00BD1D7A /* Accelerate.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6F1239071862A59D00BD1D7A /* Accelerate.framework */; };
+		6F12390A1862A5D300BD1D7A /* ImageIO.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6F1239091862A5D300BD1D7A /* ImageIO.framework */; };
+		6F2B4EDB1865324D00403B8C /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6F7C0CC217F0EA0500692EC1 /* CoreGraphics.framework */; };
+		6F2B4EDD1865325D00403B8C /* OpenGLES.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6F2B4EDC1865325D00403B8C /* OpenGLES.framework */; };
+		6F2B4EDF1865326B00403B8C /* CoreImage.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6F2B4EDE1865326B00403B8C /* CoreImage.framework */; };
+		6F2B4EE1186532A500403B8C /* CoreMedia.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6F2B4EE0186532A500403B8C /* CoreMedia.framework */; };
+		6F2B4EE3186532CE00403B8C /* CoreVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6F2B4EE2186532CE00403B8C /* CoreVideo.framework */; };
+		6F7C0CC117F0EA0500692EC1 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6F7C0CC017F0EA0500692EC1 /* Foundation.framework */; };
+		6F7C0CC517F0EA0500692EC1 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6F7C0CC417F0EA0500692EC1 /* UIKit.framework */; };
+		6F7C0CC717F0EA0500692EC1 /* ExternalAccessory.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6F7C0CC617F0EA0500692EC1 /* ExternalAccessory.framework */; };
+		6F7C0CCD17F0EA0500692EC1 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 6F7C0CCB17F0EA0500692EC1 /* InfoPlist.strings */; };
+		6F7C0CCF17F0EA0500692EC1 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 6F7C0CCE17F0EA0500692EC1 /* main.m */; };
+		6F7C0CD317F0EA0500692EC1 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 6F7C0CD217F0EA0500692EC1 /* AppDelegate.m */; };
+		6F7C0CDB17F0EA0500692EC1 /* ViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = 6F7C0CDA17F0EA0500692EC1 /* ViewController.mm */; };
+		6F7C0CDE17F0EA0500692EC1 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 6F7C0CDD17F0EA0500692EC1 /* Images.xcassets */; };
+		A626D7541A0F93660086B8BF /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A626D7531A0F93660086B8BF /* Metal.framework */; };
+		A626D7631A0F96F50086B8BF /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = A626D7621A0F96F50086B8BF /* Main.storyboard */; };
+		A626D7651A0F98CF0086B8BF /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = A626D7641A0F98CF0086B8BF /* LaunchScreen.xib */; };
+		A62ECC4B1BB58439000CC25D /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = A62ECC4A1BB58439000CC25D /* libz.tbd */; };
+		A646ADC91CBD53B200D4DAC2 /* Structure.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A646ADC81CBD53B200D4DAC2 /* Structure.framework */; };
+		A68436821A1F9C190010E0C5 /* calib.txt in Resources */ = {isa = PBXBuildFile; fileRef = A68436811A1F9C190010E0C5 /* calib.txt */; };
+		A6AC29A51CBD3323000CC89D /* Android.mk in Resources */ = {isa = PBXBuildFile; fileRef = A6AC29931CBD3323000CC89D /* Android.mk */; };
+		A6AC29A61CBD3323000CC89D /* CMakeLists.txt in Resources */ = {isa = PBXBuildFile; fileRef = A6AC29941CBD3323000CC89D /* CMakeLists.txt */; };
+		A6AC29A71CBD3323000CC89D /* FFMPEGReader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A6AC29951CBD3323000CC89D /* FFMPEGReader.cpp */; };
+		A6AC29A81CBD3323000CC89D /* FFMPEGWriter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A6AC29971CBD3323000CC89D /* FFMPEGWriter.cpp */; };
+		A6AC29A91CBD3323000CC89D /* ImageSourceEngine.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A6AC29991CBD3323000CC89D /* ImageSourceEngine.cpp */; };
+		A6AC29AA1CBD3323000CC89D /* IMUSourceEngine.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A6AC299B1CBD3323000CC89D /* IMUSourceEngine.cpp */; };
+		A6AC29AB1CBD3323000CC89D /* Kinect2Engine.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A6AC299D1CBD3323000CC89D /* Kinect2Engine.cpp */; };
+		A6AC29AC1CBD3323000CC89D /* LibUVCEngine.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A6AC299F1CBD3323000CC89D /* LibUVCEngine.cpp */; };
+		A6AC29AD1CBD3323000CC89D /* OpenNIEngine.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A6AC29A11CBD3323000CC89D /* OpenNIEngine.cpp */; };
+		A6AC29AE1CBD3323000CC89D /* RealSenseEngine.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A6AC29A31CBD3323000CC89D /* RealSenseEngine.cpp */; };
+		A6AC2AFD1CBD333D000CC89D /* Android.mk in Resources */ = {isa = PBXBuildFile; fileRef = A6AC2AE51CBD333D000CC89D /* Android.mk */; };
+		A6AC2AFE1CBD333D000CC89D /* Android.mk~c1c4fe627a2deacd274c8f1929dbbb44ae5e7e26 in Resources */ = {isa = PBXBuildFile; fileRef = A6AC2AE61CBD333D000CC89D /* Android.mk~c1c4fe627a2deacd274c8f1929dbbb44ae5e7e26 */; };
+		A6AC2AFF1CBD333D000CC89D /* CMakeLists.txt in Resources */ = {isa = PBXBuildFile; fileRef = A6AC2AE81CBD333D000CC89D /* CMakeLists.txt */; };
+		A6AC2B001CBD333D000CC89D /* FileUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A6AC2AEA1CBD333D000CC89D /* FileUtils.cpp */; };
+		A6AC2B011CBD333D000CC89D /* KeyValueConfig.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A6AC2AEE1CBD333D000CC89D /* KeyValueConfig.cpp */; };
+		A6AC2B021CBD333D000CC89D /* MetalContext.mm in Sources */ = {isa = PBXBuildFile; fileRef = A6AC2AF61CBD333D000CC89D /* MetalContext.mm */; };
+		A6AC2B031CBD333D000CC89D /* SE3Pose.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A6AC2AF91CBD333D000CC89D /* SE3Pose.cpp */; };
+		A6AC2B0E1CBD3348000CC89D /* CMakeLists.txt in Resources */ = {isa = PBXBuildFile; fileRef = A6AC2B051CBD3348000CC89D /* CMakeLists.txt */; };
+		A6AC2B0F1CBD3348000CC89D /* FernConservatory.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A6AC2B061CBD3348000CC89D /* FernConservatory.cpp */; };
+		A6AC2B101CBD3348000CC89D /* PoseDatabase.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A6AC2B081CBD3348000CC89D /* PoseDatabase.cpp */; };
+		A6AC2B111CBD3348000CC89D /* Relocaliser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A6AC2B0A1CBD3348000CC89D /* Relocaliser.cpp */; };
+		A6AC2B121CBD3348000CC89D /* RelocDatabase.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A6AC2B0C1CBD3348000CC89D /* RelocDatabase.cpp */; };
+		A6AC2C031CBD34A7000CC89D /* Android.mk in Resources */ = {isa = PBXBuildFile; fileRef = A6AC2B141CBD34A7000CC89D /* Android.mk */; };
+		A6AC2C041CBD34A7000CC89D /* CMakeLists.txt in Resources */ = {isa = PBXBuildFile; fileRef = A6AC2B151CBD34A7000CC89D /* CMakeLists.txt */; };
+		A6AC2C051CBD34A7000CC89D /* ITMBasicEngine.tpp in Resources */ = {isa = PBXBuildFile; fileRef = A6AC2B181CBD34A7000CC89D /* ITMBasicEngine.tpp */; };
+		A6AC2C061CBD34A7000CC89D /* ITMDenseMapper.tpp in Resources */ = {isa = PBXBuildFile; fileRef = A6AC2B1A1CBD34A7000CC89D /* ITMDenseMapper.tpp */; };
+		A6AC2C071CBD34A7000CC89D /* ITMDenseSurfelMapper.tpp in Resources */ = {isa = PBXBuildFile; fileRef = A6AC2B1C1CBD34A7000CC89D /* ITMDenseSurfelMapper.tpp */; };
+		A6AC2C081CBD34A7000CC89D /* ITMMultiEngine.tpp in Resources */ = {isa = PBXBuildFile; fileRef = A6AC2B1F1CBD34A7000CC89D /* ITMMultiEngine.tpp */; };
+		A6AC2C091CBD34A7000CC89D /* ITMTrackingController.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A6AC2B201CBD34A7000CC89D /* ITMTrackingController.cpp */; };
+		A6AC2C0A1CBD34A7000CC89D /* ITMActiveSceneManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A6AC2B231CBD34A7000CC89D /* ITMActiveSceneManager.cpp */; };
+		A6AC2C0B1CBD34A7000CC89D /* ITMLocalScene.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A6AC2B251CBD34A7000CC89D /* ITMLocalScene.cpp */; };
+		A6AC2C0C1CBD34A7000CC89D /* ITMMultiSceneManager.tpp in Resources */ = {isa = PBXBuildFile; fileRef = A6AC2B281CBD34A7000CC89D /* ITMMultiSceneManager.tpp */; };
+		A6AC2C0D1CBD34A7000CC89D /* CPUInstantiations.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A6AC2B291CBD34A7000CC89D /* CPUInstantiations.cpp */; };
+		A6AC2C0E1CBD34A7000CC89D /* CUDAInstantiations.cu in Resources */ = {isa = PBXBuildFile; fileRef = A6AC2B2A1CBD34A7000CC89D /* CUDAInstantiations.cu */; };
+		A6AC2C0F1CBD34A7000CC89D /* ITMLowLevelEngine_CPU.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A6AC2B2E1CBD34A7000CC89D /* ITMLowLevelEngine_CPU.cpp */; };
+		A6AC2C101CBD34A7000CC89D /* ITMLowLevelEngine_CUDA.cu in Resources */ = {isa = PBXBuildFile; fileRef = A6AC2B311CBD34A7000CC89D /* ITMLowLevelEngine_CUDA.cu */; };
+		A6AC2C111CBD34A7000CC89D /* ITMLowLevelEngineFactory.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A6AC2B351CBD34A7000CC89D /* ITMLowLevelEngineFactory.cpp */; };
+		A6AC2C141CBD34A7000CC89D /* ITMMeshingEngine_CPU.tpp in Resources */ = {isa = PBXBuildFile; fileRef = A6AC2B401CBD34A7000CC89D /* ITMMeshingEngine_CPU.tpp */; };
+		A6AC2C151CBD34A7000CC89D /* ITMMeshingEngine_CUDA.tcu in Resources */ = {isa = PBXBuildFile; fileRef = A6AC2B431CBD34A7000CC89D /* ITMMeshingEngine_CUDA.tcu */; };
+		A6AC2C161CBD34A7000CC89D /* ITMSceneReconstructionEngine_CPU.tpp in Resources */ = {isa = PBXBuildFile; fileRef = A6AC2B4C1CBD34A7000CC89D /* ITMSceneReconstructionEngine_CPU.tpp */; };
+		A6AC2C171CBD34A7000CC89D /* ITMSurfelSceneReconstructionEngine_CPU.tpp in Resources */ = {isa = PBXBuildFile; fileRef = A6AC2B4E1CBD34A7000CC89D /* ITMSurfelSceneReconstructionEngine_CPU.tpp */; };
+		A6AC2C181CBD34A7000CC89D /* ITMSceneReconstructionEngine_CUDA.tcu in Resources */ = {isa = PBXBuildFile; fileRef = A6AC2B511CBD34A7000CC89D /* ITMSceneReconstructionEngine_CUDA.tcu */; };
+		A6AC2C191CBD34A7000CC89D /* ITMSurfelSceneReconstructionEngine_CUDA.tcu in Resources */ = {isa = PBXBuildFile; fileRef = A6AC2B531CBD34A7000CC89D /* ITMSurfelSceneReconstructionEngine_CUDA.tcu */; };
+		A6AC2C1A1CBD34A7000CC89D /* ITMSurfelSceneReconstructionEngine.tpp in Resources */ = {isa = PBXBuildFile; fileRef = A6AC2B571CBD34A7000CC89D /* ITMSurfelSceneReconstructionEngine.tpp */; };
+		A6AC2C1B1CBD34A7000CC89D /* ITMSurfelSceneReconstructionEngineFactory.tpp in Resources */ = {isa = PBXBuildFile; fileRef = A6AC2B5A1CBD34A7000CC89D /* ITMSurfelSceneReconstructionEngineFactory.tpp */; };
+		A6AC2C1C1CBD34A7000CC89D /* ITMSceneReconstructionEngine.metal in Sources */ = {isa = PBXBuildFile; fileRef = A6AC2B5C1CBD34A7000CC89D /* ITMSceneReconstructionEngine.metal */; };
+		A6AC2C1D1CBD34A7000CC89D /* ITMSceneReconstructionEngine_Metal.mm in Sources */ = {isa = PBXBuildFile; fileRef = A6AC2B5E1CBD34A7000CC89D /* ITMSceneReconstructionEngine_Metal.mm */; };
+		A6AC2C1E1CBD34A7000CC89D /* ITMSwappingEngine_CPU.tpp in Resources */ = {isa = PBXBuildFile; fileRef = A6AC2B651CBD34A7000CC89D /* ITMSwappingEngine_CPU.tpp */; };
+		A6AC2C1F1CBD34A7000CC89D /* ITMSwappingEngine_CUDA.tcu in Resources */ = {isa = PBXBuildFile; fileRef = A6AC2B681CBD34A7000CC89D /* ITMSwappingEngine_CUDA.tcu */; };
+		A6AC2C201CBD34A7000CC89D /* ITMSwappingEngine.metal in Sources */ = {isa = PBXBuildFile; fileRef = A6AC2B6D1CBD34A7000CC89D /* ITMSwappingEngine.metal */; };
+		A6AC2C211CBD34A7000CC89D /* ITMSwappingEngine_Metal.mm in Sources */ = {isa = PBXBuildFile; fileRef = A6AC2B6F1CBD34A7000CC89D /* ITMSwappingEngine_Metal.mm */; };
+		A6AC2C221CBD34A7000CC89D /* ITMViewBuilder_CPU.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A6AC2B741CBD34A7000CC89D /* ITMViewBuilder_CPU.cpp */; };
+		A6AC2C231CBD34A7000CC89D /* ITMViewBuilder_CUDA.cu in Resources */ = {isa = PBXBuildFile; fileRef = A6AC2B771CBD34A7000CC89D /* ITMViewBuilder_CUDA.cu */; };
+		A6AC2C241CBD34A7000CC89D /* ITMViewBuilderFactory.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A6AC2B7B1CBD34A7000CC89D /* ITMViewBuilderFactory.cpp */; };
+		A6AC2C251CBD34A7000CC89D /* ITMViewBuilder.metal in Sources */ = {isa = PBXBuildFile; fileRef = A6AC2B7E1CBD34A7000CC89D /* ITMViewBuilder.metal */; };
+		A6AC2C261CBD34A7000CC89D /* ITMViewBuilder_Metal.mm in Sources */ = {isa = PBXBuildFile; fileRef = A6AC2B801CBD34A7000CC89D /* ITMViewBuilder_Metal.mm */; };
+		A6AC2C271CBD34A7000CC89D /* ITMSurfelVisualisationEngine_CPU.tpp in Resources */ = {isa = PBXBuildFile; fileRef = A6AC2B861CBD34A7000CC89D /* ITMSurfelVisualisationEngine_CPU.tpp */; };
+		A6AC2C281CBD34A7000CC89D /* ITMVisualisationEngine_CPU.tpp in Resources */ = {isa = PBXBuildFile; fileRef = A6AC2B881CBD34A7000CC89D /* ITMVisualisationEngine_CPU.tpp */; };
+		A6AC2C291CBD34A7000CC89D /* ITMSurfelVisualisationEngine_CUDA.tcu in Resources */ = {isa = PBXBuildFile; fileRef = A6AC2B8B1CBD34A7000CC89D /* ITMSurfelVisualisationEngine_CUDA.tcu */; };
+		A6AC2C2A1CBD34A7000CC89D /* ITMVisualisationEngine_CUDA.tcu in Resources */ = {isa = PBXBuildFile; fileRef = A6AC2B8D1CBD34A7000CC89D /* ITMVisualisationEngine_CUDA.tcu */; };
+		A6AC2C2B1CBD34A7000CC89D /* ITMSurfelVisualisationEngine.tpp in Resources */ = {isa = PBXBuildFile; fileRef = A6AC2B901CBD34A7000CC89D /* ITMSurfelVisualisationEngine.tpp */; };
+		A6AC2C2C1CBD34A7000CC89D /* ITMVisualisationEngine.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A6AC2B911CBD34A7000CC89D /* ITMVisualisationEngine.cpp */; };
+		A6AC2C2D1CBD34A7000CC89D /* ITMSurfelVisualisationEngineFactory.tpp in Resources */ = {isa = PBXBuildFile; fileRef = A6AC2B941CBD34A7000CC89D /* ITMSurfelVisualisationEngineFactory.tpp */; };
+		A6AC2C2E1CBD34A7000CC89D /* ITMVisualisationEngine.metal in Sources */ = {isa = PBXBuildFile; fileRef = A6AC2B971CBD34A7000CC89D /* ITMVisualisationEngine.metal */; };
+		A6AC2C2F1CBD34A7000CC89D /* ITMVisualisationEngine_Metal.mm in Sources */ = {isa = PBXBuildFile; fileRef = A6AC2B991CBD34A7000CC89D /* ITMVisualisationEngine_Metal.mm */; };
+		A6AC2C301CBD34A7000CC89D /* ITMCalibIO.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A6AC2BA11CBD34A7000CC89D /* ITMCalibIO.cpp */; };
+		A6AC2C311CBD34A7000CC89D /* ITMSurfelRenderState.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A6AC2BB01CBD34A7000CC89D /* ITMSurfelRenderState.cpp */; };
+		A6AC2C321CBD34A7000CC89D /* ITMColorTracker_CPU.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A6AC2BC91CBD34A7000CC89D /* ITMColorTracker_CPU.cpp */; };
+		A6AC2C331CBD34A7000CC89D /* ITMDepthTracker_CPU.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A6AC2BCB1CBD34A7000CC89D /* ITMDepthTracker_CPU.cpp */; };
+		A6AC2C341CBD34A7000CC89D /* ITMExtendedTracker_CPU.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A6AC2BCD1CBD34A7000CC89D /* ITMExtendedTracker_CPU.cpp */; };
+		A6AC2C351CBD34A7000CC89D /* ITMRenTracker_CPU.tpp in Resources */ = {isa = PBXBuildFile; fileRef = A6AC2BD01CBD34A7000CC89D /* ITMRenTracker_CPU.tpp */; };
+		A6AC2C361CBD34A7000CC89D /* ITMColorTracker_CUDA.cu in Resources */ = {isa = PBXBuildFile; fileRef = A6AC2BD21CBD34A7000CC89D /* ITMColorTracker_CUDA.cu */; };
+		A6AC2C371CBD34A7000CC89D /* ITMDepthTracker_CUDA.cu in Resources */ = {isa = PBXBuildFile; fileRef = A6AC2BD41CBD34A7000CC89D /* ITMDepthTracker_CUDA.cu */; };
+		A6AC2C381CBD34A7000CC89D /* ITMExtendedTracker_CUDA.cu in Resources */ = {isa = PBXBuildFile; fileRef = A6AC2BD61CBD34A7000CC89D /* ITMExtendedTracker_CUDA.cu */; };
+		A6AC2C391CBD34A7000CC89D /* ITMRenTracker_CUDA.tcu in Resources */ = {isa = PBXBuildFile; fileRef = A6AC2BD91CBD34A7000CC89D /* ITMRenTracker_CUDA.tcu */; };
+		A6AC2C3A1CBD34A7000CC89D /* ITMColorTracker.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A6AC2BDB1CBD34A7000CC89D /* ITMColorTracker.cpp */; };
+		A6AC2C3B1CBD34A7000CC89D /* ITMDepthTracker.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A6AC2BDE1CBD34A7000CC89D /* ITMDepthTracker.cpp */; };
+		A6AC2C3C1CBD34A7000CC89D /* ITMExtendedTracker.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A6AC2BE01CBD34A7000CC89D /* ITMExtendedTracker.cpp */; };
+		A6AC2C3D1CBD34A7000CC89D /* ITMIMUTracker.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A6AC2BE21CBD34A7000CC89D /* ITMIMUTracker.cpp */; };
+		A6AC2C3E1CBD34A7000CC89D /* ITMRenTracker.tpp in Resources */ = {isa = PBXBuildFile; fileRef = A6AC2BE51CBD34A7000CC89D /* ITMRenTracker.tpp */; };
+		A6AC2C411CBD34A7000CC89D /* ITMDepthTracker.metal in Sources */ = {isa = PBXBuildFile; fileRef = A6AC2BEC1CBD34A7000CC89D /* ITMDepthTracker.metal */; };
+		A6AC2C421CBD34A7000CC89D /* ITMDepthTracker_Metal.mm in Sources */ = {isa = PBXBuildFile; fileRef = A6AC2BEE1CBD34A7000CC89D /* ITMDepthTracker_Metal.mm */; };
+		A6AC2C471CBD34A7000CC89D /* ITMLibSettings.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A6AC2BFD1CBD34A7000CC89D /* ITMLibSettings.cpp */; };
+		A6AC2C491CBD3ADF000CC89D /* MetalInstantiations.mm in Sources */ = {isa = PBXBuildFile; fileRef = A6AC2C481CBD3ADF000CC89D /* MetalInstantiations.mm */; };
+		A6CA7EF91A0FDE0C0070848F /* iPhone_Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = A6CA7EF81A0FDE0C0070848F /* iPhone_Main.storyboard */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		01FAFAF11964A14700BF040D /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
+		2DFFE048199142E800761886 /* CoreMotion.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMotion.framework; path = System/Library/Frameworks/CoreMotion.framework; sourceTree = SDKROOT; };
+		431C6F5218455ABD00EDB38B /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
+		6F1239071862A59D00BD1D7A /* Accelerate.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Accelerate.framework; path = System/Library/Frameworks/Accelerate.framework; sourceTree = SDKROOT; };
+		6F1239091862A5D300BD1D7A /* ImageIO.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ImageIO.framework; path = System/Library/Frameworks/ImageIO.framework; sourceTree = SDKROOT; };
+		6F2B4EDC1865325D00403B8C /* OpenGLES.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGLES.framework; path = System/Library/Frameworks/OpenGLES.framework; sourceTree = SDKROOT; };
+		6F2B4EDE1865326B00403B8C /* CoreImage.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreImage.framework; path = System/Library/Frameworks/CoreImage.framework; sourceTree = SDKROOT; };
+		6F2B4EE0186532A500403B8C /* CoreMedia.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMedia.framework; path = System/Library/Frameworks/CoreMedia.framework; sourceTree = SDKROOT; };
+		6F2B4EE2186532CE00403B8C /* CoreVideo.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreVideo.framework; path = System/Library/Frameworks/CoreVideo.framework; sourceTree = SDKROOT; };
+		6F7C0CBD17F0EA0500692EC1 /* InfiniTAM.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = InfiniTAM.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		6F7C0CC017F0EA0500692EC1 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
+		6F7C0CC217F0EA0500692EC1 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
+		6F7C0CC417F0EA0500692EC1 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
+		6F7C0CC617F0EA0500692EC1 /* ExternalAccessory.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ExternalAccessory.framework; path = System/Library/Frameworks/ExternalAccessory.framework; sourceTree = SDKROOT; };
+		6F7C0CCA17F0EA0500692EC1 /* InfiniTAM-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "InfiniTAM-Info.plist"; sourceTree = "<group>"; };
+		6F7C0CCC17F0EA0500692EC1 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		6F7C0CCE17F0EA0500692EC1 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		6F7C0CD017F0EA0500692EC1 /* InfiniTAM-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "InfiniTAM-Prefix.pch"; sourceTree = "<group>"; };
+		6F7C0CD117F0EA0500692EC1 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
+		6F7C0CD217F0EA0500692EC1 /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
+		6F7C0CDA17F0EA0500692EC1 /* ViewController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = ViewController.mm; sourceTree = "<group>"; };
+		6F7C0CDC17F0EA0500692EC1 /* ViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ViewController.h; sourceTree = "<group>"; };
+		6F7C0CDD17F0EA0500692EC1 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
+		A626D7531A0F93660086B8BF /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = System/Library/Frameworks/Metal.framework; sourceTree = SDKROOT; };
+		A626D7621A0F96F50086B8BF /* Main.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = Main.storyboard; sourceTree = "<group>"; };
+		A626D7641A0F98CF0086B8BF /* LaunchScreen.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = LaunchScreen.xib; sourceTree = "<group>"; };
+		A62ECC4A1BB58439000CC25D /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = usr/lib/libz.tbd; sourceTree = SDKROOT; };
+		A646ADC81CBD53B200D4DAC2 /* Structure.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Structure.framework; path = ../../../../../../../../Library/Frameworks/Structure.framework; sourceTree = "<group>"; };
+		A68436811A1F9C190010E0C5 /* calib.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = calib.txt; sourceTree = "<group>"; };
+		A68436831A1F9C430010E0C5 /* InfiniTAM.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.xml; name = InfiniTAM.entitlements; path = ../InfiniTAM.entitlements; sourceTree = "<group>"; };
+		A6AC29931CBD3323000CC89D /* Android.mk */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Android.mk; sourceTree = "<group>"; };
+		A6AC29941CBD3323000CC89D /* CMakeLists.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = CMakeLists.txt; sourceTree = "<group>"; };
+		A6AC29951CBD3323000CC89D /* FFMPEGReader.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FFMPEGReader.cpp; sourceTree = "<group>"; };
+		A6AC29961CBD3323000CC89D /* FFMPEGReader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FFMPEGReader.h; sourceTree = "<group>"; };
+		A6AC29971CBD3323000CC89D /* FFMPEGWriter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FFMPEGWriter.cpp; sourceTree = "<group>"; };
+		A6AC29981CBD3323000CC89D /* FFMPEGWriter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FFMPEGWriter.h; sourceTree = "<group>"; };
+		A6AC29991CBD3323000CC89D /* ImageSourceEngine.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ImageSourceEngine.cpp; sourceTree = "<group>"; };
+		A6AC299A1CBD3323000CC89D /* ImageSourceEngine.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ImageSourceEngine.h; sourceTree = "<group>"; };
+		A6AC299B1CBD3323000CC89D /* IMUSourceEngine.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = IMUSourceEngine.cpp; sourceTree = "<group>"; };
+		A6AC299C1CBD3323000CC89D /* IMUSourceEngine.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IMUSourceEngine.h; sourceTree = "<group>"; };
+		A6AC299D1CBD3323000CC89D /* Kinect2Engine.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Kinect2Engine.cpp; sourceTree = "<group>"; };
+		A6AC299E1CBD3323000CC89D /* Kinect2Engine.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Kinect2Engine.h; sourceTree = "<group>"; };
+		A6AC299F1CBD3323000CC89D /* LibUVCEngine.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LibUVCEngine.cpp; sourceTree = "<group>"; };
+		A6AC29A01CBD3323000CC89D /* LibUVCEngine.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LibUVCEngine.h; sourceTree = "<group>"; };
+		A6AC29A11CBD3323000CC89D /* OpenNIEngine.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = OpenNIEngine.cpp; sourceTree = "<group>"; };
+		A6AC29A21CBD3323000CC89D /* OpenNIEngine.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OpenNIEngine.h; sourceTree = "<group>"; };
+		A6AC29A31CBD3323000CC89D /* RealSenseEngine.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RealSenseEngine.cpp; sourceTree = "<group>"; };
+		A6AC29A41CBD3323000CC89D /* RealSenseEngine.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RealSenseEngine.h; sourceTree = "<group>"; };
+		A6AC2AE51CBD333D000CC89D /* Android.mk */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Android.mk; sourceTree = "<group>"; };
+		A6AC2AE61CBD333D000CC89D /* Android.mk~c1c4fe627a2deacd274c8f1929dbbb44ae5e7e26 */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "Android.mk~c1c4fe627a2deacd274c8f1929dbbb44ae5e7e26"; sourceTree = "<group>"; };
+		A6AC2AE71CBD333D000CC89D /* Cholesky.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Cholesky.h; sourceTree = "<group>"; };
+		A6AC2AE81CBD333D000CC89D /* CMakeLists.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = CMakeLists.txt; sourceTree = "<group>"; };
+		A6AC2AE91CBD333D000CC89D /* CUDADefines.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CUDADefines.h; sourceTree = "<group>"; };
+		A6AC2AEA1CBD333D000CC89D /* FileUtils.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FileUtils.cpp; sourceTree = "<group>"; };
+		A6AC2AEB1CBD333D000CC89D /* FileUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FileUtils.h; sourceTree = "<group>"; };
+		A6AC2AEC1CBD333D000CC89D /* HomkerMap.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HomkerMap.h; sourceTree = "<group>"; };
+		A6AC2AED1CBD333D000CC89D /* Image.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Image.h; sourceTree = "<group>"; };
+		A6AC2AEE1CBD333D000CC89D /* KeyValueConfig.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = KeyValueConfig.cpp; sourceTree = "<group>"; };
+		A6AC2AEF1CBD333D000CC89D /* KeyValueConfig.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KeyValueConfig.h; sourceTree = "<group>"; };
+		A6AC2AF01CBD333D000CC89D /* LexicalCast.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LexicalCast.h; sourceTree = "<group>"; };
+		A6AC2AF11CBD333D000CC89D /* MathUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MathUtils.h; sourceTree = "<group>"; };
+		A6AC2AF21CBD333D000CC89D /* Matrix.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Matrix.h; sourceTree = "<group>"; };
+		A6AC2AF31CBD333D000CC89D /* MemoryBlock.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MemoryBlock.h; sourceTree = "<group>"; };
+		A6AC2AF41CBD333D000CC89D /* MemoryBlockPersister.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MemoryBlockPersister.h; sourceTree = "<group>"; };
+		A6AC2AF51CBD333D000CC89D /* MetalContext.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MetalContext.h; sourceTree = "<group>"; };
+		A6AC2AF61CBD333D000CC89D /* MetalContext.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = MetalContext.mm; sourceTree = "<group>"; };
+		A6AC2AF71CBD333D000CC89D /* NVTimer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NVTimer.h; sourceTree = "<group>"; };
+		A6AC2AF81CBD333D000CC89D /* PlatformIndependence.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PlatformIndependence.h; sourceTree = "<group>"; };
+		A6AC2AF91CBD333D000CC89D /* SE3Pose.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SE3Pose.cpp; sourceTree = "<group>"; };
+		A6AC2AFA1CBD333D000CC89D /* SE3Pose.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SE3Pose.h; sourceTree = "<group>"; };
+		A6AC2AFB1CBD333D000CC89D /* SVMClassifier.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SVMClassifier.h; sourceTree = "<group>"; };
+		A6AC2AFC1CBD333D000CC89D /* Vector.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Vector.h; sourceTree = "<group>"; };
+		A6AC2B051CBD3348000CC89D /* CMakeLists.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = CMakeLists.txt; sourceTree = "<group>"; };
+		A6AC2B061CBD3348000CC89D /* FernConservatory.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FernConservatory.cpp; sourceTree = "<group>"; };
+		A6AC2B071CBD3348000CC89D /* FernConservatory.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FernConservatory.h; sourceTree = "<group>"; };
+		A6AC2B081CBD3348000CC89D /* PoseDatabase.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PoseDatabase.cpp; sourceTree = "<group>"; };
+		A6AC2B091CBD3348000CC89D /* PoseDatabase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PoseDatabase.h; sourceTree = "<group>"; };
+		A6AC2B0A1CBD3348000CC89D /* Relocaliser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Relocaliser.cpp; sourceTree = "<group>"; };
+		A6AC2B0B1CBD3348000CC89D /* Relocaliser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Relocaliser.h; sourceTree = "<group>"; };
+		A6AC2B0C1CBD3348000CC89D /* RelocDatabase.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RelocDatabase.cpp; sourceTree = "<group>"; };
+		A6AC2B0D1CBD3348000CC89D /* RelocDatabase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RelocDatabase.h; sourceTree = "<group>"; };
+		A6AC2B141CBD34A7000CC89D /* Android.mk */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Android.mk; sourceTree = "<group>"; };
+		A6AC2B151CBD34A7000CC89D /* CMakeLists.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = CMakeLists.txt; sourceTree = "<group>"; };
+		A6AC2B171CBD34A7000CC89D /* ITMBasicEngine.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMBasicEngine.h; sourceTree = "<group>"; };
+		A6AC2B181CBD34A7000CC89D /* ITMBasicEngine.tpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = ITMBasicEngine.tpp; sourceTree = "<group>"; };
+		A6AC2B191CBD34A7000CC89D /* ITMDenseMapper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMDenseMapper.h; sourceTree = "<group>"; };
+		A6AC2B1A1CBD34A7000CC89D /* ITMDenseMapper.tpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = ITMDenseMapper.tpp; sourceTree = "<group>"; };
+		A6AC2B1B1CBD34A7000CC89D /* ITMDenseSurfelMapper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMDenseSurfelMapper.h; sourceTree = "<group>"; };
+		A6AC2B1C1CBD34A7000CC89D /* ITMDenseSurfelMapper.tpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = ITMDenseSurfelMapper.tpp; sourceTree = "<group>"; };
+		A6AC2B1D1CBD34A7000CC89D /* ITMMainEngine.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMMainEngine.h; sourceTree = "<group>"; };
+		A6AC2B1E1CBD34A7000CC89D /* ITMMultiEngine.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMMultiEngine.h; sourceTree = "<group>"; };
+		A6AC2B1F1CBD34A7000CC89D /* ITMMultiEngine.tpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = ITMMultiEngine.tpp; sourceTree = "<group>"; };
+		A6AC2B201CBD34A7000CC89D /* ITMTrackingController.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ITMTrackingController.cpp; sourceTree = "<group>"; };
+		A6AC2B211CBD34A7000CC89D /* ITMTrackingController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMTrackingController.h; sourceTree = "<group>"; };
+		A6AC2B231CBD34A7000CC89D /* ITMActiveSceneManager.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ITMActiveSceneManager.cpp; sourceTree = "<group>"; };
+		A6AC2B241CBD34A7000CC89D /* ITMActiveSceneManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMActiveSceneManager.h; sourceTree = "<group>"; };
+		A6AC2B251CBD34A7000CC89D /* ITMLocalScene.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ITMLocalScene.cpp; sourceTree = "<group>"; };
+		A6AC2B261CBD34A7000CC89D /* ITMLocalScene.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMLocalScene.h; sourceTree = "<group>"; };
+		A6AC2B271CBD34A7000CC89D /* ITMMultiSceneManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMMultiSceneManager.h; sourceTree = "<group>"; };
+		A6AC2B281CBD34A7000CC89D /* ITMMultiSceneManager.tpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = ITMMultiSceneManager.tpp; sourceTree = "<group>"; };
+		A6AC2B291CBD34A7000CC89D /* CPUInstantiations.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CPUInstantiations.cpp; sourceTree = "<group>"; };
+		A6AC2B2A1CBD34A7000CC89D /* CUDAInstantiations.cu */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = CUDAInstantiations.cu; sourceTree = "<group>"; };
+		A6AC2B2E1CBD34A7000CC89D /* ITMLowLevelEngine_CPU.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ITMLowLevelEngine_CPU.cpp; sourceTree = "<group>"; };
+		A6AC2B2F1CBD34A7000CC89D /* ITMLowLevelEngine_CPU.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMLowLevelEngine_CPU.h; sourceTree = "<group>"; };
+		A6AC2B311CBD34A7000CC89D /* ITMLowLevelEngine_CUDA.cu */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = ITMLowLevelEngine_CUDA.cu; sourceTree = "<group>"; };
+		A6AC2B321CBD34A7000CC89D /* ITMLowLevelEngine_CUDA.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMLowLevelEngine_CUDA.h; sourceTree = "<group>"; };
+		A6AC2B341CBD34A7000CC89D /* ITMLowLevelEngine.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMLowLevelEngine.h; sourceTree = "<group>"; };
+		A6AC2B351CBD34A7000CC89D /* ITMLowLevelEngineFactory.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ITMLowLevelEngineFactory.cpp; sourceTree = "<group>"; };
+		A6AC2B361CBD34A7000CC89D /* ITMLowLevelEngineFactory.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMLowLevelEngineFactory.h; sourceTree = "<group>"; };
+		A6AC2B3C1CBD34A7000CC89D /* ITMLowLevelEngine_Shared.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMLowLevelEngine_Shared.h; sourceTree = "<group>"; };
+		A6AC2B3F1CBD34A7000CC89D /* ITMMeshingEngine_CPU.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMMeshingEngine_CPU.h; sourceTree = "<group>"; };
+		A6AC2B401CBD34A7000CC89D /* ITMMeshingEngine_CPU.tpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = ITMMeshingEngine_CPU.tpp; sourceTree = "<group>"; };
+		A6AC2B421CBD34A7000CC89D /* ITMMeshingEngine_CUDA.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMMeshingEngine_CUDA.h; sourceTree = "<group>"; };
+		A6AC2B431CBD34A7000CC89D /* ITMMeshingEngine_CUDA.tcu */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = ITMMeshingEngine_CUDA.tcu; sourceTree = "<group>"; };
+		A6AC2B451CBD34A7000CC89D /* ITMMeshingEngine.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMMeshingEngine.h; sourceTree = "<group>"; };
+		A6AC2B461CBD34A7000CC89D /* ITMMeshingEngineFactory.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMMeshingEngineFactory.h; sourceTree = "<group>"; };
+		A6AC2B481CBD34A7000CC89D /* ITMMeshingEngine_Shared.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMMeshingEngine_Shared.h; sourceTree = "<group>"; };
+		A6AC2B4B1CBD34A7000CC89D /* ITMSceneReconstructionEngine_CPU.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMSceneReconstructionEngine_CPU.h; sourceTree = "<group>"; };
+		A6AC2B4C1CBD34A7000CC89D /* ITMSceneReconstructionEngine_CPU.tpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = ITMSceneReconstructionEngine_CPU.tpp; sourceTree = "<group>"; };
+		A6AC2B4D1CBD34A7000CC89D /* ITMSurfelSceneReconstructionEngine_CPU.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMSurfelSceneReconstructionEngine_CPU.h; sourceTree = "<group>"; };
+		A6AC2B4E1CBD34A7000CC89D /* ITMSurfelSceneReconstructionEngine_CPU.tpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = ITMSurfelSceneReconstructionEngine_CPU.tpp; sourceTree = "<group>"; };
+		A6AC2B501CBD34A7000CC89D /* ITMSceneReconstructionEngine_CUDA.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMSceneReconstructionEngine_CUDA.h; sourceTree = "<group>"; };
+		A6AC2B511CBD34A7000CC89D /* ITMSceneReconstructionEngine_CUDA.tcu */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = ITMSceneReconstructionEngine_CUDA.tcu; sourceTree = "<group>"; };
+		A6AC2B521CBD34A7000CC89D /* ITMSurfelSceneReconstructionEngine_CUDA.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMSurfelSceneReconstructionEngine_CUDA.h; sourceTree = "<group>"; };
+		A6AC2B531CBD34A7000CC89D /* ITMSurfelSceneReconstructionEngine_CUDA.tcu */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = ITMSurfelSceneReconstructionEngine_CUDA.tcu; sourceTree = "<group>"; };
+		A6AC2B551CBD34A7000CC89D /* ITMSceneReconstructionEngine.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMSceneReconstructionEngine.h; sourceTree = "<group>"; };
+		A6AC2B561CBD34A7000CC89D /* ITMSurfelSceneReconstructionEngine.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMSurfelSceneReconstructionEngine.h; sourceTree = "<group>"; };
+		A6AC2B571CBD34A7000CC89D /* ITMSurfelSceneReconstructionEngine.tpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = ITMSurfelSceneReconstructionEngine.tpp; sourceTree = "<group>"; };
+		A6AC2B581CBD34A7000CC89D /* ITMSceneReconstructionEngineFactory.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMSceneReconstructionEngineFactory.h; sourceTree = "<group>"; };
+		A6AC2B591CBD34A7000CC89D /* ITMSurfelSceneReconstructionEngineFactory.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMSurfelSceneReconstructionEngineFactory.h; sourceTree = "<group>"; };
+		A6AC2B5A1CBD34A7000CC89D /* ITMSurfelSceneReconstructionEngineFactory.tpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = ITMSurfelSceneReconstructionEngineFactory.tpp; sourceTree = "<group>"; };
+		A6AC2B5C1CBD34A7000CC89D /* ITMSceneReconstructionEngine.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; path = ITMSceneReconstructionEngine.metal; sourceTree = "<group>"; };
+		A6AC2B5D1CBD34A7000CC89D /* ITMSceneReconstructionEngine_Metal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMSceneReconstructionEngine_Metal.h; sourceTree = "<group>"; };
+		A6AC2B5E1CBD34A7000CC89D /* ITMSceneReconstructionEngine_Metal.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = ITMSceneReconstructionEngine_Metal.mm; sourceTree = "<group>"; };
+		A6AC2B601CBD34A7000CC89D /* ITMSceneReconstructionEngine_Shared.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMSceneReconstructionEngine_Shared.h; sourceTree = "<group>"; };
+		A6AC2B611CBD34A7000CC89D /* ITMSurfelSceneReconstructionEngine_Shared.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMSurfelSceneReconstructionEngine_Shared.h; sourceTree = "<group>"; };
+		A6AC2B641CBD34A7000CC89D /* ITMSwappingEngine_CPU.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMSwappingEngine_CPU.h; sourceTree = "<group>"; };
+		A6AC2B651CBD34A7000CC89D /* ITMSwappingEngine_CPU.tpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = ITMSwappingEngine_CPU.tpp; sourceTree = "<group>"; };
+		A6AC2B671CBD34A7000CC89D /* ITMSwappingEngine_CUDA.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMSwappingEngine_CUDA.h; sourceTree = "<group>"; };
+		A6AC2B681CBD34A7000CC89D /* ITMSwappingEngine_CUDA.tcu */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = ITMSwappingEngine_CUDA.tcu; sourceTree = "<group>"; };
+		A6AC2B6A1CBD34A7000CC89D /* ITMSwappingEngine.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMSwappingEngine.h; sourceTree = "<group>"; };
+		A6AC2B6B1CBD34A7000CC89D /* ITMSwappingEngineFactory.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMSwappingEngineFactory.h; sourceTree = "<group>"; };
+		A6AC2B6D1CBD34A7000CC89D /* ITMSwappingEngine.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; path = ITMSwappingEngine.metal; sourceTree = "<group>"; };
+		A6AC2B6E1CBD34A7000CC89D /* ITMSwappingEngine_Metal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMSwappingEngine_Metal.h; sourceTree = "<group>"; };
+		A6AC2B6F1CBD34A7000CC89D /* ITMSwappingEngine_Metal.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = ITMSwappingEngine_Metal.mm; sourceTree = "<group>"; };
+		A6AC2B711CBD34A7000CC89D /* ITMSwappingEngine_Shared.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMSwappingEngine_Shared.h; sourceTree = "<group>"; };
+		A6AC2B741CBD34A7000CC89D /* ITMViewBuilder_CPU.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ITMViewBuilder_CPU.cpp; sourceTree = "<group>"; };
+		A6AC2B751CBD34A7000CC89D /* ITMViewBuilder_CPU.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMViewBuilder_CPU.h; sourceTree = "<group>"; };
+		A6AC2B771CBD34A7000CC89D /* ITMViewBuilder_CUDA.cu */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = ITMViewBuilder_CUDA.cu; sourceTree = "<group>"; };
+		A6AC2B781CBD34A7000CC89D /* ITMViewBuilder_CUDA.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMViewBuilder_CUDA.h; sourceTree = "<group>"; };
+		A6AC2B7A1CBD34A7000CC89D /* ITMViewBuilder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMViewBuilder.h; sourceTree = "<group>"; };
+		A6AC2B7B1CBD34A7000CC89D /* ITMViewBuilderFactory.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ITMViewBuilderFactory.cpp; sourceTree = "<group>"; };
+		A6AC2B7C1CBD34A7000CC89D /* ITMViewBuilderFactory.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMViewBuilderFactory.h; sourceTree = "<group>"; };
+		A6AC2B7E1CBD34A7000CC89D /* ITMViewBuilder.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; path = ITMViewBuilder.metal; sourceTree = "<group>"; };
+		A6AC2B7F1CBD34A7000CC89D /* ITMViewBuilder_Metal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMViewBuilder_Metal.h; sourceTree = "<group>"; };
+		A6AC2B801CBD34A7000CC89D /* ITMViewBuilder_Metal.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = ITMViewBuilder_Metal.mm; sourceTree = "<group>"; };
+		A6AC2B821CBD34A7000CC89D /* ITMViewBuilder_Shared.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMViewBuilder_Shared.h; sourceTree = "<group>"; };
+		A6AC2B851CBD34A7000CC89D /* ITMSurfelVisualisationEngine_CPU.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMSurfelVisualisationEngine_CPU.h; sourceTree = "<group>"; };
+		A6AC2B861CBD34A7000CC89D /* ITMSurfelVisualisationEngine_CPU.tpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = ITMSurfelVisualisationEngine_CPU.tpp; sourceTree = "<group>"; };
+		A6AC2B871CBD34A7000CC89D /* ITMVisualisationEngine_CPU.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMVisualisationEngine_CPU.h; sourceTree = "<group>"; };
+		A6AC2B881CBD34A7000CC89D /* ITMVisualisationEngine_CPU.tpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = ITMVisualisationEngine_CPU.tpp; sourceTree = "<group>"; };
+		A6AC2B8A1CBD34A7000CC89D /* ITMSurfelVisualisationEngine_CUDA.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMSurfelVisualisationEngine_CUDA.h; sourceTree = "<group>"; };
+		A6AC2B8B1CBD34A7000CC89D /* ITMSurfelVisualisationEngine_CUDA.tcu */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = ITMSurfelVisualisationEngine_CUDA.tcu; sourceTree = "<group>"; };
+		A6AC2B8C1CBD34A7000CC89D /* ITMVisualisationEngine_CUDA.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMVisualisationEngine_CUDA.h; sourceTree = "<group>"; };
+		A6AC2B8D1CBD34A7000CC89D /* ITMVisualisationEngine_CUDA.tcu */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = ITMVisualisationEngine_CUDA.tcu; sourceTree = "<group>"; };
+		A6AC2B8F1CBD34A7000CC89D /* ITMSurfelVisualisationEngine.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMSurfelVisualisationEngine.h; sourceTree = "<group>"; };
+		A6AC2B901CBD34A7000CC89D /* ITMSurfelVisualisationEngine.tpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = ITMSurfelVisualisationEngine.tpp; sourceTree = "<group>"; };
+		A6AC2B911CBD34A7000CC89D /* ITMVisualisationEngine.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ITMVisualisationEngine.cpp; sourceTree = "<group>"; };
+		A6AC2B921CBD34A7000CC89D /* ITMVisualisationEngine.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMVisualisationEngine.h; sourceTree = "<group>"; };
+		A6AC2B931CBD34A7000CC89D /* ITMSurfelVisualisationEngineFactory.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMSurfelVisualisationEngineFactory.h; sourceTree = "<group>"; };
+		A6AC2B941CBD34A7000CC89D /* ITMSurfelVisualisationEngineFactory.tpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = ITMSurfelVisualisationEngineFactory.tpp; sourceTree = "<group>"; };
+		A6AC2B951CBD34A7000CC89D /* ITMVisualisationEngineFactory.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMVisualisationEngineFactory.h; sourceTree = "<group>"; };
+		A6AC2B971CBD34A7000CC89D /* ITMVisualisationEngine.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; path = ITMVisualisationEngine.metal; sourceTree = "<group>"; };
+		A6AC2B981CBD34A7000CC89D /* ITMVisualisationEngine_Metal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMVisualisationEngine_Metal.h; sourceTree = "<group>"; };
+		A6AC2B991CBD34A7000CC89D /* ITMVisualisationEngine_Metal.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = ITMVisualisationEngine_Metal.mm; sourceTree = "<group>"; };
+		A6AC2B9B1CBD34A7000CC89D /* ITMSurfelVisualisationEngine_Settings.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMSurfelVisualisationEngine_Settings.h; sourceTree = "<group>"; };
+		A6AC2B9C1CBD34A7000CC89D /* ITMSurfelVisualisationEngine_Shared.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMSurfelVisualisationEngine_Shared.h; sourceTree = "<group>"; };
+		A6AC2B9D1CBD34A7000CC89D /* ITMVisualisationEngine_Shared.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMVisualisationEngine_Shared.h; sourceTree = "<group>"; };
+		A6AC2B9E1CBD34A7000CC89D /* ITMLibDefines.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMLibDefines.h; sourceTree = "<group>"; };
+		A6AC2BA11CBD34A7000CC89D /* ITMCalibIO.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ITMCalibIO.cpp; sourceTree = "<group>"; };
+		A6AC2BA21CBD34A7000CC89D /* ITMCalibIO.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMCalibIO.h; sourceTree = "<group>"; };
+		A6AC2BA31CBD34A7000CC89D /* ITMDisparityCalib.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMDisparityCalib.h; sourceTree = "<group>"; };
+		A6AC2BA41CBD34A7000CC89D /* ITMExtrinsics.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMExtrinsics.h; sourceTree = "<group>"; };
+		A6AC2BA51CBD34A7000CC89D /* ITMIntrinsics.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMIntrinsics.h; sourceTree = "<group>"; };
+		A6AC2BA61CBD34A7000CC89D /* ITMRGBDCalib.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMRGBDCalib.h; sourceTree = "<group>"; };
+		A6AC2BA81CBD34A7000CC89D /* ITMMesh.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMMesh.h; sourceTree = "<group>"; };
+		A6AC2BAA1CBD34A7000CC89D /* ITMIMUCalibrator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMIMUCalibrator.h; sourceTree = "<group>"; };
+		A6AC2BAB1CBD34A7000CC89D /* ITMIMUMeasurement.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMIMUMeasurement.h; sourceTree = "<group>"; };
+		A6AC2BAC1CBD34A7000CC89D /* ITMPointCloud.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMPointCloud.h; sourceTree = "<group>"; };
+		A6AC2BAE1CBD34A7000CC89D /* ITMRenderState.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMRenderState.h; sourceTree = "<group>"; };
+		A6AC2BAF1CBD34A7000CC89D /* ITMRenderState_VH.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMRenderState_VH.h; sourceTree = "<group>"; };
+		A6AC2BB01CBD34A7000CC89D /* ITMSurfelRenderState.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ITMSurfelRenderState.cpp; sourceTree = "<group>"; };
+		A6AC2BB11CBD34A7000CC89D /* ITMSurfelRenderState.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMSurfelRenderState.h; sourceTree = "<group>"; };
+		A6AC2BB31CBD34A7000CC89D /* ITMGlobalCache.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMGlobalCache.h; sourceTree = "<group>"; };
+		A6AC2BB41CBD34A7000CC89D /* ITMLocalVBA.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMLocalVBA.h; sourceTree = "<group>"; };
+		A6AC2BB51CBD34A7000CC89D /* ITMPlainVoxelArray.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMPlainVoxelArray.h; sourceTree = "<group>"; };
+		A6AC2BB61CBD34A7000CC89D /* ITMRepresentationAccess.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMRepresentationAccess.h; sourceTree = "<group>"; };
+		A6AC2BB71CBD34A7000CC89D /* ITMScene.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMScene.h; sourceTree = "<group>"; };
+		A6AC2BB81CBD34A7000CC89D /* ITMSurfelScene.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMSurfelScene.h; sourceTree = "<group>"; };
+		A6AC2BB91CBD34A7000CC89D /* ITMSurfelTypes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMSurfelTypes.h; sourceTree = "<group>"; };
+		A6AC2BBA1CBD34A7000CC89D /* ITMVoxelBlockHash.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMVoxelBlockHash.h; sourceTree = "<group>"; };
+		A6AC2BBB1CBD34A7000CC89D /* ITMVoxelTypes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMVoxelTypes.h; sourceTree = "<group>"; };
+		A6AC2BBD1CBD34A7000CC89D /* ITMExtendedHierarchyLevel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMExtendedHierarchyLevel.h; sourceTree = "<group>"; };
+		A6AC2BBE1CBD34A7000CC89D /* ITMImageHierarchy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMImageHierarchy.h; sourceTree = "<group>"; };
+		A6AC2BBF1CBD34A7000CC89D /* ITMSceneHierarchyLevel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMSceneHierarchyLevel.h; sourceTree = "<group>"; };
+		A6AC2BC01CBD34A7000CC89D /* ITMTemplatedHierarchyLevel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMTemplatedHierarchyLevel.h; sourceTree = "<group>"; };
+		A6AC2BC11CBD34A7000CC89D /* ITMTrackingState.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMTrackingState.h; sourceTree = "<group>"; };
+		A6AC2BC21CBD34A7000CC89D /* ITMViewHierarchyLevel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMViewHierarchyLevel.h; sourceTree = "<group>"; };
+		A6AC2BC31CBD34A7000CC89D /* TrackerIterationType.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TrackerIterationType.h; sourceTree = "<group>"; };
+		A6AC2BC51CBD34A7000CC89D /* ITMView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMView.h; sourceTree = "<group>"; };
+		A6AC2BC61CBD34A7000CC89D /* ITMViewIMU.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMViewIMU.h; sourceTree = "<group>"; };
+		A6AC2BC91CBD34A7000CC89D /* ITMColorTracker_CPU.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ITMColorTracker_CPU.cpp; sourceTree = "<group>"; };
+		A6AC2BCA1CBD34A7000CC89D /* ITMColorTracker_CPU.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMColorTracker_CPU.h; sourceTree = "<group>"; };
+		A6AC2BCB1CBD34A7000CC89D /* ITMDepthTracker_CPU.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ITMDepthTracker_CPU.cpp; sourceTree = "<group>"; };
+		A6AC2BCC1CBD34A7000CC89D /* ITMDepthTracker_CPU.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMDepthTracker_CPU.h; sourceTree = "<group>"; };
+		A6AC2BCD1CBD34A7000CC89D /* ITMExtendedTracker_CPU.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ITMExtendedTracker_CPU.cpp; sourceTree = "<group>"; };
+		A6AC2BCE1CBD34A7000CC89D /* ITMExtendedTracker_CPU.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMExtendedTracker_CPU.h; sourceTree = "<group>"; };
+		A6AC2BCF1CBD34A7000CC89D /* ITMRenTracker_CPU.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMRenTracker_CPU.h; sourceTree = "<group>"; };
+		A6AC2BD01CBD34A7000CC89D /* ITMRenTracker_CPU.tpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = ITMRenTracker_CPU.tpp; sourceTree = "<group>"; };
+		A6AC2BD21CBD34A7000CC89D /* ITMColorTracker_CUDA.cu */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = ITMColorTracker_CUDA.cu; sourceTree = "<group>"; };
+		A6AC2BD31CBD34A7000CC89D /* ITMColorTracker_CUDA.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMColorTracker_CUDA.h; sourceTree = "<group>"; };
+		A6AC2BD41CBD34A7000CC89D /* ITMDepthTracker_CUDA.cu */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = ITMDepthTracker_CUDA.cu; sourceTree = "<group>"; };
+		A6AC2BD51CBD34A7000CC89D /* ITMDepthTracker_CUDA.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMDepthTracker_CUDA.h; sourceTree = "<group>"; };
+		A6AC2BD61CBD34A7000CC89D /* ITMExtendedTracker_CUDA.cu */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = ITMExtendedTracker_CUDA.cu; sourceTree = "<group>"; };
+		A6AC2BD71CBD34A7000CC89D /* ITMExtendedTracker_CUDA.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMExtendedTracker_CUDA.h; sourceTree = "<group>"; };
+		A6AC2BD81CBD34A7000CC89D /* ITMRenTracker_CUDA.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMRenTracker_CUDA.h; sourceTree = "<group>"; };
+		A6AC2BD91CBD34A7000CC89D /* ITMRenTracker_CUDA.tcu */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = ITMRenTracker_CUDA.tcu; sourceTree = "<group>"; };
+		A6AC2BDB1CBD34A7000CC89D /* ITMColorTracker.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ITMColorTracker.cpp; sourceTree = "<group>"; };
+		A6AC2BDC1CBD34A7000CC89D /* ITMColorTracker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMColorTracker.h; sourceTree = "<group>"; };
+		A6AC2BDD1CBD34A7000CC89D /* ITMCompositeTracker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMCompositeTracker.h; sourceTree = "<group>"; };
+		A6AC2BDE1CBD34A7000CC89D /* ITMDepthTracker.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ITMDepthTracker.cpp; sourceTree = "<group>"; };
+		A6AC2BDF1CBD34A7000CC89D /* ITMDepthTracker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMDepthTracker.h; sourceTree = "<group>"; };
+		A6AC2BE01CBD34A7000CC89D /* ITMExtendedTracker.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ITMExtendedTracker.cpp; sourceTree = "<group>"; };
+		A6AC2BE11CBD34A7000CC89D /* ITMExtendedTracker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMExtendedTracker.h; sourceTree = "<group>"; };
+		A6AC2BE21CBD34A7000CC89D /* ITMIMUTracker.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ITMIMUTracker.cpp; sourceTree = "<group>"; };
+		A6AC2BE31CBD34A7000CC89D /* ITMIMUTracker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMIMUTracker.h; sourceTree = "<group>"; };
+		A6AC2BE41CBD34A7000CC89D /* ITMRenTracker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMRenTracker.h; sourceTree = "<group>"; };
+		A6AC2BE51CBD34A7000CC89D /* ITMRenTracker.tpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = ITMRenTracker.tpp; sourceTree = "<group>"; };
+		A6AC2BE61CBD34A7000CC89D /* ITMTracker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMTracker.h; sourceTree = "<group>"; };
+		A6AC2BE71CBD34A7000CC89D /* ITMTrackerFactory.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMTrackerFactory.h; sourceTree = "<group>"; };
+		A6AC2BEC1CBD34A7000CC89D /* ITMDepthTracker.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; path = ITMDepthTracker.metal; sourceTree = "<group>"; };
+		A6AC2BED1CBD34A7000CC89D /* ITMDepthTracker_Metal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMDepthTracker_Metal.h; sourceTree = "<group>"; };
+		A6AC2BEE1CBD34A7000CC89D /* ITMDepthTracker_Metal.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = ITMDepthTracker_Metal.mm; sourceTree = "<group>"; };
+		A6AC2BF61CBD34A7000CC89D /* ITMColorTracker_Shared.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMColorTracker_Shared.h; sourceTree = "<group>"; };
+		A6AC2BF71CBD34A7000CC89D /* ITMDepthTracker_Shared.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMDepthTracker_Shared.h; sourceTree = "<group>"; };
+		A6AC2BF81CBD34A7000CC89D /* ITMExtendedTracker_Shared.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMExtendedTracker_Shared.h; sourceTree = "<group>"; };
+		A6AC2BF91CBD34A7000CC89D /* ITMRenTracker_Shared.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMRenTracker_Shared.h; sourceTree = "<group>"; };
+		A6AC2BFB1CBD34A7000CC89D /* ITMCUDAUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMCUDAUtils.h; sourceTree = "<group>"; };
+		A6AC2BFC1CBD34A7000CC89D /* ITMImageTypes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMImageTypes.h; sourceTree = "<group>"; };
+		A6AC2BFD1CBD34A7000CC89D /* ITMLibSettings.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ITMLibSettings.cpp; sourceTree = "<group>"; };
+		A6AC2BFE1CBD34A7000CC89D /* ITMLibSettings.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMLibSettings.h; sourceTree = "<group>"; };
+		A6AC2BFF1CBD34A7000CC89D /* ITMMath.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMMath.h; sourceTree = "<group>"; };
+		A6AC2C001CBD34A7000CC89D /* ITMPixelUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMPixelUtils.h; sourceTree = "<group>"; };
+		A6AC2C011CBD34A7000CC89D /* ITMSceneParams.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMSceneParams.h; sourceTree = "<group>"; };
+		A6AC2C021CBD34A7000CC89D /* ITMSurfelSceneParams.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMSurfelSceneParams.h; sourceTree = "<group>"; };
+		A6AC2C481CBD3ADF000CC89D /* MetalInstantiations.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = MetalInstantiations.mm; sourceTree = "<group>"; };
+		A6CA7EF81A0FDE0C0070848F /* iPhone_Main.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = iPhone_Main.storyboard; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		6F7C0CBA17F0EA0500692EC1 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A62ECC4B1BB58439000CC25D /* libz.tbd in Frameworks */,
+				A626D7541A0F93660086B8BF /* Metal.framework in Frameworks */,
+				2DFFE049199142E800761886 /* CoreMotion.framework in Frameworks */,
+				01FAFAF21964A14700BF040D /* QuartzCore.framework in Frameworks */,
+				6F7C0CC117F0EA0500692EC1 /* Foundation.framework in Frameworks */,
+				431C6F5318455ABD00EDB38B /* AVFoundation.framework in Frameworks */,
+				6F1239081862A59D00BD1D7A /* Accelerate.framework in Frameworks */,
+				6F2B4EDD1865325D00403B8C /* OpenGLES.framework in Frameworks */,
+				6F12390A1862A5D300BD1D7A /* ImageIO.framework in Frameworks */,
+				6F2B4EE1186532A500403B8C /* CoreMedia.framework in Frameworks */,
+				6F2B4EDB1865324D00403B8C /* CoreGraphics.framework in Frameworks */,
+				6F2B4EDF1865326B00403B8C /* CoreImage.framework in Frameworks */,
+				6F2B4EE3186532CE00403B8C /* CoreVideo.framework in Frameworks */,
+				6F7C0CC517F0EA0500692EC1 /* UIKit.framework in Frameworks */,
+				A646ADC91CBD53B200D4DAC2 /* Structure.framework in Frameworks */,
+				6F7C0CC717F0EA0500692EC1 /* ExternalAccessory.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		6F7C0CB417F0EA0500692EC1 = {
+			isa = PBXGroup;
+			children = (
+				A68436801A1F9C190010E0C5 /* Files */,
+				6F7C0CC817F0EA0500692EC1 /* Main */,
+				6F7C0CBF17F0EA0500692EC1 /* Frameworks */,
+				6F7C0CBE17F0EA0500692EC1 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		6F7C0CBE17F0EA0500692EC1 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				6F7C0CBD17F0EA0500692EC1 /* InfiniTAM.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		6F7C0CBF17F0EA0500692EC1 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				A646ADC81CBD53B200D4DAC2 /* Structure.framework */,
+				A62ECC4A1BB58439000CC25D /* libz.tbd */,
+				A626D7531A0F93660086B8BF /* Metal.framework */,
+				2DFFE048199142E800761886 /* CoreMotion.framework */,
+				01FAFAF11964A14700BF040D /* QuartzCore.framework */,
+				6F7C0CC017F0EA0500692EC1 /* Foundation.framework */,
+				431C6F5218455ABD00EDB38B /* AVFoundation.framework */,
+				6F1239071862A59D00BD1D7A /* Accelerate.framework */,
+				6F2B4EDC1865325D00403B8C /* OpenGLES.framework */,
+				6F1239091862A5D300BD1D7A /* ImageIO.framework */,
+				6F2B4EE0186532A500403B8C /* CoreMedia.framework */,
+				6F7C0CC217F0EA0500692EC1 /* CoreGraphics.framework */,
+				6F2B4EDE1865326B00403B8C /* CoreImage.framework */,
+				6F2B4EE2186532CE00403B8C /* CoreVideo.framework */,
+				6F7C0CC417F0EA0500692EC1 /* UIKit.framework */,
+				6F7C0CC617F0EA0500692EC1 /* ExternalAccessory.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		6F7C0CC817F0EA0500692EC1 /* Main */ = {
+			isa = PBXGroup;
+			children = (
+				A6AC2B131CBD34A7000CC89D /* ITMLib */,
+				A6AC2B041CBD3348000CC89D /* RelocLib */,
+				A6AC2AE41CBD333D000CC89D /* ORUtils */,
+				A6AC29921CBD3323000CC89D /* InputSource */,
+				6F7C0CD117F0EA0500692EC1 /* AppDelegate.h */,
+				6F7C0CD217F0EA0500692EC1 /* AppDelegate.m */,
+				6F7C0CDC17F0EA0500692EC1 /* ViewController.h */,
+				6F7C0CDA17F0EA0500692EC1 /* ViewController.mm */,
+				6F7C0CC917F0EA0500692EC1 /* Supporting Files */,
+			);
+			name = Main;
+			path = Viewer;
+			sourceTree = "<group>";
+		};
+		6F7C0CC917F0EA0500692EC1 /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				A68436831A1F9C430010E0C5 /* InfiniTAM.entitlements */,
+				A626D7641A0F98CF0086B8BF /* LaunchScreen.xib */,
+				A626D7621A0F96F50086B8BF /* Main.storyboard */,
+				A6CA7EF81A0FDE0C0070848F /* iPhone_Main.storyboard */,
+				6F7C0CDD17F0EA0500692EC1 /* Images.xcassets */,
+				6F7C0CCB17F0EA0500692EC1 /* InfoPlist.strings */,
+				6F7C0CCA17F0EA0500692EC1 /* InfiniTAM-Info.plist */,
+				6F7C0CD017F0EA0500692EC1 /* InfiniTAM-Prefix.pch */,
+				6F7C0CCE17F0EA0500692EC1 /* main.m */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		A68436801A1F9C190010E0C5 /* Files */ = {
+			isa = PBXGroup;
+			children = (
+				A68436811A1F9C190010E0C5 /* calib.txt */,
+			);
+			name = Files;
+			path = Viewer/Files;
+			sourceTree = "<group>";
+		};
+		A6AC29921CBD3323000CC89D /* InputSource */ = {
+			isa = PBXGroup;
+			children = (
+				A6AC29931CBD3323000CC89D /* Android.mk */,
+				A6AC29941CBD3323000CC89D /* CMakeLists.txt */,
+				A6AC29951CBD3323000CC89D /* FFMPEGReader.cpp */,
+				A6AC29961CBD3323000CC89D /* FFMPEGReader.h */,
+				A6AC29971CBD3323000CC89D /* FFMPEGWriter.cpp */,
+				A6AC29981CBD3323000CC89D /* FFMPEGWriter.h */,
+				A6AC29991CBD3323000CC89D /* ImageSourceEngine.cpp */,
+				A6AC299A1CBD3323000CC89D /* ImageSourceEngine.h */,
+				A6AC299B1CBD3323000CC89D /* IMUSourceEngine.cpp */,
+				A6AC299C1CBD3323000CC89D /* IMUSourceEngine.h */,
+				A6AC299D1CBD3323000CC89D /* Kinect2Engine.cpp */,
+				A6AC299E1CBD3323000CC89D /* Kinect2Engine.h */,
+				A6AC299F1CBD3323000CC89D /* LibUVCEngine.cpp */,
+				A6AC29A01CBD3323000CC89D /* LibUVCEngine.h */,
+				A6AC29A11CBD3323000CC89D /* OpenNIEngine.cpp */,
+				A6AC29A21CBD3323000CC89D /* OpenNIEngine.h */,
+				A6AC29A31CBD3323000CC89D /* RealSenseEngine.cpp */,
+				A6AC29A41CBD3323000CC89D /* RealSenseEngine.h */,
+			);
+			name = InputSource;
+			path = ../../../InputSource;
+			sourceTree = "<group>";
+		};
+		A6AC2AE41CBD333D000CC89D /* ORUtils */ = {
+			isa = PBXGroup;
+			children = (
+				A6AC2AE51CBD333D000CC89D /* Android.mk */,
+				A6AC2AE61CBD333D000CC89D /* Android.mk~c1c4fe627a2deacd274c8f1929dbbb44ae5e7e26 */,
+				A6AC2AE71CBD333D000CC89D /* Cholesky.h */,
+				A6AC2AE81CBD333D000CC89D /* CMakeLists.txt */,
+				A6AC2AE91CBD333D000CC89D /* CUDADefines.h */,
+				A6AC2AEA1CBD333D000CC89D /* FileUtils.cpp */,
+				A6AC2AEB1CBD333D000CC89D /* FileUtils.h */,
+				A6AC2AEC1CBD333D000CC89D /* HomkerMap.h */,
+				A6AC2AED1CBD333D000CC89D /* Image.h */,
+				A6AC2AEE1CBD333D000CC89D /* KeyValueConfig.cpp */,
+				A6AC2AEF1CBD333D000CC89D /* KeyValueConfig.h */,
+				A6AC2AF01CBD333D000CC89D /* LexicalCast.h */,
+				A6AC2AF11CBD333D000CC89D /* MathUtils.h */,
+				A6AC2AF21CBD333D000CC89D /* Matrix.h */,
+				A6AC2AF31CBD333D000CC89D /* MemoryBlock.h */,
+				A6AC2AF41CBD333D000CC89D /* MemoryBlockPersister.h */,
+				A6AC2AF51CBD333D000CC89D /* MetalContext.h */,
+				A6AC2AF61CBD333D000CC89D /* MetalContext.mm */,
+				A6AC2AF71CBD333D000CC89D /* NVTimer.h */,
+				A6AC2AF81CBD333D000CC89D /* PlatformIndependence.h */,
+				A6AC2AF91CBD333D000CC89D /* SE3Pose.cpp */,
+				A6AC2AFA1CBD333D000CC89D /* SE3Pose.h */,
+				A6AC2AFB1CBD333D000CC89D /* SVMClassifier.h */,
+				A6AC2AFC1CBD333D000CC89D /* Vector.h */,
+			);
+			name = ORUtils;
+			path = ../../../ORUtils;
+			sourceTree = "<group>";
+		};
+		A6AC2B041CBD3348000CC89D /* RelocLib */ = {
+			isa = PBXGroup;
+			children = (
+				A6AC2B051CBD3348000CC89D /* CMakeLists.txt */,
+				A6AC2B061CBD3348000CC89D /* FernConservatory.cpp */,
+				A6AC2B071CBD3348000CC89D /* FernConservatory.h */,
+				A6AC2B081CBD3348000CC89D /* PoseDatabase.cpp */,
+				A6AC2B091CBD3348000CC89D /* PoseDatabase.h */,
+				A6AC2B0A1CBD3348000CC89D /* Relocaliser.cpp */,
+				A6AC2B0B1CBD3348000CC89D /* Relocaliser.h */,
+				A6AC2B0C1CBD3348000CC89D /* RelocDatabase.cpp */,
+				A6AC2B0D1CBD3348000CC89D /* RelocDatabase.h */,
+			);
+			name = RelocLib;
+			path = ../../../RelocLib;
+			sourceTree = "<group>";
+		};
+		A6AC2B131CBD34A7000CC89D /* ITMLib */ = {
+			isa = PBXGroup;
+			children = (
+				A6AC2B141CBD34A7000CC89D /* Android.mk */,
+				A6AC2B151CBD34A7000CC89D /* CMakeLists.txt */,
+				A6AC2B161CBD34A7000CC89D /* Core */,
+				A6AC2B291CBD34A7000CC89D /* CPUInstantiations.cpp */,
+				A6AC2B2A1CBD34A7000CC89D /* CUDAInstantiations.cu */,
+				A6AC2C481CBD3ADF000CC89D /* MetalInstantiations.mm */,
+				A6AC2B2B1CBD34A7000CC89D /* Engines */,
+				A6AC2B9E1CBD34A7000CC89D /* ITMLibDefines.h */,
+				A6AC2B9F1CBD34A7000CC89D /* Objects */,
+				A6AC2BC71CBD34A7000CC89D /* Trackers */,
+				A6AC2BFA1CBD34A7000CC89D /* Utils */,
+			);
+			name = ITMLib;
+			path = ../../../ITMLib;
+			sourceTree = "<group>";
+		};
+		A6AC2B161CBD34A7000CC89D /* Core */ = {
+			isa = PBXGroup;
+			children = (
+				A6AC2B171CBD34A7000CC89D /* ITMBasicEngine.h */,
+				A6AC2B181CBD34A7000CC89D /* ITMBasicEngine.tpp */,
+				A6AC2B191CBD34A7000CC89D /* ITMDenseMapper.h */,
+				A6AC2B1A1CBD34A7000CC89D /* ITMDenseMapper.tpp */,
+				A6AC2B1B1CBD34A7000CC89D /* ITMDenseSurfelMapper.h */,
+				A6AC2B1C1CBD34A7000CC89D /* ITMDenseSurfelMapper.tpp */,
+				A6AC2B1D1CBD34A7000CC89D /* ITMMainEngine.h */,
+				A6AC2B1E1CBD34A7000CC89D /* ITMMultiEngine.h */,
+				A6AC2B1F1CBD34A7000CC89D /* ITMMultiEngine.tpp */,
+				A6AC2B201CBD34A7000CC89D /* ITMTrackingController.cpp */,
+				A6AC2B211CBD34A7000CC89D /* ITMTrackingController.h */,
+				A6AC2B221CBD34A7000CC89D /* MultiScene */,
+			);
+			path = Core;
+			sourceTree = "<group>";
+		};
+		A6AC2B221CBD34A7000CC89D /* MultiScene */ = {
+			isa = PBXGroup;
+			children = (
+				A6AC2B231CBD34A7000CC89D /* ITMActiveSceneManager.cpp */,
+				A6AC2B241CBD34A7000CC89D /* ITMActiveSceneManager.h */,
+				A6AC2B251CBD34A7000CC89D /* ITMLocalScene.cpp */,
+				A6AC2B261CBD34A7000CC89D /* ITMLocalScene.h */,
+				A6AC2B271CBD34A7000CC89D /* ITMMultiSceneManager.h */,
+				A6AC2B281CBD34A7000CC89D /* ITMMultiSceneManager.tpp */,
+			);
+			path = MultiScene;
+			sourceTree = "<group>";
+		};
+		A6AC2B2B1CBD34A7000CC89D /* Engines */ = {
+			isa = PBXGroup;
+			children = (
+				A6AC2B2C1CBD34A7000CC89D /* LowLevel */,
+				A6AC2B3D1CBD34A7000CC89D /* Meshing */,
+				A6AC2B491CBD34A7000CC89D /* Reconstruction */,
+				A6AC2B621CBD34A7000CC89D /* Swapping */,
+				A6AC2B721CBD34A7000CC89D /* ViewBuilding */,
+				A6AC2B831CBD34A7000CC89D /* Visualisation */,
+			);
+			path = Engines;
+			sourceTree = "<group>";
+		};
+		A6AC2B2C1CBD34A7000CC89D /* LowLevel */ = {
+			isa = PBXGroup;
+			children = (
+				A6AC2B2D1CBD34A7000CC89D /* CPU */,
+				A6AC2B301CBD34A7000CC89D /* CUDA */,
+				A6AC2B331CBD34A7000CC89D /* Interface */,
+				A6AC2B351CBD34A7000CC89D /* ITMLowLevelEngineFactory.cpp */,
+				A6AC2B361CBD34A7000CC89D /* ITMLowLevelEngineFactory.h */,
+				A6AC2B3B1CBD34A7000CC89D /* Shared */,
+			);
+			path = LowLevel;
+			sourceTree = "<group>";
+		};
+		A6AC2B2D1CBD34A7000CC89D /* CPU */ = {
+			isa = PBXGroup;
+			children = (
+				A6AC2B2E1CBD34A7000CC89D /* ITMLowLevelEngine_CPU.cpp */,
+				A6AC2B2F1CBD34A7000CC89D /* ITMLowLevelEngine_CPU.h */,
+			);
+			path = CPU;
+			sourceTree = "<group>";
+		};
+		A6AC2B301CBD34A7000CC89D /* CUDA */ = {
+			isa = PBXGroup;
+			children = (
+				A6AC2B311CBD34A7000CC89D /* ITMLowLevelEngine_CUDA.cu */,
+				A6AC2B321CBD34A7000CC89D /* ITMLowLevelEngine_CUDA.h */,
+			);
+			path = CUDA;
+			sourceTree = "<group>";
+		};
+		A6AC2B331CBD34A7000CC89D /* Interface */ = {
+			isa = PBXGroup;
+			children = (
+				A6AC2B341CBD34A7000CC89D /* ITMLowLevelEngine.h */,
+			);
+			path = Interface;
+			sourceTree = "<group>";
+		};
+		A6AC2B3B1CBD34A7000CC89D /* Shared */ = {
+			isa = PBXGroup;
+			children = (
+				A6AC2B3C1CBD34A7000CC89D /* ITMLowLevelEngine_Shared.h */,
+			);
+			path = Shared;
+			sourceTree = "<group>";
+		};
+		A6AC2B3D1CBD34A7000CC89D /* Meshing */ = {
+			isa = PBXGroup;
+			children = (
+				A6AC2B3E1CBD34A7000CC89D /* CPU */,
+				A6AC2B411CBD34A7000CC89D /* CUDA */,
+				A6AC2B441CBD34A7000CC89D /* Interface */,
+				A6AC2B461CBD34A7000CC89D /* ITMMeshingEngineFactory.h */,
+				A6AC2B471CBD34A7000CC89D /* Shared */,
+			);
+			path = Meshing;
+			sourceTree = "<group>";
+		};
+		A6AC2B3E1CBD34A7000CC89D /* CPU */ = {
+			isa = PBXGroup;
+			children = (
+				A6AC2B3F1CBD34A7000CC89D /* ITMMeshingEngine_CPU.h */,
+				A6AC2B401CBD34A7000CC89D /* ITMMeshingEngine_CPU.tpp */,
+			);
+			path = CPU;
+			sourceTree = "<group>";
+		};
+		A6AC2B411CBD34A7000CC89D /* CUDA */ = {
+			isa = PBXGroup;
+			children = (
+				A6AC2B421CBD34A7000CC89D /* ITMMeshingEngine_CUDA.h */,
+				A6AC2B431CBD34A7000CC89D /* ITMMeshingEngine_CUDA.tcu */,
+			);
+			path = CUDA;
+			sourceTree = "<group>";
+		};
+		A6AC2B441CBD34A7000CC89D /* Interface */ = {
+			isa = PBXGroup;
+			children = (
+				A6AC2B451CBD34A7000CC89D /* ITMMeshingEngine.h */,
+			);
+			path = Interface;
+			sourceTree = "<group>";
+		};
+		A6AC2B471CBD34A7000CC89D /* Shared */ = {
+			isa = PBXGroup;
+			children = (
+				A6AC2B481CBD34A7000CC89D /* ITMMeshingEngine_Shared.h */,
+			);
+			path = Shared;
+			sourceTree = "<group>";
+		};
+		A6AC2B491CBD34A7000CC89D /* Reconstruction */ = {
+			isa = PBXGroup;
+			children = (
+				A6AC2B4A1CBD34A7000CC89D /* CPU */,
+				A6AC2B4F1CBD34A7000CC89D /* CUDA */,
+				A6AC2B541CBD34A7000CC89D /* Interface */,
+				A6AC2B581CBD34A7000CC89D /* ITMSceneReconstructionEngineFactory.h */,
+				A6AC2B591CBD34A7000CC89D /* ITMSurfelSceneReconstructionEngineFactory.h */,
+				A6AC2B5A1CBD34A7000CC89D /* ITMSurfelSceneReconstructionEngineFactory.tpp */,
+				A6AC2B5B1CBD34A7000CC89D /* Metal */,
+				A6AC2B5F1CBD34A7000CC89D /* Shared */,
+			);
+			path = Reconstruction;
+			sourceTree = "<group>";
+		};
+		A6AC2B4A1CBD34A7000CC89D /* CPU */ = {
+			isa = PBXGroup;
+			children = (
+				A6AC2B4B1CBD34A7000CC89D /* ITMSceneReconstructionEngine_CPU.h */,
+				A6AC2B4C1CBD34A7000CC89D /* ITMSceneReconstructionEngine_CPU.tpp */,
+				A6AC2B4D1CBD34A7000CC89D /* ITMSurfelSceneReconstructionEngine_CPU.h */,
+				A6AC2B4E1CBD34A7000CC89D /* ITMSurfelSceneReconstructionEngine_CPU.tpp */,
+			);
+			path = CPU;
+			sourceTree = "<group>";
+		};
+		A6AC2B4F1CBD34A7000CC89D /* CUDA */ = {
+			isa = PBXGroup;
+			children = (
+				A6AC2B501CBD34A7000CC89D /* ITMSceneReconstructionEngine_CUDA.h */,
+				A6AC2B511CBD34A7000CC89D /* ITMSceneReconstructionEngine_CUDA.tcu */,
+				A6AC2B521CBD34A7000CC89D /* ITMSurfelSceneReconstructionEngine_CUDA.h */,
+				A6AC2B531CBD34A7000CC89D /* ITMSurfelSceneReconstructionEngine_CUDA.tcu */,
+			);
+			path = CUDA;
+			sourceTree = "<group>";
+		};
+		A6AC2B541CBD34A7000CC89D /* Interface */ = {
+			isa = PBXGroup;
+			children = (
+				A6AC2B551CBD34A7000CC89D /* ITMSceneReconstructionEngine.h */,
+				A6AC2B561CBD34A7000CC89D /* ITMSurfelSceneReconstructionEngine.h */,
+				A6AC2B571CBD34A7000CC89D /* ITMSurfelSceneReconstructionEngine.tpp */,
+			);
+			path = Interface;
+			sourceTree = "<group>";
+		};
+		A6AC2B5B1CBD34A7000CC89D /* Metal */ = {
+			isa = PBXGroup;
+			children = (
+				A6AC2B5C1CBD34A7000CC89D /* ITMSceneReconstructionEngine.metal */,
+				A6AC2B5D1CBD34A7000CC89D /* ITMSceneReconstructionEngine_Metal.h */,
+				A6AC2B5E1CBD34A7000CC89D /* ITMSceneReconstructionEngine_Metal.mm */,
+			);
+			path = Metal;
+			sourceTree = "<group>";
+		};
+		A6AC2B5F1CBD34A7000CC89D /* Shared */ = {
+			isa = PBXGroup;
+			children = (
+				A6AC2B601CBD34A7000CC89D /* ITMSceneReconstructionEngine_Shared.h */,
+				A6AC2B611CBD34A7000CC89D /* ITMSurfelSceneReconstructionEngine_Shared.h */,
+			);
+			path = Shared;
+			sourceTree = "<group>";
+		};
+		A6AC2B621CBD34A7000CC89D /* Swapping */ = {
+			isa = PBXGroup;
+			children = (
+				A6AC2B631CBD34A7000CC89D /* CPU */,
+				A6AC2B661CBD34A7000CC89D /* CUDA */,
+				A6AC2B691CBD34A7000CC89D /* Interface */,
+				A6AC2B6B1CBD34A7000CC89D /* ITMSwappingEngineFactory.h */,
+				A6AC2B6C1CBD34A7000CC89D /* Metal */,
+				A6AC2B701CBD34A7000CC89D /* Shared */,
+			);
+			path = Swapping;
+			sourceTree = "<group>";
+		};
+		A6AC2B631CBD34A7000CC89D /* CPU */ = {
+			isa = PBXGroup;
+			children = (
+				A6AC2B641CBD34A7000CC89D /* ITMSwappingEngine_CPU.h */,
+				A6AC2B651CBD34A7000CC89D /* ITMSwappingEngine_CPU.tpp */,
+			);
+			path = CPU;
+			sourceTree = "<group>";
+		};
+		A6AC2B661CBD34A7000CC89D /* CUDA */ = {
+			isa = PBXGroup;
+			children = (
+				A6AC2B671CBD34A7000CC89D /* ITMSwappingEngine_CUDA.h */,
+				A6AC2B681CBD34A7000CC89D /* ITMSwappingEngine_CUDA.tcu */,
+			);
+			path = CUDA;
+			sourceTree = "<group>";
+		};
+		A6AC2B691CBD34A7000CC89D /* Interface */ = {
+			isa = PBXGroup;
+			children = (
+				A6AC2B6A1CBD34A7000CC89D /* ITMSwappingEngine.h */,
+			);
+			path = Interface;
+			sourceTree = "<group>";
+		};
+		A6AC2B6C1CBD34A7000CC89D /* Metal */ = {
+			isa = PBXGroup;
+			children = (
+				A6AC2B6D1CBD34A7000CC89D /* ITMSwappingEngine.metal */,
+				A6AC2B6E1CBD34A7000CC89D /* ITMSwappingEngine_Metal.h */,
+				A6AC2B6F1CBD34A7000CC89D /* ITMSwappingEngine_Metal.mm */,
+			);
+			path = Metal;
+			sourceTree = "<group>";
+		};
+		A6AC2B701CBD34A7000CC89D /* Shared */ = {
+			isa = PBXGroup;
+			children = (
+				A6AC2B711CBD34A7000CC89D /* ITMSwappingEngine_Shared.h */,
+			);
+			path = Shared;
+			sourceTree = "<group>";
+		};
+		A6AC2B721CBD34A7000CC89D /* ViewBuilding */ = {
+			isa = PBXGroup;
+			children = (
+				A6AC2B731CBD34A7000CC89D /* CPU */,
+				A6AC2B761CBD34A7000CC89D /* CUDA */,
+				A6AC2B791CBD34A7000CC89D /* Interface */,
+				A6AC2B7B1CBD34A7000CC89D /* ITMViewBuilderFactory.cpp */,
+				A6AC2B7C1CBD34A7000CC89D /* ITMViewBuilderFactory.h */,
+				A6AC2B7D1CBD34A7000CC89D /* Metal */,
+				A6AC2B811CBD34A7000CC89D /* Shared */,
+			);
+			path = ViewBuilding;
+			sourceTree = "<group>";
+		};
+		A6AC2B731CBD34A7000CC89D /* CPU */ = {
+			isa = PBXGroup;
+			children = (
+				A6AC2B741CBD34A7000CC89D /* ITMViewBuilder_CPU.cpp */,
+				A6AC2B751CBD34A7000CC89D /* ITMViewBuilder_CPU.h */,
+			);
+			path = CPU;
+			sourceTree = "<group>";
+		};
+		A6AC2B761CBD34A7000CC89D /* CUDA */ = {
+			isa = PBXGroup;
+			children = (
+				A6AC2B771CBD34A7000CC89D /* ITMViewBuilder_CUDA.cu */,
+				A6AC2B781CBD34A7000CC89D /* ITMViewBuilder_CUDA.h */,
+			);
+			path = CUDA;
+			sourceTree = "<group>";
+		};
+		A6AC2B791CBD34A7000CC89D /* Interface */ = {
+			isa = PBXGroup;
+			children = (
+				A6AC2B7A1CBD34A7000CC89D /* ITMViewBuilder.h */,
+			);
+			path = Interface;
+			sourceTree = "<group>";
+		};
+		A6AC2B7D1CBD34A7000CC89D /* Metal */ = {
+			isa = PBXGroup;
+			children = (
+				A6AC2B7E1CBD34A7000CC89D /* ITMViewBuilder.metal */,
+				A6AC2B7F1CBD34A7000CC89D /* ITMViewBuilder_Metal.h */,
+				A6AC2B801CBD34A7000CC89D /* ITMViewBuilder_Metal.mm */,
+			);
+			path = Metal;
+			sourceTree = "<group>";
+		};
+		A6AC2B811CBD34A7000CC89D /* Shared */ = {
+			isa = PBXGroup;
+			children = (
+				A6AC2B821CBD34A7000CC89D /* ITMViewBuilder_Shared.h */,
+			);
+			path = Shared;
+			sourceTree = "<group>";
+		};
+		A6AC2B831CBD34A7000CC89D /* Visualisation */ = {
+			isa = PBXGroup;
+			children = (
+				A6AC2B841CBD34A7000CC89D /* CPU */,
+				A6AC2B891CBD34A7000CC89D /* CUDA */,
+				A6AC2B8E1CBD34A7000CC89D /* Interface */,
+				A6AC2B931CBD34A7000CC89D /* ITMSurfelVisualisationEngineFactory.h */,
+				A6AC2B941CBD34A7000CC89D /* ITMSurfelVisualisationEngineFactory.tpp */,
+				A6AC2B951CBD34A7000CC89D /* ITMVisualisationEngineFactory.h */,
+				A6AC2B961CBD34A7000CC89D /* Metal */,
+				A6AC2B9A1CBD34A7000CC89D /* Shared */,
+			);
+			path = Visualisation;
+			sourceTree = "<group>";
+		};
+		A6AC2B841CBD34A7000CC89D /* CPU */ = {
+			isa = PBXGroup;
+			children = (
+				A6AC2B851CBD34A7000CC89D /* ITMSurfelVisualisationEngine_CPU.h */,
+				A6AC2B861CBD34A7000CC89D /* ITMSurfelVisualisationEngine_CPU.tpp */,
+				A6AC2B871CBD34A7000CC89D /* ITMVisualisationEngine_CPU.h */,
+				A6AC2B881CBD34A7000CC89D /* ITMVisualisationEngine_CPU.tpp */,
+			);
+			path = CPU;
+			sourceTree = "<group>";
+		};
+		A6AC2B891CBD34A7000CC89D /* CUDA */ = {
+			isa = PBXGroup;
+			children = (
+				A6AC2B8A1CBD34A7000CC89D /* ITMSurfelVisualisationEngine_CUDA.h */,
+				A6AC2B8B1CBD34A7000CC89D /* ITMSurfelVisualisationEngine_CUDA.tcu */,
+				A6AC2B8C1CBD34A7000CC89D /* ITMVisualisationEngine_CUDA.h */,
+				A6AC2B8D1CBD34A7000CC89D /* ITMVisualisationEngine_CUDA.tcu */,
+			);
+			path = CUDA;
+			sourceTree = "<group>";
+		};
+		A6AC2B8E1CBD34A7000CC89D /* Interface */ = {
+			isa = PBXGroup;
+			children = (
+				A6AC2B8F1CBD34A7000CC89D /* ITMSurfelVisualisationEngine.h */,
+				A6AC2B901CBD34A7000CC89D /* ITMSurfelVisualisationEngine.tpp */,
+				A6AC2B911CBD34A7000CC89D /* ITMVisualisationEngine.cpp */,
+				A6AC2B921CBD34A7000CC89D /* ITMVisualisationEngine.h */,
+			);
+			path = Interface;
+			sourceTree = "<group>";
+		};
+		A6AC2B961CBD34A7000CC89D /* Metal */ = {
+			isa = PBXGroup;
+			children = (
+				A6AC2B971CBD34A7000CC89D /* ITMVisualisationEngine.metal */,
+				A6AC2B981CBD34A7000CC89D /* ITMVisualisationEngine_Metal.h */,
+				A6AC2B991CBD34A7000CC89D /* ITMVisualisationEngine_Metal.mm */,
+			);
+			path = Metal;
+			sourceTree = "<group>";
+		};
+		A6AC2B9A1CBD34A7000CC89D /* Shared */ = {
+			isa = PBXGroup;
+			children = (
+				A6AC2B9B1CBD34A7000CC89D /* ITMSurfelVisualisationEngine_Settings.h */,
+				A6AC2B9C1CBD34A7000CC89D /* ITMSurfelVisualisationEngine_Shared.h */,
+				A6AC2B9D1CBD34A7000CC89D /* ITMVisualisationEngine_Shared.h */,
+			);
+			path = Shared;
+			sourceTree = "<group>";
+		};
+		A6AC2B9F1CBD34A7000CC89D /* Objects */ = {
+			isa = PBXGroup;
+			children = (
+				A6AC2BA01CBD34A7000CC89D /* Camera */,
+				A6AC2BA71CBD34A7000CC89D /* Meshing */,
+				A6AC2BA91CBD34A7000CC89D /* Misc */,
+				A6AC2BAD1CBD34A7000CC89D /* RenderStates */,
+				A6AC2BB21CBD34A7000CC89D /* Scene */,
+				A6AC2BBC1CBD34A7000CC89D /* Tracking */,
+				A6AC2BC41CBD34A7000CC89D /* Views */,
+			);
+			path = Objects;
+			sourceTree = "<group>";
+		};
+		A6AC2BA01CBD34A7000CC89D /* Camera */ = {
+			isa = PBXGroup;
+			children = (
+				A6AC2BA11CBD34A7000CC89D /* ITMCalibIO.cpp */,
+				A6AC2BA21CBD34A7000CC89D /* ITMCalibIO.h */,
+				A6AC2BA31CBD34A7000CC89D /* ITMDisparityCalib.h */,
+				A6AC2BA41CBD34A7000CC89D /* ITMExtrinsics.h */,
+				A6AC2BA51CBD34A7000CC89D /* ITMIntrinsics.h */,
+				A6AC2BA61CBD34A7000CC89D /* ITMRGBDCalib.h */,
+			);
+			path = Camera;
+			sourceTree = "<group>";
+		};
+		A6AC2BA71CBD34A7000CC89D /* Meshing */ = {
+			isa = PBXGroup;
+			children = (
+				A6AC2BA81CBD34A7000CC89D /* ITMMesh.h */,
+			);
+			path = Meshing;
+			sourceTree = "<group>";
+		};
+		A6AC2BA91CBD34A7000CC89D /* Misc */ = {
+			isa = PBXGroup;
+			children = (
+				A6AC2BAA1CBD34A7000CC89D /* ITMIMUCalibrator.h */,
+				A6AC2BAB1CBD34A7000CC89D /* ITMIMUMeasurement.h */,
+				A6AC2BAC1CBD34A7000CC89D /* ITMPointCloud.h */,
+			);
+			path = Misc;
+			sourceTree = "<group>";
+		};
+		A6AC2BAD1CBD34A7000CC89D /* RenderStates */ = {
+			isa = PBXGroup;
+			children = (
+				A6AC2BAE1CBD34A7000CC89D /* ITMRenderState.h */,
+				A6AC2BAF1CBD34A7000CC89D /* ITMRenderState_VH.h */,
+				A6AC2BB01CBD34A7000CC89D /* ITMSurfelRenderState.cpp */,
+				A6AC2BB11CBD34A7000CC89D /* ITMSurfelRenderState.h */,
+			);
+			path = RenderStates;
+			sourceTree = "<group>";
+		};
+		A6AC2BB21CBD34A7000CC89D /* Scene */ = {
+			isa = PBXGroup;
+			children = (
+				A6AC2BB31CBD34A7000CC89D /* ITMGlobalCache.h */,
+				A6AC2BB41CBD34A7000CC89D /* ITMLocalVBA.h */,
+				A6AC2BB51CBD34A7000CC89D /* ITMPlainVoxelArray.h */,
+				A6AC2BB61CBD34A7000CC89D /* ITMRepresentationAccess.h */,
+				A6AC2BB71CBD34A7000CC89D /* ITMScene.h */,
+				A6AC2BB81CBD34A7000CC89D /* ITMSurfelScene.h */,
+				A6AC2BB91CBD34A7000CC89D /* ITMSurfelTypes.h */,
+				A6AC2BBA1CBD34A7000CC89D /* ITMVoxelBlockHash.h */,
+				A6AC2BBB1CBD34A7000CC89D /* ITMVoxelTypes.h */,
+			);
+			path = Scene;
+			sourceTree = "<group>";
+		};
+		A6AC2BBC1CBD34A7000CC89D /* Tracking */ = {
+			isa = PBXGroup;
+			children = (
+				A6AC2BBD1CBD34A7000CC89D /* ITMExtendedHierarchyLevel.h */,
+				A6AC2BBE1CBD34A7000CC89D /* ITMImageHierarchy.h */,
+				A6AC2BBF1CBD34A7000CC89D /* ITMSceneHierarchyLevel.h */,
+				A6AC2BC01CBD34A7000CC89D /* ITMTemplatedHierarchyLevel.h */,
+				A6AC2BC11CBD34A7000CC89D /* ITMTrackingState.h */,
+				A6AC2BC21CBD34A7000CC89D /* ITMViewHierarchyLevel.h */,
+				A6AC2BC31CBD34A7000CC89D /* TrackerIterationType.h */,
+			);
+			path = Tracking;
+			sourceTree = "<group>";
+		};
+		A6AC2BC41CBD34A7000CC89D /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				A6AC2BC51CBD34A7000CC89D /* ITMView.h */,
+				A6AC2BC61CBD34A7000CC89D /* ITMViewIMU.h */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		A6AC2BC71CBD34A7000CC89D /* Trackers */ = {
+			isa = PBXGroup;
+			children = (
+				A6AC2BC81CBD34A7000CC89D /* CPU */,
+				A6AC2BD11CBD34A7000CC89D /* CUDA */,
+				A6AC2BDA1CBD34A7000CC89D /* Interface */,
+				A6AC2BE71CBD34A7000CC89D /* ITMTrackerFactory.h */,
+				A6AC2BE81CBD34A7000CC89D /* Metal */,
+				A6AC2BF51CBD34A7000CC89D /* Shared */,
+			);
+			path = Trackers;
+			sourceTree = "<group>";
+		};
+		A6AC2BC81CBD34A7000CC89D /* CPU */ = {
+			isa = PBXGroup;
+			children = (
+				A6AC2BC91CBD34A7000CC89D /* ITMColorTracker_CPU.cpp */,
+				A6AC2BCA1CBD34A7000CC89D /* ITMColorTracker_CPU.h */,
+				A6AC2BCB1CBD34A7000CC89D /* ITMDepthTracker_CPU.cpp */,
+				A6AC2BCC1CBD34A7000CC89D /* ITMDepthTracker_CPU.h */,
+				A6AC2BCD1CBD34A7000CC89D /* ITMExtendedTracker_CPU.cpp */,
+				A6AC2BCE1CBD34A7000CC89D /* ITMExtendedTracker_CPU.h */,
+				A6AC2BCF1CBD34A7000CC89D /* ITMRenTracker_CPU.h */,
+				A6AC2BD01CBD34A7000CC89D /* ITMRenTracker_CPU.tpp */,
+			);
+			path = CPU;
+			sourceTree = "<group>";
+		};
+		A6AC2BD11CBD34A7000CC89D /* CUDA */ = {
+			isa = PBXGroup;
+			children = (
+				A6AC2BD21CBD34A7000CC89D /* ITMColorTracker_CUDA.cu */,
+				A6AC2BD31CBD34A7000CC89D /* ITMColorTracker_CUDA.h */,
+				A6AC2BD41CBD34A7000CC89D /* ITMDepthTracker_CUDA.cu */,
+				A6AC2BD51CBD34A7000CC89D /* ITMDepthTracker_CUDA.h */,
+				A6AC2BD61CBD34A7000CC89D /* ITMExtendedTracker_CUDA.cu */,
+				A6AC2BD71CBD34A7000CC89D /* ITMExtendedTracker_CUDA.h */,
+				A6AC2BD81CBD34A7000CC89D /* ITMRenTracker_CUDA.h */,
+				A6AC2BD91CBD34A7000CC89D /* ITMRenTracker_CUDA.tcu */,
+			);
+			path = CUDA;
+			sourceTree = "<group>";
+		};
+		A6AC2BDA1CBD34A7000CC89D /* Interface */ = {
+			isa = PBXGroup;
+			children = (
+				A6AC2BDB1CBD34A7000CC89D /* ITMColorTracker.cpp */,
+				A6AC2BDC1CBD34A7000CC89D /* ITMColorTracker.h */,
+				A6AC2BDD1CBD34A7000CC89D /* ITMCompositeTracker.h */,
+				A6AC2BDE1CBD34A7000CC89D /* ITMDepthTracker.cpp */,
+				A6AC2BDF1CBD34A7000CC89D /* ITMDepthTracker.h */,
+				A6AC2BE01CBD34A7000CC89D /* ITMExtendedTracker.cpp */,
+				A6AC2BE11CBD34A7000CC89D /* ITMExtendedTracker.h */,
+				A6AC2BE21CBD34A7000CC89D /* ITMIMUTracker.cpp */,
+				A6AC2BE31CBD34A7000CC89D /* ITMIMUTracker.h */,
+				A6AC2BE41CBD34A7000CC89D /* ITMRenTracker.h */,
+				A6AC2BE51CBD34A7000CC89D /* ITMRenTracker.tpp */,
+				A6AC2BE61CBD34A7000CC89D /* ITMTracker.h */,
+			);
+			path = Interface;
+			sourceTree = "<group>";
+		};
+		A6AC2BE81CBD34A7000CC89D /* Metal */ = {
+			isa = PBXGroup;
+			children = (
+				A6AC2BEC1CBD34A7000CC89D /* ITMDepthTracker.metal */,
+				A6AC2BED1CBD34A7000CC89D /* ITMDepthTracker_Metal.h */,
+				A6AC2BEE1CBD34A7000CC89D /* ITMDepthTracker_Metal.mm */,
+			);
+			path = Metal;
+			sourceTree = "<group>";
+		};
+		A6AC2BF51CBD34A7000CC89D /* Shared */ = {
+			isa = PBXGroup;
+			children = (
+				A6AC2BF61CBD34A7000CC89D /* ITMColorTracker_Shared.h */,
+				A6AC2BF71CBD34A7000CC89D /* ITMDepthTracker_Shared.h */,
+				A6AC2BF81CBD34A7000CC89D /* ITMExtendedTracker_Shared.h */,
+				A6AC2BF91CBD34A7000CC89D /* ITMRenTracker_Shared.h */,
+			);
+			path = Shared;
+			sourceTree = "<group>";
+		};
+		A6AC2BFA1CBD34A7000CC89D /* Utils */ = {
+			isa = PBXGroup;
+			children = (
+				A6AC2BFB1CBD34A7000CC89D /* ITMCUDAUtils.h */,
+				A6AC2BFC1CBD34A7000CC89D /* ITMImageTypes.h */,
+				A6AC2BFD1CBD34A7000CC89D /* ITMLibSettings.cpp */,
+				A6AC2BFE1CBD34A7000CC89D /* ITMLibSettings.h */,
+				A6AC2BFF1CBD34A7000CC89D /* ITMMath.h */,
+				A6AC2C001CBD34A7000CC89D /* ITMPixelUtils.h */,
+				A6AC2C011CBD34A7000CC89D /* ITMSceneParams.h */,
+				A6AC2C021CBD34A7000CC89D /* ITMSurfelSceneParams.h */,
+			);
+			path = Utils;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		6F7C0CBC17F0EA0500692EC1 /* InfiniTAM */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 6F7C0CF417F0EA0500692EC1 /* Build configuration list for PBXNativeTarget "InfiniTAM" */;
+			buildPhases = (
+				6F7C0CB917F0EA0500692EC1 /* Sources */,
+				6F7C0CBA17F0EA0500692EC1 /* Frameworks */,
+				6F7C0CBB17F0EA0500692EC1 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = InfiniTAM;
+			productName = DepthViewer;
+			productReference = 6F7C0CBD17F0EA0500692EC1 /* InfiniTAM.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		6F7C0CB517F0EA0500692EC1 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0700;
+				ORGANIZATIONNAME = Occipital;
+				TargetAttributes = {
+					6F7C0CBC17F0EA0500692EC1 = {
+						DevelopmentTeam = 2E52FN4L7M;
+					};
+				};
+			};
+			buildConfigurationList = 6F7C0CB817F0EA0500692EC1 /* Build configuration list for PBXProject "InfiniTAM" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = 6F7C0CB417F0EA0500692EC1;
+			productRefGroup = 6F7C0CBE17F0EA0500692EC1 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				6F7C0CBC17F0EA0500692EC1 /* InfiniTAM */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		6F7C0CBB17F0EA0500692EC1 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A6AC2C191CBD34A7000CC89D /* ITMSurfelSceneReconstructionEngine_CUDA.tcu in Resources */,
+				A6AC2C1E1CBD34A7000CC89D /* ITMSwappingEngine_CPU.tpp in Resources */,
+				A6AC2C151CBD34A7000CC89D /* ITMMeshingEngine_CUDA.tcu in Resources */,
+				A6AC2C2B1CBD34A7000CC89D /* ITMSurfelVisualisationEngine.tpp in Resources */,
+				A6AC2C1F1CBD34A7000CC89D /* ITMSwappingEngine_CUDA.tcu in Resources */,
+				A6AC2C231CBD34A7000CC89D /* ITMViewBuilder_CUDA.cu in Resources */,
+				A6AC2C271CBD34A7000CC89D /* ITMSurfelVisualisationEngine_CPU.tpp in Resources */,
+				A6AC2C031CBD34A7000CC89D /* Android.mk in Resources */,
+				A6AC2C391CBD34A7000CC89D /* ITMRenTracker_CUDA.tcu in Resources */,
+				A626D7651A0F98CF0086B8BF /* LaunchScreen.xib in Resources */,
+				A6AC2C3E1CBD34A7000CC89D /* ITMRenTracker.tpp in Resources */,
+				A6AC2C2A1CBD34A7000CC89D /* ITMVisualisationEngine_CUDA.tcu in Resources */,
+				A6AC2C141CBD34A7000CC89D /* ITMMeshingEngine_CPU.tpp in Resources */,
+				A6AC2C061CBD34A7000CC89D /* ITMDenseMapper.tpp in Resources */,
+				A6AC2AFF1CBD333D000CC89D /* CMakeLists.txt in Resources */,
+				A6AC2C101CBD34A7000CC89D /* ITMLowLevelEngine_CUDA.cu in Resources */,
+				A6AC2C181CBD34A7000CC89D /* ITMSceneReconstructionEngine_CUDA.tcu in Resources */,
+				A6AC2C371CBD34A7000CC89D /* ITMDepthTracker_CUDA.cu in Resources */,
+				A6AC2C2D1CBD34A7000CC89D /* ITMSurfelVisualisationEngineFactory.tpp in Resources */,
+				A6AC2C1A1CBD34A7000CC89D /* ITMSurfelSceneReconstructionEngine.tpp in Resources */,
+				6F7C0CCD17F0EA0500692EC1 /* InfoPlist.strings in Resources */,
+				A6AC2C041CBD34A7000CC89D /* CMakeLists.txt in Resources */,
+				A6AC2C171CBD34A7000CC89D /* ITMSurfelSceneReconstructionEngine_CPU.tpp in Resources */,
+				A6AC2C0C1CBD34A7000CC89D /* ITMMultiSceneManager.tpp in Resources */,
+				A6AC2C291CBD34A7000CC89D /* ITMSurfelVisualisationEngine_CUDA.tcu in Resources */,
+				A6AC2C361CBD34A7000CC89D /* ITMColorTracker_CUDA.cu in Resources */,
+				A6AC2B0E1CBD3348000CC89D /* CMakeLists.txt in Resources */,
+				A6AC2C381CBD34A7000CC89D /* ITMExtendedTracker_CUDA.cu in Resources */,
+				A6AC2C051CBD34A7000CC89D /* ITMBasicEngine.tpp in Resources */,
+				A6AC2AFE1CBD333D000CC89D /* Android.mk~c1c4fe627a2deacd274c8f1929dbbb44ae5e7e26 in Resources */,
+				A6AC2C081CBD34A7000CC89D /* ITMMultiEngine.tpp in Resources */,
+				A6CA7EF91A0FDE0C0070848F /* iPhone_Main.storyboard in Resources */,
+				A6AC2C0E1CBD34A7000CC89D /* CUDAInstantiations.cu in Resources */,
+				A6AC2C351CBD34A7000CC89D /* ITMRenTracker_CPU.tpp in Resources */,
+				A6AC2C1B1CBD34A7000CC89D /* ITMSurfelSceneReconstructionEngineFactory.tpp in Resources */,
+				A68436821A1F9C190010E0C5 /* calib.txt in Resources */,
+				A6AC29A61CBD3323000CC89D /* CMakeLists.txt in Resources */,
+				A6AC29A51CBD3323000CC89D /* Android.mk in Resources */,
+				A6AC2C281CBD34A7000CC89D /* ITMVisualisationEngine_CPU.tpp in Resources */,
+				6F7C0CDE17F0EA0500692EC1 /* Images.xcassets in Resources */,
+				A6AC2C071CBD34A7000CC89D /* ITMDenseSurfelMapper.tpp in Resources */,
+				A6AC2C161CBD34A7000CC89D /* ITMSceneReconstructionEngine_CPU.tpp in Resources */,
+				A6AC2AFD1CBD333D000CC89D /* Android.mk in Resources */,
+				A626D7631A0F96F50086B8BF /* Main.storyboard in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		6F7C0CB917F0EA0500692EC1 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A6AC29AB1CBD3323000CC89D /* Kinect2Engine.cpp in Sources */,
+				A6AC2B011CBD333D000CC89D /* KeyValueConfig.cpp in Sources */,
+				A6AC2C3D1CBD34A7000CC89D /* ITMIMUTracker.cpp in Sources */,
+				A6AC2C411CBD34A7000CC89D /* ITMDepthTracker.metal in Sources */,
+				A6AC2C1D1CBD34A7000CC89D /* ITMSceneReconstructionEngine_Metal.mm in Sources */,
+				6F7C0CDB17F0EA0500692EC1 /* ViewController.mm in Sources */,
+				A6AC2C261CBD34A7000CC89D /* ITMViewBuilder_Metal.mm in Sources */,
+				A6AC2B0F1CBD3348000CC89D /* FernConservatory.cpp in Sources */,
+				A6AC29A71CBD3323000CC89D /* FFMPEGReader.cpp in Sources */,
+				A6AC2B111CBD3348000CC89D /* Relocaliser.cpp in Sources */,
+				A6AC29AA1CBD3323000CC89D /* IMUSourceEngine.cpp in Sources */,
+				A6AC2C2E1CBD34A7000CC89D /* ITMVisualisationEngine.metal in Sources */,
+				A6AC2C341CBD34A7000CC89D /* ITMExtendedTracker_CPU.cpp in Sources */,
+				A6AC2B021CBD333D000CC89D /* MetalContext.mm in Sources */,
+				A6AC29A91CBD3323000CC89D /* ImageSourceEngine.cpp in Sources */,
+				A6AC2B121CBD3348000CC89D /* RelocDatabase.cpp in Sources */,
+				A6AC2C2F1CBD34A7000CC89D /* ITMVisualisationEngine_Metal.mm in Sources */,
+				A6AC2C471CBD34A7000CC89D /* ITMLibSettings.cpp in Sources */,
+				A6AC2C1C1CBD34A7000CC89D /* ITMSceneReconstructionEngine.metal in Sources */,
+				A6AC2C3A1CBD34A7000CC89D /* ITMColorTracker.cpp in Sources */,
+				A6AC2B031CBD333D000CC89D /* SE3Pose.cpp in Sources */,
+				A6AC2C091CBD34A7000CC89D /* ITMTrackingController.cpp in Sources */,
+				6F7C0CD317F0EA0500692EC1 /* AppDelegate.m in Sources */,
+				A6AC2C0B1CBD34A7000CC89D /* ITMLocalScene.cpp in Sources */,
+				A6AC2C0A1CBD34A7000CC89D /* ITMActiveSceneManager.cpp in Sources */,
+				A6AC29AD1CBD3323000CC89D /* OpenNIEngine.cpp in Sources */,
+				A6AC29A81CBD3323000CC89D /* FFMPEGWriter.cpp in Sources */,
+				A6AC2C491CBD3ADF000CC89D /* MetalInstantiations.mm in Sources */,
+				A6AC2C301CBD34A7000CC89D /* ITMCalibIO.cpp in Sources */,
+				A6AC2C211CBD34A7000CC89D /* ITMSwappingEngine_Metal.mm in Sources */,
+				A6AC2C2C1CBD34A7000CC89D /* ITMVisualisationEngine.cpp in Sources */,
+				A6AC2C3B1CBD34A7000CC89D /* ITMDepthTracker.cpp in Sources */,
+				A6AC2C331CBD34A7000CC89D /* ITMDepthTracker_CPU.cpp in Sources */,
+				A6AC2B001CBD333D000CC89D /* FileUtils.cpp in Sources */,
+				6F7C0CCF17F0EA0500692EC1 /* main.m in Sources */,
+				A6AC2C3C1CBD34A7000CC89D /* ITMExtendedTracker.cpp in Sources */,
+				A6AC2C111CBD34A7000CC89D /* ITMLowLevelEngineFactory.cpp in Sources */,
+				A6AC2C0F1CBD34A7000CC89D /* ITMLowLevelEngine_CPU.cpp in Sources */,
+				A6AC29AC1CBD3323000CC89D /* LibUVCEngine.cpp in Sources */,
+				A6AC2C321CBD34A7000CC89D /* ITMColorTracker_CPU.cpp in Sources */,
+				A6AC2C221CBD34A7000CC89D /* ITMViewBuilder_CPU.cpp in Sources */,
+				A6AC2C201CBD34A7000CC89D /* ITMSwappingEngine.metal in Sources */,
+				A6AC2C421CBD34A7000CC89D /* ITMDepthTracker_Metal.mm in Sources */,
+				A6AC2C0D1CBD34A7000CC89D /* CPUInstantiations.cpp in Sources */,
+				A6AC29AE1CBD3323000CC89D /* RealSenseEngine.cpp in Sources */,
+				A6AC2C251CBD34A7000CC89D /* ITMViewBuilder.metal in Sources */,
+				A6AC2C311CBD34A7000CC89D /* ITMSurfelRenderState.cpp in Sources */,
+				A6AC2C241CBD34A7000CC89D /* ITMViewBuilderFactory.cpp in Sources */,
+				A6AC2B101CBD3348000CC89D /* PoseDatabase.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXVariantGroup section */
+		6F7C0CCB17F0EA0500692EC1 /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				6F7C0CCC17F0EA0500692EC1 /* en */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		6F7C0CF217F0EA0500692EC1 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				ENABLE_BITCODE = NO;
+				ENABLE_TESTABILITY = YES;
+				FRAMEWORK_SEARCH_PATHS = "$(PROJECT_DIR)/../Frameworks";
+				GCC_OPTIMIZATION_LEVEL = 0;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		6F7C0CF317F0EA0500692EC1 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				ENABLE_BITCODE = NO;
+				ENABLE_NS_ASSERTIONS = NO;
+				FRAMEWORK_SEARCH_PATHS = "$(PROJECT_DIR)/../Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		6F7C0CF517F0EA0500692EC1 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = InfiniTAM.entitlements;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Frameworks",
+					"$(LOCAL_LIBRARY_DIR)/Frameworks",
+				);
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "Viewer/InfiniTAM-Prefix.pch";
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					COMPILE_WITHOUT_CUDA,
+					COMPILE_WITH_METAL,
+					COMPILE_WITHOUT_Kinect2,
+					COMPILE_WITHOUT_OpenNI,
+				);
+				INFOPLIST_FILE = "Viewer/InfiniTAM-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 9.3;
+				MTL_PREPROCESSOR_DEFINITIONS = "COMPILE_WITHOUT_CUDA __METALC__";
+				PRODUCT_BUNDLE_IDENTIFIER = "avl.InfiniTAM-v3";
+				PRODUCT_NAME = InfiniTAM;
+				PROVISIONING_PROFILE = "";
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		6F7C0CF617F0EA0500692EC1 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = InfiniTAM.entitlements;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Frameworks",
+					"$(LOCAL_LIBRARY_DIR)/Frameworks",
+				);
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "Viewer/InfiniTAM-Prefix.pch";
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					COMPILE_WITHOUT_CUDA,
+					COMPILE_WITH_METAL,
+					COMPILE_WITHOUT_Kinect2,
+					COMPILE_WITHOUT_OpenNI,
+				);
+				INFOPLIST_FILE = "Viewer/InfiniTAM-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 9.3;
+				MTL_PREPROCESSOR_DEFINITIONS = "COMPILE_WITHOUT_CUDA __METALC__";
+				PRODUCT_BUNDLE_IDENTIFIER = "avl.InfiniTAM-v3";
+				PRODUCT_NAME = InfiniTAM;
+				PROVISIONING_PROFILE = "";
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		6F7C0CB817F0EA0500692EC1 /* Build configuration list for PBXProject "InfiniTAM" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				6F7C0CF217F0EA0500692EC1 /* Debug */,
+				6F7C0CF317F0EA0500692EC1 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		6F7C0CF417F0EA0500692EC1 /* Build configuration list for PBXNativeTarget "InfiniTAM" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				6F7C0CF517F0EA0500692EC1 /* Debug */,
+				6F7C0CF617F0EA0500692EC1 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 6F7C0CB517F0EA0500692EC1 /* Project object */;
+}

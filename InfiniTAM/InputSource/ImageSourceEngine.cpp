@@ -270,5 +270,5 @@ void RawFileReader::getImages(ITMUChar4Image *rgb, ITMShortImage *rawDepth)
 	++currentFrameNo;
 }
 
-template class ImageFileReader<ImageMaskPathGenerator>;
-template class ImageFileReader<ImageListPathGenerator>;
+template class InfiniTAM::Engine::ImageFileReader<ImageMaskPathGenerator>;
+template class InfiniTAM::Engine::ImageFileReader<ImageListPathGenerator>;

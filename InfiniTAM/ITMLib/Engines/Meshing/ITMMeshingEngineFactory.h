@@ -6,9 +6,6 @@
 #ifndef COMPILE_WITHOUT_CUDA
 #include "CUDA/ITMMeshingEngine_CUDA.h"
 #endif
-#ifdef COMPILE_WITH_METAL
-#include "Metal/ITMMeshingEngine_Metal.h"
-#endif
 
 namespace ITMLib
 {

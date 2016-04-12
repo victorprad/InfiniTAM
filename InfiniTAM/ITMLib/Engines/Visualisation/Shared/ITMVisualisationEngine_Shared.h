@@ -25,7 +25,7 @@ static const CONSTPTR(int) MAX_RENDERING_BLOCKS = 65536*4;
 //static const int MAX_RENDERING_BLOCKS = 16384;
 static const CONSTPTR(int) minmaximg_subsample = 8;
 
-inline Vector4f InvertProjectionParams(const Vector4f& projParams)
+_CPU_AND_GPU_CODE_ inline Vector4f InvertProjectionParams(const THREADPTR(Vector4f)& projParams)
 {
 	return Vector4f(1.0f / projParams.x, 1.0f / projParams.y, -projParams.z, -projParams.w);
 }
@@ -295,7 +295,7 @@ _CPU_AND_GPU_CODE_ inline void drawPixelConfidence(DEVICEPTR(Vector4u) & dest, c
 	color.a = 255;
 
 	Vector4f outRes = (0.8f * angle + 0.2f) * color;
-	dest = outRes.toUChar();
+	dest = TO_UCHAR4(outRes);
 }
 
 _CPU_AND_GPU_CODE_ inline void drawPixelNormal(DEVICEPTR(Vector4u) & dest, const THREADPTR(Vector3f) & normal_obj)

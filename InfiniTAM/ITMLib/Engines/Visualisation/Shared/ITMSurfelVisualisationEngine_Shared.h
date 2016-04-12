@@ -325,9 +325,9 @@ void shade_pixel_depth(int locId, const unsigned int *surfelIndexImage, const TS
   if(surfelIndex >= 0)
   {
     Vector3f p = surfels[surfelIndex].position;
-    float dx = abs(cameraPosition.x - p.x);
-    float dy = abs(cameraPosition.y - p.y);
-    float dz = abs(cameraPosition.z - p.z);
+    float dx = fabs(cameraPosition.x - p.x);
+    float dy = fabs(cameraPosition.y - p.y);
+    float dz = fabs(cameraPosition.z - p.z);
     value = sqrt(dx * dx + dy * dy + dz * dz);
   }
 

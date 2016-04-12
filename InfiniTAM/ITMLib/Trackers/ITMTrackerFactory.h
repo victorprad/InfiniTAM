@@ -294,7 +294,7 @@ namespace ITMLib
 			break;
 		case ITMLibSettings::DEVICE_METAL:
 #ifdef COMPILE_WITH_METAL
-			ret = new ITMExtendedTracker_Metal(imgSize_d, &(levels[0]), static_cast<int>(levels.size()), smallStepSizeCriterion, failureDetectorThd, 
+			ret = new ITMExtendedTracker_CPU(imgSize_d, &(levels[0]), static_cast<int>(levels.size()), smallStepSizeCriterion, failureDetectorThd,
 				scene->sceneParams->viewFrustum_min, scene->sceneParams->viewFrustum_max, tukeyCutOff, framesToSkip, framesToWeight,  lowLevelEngine);
 #endif
 			break;
@@ -407,7 +407,7 @@ namespace ITMLib
 			break;
 		case ITMLibSettings::DEVICE_METAL:
 #ifdef COMPILE_WITH_METAL
-			dTracker = new ITMExtendedTracker_Metal(imgSize_d, &(levels[0]), static_cast<int>(levels.size()), smallStepSizeCriterion, failureDetectorThd,
+			dTracker = new ITMExtendedTracker_CPU(imgSize_d, &(levels[0]), static_cast<int>(levels.size()), smallStepSizeCriterion, failureDetectorThd,
 				scene->sceneParams->viewFrustum_min, scene->sceneParams->viewFrustum_max, tukeyCutOff, framesToSkip, framesToWeight, lowLevelEngine);
 #endif
 			break;

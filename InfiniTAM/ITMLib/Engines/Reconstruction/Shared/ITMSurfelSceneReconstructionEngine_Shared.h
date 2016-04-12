@@ -44,7 +44,7 @@ inline float calculate_gaussian_sample_confidence(int locId, int width, int heig
   // Calculate the normalised radial distance of the depth sample from the camera centre.
   const int x = locId % width, y = locId / width;
   const float halfW = width / 2.0f, halfH = height / 2.0f;
-  const float dx = abs(x - halfW), dy = abs(y - halfH);
+  const float dx = fabs(x - halfW), dy = fabs(y - halfH);
   const float gamma = sqrtf((dx * dx + dy * dy) / (halfW * halfW + halfH * halfH));
 
   // Calculate and return the confidence value itself.

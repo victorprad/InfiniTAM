@@ -6,25 +6,48 @@
 
 #include "../CPU/ITMVisualisationEngine_CPU.h"
 
+#if (defined __OBJC__)
+struct VisualisationEngine_MetalBits
+{
+    id<MTLFunction> f_genericRaycastVH_device;
+    id<MTLComputePipelineState> p_genericRaycastVH_device;
+    
+    id<MTLFunction> f_genericRaycastVGMissingPoints_device;
+    id<MTLComputePipelineState> p_genericRaycastVGMissingPoints_device;
+    
+    id<MTLFunction> f_forwardProject_device;
+    id<MTLComputePipelineState> p_forwardProject_device;
+    
+    id<MTLFunction> f_renderICP_device;
+    id<MTLComputePipelineState> p_renderICP_device;
+    
+    id<MTLFunction> f_renderForward_device;
+    id<MTLComputePipelineState> p_renderForward_device;
+    
+    id<MTLBuffer> paramsBuffer_visualisation;
+};
+#endif
+
 namespace ITMLib
 {
-    namespace Engine
+    template<class TVoxel, class TIndex>
+    class ITMVisualisationEngine_Metal : public ITMVisualisationEngine_CPU < TVoxel, TIndex >
+    { };
+    
+    template<class TVoxel>
+    class ITMVisualisationEngine_Metal<TVoxel, ITMVoxelBlockHash> : public ITMVisualisationEngine_CPU < TVoxel, ITMVoxelBlockHash >
     {
-        template<class TVoxel, class TIndex>
-        class ITMVisualisationEngine_Metal : public ITMVisualisationEngine_CPU < TVoxel, TIndex >
-        { };
+    private:
+#if (defined __OBJC__)
+        VisualisationEngine_MetalBits metalBits;
+#endif
         
-        template<class TVoxel>
-        class ITMVisualisationEngine_Metal<TVoxel, ITMVoxelBlockHash> : public ITMVisualisationEngine_CPU < TVoxel, ITMVoxelBlockHash >
-        {
-        public:
-            void CreateExpectedDepths(const ITMPose *pose, const ITMIntrinsics *intrinsics, ITMRenderState *renderState) const;
-            void CreateICPMaps(const ITMView *view, ITMTrackingState *trackingState, ITMRenderState *renderState) const;
-            void ForwardRender(const ITMView *view, ITMTrackingState *trackingState, ITMRenderState *renderState) const;
-            
-            ITMVisualisationEngine_Metal(ITMScene<TVoxel, ITMVoxelBlockHash> *scene);
-        };
-    }
+    public:
+        void CreateICPMaps(const ITMScene<TVoxel,ITMVoxelBlockHash> *scene, const ITMView *view, ITMTrackingState *trackingState, ITMRenderState *renderState) const;
+        void ForwardRender(const ITMScene<TVoxel,ITMVoxelBlockHash> *scene, const ITMView *view, ITMTrackingState *trackingState, ITMRenderState *renderState) const;
+        
+        ITMVisualisationEngine_Metal();
+    };
 }
 
 #endif

@@ -318,6 +318,7 @@ void ITMMultiEngine<TVoxel,TIndex>::GetImage(ITMUChar4Image *out, GetImageType g
 		else out->SetFrom(renderState_freeview->raycastImage, ORUtils::MemoryBlock<Vector4u>::CPU_TO_CPU);
 		break;
 	}
+    case ITMMultiEngine::InfiniTAM_IMAGE_COLOUR_FROM_NORMAL:
 	case ITMMultiEngine::InfiniTAM_IMAGE_UNKNOWN:
 		break;
 	};

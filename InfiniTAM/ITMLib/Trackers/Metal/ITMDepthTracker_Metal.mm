@@ -4,7 +4,7 @@
 #include "../Shared/ITMDepthTracker_Shared.h"
 #import <Accelerate/Accelerate.h>
 
-using namespace ITMLib::Engine;
+using namespace ITMLib;
 
 id<MTLFunction> f_depthTrackerOneLevel_g_rg_device;
 id<MTLComputePipelineState> p_depthTrackerOneLevel_g_rg_device;

@@ -392,6 +392,8 @@ struct VoxelColorReader<true,TVoxel,TIndex> {
 	}
 };
 
+#ifndef __METALC__
+
 /**
  * \brief The specialisations of this struct template can be used to write/read colours to/from surfels.
  *
@@ -470,3 +472,5 @@ struct SurfelColourManipulator<true>
 		surfel.colour = colour;
 	}
 };
+
+#endif
