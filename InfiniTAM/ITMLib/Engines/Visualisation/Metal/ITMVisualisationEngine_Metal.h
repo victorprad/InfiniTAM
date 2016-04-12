@@ -12,8 +12,8 @@ struct VisualisationEngine_MetalBits
     id<MTLFunction> f_genericRaycastVH_device;
     id<MTLComputePipelineState> p_genericRaycastVH_device;
     
-    id<MTLFunction> f_genericRaycastVGMissingPoints_device;
-    id<MTLComputePipelineState> p_genericRaycastVGMissingPoints_device;
+    id<MTLFunction> f_genericRaycastVHMissingPoints_device;
+    id<MTLComputePipelineState> p_genericRaycastVHMissingPoints_device;
     
     id<MTLFunction> f_forwardProject_device;
     id<MTLComputePipelineState> p_forwardProject_device;

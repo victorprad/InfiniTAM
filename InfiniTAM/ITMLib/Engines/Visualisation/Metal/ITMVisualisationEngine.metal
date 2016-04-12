@@ -24,19 +24,16 @@ kernel void genericRaycastVH_device(DEVICEPTR(Vector4f) *pointsRay              
     int locId = x + y * params->imgSize.x;
     int locId2 = (int)floor((float)x / minmaximg_subsample) + (int)floor((float)y / minmaximg_subsample) * params->imgSize.x;
     
-//    bool updateEntriesVisibleType = true;//params->updateEntriesVisibleType;
-    
-    castRay<ITMVoxel, ITMVoxelIndex, true>(pointsRay[locId], entriesVisibleType, x, y, voxelData, voxelIndex, params->invM, params->invProjParams,
+    castRay<ITMVoxel, ITMVoxelIndex, false>(pointsRay[locId], entriesVisibleType, x, y, voxelData, voxelIndex, params->invM, params->invProjParams,
                                      params->voxelSizes.y, params->lightSource.w, minmaxdata[locId2]);
 }
 
-kernel void genericRaycastVGMissingPoints_device(DEVICEPTR(Vector4f) *forwardProjection                         [[ buffer(0) ]],
-                                                 DEVICEPTR(uchar) *entriesVisibleType                           [[ buffer(1) ]],
-                                                 const CONSTPTR(int) *fwdProjMissingPoints                      [[ buffer(2) ]],
-                                                 const CONSTPTR(ITMVoxel) *voxelData                            [[ buffer(3) ]],
-                                                 const CONSTPTR(typename ITMVoxelIndex::IndexData) *voxelIndex  [[ buffer(4) ]],
-                                                 const CONSTPTR(Vector2f) *minmaxdata                           [[ buffer(5) ]],
-                                                 const CONSTPTR(CreateICPMaps_Params) *params                   [[ buffer(6) ]],
+kernel void genericRaycastVHMissingPoints_device(DEVICEPTR(Vector4f) *forwardProjection                         [[ buffer(0) ]],
+                                                 const CONSTPTR(int) *fwdProjMissingPoints                      [[ buffer(1) ]],
+                                                 const CONSTPTR(ITMVoxel) *voxelData                            [[ buffer(2) ]],
+                                                 const CONSTPTR(typename ITMVoxelIndex::IndexData) *voxelIndex  [[ buffer(3) ]],
+                                                 const CONSTPTR(Vector2f) *minmaxdata                           [[ buffer(4) ]],
+                                                 const CONSTPTR(CreateICPMaps_Params) *params                   [[ buffer(5) ]],
                                                  uint2 threadIdx                                                [[ thread_position_in_threadgroup ]],
                                                  uint2 blockIdx                                                 [[ threadgroup_position_in_grid ]],
                                                  uint2 blockDim                                                 [[ threads_per_threadgroup ]])
@@ -49,9 +46,7 @@ kernel void genericRaycastVGMissingPoints_device(DEVICEPTR(Vector4f) *forwardPro
     int y = locId / params->imgSize.x, x = locId - y * params->imgSize.x;
     int locId2 = (int)floor((float)x / minmaximg_subsample) + (int)floor((float)y / minmaximg_subsample) * params->imgSize.x;
     
-//    bool updateEntriesVisibleType = true;//params->updateEntriesVisibleType;
-    
-    castRay<ITMVoxel, ITMVoxelIndex, true>(forwardProjection[locId], entriesVisibleType, x, y, voxelData, voxelIndex, params->invM, params->invProjParams,
+    castRay<ITMVoxel, ITMVoxelIndex, false>(forwardProjection[locId], NULL, x, y, voxelData, voxelIndex, params->invM, params->invProjParams,
                                      params->voxelSizes.y, params->lightSource.w, minmaxdata[locId2]);
 }
 

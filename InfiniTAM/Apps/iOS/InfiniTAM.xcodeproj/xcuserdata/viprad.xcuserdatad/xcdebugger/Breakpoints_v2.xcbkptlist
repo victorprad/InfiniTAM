@@ -1048,11 +1048,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "../../ITMLib/Engines/Visualisation/Metal/ITMVisualisationEngine_Metal.mm"
-            timestampString = "482172707.109456"
+            timestampString = "482176407.003536"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "184"
-            endingLineNumber = "184"
+            startingLineNumber = "171"
+            endingLineNumber = "171"
             landmarkName = "ForwardRender_common_metal(const ITMScene&lt;TVoxel, TIndex&gt; *scene, const ITMView *view, ITMTrackingState *trackingState, ITMRenderState *renderState, const VisualisationEngine_MetalBits *metalBits)"
             landmarkType = "7">
          </BreakpointContent>
@@ -1060,15 +1060,15 @@
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            shouldBeEnabled = "Yes"
+            shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "../../ITMLib/Engines/Visualisation/Metal/ITMVisualisationEngine_Metal.mm"
-            timestampString = "482172979.013951"
+            timestampString = "482176407.003536"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "175"
-            endingLineNumber = "175"
+            startingLineNumber = "170"
+            endingLineNumber = "170"
             landmarkName = "ForwardRender_common_metal(const ITMScene&lt;TVoxel, TIndex&gt; *scene, const ITMView *view, ITMTrackingState *trackingState, ITMRenderState *renderState, const VisualisationEngine_MetalBits *metalBits)"
             landmarkType = "7">
          </BreakpointContent>

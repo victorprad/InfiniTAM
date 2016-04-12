@@ -21,8 +21,8 @@ ITMVisualisationEngine_Metal<TVoxel, ITMVoxelBlockHash>::ITMVisualisationEngine_
     metalBits.f_genericRaycastVH_device = [[[MetalContext instance]library]newFunctionWithName:@"genericRaycastVH_device"];
     metalBits.p_genericRaycastVH_device = [[[MetalContext instance]device]newComputePipelineStateWithFunction:metalBits.f_genericRaycastVH_device error:&errors];
     
-    metalBits.f_genericRaycastVGMissingPoints_device = [[[MetalContext instance]library]newFunctionWithName:@"genericRaycastVGMissingPoints_device"];
-    metalBits.p_genericRaycastVGMissingPoints_device = [[[MetalContext instance]device]newComputePipelineStateWithFunction:metalBits.f_genericRaycastVGMissingPoints_device error:&errors];
+    metalBits.f_genericRaycastVHMissingPoints_device = [[[MetalContext instance]library]newFunctionWithName:@"genericRaycastVHMissingPoints_device"];
+    metalBits.p_genericRaycastVHMissingPoints_device = [[[MetalContext instance]device]newComputePipelineStateWithFunction:metalBits.f_genericRaycastVHMissingPoints_device error:&errors];
 
     metalBits.f_forwardProject_device = [[[MetalContext instance]library]newFunctionWithName:@"forwardProject_device"];
     metalBits.p_forwardProject_device = [[[MetalContext instance]device]newComputePipelineStateWithFunction:metalBits.f_forwardProject_device error:&errors];
@@ -70,7 +70,7 @@ static void CreateICPMaps_common_metal(const ITMScene<TVoxel,TIndex> *scene, con
     [commandEncoder setBuffer:(__bridge id<MTLBuffer>) renderState->renderingRangeImage->GetMetalBuffer()       offset:0 atIndex:4];
     [commandEncoder setBuffer:metalBits->paramsBuffer_visualisation                                             offset:0 atIndex:5];
     
-    MTLSize blockSize = {8, 8, 1};
+    MTLSize blockSize = {16, 16, 1};
     MTLSize gridSize = {(NSUInteger)ceil((float)view->depth->noDims.x / (float)blockSize.width),
         (NSUInteger)ceil((float)view->depth->noDims.y / (float)blockSize.height), 1};
     
@@ -124,9 +124,7 @@ static void ForwardRender_common_metal(const ITMScene<TVoxel, TIndex> *scene, co
     params->M = trackingState->pose_d->GetM();
     params->invM = trackingState->pose_d->GetInvM();
     params->projParams = view->calib->intrinsics_d.projectionParamsSimple.all;
-    params->invProjParams = view->calib->intrinsics_d.projectionParamsSimple.all;
-    params->invProjParams.x = 1.0f / params->invProjParams.x;
-    params->invProjParams.y = 1.0f / params->invProjParams.y;
+    params->invProjParams = InvertProjectionParams(view->calib->intrinsics_d.projectionParamsSimple.all);
     params->lightSource.x = -Vector3f(params->invM.getColumn(2)).x;
     params->lightSource.y = -Vector3f(params->invM.getColumn(2)).y;
     params->lightSource.z = -Vector3f(params->invM.getColumn(2)).z;
@@ -134,7 +132,7 @@ static void ForwardRender_common_metal(const ITMScene<TVoxel, TIndex> *scene, co
 
     renderState->forwardProjection->Clear();
     
-    MTLSize blockSize = {8, 8, 1};
+    MTLSize blockSize = {16, 16, 1};
     MTLSize gridSize = {(NSUInteger)ceil((float)view->depth->noDims.x / (float)blockSize.width),
         (NSUInteger)ceil((float)view->depth->noDims.y / (float)blockSize.height), 1};
     
@@ -160,7 +158,6 @@ static void ForwardRender_common_metal(const ITMScene<TVoxel, TIndex> *scene, co
         Vector2f minmaxval = minmaximg[locId2];
         float depth = currentDepth[locId];
         
-        //if ((fwdPoint.w <= 0) && (minmaxval.x < minmaxval.y))
         if ((fwdPoint.w <= 0) && ((fwdPoint.x == 0 && fwdPoint.y == 0 && fwdPoint.z == 0) || (depth >= 0)) && (minmaxval.x < minmaxval.y))
         {
             fwdProjMissingPoints[noMissingPoints] = locId;
@@ -172,23 +169,16 @@ static void ForwardRender_common_metal(const ITMScene<TVoxel, TIndex> *scene, co
     
     params->imgSize.x = view->depth->noDims.x; params->imgSize.y = view->depth->noDims.y; params->imgSize.z = noMissingPoints; params->imgSize.w = 0;
     
-    const void *entriesVisibleType = NULL;
-    if ((dynamic_cast<const ITMRenderState_VH*>(renderState)!=NULL))
-    {
-        entriesVisibleType = ((ITMRenderState_VH*)renderState)->GetEntriesVisibleType_MB();
-    }
-    
     commandBuffer = [[[MetalContext instance]commandQueue]commandBuffer];
     commandEncoder = [commandBuffer computeCommandEncoder];
     
-    [commandEncoder setComputePipelineState:metalBits->p_genericRaycastVGMissingPoints_device];
+    [commandEncoder setComputePipelineState:metalBits->p_genericRaycastVHMissingPoints_device];
     [commandEncoder setBuffer:(__bridge id<MTLBuffer>) renderState->forwardProjection->GetMetalBuffer()         offset:0 atIndex:0];
-    [commandEncoder setBuffer:(__bridge id<MTLBuffer>) entriesVisibleType                                       offset:0 atIndex:1];
-    [commandEncoder setBuffer:(__bridge id<MTLBuffer>) renderState->fwdProjMissingPoints->GetMetalBuffer()      offset:0 atIndex:2];
-    [commandEncoder setBuffer:(__bridge id<MTLBuffer>) scene->localVBA.GetVoxelBlocks_MB()                      offset:0 atIndex:3];
-    [commandEncoder setBuffer:(__bridge id<MTLBuffer>) scene->index.getIndexData_MB()                           offset:0 atIndex:4];
-    [commandEncoder setBuffer:(__bridge id<MTLBuffer>) renderState->renderingRangeImage->GetMetalBuffer()       offset:0 atIndex:5];
-    [commandEncoder setBuffer:metalBits->paramsBuffer_visualisation                                             offset:0 atIndex:6];
+    [commandEncoder setBuffer:(__bridge id<MTLBuffer>) renderState->fwdProjMissingPoints->GetMetalBuffer()      offset:0 atIndex:1];
+    [commandEncoder setBuffer:(__bridge id<MTLBuffer>) scene->localVBA.GetVoxelBlocks_MB()                      offset:0 atIndex:2];
+    [commandEncoder setBuffer:(__bridge id<MTLBuffer>) scene->index.getIndexData_MB()                           offset:0 atIndex:3];
+    [commandEncoder setBuffer:(__bridge id<MTLBuffer>) renderState->renderingRangeImage->GetMetalBuffer()       offset:0 atIndex:4];
+    [commandEncoder setBuffer:metalBits->paramsBuffer_visualisation                                             offset:0 atIndex:5];
     
     blockSize = {64, 1, 1};
     gridSize = {(NSUInteger)ceil((float)noMissingPoints / (float)blockSize.width), 1, 1};
