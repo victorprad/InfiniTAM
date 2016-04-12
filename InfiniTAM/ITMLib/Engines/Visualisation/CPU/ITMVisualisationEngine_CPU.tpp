@@ -173,8 +173,8 @@ void ITMVisualisationEngine_CPU<TVoxel,ITMVoxelBlockHash>::CreateExpectedDepths(
 	}
 }
 
-template<class TVoxel>
-static void GenericRaycast(const ITMScene<TVoxel, ITMVoxelBlockHash> *scene, const Vector2i& imgSize, const Matrix4f& invM, const Vector4f& projParams, const ITMRenderState *renderState)
+template<class TVoxel, class TIndex>
+static void GenericRaycast(const ITMScene<TVoxel, TIndex> *scene, const Vector2i& imgSize, const Matrix4f& invM, const Vector4f& projParams, const ITMRenderState *renderState, bool updateVisibleList)
 {
 	const Vector2f *minmaximg = renderState->renderingRangeImage->GetData(MEMORYDEVICE_CPU);
 	float mu = scene->sceneParams->mu;
@@ -182,7 +182,11 @@ static void GenericRaycast(const ITMScene<TVoxel, ITMVoxelBlockHash> *scene, con
 	Vector4f *pointsRay = renderState->raycastResult->GetData(MEMORYDEVICE_CPU);
 	const TVoxel *voxelData = scene->localVBA.GetVoxelBlocks();
 	const typename ITMVoxelBlockHash::IndexData *voxelIndex = scene->index.getIndexData();
-	ITMRenderState_VH *renderState_vh = (ITMRenderState_VH*)renderState;
+	uchar *entriesVisibleType = NULL;
+	if (updateVisibleList&&(dynamic_cast<const ITMRenderState_VH*>(renderState)!=NULL))
+	{
+		entriesVisibleType = ((ITMRenderState_VH*)renderState)->GetEntriesVisibleType();
+	}
 
 #ifdef WITH_OPENMP
 	#pragma omp parallel for
@@ -193,51 +197,29 @@ static void GenericRaycast(const ITMScene<TVoxel, ITMVoxelBlockHash> *scene, con
 		int x = locId - y*imgSize.x;
 		int locId2 = (int)floor((float)x / minmaximg_subsample) + (int)floor((float)y / minmaximg_subsample) * imgSize.x;
 
-		castRay<TVoxel, ITMVoxelBlockHash, true>(
-			pointsRay[locId],
-			renderState_vh->GetEntriesVisibleType(),
-			x, y,
-			voxelData,
-			voxelIndex,
-			invM,
-			InvertProjectionParams(projParams),
-			oneOverVoxelSize,
-			mu,
-			minmaximg[locId2]
-		);
-	}
-}
-
-template<class TVoxel>
-static void GenericRaycast(const ITMScene<TVoxel, ITMPlainVoxelArray> *scene, const Vector2i& imgSize, const Matrix4f& invM, const Vector4f& projParams, const ITMRenderState *renderState)
-{
-	const Vector2f *minmaximg = renderState->renderingRangeImage->GetData(MEMORYDEVICE_CPU);
-	float mu = scene->sceneParams->mu;
-	float oneOverVoxelSize = 1.0f / scene->sceneParams->voxelSize;
-	Vector4f *pointsRay = renderState->raycastResult->GetData(MEMORYDEVICE_CPU);
-	const ITMPlainVoxelArray *voxelData = scene->localVBA.GetVoxelBlocks();
-	const typename ITMPlainVoxelArray::IndexData *voxelIndex = scene->index.getIndexData();
-
-#ifdef WITH_OPENMP
-#pragma omp parallel for
-#endif
-	for (int locId = 0; locId < imgSize.x*imgSize.y; ++locId)
-	{
-		int y = locId / imgSize.x;
-		int x = locId - y*imgSize.x;
-		int locId2 = (int)floor((float)x / minmaximg_subsample) + (int)floor((float)y / minmaximg_subsample) * imgSize.x;
-
-		castRay<TVoxel, ITMPlainVoxelArray, false>(
-			pointsRay[locId],
-			NULL,
-			x, y,
-			voxelData,
-			voxelIndex,
-			invM,
-			InvertProjectionParams(projParams),
-			oneOverVoxelSize,
-			mu,
-			minmaximg[locId2]
+		if (entriesVisibleType!=NULL) castRay<TVoxel, TIndex, true>(
+				pointsRay[locId],
+				entriesVisibleType,
+				x, y,
+				voxelData,
+				voxelIndex,
+				invM,
+				InvertProjectionParams(projParams),
+				oneOverVoxelSize,
+				mu,
+				minmaximg[locId2]
+			);
+		else castRay<TVoxel, TIndex, false>(
+				pointsRay[locId],
+				NULL,
+				x, y,
+				voxelData,
+				voxelIndex,
+				invM,
+				InvertProjectionParams(projParams),
+				oneOverVoxelSize,
+				mu,
+				minmaximg[locId2]
 			);
 	}
 }
@@ -250,7 +232,9 @@ static void RenderImage_common(const ITMScene<TVoxel,TIndex> *scene, const ORUti
 	Vector2i imgSize = outputImage->noDims;
 	Matrix4f invM = pose->GetInvM();
 
-	GenericRaycast(scene, imgSize, invM, intrinsics->projectionParamsSimple.all, renderState);
+	// this one is generally done for freeview visualisation, so no, do not
+	// update the list of visible blocks
+	GenericRaycast(scene, imgSize, invM, intrinsics->projectionParamsSimple.all, renderState, false);
 
 	Vector3f lightSource = -Vector3f(invM.getColumn(2));
 	Vector4u *outRendering = outputImage->GetData(MEMORYDEVICE_CPU);
@@ -302,7 +286,9 @@ static void CreatePointCloud_common(const ITMScene<TVoxel,TIndex> *scene, const 
 	Vector2i imgSize = renderState->raycastResult->noDims;
 	Matrix4f invM = trackingState->pose_d->GetInvM() * view->calib->trafo_rgb_to_depth.calib;
 
-	GenericRaycast(scene, imgSize, invM, view->calib->intrinsics_rgb.projectionParamsSimple.all, renderState);
+	// this one is generally done for the colour tracker, so yes, update
+	// the list of visible blocks if possible
+	GenericRaycast(scene, imgSize, invM, view->calib->intrinsics_rgb.projectionParamsSimple.all, renderState, true);
 	trackingState->pose_pointCloud->SetFrom(trackingState->pose_d);
 
 	trackingState->pointCloud->noTotalPoints = RenderPointCloud<TVoxel, TIndex>(
@@ -325,7 +311,9 @@ static void CreateICPMaps_common(const ITMScene<TVoxel,TIndex> *scene, const ITM
 	Vector2i imgSize = renderState->raycastResult->noDims;
 	Matrix4f invM = trackingState->pose_d->GetInvM();
 
-	GenericRaycast(scene, imgSize, invM, view->calib->intrinsics_d.projectionParamsSimple.all, renderState);
+	// this one is generally done for the ICP tracker, so yes, update
+	// the list of visible blocks if possible
+	GenericRaycast(scene, imgSize, invM, view->calib->intrinsics_d.projectionParamsSimple.all, renderState, true);
 	trackingState->pose_pointCloud->SetFrom(trackingState->pose_d);
 
 	Vector3f lightSource = -Vector3f(invM.getColumn(2));
@@ -424,14 +412,18 @@ void ITMVisualisationEngine_CPU<TVoxel,ITMVoxelBlockHash>::RenderImage(const ITM
 template<class TVoxel, class TIndex>
 void ITMVisualisationEngine_CPU<TVoxel, TIndex>::FindSurface(const ITMScene<TVoxel,TIndex> *scene, const ORUtils::SE3Pose *pose, const ITMIntrinsics *intrinsics, const ITMRenderState *renderState) const
 {
-	GenericRaycast(scene, renderState->raycastResult->noDims, pose->GetInvM(), intrinsics->projectionParamsSimple.all, renderState);
+	// this one is generally done for freeview visualisation, so no, do not
+	// update the list of visible blocks
+	GenericRaycast(scene, renderState->raycastResult->noDims, pose->GetInvM(), intrinsics->projectionParamsSimple.all, renderState, false);
 }
 
 template<class TVoxel>
 void ITMVisualisationEngine_CPU<TVoxel,ITMVoxelBlockHash>::FindSurface(const ITMScene<TVoxel,ITMVoxelBlockHash> *scene, const ORUtils::SE3Pose *pose, const ITMIntrinsics *intrinsics,
 	const ITMRenderState *renderState) const
 {
-	GenericRaycast(scene, renderState->raycastResult->noDims, pose->GetInvM(), intrinsics->projectionParamsSimple.all, renderState);
+	// this one is generally done for freeview visualisation, so no, do not
+	// update the list of visible blocks
+	GenericRaycast(scene, renderState->raycastResult->noDims, pose->GetInvM(), intrinsics->projectionParamsSimple.all, renderState, false);
 }
 
 template<class TVoxel, class TIndex>

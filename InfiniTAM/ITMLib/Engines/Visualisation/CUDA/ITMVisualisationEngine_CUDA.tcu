@@ -242,51 +242,44 @@ void ITMVisualisationEngine_CUDA<TVoxel, ITMVoxelBlockHash>::CreateExpectedDepth
 	}
 }
 
-template <class TVoxel>
-static void GenericRaycast(const ITMScene<TVoxel, ITMVoxelBlockHash> *scene, const Vector2i& imgSize, const Matrix4f& invM, const Vector4f& projParams, const ITMRenderState *renderState)
+template <class TVoxel, class TIndex>
+static void GenericRaycast(const ITMScene<TVoxel, TIndex> *scene, const Vector2i& imgSize, const Matrix4f& invM, const Vector4f& projParams, const ITMRenderState *renderState, bool updateVisibleList)
 {
 	float voxelSize = scene->sceneParams->voxelSize;
 	float oneOverVoxelSize = 1.0f / voxelSize;
 
-	ITMRenderState_VH *renderState_vh = (ITMRenderState_VH*)renderState;
+	uchar *entriesVisibleType = NULL;
+	if (updateVisibleList&&(dynamic_cast<const ITMRenderState_VH*>(renderState)!=NULL))
+	{
+		entriesVisibleType = ((ITMRenderState_VH*)renderState)->GetEntriesVisibleType();
+	}
 
 	dim3 cudaBlockSize(16, 12);
 	dim3 gridSize((int)ceil((float)imgSize.x / (float)cudaBlockSize.x), (int)ceil((float)imgSize.y / (float)cudaBlockSize.y));
-	genericRaycast_device<TVoxel, ITMVoxelBlockHash, true> << <gridSize, cudaBlockSize >> >(
-		renderState->raycastResult->GetData(MEMORYDEVICE_CUDA),
-		renderState_vh->GetEntriesVisibleType(),
-		scene->localVBA.GetVoxelBlocks(),
-		scene->index.getIndexData(),
-		imgSize,
-		invM,
-		InvertProjectionParams(projParams),
-		oneOverVoxelSize,
-		renderState->renderingRangeImage->GetData(MEMORYDEVICE_CUDA),
-		scene->sceneParams->mu
-	);
-	ORcudaKernelCheck;
-}
-
-template <class TVoxel>
-static void GenericRaycast(const ITMScene<TVoxel, ITMPlainVoxelArray> *scene, const Vector2i& imgSize, const Matrix4f& invM, const Vector4f& projParams, const ITMRenderState *renderState)
-{
-	float voxelSize = scene->sceneParams->voxelSize;
-	float oneOverVoxelSize = 1.0f / voxelSize;
-
-	dim3 cudaBlockSize(16, 12);
-	dim3 gridSize((int)ceil((float)imgSize.x / (float)cudaBlockSize.x), (int)ceil((float)imgSize.y / (float)cudaBlockSize.y));
-	genericRaycast_device<TVoxel, ITMPlainVoxelArray, false> << <gridSize, cudaBlockSize >> >(
-		renderState->raycastResult->GetData(MEMORYDEVICE_CUDA),
-		NULL,
-		scene->localVBA.GetVoxelBlocks(),
-		scene->index.getIndexData(),
-		imgSize,
-		invM,
-		InvertProjectionParams(projParams),
-		oneOverVoxelSize,
-		renderState->renderingRangeImage->GetData(MEMORYDEVICE_CUDA),
-		scene->sceneParams->mu
-	);
+	if (entriesVisibleType!=NULL) genericRaycast_device<TVoxel, ITMVoxelBlockHash, true> << <gridSize, cudaBlockSize >> >(
+			renderState->raycastResult->GetData(MEMORYDEVICE_CUDA),
+			entriesVisibleType,
+			scene->localVBA.GetVoxelBlocks(),
+			scene->index.getIndexData(),
+			imgSize,
+			invM,
+			InvertProjectionParams(projParams),
+			oneOverVoxelSize,
+			renderState->renderingRangeImage->GetData(MEMORYDEVICE_CUDA),
+			scene->sceneParams->mu
+		);
+	else genericRaycast_device<TVoxel, ITMVoxelBlockHash, false> << <gridSize, cudaBlockSize >> >(
+			renderState->raycastResult->GetData(MEMORYDEVICE_CUDA),
+			NULL,
+			scene->localVBA.GetVoxelBlocks(),
+			scene->index.getIndexData(),
+			imgSize,
+			invM,
+			InvertProjectionParams(projParams),
+			oneOverVoxelSize,
+			renderState->renderingRangeImage->GetData(MEMORYDEVICE_CUDA),
+			scene->sceneParams->mu
+		);
 	ORcudaKernelCheck;
 }
 
@@ -297,7 +290,7 @@ static void RenderImage_common(const ITMScene<TVoxel, TIndex> *scene, const ORUt
 	Vector2i imgSize = outputImage->noDims;
 	Matrix4f invM = pose->GetInvM();
 
-	GenericRaycast(scene, imgSize, invM, intrinsics->projectionParamsSimple.all, renderState);
+	GenericRaycast(scene, imgSize, invM, intrinsics->projectionParamsSimple.all, renderState, false);
 
 	Vector3f lightSource = -Vector3f(invM.getColumn(2));
 	Vector4u *outRendering = outputImage->GetData(MEMORYDEVICE_CUDA);
@@ -336,7 +329,7 @@ static void CreatePointCloud_common(const ITMScene<TVoxel, TIndex> *scene, const
 	Vector2i imgSize = renderState->raycastResult->noDims;
 	Matrix4f invM = trackingState->pose_d->GetInvM() * view->calib->trafo_rgb_to_depth.calib;
 
-	GenericRaycast(scene, imgSize, invM, view->calib->intrinsics_rgb.projectionParamsSimple.all, renderState);
+	GenericRaycast(scene, imgSize, invM, view->calib->intrinsics_rgb.projectionParamsSimple.all, renderState, true);
 	trackingState->pose_pointCloud->SetFrom(trackingState->pose_d);
 
 	ORcudaSafeCall(cudaMemsetAsync(noTotalPoints_device, 0, sizeof(uint)));
@@ -362,7 +355,7 @@ void CreateICPMaps_common(const ITMScene<TVoxel, TIndex> *scene, const ITMView *
 	Vector2i imgSize = renderState->raycastResult->noDims;
 	Matrix4f invM = trackingState->pose_d->GetInvM();
 
-	GenericRaycast(scene, imgSize, invM, view->calib->intrinsics_d.projectionParamsSimple.all, renderState);
+	GenericRaycast(scene, imgSize, invM, view->calib->intrinsics_d.projectionParamsSimple.all, renderState, true);
 	trackingState->pose_pointCloud->SetFrom(trackingState->pose_d);
 
 	Vector4f *pointsMap = trackingState->pointCloud->locations->GetData(MEMORYDEVICE_CUDA);
@@ -459,14 +452,14 @@ void ITMVisualisationEngine_CUDA<TVoxel, ITMVoxelBlockHash>::RenderImage(const I
 template<class TVoxel, class TIndex>
 void ITMVisualisationEngine_CUDA<TVoxel, TIndex>::FindSurface(const ITMScene<TVoxel,TIndex> *scene, const ORUtils::SE3Pose *pose, const ITMIntrinsics *intrinsics, const ITMRenderState *renderState) const
 {
-	GenericRaycast(scene, renderState->raycastResult->noDims, pose->GetInvM(), intrinsics->projectionParamsSimple.all, renderState);
+	GenericRaycast(scene, renderState->raycastResult->noDims, pose->GetInvM(), intrinsics->projectionParamsSimple.all, renderState, false);
 }
 
 template<class TVoxel>
 void ITMVisualisationEngine_CUDA<TVoxel, ITMVoxelBlockHash>::FindSurface(const ITMScene<TVoxel,ITMVoxelBlockHash> *scene, const ORUtils::SE3Pose *pose, const ITMIntrinsics *intrinsics,
 	const ITMRenderState *renderState) const
 {
-	GenericRaycast(scene, renderState->raycastResult->noDims, pose->GetInvM(), intrinsics->projectionParamsSimple.all, renderState);
+	GenericRaycast(scene, renderState->raycastResult->noDims, pose->GetInvM(), intrinsics->projectionParamsSimple.all, renderState, false);
 }
 
 template<class TVoxel, class TIndex>
