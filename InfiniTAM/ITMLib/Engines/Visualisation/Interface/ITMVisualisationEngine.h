@@ -15,8 +15,17 @@ namespace ITMLib
 		enum RenderImageType
 		{
 			RENDER_SHADED_GREYSCALE,
+			RENDER_SHADED_GREYSCALE_IMAGENORMALS,
 			RENDER_COLOUR_FROM_VOLUME,
-			RENDER_COLOUR_FROM_NORMAL
+			RENDER_COLOUR_FROM_NORMAL,
+			RENDER_COLOUR_FROM_CONFIDENCE
+		};
+
+		enum RenderRaycastSelection
+		{
+			RENDER_FROM_NEW_RAYCAST,
+			RENDER_FROM_OLD_RAYCAST,
+			RENDER_FROM_OLD_FORWARDPROJ
 		};
 
 		virtual ~IITMVisualisationEngine(void) {}
@@ -72,7 +81,7 @@ namespace ITMLib
 
 		/** This will render an image using raycasting. */
 		virtual void RenderImage(const ITMScene<TVoxel,TIndex> *scene, const ORUtils::SE3Pose *pose, const ITMIntrinsics *intrinsics,
-			const ITMRenderState *renderState, ITMUChar4Image *outputImage, RenderImageType type = RENDER_SHADED_GREYSCALE) const = 0;
+			const ITMRenderState *renderState, ITMUChar4Image *outputImage, RenderImageType type = RENDER_SHADED_GREYSCALE, RenderRaycastSelection raycastType = RENDER_FROM_NEW_RAYCAST) const = 0;
 
 		/** Finds the scene surface using raycasting. */
 		virtual void FindSurface(const ITMScene<TVoxel,TIndex> *scene, const ORUtils::SE3Pose *pose, const ITMIntrinsics *intrinsics,

@@ -99,6 +99,8 @@ void ImageFileReader<PathGenerator>::loadIntoCache(void)
 		if (cached_depth->noDims.x > 0) cacheIsValid = false;
 		printf("error reading file '%s'\n", depthPath.c_str());
 	}
+
+	if ((cached_rgb->noDims.x <= 0) && (cached_depth->noDims.x <= 0)) cacheIsValid = false;
 }
 
 template <typename PathGenerator>
