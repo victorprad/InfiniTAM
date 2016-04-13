@@ -202,7 +202,7 @@ static void ForwardRender_common_metal(const ITMScene<TVoxel, TIndex> *scene, co
     [commandEncoder setBuffer:(__bridge id<MTLBuffer>) renderState->renderingRangeImage->GetMetalBuffer()       offset:0 atIndex:4];
     [commandEncoder setBuffer:vis_metalBits.paramsBuffer                                                        offset:0 atIndex:5];
     
-    blockSize = {128, 1, 1};
+    blockSize = {256, 1, 1};
     gridSize = {(NSUInteger)ceil((float)noMissingPoints / (float)blockSize.width), 1, 1};
     
     [commandEncoder dispatchThreadgroups:gridSize threadsPerThreadgroup:blockSize];

@@ -159,8 +159,10 @@ using namespace ITMLib;
         }
         
         const char *calibFile = [[[NSBundle mainBundle]pathForResource:@"calib" ofType:@"txt"] cStringUsingEncoding:[NSString defaultCStringEncoding]];
+//        imageSource = new CalibSource(calibFile, Vector2i(320, 240), 0.5f);
         imageSource = new CalibSource(calibFile, Vector2i(640, 480), 1.0f);
-
+//        imageSource = new CalibSource(calibFile, Vector2i(512, 384), 0.8f);
+        
         if (error != nil) [_tbOut setText:@"from camera -- errors"];
         else [_tbOut setText:@"from camera"];
         
@@ -305,6 +307,14 @@ using namespace ITMLib;
             imuMeasurement->R.m10 = rotationMatrix.m21; imuMeasurement->R.m11 = rotationMatrix.m22; imuMeasurement->R.m12 = rotationMatrix.m23;
             imuMeasurement->R.m20 = rotationMatrix.m31; imuMeasurement->R.m21 = rotationMatrix.m32; imuMeasurement->R.m22 = rotationMatrix.m33;
         }
+        
+//        unsigned short *depthFrameStructure = (unsigned short*)[depthFrame shiftData];
+//        short *depthFrameInfiniTAM = inputRawDepthImage->GetData(MEMORYDEVICE_CPU);
+//        
+//        for (int y = 0; y < imageSize.y; y++) for (int x = 0; x < imageSize.x; x++)
+//        {
+//            depthFrameInfiniTAM[x + y * imageSize.x] = depthFrameStructure[(int)(x * 1.25) + (int)(y * 1.25) * 640];
+//        }
         
         memcpy(inputRawDepthImage->GetData(MEMORYDEVICE_CPU), [depthFrame shiftData], imageSize.x * imageSize.y * sizeof(short));
         

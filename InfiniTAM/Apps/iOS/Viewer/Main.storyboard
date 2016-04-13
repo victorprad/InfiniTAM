@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="9532" systemVersion="15D21" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" initialViewController="BYZ-38-t0r">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="10116" systemVersion="15E65" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" initialViewController="BYZ-38-t0r">
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="9530"/>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="10085"/>
     </dependencies>
     <scenes>
         <!--View Controller-->
@@ -48,7 +49,7 @@
                                     <action selector="bProcessCont_clicked:" destination="BYZ-38-t0r" eventType="touchUpInside" id="59H-vd-PUI"/>
                                 </connections>
                             </button>
-                            <view contentMode="scaleToFill" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Evu-Xq-jOF">
+                            <view contentMode="center" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Evu-Xq-jOF">
                                 <rect key="frame" x="128" y="77" width="768" height="576"/>
                                 <color key="backgroundColor" red="0.60065498737373735" green="0.60065498737373735" blue="0.60065498737373735" alpha="1" colorSpace="calibratedRGB"/>
                                 <variation key="widthClass=regular" fixedFrame="YES">

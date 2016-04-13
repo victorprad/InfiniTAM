@@ -63,7 +63,7 @@ kernel void renderICP_device(const CONSTPTR(Vector4f) *pointsRay            [[ b
     
     if (x >= params->imgSize.x || y >= params->imgSize.y) return;
     
-    processPixelICP<false>(outRendering, pointsMap, normalsMap, pointsRay, params->imgSize.xy, x, y, params->voxelSizes.x, TO_VECTOR3(params->lightSource));
+    processPixelICP<true>(outRendering, pointsMap, normalsMap, pointsRay, params->imgSize.xy, x, y, params->voxelSizes.x, TO_VECTOR3(params->lightSource));
 }
 
 kernel void renderForward_device(DEVICEPTR(Vector4u) *outRendering              [[ buffer(0) ]],
@@ -77,7 +77,7 @@ kernel void renderForward_device(DEVICEPTR(Vector4u) *outRendering              
     
     if (x >= params->imgSize.x || y >= params->imgSize.y) return;
     
-    processPixelForwardRender<false>(outRendering, pointsRay, params->imgSize.xy, x, y, params->voxelSizes.x, TO_VECTOR3(params->lightSource));
+    processPixelForwardRender<true>(outRendering, pointsRay, params->imgSize.xy, x, y, params->voxelSizes.x, TO_VECTOR3(params->lightSource));
 }
 
 kernel void forwardProject_device(DEVICEPTR(Vector4f) *forwardProjection         [[ buffer(0) ]],
