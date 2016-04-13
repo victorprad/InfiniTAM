@@ -63,6 +63,7 @@ namespace InfiniTAM
 			void loadIntoCache();
 			size_t cachedFrameNo;
 			size_t currentFrameNo;
+			bool cacheIsValid;
 
 			PathGenerator pathGenerator;
 		public:

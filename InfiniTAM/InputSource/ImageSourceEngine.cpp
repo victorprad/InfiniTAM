@@ -66,8 +66,9 @@ ImageFileReader<PathGenerator>::ImageFileReader(const char *calibFilename, const
 	currentFrameNo = 0;
 	cachedFrameNo = -1;
 
-	cached_rgb = NULL;
-	cached_depth = NULL;
+	cached_rgb = new ITMUChar4Image(true, false);
+	cached_depth = new ITMShortImage(true, false);
+	cacheIsValid = false;
 }
 
 template <typename PathGenerator>
@@ -83,24 +84,19 @@ void ImageFileReader<PathGenerator>::loadIntoCache(void)
 	if (currentFrameNo == cachedFrameNo) return;
 	cachedFrameNo = currentFrameNo;
 
-	//TODO> make nicer
-    if (cached_rgb == NULL && cached_depth == NULL)
-    {
-        cached_rgb = new ITMUChar4Image(true, false);
-        cached_depth = new ITMShortImage(true, false);
-    }
-    
+	cacheIsValid = true;
+
 	std::string rgbPath = pathGenerator.getRgbImagePath(currentFrameNo);
 	if (!ReadImageFromFile(cached_rgb, rgbPath.c_str()))
 	{
-		delete cached_rgb; cached_rgb = NULL;
+		if (cached_rgb->noDims.x > 0) cacheIsValid = false;
 		printf("error reading file '%s'\n", rgbPath.c_str());
 	}
 
 	std::string depthPath = pathGenerator.getDepthImagePath(currentFrameNo);
 	if (!ReadImageFromFile(cached_depth, depthPath.c_str()))
 	{
-		delete cached_depth; cached_depth = NULL;
+		if (cached_depth->noDims.x > 0) cacheIsValid = false;
 		printf("error reading file '%s'\n", depthPath.c_str());
 	}
 }
@@ -109,34 +105,15 @@ template <typename PathGenerator>
 bool ImageFileReader<PathGenerator>::hasMoreImages(void)
 {
 	loadIntoCache();
-	return ((cached_rgb!=NULL)&&(cached_depth!=NULL));
+	return cacheIsValid;
 }
 
 template <typename PathGenerator>
 void ImageFileReader<PathGenerator>::getImages(ITMUChar4Image *rgb, ITMShortImage *rawDepth)
 {
-	bool bUsedCache = false;
-	if (cached_rgb != NULL) {
-		rgb->SetFrom(cached_rgb, ORUtils::MemoryBlock<Vector4u>::CPU_TO_CPU);
-//		delete cached_rgb;
-//		cached_rgb = NULL;
-		bUsedCache = true;
-	}
-	if (cached_depth != NULL) {
-		rawDepth->SetFrom(cached_depth, ORUtils::MemoryBlock<short>::CPU_TO_CPU);
-//		delete cached_depth;
-//		cached_depth = NULL;
-		bUsedCache = true;
-	}
-
-	if (!bUsedCache) {
-
-		std::string rgbPath = pathGenerator.getRgbImagePath(currentFrameNo);
-		if (!ReadImageFromFile(rgb, rgbPath.c_str())) printf("error reading file '%s'\n", rgbPath.c_str());
-
-		std::string depthPath = pathGenerator.getDepthImagePath(currentFrameNo);
-		if (!ReadImageFromFile(rawDepth, depthPath.c_str())) printf("error reading file '%s'\n", depthPath.c_str());
-	}
+	loadIntoCache();
+	rgb->SetFrom(cached_rgb, ORUtils::MemoryBlock<Vector4u>::CPU_TO_CPU);
+	rawDepth->SetFrom(cached_depth, ORUtils::MemoryBlock<short>::CPU_TO_CPU);
 
 	++currentFrameNo;
 }
@@ -152,8 +129,7 @@ template <typename PathGenerator>
 Vector2i ImageFileReader<PathGenerator>::getRGBImageSize(void)
 {
 	loadIntoCache();
-	if (cached_rgb != NULL) return cached_rgb->noDims;
-	return cached_depth->noDims;
+	return cached_rgb->noDims;
 }
 
 CalibSource::CalibSource(const char *calibFilename, Vector2i setImageSize, float ratio)
