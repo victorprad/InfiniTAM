@@ -2,6 +2,8 @@
 
 #pragma once
 
+#ifndef __METALC__
+
 #include "../../Utils/ITMMath.h"
 #include "../../../ORUtils/MemoryBlock.h"
 
@@ -34,11 +36,10 @@ namespace ITMLib
 		struct IndexCache {};
 
 	private:
-		DEVICEPTR(ORUtils::MemoryBlock<IndexData>) *indexData;
+		ORUtils::MemoryBlock<IndexData> *indexData;
 
 		MemoryDeviceType memoryType;
 
-#ifndef __METALC__
 	public:
 		ITMPlainVoxelArray(MemoryDeviceType memoryType)
 		{
@@ -76,6 +77,7 @@ namespace ITMLib
 		// Suppress the default copy constructor and assignment operator
 		ITMPlainVoxelArray(const ITMPlainVoxelArray&);
 		ITMPlainVoxelArray& operator=(const ITMPlainVoxelArray&);
-#endif
 	};
 }
+
+#endif

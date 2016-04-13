@@ -24,7 +24,7 @@ kernel void genericRaycastVH_device(DEVICEPTR(Vector4f) *pointsRay              
     int locId = x + y * params->imgSize.x;
     int locId2 = (int)floor((float)x / minmaximg_subsample) + (int)floor((float)y / minmaximg_subsample) * params->imgSize.x;
     
-    castRay<ITMVoxel, ITMVoxelIndex, false>(pointsRay[locId], entriesVisibleType, x, y, voxelData, voxelIndex, params->invM, params->invProjParams,
+    castRay<ITMVoxel, ITMVoxelIndex, true>(pointsRay[locId], entriesVisibleType, x, y, voxelData, voxelIndex, params->invM, params->invProjParams,
                                      params->voxelSizes.y, params->lightSource.w, minmaxdata[locId2]);
 }
 

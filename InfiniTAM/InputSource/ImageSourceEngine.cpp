@@ -84,9 +84,12 @@ void ImageFileReader<PathGenerator>::loadIntoCache(void)
 	cachedFrameNo = currentFrameNo;
 
 	//TODO> make nicer
-	cached_rgb = new ITMUChar4Image(true, false);
-	cached_depth = new ITMShortImage(true, false);
-
+    if (cached_rgb == NULL && cached_depth == NULL)
+    {
+        cached_rgb = new ITMUChar4Image(true, false);
+        cached_depth = new ITMShortImage(true, false);
+    }
+    
 	std::string rgbPath = pathGenerator.getRgbImagePath(currentFrameNo);
 	if (!ReadImageFromFile(cached_rgb, rgbPath.c_str()))
 	{
@@ -115,14 +118,14 @@ void ImageFileReader<PathGenerator>::getImages(ITMUChar4Image *rgb, ITMShortImag
 	bool bUsedCache = false;
 	if (cached_rgb != NULL) {
 		rgb->SetFrom(cached_rgb, ORUtils::MemoryBlock<Vector4u>::CPU_TO_CPU);
-		delete cached_rgb;
-		cached_rgb = NULL;
+//		delete cached_rgb;
+//		cached_rgb = NULL;
 		bUsedCache = true;
 	}
 	if (cached_depth != NULL) {
 		rawDepth->SetFrom(cached_depth, ORUtils::MemoryBlock<short>::CPU_TO_CPU);
-		delete cached_depth;
-		cached_depth = NULL;
+//		delete cached_depth;
+//		cached_depth = NULL;
 		bUsedCache = true;
 	}
 
@@ -202,9 +205,12 @@ void RawFileReader::loadIntoCache(void)
 	cachedFrameNo = currentFrameNo;
 
 	//TODO> make nicer
-	cached_rgb = new ITMUChar4Image(imgSize, MEMORYDEVICE_CPU);
-	cached_depth = new ITMShortImage(imgSize, MEMORYDEVICE_CPU);
-
+    if (cached_rgb == NULL && cached_depth == NULL)
+    {
+        cached_rgb = new ITMUChar4Image(imgSize, MEMORYDEVICE_CPU);
+        cached_depth = new ITMShortImage(imgSize, MEMORYDEVICE_CPU);
+    }
+    
 	char str[2048]; FILE *f; bool success = false;
 
 	sprintf(str, rgbImageMask, currentFrameNo);

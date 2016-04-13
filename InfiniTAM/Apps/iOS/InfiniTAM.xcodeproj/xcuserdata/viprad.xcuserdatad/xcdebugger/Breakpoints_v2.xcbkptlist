@@ -26,7 +26,7 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Viewer/ViewController.mm"
-            timestampString = "482163118.075894"
+            timestampString = "482231581.096729"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "192"
@@ -476,7 +476,7 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Viewer/ViewController.mm"
-            timestampString = "482163118.075894"
+            timestampString = "482231581.096729"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "190"
@@ -968,7 +968,7 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Viewer/ViewController.mm"
-            timestampString = "482163118.075894"
+            timestampString = "482231870.183704"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "230"
@@ -1000,7 +1000,7 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Viewer/ViewController.mm"
-            timestampString = "482163118.075894"
+            timestampString = "482231581.096729"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "199"
@@ -1015,29 +1015,13 @@
             shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "Viewer/ViewController.mm"
-            timestampString = "482163118.075894"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "215"
-            endingLineNumber = "215"
-            landmarkName = "-bProcessCont_clicked:"
-            landmarkType = "5">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
             filePath = "../../ITMLib/Engines/Visualisation/Metal/ITMVisualisationEngine_Metal.mm"
-            timestampString = "482172663.459167"
+            timestampString = "482235848.504719"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "43"
-            endingLineNumber = "43"
-            landmarkName = "CreateICPMaps_common_metal(const ITMScene&lt;TVoxel,TIndex&gt; *scene, const ITMView *view, ITMTrackingState *trackingState, ITMRenderState *renderState, const VisualisationEngine_MetalBits *metalBits)"
+            startingLineNumber = "64"
+            endingLineNumber = "64"
+            landmarkName = "CreateICPMaps_common_metal(const ITMScene&lt;TVoxel,TIndex&gt; *scene, const ITMView *view, ITMTrackingState *trackingState, ITMRenderState *renderState)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
@@ -1048,12 +1032,12 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "../../ITMLib/Engines/Visualisation/Metal/ITMVisualisationEngine_Metal.mm"
-            timestampString = "482176407.003536"
+            timestampString = "482235848.504719"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "171"
-            endingLineNumber = "171"
-            landmarkName = "ForwardRender_common_metal(const ITMScene&lt;TVoxel, TIndex&gt; *scene, const ITMView *view, ITMTrackingState *trackingState, ITMRenderState *renderState, const VisualisationEngine_MetalBits *metalBits)"
+            startingLineNumber = "191"
+            endingLineNumber = "191"
+            landmarkName = "ForwardRender_common_metal(const ITMScene&lt;TVoxel, TIndex&gt; *scene, const ITMView *view, ITMTrackingState *trackingState, ITMRenderState *renderState)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
@@ -1064,12 +1048,12 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "../../ITMLib/Engines/Visualisation/Metal/ITMVisualisationEngine_Metal.mm"
-            timestampString = "482176407.003536"
+            timestampString = "482235848.504719"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "170"
-            endingLineNumber = "170"
-            landmarkName = "ForwardRender_common_metal(const ITMScene&lt;TVoxel, TIndex&gt; *scene, const ITMView *view, ITMTrackingState *trackingState, ITMRenderState *renderState, const VisualisationEngine_MetalBits *metalBits)"
+            startingLineNumber = "190"
+            endingLineNumber = "190"
+            landmarkName = "ForwardRender_common_metal(const ITMScene&lt;TVoxel, TIndex&gt; *scene, const ITMView *view, ITMTrackingState *trackingState, ITMRenderState *renderState)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>

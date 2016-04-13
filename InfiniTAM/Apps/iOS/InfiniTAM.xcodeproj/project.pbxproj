@@ -203,7 +203,7 @@
 		A6AC2B141CBD34A7000CC89D /* Android.mk */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Android.mk; sourceTree = "<group>"; };
 		A6AC2B151CBD34A7000CC89D /* CMakeLists.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = CMakeLists.txt; sourceTree = "<group>"; };
 		A6AC2B171CBD34A7000CC89D /* ITMBasicEngine.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMBasicEngine.h; sourceTree = "<group>"; };
-		A6AC2B181CBD34A7000CC89D /* ITMBasicEngine.tpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = ITMBasicEngine.tpp; sourceTree = "<group>"; };
+		A6AC2B181CBD34A7000CC89D /* ITMBasicEngine.tpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = ITMBasicEngine.tpp; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.cpp; };
 		A6AC2B191CBD34A7000CC89D /* ITMDenseMapper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMDenseMapper.h; sourceTree = "<group>"; };
 		A6AC2B1A1CBD34A7000CC89D /* ITMDenseMapper.tpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = ITMDenseMapper.tpp; sourceTree = "<group>"; };
 		A6AC2B1B1CBD34A7000CC89D /* ITMDenseSurfelMapper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMDenseSurfelMapper.h; sourceTree = "<group>"; };

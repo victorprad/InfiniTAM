@@ -217,7 +217,7 @@ void ITMBasicEngine<TVoxel,TIndex>::ProcessFrame(ITMUChar4Image *rgbImage, ITMSh
 			break;
 		}
 		trackerResult_prev = trackerResult;
-	}
+    }
 
 	//relocalisation
 	int addKeyframeIdx = -1;
@@ -280,8 +280,6 @@ void ITMBasicEngine<TVoxel,TIndex>::ProcessFrame(ITMUChar4Image *rgbImage, ITMSh
 	fprintf(stderr, "%f %f %f %f %f %f %f\n", t[0],
 		t[1], t[2], q[1], q[2], q[3], q[0]);
 #endif
-
-	//printf("%d\n", framesProcessed);
 }
 
 template <typename TVoxel, typename TIndex>

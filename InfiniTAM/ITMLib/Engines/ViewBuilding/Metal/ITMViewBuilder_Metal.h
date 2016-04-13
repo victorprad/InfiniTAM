@@ -11,8 +11,8 @@ namespace ITMLib
     class ITMViewBuilder_Metal : public ITMViewBuilder_CPU
     {
     public:
-//        void ConvertDisparityToDepth(ITMFloatImage *depth_out, const ITMShortImage *disp_in, const ITMIntrinsics *depthIntrinsics,
-//                                     const ITMDisparityCalib *disparityCalib);
+        void ConvertDisparityToDepth(ITMFloatImage *depth_out, const ITMShortImage *disp_in, const ITMIntrinsics *depthIntrinsics,
+                                     Vector2f disparityCalibParams);
         
         ITMViewBuilder_Metal(const ITMRGBDCalib *calib);
         ~ITMViewBuilder_Metal(void);

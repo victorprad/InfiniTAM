@@ -4,6 +4,12 @@
 
 #include "../../../Objects/Scene/ITMRepresentationAccess.h"
 
+static const CONSTPTR(int) MAX_RENDERING_BLOCKS = 65536*4;
+//static const int MAX_RENDERING_BLOCKS = 16384;
+static const CONSTPTR(int) minmaximg_subsample = 8;
+
+#if !(defined __METALC__)
+
 struct RenderingBlock {
 	Vector2s upperLeft;
 	Vector2s lowerRight;
@@ -20,10 +26,6 @@ struct RenderingBlock {
 
 static const CONSTPTR(int) renderingBlockSizeX = 16;
 static const CONSTPTR(int) renderingBlockSizeY = 16;
-
-static const CONSTPTR(int) MAX_RENDERING_BLOCKS = 65536*4;
-//static const int MAX_RENDERING_BLOCKS = 16384;
-static const CONSTPTR(int) minmaximg_subsample = 8;
 
 _CPU_AND_GPU_CODE_ inline Vector4f InvertProjectionParams(const THREADPTR(Vector4f)& projParams)
 {
@@ -93,6 +95,8 @@ _CPU_AND_GPU_CODE_ inline void CreateRenderingBlocks(DEVICEPTR(RenderingBlock) *
 		}
 	}
 }
+
+#endif
 
 template<class TVoxel, class TIndex, bool modifyVisibleEntries>
 _CPU_AND_GPU_CODE_ inline bool castRay(DEVICEPTR(Vector4f) &pt_out, DEVICEPTR(uchar) *entriesVisibleType, 
@@ -436,7 +440,6 @@ _CPU_AND_GPU_CODE_ inline void processPixelColour(DEVICEPTR(Vector4u) &outRender
 	if (foundPoint) drawPixelColour<TVoxel, TIndex>(outRendering, point, voxelData, voxelIndex);
 	else outRendering = Vector4u((uchar)0);
 }
-
 
 template<class TVoxel, class TIndex>
 _CPU_AND_GPU_CODE_ inline void processPixelNormal(DEVICEPTR(Vector4u) &outRendering, const CONSTPTR(Vector3f) & point,

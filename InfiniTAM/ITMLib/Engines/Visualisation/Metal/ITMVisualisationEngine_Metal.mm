@@ -12,33 +12,54 @@
 
 using namespace ITMLib;
 
+struct VisualisationEngine_MetalBits
+{
+    id<MTLFunction> f_genericRaycastVH_device;
+    id<MTLComputePipelineState> p_genericRaycastVH_device;
+    
+    id<MTLFunction> f_genericRaycastVHMissingPoints_device;
+    id<MTLComputePipelineState> p_genericRaycastVHMissingPoints_device;
+    
+    id<MTLFunction> f_forwardProject_device;
+    id<MTLComputePipelineState> p_forwardProject_device;
+    
+    id<MTLFunction> f_renderICP_device;
+    id<MTLComputePipelineState> p_renderICP_device;
+    
+    id<MTLFunction> f_renderForward_device;
+    id<MTLComputePipelineState> p_renderForward_device;
+    
+    id<MTLBuffer> paramsBuffer;
+};
+
+static VisualisationEngine_MetalBits vis_metalBits;
+
 template<class TVoxel>
 ITMVisualisationEngine_Metal<TVoxel, ITMVoxelBlockHash>::ITMVisualisationEngine_Metal()
 : ITMVisualisationEngine_CPU<TVoxel, ITMVoxelBlockHash>()
 {
     NSError *errors;
     
-    metalBits.f_genericRaycastVH_device = [[[MetalContext instance]library]newFunctionWithName:@"genericRaycastVH_device"];
-    metalBits.p_genericRaycastVH_device = [[[MetalContext instance]device]newComputePipelineStateWithFunction:metalBits.f_genericRaycastVH_device error:&errors];
+    vis_metalBits.f_genericRaycastVH_device = [[[MetalContext instance]library]newFunctionWithName:@"genericRaycastVH_device"];
+    vis_metalBits.p_genericRaycastVH_device = [[[MetalContext instance]device]newComputePipelineStateWithFunction:vis_metalBits.f_genericRaycastVH_device error:&errors];
     
-    metalBits.f_genericRaycastVHMissingPoints_device = [[[MetalContext instance]library]newFunctionWithName:@"genericRaycastVHMissingPoints_device"];
-    metalBits.p_genericRaycastVHMissingPoints_device = [[[MetalContext instance]device]newComputePipelineStateWithFunction:metalBits.f_genericRaycastVHMissingPoints_device error:&errors];
+    vis_metalBits.f_genericRaycastVHMissingPoints_device = [[[MetalContext instance]library]newFunctionWithName:@"genericRaycastVHMissingPoints_device"];
+    vis_metalBits.p_genericRaycastVHMissingPoints_device = [[[MetalContext instance]device]newComputePipelineStateWithFunction:vis_metalBits.f_genericRaycastVHMissingPoints_device error:&errors];
 
-    metalBits.f_forwardProject_device = [[[MetalContext instance]library]newFunctionWithName:@"forwardProject_device"];
-    metalBits.p_forwardProject_device = [[[MetalContext instance]device]newComputePipelineStateWithFunction:metalBits.f_forwardProject_device error:&errors];
+    vis_metalBits.f_forwardProject_device = [[[MetalContext instance]library]newFunctionWithName:@"forwardProject_device"];
+    vis_metalBits.p_forwardProject_device = [[[MetalContext instance]device]newComputePipelineStateWithFunction:vis_metalBits.f_forwardProject_device error:&errors];
     
-    metalBits.f_renderICP_device = [[[MetalContext instance]library]newFunctionWithName:@"renderICP_device"];
-    metalBits.p_renderICP_device = [[[MetalContext instance]device]newComputePipelineStateWithFunction:metalBits.f_renderICP_device error:&errors];
+    vis_metalBits.f_renderICP_device = [[[MetalContext instance]library]newFunctionWithName:@"renderICP_device"];
+    vis_metalBits.p_renderICP_device = [[[MetalContext instance]device]newComputePipelineStateWithFunction:vis_metalBits.f_renderICP_device error:&errors];
     
-    metalBits.f_renderForward_device = [[[MetalContext instance]library]newFunctionWithName:@"renderForward_device"];
-    metalBits.p_renderForward_device = [[[MetalContext instance]device]newComputePipelineStateWithFunction:metalBits.f_renderForward_device error:&errors];
+    vis_metalBits.f_renderForward_device = [[[MetalContext instance]library]newFunctionWithName:@"renderForward_device"];
+    vis_metalBits.p_renderForward_device = [[[MetalContext instance]device]newComputePipelineStateWithFunction:vis_metalBits.f_renderForward_device error:&errors];
     
-    metalBits.paramsBuffer_visualisation = BUFFEREMPTY(16384);
+    vis_metalBits.paramsBuffer = BUFFEREMPTY(16384);
 }
 
 template<class TVoxel, class TIndex>
-static void CreateICPMaps_common_metal(const ITMScene<TVoxel,TIndex> *scene, const ITMView *view, ITMTrackingState *trackingState, ITMRenderState *renderState,
-                                       const VisualisationEngine_MetalBits *metalBits)
+static void CreateICPMaps_common_metal(const ITMScene<TVoxel,TIndex> *scene, const ITMView *view, ITMTrackingState *trackingState, ITMRenderState *renderState)
 {
     const void *entriesVisibleType = NULL;
     if ((dynamic_cast<const ITMRenderState_VH*>(renderState)!=NULL))
@@ -51,7 +72,7 @@ static void CreateICPMaps_common_metal(const ITMScene<TVoxel,TIndex> *scene, con
     
     trackingState->pose_pointCloud->SetFrom(trackingState->pose_d);
     
-    CreateICPMaps_Params *params = (CreateICPMaps_Params*)[metalBits->paramsBuffer_visualisation contents];
+    CreateICPMaps_Params *params = (CreateICPMaps_Params*)[vis_metalBits.paramsBuffer contents];
     params->imgSize.x = view->depth->noDims.x; params->imgSize.y = view->depth->noDims.y; params->imgSize.z = 0; params->imgSize.w = 0;
     params->voxelSizes.x = scene->sceneParams->voxelSize;
     params->voxelSizes.y = 1.0f / scene->sceneParams->voxelSize;
@@ -62,13 +83,13 @@ static void CreateICPMaps_common_metal(const ITMScene<TVoxel,TIndex> *scene, con
     params->lightSource.z = -Vector3f(params->invM.getColumn(2)).z;
     params->lightSource.w = scene->sceneParams->mu;
     
-    [commandEncoder setComputePipelineState:metalBits->p_genericRaycastVH_device];
+    [commandEncoder setComputePipelineState:vis_metalBits.p_genericRaycastVH_device];
     [commandEncoder setBuffer:(__bridge id<MTLBuffer>) renderState->raycastResult->GetMetalBuffer()             offset:0 atIndex:0];
     [commandEncoder setBuffer:(__bridge id<MTLBuffer>) entriesVisibleType                                       offset:0 atIndex:1];
     [commandEncoder setBuffer:(__bridge id<MTLBuffer>) scene->localVBA.GetVoxelBlocks_MB()                      offset:0 atIndex:2];
     [commandEncoder setBuffer:(__bridge id<MTLBuffer>) scene->index.getIndexData_MB()                           offset:0 atIndex:3];
     [commandEncoder setBuffer:(__bridge id<MTLBuffer>) renderState->renderingRangeImage->GetMetalBuffer()       offset:0 atIndex:4];
-    [commandEncoder setBuffer:metalBits->paramsBuffer_visualisation                                             offset:0 atIndex:5];
+    [commandEncoder setBuffer:vis_metalBits.paramsBuffer                                                        offset:0 atIndex:5];
     
     MTLSize blockSize = {16, 16, 1};
     MTLSize gridSize = {(NSUInteger)ceil((float)view->depth->noDims.x / (float)blockSize.width),
@@ -79,12 +100,12 @@ static void CreateICPMaps_common_metal(const ITMScene<TVoxel,TIndex> *scene, con
     
     commandEncoder = [commandBuffer computeCommandEncoder];
     
-    [commandEncoder setComputePipelineState:metalBits->p_renderICP_device];
+    [commandEncoder setComputePipelineState:vis_metalBits.p_renderICP_device];
     [commandEncoder setBuffer:(__bridge id<MTLBuffer>) renderState->raycastResult->GetMetalBuffer()             offset:0 atIndex:0];
     [commandEncoder setBuffer:(__bridge id<MTLBuffer>) trackingState->pointCloud->locations->GetMetalBuffer()   offset:0 atIndex:1];
     [commandEncoder setBuffer:(__bridge id<MTLBuffer>) trackingState->pointCloud->colours->GetMetalBuffer()     offset:0 atIndex:2];
     [commandEncoder setBuffer:(__bridge id<MTLBuffer>) renderState->raycastImage->GetMetalBuffer()              offset:0 atIndex:3];
-    [commandEncoder setBuffer:metalBits->paramsBuffer_visualisation                                             offset:0 atIndex:4];
+    [commandEncoder setBuffer:vis_metalBits.paramsBuffer                                                        offset:0 atIndex:4];
     
     [commandEncoder dispatchThreadgroups:gridSize threadsPerThreadgroup:blockSize];
     [commandEncoder endEncoding];
@@ -95,8 +116,7 @@ static void CreateICPMaps_common_metal(const ITMScene<TVoxel,TIndex> *scene, con
 }
 
 template<class TVoxel, class TIndex>
-static void ForwardRender_common_metal(const ITMScene<TVoxel, TIndex> *scene, const ITMView *view, ITMTrackingState *trackingState, ITMRenderState *renderState,
-                                       const VisualisationEngine_MetalBits *metalBits)
+static void ForwardRender_common_metal(const ITMScene<TVoxel, TIndex> *scene, const ITMView *view, ITMTrackingState *trackingState, ITMRenderState *renderState)
 {  
     Vector2i imgSize = view->depth->noDims;
     Matrix4f M = trackingState->pose_d->GetM();
@@ -117,7 +137,7 @@ static void ForwardRender_common_metal(const ITMScene<TVoxel, TIndex> *scene, co
     id<MTLCommandBuffer> commandBuffer = [[[MetalContext instance]commandQueue]commandBuffer];
     id<MTLComputeCommandEncoder> commandEncoder = [commandBuffer computeCommandEncoder];
     
-    CreateICPMaps_Params *params = (CreateICPMaps_Params*)[metalBits->paramsBuffer_visualisation contents];
+    CreateICPMaps_Params *params = (CreateICPMaps_Params*)[vis_metalBits.paramsBuffer contents];
     params->imgSize.x = view->depth->noDims.x; params->imgSize.y = view->depth->noDims.y; params->imgSize.z = 0; params->imgSize.w = 0;
     params->voxelSizes.x = scene->sceneParams->voxelSize;
     params->voxelSizes.y = 1.0f / scene->sceneParams->voxelSize;
@@ -136,10 +156,10 @@ static void ForwardRender_common_metal(const ITMScene<TVoxel, TIndex> *scene, co
     MTLSize gridSize = {(NSUInteger)ceil((float)view->depth->noDims.x / (float)blockSize.width),
         (NSUInteger)ceil((float)view->depth->noDims.y / (float)blockSize.height), 1};
     
-    [commandEncoder setComputePipelineState:metalBits->p_forwardProject_device];
+    [commandEncoder setComputePipelineState:vis_metalBits.p_forwardProject_device];
     [commandEncoder setBuffer:(__bridge id<MTLBuffer>) renderState->forwardProjection->GetMetalBuffer()     offset:0 atIndex:0];
     [commandEncoder setBuffer:(__bridge id<MTLBuffer>) renderState->raycastResult->GetMetalBuffer()         offset:0 atIndex:1];
-    [commandEncoder setBuffer:metalBits->paramsBuffer_visualisation                                         offset:0 atIndex:2];
+    [commandEncoder setBuffer:vis_metalBits.paramsBuffer                                                    offset:0 atIndex:2];
     
     [commandEncoder dispatchThreadgroups:gridSize threadsPerThreadgroup:blockSize];
     [commandEncoder endEncoding];
@@ -172,15 +192,15 @@ static void ForwardRender_common_metal(const ITMScene<TVoxel, TIndex> *scene, co
     commandBuffer = [[[MetalContext instance]commandQueue]commandBuffer];
     commandEncoder = [commandBuffer computeCommandEncoder];
     
-    [commandEncoder setComputePipelineState:metalBits->p_genericRaycastVHMissingPoints_device];
+    [commandEncoder setComputePipelineState:vis_metalBits.p_genericRaycastVHMissingPoints_device];
     [commandEncoder setBuffer:(__bridge id<MTLBuffer>) renderState->forwardProjection->GetMetalBuffer()         offset:0 atIndex:0];
     [commandEncoder setBuffer:(__bridge id<MTLBuffer>) renderState->fwdProjMissingPoints->GetMetalBuffer()      offset:0 atIndex:1];
     [commandEncoder setBuffer:(__bridge id<MTLBuffer>) scene->localVBA.GetVoxelBlocks_MB()                      offset:0 atIndex:2];
     [commandEncoder setBuffer:(__bridge id<MTLBuffer>) scene->index.getIndexData_MB()                           offset:0 atIndex:3];
     [commandEncoder setBuffer:(__bridge id<MTLBuffer>) renderState->renderingRangeImage->GetMetalBuffer()       offset:0 atIndex:4];
-    [commandEncoder setBuffer:metalBits->paramsBuffer_visualisation                                             offset:0 atIndex:5];
+    [commandEncoder setBuffer:vis_metalBits.paramsBuffer                                                        offset:0 atIndex:5];
     
-    blockSize = {64, 1, 1};
+    blockSize = {128, 1, 1};
     gridSize = {(NSUInteger)ceil((float)noMissingPoints / (float)blockSize.width), 1, 1};
     
     [commandEncoder dispatchThreadgroups:gridSize threadsPerThreadgroup:blockSize];
@@ -188,12 +208,12 @@ static void ForwardRender_common_metal(const ITMScene<TVoxel, TIndex> *scene, co
     
     commandEncoder = [commandBuffer computeCommandEncoder];
     
-    [commandEncoder setComputePipelineState:metalBits->p_renderForward_device];
+    [commandEncoder setComputePipelineState:vis_metalBits.p_renderForward_device];
     [commandEncoder setBuffer:(__bridge id<MTLBuffer>) renderState->raycastImage->GetMetalBuffer()              offset:0 atIndex:0];
     [commandEncoder setBuffer:(__bridge id<MTLBuffer>) renderState->forwardProjection->GetMetalBuffer()         offset:0 atIndex:1];
-    [commandEncoder setBuffer:metalBits->paramsBuffer_visualisation                                             offset:0 atIndex:2];
+    [commandEncoder setBuffer:vis_metalBits.paramsBuffer                                                        offset:0 atIndex:2];
     
-    blockSize = {8, 8, 1};
+    blockSize = {16, 16, 1};
     gridSize = {(NSUInteger)ceil((float)view->depth->noDims.x / (float)blockSize.width),
         (NSUInteger)ceil((float)view->depth->noDims.y / (float)blockSize.height), 1};
     
@@ -208,13 +228,13 @@ static void ForwardRender_common_metal(const ITMScene<TVoxel, TIndex> *scene, co
 template<class TVoxel>
 void ITMVisualisationEngine_Metal<TVoxel, ITMVoxelBlockHash>::ForwardRender(const ITMScene<TVoxel,ITMVoxelBlockHash> *scene, const ITMView *view, ITMTrackingState *trackingState, ITMRenderState *renderState) const
 {
-    ForwardRender_common_metal(scene, view, trackingState, renderState, &metalBits);
+    ForwardRender_common_metal(scene, view, trackingState, renderState);
 }
 
 template<class TVoxel>
 void ITMVisualisationEngine_Metal<TVoxel, ITMVoxelBlockHash>::CreateICPMaps(const ITMScene<TVoxel,ITMVoxelBlockHash> *scene, const ITMView *view, ITMTrackingState *trackingState, ITMRenderState *renderState) const
 {
-    CreateICPMaps_common_metal(scene, view, trackingState, renderState, &metalBits);
+    CreateICPMaps_common_metal(scene, view, trackingState, renderState);
 }
 
 #endif

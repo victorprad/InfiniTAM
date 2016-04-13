@@ -15,14 +15,15 @@ namespace ITMLib
     class ITMSceneReconstructionEngine_Metal<TVoxel,ITMVoxelBlockHash> : public ITMSceneReconstructionEngine_CPU<TVoxel,ITMVoxelBlockHash>
     {
     private:
-//        void BuildAllocAndVisibleType(ITMScene<TVoxel, ITMVoxelBlockHash> *scene, const ITMView *view,
-//                                      const ITMTrackingState *trackingState, const ITMRenderState *renderState);
+        void BuildAllocAndVisibleType(ITMScene<TVoxel, ITMVoxelBlockHash> *scene, const ITMView *view,
+                                      const ITMTrackingState *trackingState, const ITMRenderState *renderState);
     public:
-//        void IntegrateIntoScene(ITMScene<TVoxel, ITMVoxelBlockHash> *scene, const ITMView *view, const ITMTrackingState *trackingState,
-//                                const ITMRenderState *renderState);
-//        void AllocateSceneFromDepth(ITMScene<TVoxel, ITMVoxelBlockHash> *scene, const ITMView *view,
-//                                    const ITMTrackingState *trackingState, const ITMRenderState *renderState,
-//                                    bool onlyUpdateVisibleList = false);
+        void IntegrateIntoScene(ITMScene<TVoxel, ITMVoxelBlockHash> *scene, const ITMView *view, const ITMTrackingState *trackingState,
+                                const ITMRenderState *renderState);
+        
+        void AllocateSceneFromDepth(ITMScene<TVoxel, ITMVoxelBlockHash> *scene, const ITMView *view,
+                                    const ITMTrackingState *trackingState, const ITMRenderState *renderState,
+                                    bool onlyUpdateVisibleList = false, bool resetVisibleList = false);
         
         ITMSceneReconstructionEngine_Metal(void);
     };
