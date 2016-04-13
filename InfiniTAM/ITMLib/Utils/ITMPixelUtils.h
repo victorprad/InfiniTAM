@@ -6,6 +6,7 @@
 #endif
 
 #include "ITMMath.h"
+#include "../../ORUtils/PlatformIndependence.h"
 
 template<typename T> _CPU_AND_GPU_CODE_ inline Vector4f interpolateBilinear(const CONSTPTR(T) *source,
 	const THREADPTR(Vector2f) & position, const CONSTPTR(Vector2i) & imgSize)

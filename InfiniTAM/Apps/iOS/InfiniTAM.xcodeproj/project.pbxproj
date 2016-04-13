@@ -30,6 +30,8 @@
 		A626D7651A0F98CF0086B8BF /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = A626D7641A0F98CF0086B8BF /* LaunchScreen.xib */; };
 		A62ECC4B1BB58439000CC25D /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = A62ECC4A1BB58439000CC25D /* libz.tbd */; };
 		A646ADC91CBD53B200D4DAC2 /* Structure.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A646ADC81CBD53B200D4DAC2 /* Structure.framework */; };
+		A67763BF1CBE89E30091E5A8 /* ITMExtendedTracker_Metal.mm in Sources */ = {isa = PBXBuildFile; fileRef = A67763BD1CBE89E30091E5A8 /* ITMExtendedTracker_Metal.mm */; };
+		A67763C01CBE89E30091E5A8 /* ITMExtendedTracker.metal in Sources */ = {isa = PBXBuildFile; fileRef = A67763BE1CBE89E30091E5A8 /* ITMExtendedTracker.metal */; };
 		A68436821A1F9C190010E0C5 /* calib.txt in Resources */ = {isa = PBXBuildFile; fileRef = A68436811A1F9C190010E0C5 /* calib.txt */; };
 		A6AC29A51CBD3323000CC89D /* Android.mk in Resources */ = {isa = PBXBuildFile; fileRef = A6AC29931CBD3323000CC89D /* Android.mk */; };
 		A6AC29A61CBD3323000CC89D /* CMakeLists.txt in Resources */ = {isa = PBXBuildFile; fileRef = A6AC29941CBD3323000CC89D /* CMakeLists.txt */; };
@@ -111,8 +113,6 @@
 		A6AC2C3C1CBD34A7000CC89D /* ITMExtendedTracker.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A6AC2BE01CBD34A7000CC89D /* ITMExtendedTracker.cpp */; };
 		A6AC2C3D1CBD34A7000CC89D /* ITMIMUTracker.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A6AC2BE21CBD34A7000CC89D /* ITMIMUTracker.cpp */; };
 		A6AC2C3E1CBD34A7000CC89D /* ITMRenTracker.tpp in Resources */ = {isa = PBXBuildFile; fileRef = A6AC2BE51CBD34A7000CC89D /* ITMRenTracker.tpp */; };
-		A6AC2C411CBD34A7000CC89D /* ITMDepthTracker.metal in Sources */ = {isa = PBXBuildFile; fileRef = A6AC2BEC1CBD34A7000CC89D /* ITMDepthTracker.metal */; };
-		A6AC2C421CBD34A7000CC89D /* ITMDepthTracker_Metal.mm in Sources */ = {isa = PBXBuildFile; fileRef = A6AC2BEE1CBD34A7000CC89D /* ITMDepthTracker_Metal.mm */; };
 		A6AC2C471CBD34A7000CC89D /* ITMLibSettings.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A6AC2BFD1CBD34A7000CC89D /* ITMLibSettings.cpp */; };
 		A6AC2C491CBD3ADF000CC89D /* MetalInstantiations.mm in Sources */ = {isa = PBXBuildFile; fileRef = A6AC2C481CBD3ADF000CC89D /* MetalInstantiations.mm */; };
 		A6CA7EF91A0FDE0C0070848F /* iPhone_Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = A6CA7EF81A0FDE0C0070848F /* iPhone_Main.storyboard */; };
@@ -147,6 +147,9 @@
 		A626D7641A0F98CF0086B8BF /* LaunchScreen.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = LaunchScreen.xib; sourceTree = "<group>"; };
 		A62ECC4A1BB58439000CC25D /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = usr/lib/libz.tbd; sourceTree = SDKROOT; };
 		A646ADC81CBD53B200D4DAC2 /* Structure.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Structure.framework; path = ../../../../../../../../Library/Frameworks/Structure.framework; sourceTree = "<group>"; };
+		A67763BC1CBE89E30091E5A8 /* ITMExtendedTracker_Metal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMExtendedTracker_Metal.h; sourceTree = "<group>"; };
+		A67763BD1CBE89E30091E5A8 /* ITMExtendedTracker_Metal.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = ITMExtendedTracker_Metal.mm; sourceTree = "<group>"; };
+		A67763BE1CBE89E30091E5A8 /* ITMExtendedTracker.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; path = ITMExtendedTracker.metal; sourceTree = "<group>"; };
 		A68436811A1F9C190010E0C5 /* calib.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = calib.txt; sourceTree = "<group>"; };
 		A68436831A1F9C430010E0C5 /* InfiniTAM.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.xml; name = InfiniTAM.entitlements; path = ../InfiniTAM.entitlements; sourceTree = "<group>"; };
 		A6AC29931CBD3323000CC89D /* Android.mk */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Android.mk; sourceTree = "<group>"; };
@@ -359,9 +362,6 @@
 		A6AC2BE51CBD34A7000CC89D /* ITMRenTracker.tpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = ITMRenTracker.tpp; sourceTree = "<group>"; };
 		A6AC2BE61CBD34A7000CC89D /* ITMTracker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMTracker.h; sourceTree = "<group>"; };
 		A6AC2BE71CBD34A7000CC89D /* ITMTrackerFactory.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMTrackerFactory.h; sourceTree = "<group>"; };
-		A6AC2BEC1CBD34A7000CC89D /* ITMDepthTracker.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; path = ITMDepthTracker.metal; sourceTree = "<group>"; };
-		A6AC2BED1CBD34A7000CC89D /* ITMDepthTracker_Metal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMDepthTracker_Metal.h; sourceTree = "<group>"; };
-		A6AC2BEE1CBD34A7000CC89D /* ITMDepthTracker_Metal.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = ITMDepthTracker_Metal.mm; sourceTree = "<group>"; };
 		A6AC2BF61CBD34A7000CC89D /* ITMColorTracker_Shared.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMColorTracker_Shared.h; sourceTree = "<group>"; };
 		A6AC2BF71CBD34A7000CC89D /* ITMDepthTracker_Shared.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMDepthTracker_Shared.h; sourceTree = "<group>"; };
 		A6AC2BF81CBD34A7000CC89D /* ITMExtendedTracker_Shared.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMExtendedTracker_Shared.h; sourceTree = "<group>"; };
@@ -1129,9 +1129,9 @@
 		A6AC2BE81CBD34A7000CC89D /* Metal */ = {
 			isa = PBXGroup;
 			children = (
-				A6AC2BEC1CBD34A7000CC89D /* ITMDepthTracker.metal */,
-				A6AC2BED1CBD34A7000CC89D /* ITMDepthTracker_Metal.h */,
-				A6AC2BEE1CBD34A7000CC89D /* ITMDepthTracker_Metal.mm */,
+				A67763BC1CBE89E30091E5A8 /* ITMExtendedTracker_Metal.h */,
+				A67763BD1CBE89E30091E5A8 /* ITMExtendedTracker_Metal.mm */,
+				A67763BE1CBE89E30091E5A8 /* ITMExtendedTracker.metal */,
 			);
 			path = Metal;
 			sourceTree = "<group>";
@@ -1275,7 +1275,6 @@
 				A6AC29AB1CBD3323000CC89D /* Kinect2Engine.cpp in Sources */,
 				A6AC2B011CBD333D000CC89D /* KeyValueConfig.cpp in Sources */,
 				A6AC2C3D1CBD34A7000CC89D /* ITMIMUTracker.cpp in Sources */,
-				A6AC2C411CBD34A7000CC89D /* ITMDepthTracker.metal in Sources */,
 				A6AC2C1D1CBD34A7000CC89D /* ITMSceneReconstructionEngine_Metal.mm in Sources */,
 				6F7C0CDB17F0EA0500692EC1 /* ViewController.mm in Sources */,
 				A6AC2C261CBD34A7000CC89D /* ITMViewBuilder_Metal.mm in Sources */,
@@ -1303,6 +1302,7 @@
 				A6AC2C301CBD34A7000CC89D /* ITMCalibIO.cpp in Sources */,
 				A6AC2C211CBD34A7000CC89D /* ITMSwappingEngine_Metal.mm in Sources */,
 				A6AC2C2C1CBD34A7000CC89D /* ITMVisualisationEngine.cpp in Sources */,
+				A67763C01CBE89E30091E5A8 /* ITMExtendedTracker.metal in Sources */,
 				A6AC2C3B1CBD34A7000CC89D /* ITMDepthTracker.cpp in Sources */,
 				A6AC2C331CBD34A7000CC89D /* ITMDepthTracker_CPU.cpp in Sources */,
 				A6AC2B001CBD333D000CC89D /* FileUtils.cpp in Sources */,
@@ -1314,10 +1314,10 @@
 				A6AC2C321CBD34A7000CC89D /* ITMColorTracker_CPU.cpp in Sources */,
 				A6AC2C221CBD34A7000CC89D /* ITMViewBuilder_CPU.cpp in Sources */,
 				A6AC2C201CBD34A7000CC89D /* ITMSwappingEngine.metal in Sources */,
-				A6AC2C421CBD34A7000CC89D /* ITMDepthTracker_Metal.mm in Sources */,
 				A6AC2C0D1CBD34A7000CC89D /* CPUInstantiations.cpp in Sources */,
 				A6AC29AE1CBD3323000CC89D /* RealSenseEngine.cpp in Sources */,
 				A6AC2C251CBD34A7000CC89D /* ITMViewBuilder.metal in Sources */,
+				A67763BF1CBE89E30091E5A8 /* ITMExtendedTracker_Metal.mm in Sources */,
 				A6AC2C311CBD34A7000CC89D /* ITMSurfelRenderState.cpp in Sources */,
 				A6AC2C241CBD34A7000CC89D /* ITMViewBuilderFactory.cpp in Sources */,
 				A6AC2B101CBD3348000CC89D /* PoseDatabase.cpp in Sources */,

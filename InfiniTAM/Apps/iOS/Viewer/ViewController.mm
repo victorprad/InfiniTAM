@@ -36,7 +36,7 @@ using namespace ITMLib;
     ImageSourceEngine *imageSource;
     IMUSourceEngine *imuSource;
     ITMLibSettings *internalSettings;
-    ITMMainEngine *mainEngine;
+    ITMBasicEngine<ITMVoxel, ITMVoxelIndex> *mainEngine;
     
     ITMIMUMeasurement *imuMeasurement;
     
@@ -120,16 +120,18 @@ using namespace ITMLib;
         //TODO deallocate somewhere
         ImageMaskPathGenerator pathGenerator(imageSource_part1, imageSource_part2);
         imageSource = new ImageFileReader<ImageMaskPathGenerator>(calibFile, pathGenerator);
-       
+        imuSource = NULL;
+        
 //        char imageSource_part1[2000], imageSource_part2[2000], imageSource_part3[2000];
 //        sprintf(imageSource_part1, "%s/CAsmall/Frames/img_%%08d.ppm", documentsPath);
 //        sprintf(imageSource_part2, "%s/CAsmall/Frames/img_%%08d.irw", documentsPath);
 //        sprintf(imageSource_part3, "%s/CAsmall/Frames/imu_%%08d.txt", documentsPath);
-        
+//        
 //        imageSource = new RawFileReader(calibFile, imageSource_part1, imageSource_part2, Vector2i(320, 240), 0.5f);
+//        imuSource = new IMUSourceEngine(imageSource_part3);
+
         inputRGBImage = new ITMUChar4Image(imageSource->getRGBImageSize(), true, false);
         inputRawDepthImage = new ITMShortImage(imageSource->getDepthImageSize(), true, false);
-//        imuSource = new IMUSourceEngine(imageSource_part3);
         
         [_tbOut setText:@"from file"];
         
@@ -203,27 +205,32 @@ using namespace ITMLib;
     }
     
     dispatch_async(self.renderingQueue, ^{
-//        while (imageSource->hasMoreImages()&&imuSource->hasMoreMeasurements())
-//        {
-//            imageSource->getImages(inputRGBImage, inputRawDepthImage);
-//            imuSource->getMeasurement(imuMeasurement);
-//            [self updateImage];
-//            
-//        }
-        while (imageSource->hasMoreImages())
+        if (imuSource != NULL)
         {
-            imageSource->getImages(inputRGBImage, inputRawDepthImage);
-            [self updateImage];
+            while (imageSource->hasMoreImages()&&imuSource->hasMoreMeasurements())
+            {
+                imageSource->getImages(inputRGBImage, inputRawDepthImage);
+                imuSource->getMeasurement(imuMeasurement);
+                [self updateImage];
+                
+            }
             
+        }
+        else
+        {
+            while (imageSource->hasMoreImages())
+            {
+                imageSource->getImages(inputRGBImage, inputRawDepthImage);
+                [self updateImage];
+            }
         }
     });
 }
 
 - (void) updateImage
 {
-    
-//    if (fullProcess) mainEngine->turnOnMainProcessing();
-//    else mainEngine->turnOffMainProcessing();
+    if (fullProcess) mainEngine->turnOnMainProcessing();
+    else mainEngine->turnOffMainProcessing();
     
     NSDate *timerStart = [NSDate date];
     

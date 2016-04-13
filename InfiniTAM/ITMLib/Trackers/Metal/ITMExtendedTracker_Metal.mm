@@ -4,16 +4,22 @@
 #include "../Shared/ITMExtendedTracker_Shared.h"
 #import <Accelerate/Accelerate.h>
 
-using namespace ITMLib::Engine;
+using namespace ITMLib;
 
-id<MTLFunction> f_exDepthTrackerOneLevel_g_rg_device;
-id<MTLComputePipelineState> p_exDepthTrackerOneLevel_g_rg_device;
+struct ExtendedTracker_metalBits
+{
+    id<MTLFunction> f_extendedTrackerOneLevel_rt_device;
+    id<MTLComputePipelineState> p_extendedTrackerOneLevel_rt_device;
 
-id<MTLBuffer> paramsBuffer_exDepthTracker;
+    id<MTLBuffer> paramsBuffer;
+};
+
+static ExtendedTracker_metalBits et_metalBits;
 
 ITMExtendedTracker_Metal::ITMExtendedTracker_Metal(Vector2i imgSize, TrackerIterationType *trackingRegime, int noHierarchyLevels,
-                                             int noICPRunTillLevel, float terminationThreshold, const ITMLowLevelEngine *lowLevelEngine)
-:ITMExtendedTracker(imgSize, trackingRegime, noHierarchyLevels, noICPRunTillLevel, terminationThreshold, lowLevelEngine, MEMORYDEVICE_CPU)
+                                                   float terminationThreshold, float failureDetectorThreshold, float viewFrustum_min, float viewFrustum_max, float tukeyCutOff, float framesToSkip, float framesToWeight,
+                                                   const ITMLowLevelEngine *lowLevelEngine)
+:ITMExtendedTracker(imgSize, trackingRegime, noHierarchyLevels, terminationThreshold, failureDetectorThreshold, viewFrustum_min, viewFrustum_max, tukeyCutOff, framesToSkip, framesToWeight, lowLevelEngine, MEMORYDEVICE_CPU)
 {
     allocImgSize = imgSize;
 
@@ -23,10 +29,10 @@ ITMExtendedTracker_Metal::ITMExtendedTracker_Metal(Vector2i imgSize, TrackerIter
     allocateMetalData((void**)&f_metal, (void**)&f_metal_mb, allocImgSize.x * allocImgSize.y * sizeof(float), true);
     
     NSError *errors;
-    f_exDepthTrackerOneLevel_g_rg_device = [[[MetalContext instance]library]newFunctionWithName:@"exDepthTrackerOneLevel_g_rt_device"];
-    p_exDepthTrackerOneLevel_g_rg_device = [[[MetalContext instance]device]newComputePipelineStateWithFunction:f_exDepthTrackerOneLevel_g_rg_device error:&errors];
+    et_metalBits.f_extendedTrackerOneLevel_rt_device = [[[MetalContext instance]library]newFunctionWithName:@"extendedTrackerOneLevel_g_rt_device"];
+    et_metalBits.p_extendedTrackerOneLevel_rt_device = [[[MetalContext instance]device]newComputePipelineStateWithFunction:et_metalBits.f_extendedTrackerOneLevel_rt_device error:&errors];
 
-    paramsBuffer_exDepthTracker = BUFFEREMPTY(16384);
+    et_metalBits.paramsBuffer = BUFFEREMPTY(16384);
 }
 
 ITMExtendedTracker_Metal::~ITMExtendedTracker_Metal(void)
@@ -56,18 +62,26 @@ int ITMExtendedTracker_Metal::ComputeGandH(float &f, float *nabla, float *hessia
     memset(sumNabla, 0, sizeof(float) * noPara);
     
     int viewImageTotalSize = viewImageSize.x * viewImageSize.y;
-    int ratio = 4;
+    int pointsPerThread = 4;
     
     id<MTLCommandBuffer> commandBuffer = [[[MetalContext instance]commandQueue]commandBuffer];
     id<MTLComputeCommandEncoder> commandEncoder = [commandBuffer computeCommandEncoder];
     
-    exDepthTrackerOneLevel_g_rg_Params *params = (exDepthTrackerOneLevel_g_rg_Params*)[paramsBuffer_exDepthTracker contents];
+    ExtendedTrackerOneLevel_rt_Params *params = (ExtendedTrackerOneLevel_rt_Params*)[et_metalBits.paramsBuffer contents];
     params->approxInvPose = approxInvPose; params->sceneIntrinsics = sceneIntrinsics;
     params->sceneImageSize = sceneImageSize; params->scenePose = scenePose;
     params->viewIntrinsics = viewIntrinsics; params->viewImageSize = viewImageSize;
-    params->others.x = distThresh[levelId]; params->others.y = (float)iterationType; params->others.z = (float)ratio; params->others.w = 0;
+    params->others1.x = spaceThresh[levelId];
+    params->others1.y = (float)iterationType;
+    params->others1.z = (float)pointsPerThread;
+    params->others1.w = viewFrustum_min;
+    params->others2.x = viewFrustum_max;
+    params->others2.y = tukeyCutOff;
+    params->others2.z = framesToSkip;
+    params->others2.w = framesToWeight;
+    params->others3.x = currentFrameNo;
     
-    [commandEncoder setComputePipelineState:p_exDepthTrackerOneLevel_g_rg_device];
+    [commandEncoder setComputePipelineState:et_metalBits.p_extendedTrackerOneLevel_rt_device];
     [commandEncoder setBuffer:(__bridge id<MTLBuffer>) noValidPoints_metal_mb                               offset:0 atIndex:0];
     [commandEncoder setBuffer:(__bridge id<MTLBuffer>) f_metal_mb                                           offset:0 atIndex:1];
     [commandEncoder setBuffer:(__bridge id<MTLBuffer>) ATA_metal_mb                                         offset:0 atIndex:2];
@@ -75,11 +89,11 @@ int ITMExtendedTracker_Metal::ComputeGandH(float &f, float *nabla, float *hessia
     [commandEncoder setBuffer:(__bridge id<MTLBuffer>) viewHierarchyLevel->depth->GetMetalBuffer()          offset:0 atIndex:4];
     [commandEncoder setBuffer:(__bridge id<MTLBuffer>) sceneHierarchyLevel->pointsMap->GetMetalBuffer()     offset:0 atIndex:5];
     [commandEncoder setBuffer:(__bridge id<MTLBuffer>) sceneHierarchyLevel->normalsMap->GetMetalBuffer()    offset:0 atIndex:6];
-    [commandEncoder setBuffer:paramsBuffer_exDepthTracker                                                     offset:0 atIndex:7];
+    [commandEncoder setBuffer:et_metalBits.paramsBuffer                                                     offset:0 atIndex:7];
     
     MTLSize blockSize = {4, 4, 1};
-    MTLSize gridSize = {(NSUInteger)ceil(((float)viewImageSize.x / ratio) / (float)blockSize.width),
-        (NSUInteger)ceil(((float)viewImageSize.y / ratio) / (float)blockSize.height), 1};
+    MTLSize gridSize = {(NSUInteger)ceil(((float)viewImageSize.x / pointsPerThread) / (float)blockSize.width),
+        (NSUInteger)ceil(((float)viewImageSize.y / pointsPerThread) / (float)blockSize.height), 1};
     
     memset(noValidPoints_metal, 0, sizeof(float) * viewImageTotalSize);
     memset(f_metal, 0, sizeof(float) * viewImageTotalSize);
@@ -91,7 +105,7 @@ int ITMExtendedTracker_Metal::ComputeGandH(float &f, float *nabla, float *hessia
 
     [commandBuffer waitUntilCompleted];
     
-    for (int locId = 0; locId < (viewImageTotalSize / (ratio * ratio)); locId++)
+    for (int locId = 0; locId < (viewImageTotalSize / (pointsPerThread * pointsPerThread)); locId++)
     {
         if (noValidPoints_metal[locId] > 0)
         {

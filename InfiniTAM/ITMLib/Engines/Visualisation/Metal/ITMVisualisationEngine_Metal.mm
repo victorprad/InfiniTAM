@@ -110,6 +110,8 @@ static void CreateICPMaps_common_metal(const ITMScene<TVoxel,TIndex> *scene, con
     [commandEncoder dispatchThreadgroups:gridSize threadsPerThreadgroup:blockSize];
     [commandEncoder endEncoding];
     
+//    [[[MetalContext instance]commandQueue] insertDebugCaptureBoundary];
+    
     [commandBuffer commit];
     
     [commandBuffer waitUntilCompleted];
