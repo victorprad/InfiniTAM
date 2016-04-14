@@ -116,6 +116,12 @@ void ITMBasicEngine<TVoxel,TIndex>::SaveSceneToMesh(const char *objFileName)
 	mesh->WriteSTL(objFileName);
 }
 
+template <typename TVoxel, typename TIndex>
+void ITMBasicEngine<TVoxel,TIndex>::resetScene()
+{
+    denseMapper->ResetScene(scene);
+}
+
 #ifdef OUTPUT_TRAJECTORY_QUATERNIONS
 static int QuaternionFromRotationMatrix_variant(const double *matrix)
 {

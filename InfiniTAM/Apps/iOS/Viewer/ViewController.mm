@@ -31,7 +31,8 @@ using namespace ITMLib;
 {
     CGColorSpaceRef rgbSpace;
     Vector2i imageSize;
-    ITMUChar4Image *result;
+    ITMUChar4Image *resultMain;
+    ITMUChar4Image *resultSide;
     
     ImageSourceEngine *imageSource;
     IMUSourceEngine *imuSource;
@@ -44,10 +45,16 @@ using namespace ITMLib;
     
     STSensorController *_sensorController;
     
+    ITMMainEngine::GetImageType mainImageType;
+    
+    ORUtils::SE3Pose freeviewPose;
+    ITMLib::ITMIntrinsics freeviewIntrinsics;
+    
     bool isDone;
     bool fullProcess;
     bool isRecording;
     bool usingSensor;
+    bool freeviewActive;
     
     int currentFrameNo;
     
@@ -55,6 +62,9 @@ using namespace ITMLib;
     int totalProcessedFrames;
     
     char documentsPath[1000], *docsPath;
+    
+    Vector2f fingerLastTouch;
+    bool freeviewControlRotation;
 }
 
 - (void) viewDidLoad
@@ -173,12 +183,19 @@ using namespace ITMLib;
     }
     
     imageSize = imageSource->getDepthImageSize();
-    result = new ITMUChar4Image(imageSize, false);
+    resultMain = new ITMUChar4Image(imageSize, false);
+    resultSide = new ITMUChar4Image(imageSize, false);
     rgbSpace = CGColorSpaceCreateDeviceRGB();
     
     internalSettings = new ITMLibSettings();
     mainEngine = new ITMBasicEngine<ITMVoxel, ITMVoxelIndex>(internalSettings, &imageSource->calib, imageSource->getRGBImageSize(), imageSource->getDepthImageSize());
     isDone = true;
+
+    freeviewIntrinsics = imageSource->calib.intrinsics_d;
+    mainImageType = ITMMainEngine::InfiniTAM_IMAGE_SCENERAYCAST;
+    
+    freeviewActive = false;
+    freeviewControlRotation = true;
 }
 
 - (IBAction)bProcessOne_clicked:(id)sender
@@ -229,8 +246,161 @@ using namespace ITMLib;
     });
 }
 
+- (IBAction)bGreyRenderingPressed:(id)sender {
+    mainImageType = ITMMainEngine::InfiniTAM_IMAGE_SCENERAYCAST;
+}
+
+- (IBAction)bConfidenceRenderingPressed:(id)sender {
+    mainImageType = ITMMainEngine::InfiniTAM_IMAGE_COLOUR_FROM_CONFIDENCE;
+}
+
+- (IBAction)bNormalsRenderingPressed:(id)sender {
+    mainImageType = ITMMainEngine::InfiniTAM_IMAGE_COLOUR_FROM_NORMAL;
+}
+
+-(void)refreshFreeview
+{
+    CGContextRef cgContextMain, cgContextSide; CGImageRef cgImageRefMain, cgImageRefSide;
+    
+    NSDate *timerStart = [NSDate date];
+
+    mainEngine->GetImage(resultMain, ITMMainEngine::InfiniTAM_IMAGE_FREECAMERA_SHADED, &freeviewPose, &freeviewIntrinsics);
+    
+    cgContextMain = CGBitmapContextCreate(resultMain->GetData(MEMORYDEVICE_CPU), imageSize.x, imageSize.y, 8, 4 * imageSize.x, rgbSpace, kCGImageAlphaNoneSkipLast);
+    cgImageRefMain = CGBitmapContextCreateImage(cgContextMain);
+    
+    NSDate *timerStop = [NSDate date];
+    NSTimeInterval executionTime = [timerStop timeIntervalSinceDate:timerStart];
+    
+    self.renderView.layer.contents = (__bridge id)cgImageRefMain;
+    
+    NSString *theValue = [NSString stringWithFormat:@"%5.4lf", executionTime];
+    [self.tbOut setText:theValue];
+    
+    CGImageRelease(cgImageRefMain);
+    CGContextRelease(cgContextMain);
+}
+
+- (IBAction)bFreeviewRenderingPressed:(id)sender {
+    freeviewActive = true;
+    mainEngine->turnOffMainProcessing();
+    freeviewPose.SetFrom(mainEngine->GetTrackingState()->pose_d);
+    [self refreshFreeview];
+}
+
+- (IBAction)bResetReconstructionClicked:(id)sender {
+    mainEngine->resetScene();
+}
+
+- (IBAction)pinchDetected:(id)sender {
+    if (freeviewActive)
+    {
+        UIPinchGestureRecognizer *recognizer = (UIPinchGestureRecognizer *)sender;
+        
+        float scale_translation = 0.5f;
+        freeviewPose.SetT(freeviewPose.GetT() + scale_translation * Vector3f(0.0f, 0.0f, 1.0f - (float)[recognizer scale]));
+        
+        [self refreshFreeview];
+    }
+}
+
+- (IBAction)doubleTapDetected:(id)sender {
+    if (freeviewControlRotation) freeviewControlRotation = false;
+    else freeviewControlRotation = true;
+}
+
+- (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
+{
+    if (freeviewActive && touches.count == 1)
+    {
+        for (UITouch *touch in touches)
+        {
+            if (touch.view == self.renderView)
+            {
+                CGPoint point = [touch locationInView:self.renderView];
+                
+                fingerLastTouch.x = point.x;
+                fingerLastTouch.y = point.y;
+            }
+        }
+    }
+}
+
+- (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event
+{
+
+}
+
+static inline Matrix3f createRotation(const Vector3f & _axis, float angle)
+{
+    Vector3f axis = normalize(_axis);
+    float si = sinf(angle);
+    float co = cosf(angle);
+    
+    Matrix3f ret;
+    ret.setIdentity();
+    
+    ret *= co;
+    for (int r = 0; r < 3; ++r) for (int c = 0; c < 3; ++c) ret.at(c, r) += (1.0f - co) * axis[c] * axis[r];
+    
+    Matrix3f skewmat;
+    skewmat.setZeros();
+    skewmat.at(1, 0) = -axis.z;
+    skewmat.at(0, 1) = axis.z;
+    skewmat.at(2, 0) = axis.y;
+    skewmat.at(0, 2) = -axis.y;
+    skewmat.at(2, 1) = axis.x;
+    skewmat.at(1, 2) = -axis.x;
+    skewmat *= si;
+    ret += skewmat;
+    
+    return ret;
+}
+
+- (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event
+{
+    if (freeviewActive && [[event allTouches]count] == 1)
+    {
+        for (UITouch *touch in touches)
+        {
+            if (touch.view == self.renderView)
+            {
+                CGPoint point = [touch locationInView:self.renderView];
+                
+                Vector2f movement;
+                movement.x = point.x - fingerLastTouch.x;
+                movement.y = point.y - fingerLastTouch.y;
+                fingerLastTouch.x = point.x;
+                fingerLastTouch.y = point.y;
+                
+                if (freeviewControlRotation)
+                {
+                    float scale_rotation = 0.005f;
+                    
+                    Vector3f axis((float)-movement.y, (float)-movement.x, 0.0f);
+                    float angle = scale_rotation * sqrt((float)(movement.x * movement.x + movement.y*movement.y));
+                    Matrix3f rot = createRotation(axis, angle);
+                    freeviewPose.SetR(rot * freeviewPose.GetR());
+                    freeviewPose.Coerce();
+                }
+                else
+                {
+                    float scale_translation = 0.005f;
+                    freeviewPose.SetT(freeviewPose.GetT() + scale_translation * Vector3f((float)movement.x, (float)movement.y, 0.0f));
+                }
+                
+                [self refreshFreeview];
+            }
+            
+            return;
+        }
+    }
+}
+
 - (void) updateImage
 {
+    if (freeviewActive) return;
+    
     if (fullProcess) mainEngine->turnOnMainProcessing();
     else mainEngine->turnOffMainProcessing();
     
@@ -248,22 +418,35 @@ using namespace ITMLib;
         totalProcessingTime += executionTime;
     }
     
-    if (fullProcess) mainEngine->GetImage(result, ITMMainEngine::InfiniTAM_IMAGE_SCENERAYCAST);
-    else mainEngine->GetImage(result, ITMMainEngine::InfiniTAM_IMAGE_ORIGINAL_DEPTH);
+    CGContextRef cgContextMain, cgContextSide; CGImageRef cgImageRefMain, cgImageRefSide;
     
-    CGContextRef cgContext = CGBitmapContextCreate(result->GetData(MEMORYDEVICE_CPU), imageSize.x, imageSize.y, 8,
-                                                   4 * imageSize.x, rgbSpace, kCGImageAlphaNoneSkipLast);
-    CGImageRef cgImageRef = CGBitmapContextCreateImage(cgContext);
+    if (fullProcess)
+    {
+        mainEngine->GetImage(resultSide, ITMMainEngine::InfiniTAM_IMAGE_ORIGINAL_DEPTH);
+        mainEngine->GetImage(resultMain, mainImageType);
+    }
+    else
+    {
+        mainEngine->GetImage(resultMain, ITMMainEngine::InfiniTAM_IMAGE_ORIGINAL_DEPTH);
+    }
+    
+    cgContextMain = CGBitmapContextCreate(resultMain->GetData(MEMORYDEVICE_CPU), imageSize.x, imageSize.y, 8, 4 * imageSize.x, rgbSpace, kCGImageAlphaNoneSkipLast);
+    cgImageRefMain = CGBitmapContextCreateImage(cgContextMain);
+    cgContextSide = CGBitmapContextCreate(resultSide->GetData(MEMORYDEVICE_CPU), imageSize.x, imageSize.y, 8, 4 * imageSize.x, rgbSpace, kCGImageAlphaNoneSkipLast);
+    cgImageRefSide = CGBitmapContextCreateImage(cgContextSide);
     
     dispatch_sync(dispatch_get_main_queue(), ^{
-        self.renderView.layer.contents = (__bridge id)cgImageRef;
+        self.renderView.layer.contents = (__bridge id)cgImageRefMain;
+        self.depthView.layer.contents = (__bridge id)cgImageRefSide;
         
         NSString *theValue = [NSString stringWithFormat:@"%5.4lf", totalProcessingTime / totalProcessedFrames];
         [self.tbOut setText:theValue];
     });
 
-    CGImageRelease(cgImageRef);
-    CGContextRelease(cgContext);
+    CGImageRelease(cgImageRefMain);
+    CGContextRelease(cgContextMain);
+    CGImageRelease(cgImageRefSide);
+    CGContextRelease(cgContextSide);
 }
 
 - (void)sensorDidDisconnect

@@ -87,8 +87,6 @@
 		A6AC2C221CBD34A7000CC89D /* ITMViewBuilder_CPU.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A6AC2B741CBD34A7000CC89D /* ITMViewBuilder_CPU.cpp */; };
 		A6AC2C231CBD34A7000CC89D /* ITMViewBuilder_CUDA.cu in Resources */ = {isa = PBXBuildFile; fileRef = A6AC2B771CBD34A7000CC89D /* ITMViewBuilder_CUDA.cu */; };
 		A6AC2C241CBD34A7000CC89D /* ITMViewBuilderFactory.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A6AC2B7B1CBD34A7000CC89D /* ITMViewBuilderFactory.cpp */; };
-		A6AC2C251CBD34A7000CC89D /* ITMViewBuilder.metal in Sources */ = {isa = PBXBuildFile; fileRef = A6AC2B7E1CBD34A7000CC89D /* ITMViewBuilder.metal */; };
-		A6AC2C261CBD34A7000CC89D /* ITMViewBuilder_Metal.mm in Sources */ = {isa = PBXBuildFile; fileRef = A6AC2B801CBD34A7000CC89D /* ITMViewBuilder_Metal.mm */; };
 		A6AC2C271CBD34A7000CC89D /* ITMSurfelVisualisationEngine_CPU.tpp in Resources */ = {isa = PBXBuildFile; fileRef = A6AC2B861CBD34A7000CC89D /* ITMSurfelVisualisationEngine_CPU.tpp */; };
 		A6AC2C281CBD34A7000CC89D /* ITMVisualisationEngine_CPU.tpp in Resources */ = {isa = PBXBuildFile; fileRef = A6AC2B881CBD34A7000CC89D /* ITMVisualisationEngine_CPU.tpp */; };
 		A6AC2C291CBD34A7000CC89D /* ITMSurfelVisualisationEngine_CUDA.tcu in Resources */ = {isa = PBXBuildFile; fileRef = A6AC2B8B1CBD34A7000CC89D /* ITMSurfelVisualisationEngine_CUDA.tcu */; };
@@ -275,9 +273,6 @@
 		A6AC2B7A1CBD34A7000CC89D /* ITMViewBuilder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMViewBuilder.h; sourceTree = "<group>"; };
 		A6AC2B7B1CBD34A7000CC89D /* ITMViewBuilderFactory.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ITMViewBuilderFactory.cpp; sourceTree = "<group>"; };
 		A6AC2B7C1CBD34A7000CC89D /* ITMViewBuilderFactory.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMViewBuilderFactory.h; sourceTree = "<group>"; };
-		A6AC2B7E1CBD34A7000CC89D /* ITMViewBuilder.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; path = ITMViewBuilder.metal; sourceTree = "<group>"; };
-		A6AC2B7F1CBD34A7000CC89D /* ITMViewBuilder_Metal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMViewBuilder_Metal.h; sourceTree = "<group>"; };
-		A6AC2B801CBD34A7000CC89D /* ITMViewBuilder_Metal.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = ITMViewBuilder_Metal.mm; sourceTree = "<group>"; };
 		A6AC2B821CBD34A7000CC89D /* ITMViewBuilder_Shared.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMViewBuilder_Shared.h; sourceTree = "<group>"; };
 		A6AC2B851CBD34A7000CC89D /* ITMSurfelVisualisationEngine_CPU.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMSurfelVisualisationEngine_CPU.h; sourceTree = "<group>"; };
 		A6AC2B861CBD34A7000CC89D /* ITMSurfelVisualisationEngine_CPU.tpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = ITMSurfelVisualisationEngine_CPU.tpp; sourceTree = "<group>"; };
@@ -851,7 +846,6 @@
 				A6AC2B791CBD34A7000CC89D /* Interface */,
 				A6AC2B7B1CBD34A7000CC89D /* ITMViewBuilderFactory.cpp */,
 				A6AC2B7C1CBD34A7000CC89D /* ITMViewBuilderFactory.h */,
-				A6AC2B7D1CBD34A7000CC89D /* Metal */,
 				A6AC2B811CBD34A7000CC89D /* Shared */,
 			);
 			path = ViewBuilding;
@@ -881,16 +875,6 @@
 				A6AC2B7A1CBD34A7000CC89D /* ITMViewBuilder.h */,
 			);
 			path = Interface;
-			sourceTree = "<group>";
-		};
-		A6AC2B7D1CBD34A7000CC89D /* Metal */ = {
-			isa = PBXGroup;
-			children = (
-				A6AC2B7E1CBD34A7000CC89D /* ITMViewBuilder.metal */,
-				A6AC2B7F1CBD34A7000CC89D /* ITMViewBuilder_Metal.h */,
-				A6AC2B801CBD34A7000CC89D /* ITMViewBuilder_Metal.mm */,
-			);
-			path = Metal;
 			sourceTree = "<group>";
 		};
 		A6AC2B811CBD34A7000CC89D /* Shared */ = {
@@ -1277,7 +1261,6 @@
 				A6AC2C3D1CBD34A7000CC89D /* ITMIMUTracker.cpp in Sources */,
 				A6AC2C1D1CBD34A7000CC89D /* ITMSceneReconstructionEngine_Metal.mm in Sources */,
 				6F7C0CDB17F0EA0500692EC1 /* ViewController.mm in Sources */,
-				A6AC2C261CBD34A7000CC89D /* ITMViewBuilder_Metal.mm in Sources */,
 				A6AC2B0F1CBD3348000CC89D /* FernConservatory.cpp in Sources */,
 				A6AC29A71CBD3323000CC89D /* FFMPEGReader.cpp in Sources */,
 				A6AC2B111CBD3348000CC89D /* Relocaliser.cpp in Sources */,
@@ -1316,7 +1299,6 @@
 				A6AC2C201CBD34A7000CC89D /* ITMSwappingEngine.metal in Sources */,
 				A6AC2C0D1CBD34A7000CC89D /* CPUInstantiations.cpp in Sources */,
 				A6AC29AE1CBD3323000CC89D /* RealSenseEngine.cpp in Sources */,
-				A6AC2C251CBD34A7000CC89D /* ITMViewBuilder.metal in Sources */,
 				A67763BF1CBE89E30091E5A8 /* ITMExtendedTracker_Metal.mm in Sources */,
 				A6AC2C311CBD34A7000CC89D /* ITMSurfelRenderState.cpp in Sources */,
 				A6AC2C241CBD34A7000CC89D /* ITMViewBuilderFactory.cpp in Sources */,

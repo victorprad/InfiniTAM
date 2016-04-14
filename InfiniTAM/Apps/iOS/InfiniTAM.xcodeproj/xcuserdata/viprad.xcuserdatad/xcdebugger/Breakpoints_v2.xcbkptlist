@@ -26,11 +26,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Viewer/ViewController.mm"
-            timestampString = "482259233.951661"
+            timestampString = "482336820.981279"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "196"
-            endingLineNumber = "196"
+            startingLineNumber = "213"
+            endingLineNumber = "213"
             landmarkName = "-bProcessOne_clicked:"
             landmarkType = "5">
             <Locations>
@@ -476,11 +476,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Viewer/ViewController.mm"
-            timestampString = "482259233.951661"
+            timestampString = "482336820.981279"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "194"
-            endingLineNumber = "194"
+            startingLineNumber = "211"
+            endingLineNumber = "211"
             landmarkName = "-bProcessOne_clicked:"
             landmarkType = "5">
          </BreakpointContent>
@@ -492,11 +492,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Viewer/ViewController.mm"
-            timestampString = "482259233.951661"
+            timestampString = "482336820.981279"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "192"
-            endingLineNumber = "192"
+            startingLineNumber = "209"
+            endingLineNumber = "209"
             landmarkName = "-bProcessOne_clicked:"
             landmarkType = "5">
          </BreakpointContent>
@@ -524,11 +524,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Viewer/ViewController.mm"
-            timestampString = "482255036.129279"
+            timestampString = "482336820.981279"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "145"
-            endingLineNumber = "145"
+            startingLineNumber = "155"
+            endingLineNumber = "155"
             landmarkName = "-setupApp"
             landmarkType = "5">
          </BreakpointContent>
@@ -792,11 +792,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Viewer/ViewController.mm"
-            timestampString = "482163118.075894"
+            timestampString = "482336820.981279"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "111"
-            endingLineNumber = "111"
+            startingLineNumber = "121"
+            endingLineNumber = "121"
             landmarkName = "-setupApp"
             landmarkType = "5">
          </BreakpointContent>
@@ -872,11 +872,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Viewer/ViewController.mm"
-            timestampString = "482163118.075894"
+            timestampString = "482336820.981279"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "92"
-            endingLineNumber = "92"
+            startingLineNumber = "102"
+            endingLineNumber = "102"
             landmarkName = "-setupApp"
             landmarkType = "5">
          </BreakpointContent>
@@ -888,11 +888,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Viewer/ViewController.mm"
-            timestampString = "482259233.951661"
+            timestampString = "482336820.981279"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "186"
-            endingLineNumber = "186"
+            startingLineNumber = "203"
+            endingLineNumber = "203"
             landmarkName = "-bProcessOne_clicked:"
             landmarkType = "5">
          </BreakpointContent>
@@ -952,11 +952,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Viewer/ViewController.mm"
-            timestampString = "482259233.951661"
+            timestampString = "482339256.84111"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "239"
-            endingLineNumber = "239"
+            startingLineNumber = "409"
+            endingLineNumber = "409"
             landmarkName = "-updateImage"
             landmarkType = "5">
          </BreakpointContent>
@@ -968,11 +968,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Viewer/ViewController.mm"
-            timestampString = "482259233.951661"
+            timestampString = "482336820.981279"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "175"
-            endingLineNumber = "175"
+            startingLineNumber = "185"
+            endingLineNumber = "185"
             landmarkName = "-setupApp"
             landmarkType = "5">
          </BreakpointContent>
@@ -984,11 +984,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Viewer/ViewController.mm"
-            timestampString = "482259233.951661"
+            timestampString = "482336820.981279"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "203"
-            endingLineNumber = "203"
+            startingLineNumber = "220"
+            endingLineNumber = "220"
             landmarkName = "-bProcessCont_clicked:"
             landmarkType = "5">
          </BreakpointContent>
@@ -1016,11 +1016,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "../../ITMLib/Engines/Visualisation/Metal/ITMVisualisationEngine.metal"
-            timestampString = "482243875.502181"
+            timestampString = "482333493.084289"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "27"
-            endingLineNumber = "27"
+            startingLineNumber = "28"
+            endingLineNumber = "28"
             landmarkName = "genericRaycastVH_device(DEVICEPTR(Vector4f) *pointsRay [[ buffer(0) ]], DEVICEPTR(uchar) *entriesVisibleType [[ buffer(1) ]], const CONSTPTR(ITMVoxel) *voxelData [[ buffer(2) ]], const CONSTPTR(typename ITMVoxelIndex::IndexData) *voxelIndex [[ buffer(3) ]], const CONSTPTR(Vector2f) *minmaxdata [[ buffer(4) ]], const CONSTPTR(CreateICPMaps_Params) *params [[ buffer(5) ]], uint2 threadIdx [[ thread_position_in_threadgroup ]], uint2 blockIdx [[ threadgroup_position_in_grid ]], uint2 blockDim [[ threads_per_threadgroup ]])"
             landmarkType = "7">
          </BreakpointContent>
@@ -1048,11 +1048,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "../../ITMLib/Engines/Visualisation/Metal/ITMVisualisationEngine.metal"
-            timestampString = "482243899.935027"
+            timestampString = "482333493.084289"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "28"
-            endingLineNumber = "28"
+            startingLineNumber = "30"
+            endingLineNumber = "30"
             landmarkName = "genericRaycastVH_device(DEVICEPTR(Vector4f) *pointsRay [[ buffer(0) ]], DEVICEPTR(uchar) *entriesVisibleType [[ buffer(1) ]], const CONSTPTR(ITMVoxel) *voxelData [[ buffer(2) ]], const CONSTPTR(typename ITMVoxelIndex::IndexData) *voxelIndex [[ buffer(3) ]], const CONSTPTR(Vector2f) *minmaxdata [[ buffer(4) ]], const CONSTPTR(CreateICPMaps_Params) *params [[ buffer(5) ]], uint2 threadIdx [[ thread_position_in_threadgroup ]], uint2 blockIdx [[ threadgroup_position_in_grid ]], uint2 blockDim [[ threads_per_threadgroup ]])"
             landmarkType = "7">
          </BreakpointContent>
@@ -1064,11 +1064,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "../../ITMLib/Engines/Visualisation/Metal/ITMVisualisationEngine.metal"
-            timestampString = "482243901.906896"
+            timestampString = "482333493.084289"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "29"
-            endingLineNumber = "29"
+            startingLineNumber = "33"
+            endingLineNumber = "33"
             landmarkName = "genericRaycastVH_device(DEVICEPTR(Vector4f) *pointsRay [[ buffer(0) ]], DEVICEPTR(uchar) *entriesVisibleType [[ buffer(1) ]], const CONSTPTR(ITMVoxel) *voxelData [[ buffer(2) ]], const CONSTPTR(typename ITMVoxelIndex::IndexData) *voxelIndex [[ buffer(3) ]], const CONSTPTR(Vector2f) *minmaxdata [[ buffer(4) ]], const CONSTPTR(CreateICPMaps_Params) *params [[ buffer(5) ]], uint2 threadIdx [[ thread_position_in_threadgroup ]], uint2 blockIdx [[ threadgroup_position_in_grid ]], uint2 blockDim [[ threads_per_threadgroup ]])"
             landmarkType = "7">
          </BreakpointContent>

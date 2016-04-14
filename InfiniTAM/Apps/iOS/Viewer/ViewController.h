@@ -14,14 +14,26 @@
 @interface ViewController : UIViewController <STSensorControllerDelegate>
 
 @property (weak, nonatomic) IBOutlet UIView *renderView;
+@property (weak, nonatomic) IBOutlet UIView *depthView;
 @property (weak, nonatomic) IBOutlet UITextField *tbOut;
 @property (weak, nonatomic) IBOutlet UIButton *bProcessOne;
 @property (weak, nonatomic) IBOutlet UIButton *bProcessCont;
+@property (weak, nonatomic) IBOutlet UIView *bGreyRendering;
+@property (weak, nonatomic) IBOutlet UIButton *bConfidenceRendering;
+@property (weak, nonatomic) IBOutlet UIButton *bNormalsRendering;
+@property (weak, nonatomic) IBOutlet UIButton *bFreeviewRendering;
 
 @property (nonatomic, strong) CMMotionManager *motionManager;
 
 - (IBAction)bProcessOne_clicked:(id)sender;
 - (IBAction)bProcessCont_clicked:(id)sender;
+- (IBAction)bGreyRenderingPressed:(id)sender;
+- (IBAction)bConfidenceRenderingPressed:(id)sender;
+- (IBAction)bNormalsRenderingPressed:(id)sender;
+- (IBAction)bFreeviewRenderingPressed:(id)sender;
+- (IBAction)bResetReconstructionClicked:(id)sender;
+- (IBAction)pinchDetected:(id)sender;
+- (IBAction)doubleTapDetected:(id)sender;
 
 @end
 

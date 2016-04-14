@@ -87,6 +87,9 @@ namespace ITMLib
 		void turnOnMainProcessing();
 		void turnOffMainProcessing();
 
+        /// resets the scene
+        void resetScene();
+        
 		/** \brief Constructor
 		    Ommitting a separate image size for the depth images
 		    will assume same resolution as for the RGB images.
