@@ -454,7 +454,7 @@ _CPU_AND_GPU_CODE_ inline void processPixelConfidence(DEVICEPTR(Vector4u) &outRe
 	Vector3f outNormal;
 	float angle;
 
-	computeNormalAndAngle<TVoxel, TIndex>(foundPoint, point.toVector3(), voxelData, voxelIndex, lightSource, outNormal, angle);
+	computeNormalAndAngle<TVoxel, TIndex>(foundPoint, TO_VECTOR3(point), voxelData, voxelIndex, lightSource, outNormal, angle);
 
 	if (foundPoint) drawPixelConfidence(outRendering, angle, point.w - 1.0f);
 	else outRendering = Vector4u((uchar)0);

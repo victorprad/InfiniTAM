@@ -206,7 +206,7 @@
 		A6AC2B141CBD34A7000CC89D /* Android.mk */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Android.mk; sourceTree = "<group>"; };
 		A6AC2B151CBD34A7000CC89D /* CMakeLists.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = CMakeLists.txt; sourceTree = "<group>"; };
 		A6AC2B171CBD34A7000CC89D /* ITMBasicEngine.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMBasicEngine.h; sourceTree = "<group>"; };
-		A6AC2B181CBD34A7000CC89D /* ITMBasicEngine.tpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = ITMBasicEngine.tpp; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.cpp; };
+		A6AC2B181CBD34A7000CC89D /* ITMBasicEngine.tpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; path = ITMBasicEngine.tpp; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.cpp; };
 		A6AC2B191CBD34A7000CC89D /* ITMDenseMapper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMDenseMapper.h; sourceTree = "<group>"; };
 		A6AC2B1A1CBD34A7000CC89D /* ITMDenseMapper.tpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = ITMDenseMapper.tpp; sourceTree = "<group>"; };
 		A6AC2B1B1CBD34A7000CC89D /* ITMDenseSurfelMapper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMDenseSurfelMapper.h; sourceTree = "<group>"; };
@@ -282,7 +282,7 @@
 		A6AC2B851CBD34A7000CC89D /* ITMSurfelVisualisationEngine_CPU.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMSurfelVisualisationEngine_CPU.h; sourceTree = "<group>"; };
 		A6AC2B861CBD34A7000CC89D /* ITMSurfelVisualisationEngine_CPU.tpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = ITMSurfelVisualisationEngine_CPU.tpp; sourceTree = "<group>"; };
 		A6AC2B871CBD34A7000CC89D /* ITMVisualisationEngine_CPU.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMVisualisationEngine_CPU.h; sourceTree = "<group>"; };
-		A6AC2B881CBD34A7000CC89D /* ITMVisualisationEngine_CPU.tpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = ITMVisualisationEngine_CPU.tpp; sourceTree = "<group>"; };
+		A6AC2B881CBD34A7000CC89D /* ITMVisualisationEngine_CPU.tpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; path = ITMVisualisationEngine_CPU.tpp; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.cpp; };
 		A6AC2B8A1CBD34A7000CC89D /* ITMSurfelVisualisationEngine_CUDA.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMSurfelVisualisationEngine_CUDA.h; sourceTree = "<group>"; };
 		A6AC2B8B1CBD34A7000CC89D /* ITMSurfelVisualisationEngine_CUDA.tcu */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = ITMSurfelVisualisationEngine_CUDA.tcu; sourceTree = "<group>"; };
 		A6AC2B8C1CBD34A7000CC89D /* ITMVisualisationEngine_CUDA.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMVisualisationEngine_CUDA.h; sourceTree = "<group>"; };

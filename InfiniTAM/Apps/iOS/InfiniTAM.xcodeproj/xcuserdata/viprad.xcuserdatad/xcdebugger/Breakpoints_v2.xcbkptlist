@@ -1000,28 +1000,12 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "../../ITMLib/Engines/Visualisation/Metal/ITMVisualisationEngine_Metal.mm"
-            timestampString = "482249021.708643"
+            timestampString = "482320013.865799"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "64"
-            endingLineNumber = "64"
+            startingLineNumber = "46"
+            endingLineNumber = "46"
             landmarkName = "CreateICPMaps_common_metal(const ITMScene&lt;TVoxel,TIndex&gt; *scene, const ITMView *view, ITMTrackingState *trackingState, ITMRenderState *renderState)"
-            landmarkType = "7">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "../../ITMLib/Engines/Visualisation/Metal/ITMVisualisationEngine.metal"
-            timestampString = "482243871.054248"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "49"
-            endingLineNumber = "49"
-            landmarkName = "genericRaycastVHMissingPoints_device(DEVICEPTR(Vector4f) *forwardProjection [[ buffer(0) ]], const CONSTPTR(int) *fwdProjMissingPoints [[ buffer(1) ]], const CONSTPTR(ITMVoxel) *voxelData [[ buffer(2) ]], const CONSTPTR(typename ITMVoxelIndex::IndexData) *voxelIndex [[ buffer(3) ]], const CONSTPTR(Vector2f) *minmaxdata [[ buffer(4) ]], const CONSTPTR(CreateICPMaps_Params) *params [[ buffer(5) ]], uint2 threadIdx [[ thread_position_in_threadgroup ]], uint2 blockIdx [[ threadgroup_position_in_grid ]], uint2 blockDim [[ threads_per_threadgroup ]])"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
@@ -1064,22 +1048,6 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "../../ITMLib/Engines/Visualisation/Metal/ITMVisualisationEngine.metal"
-            timestampString = "482243894.21093"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "45"
-            endingLineNumber = "45"
-            landmarkName = "genericRaycastVHMissingPoints_device(DEVICEPTR(Vector4f) *forwardProjection [[ buffer(0) ]], const CONSTPTR(int) *fwdProjMissingPoints [[ buffer(1) ]], const CONSTPTR(ITMVoxel) *voxelData [[ buffer(2) ]], const CONSTPTR(typename ITMVoxelIndex::IndexData) *voxelIndex [[ buffer(3) ]], const CONSTPTR(Vector2f) *minmaxdata [[ buffer(4) ]], const CONSTPTR(CreateICPMaps_Params) *params [[ buffer(5) ]], uint2 threadIdx [[ thread_position_in_threadgroup ]], uint2 blockIdx [[ threadgroup_position_in_grid ]], uint2 blockDim [[ threads_per_threadgroup ]])"
-            landmarkType = "7">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "../../ITMLib/Engines/Visualisation/Metal/ITMVisualisationEngine.metal"
             timestampString = "482243899.935027"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
@@ -1112,11 +1080,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "../../ITMLib/Engines/Visualisation/Metal/ITMVisualisationEngine_Metal.mm"
-            timestampString = "482249021.708643"
+            timestampString = "482320013.865799"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "111"
-            endingLineNumber = "111"
+            startingLineNumber = "93"
+            endingLineNumber = "93"
             landmarkName = "CreateICPMaps_common_metal(const ITMScene&lt;TVoxel,TIndex&gt; *scene, const ITMView *view, ITMTrackingState *trackingState, ITMRenderState *renderState)"
             landmarkType = "7">
          </BreakpointContent>
@@ -1128,11 +1096,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "../../ITMLib/Engines/Visualisation/Metal/ITMVisualisationEngine_Metal.mm"
-            timestampString = "482249021.708643"
+            timestampString = "482320013.865799"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "115"
-            endingLineNumber = "115"
+            startingLineNumber = "95"
+            endingLineNumber = "95"
             landmarkName = "CreateICPMaps_common_metal(const ITMScene&lt;TVoxel,TIndex&gt; *scene, const ITMView *view, ITMTrackingState *trackingState, ITMRenderState *renderState)"
             landmarkType = "7">
          </BreakpointContent>
@@ -1144,11 +1112,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "../../ITMLib/Engines/Visualisation/Metal/ITMVisualisationEngine_Metal.mm"
-            timestampString = "482249021.708643"
+            timestampString = "482320013.865799"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "110"
-            endingLineNumber = "110"
+            startingLineNumber = "92"
+            endingLineNumber = "92"
             landmarkName = "CreateICPMaps_common_metal(const ITMScene&lt;TVoxel,TIndex&gt; *scene, const ITMView *view, ITMTrackingState *trackingState, ITMRenderState *renderState)"
             landmarkType = "7">
          </BreakpointContent>
@@ -1160,11 +1128,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "../../ITMLib/Engines/Visualisation/Metal/ITMVisualisationEngine_Metal.mm"
-            timestampString = "482249021.708643"
+            timestampString = "482320013.865799"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "108"
-            endingLineNumber = "108"
+            startingLineNumber = "90"
+            endingLineNumber = "90"
             landmarkName = "CreateICPMaps_common_metal(const ITMScene&lt;TVoxel,TIndex&gt; *scene, const ITMView *view, ITMTrackingState *trackingState, ITMRenderState *renderState)"
             landmarkType = "7">
          </BreakpointContent>
@@ -1176,11 +1144,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "../../ITMLib/Engines/Visualisation/Metal/ITMVisualisationEngine_Metal.mm"
-            timestampString = "482249021.708643"
+            timestampString = "482320013.865799"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "103"
-            endingLineNumber = "103"
+            startingLineNumber = "85"
+            endingLineNumber = "85"
             landmarkName = "CreateICPMaps_common_metal(const ITMScene&lt;TVoxel,TIndex&gt; *scene, const ITMView *view, ITMTrackingState *trackingState, ITMRenderState *renderState)"
             landmarkType = "7">
          </BreakpointContent>
@@ -1192,11 +1160,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "../../ITMLib/Engines/Visualisation/Metal/ITMVisualisationEngine_Metal.mm"
-            timestampString = "482249021.708643"
+            timestampString = "482320013.865799"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "98"
-            endingLineNumber = "98"
+            startingLineNumber = "80"
+            endingLineNumber = "80"
             landmarkName = "CreateICPMaps_common_metal(const ITMScene&lt;TVoxel,TIndex&gt; *scene, const ITMView *view, ITMTrackingState *trackingState, ITMRenderState *renderState)"
             landmarkType = "7">
          </BreakpointContent>
@@ -1208,11 +1176,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "../../ITMLib/Engines/Visualisation/Metal/ITMVisualisationEngine_Metal.mm"
-            timestampString = "482249021.708643"
+            timestampString = "482320013.865799"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "75"
-            endingLineNumber = "75"
+            startingLineNumber = "57"
+            endingLineNumber = "57"
             landmarkName = "CreateICPMaps_common_metal(const ITMScene&lt;TVoxel,TIndex&gt; *scene, const ITMView *view, ITMTrackingState *trackingState, ITMRenderState *renderState)"
             landmarkType = "7">
          </BreakpointContent>
@@ -1279,6 +1247,22 @@
             endingLineNumber = "279"
             landmarkName = "ITMExtendedTracker::TrackCamera(ITMTrackingState *trackingState, const ITMView *view)"
             landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "../../ITMLib/Engines/Visualisation/Shared/ITMVisualisationEngine_Shared.h"
+            timestampString = "482317069.767871"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "398"
+            endingLineNumber = "398"
+            landmarkName = "processPixelGrey_ImageNormals(DEVICEPTR(Vector4u) *outRendering, const CONSTPTR(Vector4f) *pointsRay, const THREADPTR(Vector2i) &amp;imgSize, const THREADPTR(int) &amp;x, const THREADPTR(int) &amp;y, float voxelSize, const THREADPTR(Vector3f) &amp;lightSource)"
+            landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
    </Breakpoints>

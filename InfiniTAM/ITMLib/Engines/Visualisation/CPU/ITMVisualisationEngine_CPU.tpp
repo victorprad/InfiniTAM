@@ -233,17 +233,21 @@ static void RenderImage_common(const ITMScene<TVoxel,TIndex> *scene, const ORUti
 	Matrix4f invM = pose->GetInvM();
 
 	Vector4f *pointsRay;
-	if (raycastType == IITMVisualisationEngine::RENDER_FROM_OLD_RAYCAST) {
-		pointsRay = renderState->raycastResult->GetData(MEMORYDEVICE_CUDA);
-	} else if (raycastType == IITMVisualisationEngine::RENDER_FROM_OLD_FORWARDPROJ) {
-		pointsRay = renderState->forwardProjection->GetData(MEMORYDEVICE_CUDA);
-	} else {
-		// this one is generally done for freeview visualisation, so
-		// no, do not update the list of visible blocks
-		GenericRaycast(scene, imgSize, invM, intrinsics->projectionParamsSimple.all, renderState, false);
-		pointsRay = renderState->raycastResult->GetData(MEMORYDEVICE_CUDA);
-	}
-
+    if (raycastType == IITMVisualisationEngine::RENDER_FROM_OLD_RAYCAST)
+        pointsRay = renderState->raycastResult->GetData(MEMORYDEVICE_CPU);
+    else
+    {
+        if (raycastType == IITMVisualisationEngine::RENDER_FROM_OLD_FORWARDPROJ)
+            pointsRay = renderState->forwardProjection->GetData(MEMORYDEVICE_CPU);
+        else
+        {
+            // this one is generally done for freeview visualisation, so
+            // no, do not update the list of visible blocks
+            GenericRaycast(scene, imgSize, invM, intrinsics->projectionParamsSimple.all, renderState, false);
+            pointsRay = renderState->raycastResult->GetData(MEMORYDEVICE_CPU);
+        }
+    }
+    
 	Vector3f lightSource = -Vector3f(invM.getColumn(2));
 	Vector4u *outRendering = outputImage->GetData(MEMORYDEVICE_CPU);
 	const TVoxel *voxelData = scene->localVBA.GetVoxelBlocks();
