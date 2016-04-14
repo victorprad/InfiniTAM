@@ -2,10 +2,11 @@
 
 #include <metal_stdlib>
 
+using namespace metal;
+
 #include "../Shared/ITMSceneReconstructionEngine_Shared.h"
 #include "ITMSceneReconstructionEngine_Metal.h"
-
-using namespace metal;
+#include "../../../ITMLibDefines.h"
 
 kernel void integrateIntoScene_vh_device(DEVICEPTR(ITMVoxel) *localVBA                          [[ buffer(0) ]],
                                          const CONSTPTR(ITMHashEntry) *hashTable                [[ buffer(1) ]],
@@ -33,17 +34,15 @@ kernel void integrateIntoScene_vh_device(DEVICEPTR(ITMVoxel) *localVBA          
     Vector4f pt_model; int locId;
 
     locId = x + y * SDF_BLOCK_SIZE + z * SDF_BLOCK_SIZE * SDF_BLOCK_SIZE;
-
-//    if (params->others.w < 0.5f) if (localVoxelBlock[locId].w_depth != 0) return;
     
     pt_model.x = (float)(globalPos.x + x) * params->others.x;
     pt_model.y = (float)(globalPos.y + y) * params->others.x;
     pt_model.z = (float)(globalPos.z + z) * params->others.x;
     pt_model.w = 1.0f;
     
-    ComputeUpdatedVoxelInfo<ITMVoxel::hasColorInformation,ITMVoxel>::compute(localVoxelBlock[locId], pt_model,
+    ComputeUpdatedVoxelInfo<ITMVoxel::hasColorInformation,false, ITMVoxel>::compute(localVoxelBlock[locId], pt_model,
                                                                          params->M_d, params->projParams_d, params->M_rgb,
-                                                                         params->projParams_rgb, params->others.y, params->others.z, depth,
+                                                                         params->projParams_rgb, params->others.y, params->others.z, depth, NULL,
                                                                          params->depthImgSize, rgb, params->rgbImgSize);
 }
 

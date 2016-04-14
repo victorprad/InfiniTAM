@@ -32,7 +32,12 @@ namespace ITMLib
 		ORUtils::SE3Pose *pose_d;
 
 		/// Tracking quality: 1.0: success, 0.0: failure
-		float poseQuality;
+		enum TrackingResult
+		{
+			TRACKING_GOOD,
+			TRACKING_POOR,
+			TRACKING_FAILED
+		}trackerResult;
 
 		bool TrackerFarFromPointCloud(void) const
 		{
@@ -60,7 +65,7 @@ namespace ITMLib
 
 			this->pose_d = new ORUtils::SE3Pose();
 			this->pose_d->SetFrom(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
-			this->poseQuality = 1.0f;
+			trackerResult = TRACKING_GOOD;
 
 			this->age_pointCloud = -1;
 			this->pose_pointCloud = new ORUtils::SE3Pose();

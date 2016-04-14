@@ -3,6 +3,7 @@
 #pragma once
 
 #include "../../../Utils/ITMMath.h"
+#include "../../../../ORUtils/PlatformIndependence.h"
 
 _CPU_AND_GPU_CODE_ inline void convertDisparityToDepth(DEVICEPTR(float) *d_out, int x, int y, const CONSTPTR(short) *d_in,
 	Vector2f disparityCalibParams, float fx_depth, Vector2i imgSize)
@@ -18,6 +19,8 @@ _CPU_AND_GPU_CODE_ inline void convertDisparityToDepth(DEVICEPTR(float) *d_out, 
 
 	d_out[locId] = (depth > 0) ? depth : -1.0f;
 }
+
+#ifndef __METALC__
 
 _CPU_AND_GPU_CODE_ inline void convertDepthAffineToFloat(DEVICEPTR(float) *d_out, int x, int y, const CONSTPTR(short) *d_in, Vector2i imgSize, Vector2f depthCalibParams)
 {
@@ -112,3 +115,5 @@ _CPU_AND_GPU_CODE_ inline void computeNormalAndWeight(const CONSTPTR(float) *dep
 
 	sigmaZ_out[idx] = (0.0012f + 0.0019f * (z - 0.4f) * (z - 0.4f) + 0.0001f / sqrt(z) * theta_diff * theta_diff);
 }
+
+#endif

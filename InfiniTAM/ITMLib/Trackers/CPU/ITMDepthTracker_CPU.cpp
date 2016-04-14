@@ -6,8 +6,8 @@
 using namespace ITMLib;
 
 ITMDepthTracker_CPU::ITMDepthTracker_CPU(Vector2i imgSize, TrackerIterationType *trackingRegime, int noHierarchyLevels,
-	float terminationThreshold, const ITMLowLevelEngine *lowLevelEngine)
- : ITMDepthTracker(imgSize, trackingRegime, noHierarchyLevels, terminationThreshold, lowLevelEngine, MEMORYDEVICE_CPU)
+	float terminationThreshold, float failureDetectorThreshold, const ITMLowLevelEngine *lowLevelEngine)
+ : ITMDepthTracker(imgSize, trackingRegime, noHierarchyLevels, terminationThreshold,  failureDetectorThreshold, lowLevelEngine, MEMORYDEVICE_CPU)
 { }
 
 ITMDepthTracker_CPU::~ITMDepthTracker_CPU(void) { }

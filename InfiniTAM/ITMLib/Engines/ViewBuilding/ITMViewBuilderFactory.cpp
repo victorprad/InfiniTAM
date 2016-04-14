@@ -6,9 +6,6 @@
 #ifndef COMPILE_WITHOUT_CUDA
 #include "CUDA/ITMViewBuilder_CUDA.h"
 #endif
-#ifdef COMPILE_WITH_METAL
-#include "Metal/ITMViewBuilder_Metal.h"
-#endif
 
 namespace ITMLib
 {
@@ -31,7 +28,7 @@ ITMViewBuilder *ITMViewBuilderFactory::MakeViewBuilder(const ITMRGBDCalib *calib
       break;
     case ITMLibSettings::DEVICE_METAL:
 #ifdef COMPILE_WITH_METAL
-      viewBuilder = new ITMViewBuilder_Metal(calib);
+      viewBuilder = new ITMViewBuilder_CPU(calib);
 #endif
       break;
   }

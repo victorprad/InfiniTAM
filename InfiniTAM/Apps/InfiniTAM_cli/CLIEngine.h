@@ -2,12 +2,12 @@
 
 #pragma once
 
-#include "../../Engine/ImageSourceEngine.h"
-#include "../../Engine/IMUSourceEngine.h"
+#include "../../InputSource/ImageSourceEngine.h"
+#include "../../InputSource/IMUSourceEngine.h"
 #include "../../ITMLib/Core/ITMMainEngine.h"
 #include "../../ITMLib/Utils/ITMLibSettings.h"
-#include "../../Utils/FileUtils.h"
-#include "../../Utils/NVTimer.h"
+#include "../../ORUtils/FileUtils.h"
+#include "../../ORUtils/NVTimer.h"
 
 namespace InfiniTAM
 {

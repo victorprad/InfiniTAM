@@ -64,9 +64,8 @@ ENDIF()
 
 add_subdirectory(ORUtils)
 add_subdirectory(ITMLib)
-add_subdirectory(LCDLib)
-add_subdirectory(Utils)
-add_subdirectory(Engine)
+add_subdirectory(RelocLib)
+add_subdirectory(InputSource)
 
 IF(WITH_CUDA)
   include_directories(${CUDA_INCLUDE_DIRS})
