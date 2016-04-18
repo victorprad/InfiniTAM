@@ -26,9 +26,10 @@
 		6F7C0CDB17F0EA0500692EC1 /* ViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = 6F7C0CDA17F0EA0500692EC1 /* ViewController.mm */; };
 		6F7C0CDE17F0EA0500692EC1 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 6F7C0CDD17F0EA0500692EC1 /* Images.xcassets */; };
 		A626D7541A0F93660086B8BF /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A626D7531A0F93660086B8BF /* Metal.framework */; };
-		A626D7631A0F96F50086B8BF /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = A626D7621A0F96F50086B8BF /* Main.storyboard */; };
+		A626D7631A0F96F50086B8BF /* iPad_Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = A626D7621A0F96F50086B8BF /* iPad_Main.storyboard */; };
 		A626D7651A0F98CF0086B8BF /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = A626D7641A0F98CF0086B8BF /* LaunchScreen.xib */; };
 		A62ECC4B1BB58439000CC25D /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = A62ECC4A1BB58439000CC25D /* libz.tbd */; };
+		A638F9BC1CC52210006965F2 /* MessageUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A638F9BB1CC52210006965F2 /* MessageUI.framework */; };
 		A646ADC91CBD53B200D4DAC2 /* Structure.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A646ADC81CBD53B200D4DAC2 /* Structure.framework */; };
 		A67763BF1CBE89E30091E5A8 /* ITMExtendedTracker_Metal.mm in Sources */ = {isa = PBXBuildFile; fileRef = A67763BD1CBE89E30091E5A8 /* ITMExtendedTracker_Metal.mm */; };
 		A67763C01CBE89E30091E5A8 /* ITMExtendedTracker.metal in Sources */ = {isa = PBXBuildFile; fileRef = A67763BE1CBE89E30091E5A8 /* ITMExtendedTracker.metal */; };
@@ -141,9 +142,10 @@
 		6F7C0CDC17F0EA0500692EC1 /* ViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ViewController.h; sourceTree = "<group>"; };
 		6F7C0CDD17F0EA0500692EC1 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
 		A626D7531A0F93660086B8BF /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = System/Library/Frameworks/Metal.framework; sourceTree = SDKROOT; };
-		A626D7621A0F96F50086B8BF /* Main.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = Main.storyboard; sourceTree = "<group>"; };
+		A626D7621A0F96F50086B8BF /* iPad_Main.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = iPad_Main.storyboard; sourceTree = "<group>"; };
 		A626D7641A0F98CF0086B8BF /* LaunchScreen.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = LaunchScreen.xib; sourceTree = "<group>"; };
 		A62ECC4A1BB58439000CC25D /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = usr/lib/libz.tbd; sourceTree = SDKROOT; };
+		A638F9BB1CC52210006965F2 /* MessageUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MessageUI.framework; path = System/Library/Frameworks/MessageUI.framework; sourceTree = SDKROOT; };
 		A646ADC81CBD53B200D4DAC2 /* Structure.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Structure.framework; path = ../../../../../../../../Library/Frameworks/Structure.framework; sourceTree = "<group>"; };
 		A67763BC1CBE89E30091E5A8 /* ITMExtendedTracker_Metal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMExtendedTracker_Metal.h; sourceTree = "<group>"; };
 		A67763BD1CBE89E30091E5A8 /* ITMExtendedTracker_Metal.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = ITMExtendedTracker_Metal.mm; sourceTree = "<group>"; };
@@ -378,6 +380,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A638F9BC1CC52210006965F2 /* MessageUI.framework in Frameworks */,
 				A62ECC4B1BB58439000CC25D /* libz.tbd in Frameworks */,
 				A626D7541A0F93660086B8BF /* Metal.framework in Frameworks */,
 				2DFFE049199142E800761886 /* CoreMotion.framework in Frameworks */,
@@ -421,6 +424,7 @@
 		6F7C0CBF17F0EA0500692EC1 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				A638F9BB1CC52210006965F2 /* MessageUI.framework */,
 				A646ADC81CBD53B200D4DAC2 /* Structure.framework */,
 				A62ECC4A1BB58439000CC25D /* libz.tbd */,
 				A626D7531A0F93660086B8BF /* Metal.framework */,
@@ -463,7 +467,7 @@
 			children = (
 				A68436831A1F9C430010E0C5 /* InfiniTAM.entitlements */,
 				A626D7641A0F98CF0086B8BF /* LaunchScreen.xib */,
-				A626D7621A0F96F50086B8BF /* Main.storyboard */,
+				A626D7621A0F96F50086B8BF /* iPad_Main.storyboard */,
 				A6CA7EF81A0FDE0C0070848F /* iPhone_Main.storyboard */,
 				6F7C0CDD17F0EA0500692EC1 /* Images.xcassets */,
 				6F7C0CCB17F0EA0500692EC1 /* InfoPlist.strings */,
@@ -1245,7 +1249,7 @@
 				A6AC2C071CBD34A7000CC89D /* ITMDenseSurfelMapper.tpp in Resources */,
 				A6AC2C161CBD34A7000CC89D /* ITMSceneReconstructionEngine_CPU.tpp in Resources */,
 				A6AC2AFD1CBD333D000CC89D /* Android.mk in Resources */,
-				A626D7631A0F96F50086B8BF /* Main.storyboard in Resources */,
+				A626D7631A0F96F50086B8BF /* iPad_Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

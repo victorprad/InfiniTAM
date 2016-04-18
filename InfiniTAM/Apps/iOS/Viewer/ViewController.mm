@@ -156,6 +156,7 @@ using namespace ITMLib;
         imuMeasurement = new ITMIMUMeasurement();
         
         STStreamConfig streamConfig = STStreamConfigDepth640x480;
+//        STStreamConfig streamConfig = STStreamConfigDepth320x240;
         
         NSError* error = nil;
         BOOL optionsAreValid = [_sensorController startStreamingWithOptions:@{kSTStreamConfigKey : @(streamConfig),
@@ -170,7 +171,6 @@ using namespace ITMLib;
         const char *calibFile = [[[NSBundle mainBundle]pathForResource:@"calib" ofType:@"txt"] cStringUsingEncoding:[NSString defaultCStringEncoding]];
 //        imageSource = new CalibSource(calibFile, Vector2i(320, 240), 0.5f);
         imageSource = new CalibSource(calibFile, Vector2i(640, 480), 1.0f);
-//        imageSource = new CalibSource(calibFile, Vector2i(512, 384), 0.8f);
         
         if (error != nil) [_tbOut setText:@"from camera -- errors"];
         else [_tbOut setText:@"from camera"];
@@ -300,6 +300,71 @@ using namespace ITMLib;
         
         [self refreshFreeview];
     }
+}
+
+- (void)mailComposeController:(MFMailComposeViewController*)controller didFinishWithResult:(MFMailComposeResult)result error:(NSError*)error
+{
+    switch (result)
+    {
+        case MFMailComposeResultCancelled:
+            NSLog(@"Mail cancelled: you cancelled the operation and no email message was queued.");
+            break;
+        case MFMailComposeResultSaved:
+            NSLog(@"Mail saved: you saved the email message in the drafts folder.");
+            break;
+        case MFMailComposeResultSent:
+            NSLog(@"Mail send: the email message is queued in the outbox. It is ready to send.");
+            break;
+        case MFMailComposeResultFailed:
+            NSLog(@"Mail failed: the email message was not saved or queued, possibly due to an error.");
+            break;
+        default:
+            NSLog(@"Mail not sent.");
+            break;
+    }
+    
+    [controller dismissViewControllerAnimated:YES completion:nil];
+}
+
+- (IBAction)bSendMailClicked:(id)sender {
+    if ([MFMailComposeViewController canSendMail])
+    {
+        MFMailComposeViewController *mailer = [[MFMailComposeViewController alloc] init];
+        
+        mailer.mailComposeDelegate = self;
+        
+        [mailer setSubject:@"InfiniTAM Reconstruction"];
+        
+        CGContextRef cgContextMain; CGImageRef cgImageRefMain;
+        cgContextMain = CGBitmapContextCreate(resultMain->GetData(MEMORYDEVICE_CPU), imageSize.x, imageSize.y, 8, 4 * imageSize.x, rgbSpace, kCGImageAlphaNoneSkipLast);
+        cgImageRefMain = CGBitmapContextCreateImage(cgContextMain);
+        
+        UIImage *myImage = [UIImage imageWithCGImage:cgImageRefMain];
+
+        CGImageRelease(cgImageRefMain);
+        CGContextRelease(cgContextMain);
+        
+        NSData *imageData = UIImagePNGRepresentation(myImage);
+        [mailer addAttachmentData:imageData mimeType:@"image/png" fileName:@"reconstruction.png"];
+        
+        NSString *emailBody = @"Here is your InfiniTAM result!";
+        [mailer setMessageBody:emailBody isHTML:NO];
+        
+        [self presentViewController:mailer animated:YES completion:nil];
+    }
+}
+
+- (IBAction)bSavePhotoClicked:(id)sender {
+    CGContextRef cgContextMain; CGImageRef cgImageRefMain;
+    cgContextMain = CGBitmapContextCreate(resultMain->GetData(MEMORYDEVICE_CPU), imageSize.x, imageSize.y, 8, 4 * imageSize.x, rgbSpace, kCGImageAlphaNoneSkipLast);
+    cgImageRefMain = CGBitmapContextCreateImage(cgContextMain);
+    
+    UIImage *myImage = [UIImage imageWithCGImage:cgImageRefMain];
+    
+    UIImageWriteToSavedPhotosAlbum(myImage, nil, nil, nil);
+    
+    CGImageRelease(cgImageRefMain);
+    CGContextRelease(cgContextMain);
 }
 
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
@@ -512,14 +577,6 @@ static inline Matrix3f createRotation(const Vector3f & _axis, float angle)
             imuMeasurement->R.m10 = rotationMatrix.m21; imuMeasurement->R.m11 = rotationMatrix.m22; imuMeasurement->R.m12 = rotationMatrix.m23;
             imuMeasurement->R.m20 = rotationMatrix.m31; imuMeasurement->R.m21 = rotationMatrix.m32; imuMeasurement->R.m22 = rotationMatrix.m33;
         }
-        
-//        unsigned short *depthFrameStructure = (unsigned short*)[depthFrame shiftData];
-//        short *depthFrameInfiniTAM = inputRawDepthImage->GetData(MEMORYDEVICE_CPU);
-//        
-//        for (int y = 0; y < imageSize.y; y++) for (int x = 0; x < imageSize.x; x++)
-//        {
-//            depthFrameInfiniTAM[x + y * imageSize.x] = depthFrameStructure[(int)(x * 1.25) + (int)(y * 1.25) * 640];
-//        }
         
         memcpy(inputRawDepthImage->GetData(MEMORYDEVICE_CPU), [depthFrame shiftData], imageSize.x * imageSize.y * sizeof(short));
         

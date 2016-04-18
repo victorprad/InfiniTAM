@@ -10,8 +10,9 @@
 #define HAS_LIBCXX
 #import <Structure/Structure.h>
 #import <CoreMotion/CoreMotion.h>
+#import <MessageUI/MessageUI.h>
 
-@interface ViewController : UIViewController <STSensorControllerDelegate>
+@interface ViewController : UIViewController <STSensorControllerDelegate, MFMailComposeViewControllerDelegate>
 
 @property (weak, nonatomic) IBOutlet UIView *renderView;
 @property (weak, nonatomic) IBOutlet UIView *depthView;
@@ -33,6 +34,8 @@
 - (IBAction)bFreeviewRenderingPressed:(id)sender;
 - (IBAction)bResetReconstructionClicked:(id)sender;
 - (IBAction)pinchDetected:(id)sender;
+- (IBAction)bSendMailClicked:(id)sender;
+- (IBAction)bSavePhotoClicked:(id)sender;
 
 @end
 
