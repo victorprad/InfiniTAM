@@ -202,26 +202,26 @@ ITMTrackingState::TrackingResult ITMBasicEngine<TVoxel,TIndex>::ProcessFrame(ITM
 	if (imuMeasurement == NULL) viewBuilder->UpdateView(&view, rgbImage, rawDepthImage, settings->useBilateralFilter);
 	else viewBuilder->UpdateView(&view, rgbImage, rawDepthImage, settings->useBilateralFilter, imuMeasurement);
 
-	if (!mainProcessingActive) return;
+	if (!mainProcessingActive) return ITMTrackingState::TRACKING_FAILED;
 
 	// tracking
 	ORUtils::SE3Pose oldPose(*(trackingState->pose_d));
 	if (trackingActive) trackingController->Track(trackingState, view);
 
-    ITMTrackingState::TrackingResult trackerResult = ITMTrackingState::TRACKING_GOOD;
-    switch (settings->behaviourOnFailure) {
-        case ITMLibSettings::FAILUREMODE_RELOCALISE:
-            trackerResult = trackingState->trackerResult;
-            break;
-        case ITMLibSettings::FAILUREMODE_STOP_INTEGRATION:
-            if (trackingState->trackerResult != ITMTrackingState::TRACKING_FAILED)
-                trackerResult = trackingState->trackerResult;
-            else trackerResult = ITMTrackingState::TRACKING_POOR;
-            break;
-        default:
-            break;
-    }
-    
+	ITMTrackingState::TrackingResult trackerResult = ITMTrackingState::TRACKING_GOOD;
+	switch (settings->behaviourOnFailure) {
+	case ITMLibSettings::FAILUREMODE_RELOCALISE:
+		trackerResult = trackingState->trackerResult;
+		break;
+	case ITMLibSettings::FAILUREMODE_STOP_INTEGRATION:
+		if (trackingState->trackerResult != ITMTrackingState::TRACKING_FAILED)
+			trackerResult = trackingState->trackerResult;
+		else trackerResult = ITMTrackingState::TRACKING_POOR;
+		break;
+	default:
+		break;
+	}
+
 	//relocalisation
 	int addKeyframeIdx = -1;
 	if (settings->behaviourOnFailure == ITMLibSettings::FAILUREMODE_RELOCALISE)
@@ -259,21 +259,22 @@ ITMTrackingState::TrackingResult ITMBasicEngine<TVoxel,TIndex>::ProcessFrame(ITM
 		framesProcessed++;
 	}
 
-	if (trackerResult == ITMTrackingState::TRACKING_GOOD || trackerResult == ITMTrackingState::TRACKING_POOR) {
+	if (trackerResult == ITMTrackingState::TRACKING_GOOD || trackerResult == ITMTrackingState::TRACKING_POOR)
+	{
 		if (!didFusion) denseMapper->UpdateVisibleList(view, trackingState, scene, renderState_live);
 
 		// raycast to renderState_live for tracking and free visualisation
 		trackingController->Prepare(trackingState, scene, view, visualisationEngine, renderState_live);
 
 		if (addKeyframeIdx >= 0)
-        {
-            ORUtils::MemoryBlock<Vector4u>::MemoryCopyDirection memoryCopyDirection =
-            settings->deviceType == ITMLibSettings::DEVICE_CUDA ? ORUtils::MemoryBlock<Vector4u>::CUDA_TO_CUDA : ORUtils::MemoryBlock<Vector4u>::CPU_TO_CPU;
-            
-            kfRaycast->SetFrom(renderState_live->raycastImage, memoryCopyDirection);
-        }
+		{
+			ORUtils::MemoryBlock<Vector4u>::MemoryCopyDirection memoryCopyDirection =
+				settings->deviceType == ITMLibSettings::DEVICE_CUDA ? ORUtils::MemoryBlock<Vector4u>::CUDA_TO_CUDA : ORUtils::MemoryBlock<Vector4u>::CPU_TO_CPU;
+
+			kfRaycast->SetFrom(renderState_live->raycastImage, memoryCopyDirection);
+		}
 	}
-	else { *trackingState->pose_d = oldPose; }
+	else *trackingState->pose_d = oldPose;
 
 #ifdef OUTPUT_TRAJECTORY_QUATERNIONS
 	const ORUtils::SE3Pose *p = trackingState->pose_d;
