@@ -46,6 +46,7 @@ using namespace ITMLib;
     STSensorController *_sensorController;
     
     ITMMainEngine::GetImageType mainImageType;
+    ITMMainEngine::GetImageType mainImageFreeviewType;
     
     ORUtils::SE3Pose freeviewPose;
     ITMLib::ITMIntrinsics freeviewIntrinsics;
@@ -245,15 +246,30 @@ using namespace ITMLib;
 }
 
 - (IBAction)bGreyRenderingPressed:(id)sender {
-    mainImageType = ITMMainEngine::InfiniTAM_IMAGE_SCENERAYCAST;
+    if (freeviewActive)
+    {
+        mainImageFreeviewType = ITMMainEngine::InfiniTAM_IMAGE_FREECAMERA_SHADED;
+        [self refreshFreeview];
+    }
+    else mainImageType = ITMMainEngine::InfiniTAM_IMAGE_SCENERAYCAST;
 }
 
 - (IBAction)bConfidenceRenderingPressed:(id)sender {
-    mainImageType = ITMMainEngine::InfiniTAM_IMAGE_COLOUR_FROM_CONFIDENCE;
+    if (freeviewActive)
+    {
+        mainImageFreeviewType = ITMMainEngine::InfiniTAM_IMAGE_FREECAMERA_COLOUR_FROM_CONFIDENCE;
+        [self refreshFreeview];
+    }
+    else mainImageType = ITMMainEngine::InfiniTAM_IMAGE_COLOUR_FROM_CONFIDENCE;
 }
 
 - (IBAction)bNormalsRenderingPressed:(id)sender {
-    mainImageType = ITMMainEngine::InfiniTAM_IMAGE_COLOUR_FROM_NORMAL;
+    if (freeviewActive)
+    {
+        mainImageFreeviewType = ITMMainEngine::InfiniTAM_IMAGE_FREECAMERA_COLOUR_FROM_NORMAL;
+        [self refreshFreeview];
+    }
+    else mainImageType = ITMMainEngine::InfiniTAM_IMAGE_COLOUR_FROM_NORMAL;
 }
 
 -(void)refreshFreeview
@@ -262,7 +278,7 @@ using namespace ITMLib;
     
     NSDate *timerStart = [NSDate date];
 
-    mainEngine->GetImage(resultMain, ITMMainEngine::InfiniTAM_IMAGE_FREECAMERA_SHADED, &freeviewPose, &freeviewIntrinsics);
+    mainEngine->GetImage(resultMain, mainImageFreeviewType, &freeviewPose, &freeviewIntrinsics);
     
     cgContextMain = CGBitmapContextCreate(resultMain->GetData(MEMORYDEVICE_CPU), imageSize.x, imageSize.y, 8, 4 * imageSize.x, rgbSpace, kCGImageAlphaNoneSkipLast);
     cgImageRefMain = CGBitmapContextCreateImage(cgContextMain);
@@ -283,6 +299,7 @@ using namespace ITMLib;
     freeviewActive = true;
     mainEngine->turnOffMainProcessing();
     freeviewPose.SetFrom(mainEngine->GetTrackingState()->pose_d);
+    mainImageFreeviewType = ITMMainEngine::InfiniTAM_IMAGE_FREECAMERA_SHADED;
     [self refreshFreeview];
 }
 
