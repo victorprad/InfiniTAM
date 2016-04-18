@@ -59,7 +59,7 @@ namespace ITMLib
 		/// Gives access to the internal world representation
 		ITMScene<TVoxel,TIndex>* GetScene(void) { return scene; }
 
-		void ProcessFrame(ITMUChar4Image *rgbImage, ITMShortImage *rawDepthImage, ITMIMUMeasurement *imuMeasurement = NULL);
+        ITMTrackingState::TrackingResult ProcessFrame(ITMUChar4Image *rgbImage, ITMShortImage *rawDepthImage, ITMIMUMeasurement *imuMeasurement = NULL);
 
 		/// Gives access to the data structure used internally to store any created meshes
 		ITMMesh* GetMesh(void) { return mesh; }

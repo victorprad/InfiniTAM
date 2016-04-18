@@ -33,7 +33,6 @@
 - (IBAction)bFreeviewRenderingPressed:(id)sender;
 - (IBAction)bResetReconstructionClicked:(id)sender;
 - (IBAction)pinchDetected:(id)sender;
-- (IBAction)doubleTapDetected:(id)sender;
 
 @end
 

@@ -17,6 +17,13 @@ namespace ITMLib
 			DEVICE_METAL
 		} DeviceType;
 
+        typedef enum
+        {
+            FAILUREMODE_RELOCALISE,
+            FAILUREMODE_IGNORE,
+            FAILUREMODE_STOP_INTEGRATION
+        } FailureMode;
+        
 		/// Select the type of device to use
 		DeviceType deviceType;
 
@@ -30,8 +37,10 @@ namespace ITMLib
 		/// For ITMColorTracker: skip every other point in energy function evaluation.
 		bool skipPoints;
 
-		bool useRelocalisation;
-		bool useTrackingFailureDetection;
+        FailureMode behaviourOnFailure;
+        
+//		bool useRelocalisation;
+//		bool useTrackingFailureDetection;
 
 		const char *trackerConfig;
 

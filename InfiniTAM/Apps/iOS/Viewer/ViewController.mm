@@ -64,7 +64,6 @@ using namespace ITMLib;
     char documentsPath[1000], *docsPath;
     
     Vector2f fingerLastTouch;
-    bool freeviewControlRotation;
 }
 
 - (void) viewDidLoad
@@ -195,7 +194,6 @@ using namespace ITMLib;
     mainImageType = ITMMainEngine::InfiniTAM_IMAGE_SCENERAYCAST;
     
     freeviewActive = false;
-    freeviewControlRotation = true;
 }
 
 - (IBAction)bProcessOne_clicked:(id)sender
@@ -304,24 +302,17 @@ using namespace ITMLib;
     }
 }
 
-- (IBAction)doubleTapDetected:(id)sender {
-    if (freeviewControlRotation) freeviewControlRotation = false;
-    else freeviewControlRotation = true;
-}
-
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
 {
-    if (freeviewActive && touches.count == 1)
+    if (freeviewActive)
     {
-        for (UITouch *touch in touches)
+        UITouch *touch = [touches allObjects][0];
+        if (touch.view == self.renderView)
         {
-            if (touch.view == self.renderView)
-            {
-                CGPoint point = [touch locationInView:self.renderView];
-                
-                fingerLastTouch.x = point.x;
-                fingerLastTouch.y = point.y;
-            }
+            CGPoint point = [touch locationInView:self.renderView];
+            
+            fingerLastTouch.x = point.x;
+            fingerLastTouch.y = point.y;
         }
     }
 }
@@ -359,41 +350,60 @@ static inline Matrix3f createRotation(const Vector3f & _axis, float angle)
 
 - (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event
 {
+    if (freeviewActive && [[event allTouches]count] == 2)
+    {
+        NSArray<UITouch*> *allTouches = [[event allTouches] allObjects];
+        
+        UITouch *touch_0 = allTouches[0];
+        UITouch *touch_1 = allTouches[1];
+        
+        CGPoint location_0 = [touch_0 locationInView:self.renderView];
+        CGPoint location_1 = [touch_1 locationInView:self.renderView];
+        float distance = sqrtf((location_0.x - location_1.x) * (location_0.x - location_1.x) +
+                               (location_0.y - location_1.y) * (location_0.y - location_1.y));
+        
+        if (distance > 100.0f) return;
+        
+        UITouch *touch = [touches allObjects][0];
+        if (touch.view == self.renderView)
+        {
+            CGPoint point = [touch locationInView:self.renderView];
+            Vector2f movement;
+            movement.x = point.x - fingerLastTouch.x;
+            movement.y = point.y - fingerLastTouch.y;
+            fingerLastTouch.x = point.x;
+            fingerLastTouch.y = point.y;
+            
+            float scale_translation = 0.005f;
+            freeviewPose.SetT(freeviewPose.GetT() + scale_translation * Vector3f((float)movement.x, (float)movement.y, 0.0f));
+        }
+        
+        [self refreshFreeview];
+    }
+    
     if (freeviewActive && [[event allTouches]count] == 1)
     {
-        for (UITouch *touch in touches)
+        UITouch *touch = [touches allObjects][0];
+        if (touch.view == self.renderView)
         {
-            if (touch.view == self.renderView)
-            {
-                CGPoint point = [touch locationInView:self.renderView];
-                
-                Vector2f movement;
-                movement.x = point.x - fingerLastTouch.x;
-                movement.y = point.y - fingerLastTouch.y;
-                fingerLastTouch.x = point.x;
-                fingerLastTouch.y = point.y;
-                
-                if (freeviewControlRotation)
-                {
-                    float scale_rotation = 0.005f;
-                    
-                    Vector3f axis((float)-movement.y, (float)-movement.x, 0.0f);
-                    float angle = scale_rotation * sqrt((float)(movement.x * movement.x + movement.y*movement.y));
-                    Matrix3f rot = createRotation(axis, angle);
-                    freeviewPose.SetR(rot * freeviewPose.GetR());
-                    freeviewPose.Coerce();
-                }
-                else
-                {
-                    float scale_translation = 0.005f;
-                    freeviewPose.SetT(freeviewPose.GetT() + scale_translation * Vector3f((float)movement.x, (float)movement.y, 0.0f));
-                }
-                
-                [self refreshFreeview];
-            }
+            CGPoint point = [touch locationInView:self.renderView];
             
-            return;
+            Vector2f movement;
+            movement.x = point.x - fingerLastTouch.x;
+            movement.y = point.y - fingerLastTouch.y;
+            fingerLastTouch.x = point.x;
+            fingerLastTouch.y = point.y;
+            
+            float scale_rotation = 0.005f;
+            
+            Vector3f axis((float)-movement.y, (float)-movement.x, 0.0f);
+            float angle = scale_rotation * sqrt((float)(movement.x * movement.x + movement.y*movement.y));
+            Matrix3f rot = createRotation(axis, angle);
+            freeviewPose.SetR(rot * freeviewPose.GetR());
+            freeviewPose.Coerce();
         }
+        
+        [self refreshFreeview];
     }
 }
 
@@ -406,8 +416,12 @@ static inline Matrix3f createRotation(const Vector3f & _axis, float angle)
     
     NSDate *timerStart = [NSDate date];
     
-    if (imuMeasurement != NULL) mainEngine->ProcessFrame(inputRGBImage, inputRawDepthImage, imuMeasurement);
-    else mainEngine->ProcessFrame(inputRGBImage, inputRawDepthImage);
+    ITMTrackingState::TrackingResult trackingResult;
+    
+    if (imuMeasurement != NULL)
+        trackingResult = mainEngine->ProcessFrame(inputRGBImage, inputRawDepthImage, imuMeasurement);
+    else
+        trackingResult = mainEngine->ProcessFrame(inputRGBImage, inputRawDepthImage);
     
     NSDate *timerStop = [NSDate date];
     NSTimeInterval executionTime = [timerStop timeIntervalSinceDate:timerStart];
@@ -438,6 +452,14 @@ static inline Matrix3f createRotation(const Vector3f & _axis, float angle)
     dispatch_sync(dispatch_get_main_queue(), ^{
         self.renderView.layer.contents = (__bridge id)cgImageRefMain;
         self.depthView.layer.contents = (__bridge id)cgImageRefSide;
+        
+        if (fullProcess)
+        {
+            if (trackingResult == ITMTrackingState::TRACKING_GOOD)
+                self.renderView.backgroundColor = [UIColor greenColor];
+            else
+                self.renderView.backgroundColor = [UIColor redColor];
+        }
         
         NSString *theValue = [NSString stringWithFormat:@"%5.4lf", totalProcessingTime / totalProcessedFrames];
         [self.tbOut setText:theValue];

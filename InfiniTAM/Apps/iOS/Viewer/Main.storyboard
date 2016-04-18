@@ -58,7 +58,6 @@
                                 </variation>
                                 <connections>
                                     <outletCollection property="gestureRecognizers" destination="lOV-4L-2xb" appends="YES" id="E08-ww-Fs2"/>
-                                    <outletCollection property="gestureRecognizers" destination="2rH-MC-akM" appends="YES" id="ah6-cR-Oms"/>
                                 </connections>
                             </view>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="cL1-2e-Uzu" userLabel="Other View">
@@ -131,7 +130,7 @@
                                     <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
                                 </state>
                                 <variation key="widthClass=regular" fixedFrame="YES">
-                                    <rect key="frame" x="817" y="961" width="177" height="43"/>
+                                    <rect key="frame" x="269" y="967" width="177" height="43"/>
                                 </variation>
                                 <connections>
                                     <action selector="bResetReconstructionClicked:" destination="BYZ-38-t0r" eventType="touchUpInside" id="oLw-lb-U2D"/>
@@ -180,12 +179,7 @@
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
-                <tapGestureRecognizer numberOfTapsRequired="2" id="2rH-MC-akM">
-                    <connections>
-                        <action selector="doubleTapDetected:" destination="BYZ-38-t0r" id="AWo-9u-jbA"/>
-                    </connections>
-                </tapGestureRecognizer>
-                <pinchGestureRecognizer id="lOV-4L-2xb">
+                <pinchGestureRecognizer cancelsTouchesInView="NO" id="lOV-4L-2xb">
                     <connections>
                         <action selector="pinchDetected:" destination="BYZ-38-t0r" id="tvM-9m-0Fq"/>
                     </connections>

@@ -211,7 +211,7 @@
 		A6AC2B1C1CBD34A7000CC89D /* ITMDenseSurfelMapper.tpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = ITMDenseSurfelMapper.tpp; sourceTree = "<group>"; };
 		A6AC2B1D1CBD34A7000CC89D /* ITMMainEngine.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMMainEngine.h; sourceTree = "<group>"; };
 		A6AC2B1E1CBD34A7000CC89D /* ITMMultiEngine.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMMultiEngine.h; sourceTree = "<group>"; };
-		A6AC2B1F1CBD34A7000CC89D /* ITMMultiEngine.tpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = ITMMultiEngine.tpp; sourceTree = "<group>"; };
+		A6AC2B1F1CBD34A7000CC89D /* ITMMultiEngine.tpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = ITMMultiEngine.tpp; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.cpp; };
 		A6AC2B201CBD34A7000CC89D /* ITMTrackingController.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ITMTrackingController.cpp; sourceTree = "<group>"; };
 		A6AC2B211CBD34A7000CC89D /* ITMTrackingController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITMTrackingController.h; sourceTree = "<group>"; };
 		A6AC2B231CBD34A7000CC89D /* ITMActiveSceneManager.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ITMActiveSceneManager.cpp; sourceTree = "<group>"; };
