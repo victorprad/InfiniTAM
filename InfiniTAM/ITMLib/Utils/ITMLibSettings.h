@@ -37,6 +37,8 @@ namespace ITMLib
 		/// For ITMColorTracker: skip every other point in energy function evaluation.
 		bool skipPoints;
 
+        bool createMeshingEngine;
+        
         FailureMode behaviourOnFailure;
         
 //		bool useRelocalisation;

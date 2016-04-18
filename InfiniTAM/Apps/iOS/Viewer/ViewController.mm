@@ -24,6 +24,7 @@ using namespace ITMLib;
 
 @property (nonatomic, strong) dispatch_queue_t renderingQueue;
 @property (nonatomic, strong) MetalContext *context;
+@property (nonatomic, strong) UIDocumentInteractionController *controller;
 
 @end
 
@@ -66,6 +67,31 @@ using namespace ITMLib;
     
     Vector2f fingerLastTouch;
 }
+
+- (UIDocumentInteractionController *)controller {
+    if (!_controller) {
+        _controller = [[UIDocumentInteractionController alloc]init];
+        _controller.delegate = self;
+
+    }
+
+    return _controller;
+}
+
+- (UIViewController *)documentInteractionControllerViewControllerForPreview:(UIDocumentInteractionController *)controller {
+    return  self;
+}
+
+
+
+- (void)documentInteractionController:(UIDocumentInteractionController *)controller willBeginSendingToApplication:(NSString *)application {
+    NSLog(@"Starting to send this puppy to %@", application);
+}
+
+- (void)documentInteractionController:(UIDocumentInteractionController *)controller didEndSendingToApplication:(NSString *)application {
+    NSLog(@"We're done sending the document.");
+}
+
 
 - (void) viewDidLoad
 {
@@ -382,6 +408,12 @@ using namespace ITMLib;
     
     CGImageRelease(cgImageRefMain);
     CGContextRelease(cgContextMain);
+}
+
+- (IBAction)bSendModelClicked:(id)sender {
+    char modelPath[1000];
+    sprintf(modelPath, "%s/model.stl", documentsPath);
+    mainEngine->SaveSceneToMesh(modelPath);
 }
 
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event

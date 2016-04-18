@@ -20,10 +20,6 @@ ITMBasicEngine<TVoxel,TIndex>::ITMBasicEngine(const ITMLibSettings *settings, co
 {
 	this->settings = settings;
 
-	// create all the things required for marching cubes and mesh extraction
-	// - uses additional memory (lots!)
-	static const bool createMeshingEngine = true;
-
 	if ((imgSize_d.x == -1) || (imgSize_d.y == -1)) imgSize_d = imgSize_rgb;
 
 	MemoryDeviceType memoryType = settings->deviceType == ITMLibSettings::DEVICE_CUDA ? MEMORYDEVICE_CUDA : MEMORYDEVICE_CPU;
@@ -37,7 +33,7 @@ ITMBasicEngine<TVoxel,TIndex>::ITMBasicEngine(const ITMLibSettings *settings, co
 
 	mesh = NULL;
 	meshingEngine = NULL;
-	if (createMeshingEngine)
+	if (settings->createMeshingEngine)
 	{
 		mesh = new ITMMesh(memoryType);
 		meshingEngine = ITMMeshingEngineFactory::MakeMeshingEngine<TVoxel,TIndex>(deviceType);
@@ -104,8 +100,13 @@ ITMBasicEngine<TVoxel,TIndex>::~ITMBasicEngine()
 template <typename TVoxel, typename TIndex>
 ITMMesh* ITMBasicEngine<TVoxel,TIndex>::UpdateMesh(void)
 {
-	if (mesh != NULL) meshingEngine->MeshScene(mesh, scene);
-	return mesh;
+    if (meshingEngine != NULL)
+    {
+        if (mesh != NULL) meshingEngine->MeshScene(mesh, scene);
+        return mesh;
+    }
+    
+    return NULL;
 }
 
 template <typename TVoxel, typename TIndex>

@@ -12,7 +12,7 @@
 #import <CoreMotion/CoreMotion.h>
 #import <MessageUI/MessageUI.h>
 
-@interface ViewController : UIViewController <STSensorControllerDelegate, MFMailComposeViewControllerDelegate>
+@interface ViewController : UIViewController <STSensorControllerDelegate, MFMailComposeViewControllerDelegate, UIDocumentInteractionControllerDelegate>
 
 @property (weak, nonatomic) IBOutlet UIView *renderView;
 @property (weak, nonatomic) IBOutlet UIView *depthView;
@@ -36,6 +36,7 @@
 - (IBAction)pinchDetected:(id)sender;
 - (IBAction)bSendMailClicked:(id)sender;
 - (IBAction)bSavePhotoClicked:(id)sender;
+- (IBAction)bSendModelClicked:(id)sender;
 
 @end
 
