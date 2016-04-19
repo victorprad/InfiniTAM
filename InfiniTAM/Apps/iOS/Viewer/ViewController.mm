@@ -330,7 +330,7 @@ using namespace ITMLib;
 }
 
 - (IBAction)bResetReconstructionClicked:(id)sender {
-    mainEngine->resetScene();
+    mainEngine->resetAll();
 }
 
 - (IBAction)pinchDetected:(id)sender {
