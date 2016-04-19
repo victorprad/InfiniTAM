@@ -92,11 +92,11 @@ void UIEngine::glutDisplayFunction()
 	glRasterPos2f(-0.95f, -0.95f);
 	if (uiEngine->freeviewActive)
 	{
-		sprintf(str, "n - next frame \t b - all frames \t e/esc - exit \t f - follow camera \t c - colours (currently %s) \t t - turn fusion %s", uiEngine->colourModes_freeview[uiEngine->currentColourMode].name, uiEngine->intergrationActive ? "off" : "on");
+		sprintf(str, "n - next frame \t b - all frames \t e/esc - exit \t r - reset all \t f - follow camera \t c - colours (currently %s) \t t - turn fusion %s", uiEngine->colourModes_freeview[uiEngine->currentColourMode].name, uiEngine->intergrationActive ? "off" : "on");
 	}
 	else
 	{
-		sprintf(str, "n - next frame \t b - all frames \t e/esc - exit \t f - free viewpoint \t c - colours (currently %s) \t t - turn fusion %s", uiEngine->colourModes_main[uiEngine->currentColourMode].name, uiEngine->intergrationActive ? "off" : "on");
+		sprintf(str, "n - next frame \t b - all frames \t e/esc - exit \t r - reset all \t f - free viewpoint \t c - colours (currently %s) \t t - turn fusion %s", uiEngine->colourModes_main[uiEngine->currentColourMode].name, uiEngine->intergrationActive ? "off" : "on");
 	}
 	safe_glutBitmapString(GLUT_BITMAP_HELVETICA_12, (const char*)str);
 
@@ -255,6 +255,14 @@ void UIEngine::glutKeyUpFunction(unsigned char key, int x, int y)
 			printf(" done\n");
 		}
 		}
+		break;
+	case 'r':
+	{
+		ITMBasicEngine<ITMVoxel, ITMVoxelIndex> *basicEngine = dynamic_cast<ITMBasicEngine<ITMVoxel, ITMVoxelIndex>*>(uiEngine->mainEngine);
+		if (basicEngine != NULL) {
+			basicEngine->resetAll();
+		}
+	}
 		break;
 	case '[':
 	case ']':

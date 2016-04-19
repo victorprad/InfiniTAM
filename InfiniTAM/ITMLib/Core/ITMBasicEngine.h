@@ -87,8 +87,8 @@ namespace ITMLib
 		void turnOnMainProcessing();
 		void turnOffMainProcessing();
 
-        /// resets the scene
-        void resetScene();
+        /// resets the scene and the tracker
+        void resetAll();
         
 		/** \brief Constructor
 		    Ommitting a separate image size for the depth images
