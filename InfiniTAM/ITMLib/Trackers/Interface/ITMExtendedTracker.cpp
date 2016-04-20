@@ -243,7 +243,7 @@ void ITMExtendedTracker::UpdatePoseQuality(int noValidPoints_old, float *hessian
 
 void ITMExtendedTracker::TrackCamera(ITMTrackingState *trackingState, const ITMView *view)
 {
-	if (trackingState->age_pointCloud > 0) this->currentFrameNo++;
+	if (trackingState->age_pointCloud >= 0) this->currentFrameNo++;
 	else this->currentFrameNo = 0;
 
 	this->SetEvaluationData(trackingState, view);
