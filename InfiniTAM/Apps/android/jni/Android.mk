@@ -90,13 +90,12 @@ LOCAL_MODULE    := InfiniTAM
 LOCAL_SRC_FILES := InfiniTAMApp.cpp jniExport.cpp
 LOCAL_CFLAGS := -Werror #-DCOMPILE_WITHOUT_CUDA
 LOCAL_LDLIBS := -landroid -lGLESv1_CM -llog -lz
-LOCAL_STATIC_LIBRARIES := Engine Utils ITMLib LCDLib ORUtils cudart_static
+LOCAL_STATIC_LIBRARIES := InputSource ITMLib RelocLib ORUtils cudart_static
 
 include $(BUILD_SHARED_LIBRARY)
 
-include ../Engine/Android.mk
-include ../ORUtils/Android.mk
-include ../ORUtils/Android.mk
-include ../LCDLib/Android.mk
-include ../ITMLib/Android.mk
+include ../../InputSource/Android.mk
+include ../../ORUtils/Android.mk
+include ../../RelocLib/Android.mk
+include ../../ITMLib/Android.mk
 

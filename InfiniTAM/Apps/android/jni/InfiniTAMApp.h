@@ -2,12 +2,12 @@
 
 #include <stdlib.h>
 
-#include "../../Engine/IMUSourceEngine.h"
-#include "../../Engine/ImageSourceEngine.h"
-#include "../../ITMLib/Core/ITMMainEngine.h"
-#include "../../ORUtils/NVTimer.h"
+#include "../../../InputSource/IMUSourceEngine.h"
+#include "../../../InputSource/ImageSourceEngine.h"
+#include "../../../ITMLib/Core/ITMMainEngine.h"
+#include "../../../ORUtils/NVTimer.h"
 
-#include "../../InputSource/FFMPEGWriter.h"
+#include "../../../InputSource/FFMPEGWriter.h"
 
 class InfiniTAMApp {
 	public:
@@ -60,6 +60,7 @@ class InfiniTAMApp {
 	bool mRecordingMode;
 
 	InfiniTAM::FFMPEGWriter *depthVideoWriter;
+	InfiniTAM::FFMPEGWriter *colorVideoWriter;
 };
 
 

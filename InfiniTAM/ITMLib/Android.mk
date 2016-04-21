@@ -12,7 +12,7 @@ MY_FILE_LIST := $(wildcard *.cpp *.cu Core/*.cpp Core/MultiScene/*.cpp) \
 	$(wildcard Engines/LowLevel/*.cpp Engines/LowLevel/CPU/*.cpp Engines/LowLevel/CUDA/*.cu) \
 	$(wildcard Engines/ViewBuilding/*.cpp Engines/ViewBuilding/CPU/*.cpp Engines/ViewBuilding/CUDA/*.cu) \
 	$(wildcard Engines/Visualisation/Interface/*.cpp) \
-	$(wildcard Objects/Camera/*.cpp Utils/*.cpp) \
+	$(wildcard Objects/Camera/*.cpp Objects/RenderStates/*.cpp Utils/*.cpp) \
 	$(wildcard Trackers/CPU/*.cpp Trackers/CUDA/*.cu Trackers/Interface/*.cpp)
 MY_OBJ_LIST := $(MY_FILE_LIST:%.cu=%.o)
 MY_OBJ_LIST := $(MY_OBJ_LIST:%.cpp=%.o)

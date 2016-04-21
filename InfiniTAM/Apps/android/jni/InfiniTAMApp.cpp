@@ -1,16 +1,18 @@
 // Copyright 2014-2015 Isis Innovation Limited and the authors of InfiniTAM
 
 #include "InfiniTAMApp.h"
-#include "../../Engine/OpenNIEngine.h"
-#include "../../Engine/IMUSourceEngine.h"
+#include "../../../InputSource/OpenNIEngine.h"
+#include "../../../InputSource/IMUSourceEngine.h"
 
-#include "../../ITMLib/Core/ITMBasicEngine.h"
-#include "../../ITMLib/ITMLibDefines.h"
+#include "../../../ITMLib/Core/ITMBasicEngine.h"
+#include "../../../ITMLib/ITMLibDefines.h"
 
 #include <GLES/gl.h>
 
 #include <android/log.h>
 #include <unistd.h>
+
+static const bool recordRGB = false;
 
 using namespace ITMLib;
 
@@ -24,6 +26,7 @@ InfiniTAMApp::InfiniTAMApp(void)
 	mIsInitialized = false;
 	mRecordingMode = false;
 	depthVideoWriter = NULL;
+	colorVideoWriter = NULL;
 
 	winImageType[0] = ITMMainEngine::InfiniTAM_IMAGE_SCENERAYCAST;
 	winImageType[1] = ITMMainEngine::InfiniTAM_IMAGE_ORIGINAL_DEPTH;
@@ -68,7 +71,7 @@ void InfiniTAMApp::RenderGL(void)
 		mNewWindowSize.x = mNewWindowSize.y = -1;
 	}
 
-	if (mRecordingMode) winImageType[0] = ITMMainEngine::InfiniTAM_IMAGE_ORIGINAL_DEPTH;
+	if (mRecordingMode) winImageType[0] = recordRGB?ITMMainEngine::InfiniTAM_IMAGE_ORIGINAL_RGB:ITMMainEngine::InfiniTAM_IMAGE_ORIGINAL_DEPTH;
 	else winImageType[0] = ITMMainEngine::InfiniTAM_IMAGE_SCENERAYCAST;
 
 	int localNumWin = 1;//NUM_WIN
@@ -183,6 +186,14 @@ bool InfiniTAMApp::ProcessFrame(void)
 	else mMainEngine->ProcessFrame(inputRGBImage, inputRawDepthImage);
 
 	if (mRecordingMode) {
+		if (recordRGB) {
+			if (colorVideoWriter == NULL) {
+				colorVideoWriter = new InfiniTAM::FFMPEGWriter();
+				colorVideoWriter->open("/sdcard/InfiniTAM/out_color.avi", inputRGBImage->noDims.x, inputRGBImage->noDims.y, false, 30);
+				//depthVideoWriter->open("out_rgb.avi", inputRGBImage->noDims.x, inputRGBImage->noDims.y, false, 30);
+			}
+			colorVideoWriter->writeFrame(inputRGBImage);
+		}
 		if (depthVideoWriter == NULL) {
 			depthVideoWriter = new InfiniTAM::FFMPEGWriter();
 			depthVideoWriter->open("/sdcard/InfiniTAM/out_depth.avi", inputRawDepthImage->noDims.x, inputRawDepthImage->noDims.y, true, 30);
@@ -193,6 +204,10 @@ bool InfiniTAMApp::ProcessFrame(void)
 		if (depthVideoWriter != NULL) {
 			delete depthVideoWriter;
 			depthVideoWriter = NULL;
+		}
+		if (colorVideoWriter != NULL) {
+			delete colorVideoWriter;
+			colorVideoWriter = NULL;
 		}
 	}
 
