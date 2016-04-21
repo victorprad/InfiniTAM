@@ -17,8 +17,11 @@ namespace ITMLib
 		/// Intrinsic calibration information for the view.
 		ITMRGBDCalib *calib;
 
-		/// RGB colour image.
+		/// RGB colour image for the current frame.
 		ITMUChar4Image *rgb; 
+
+		/// RGB colour image for the previous frame.
+		ITMUChar4Image *rgb_prev; 
 
 		/// Float valued depth image, if available according to @ref inputImageType.
 		ITMFloatImage *depth;
@@ -38,6 +41,7 @@ namespace ITMLib
 		{
 			this->calib = new ITMRGBDCalib(*calibration);
 			this->rgb = new ITMUChar4Image(imgSize_rgb, true, useGPU);
+			this->rgb_prev = NULL;
 			this->depth = new ITMFloatImage(imgSize_d, true, useGPU);
 			this->depthNormal = NULL;
 			this->depthUncertainty = NULL;
@@ -49,6 +53,7 @@ namespace ITMLib
 			delete calib;
 
 			delete rgb;
+			if (rgb_prev != NULL) delete rgb_prev;
 			delete depth;
 			delete depthConfidence;
 

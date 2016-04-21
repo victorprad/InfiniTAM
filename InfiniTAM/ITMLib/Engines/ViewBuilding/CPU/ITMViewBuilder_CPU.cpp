@@ -11,7 +11,7 @@ using namespace ORUtils;
 ITMViewBuilder_CPU::ITMViewBuilder_CPU(const ITMRGBDCalib *calib):ITMViewBuilder(calib) { }
 ITMViewBuilder_CPU::~ITMViewBuilder_CPU(void) { }
 
-void ITMViewBuilder_CPU::UpdateView(ITMView **view_ptr, ITMUChar4Image *rgbImage, ITMShortImage *rawDepthImage, bool useBilateralFilter, bool modelSensorNoise)
+void ITMViewBuilder_CPU::UpdateView(ITMView **view_ptr, ITMUChar4Image *rgbImage, ITMShortImage *rawDepthImage, bool useBilateralFilter, bool modelSensorNoise, bool storePreviousImage)
 { 
 	if (*view_ptr == NULL)
 	{
@@ -28,6 +28,12 @@ void ITMViewBuilder_CPU::UpdateView(ITMView **view_ptr, ITMUChar4Image *rgbImage
 		}
 	}
 	ITMView *view = *view_ptr;
+
+	if (storePreviousImage)
+	{
+		if (view->rgb_prev == NULL) view->rgb_prev = new ITMUChar4Image(rgbImage->noDims, true, false);
+		else view->rgb_prev->SetFrom(view->rgb, MemoryBlock<Vector4u>::CPU_TO_CPU);
+	}
 
 	view->rgb->SetFrom(rgbImage, MemoryBlock<Vector4u>::CPU_TO_CPU);
 	this->shortImage->SetFrom(rawDepthImage, MemoryBlock<short>::CPU_TO_CPU);
@@ -61,18 +67,7 @@ void ITMViewBuilder_CPU::UpdateView(ITMView **view_ptr, ITMUChar4Image *rgbImage
 	}
 }
 
-void ITMViewBuilder_CPU::UpdateView(ITMView **view_ptr, ITMUChar4Image *rgbImage, ITMFloatImage *depthImage)
-{
-	if (*view_ptr == NULL)
-		*view_ptr = new ITMView(calib, rgbImage->noDims, depthImage->noDims, false);
-
-	ITMView *view = *view_ptr;
-
-	view->rgb->UpdateDeviceFromHost();
-	view->depth->UpdateDeviceFromHost();
-}
-
-void ITMViewBuilder_CPU::UpdateView(ITMView **view_ptr, ITMUChar4Image *rgbImage, ITMShortImage *depthImage, bool useBilateralFilter, ITMIMUMeasurement *imuMeasurement, bool modelSensorNoise)
+void ITMViewBuilder_CPU::UpdateView(ITMView **view_ptr, ITMUChar4Image *rgbImage, ITMShortImage *depthImage, bool useBilateralFilter, ITMIMUMeasurement *imuMeasurement, bool modelSensorNoise, bool storePreviousImage)
 {
 	if (*view_ptr == NULL)
 	{
@@ -92,7 +87,7 @@ void ITMViewBuilder_CPU::UpdateView(ITMView **view_ptr, ITMUChar4Image *rgbImage
 	ITMViewIMU* imuView = (ITMViewIMU*)(*view_ptr);
 	imuView->imu->SetFrom(imuMeasurement);
 
-	this->UpdateView(view_ptr, rgbImage, depthImage, useBilateralFilter, modelSensorNoise);
+	this->UpdateView(view_ptr, rgbImage, depthImage, useBilateralFilter, modelSensorNoise, storePreviousImage);
 }
 
 void ITMViewBuilder_CPU::ConvertDisparityToDepth(ITMFloatImage *depth_out, const ITMShortImage *depth_in, const ITMIntrinsics *depthIntrinsics,
