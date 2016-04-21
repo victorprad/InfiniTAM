@@ -124,6 +124,7 @@ void ITMBasicEngine<TVoxel,TIndex>::resetAll()
     denseMapper->ResetScene(scene);
 	trackingState->pose_d->SetFrom(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
 	trackingState->age_pointCloud = -1;
+	if (view->rgb_prev != NULL) delete view->rgb_prev;
 }
 
 #ifdef OUTPUT_TRAJECTORY_QUATERNIONS
