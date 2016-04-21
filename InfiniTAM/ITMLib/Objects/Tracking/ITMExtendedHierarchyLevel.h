@@ -16,8 +16,6 @@ namespace ITMLib
 		TrackerIterationType iterationType;
 
 		ORUtils::Image<float> *depth;
-		ORUtils::Image<Vector4f> *depthNormals;
-		ORUtils::Image<float> *depthUncertainty;
 
 		Vector4f intrinsics;
 		bool manageData;
@@ -32,23 +30,17 @@ namespace ITMLib
 			if (!skipAllocation)
 			{
 				this->depth = new ORUtils::Image<float>(imgSize, memoryType);
-				this->depthNormals = new ORUtils::Image<Vector4f>(imgSize, memoryType);
-				this->depthUncertainty = new ORUtils::Image<float>(imgSize, memoryType);
 			}
 		}
 
 		void UpdateHostFromDevice()
 		{ 
 			this->depth->UpdateHostFromDevice();
-			this->depthNormals->UpdateHostFromDevice();
-			this->depthUncertainty->UpdateHostFromDevice();
 		}
 
 		void UpdateDeviceFromHost()
 		{ 
 			this->depth->UpdateDeviceFromHost();
-			this->depthNormals->UpdateDeviceFromHost();
-			this->depthUncertainty->UpdateDeviceFromHost();
 		}
 
 		~ITMExtendHierarchyLevel(void)
@@ -56,8 +48,6 @@ namespace ITMLib
 			if (manageData)
 			{
 				delete depth;
-				delete depthNormals;
-				delete depthUncertainty;
 			}
 		}
 
