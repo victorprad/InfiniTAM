@@ -2,13 +2,13 @@
 
 #pragma once
 
-#include "../../Engine/ImageSourceEngine.h"
-#include "../../Engine/IMUSourceEngine.h"
-#include "../../Engine/FFMPEGWriter.h"
+#include "../../InputSource/ImageSourceEngine.h"
+#include "../../InputSource/IMUSourceEngine.h"
+#include "../../InputSource/FFMPEGWriter.h"
 #include "../../ITMLib/Core/ITMMainEngine.h"
 #include "../../ITMLib/Utils/ITMLibSettings.h"
-#include "../../Utils/FileUtils.h"
-#include "../../Utils/NVTimer.h"
+#include "../../ORUtils/FileUtils.h"
+#include "../../ORUtils/NVTimer.h"
 
 #include <vector>
 
@@ -32,7 +32,7 @@ namespace InfiniTAM
 				 : name(_name), type(_type)
 				{}
 			};
-			std::vector<UIColourMode> colourModes;
+			std::vector<UIColourMode> colourModes_main, colourModes_freeview;
 			int currentColourMode;
 
 			ImageSourceEngine *imageSource;

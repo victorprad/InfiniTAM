@@ -9,6 +9,9 @@
 #include "../../Objects/Tracking/ITMSceneHierarchyLevel.h"
 #include "../../Objects/Tracking/TrackerIterationType.h"
 
+#include "../../../ORUtils/HomkerMap.h"
+#include "../../../ORUtils/SVMClassifier.h"
+
 namespace ITMLib
 {
 	/** Base class for engine performing ICP based depth tracking.
@@ -36,6 +39,12 @@ namespace ITMLib
 		bool HasConverged(float *step) const;
 
 		void SetEvaluationData(ITMTrackingState *trackingState, const ITMView *view);
+
+		void UpdatePoseQuality(int noValidPoints_old, float *hessian_good, float f_old);
+
+		ORUtils::HomkerMap *map;
+		ORUtils::SVMClassifier *svmClassifier;
+		Vector4f mu, sigma;
 	protected:
 		float *distThresh;
 
@@ -57,7 +66,8 @@ namespace ITMLib
 		void SetupLevels(int numIterCoarse, int numIterFine, float distThreshCoarse, float distThreshFine);
 
 		ITMDepthTracker(Vector2i imgSize, TrackerIterationType *trackingRegime, int noHierarchyLevels,
-			float terminationThreshold, const ITMLowLevelEngine *lowLevelEngine, MemoryDeviceType memoryType);
+			float terminationThreshold, float failureDetectorThreshold, 
+			const ITMLowLevelEngine *lowLevelEngine, MemoryDeviceType memoryType);
 		virtual ~ITMDepthTracker(void);
 	};
 }

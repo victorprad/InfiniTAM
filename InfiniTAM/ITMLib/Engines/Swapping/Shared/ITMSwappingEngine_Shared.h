@@ -9,8 +9,8 @@ _CPU_AND_GPU_CODE_ inline void combineVoxelDepthInformation(const CONSTPTR(TVoxe
 {
 	int newW = dst.w_depth;
 	int oldW = src.w_depth;
-	float newF = TVoxel::SDF_valueToFloat(dst.sdf);
-	float oldF = TVoxel::SDF_valueToFloat(src.sdf);
+	float newF = TVoxel::valueToFloat(dst.sdf);
+	float oldF = TVoxel::valueToFloat(src.sdf);
 
 	if (oldW == 0) return;
 
@@ -20,7 +20,7 @@ _CPU_AND_GPU_CODE_ inline void combineVoxelDepthInformation(const CONSTPTR(TVoxe
 	newW = MIN(newW, maxW);
 
 	dst.w_depth = newW;
-	dst.sdf = TVoxel::SDF_floatToValue(newF);
+	dst.sdf = TVoxel::floatToValue(newF);
 }
 
 template<class TVoxel>

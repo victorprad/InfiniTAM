@@ -23,14 +23,14 @@ _CPU_AND_GPU_CODE_ inline float computeUpdatedVoxelDepthInfo(DEVICEPTR(TVoxel) &
 
 	// get measured depth from image
 	depth_measure = depth[(int)(pt_image.x + 0.5f) + (int)(pt_image.y + 0.5f) * imgSize.x];
-	if (depth_measure <= 0.0) return -1;
+	if (depth_measure <= 0.0f) return -1;
 
 	// check whether voxel needs updating
 	eta = depth_measure - pt_camera.z;
 	if (eta < -mu) return eta;
 
 	// compute updated SDF value and reliability
-	oldF = TVoxel::SDF_valueToFloat(voxel.sdf); oldW = voxel.w_depth;
+	oldF = TVoxel::valueToFloat(voxel.sdf); oldW = voxel.w_depth;
 
 	newF = MIN(1.0f, eta / mu);
 	newW = 1;
@@ -41,12 +41,53 @@ _CPU_AND_GPU_CODE_ inline float computeUpdatedVoxelDepthInfo(DEVICEPTR(TVoxel) &
 	newW = MIN(newW, maxW);
 
 	// write back
-	voxel.sdf = TVoxel::SDF_floatToValue(newF);
+	voxel.sdf = TVoxel::floatToValue(newF);
 	voxel.w_depth = newW;
 
 	return eta;
 }
 
+template<class TVoxel>
+_CPU_AND_GPU_CODE_ inline float computeUpdatedVoxelDepthInfo(DEVICEPTR(TVoxel) &voxel, const THREADPTR(Vector4f) & pt_model, const CONSTPTR(Matrix4f) & M_d,
+	const CONSTPTR(Vector4f) & projParams_d, float mu, int maxW, const CONSTPTR(float) *depth, const CONSTPTR(float) *confidence, const CONSTPTR(Vector2i) & imgSize)
+{
+	Vector4f pt_camera; Vector2f pt_image;
+	float depth_measure, eta, oldF, newF;
+	int oldW, newW, locId;
+
+	// project point into image
+	pt_camera = M_d * pt_model;
+	if (pt_camera.z <= 0) return -1;
+
+	pt_image.x = projParams_d.x * pt_camera.x / pt_camera.z + projParams_d.z;
+	pt_image.y = projParams_d.y * pt_camera.y / pt_camera.z + projParams_d.w;
+	if ((pt_image.x < 1) || (pt_image.x > imgSize.x - 2) || (pt_image.y < 1) || (pt_image.y > imgSize.y - 2)) return -1;
+
+	locId = (int)(pt_image.x + 0.5f) + (int)(pt_image.y + 0.5f) * imgSize.x;
+	// get measured depth from image
+	depth_measure = depth[locId];
+	if (depth_measure <= 0.0) return -1;
+
+	// check whether voxel needs updating
+	eta = depth_measure - pt_camera.z;
+	if (eta < -mu) return eta;
+
+	// compute updated SDF value and reliability
+	oldF = TVoxel::valueToFloat(voxel.sdf); oldW = voxel.w_depth;
+	newF = MIN(1.0f, eta / mu); newW = 1;
+
+	newF = oldW * oldF + newW * newF;
+	newW = oldW + newW;
+	newF /= newW;
+	newW = MIN(newW, maxW);
+
+	// write back^
+	voxel.sdf = TVoxel::floatToValue(newF);
+	voxel.w_depth = newW;
+	voxel.confidence += TVoxel::floatToValue(confidence[locId]);
+
+	return eta;
+}
 
 template<class TVoxel>
 _CPU_AND_GPU_CODE_ inline void computeUpdatedVoxelColorInfo(DEVICEPTR(TVoxel) &voxel, const THREADPTR(Vector4f) & pt_model, const CONSTPTR(Matrix4f) & M_rgb,
@@ -78,21 +119,19 @@ _CPU_AND_GPU_CODE_ inline void computeUpdatedVoxelColorInfo(DEVICEPTR(TVoxel) &v
 	newC /= newW;
 	newW = MIN(newW, maxW);
 
-	buffV3u = TO_UCHAR3(newC * 255.0f);
-
-	voxel.clr = buffV3u;
+	voxel.clr = TO_UCHAR3(newC * 255.0f);
 	voxel.w_color = (uchar)newW;
 }
 
-template<bool hasColor, class TVoxel> struct ComputeUpdatedVoxelInfo;
+template<bool hasColor, bool hasConfidence, class TVoxel> struct ComputeUpdatedVoxelInfo;
 
 template<class TVoxel>
-struct ComputeUpdatedVoxelInfo<false, TVoxel> {
+struct ComputeUpdatedVoxelInfo<false, false, TVoxel> {
 	_CPU_AND_GPU_CODE_ static void compute(DEVICEPTR(TVoxel) & voxel, const THREADPTR(Vector4f) & pt_model,
 		const CONSTPTR(Matrix4f) & M_d, const CONSTPTR(Vector4f) & projParams_d,
 		const CONSTPTR(Matrix4f) & M_rgb, const CONSTPTR(Vector4f) & projParams_rgb,
 		float mu, int maxW,
-		const CONSTPTR(float) *depth, const CONSTPTR(Vector2i) & imgSize_d,
+		const CONSTPTR(float) *depth, const CONSTPTR(float) *confidence, const CONSTPTR(Vector2i) & imgSize_d,
 		const CONSTPTR(Vector4u) *rgb, const CONSTPTR(Vector2i) & imgSize_rgb)
 	{
 		computeUpdatedVoxelDepthInfo(voxel, pt_model, M_d, projParams_d, mu, maxW, depth, imgSize_d);
@@ -100,15 +139,43 @@ struct ComputeUpdatedVoxelInfo<false, TVoxel> {
 };
 
 template<class TVoxel>
-struct ComputeUpdatedVoxelInfo<true, TVoxel> {
+struct ComputeUpdatedVoxelInfo<true, false, TVoxel> {
 	_CPU_AND_GPU_CODE_ static void compute(DEVICEPTR(TVoxel) & voxel, const THREADPTR(Vector4f) & pt_model,
 		const THREADPTR(Matrix4f) & M_d, const THREADPTR(Vector4f) & projParams_d,
 		const THREADPTR(Matrix4f) & M_rgb, const THREADPTR(Vector4f) & projParams_rgb,
 		float mu, int maxW,
-		const CONSTPTR(float) *depth, const CONSTPTR(Vector2i) & imgSize_d,
+		const CONSTPTR(float) *depth, const CONSTPTR(float) *confidence, const CONSTPTR(Vector2i) & imgSize_d,
 		const CONSTPTR(Vector4u) *rgb, const THREADPTR(Vector2i) & imgSize_rgb)
 	{
 		float eta = computeUpdatedVoxelDepthInfo(voxel, pt_model, M_d, projParams_d, mu, maxW, depth, imgSize_d);
+		if ((eta > mu) || (fabs(eta / mu) > 0.25f)) return;
+		computeUpdatedVoxelColorInfo(voxel, pt_model, M_rgb, projParams_rgb, mu, maxW, eta, rgb, imgSize_rgb);
+	}
+};
+
+template<class TVoxel>
+struct ComputeUpdatedVoxelInfo<false, true, TVoxel> {
+	_CPU_AND_GPU_CODE_ static void compute(DEVICEPTR(TVoxel) & voxel, const THREADPTR(Vector4f) & pt_model,
+		const CONSTPTR(Matrix4f) & M_d, const CONSTPTR(Vector4f) & projParams_d,
+		const CONSTPTR(Matrix4f) & M_rgb, const CONSTPTR(Vector4f) & projParams_rgb,
+		float mu, int maxW,
+		const CONSTPTR(float) *depth, const CONSTPTR(float) *confidence, const CONSTPTR(Vector2i) & imgSize_d,
+		const CONSTPTR(Vector4u) *rgb, const CONSTPTR(Vector2i) & imgSize_rgb)
+	{
+		computeUpdatedVoxelDepthInfo(voxel, pt_model, M_d, projParams_d, mu, maxW, depth, confidence, imgSize_d);
+	}
+};
+
+template<class TVoxel>
+struct ComputeUpdatedVoxelInfo<true, true, TVoxel> {
+	_CPU_AND_GPU_CODE_ static void compute(DEVICEPTR(TVoxel) & voxel, const THREADPTR(Vector4f) & pt_model,
+		const THREADPTR(Matrix4f) & M_d, const THREADPTR(Vector4f) & projParams_d,
+		const THREADPTR(Matrix4f) & M_rgb, const THREADPTR(Vector4f) & projParams_rgb,
+		float mu, int maxW,
+		const CONSTPTR(float) *depth, const CONSTPTR(float) *confidence, const CONSTPTR(Vector2i) & imgSize_d,
+		const CONSTPTR(Vector4u) *rgb, const THREADPTR(Vector2i) & imgSize_rgb)
+	{
+		float eta = computeUpdatedVoxelDepthInfo(voxel, pt_model, M_d, projParams_d, mu, maxW, depth, confidence, imgSize_d);
 		if ((eta > mu) || (fabs(eta / mu) > 0.25f)) return;
 		computeUpdatedVoxelColorInfo(voxel, pt_model, M_rgb, projParams_rgb, mu, maxW, eta, rgb, imgSize_rgb);
 	}
@@ -119,7 +186,7 @@ _CPU_AND_GPU_CODE_ inline void buildHashAllocAndVisibleTypePP(DEVICEPTR(uchar) *
 	float oneOverVoxelSize, const CONSTPTR(ITMHashEntry) *hashTable, float viewFrustum_min, float viewFrustum_max)
 {
 	float depth_measure; unsigned int hashIdx; int noSteps;
-	Vector3f pt_camera_f, point_e, point, direction; Vector3s blockPos;
+	Vector4f pt_camera_f; Vector3f point_e, point, direction; Vector3s blockPos;
 
 	depth_measure = depth[x + y * imgSize.x];
 	if (depth_measure <= 0 || (depth_measure - mu) < 0 || (depth_measure - mu) < viewFrustum_min || (depth_measure + mu) > viewFrustum_max) return;
@@ -130,16 +197,13 @@ _CPU_AND_GPU_CODE_ inline void buildHashAllocAndVisibleTypePP(DEVICEPTR(uchar) *
 
 	float norm = sqrt(pt_camera_f.x * pt_camera_f.x + pt_camera_f.y * pt_camera_f.y + pt_camera_f.z * pt_camera_f.z);
 
-	Vector4f tmp;
-	tmp.x = pt_camera_f.x * (1.0f - mu / norm);
-	tmp.y = pt_camera_f.y * (1.0f - mu / norm);
-	tmp.z = pt_camera_f.z * (1.0f - mu / norm);
-	tmp.w = 1.0f;
-	point = TO_VECTOR3(invM_d * tmp) * oneOverVoxelSize;
-	tmp.x = pt_camera_f.x * (1.0f + mu / norm);
-	tmp.y = pt_camera_f.y * (1.0f + mu / norm);
-	tmp.z = pt_camera_f.z * (1.0f + mu / norm);
-	point_e = TO_VECTOR3(invM_d * tmp) * oneOverVoxelSize;
+	Vector4f pt_buff;
+	
+	pt_buff = pt_camera_f * (1.0f - mu / norm); pt_buff.w = 1.0f;
+	point = TO_VECTOR3(invM_d * pt_buff) * oneOverVoxelSize;
+
+	pt_buff = pt_camera_f * (1.0f + mu / norm); pt_buff.w = 1.0f;
+	point_e = TO_VECTOR3(invM_d * pt_buff) * oneOverVoxelSize;
 
 	direction = point_e - point;
 	norm = sqrt(direction.x * direction.x + direction.y * direction.y + direction.z * direction.z);

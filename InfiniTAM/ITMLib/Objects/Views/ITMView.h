@@ -31,6 +31,8 @@ namespace ITMLib
 		/// allocated when needed
 		ITMFloatImage *depthUncertainty;
 
+		// confidence based on distance from center
+		ITMFloatImage *depthConfidence;
 
 		ITMView(const ITMRGBDCalib *calibration, Vector2i imgSize_rgb, Vector2i imgSize_d, bool useGPU)
 		{
@@ -39,6 +41,7 @@ namespace ITMLib
 			this->depth = new ITMFloatImage(imgSize_d, true, useGPU);
 			this->depthNormal = NULL;
 			this->depthUncertainty = NULL;
+			this->depthConfidence = new ITMFloatImage(imgSize_d, true, useGPU);
 		}
 
 		virtual ~ITMView(void)
@@ -47,6 +50,7 @@ namespace ITMLib
 
 			delete rgb;
 			delete depth;
+			delete depthConfidence;
 
 			if (depthNormal != NULL) delete depthNormal;
 			if (depthUncertainty != NULL) delete depthUncertainty;

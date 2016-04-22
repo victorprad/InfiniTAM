@@ -46,7 +46,7 @@ namespace ITMLib
 		void UpdateDeviceFromHost()
 		{ 
 			this->rgb->UpdateDeviceFromHost();
-			this->depth->UpdateHostFromDevice();
+			this->depth->UpdateDeviceFromHost();
 			this->gradientX_rgb->UpdateDeviceFromHost();
 			this->gradientY_rgb->UpdateDeviceFromHost();
 		}

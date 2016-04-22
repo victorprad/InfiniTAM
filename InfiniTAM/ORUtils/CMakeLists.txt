@@ -14,12 +14,14 @@ SET(targetname ORUtils)
 
 INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseCUDA.cmake)
 INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseOpenMP.cmake)
+INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UsePNG.cmake)
 
 #############################
 # Specify the project files #
 #############################
 
 SET(sources
+FileUtils.cpp
 KeyValueConfig.cpp
 SE3Pose.cpp
 )
@@ -27,6 +29,8 @@ SE3Pose.cpp
 SET(headers
 Cholesky.h
 CUDADefines.h
+FileUtils.h
+HomkerMap.h
 Image.h
 KeyValueConfig.h
 LexicalCast.h
@@ -34,8 +38,10 @@ MathUtils.h
 Matrix.h
 MemoryBlock.h
 MemoryBlockPersister.h
+NVTimer.h
 PlatformIndependence.h
 SE3Pose.h
+SVMClassifier.h
 Vector.h
 )
 

@@ -4,11 +4,11 @@
 
 #include "PlatformIndependence.h"
 
+#ifndef __METALC__
+
 #ifndef COMPILE_WITHOUT_CUDA
 #include "CUDADefines.h"
 #endif
-
-#ifndef __METALC__
 
 #ifdef COMPILE_WITH_METAL
 #include "MetalContext.h"
@@ -16,8 +16,6 @@
 
 #include <stdlib.h>
 #include <string.h>
-
-#endif
 
 #ifndef MEMORY_DEVICE_TYPE
 #define MEMORY_DEVICE_TYPE
@@ -33,21 +31,15 @@ namespace ORUtils
 	class MemoryBlock
 	{
 	protected:
-#ifndef __METALC__
 		bool isAllocated_CPU, isAllocated_CUDA, isMetalCompatible;
-#endif
 		/** Pointer to memory on CPU host. */
 		DEVICEPTR(T)* data_cpu;
 
 		/** Pointer to memory on GPU, if available. */
 		DEVICEPTR(T)* data_cuda;
 
-#ifndef __METALC__
-
 #ifdef COMPILE_WITH_METAL
 		void *data_metalBuffer;
-#endif
-
 #endif
 	public:
 		enum MemoryCopyDirection { CPU_TO_CPU, CPU_TO_CUDA, CUDA_TO_CPU, CUDA_TO_CUDA };
@@ -78,9 +70,6 @@ namespace ORUtils
 
 			return 0;
 		}
-
-#ifndef __METALC__
-
 #ifdef COMPILE_WITH_METAL
 		inline const void *GetMetalBuffer() const { return data_metalBuffer; }
 #endif
@@ -286,6 +275,7 @@ namespace ORUtils
 		// Suppress the default copy constructor and assignment operator
 		MemoryBlock(const MemoryBlock&);
 		MemoryBlock& operator=(const MemoryBlock&);
-#endif
 	};
-} 
+}
+
+#endif

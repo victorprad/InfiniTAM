@@ -28,9 +28,9 @@ static const float F_maxdistattemptreloc = 0.2f;
 template <typename TVoxel, typename TIndex>
 ITMMultiEngine<TVoxel,TIndex>::ITMMultiEngine(const ITMLibSettings *settings, const ITMRGBDCalib *calib, Vector2i imgSize_rgb, Vector2i imgSize_d)
 {
-	if ((imgSize_d.x == -1) || (imgSize_d.y == -1)) imgSize_d = imgSize_rgb;
-
 	this->settings = settings;
+
+	if ((imgSize_d.x == -1) || (imgSize_d.y == -1)) imgSize_d = imgSize_rgb;
 
 	const ITMLibSettings::DeviceType deviceType = settings->deviceType;
 	lowLevelEngine = ITMLowLevelEngineFactory::MakeLowLevelEngine(deviceType);
@@ -55,7 +55,7 @@ ITMMultiEngine<TVoxel,TIndex>::ITMMultiEngine(const ITMLibSettings *settings, co
 
 	view = NULL; // will be allocated by the view builder
 
-	mLoopClosureDetector = new LCDLib::LoopClosureDetector(imgSize_d, Vector2f(0.5f,3.0f), 0.2f, 500, 4);
+	mRelocaliser = new RelocLib::Relocaliser(imgSize_d, Vector2f(0.5f,3.0f), 0.2f, 500, 4);
 }
 
 template <typename TVoxel, typename TIndex>
@@ -79,7 +79,7 @@ ITMMultiEngine<TVoxel,TIndex>::~ITMMultiEngine(void)
 
 	delete visualisationEngine;
 
-	delete mLoopClosureDetector;
+	delete mRelocaliser;
 }
 
 template <typename TVoxel, typename TIndex>
@@ -168,7 +168,7 @@ void ITMMultiEngine<TVoxel,TIndex>::ProcessFrame(ITMUChar4Image *rgbImage, ITMSh
 			fprintf(stderr, " LCD");
 			int NN[k_loopcloseneighbours];
 			float distances[k_loopcloseneighbours];
-			int addKeyframeIdx = mLoopClosureDetector->ProcessFrame(view->depth, k_loopcloseneighbours, NN, distances, primaryTrackingSuccess);
+			int addKeyframeIdx = mRelocaliser->ProcessFrame(view->depth, k_loopcloseneighbours, NN, distances, primaryTrackingSuccess);
 			int primarySceneIdx = -1;
 			if (primaryDataIdx >= 0) primarySceneIdx = activeDataManager->getSceneIndex(primaryDataIdx);
 
@@ -180,7 +180,7 @@ void ITMMultiEngine<TVoxel,TIndex>::ProcessFrame(ITMUChar4Image *rgbImage, ITMSh
 			else for (int j = 0; j < k_loopcloseneighbours; ++j)
 			{
 				if (distances[j] > F_maxdistattemptreloc) continue;
-				const LCDLib::PoseDatabase::PoseInScene & keyframe = poseDatabase.retrievePose(NN[j]);
+				const RelocLib::PoseDatabase::PoseInScene & keyframe = poseDatabase.retrievePose(NN[j]);
 				int newDataIdx = activeDataManager->initiateNewLink(keyframe.sceneIdx, keyframe.pose, (primarySceneIdx<0));
 				if (newDataIdx >= 0) {
 					// this is a new relocalisation attempt
@@ -214,8 +214,8 @@ void ITMMultiEngine<TVoxel,TIndex>::ProcessFrame(ITMUChar4Image *rgbImage, ITMSh
 			trackingController->Track(currentScene->trackingState, view);
 
 			int trackingSuccess = 0;
-			if (currentScene->trackingState->poseQuality>0.8f) trackingSuccess = 2;
-			else if (currentScene->trackingState->poseQuality>0.4f) trackingSuccess = 1;
+			if (currentScene->trackingState->trackerResult == ITMTrackingState::TRACKING_GOOD) trackingSuccess = 2;
+			else if (currentScene->trackingState->trackerResult == ITMTrackingState::TRACKING_POOR) trackingSuccess = 1;
 
 			if (trackingSuccess < 2)
 			{
@@ -318,6 +318,7 @@ void ITMMultiEngine<TVoxel,TIndex>::GetImage(ITMUChar4Image *out, GetImageType g
 		else out->SetFrom(renderState_freeview->raycastImage, ORUtils::MemoryBlock<Vector4u>::CPU_TO_CPU);
 		break;
 	}
+    case ITMMultiEngine::InfiniTAM_IMAGE_COLOUR_FROM_NORMAL:
 	case ITMMultiEngine::InfiniTAM_IMAGE_UNKNOWN:
 		break;
 	};

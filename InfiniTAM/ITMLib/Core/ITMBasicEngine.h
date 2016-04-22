@@ -11,6 +11,9 @@
 #include "../Engines/Visualisation/Interface/ITMVisualisationEngine.h"
 #include "../Objects/Misc/ITMIMUCalibrator.h"
 
+#include "../../RelocLib/Relocaliser.h"
+#include "../../RelocLib/PoseDatabase.h"
+
 namespace ITMLib
 {
 	template <typename TVoxel, typename TIndex>
@@ -20,6 +23,7 @@ namespace ITMLib
 		const ITMLibSettings *settings;
 
 		bool trackingActive, fusionActive, mainProcessingActive, trackingInitialised;
+		int framesProcessed, relocalisationCount;
 
 		ITMLowLevelEngine *lowLevelEngine;
 		ITMVisualisationEngine<TVoxel,TIndex> *visualisationEngine;
@@ -37,6 +41,10 @@ namespace ITMLib
 
 		ITMTracker *tracker;
 		ITMIMUCalibrator *imuCalibrator;
+
+		RelocLib::Relocaliser *relocaliser;
+		RelocLib::PoseDatabase poseDatabase;
+		ITMUChar4Image *kfRaycast;
 
 		/// Pointer for storing the current input frame
 		ITMView *view;
@@ -79,6 +87,9 @@ namespace ITMLib
 		void turnOnMainProcessing();
 		void turnOffMainProcessing();
 
+        /// resets the scene
+        void resetScene();
+        
 		/** \brief Constructor
 		    Ommitting a separate image size for the depth images
 		    will assume same resolution as for the RGB images.

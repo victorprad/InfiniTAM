@@ -60,6 +60,10 @@ typedef class ORUtils::Vector6<float> Vector6f;
 #define TO_UCHAR3(x) (x).toUChar()
 #endif
 
+#ifndef TO_UCHAR4
+#define TO_UCHAR4(x) (x).toUChar()
+#endif
+
 #ifndef TO_FLOAT3
 #define TO_FLOAT3(x) (x).toFloat()
 #endif
@@ -110,6 +114,10 @@ typedef metal::uchar4 Vector4u;
 
 #ifndef TO_UCHAR3
 #define TO_UCHAR3(x) (static_cast<metal::uchar3>(x))
+#endif
+
+#ifndef TO_UCHAR4
+#define TO_UCHAR4(x) (static_cast<metal::uchar4>(x))
 #endif
 
 #ifndef TO_FLOAT3

@@ -5,8 +5,8 @@
 
 #include "CLIEngine.h"
 
-#include "../../Engine/OpenNIEngine.h"
-#include "../../Engine/Kinect2Engine.h"
+#include "../../InputSource/OpenNIEngine.h"
+#include "../../InputSource/Kinect2Engine.h"
 
 #include "../../ITMLib/ITMLibDefines.h"
 #include "../../ITMLib/Core/ITMBasicEngine.h"

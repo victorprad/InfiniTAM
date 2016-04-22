@@ -44,19 +44,22 @@ namespace ORUtils
 		Essentially any previously allocated data is
 		released, new memory is allocated.
 		*/
-		void ChangeDims(Vector2<int> newDims)
+		void ChangeDims(Vector2<int> newDims, bool noResize = false)
 		{
-			if (newDims != noDims)
-			{
+			if (noResize && noDims.x > newDims.x && noDims.y > newDims.y)
 				this->noDims = newDims;
+			else
+				if (newDims != noDims)
+				{
+					this->noDims = newDims;
 
-				bool allocate_CPU = this->isAllocated_CPU;
-				bool allocate_CUDA = this->isAllocated_CUDA;
-				bool metalCompatible = this->isMetalCompatible;
+					bool allocate_CPU = this->isAllocated_CPU;
+					bool allocate_CUDA = this->isAllocated_CUDA;
+					bool metalCompatible = this->isMetalCompatible;
 
-				this->Free();
-				this->Allocate(newDims.x * newDims.y, allocate_CPU, allocate_CUDA, metalCompatible);
-			}
+					this->Free();
+					this->Allocate(newDims.x * newDims.y, allocate_CPU, allocate_CUDA, metalCompatible);
+				}
 		}
 
 		// Suppress the default copy constructor and assignment operator

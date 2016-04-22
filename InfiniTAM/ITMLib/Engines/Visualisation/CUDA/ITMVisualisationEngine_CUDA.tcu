@@ -36,22 +36,22 @@ __global__ void fillBlocks_device(const uint *noTotalBlocks, const RenderingBloc
 __global__ void findMissingPoints_device(int *fwdProjMissingPoints, uint *noMissingPoints, const Vector2f *minmaximg,
 	Vector4f *forwardProjection, float *currentDepth, Vector2i imgSize);
 
-template<class TVoxel, class TIndex>
-__global__ void genericRaycast_device(Vector4f *out_ptsRay, const TVoxel *voxelData, const typename TIndex::IndexData *voxelIndex,
+template<class TVoxel, class TIndex, bool modifyVisibleEntries>
+__global__ void genericRaycast_device(Vector4f *out_ptsRay, uchar *entriesVisibleType, const TVoxel *voxelData, const typename TIndex::IndexData *voxelIndex,
 	Vector2i imgSize, Matrix4f invM, Vector4f invProjParams, float oneOverVoxelSize, const Vector2f *minmaxdata, float mu);
 
-template<class TVoxel, class TIndex>
-__global__ void genericRaycastMissingPoints_device(Vector4f *forwardProjection, const TVoxel *voxelData, const typename TIndex::IndexData *voxelIndex,
-	Vector2i imgSize, Matrix4f invM, Vector4f invProjParams, float oneOverVoxelSize, int *fwdProjMissingPoints, int noMissingPoints,
-	const Vector2f *minmaximg, float mu);
+template<class TVoxel, class TIndex, bool modifyVisibleEntries>
+__global__ void genericRaycastMissingPoints_device(Vector4f *forwardProjection, uchar *entriesVisibleType, const TVoxel *voxelData, 
+	const typename TIndex::IndexData *voxelIndex, Vector2i imgSize, Matrix4f invM, Vector4f invProjParams, float oneOverVoxelSize, 
+	int *fwdProjMissingPoints, int noMissingPoints, const Vector2f *minmaximg, float mu);
 
 __global__ void forwardProject_device(Vector4f *forwardProjection, const Vector4f *pointsRay, Vector2i imgSize, Matrix4f M,
 	Vector4f projParams, float voxelSize);
 
-__global__ void renderICP_device(Vector4u *outRendering, Vector4f *pointsMap, Vector4f *normalsMap, const Vector4f *ptsRay,
+__global__ void renderICP_device(Vector4f *pointsMap, Vector4f *normalsMap, const Vector4f *ptsRay,
 	float voxelSize, Vector2i imgSize, Vector3f lightSource);
 
-__global__ void renderForward_device(Vector4u *outRendering, const Vector4f *pointsRay, float voxelSize, Vector2i imgSize, Vector3f lightSource);
+__global__ void renderGrey_ImageNormals_device(Vector4u *outRendering, const Vector4f *pointsRay, float voxelSize, Vector2i imgSize, Vector3f lightSource);
 
 template<class TVoxel, class TIndex>
 __global__ void renderGrey_device(Vector4u *outRendering, const Vector4f *ptsRay, const TVoxel *voxelData,
@@ -62,7 +62,11 @@ __global__ void renderColourFromNormal_device(Vector4u *outRendering, const Vect
 	const typename TIndex::IndexData *voxelIndex, Vector2i imgSize, Vector3f lightSource);
 
 template<class TVoxel, class TIndex>
-__global__ void renderPointCloud_device(Vector4u *outRendering, Vector4f *locations, Vector4f *colours, uint *noTotalPoints,
+__global__ void renderColourFromConfidence_device(Vector4u *outRendering, const Vector4f *ptsRay, const TVoxel *voxelData,
+	const typename TIndex::IndexData *voxelIndex, Vector2i imgSize, Vector3f lightSource);
+
+template<class TVoxel, class TIndex>
+__global__ void renderPointCloud_device(Vector4f *locations, Vector4f *colours, uint *noTotalPoints,
 	const Vector4f *ptsRay, const TVoxel *voxelData, const typename TIndex::IndexData *voxelIndex, bool skipPoints,
 	float voxelSize, Vector2i imgSize, Vector3f lightSource);
 
@@ -243,39 +247,65 @@ void ITMVisualisationEngine_CUDA<TVoxel, ITMVoxelBlockHash>::CreateExpectedDepth
 }
 
 template <class TVoxel, class TIndex>
-static void GenericRaycast(const ITMScene<TVoxel, TIndex> *scene, const Vector2i& imgSize, const Matrix4f& invM, const Vector4f& projParams, const ITMRenderState *renderState)
+static void GenericRaycast(const ITMScene<TVoxel, TIndex> *scene, const Vector2i& imgSize, const Matrix4f& invM, const Vector4f& projParams, const ITMRenderState *renderState, bool updateVisibleList)
 {
 	float voxelSize = scene->sceneParams->voxelSize;
 	float oneOverVoxelSize = 1.0f / voxelSize;
 
+	uchar *entriesVisibleType = NULL;
+	if (updateVisibleList&&(dynamic_cast<const ITMRenderState_VH*>(renderState)!=NULL))
+	{
+		entriesVisibleType = ((ITMRenderState_VH*)renderState)->GetEntriesVisibleType();
+	}
+
 	dim3 cudaBlockSize(16, 12);
 	dim3 gridSize((int)ceil((float)imgSize.x / (float)cudaBlockSize.x), (int)ceil((float)imgSize.y / (float)cudaBlockSize.y));
-	genericRaycast_device<TVoxel, TIndex> <<<gridSize, cudaBlockSize>>>(
-		renderState->raycastResult->GetData(MEMORYDEVICE_CUDA),
-		scene->localVBA.GetVoxelBlocks(),
-		scene->index.getIndexData(),
-		imgSize,
-		invM,
-		InvertProjectionParams(projParams),
-		oneOverVoxelSize,
-		renderState->renderingRangeImage->GetData(MEMORYDEVICE_CUDA),
-		scene->sceneParams->mu
-	);
+	if (entriesVisibleType!=NULL) genericRaycast_device<TVoxel, ITMVoxelBlockHash, true> << <gridSize, cudaBlockSize >> >(
+			renderState->raycastResult->GetData(MEMORYDEVICE_CUDA),
+			entriesVisibleType,
+			scene->localVBA.GetVoxelBlocks(),
+			scene->index.getIndexData(),
+			imgSize,
+			invM,
+			InvertProjectionParams(projParams),
+			oneOverVoxelSize,
+			renderState->renderingRangeImage->GetData(MEMORYDEVICE_CUDA),
+			scene->sceneParams->mu
+		);
+	else genericRaycast_device<TVoxel, ITMVoxelBlockHash, false> << <gridSize, cudaBlockSize >> >(
+			renderState->raycastResult->GetData(MEMORYDEVICE_CUDA),
+			NULL,
+			scene->localVBA.GetVoxelBlocks(),
+			scene->index.getIndexData(),
+			imgSize,
+			invM,
+			InvertProjectionParams(projParams),
+			oneOverVoxelSize,
+			renderState->renderingRangeImage->GetData(MEMORYDEVICE_CUDA),
+			scene->sceneParams->mu
+		);
 	ORcudaKernelCheck;
 }
 
 template<class TVoxel, class TIndex>
 static void RenderImage_common(const ITMScene<TVoxel, TIndex> *scene, const ORUtils::SE3Pose *pose, const ITMIntrinsics *intrinsics, const ITMRenderState *renderState,
-	ITMUChar4Image *outputImage, IITMVisualisationEngine::RenderImageType type)
+	ITMUChar4Image *outputImage, IITMVisualisationEngine::RenderImageType type, IITMVisualisationEngine::RenderRaycastSelection raycastType)
 {
 	Vector2i imgSize = outputImage->noDims;
 	Matrix4f invM = pose->GetInvM();
 
-	GenericRaycast(scene, imgSize, invM, intrinsics->projectionParamsSimple.all, renderState);
+	Vector4f *pointsRay;
+	if (raycastType == IITMVisualisationEngine::RENDER_FROM_OLD_RAYCAST) {
+		pointsRay = renderState->raycastResult->GetData(MEMORYDEVICE_CUDA);
+	} else if (raycastType == IITMVisualisationEngine::RENDER_FROM_OLD_FORWARDPROJ) {
+		pointsRay = renderState->forwardProjection->GetData(MEMORYDEVICE_CUDA);
+	} else {
+		GenericRaycast(scene, imgSize, invM, intrinsics->projectionParamsSimple.all, renderState, false);
+		pointsRay = renderState->raycastResult->GetData(MEMORYDEVICE_CUDA);
+	}
 
 	Vector3f lightSource = -Vector3f(invM.getColumn(2));
 	Vector4u *outRendering = outputImage->GetData(MEMORYDEVICE_CUDA);
-	Vector4f *pointsRay = renderState->raycastResult->GetData(MEMORYDEVICE_CUDA);
 
 	dim3 cudaBlockSize(8, 8);
 	dim3 gridSize((int)ceil((float)imgSize.x / (float)cudaBlockSize.x), (int)ceil((float)imgSize.y / (float)cudaBlockSize.y));
@@ -294,6 +324,16 @@ static void RenderImage_common(const ITMScene<TVoxel, TIndex> *scene, const ORUt
 			scene->index.getIndexData(), imgSize, lightSource);
 		ORcudaKernelCheck;
 		break;
+	case IITMVisualisationEngine::RENDER_COLOUR_FROM_CONFIDENCE:
+		renderColourFromConfidence_device<TVoxel, TIndex> <<<gridSize, cudaBlockSize>>>(outRendering, pointsRay, scene->localVBA.GetVoxelBlocks(),
+			scene->index.getIndexData(), imgSize, lightSource);
+		ORcudaKernelCheck;
+		break;
+	case IITMVisualisationEngine::RENDER_SHADED_GREYSCALE_IMAGENORMALS:
+		renderGrey_ImageNormals_device <<<gridSize, cudaBlockSize>>>(outRendering, pointsRay, scene->sceneParams->voxelSize,
+			imgSize, lightSource);
+		ORcudaKernelCheck;
+		break;
 	case IITMVisualisationEngine::RENDER_SHADED_GREYSCALE:
 	default:
 		renderGrey_device<TVoxel, TIndex> <<<gridSize, cudaBlockSize>>>(outRendering, pointsRay, scene->localVBA.GetVoxelBlocks(),
@@ -310,7 +350,7 @@ static void CreatePointCloud_common(const ITMScene<TVoxel, TIndex> *scene, const
 	Vector2i imgSize = renderState->raycastResult->noDims;
 	Matrix4f invM = trackingState->pose_d->GetInvM() * view->calib->trafo_rgb_to_depth.calib;
 
-	GenericRaycast(scene, imgSize, invM, view->calib->intrinsics_rgb.projectionParamsSimple.all, renderState);
+	GenericRaycast(scene, imgSize, invM, view->calib->intrinsics_rgb.projectionParamsSimple.all, renderState, true);
 	trackingState->pose_pointCloud->SetFrom(trackingState->pose_d);
 
 	ORcudaSafeCall(cudaMemsetAsync(noTotalPoints_device, 0, sizeof(uint)));
@@ -318,12 +358,11 @@ static void CreatePointCloud_common(const ITMScene<TVoxel, TIndex> *scene, const
 	Vector3f lightSource = -Vector3f(invM.getColumn(2));
 	Vector4f *locations = trackingState->pointCloud->locations->GetData(MEMORYDEVICE_CUDA);
 	Vector4f *colours = trackingState->pointCloud->colours->GetData(MEMORYDEVICE_CUDA);
-	Vector4u *outRendering = renderState->raycastImage->GetData(MEMORYDEVICE_CUDA);
 	Vector4f *pointsRay = renderState->raycastResult->GetData(MEMORYDEVICE_CUDA);
 
 	dim3 cudaBlockSize(16, 16);
 	dim3 gridSize = getGridSize(imgSize, cudaBlockSize);
-	renderPointCloud_device<TVoxel, TIndex> << <gridSize, cudaBlockSize >> >(outRendering, locations, colours, noTotalPoints_device,
+	renderPointCloud_device<TVoxel, TIndex> << <gridSize, cudaBlockSize >> >(locations, colours, noTotalPoints_device,
 		pointsRay, scene->localVBA.GetVoxelBlocks(), scene->index.getIndexData(), skipPoints, scene->sceneParams->voxelSize, imgSize, lightSource);
 	ORcudaKernelCheck;
 
@@ -336,18 +375,17 @@ void CreateICPMaps_common(const ITMScene<TVoxel, TIndex> *scene, const ITMView *
 	Vector2i imgSize = renderState->raycastResult->noDims;
 	Matrix4f invM = trackingState->pose_d->GetInvM();
 
-	GenericRaycast(scene, imgSize, invM, view->calib->intrinsics_d.projectionParamsSimple.all, renderState);
+	GenericRaycast(scene, imgSize, invM, view->calib->intrinsics_d.projectionParamsSimple.all, renderState, true);
 	trackingState->pose_pointCloud->SetFrom(trackingState->pose_d);
 
 	Vector4f *pointsMap = trackingState->pointCloud->locations->GetData(MEMORYDEVICE_CUDA);
 	Vector4f *normalsMap = trackingState->pointCloud->colours->GetData(MEMORYDEVICE_CUDA);
-	Vector4u *outRendering = renderState->raycastImage->GetData(MEMORYDEVICE_CUDA);
 	Vector4f *pointsRay = renderState->raycastResult->GetData(MEMORYDEVICE_CUDA);
 	Vector3f lightSource = -Vector3f(invM.getColumn(2));
 
 	dim3 cudaBlockSize(16, 12);
 	dim3 gridSize((int)ceil((float)imgSize.x / (float)cudaBlockSize.x), (int)ceil((float)imgSize.y / (float)cudaBlockSize.y));
-	renderICP_device<<<gridSize, cudaBlockSize>>>(outRendering, pointsMap, normalsMap, pointsRay,
+	renderICP_device<<<gridSize, cudaBlockSize>>>(pointsMap, normalsMap, pointsRay,
 		scene->sceneParams->voxelSize, imgSize, lightSource);
 	ORcudaKernelCheck;
 }
@@ -361,12 +399,10 @@ static void ForwardRender_common(const ITMScene<TVoxel, TIndex> *scene, const IT
 	Matrix4f invM = trackingState->pose_d->GetInvM();
 	const Vector4f& projParams = view->calib->intrinsics_d.projectionParamsSimple.all;
 
-	Vector3f lightSource = -Vector3f(invM.getColumn(2));
 	const Vector4f *pointsRay = renderState->raycastResult->GetData(MEMORYDEVICE_CUDA);
 	float *currentDepth = view->depth->GetData(MEMORYDEVICE_CUDA);
 	Vector4f *forwardProjection = renderState->forwardProjection->GetData(MEMORYDEVICE_CUDA);
 	int *fwdProjMissingPoints = renderState->fwdProjMissingPoints->GetData(MEMORYDEVICE_CUDA);
-	Vector4u *outRendering = renderState->raycastImage->GetData(MEMORYDEVICE_CUDA);
 	const Vector2f *minmaximg = renderState->renderingRangeImage->GetData(MEMORYDEVICE_CUDA);
 	float oneOverVoxelSize = 1.0f / scene->sceneParams->voxelSize;
 	float voxelSize = scene->sceneParams->voxelSize;
@@ -402,45 +438,39 @@ static void ForwardRender_common(const ITMScene<TVoxel, TIndex> *scene, const IT
 		blockSize = dim3(256);
 		gridSize = dim3((int)ceil((float)renderState->noFwdProjMissingPoints / blockSize.x));
 
-		genericRaycastMissingPoints_device<TVoxel, TIndex> << <gridSize, blockSize >> >(forwardProjection, voxelData, voxelIndex, imgSize, invM,
+		genericRaycastMissingPoints_device<TVoxel, TIndex, false> << <gridSize, blockSize >> >(forwardProjection, NULL, voxelData, voxelIndex, imgSize, invM,
 			InvertProjectionParams(projParams), oneOverVoxelSize, fwdProjMissingPoints, renderState->noFwdProjMissingPoints, minmaximg, scene->sceneParams->mu);
-		ORcudaKernelCheck;
-	}
-
-	{
-		blockSize = dim3(16, 16);
-		gridSize = dim3((int)ceil((float)imgSize.x / (float)blockSize.x), (int)ceil((float)imgSize.y / (float)blockSize.y));
-
-		renderForward_device << <gridSize, blockSize >> >(outRendering, forwardProjection, voxelSize, imgSize, lightSource);
 		ORcudaKernelCheck;
 	}
 }
 
 template<class TVoxel, class TIndex>
 void ITMVisualisationEngine_CUDA<TVoxel, TIndex>::RenderImage(const ITMScene<TVoxel,TIndex> *scene, const ORUtils::SE3Pose *pose, const ITMIntrinsics *intrinsics, const ITMRenderState *renderState,
-	ITMUChar4Image *outputImage, IITMVisualisationEngine::RenderImageType type) const
+	ITMUChar4Image *outputImage, IITMVisualisationEngine::RenderImageType type,
+	IITMVisualisationEngine::RenderRaycastSelection raycastType) const
 {
-	RenderImage_common(scene, pose, intrinsics, renderState, outputImage, type);
+	RenderImage_common(scene, pose, intrinsics, renderState, outputImage, type, raycastType);
 }
 
 template<class TVoxel>
 void ITMVisualisationEngine_CUDA<TVoxel, ITMVoxelBlockHash>::RenderImage(const ITMScene<TVoxel,ITMVoxelBlockHash> *scene, const ORUtils::SE3Pose *pose, const ITMIntrinsics *intrinsics,
-	const ITMRenderState *renderState, ITMUChar4Image *outputImage, IITMVisualisationEngine::RenderImageType type) const
+	const ITMRenderState *renderState, ITMUChar4Image *outputImage, IITMVisualisationEngine::RenderImageType type,
+	IITMVisualisationEngine::RenderRaycastSelection raycastType) const
 {
-	RenderImage_common(scene, pose, intrinsics, renderState, outputImage, type);
+	RenderImage_common(scene, pose, intrinsics, renderState, outputImage, type, raycastType);
 }
 
 template<class TVoxel, class TIndex>
 void ITMVisualisationEngine_CUDA<TVoxel, TIndex>::FindSurface(const ITMScene<TVoxel,TIndex> *scene, const ORUtils::SE3Pose *pose, const ITMIntrinsics *intrinsics, const ITMRenderState *renderState) const
 {
-	GenericRaycast(scene, renderState->raycastResult->noDims, pose->GetInvM(), intrinsics->projectionParamsSimple.all, renderState);
+	GenericRaycast(scene, renderState->raycastResult->noDims, pose->GetInvM(), intrinsics->projectionParamsSimple.all, renderState, false);
 }
 
 template<class TVoxel>
 void ITMVisualisationEngine_CUDA<TVoxel, ITMVoxelBlockHash>::FindSurface(const ITMScene<TVoxel,ITMVoxelBlockHash> *scene, const ORUtils::SE3Pose *pose, const ITMIntrinsics *intrinsics,
 	const ITMRenderState *renderState) const
 {
-	GenericRaycast(scene, renderState->raycastResult->noDims, pose->GetInvM(), intrinsics->projectionParamsSimple.all, renderState);
+	GenericRaycast(scene, renderState->raycastResult->noDims, pose->GetInvM(), intrinsics->projectionParamsSimple.all, renderState, false);
 }
 
 template<class TVoxel, class TIndex>
@@ -613,9 +643,10 @@ __global__ void findMissingPoints_device(int *fwdProjMissingPoints, uint *noMiss
 	}
 }
 
-template<class TVoxel, class TIndex>
-__global__ void genericRaycast_device(Vector4f *out_ptsRay, const TVoxel *voxelData, const typename TIndex::IndexData *voxelIndex,
-	Vector2i imgSize, Matrix4f invM, Vector4f invProjParams, float oneOverVoxelSize, const Vector2f *minmaximg, float mu)
+template<class TVoxel, class TIndex, bool modifyVisibleEntries>
+__global__ void genericRaycast_device(Vector4f *out_ptsRay, uchar *entriesVisibleType, const TVoxel *voxelData, 
+	const typename TIndex::IndexData *voxelIndex, Vector2i imgSize, Matrix4f invM, Vector4f invProjParams, 
+	float oneOverVoxelSize, const Vector2f *minmaximg, float mu)
 {
 	int x = (threadIdx.x + blockIdx.x * blockDim.x), y = (threadIdx.y + blockIdx.y * blockDim.y);
 
@@ -624,13 +655,13 @@ __global__ void genericRaycast_device(Vector4f *out_ptsRay, const TVoxel *voxelD
 	int locId = x + y * imgSize.x;
 	int locId2 = (int)floor((float)x / minmaximg_subsample) + (int)floor((float)y / minmaximg_subsample) * imgSize.x;
 
-	castRay<TVoxel, TIndex>(out_ptsRay[locId], x, y, voxelData, voxelIndex, invM, invProjParams, oneOverVoxelSize, mu, minmaximg[locId2]);
+	castRay<TVoxel, TIndex, modifyVisibleEntries>(out_ptsRay[locId], entriesVisibleType, x, y, voxelData, voxelIndex, invM, invProjParams, oneOverVoxelSize, mu, minmaximg[locId2]);
 }
 
-template<class TVoxel, class TIndex>
-__global__ void genericRaycastMissingPoints_device(Vector4f *forwardProjection, const TVoxel *voxelData, const typename TIndex::IndexData *voxelIndex,
-	Vector2i imgSize, Matrix4f invM, Vector4f invProjParams, float oneOverVoxelSize, int *fwdProjMissingPoints, int noMissingPoints,
-	const Vector2f *minmaximg, float mu)
+template<class TVoxel, class TIndex, bool modifyVisibleEntries>
+__global__ void genericRaycastMissingPoints_device(Vector4f *forwardProjection, uchar *entriesVisibleType, const TVoxel *voxelData, 
+	const typename TIndex::IndexData *voxelIndex, Vector2i imgSize, Matrix4f invM, Vector4f invProjParams, float oneOverVoxelSize, 
+	int *fwdProjMissingPoints, int noMissingPoints, const Vector2f *minmaximg, float mu)
 {
 	int pointId = threadIdx.x + blockIdx.x * blockDim.x;
 
@@ -640,7 +671,7 @@ __global__ void genericRaycastMissingPoints_device(Vector4f *forwardProjection, 
 	int y = locId / imgSize.x, x = locId - y*imgSize.x;
 	int locId2 = (int)floor((float)x / minmaximg_subsample) + (int)floor((float)y / minmaximg_subsample) * imgSize.x;
 
-	castRay<TVoxel, TIndex>(forwardProjection[locId], x, y, voxelData, voxelIndex, invM, invProjParams, oneOverVoxelSize, mu, minmaximg[locId2]);
+	castRay<TVoxel, TIndex, modifyVisibleEntries>(forwardProjection[locId], entriesVisibleType, x, y, voxelData, voxelIndex, invM, invProjParams, oneOverVoxelSize, mu, minmaximg[locId2]);
 }
 
 __global__ void forwardProject_device(Vector4f *forwardProjection, const Vector4f *pointsRay, Vector2i imgSize, Matrix4f M,
@@ -657,23 +688,23 @@ __global__ void forwardProject_device(Vector4f *forwardProjection, const Vector4
 	if (locId_new >= 0) forwardProjection[locId_new] = pixel;
 }
 
-__global__ void renderICP_device(Vector4u *outRendering, Vector4f *pointsMap, Vector4f *normalsMap, const Vector4f *pointsRay,
+__global__ void renderICP_device(Vector4f *pointsMap, Vector4f *normalsMap, const Vector4f *pointsRay,
 	float voxelSize, Vector2i imgSize, Vector3f lightSource)
 {
 	int x = (threadIdx.x + blockIdx.x * blockDim.x), y = (threadIdx.y + blockIdx.y * blockDim.y);
 
 	if (x >= imgSize.x || y >= imgSize.y) return;
 
-	processPixelICP<true>(outRendering, pointsMap, normalsMap, pointsRay, imgSize, x, y, voxelSize, lightSource);
+	processPixelICP<true>(pointsMap, normalsMap, pointsRay, imgSize, x, y, voxelSize, lightSource);
 }
 
-__global__ void renderForward_device(Vector4u *outRendering, const Vector4f *pointsRay, float voxelSize, Vector2i imgSize, Vector3f lightSource)
+__global__ void renderGrey_ImageNormals_device(Vector4u *outRendering, const Vector4f *pointsRay, float voxelSize, Vector2i imgSize, Vector3f lightSource)
 {
 	int x = (threadIdx.x + blockIdx.x * blockDim.x), y = (threadIdx.y + blockIdx.y * blockDim.y);
 
 	if (x >= imgSize.x || y >= imgSize.y) return;
 
-	processPixelForwardRender<true>(outRendering, pointsRay, imgSize, x, y, voxelSize, lightSource);
+	processPixelGrey_ImageNormals<true>(outRendering, pointsRay, imgSize, x, y, voxelSize, lightSource);
 }
 
 template<class TVoxel, class TIndex>
@@ -707,7 +738,22 @@ __global__ void renderColourFromNormal_device(Vector4u *outRendering, const Vect
 }
 
 template<class TVoxel, class TIndex>
-__global__ void renderPointCloud_device(Vector4u *outRendering, Vector4f *locations, Vector4f *colours, uint *noTotalPoints,
+__global__ void renderColourFromConfidence_device(Vector4u *outRendering, const Vector4f *ptsRay, const TVoxel *voxelData,
+	const typename TIndex::IndexData *voxelIndex, Vector2i imgSize, Vector3f lightSource)
+{
+	int x = (threadIdx.x + blockIdx.x * blockDim.x), y = (threadIdx.y + blockIdx.y * blockDim.y);
+
+	if (x >= imgSize.x || y >= imgSize.y) return;
+
+	int locId = x + y * imgSize.x;
+
+	Vector4f ptRay = ptsRay[locId];
+
+	processPixelConfidence<TVoxel, TIndex>(outRendering[locId], ptRay, ptRay.w > 0, voxelData, voxelIndex, lightSource);
+}
+
+template<class TVoxel, class TIndex>
+__global__ void renderPointCloud_device(/*Vector4u *outRendering, */Vector4f *locations, Vector4f *colours, uint *noTotalPoints,
 	const Vector4f *ptsRay, const TVoxel *voxelData, const typename TIndex::IndexData *voxelIndex, bool skipPoints,
 	float voxelSize, Vector2i imgSize, Vector3f lightSource)
 {
@@ -729,9 +775,6 @@ __global__ void renderPointCloud_device(Vector4u *outRendering, Vector4f *locati
 		foundPoint = pointRay.w > 0;
 
 		computeNormalAndAngle<TVoxel, TIndex>(foundPoint, point, voxelData, voxelIndex, lightSource, outNormal, angle);
-
-		if (foundPoint) drawPixelGrey(outRendering[locId], angle);
-		else outRendering[locId] = Vector4u((uchar)0);
 
 		if (skipPoints && ((x % 2 == 0) || (y % 2 == 0))) foundPoint = false;
 
