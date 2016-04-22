@@ -13,7 +13,18 @@ ITMExtendedTracker::ITMExtendedTracker(Vector2i imgSize, TrackerIterationType *t
 	float terminationThreshold, float failureDetectorThreshold, float viewFrustum_min, float viewFrustum_max,
 	int tukeyCutOff, int framesToSkip, int framesToWeight, const ITMLowLevelEngine *lowLevelEngine, MemoryDeviceType memoryType)
 {
-	viewHierarchy = new ITMImageHierarchy<ITMExtendHierarchyLevel>(imgSize, trackingRegime, noHierarchyLevels, memoryType, true);
+	useDepth = true;
+	useColour = true;
+
+	//TODO imgSize should be _d and _rgb
+	if (useColour && useDepth)
+		viewHierarchy = new ITMTwoImageHierarchy<ITMDepthHierarchyLevel, ITMRGBHierarchyLevel>(imgSize, imgSize, trackingRegime, noHierarchyLevels, memoryType, true);
+	else
+	{
+		if (useDepth) viewHierarchy = new ITMTwoImageHierarchy<ITMDepthHierarchyLevel, ITMRGBHierarchyLevel>(imgSize, trackingRegime, noHierarchyLevels, memoryType, 0, true);
+		else viewHierarchy = new ITMTwoImageHierarchy<ITMDepthHierarchyLevel, ITMRGBHierarchyLevel>(imgSize, trackingRegime, noHierarchyLevels, memoryType, 1, true);
+	}
+
 	sceneHierarchy = new ITMImageHierarchy<ITMSceneHierarchyLevel>(imgSize, trackingRegime, noHierarchyLevels, memoryType, true);
 
 	this->noIterationsPerLevel = new int[noHierarchyLevels];
@@ -54,6 +65,7 @@ ITMExtendedTracker::ITMExtendedTracker(Vector2i imgSize, TrackerIterationType *t
 ITMExtendedTracker::~ITMExtendedTracker(void)
 {
 	delete this->viewHierarchy;
+
 	delete this->sceneHierarchy;
 
 	delete[] this->noIterationsPerLevel;
@@ -75,7 +87,6 @@ void ITMExtendedTracker::SetupLevels(int numIterCoarse, int numIterFine, float s
 			val -= step;
 		}
 	}
-
 	if ((spaceThreshCoarse >= 0.0f) && (spaceThreshFine >= 0.0f)) {
 		float step = (float)(spaceThreshCoarse - spaceThreshFine) / (float)(noHierarchyLevels - 1);
 		float val = spaceThreshCoarse;
@@ -91,11 +102,21 @@ void ITMExtendedTracker::SetEvaluationData(ITMTrackingState *trackingState, cons
 	this->trackingState = trackingState;
 	this->view = view;
 
-	sceneHierarchy->levels[0]->intrinsics = view->calib->intrinsics_d.projectionParamsSimple.all;
-	viewHierarchy->levels[0]->intrinsics = view->calib->intrinsics_d.projectionParamsSimple.all;
-
 	// the image hierarchy allows pointers to external data at level 0
-	viewHierarchy->levels[0]->depth = view->depth;
+	sceneHierarchy->levels[0]->intrinsics = view->calib->intrinsics_d.projectionParamsSimple.all;
+
+	if (useDepth)
+	{
+		viewHierarchy->levels_t0[0]->intrinsics = view->calib->intrinsics_d.projectionParamsSimple.all;
+		viewHierarchy->levels_t0[0]->depth = view->depth;
+	}
+
+	if (useColour)
+	{
+		viewHierarchy->levels_t1[0]->intrinsics = view->calib->intrinsics_rgb.projectionParamsSimple.all;
+		viewHierarchy->levels_t1[0]->rgb_current = view->rgb;
+		viewHierarchy->levels_t1[0]->rgb_prev = view->rgb_prev;
+	}
 
 	sceneHierarchy->levels[0]->pointsMap = trackingState->pointCloud->locations;
 	sceneHierarchy->levels[0]->normalsMap = trackingState->pointCloud->colours;
@@ -105,27 +126,63 @@ void ITMExtendedTracker::SetEvaluationData(ITMTrackingState *trackingState, cons
 
 void ITMExtendedTracker::PrepareForEvaluation()
 {
-	for (int i = 1; i < viewHierarchy->noLevels; i++)
+	if (useDepth)
 	{
-		ITMExtendHierarchyLevel *currentLevelView = viewHierarchy->levels[i], *previousLevelView = viewHierarchy->levels[i - 1];
+		for (int i = 1; i < viewHierarchy->noLevels; i++)
+		{
+			ITMDepthHierarchyLevel *currentLevel = viewHierarchy->levels_t0[i], *previousLevel = viewHierarchy->levels_t0[i - 1];
+			lowLevelEngine->FilterSubsampleWithHoles(currentLevel->depth, previousLevel->depth);
 
-		lowLevelEngine->FilterSubsampleWithHoles(currentLevelView->depth, previousLevelView->depth);
+			currentLevel->intrinsics = previousLevel->intrinsics * 0.5f;
+		}
+	}
 
-		currentLevelView->intrinsics = previousLevelView->intrinsics * 0.5f;
+	if (useColour)
+	{
+		for (int i = 1; i < viewHierarchy->noLevels; i++)
+		{
+			ITMRGBHierarchyLevel *currentLevel = viewHierarchy->levels_t1[i], *previousLevel = viewHierarchy->levels_t1[i - 1];
 
-		ITMSceneHierarchyLevel *currentLevelScene = sceneHierarchy->levels[i], *previousLevelScene = sceneHierarchy->levels[i - 1];
-		//lowLevelEngine->FilterSubsampleWithHoles(currentLevelScene->pointsMap, previousLevelScene->pointsMap);
-		//lowLevelEngine->FilterSubsampleWithHoles(currentLevelScene->normalsMap, previousLevelScene->normalsMap);
-		currentLevelScene->intrinsics = previousLevelScene->intrinsics * 0.5f;
+			lowLevelEngine->FilterSubsample(currentLevel->rgb_prev, previousLevel->rgb_prev);
+
+			currentLevel->intrinsics = previousLevel->intrinsics * 0.5f;
+		}
+
+		for (int i = 0; i < viewHierarchy->noLevels; i++)
+		{
+			ITMRGBHierarchyLevel *currentLevel = viewHierarchy->levels_t1[i];
+
+			lowLevelEngine->GradientX(currentLevel->gX, currentLevel->rgb_prev);
+			lowLevelEngine->GradientY(currentLevel->gY, currentLevel->rgb_prev);
+		}
+
+		for (int i = 1; i < sceneHierarchy->noLevels; i++)
+		{
+			ITMSceneHierarchyLevel *currentLevel = sceneHierarchy->levels[i], *previousLevel = sceneHierarchy->levels[i - 1];
+			lowLevelEngine->FilterSubsampleWithHoles(currentLevel->pointsMap, previousLevel->pointsMap);
+			lowLevelEngine->FilterSubsampleWithHoles(currentLevel->normalsMap, previousLevel->normalsMap);
+			currentLevel->intrinsics = previousLevel->intrinsics * 0.5f;
+		}
 	}
 }
 
 void ITMExtendedTracker::SetEvaluationParams(int levelId)
 {
 	this->levelId = levelId;
-	this->iterationType = viewHierarchy->levels[levelId]->iterationType;
-	this->sceneHierarchyLevel = sceneHierarchy->levels[0];
-	this->viewHierarchyLevel = viewHierarchy->levels[levelId];
+
+	if (useDepth)
+	{
+		this->sceneHierarchyLevel = sceneHierarchy->levels[0];
+		this->viewHierarchyLevel_Depth = viewHierarchy->levels_t0[levelId];
+		iterationType = this->viewHierarchyLevel_Depth->iterationType;
+	}
+
+	if (useColour)
+	{
+		this->sceneHierarchyLevel = sceneHierarchy->levels[levelId];
+		this->viewHierarchyLevel_RGB = viewHierarchy->levels_t1[levelId];
+		iterationType = this->viewHierarchyLevel_RGB->iterationType;
+	}
 }
 
 void ITMExtendedTracker::ComputeDelta(float *step, float *nabla, float *hessian, bool shortIteration) const
@@ -190,7 +247,7 @@ void ITMExtendedTracker::ApplyDelta(const Matrix4f & para_old, const float *delt
 
 void ITMExtendedTracker::UpdatePoseQuality(int noValidPoints_old, float *hessian_good, float f_old)
 {
-	int noTotalPoints = viewHierarchy->levels[0]->depth->noDims.x * viewHierarchy->levels[0]->depth->noDims.y;
+	int noTotalPoints = viewHierarchy->levels_t0[0]->depth->noDims.x * viewHierarchy->levels_t0[0]->depth->noDims.y;
 
 	int noValidPointsMax = lowLevelEngine->CountValidDepths(view->depth);
 
@@ -264,9 +321,55 @@ void ITMExtendedTracker::TrackCamera(ITMTrackingState *trackingState, const ITMV
 	for (int levelId = viewHierarchy->noLevels - 1; levelId >= 0; levelId--)
 	{
 		this->SetEvaluationParams(levelId);
+
 		if (iterationType == TRACKER_ITERATION_NONE) continue;
 
-		Matrix4f approxInvPose = trackingState->pose_d->GetInvM();
+		//Matrix4f approxInvPose = trackingState->pose_d->GetInvM();
+		//ORUtils::SE3Pose lastKnownGoodPose(*(trackingState->pose_d));
+		//f_old = 1e20f;
+		//noValidPoints_old = 0;
+		//float lambda = 1.0;
+
+		//for (int iterNo = 0; iterNo < noIterationsPerLevel[levelId]; iterNo++)
+		//{
+		//	// evaluate error function and gradients
+		//	noValidPoints_new = this->ComputeGandH_Depth(f_new, nabla_new, hessian_new, approxInvPose);
+
+		//	// check if error increased. If so, revert
+		//	if ((noValidPoints_new <= 0) || (f_new > f_old))
+		//	{
+		//		trackingState->pose_d->SetFrom(&lastKnownGoodPose);
+		//		approxInvPose = trackingState->pose_d->GetInvM();
+		//		lambda *= 10.0f;
+		//	}
+		//	else
+		//	{
+		//		lastKnownGoodPose.SetFrom(trackingState->pose_d);
+		//		f_old = f_new;
+		//		noValidPoints_old = noValidPoints_new;
+
+		//		for (int i = 0; i < 6 * 6; ++i) hessian_good[i] = hessian_new[i] / noValidPoints_new;
+		//		for (int i = 0; i < 6; ++i) nabla_good[i] = nabla_new[i] / noValidPoints_new;
+		//		lambda /= 10.0f;
+		//	}
+
+		//	for (int i = 0; i < 6 * 6; ++i) A[i] = hessian_good[i];
+		//	for (int i = 0; i < 6; ++i) A[i + i * 6] *= 1.0f + lambda;
+
+		//	// compute a new step and make sure we've got an SE3
+		//	ComputeDelta(step, nabla_good, A, iterationType != TRACKER_ITERATION_BOTH);
+		//	ApplyDelta(approxInvPose, step, approxInvPose);
+		//	trackingState->pose_d->SetInvM(approxInvPose);
+		//	trackingState->pose_d->Coerce();
+		//	approxInvPose = trackingState->pose_d->GetInvM();
+
+		//	// if step is small, assume it's going to decrease the error and finish
+		//	if (HasConverged(step)) break;
+		//}
+
+		if (iterationType == TRACKER_ITERATION_NONE) continue;
+
+		Matrix4f approxPose = trackingState->pose_d->GetM();
 		ORUtils::SE3Pose lastKnownGoodPose(*(trackingState->pose_d));
 		f_old = 1e20f;
 		noValidPoints_old = 0;
@@ -275,13 +378,13 @@ void ITMExtendedTracker::TrackCamera(ITMTrackingState *trackingState, const ITMV
 		for (int iterNo = 0; iterNo < noIterationsPerLevel[levelId]; iterNo++)
 		{
 			// evaluate error function and gradients
-			noValidPoints_new = this->ComputeGandH(f_new, nabla_new, hessian_new, approxInvPose);
+			noValidPoints_new = this->ComputeGandH_RGB(f_new, nabla_new, hessian_new, approxPose);
 
 			// check if error increased. If so, revert
 			if ((noValidPoints_new <= 0) || (f_new > f_old))
 			{
 				trackingState->pose_d->SetFrom(&lastKnownGoodPose);
-				approxInvPose = trackingState->pose_d->GetInvM();
+				approxPose = trackingState->pose_d->GetM();
 				lambda *= 10.0f;
 			}
 			else
@@ -300,10 +403,10 @@ void ITMExtendedTracker::TrackCamera(ITMTrackingState *trackingState, const ITMV
 
 			// compute a new step and make sure we've got an SE3
 			ComputeDelta(step, nabla_good, A, iterationType != TRACKER_ITERATION_BOTH);
-			ApplyDelta(approxInvPose, step, approxInvPose);
-			trackingState->pose_d->SetInvM(approxInvPose);
+			ApplyDelta(approxPose, step, approxPose);
+			trackingState->pose_d->SetM(approxPose);
 			trackingState->pose_d->Coerce();
-			approxInvPose = trackingState->pose_d->GetInvM();
+			approxPose = trackingState->pose_d->GetM();
 
 			// if step is small, assume it's going to decrease the error and finish
 			if (HasConverged(step)) break;

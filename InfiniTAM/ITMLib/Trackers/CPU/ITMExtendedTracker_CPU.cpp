@@ -14,16 +14,16 @@ ITMExtendedTracker_CPU::ITMExtendedTracker_CPU(Vector2i imgSize, TrackerIteratio
 
 ITMExtendedTracker_CPU::~ITMExtendedTracker_CPU(void) { }
 
-int ITMExtendedTracker_CPU::ComputeGandH(float &f, float *nabla, float *hessian, Matrix4f approxInvPose)
+int ITMExtendedTracker_CPU::ComputeGandH_Depth(float &f, float *nabla, float *hessian, Matrix4f approxInvPose)
 {
 	Vector4f *pointsMap = sceneHierarchyLevel->pointsMap->GetData(MEMORYDEVICE_CPU);
 	Vector4f *normalsMap = sceneHierarchyLevel->normalsMap->GetData(MEMORYDEVICE_CPU);
 	Vector4f sceneIntrinsics = sceneHierarchyLevel->intrinsics;
 	Vector2i sceneImageSize = sceneHierarchyLevel->pointsMap->noDims;
 
-	float *depth = viewHierarchyLevel->depth->GetData(MEMORYDEVICE_CPU);
-	Vector4f viewIntrinsics = viewHierarchyLevel->intrinsics;
-	Vector2i viewImageSize = viewHierarchyLevel->depth->noDims;
+	float *depth = viewHierarchyLevel_Depth->depth->GetData(MEMORYDEVICE_CPU);
+	Vector4f viewIntrinsics = viewHierarchyLevel_Depth->intrinsics;
+	Vector2i viewImageSize = viewHierarchyLevel_Depth->depth->noDims;
 
 	if (iterationType == TRACKER_ITERATION_NONE) return 0;
 
@@ -84,4 +84,10 @@ int ITMExtendedTracker_CPU::ComputeGandH(float &f, float *nabla, float *hessian,
 	f = (noValidPoints > 100) ? sumF / noValidPoints : 1e5f;
 
 	return noValidPoints;
+}
+
+int ITMExtendedTracker_CPU::ComputeGandH_RGB(float &f, float *nabla, float *hessian, Matrix4f approxPose)
+{
+
+	return 0;
 }

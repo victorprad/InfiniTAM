@@ -74,6 +74,9 @@ void ITMColorTracker_CPU::G_oneLevel(float *gradient, float *hessian, ORUtils::S
 	{
 		float localGradient[6], localHessian[21];
 
+		computePerPointGH_rt_Color(localGradient, localHessian, locations, colours, rgb, imgSize, locId,
+			projParams, M, gx, gy, 6, 0);
+
 		bool isValidPoint = computePerPointGH_rt_Color(localGradient, localHessian, locations, colours, rgb, imgSize, locId,
 			projParams, M, gx, gy, numPara, startPara);
 

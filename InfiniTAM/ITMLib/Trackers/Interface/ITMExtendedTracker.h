@@ -5,7 +5,9 @@
 #include "ITMTracker.h"
 #include "../../Engines/LowLevel/Interface/ITMLowLevelEngine.h"
 #include "../../Objects/Tracking/ITMImageHierarchy.h"
-#include "../../Objects/Tracking/ITMExtendedHierarchyLevel.h"
+#include "../../Objects/Tracking/ITMTwoImageHierarchy.h"
+#include "../../Objects/Tracking/ITMDepthHierarchyLevel.h"
+#include "../../Objects/Tracking/ITMRGBHierarchyLevel.h"
 #include "../../Objects/Tracking/ITMSceneHierarchyLevel.h"
 #include "../../Objects/Tracking/TrackerIterationType.h"
 
@@ -23,7 +25,7 @@ namespace ITMLib
 	private:
 		const ITMLowLevelEngine *lowLevelEngine;
 		ITMImageHierarchy<ITMSceneHierarchyLevel> *sceneHierarchy;
-		ITMImageHierarchy<ITMExtendHierarchyLevel> *viewHierarchy;
+		ITMTwoImageHierarchy<ITMDepthHierarchyLevel, ITMRGBHierarchyLevel> *viewHierarchy;
 
 		ITMTrackingState *trackingState; const ITMView *view;
 
@@ -53,14 +55,19 @@ namespace ITMLib
 
 		Matrix4f scenePose;
 		ITMSceneHierarchyLevel *sceneHierarchyLevel;
-		ITMExtendHierarchyLevel *viewHierarchyLevel;
+		ITMDepthHierarchyLevel *viewHierarchyLevel_Depth;
+		ITMRGBHierarchyLevel *viewHierarchyLevel_RGB;
 
 		int currentFrameNo;
+
+		bool useColour;
+		bool useDepth;
 
 		float viewFrustum_min, viewFrustum_max;
 		int tukeyCutOff, framesToSkip, framesToWeight;
 
-		virtual int ComputeGandH(float &f, float *nabla, float *hessian, Matrix4f approxInvPose) = 0;
+		virtual int ComputeGandH_Depth(float &f, float *nabla, float *hessian, Matrix4f approxInvPose) = 0;
+		virtual int ComputeGandH_RGB(float &f, float *nabla, float *hessian, Matrix4f approxPose) = 0;
 
 	public:
 		void TrackCamera(ITMTrackingState *trackingState, const ITMView *view);

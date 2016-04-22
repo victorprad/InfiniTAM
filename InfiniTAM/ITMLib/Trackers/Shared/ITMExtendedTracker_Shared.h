@@ -82,6 +82,78 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exDepth_Ab(THREADPTR(float) *A,
 	return true;
 }
 
+_CPU_AND_GPU_CODE_ inline bool computePerPointGH_exRGB_Ab(THREADPTR(float) &colourDifferenceSq, THREADPTR(float) *localGradient, THREADPTR(float) *localHessian,
+	const THREADPTR(Vector4f) &pt_model, const THREADPTR(Vector4f) &colour_known, DEVICEPTR(Vector4u) *rgb, const CONSTPTR(Vector2i) & imgSize,
+	int locId_global, Vector4f projParams, Matrix4f M, DEVICEPTR(Vector4s) *gx, DEVICEPTR(Vector4s) *gy, int numPara)
+{
+	Vector4f pt_camera, colour_obs, gx_obs, gy_obs;
+	Vector3f colour_diff_d, d_pt_cam_dpi, d[6];
+	Vector2f pt_image, d_proj_dpi;
+
+	pt_camera = M * pt_model;
+
+	if (pt_camera.z <= 0) return false;
+
+	pt_image.x = projParams.x * pt_camera.x / pt_camera.z + projParams.z;
+	pt_image.y = projParams.y * pt_camera.y / pt_camera.z + projParams.w;
+
+	if (pt_image.x < 1 || pt_image.x > imgSize.x - 2 || pt_image.y < 1 || pt_image.y > imgSize.y - 2) return false;
+
+	colour_obs = interpolateBilinear(rgb, pt_image, imgSize);
+	gx_obs = interpolateBilinear(gx, pt_image, imgSize);
+	gy_obs = interpolateBilinear(gy, pt_image, imgSize);
+
+	if (colour_obs.w < 254.0f) return false;
+
+	colour_diff_d.x = colour_obs.x - colour_known.x;
+	colour_diff_d.y = colour_obs.y - colour_known.y;
+	colour_diff_d.z = colour_obs.z - colour_known.z;
+
+	colourDifferenceSq = colour_diff_d.x * colour_diff_d.x + colour_diff_d.y * colour_diff_d.y + colour_diff_d.z * colour_diff_d.z;
+
+	for (int para = 0, counter = 0; para < numPara; para++)
+	{
+		switch (para)
+		{
+		case 0: //rx
+			d_proj_dpi.x = -projParams.x * pt_camera.y * pt_camera.x / (pt_camera.z * pt_camera.z);
+			d_proj_dpi.y = -projParams.y * (pt_camera.z * pt_camera.z + pt_camera.y * pt_camera.y) / (pt_camera.z * pt_camera.z);
+			break;
+		case 1: // ry
+			d_proj_dpi.x = projParams.x * (pt_camera.z * pt_camera.z + pt_camera.x * pt_camera.x) / (pt_camera.z * pt_camera.z);
+			d_proj_dpi.y = projParams.y * pt_camera.x * pt_camera.y / (pt_camera.z * pt_camera.z);
+			break;
+		case 2: // rz
+			d_proj_dpi.x = -projParams.x * pt_camera.y / pt_camera.z;
+			d_proj_dpi.y = projParams.y * pt_camera.x / pt_camera.z;
+			break; //rz
+		case 3: //tx
+			d_proj_dpi.x = projParams.x / pt_camera.z;
+			d_proj_dpi.y = 0.0f;
+			break;
+		case 4: //ty
+			d_proj_dpi.x = 0.0f;
+			d_proj_dpi.y = projParams.y / pt_camera.z;
+			break;
+		case 5: //tz
+			d_proj_dpi.x = -projParams.x * pt_camera.x / (pt_camera.z * pt_camera.z);
+			d_proj_dpi.y = -projParams.y * pt_camera.y / (pt_camera.z * pt_camera.z);
+			break;
+		};
+
+		d[para].x = d_proj_dpi.x * gx_obs.x + d_proj_dpi.y * gy_obs.x;
+		d[para].y = d_proj_dpi.x * gx_obs.y + d_proj_dpi.y * gy_obs.y;
+		d[para].z = d_proj_dpi.x * gx_obs.z + d_proj_dpi.y * gy_obs.z;
+
+		localGradient[para] = 2.0f * (d[para].x * colour_diff_d.x + d[para].y * colour_diff_d.y + d[para].z * colour_diff_d.z);
+
+		for (int col = 0; col <= para; col++)
+			localHessian[counter++] = 2.0f * (d[para].x * d[col].x + d[para].y * d[col].y + d[para].z * d[col].z);
+	}
+
+	return true;
+}
+
 template<bool shortIteration, bool rotationOnly, bool useWeights>
 _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exDepth(THREADPTR(float) *localNabla, THREADPTR(float) *localHessian, THREADPTR(float) &localF,
 	const THREADPTR(int) & x, const THREADPTR(int) & y, const CONSTPTR(float) &depth, THREADPTR(float) &depthWeight, CONSTPTR(Vector2i) & viewImageSize, const CONSTPTR(Vector4f) & viewIntrinsics, 

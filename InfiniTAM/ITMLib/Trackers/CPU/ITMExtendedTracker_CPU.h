@@ -9,7 +9,8 @@ namespace ITMLib
 	class ITMExtendedTracker_CPU : public ITMExtendedTracker
 	{
 	protected:
-		int ComputeGandH(float &f, float *nabla, float *hessian, Matrix4f approxInvPose);
+		int ComputeGandH_Depth(float &f, float *nabla, float *hessian, Matrix4f approxInvPose);
+		int ComputeGandH_RGB(float &f, float *nabla, float *hessian, Matrix4f approxInvPose);
 
 	public:
 		ITMExtendedTracker_CPU(Vector2i imgSize, TrackerIterationType *trackingRegime, int noHierarchyLevels,

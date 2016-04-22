@@ -16,7 +16,8 @@ namespace ITMLib
 		AccuCell *accu_device;
 
 	protected:
-		int ComputeGandH(float &f, float *nabla, float *hessian, Matrix4f approxInvPose);
+		int ComputeGandH_Depth(float &f, float *nabla, float *hessian, Matrix4f approxInvPose);
+		int ComputeGandH_RGB(float &f, float *nabla, float *hessian, Matrix4f approxInvPose);
 
 	public:
 		ITMExtendedTracker_CUDA(Vector2i imgSize, TrackerIterationType *trackingRegime, int noHierarchyLevels,

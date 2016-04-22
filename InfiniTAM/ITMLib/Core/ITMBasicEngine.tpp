@@ -12,7 +12,7 @@
 #include "../../ORUtils/NVTimer.h"
 #include "../../ORUtils/FileUtils.h"
 
-//#define OUTPUT_TRAJECTORY_QUATERNIONS
+#define OUTPUT_TRAJECTORY_QUATERNIONS
 
 using namespace ITMLib;
 
