@@ -51,8 +51,12 @@ Several 3rd party libraries are needed for compiling InfiniTAM. The given versio
     OPTIONAL, allows writing and playback of lossless FFV1 encoded videos
     available at https://www.ffmpeg.org/
 
-  - libuvc (e.g. github version from 2015-OCT-27)
+  - librealsense (e.g. github version from 2016-MAR-22)
     OPTIONAL, allows to get live images from Intel Realsense cameras
+    available at https://github.com/IntelRealSense/librealsense
+
+  - libuvc (e.g. github version from 2015-OCT-27)
+    OPTIONAL, deprecated alternative to librealsense
     currently this works only with branch olafkaehler/master
     available at https://github.com/olafkaehler/libuvc
 

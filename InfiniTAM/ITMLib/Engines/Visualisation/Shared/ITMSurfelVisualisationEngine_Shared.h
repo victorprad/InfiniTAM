@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include <climits>
+
 #include "ITMSurfelVisualisationEngine_Settings.h"
 #include "../../../Objects/Scene/ITMRepresentationAccess.h"
 
