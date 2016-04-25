@@ -17,6 +17,7 @@
 #include "../../ITMLib/Core/ITMMultiEngine.h"
 
 using namespace InfiniTAM::Engine;
+using namespace InputSource;
 using namespace ITMLib;
 
 /** Create a default source of depth images from a list of command line
@@ -60,7 +61,7 @@ static void CreateDefaultImageSource(ImageSourceEngine* & imageSource, IMUSource
 
 	if ((imageSource == NULL) && (filename1 != NULL) && (filename_imu == NULL))
 	{
-		imageSource = new InfiniTAM::FFMPEGReader(calibFile, filename1, filename2);
+		imageSource = new InputSource::FFMPEGReader(calibFile, filename1, filename2);
 		if (imageSource->getDepthImageSize().x == 0)
 		{
 			delete imageSource;

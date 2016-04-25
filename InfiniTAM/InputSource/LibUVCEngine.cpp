@@ -2,7 +2,7 @@
 
 #include "LibUVCEngine.h"
 
-using namespace InfiniTAM::Engine;
+using namespace InputSource;
 
 #ifdef COMPILE_WITH_LibUVC
 

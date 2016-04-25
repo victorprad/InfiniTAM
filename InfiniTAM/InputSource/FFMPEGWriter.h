@@ -4,9 +4,10 @@
 
 #include "../ITMLib/Utils/ITMImageTypes.h"
 
-namespace InfiniTAM {
+namespace InputSource {
 
-class FFMPEGWriter {
+class FFMPEGWriter
+{
 	public:
 	class PrivateData;
 
@@ -26,4 +27,3 @@ class FFMPEGWriter {
 };
 
 }
-

@@ -35,8 +35,8 @@ namespace InfiniTAM
 			std::vector<UIColourMode> colourModes_main, colourModes_freeview;
 			int currentColourMode;
 
-			ImageSourceEngine *imageSource;
-			IMUSourceEngine *imuSource;
+			InputSource::ImageSourceEngine *imageSource;
+			InputSource::IMUSourceEngine *imuSource;
 			ITMLib::ITMLibSettings internalSettings;
 			ITMLib::ITMMainEngine *mainEngine;
 
@@ -63,8 +63,8 @@ namespace InfiniTAM
 			Vector2i mouseLastClick;
 
 			int currentFrameNo; bool isRecording;
-			FFMPEGWriter *rgbVideoWriter;
-			FFMPEGWriter *depthVideoWriter;
+			InputSource::FFMPEGWriter *rgbVideoWriter;
+			InputSource::FFMPEGWriter *depthVideoWriter;
 		public:
 			static UIEngine* Instance(void) {
 				if (instance == NULL) instance = new UIEngine();
@@ -87,8 +87,8 @@ namespace InfiniTAM
 			bool needsRefresh;
 			ITMUChar4Image *saveImage;
 
-			void Initialise(int & argc, char** argv, ImageSourceEngine *imageSource, IMUSourceEngine *imuSource, ITMLib::ITMMainEngine *mainEngine,
-				const char *outFolder, ITMLib::ITMLibSettings::DeviceType deviceType);
+			void Initialise(int & argc, char** argv, InputSource::ImageSourceEngine *imageSource, InputSource::IMUSourceEngine *imuSource,
+				ITMLib::ITMMainEngine *mainEngine, const char *outFolder, ITMLib::ITMLibSettings::DeviceType deviceType);
 			void Shutdown();
 
 			void Run();

@@ -27,7 +27,7 @@ extern "C" {
 
 #include <iostream>
 
-using namespace InfiniTAM;
+using namespace InputSource;
 
 class FFMPEGWriter::PrivateData {
 	public:
@@ -445,7 +445,7 @@ bool FFMPEGWriter::isOpen(void) const
 
 #else
 
-using namespace InfiniTAM;
+using namespace InputSource;
 
 FFMPEGWriter::FFMPEGWriter(void)
 {}

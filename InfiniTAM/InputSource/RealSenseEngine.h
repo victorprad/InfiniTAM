@@ -12,26 +12,23 @@
 #endif 
 #endif
 
-namespace InfiniTAM
+namespace InputSource {
+
+class RealSenseEngine : public ImageSourceEngine
 {
-	namespace Engine
-	{
-		class RealSenseEngine : public ImageSourceEngine
-		{
-		private:
-			class PrivateData;
-			PrivateData *data; bool dataAvailable;
+private:
+	class PrivateData;
+	PrivateData *data; bool dataAvailable;
 
-			Vector2i imageSize_rgb, imageSize_d;
-		public:
-			RealSenseEngine(const char *calibFilename, Vector2i imageSize_rgb = Vector2i(640, 480), Vector2i imageSize_d = Vector2i(640, 480));
-			~RealSenseEngine();
+	Vector2i imageSize_rgb, imageSize_d;
+public:
+	RealSenseEngine(const char *calibFilename, Vector2i imageSize_rgb = Vector2i(640, 480), Vector2i imageSize_d = Vector2i(640, 480));
+	~RealSenseEngine();
 
-			bool hasMoreImages(void);
-			void getImages(ITMUChar4Image *rgb, ITMShortImage *rawDepth);
-			Vector2i getDepthImageSize(void);
-			Vector2i getRGBImageSize(void);
-		};
-	}
+	bool hasMoreImages(void);
+	void getImages(ITMUChar4Image *rgb, ITMShortImage *rawDepth);
+	Vector2i getDepthImageSize(void);
+	Vector2i getRGBImageSize(void);
+};
+
 }
-

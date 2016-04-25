@@ -8,7 +8,7 @@
 #include <stdexcept>
 #include <stdio.h>
 
-using namespace InfiniTAM::Engine;
+using namespace InputSource;
 using namespace ITMLib;
 
 ImageSourceEngine::ImageSourceEngine(const char *calibFilename)
@@ -254,5 +254,5 @@ void RawFileReader::getImages(ITMUChar4Image *rgb, ITMShortImage *rawDepth)
 	++currentFrameNo;
 }
 
-template class InfiniTAM::Engine::ImageFileReader<ImageMaskPathGenerator>;
-template class InfiniTAM::Engine::ImageFileReader<ImageListPathGenerator>;
+template class InputSource::ImageFileReader<ImageMaskPathGenerator>;
+template class InputSource::ImageFileReader<ImageListPathGenerator>;
