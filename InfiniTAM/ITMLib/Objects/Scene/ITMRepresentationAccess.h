@@ -57,6 +57,15 @@ _CPU_AND_GPU_CODE_ inline int findVoxel(const CONSTPTR(ITMLib::ITMVoxelBlockHash
 	return findVoxel(voxelIndex, point, vmIndex, cache);
 }
 
+_CPU_AND_GPU_CODE_ inline int findVoxel(const CONSTPTR(ITMLib::ITMVoxelBlockHash::IndexData) *voxelIndex, Vector3i point, THREADPTR(bool) &foundPoint)
+{
+	int vmIndex;
+	ITMLib::ITMVoxelBlockHash::IndexCache cache;
+	int result = findVoxel(voxelIndex, point, vmIndex, cache);
+	foundPoint = vmIndex != 0;
+	return result;
+}
+
 template<class TVoxel>
 _CPU_AND_GPU_CODE_ inline TVoxel readVoxel(const CONSTPTR(TVoxel) *voxelData, const CONSTPTR(ITMLib::ITMVoxelBlockHash::IndexData) *voxelIndex,
 	const THREADPTR(Vector3i) & point, THREADPTR(int) &vmIndex, THREADPTR(ITMLib::ITMVoxelBlockHash::IndexCache) & cache)
@@ -98,6 +107,17 @@ _CPU_AND_GPU_CODE_ inline TVoxel readVoxel(const CONSTPTR(TVoxel) *voxelData, co
 {
 	ITMLib::ITMVoxelBlockHash::IndexCache cache;
 	return readVoxel(voxelData, voxelIndex, point, vmIndex, cache);
+}
+
+template<class TVoxel>
+_CPU_AND_GPU_CODE_ inline TVoxel readVoxel(const CONSTPTR(TVoxel) *voxelData, const CONSTPTR(ITMLib::ITMVoxelBlockHash::IndexData) *voxelIndex,
+	Vector3i point, THREADPTR(bool) &foundPoint)
+{
+	int vmIndex;
+	ITMLib::ITMVoxelBlockHash::IndexCache cache;
+	TVoxel result = readVoxel(voxelData, voxelIndex, point, vmIndex, cache);
+	foundPoint = vmIndex != 0;
+	return result;
 }
 
 template<class TVoxel, class TIndex>
