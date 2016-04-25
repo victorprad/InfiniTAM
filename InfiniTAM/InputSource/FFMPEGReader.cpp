@@ -45,6 +45,8 @@ class FFMPEGReader::PrivateData {
 		packet.data = NULL;
 		packet.size = 0;
 		frame = NULL;
+		ifmt_ctx = NULL;
+		filter_ctx = NULL;
 	}
 
 	~PrivateData(void)
@@ -143,7 +145,6 @@ int FFMPEGReader::PrivateData::open_input_file(const char *filename)
 {
 	int ret;
 	unsigned int i;
-	ifmt_ctx = NULL;
 	if ((ret = avformat_open_input(&ifmt_ctx, filename, NULL, NULL)) < 0) {
 		std::cerr << "Cannot open input file" << std::endl;
 		return ret;
@@ -412,12 +413,16 @@ bool FFMPEGReader::PrivateData::readFrames(void)
 
 bool FFMPEGReader::PrivateData::close(void)
 {
-	for (unsigned int i = 0; i < ifmt_ctx->nb_streams; i++) {
-		avcodec_close(ifmt_ctx->streams[i]->codec);
-		if (filter_ctx && filter_ctx[i].filter_graph) avfilter_graph_free(&filter_ctx[i].filter_graph);
+	if (ifmt_ctx != NULL) {
+		for (unsigned int i = 0; i < ifmt_ctx->nb_streams; i++) {
+			avcodec_close(ifmt_ctx->streams[i]->codec);
+			if (filter_ctx && filter_ctx[i].filter_graph) avfilter_graph_free(&filter_ctx[i].filter_graph);
+		}
+		avformat_close_input(&ifmt_ctx);
 	}
-	av_free(filter_ctx);
-	avformat_close_input(&ifmt_ctx);
+	if (filter_ctx != NULL) av_free(filter_ctx);
+	ifmt_ctx = NULL;
+	filter_ctx = NULL;
 	return true;
 }
 

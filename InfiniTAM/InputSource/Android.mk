@@ -2,7 +2,7 @@ LOCAL_PATH := $(call my-dir)
 
 include $(CLEAR_VARS)
 
-LOCAL_MODULE    := Engine
+LOCAL_MODULE    := InputSource
 LOCAL_SRC_FILES := ImageSourceEngine.cpp IMUSourceEngine.cpp OpenNIEngine.cpp FFMPEGReader.cpp FFMPEGWriter.cpp
 LOCAL_CFLAGS := -Werror
 ifneq ($(FFMPEG_ROOT),)

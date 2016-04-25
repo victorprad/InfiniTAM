@@ -29,7 +29,7 @@
 	<key>UIMainStoryboardFile</key>
 	<string>iPhone_Main</string>
 	<key>UIMainStoryboardFile~ipad</key>
-	<string>Main</string>
+	<string>iPad_Main</string>
 	<key>UIPrerenderedIcon</key>
 	<true/>
 	<key>UIRequiredDeviceCapabilities</key>
@@ -52,6 +52,8 @@
 	<array>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>UIFileSharingEnabled</key>
+	<true/>
 	<key>UISupportedInterfaceOrientations~ipad</key>
 	<array>
 		<string>UIInterfaceOrientationLandscapeRight</string>

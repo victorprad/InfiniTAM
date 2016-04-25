@@ -26,14 +26,20 @@ namespace ITMLib
 
 template class ITMBasicEngine<ITMVoxel, ITMVoxelIndex>;
 template class ITMDenseMapper<ITMVoxel, ITMVoxelIndex>;
-template class ITMDenseSurfelMapper<ITMSurfel_grey>;
-template class ITMDenseSurfelMapper<ITMSurfel_rgb>;
 template class ITMMeshingEngine_CPU<ITMVoxel, ITMVoxelIndex>;
 template class ITMMultiEngine<ITMVoxel, ITMVoxelIndex>;
 template class ITMMultiSceneManager_instance<ITMVoxel, ITMVoxelIndex>;
 template class ITMRenTracker<ITMVoxel, ITMVoxelIndex>;
 template class ITMRenTracker_CPU<ITMVoxel, ITMVoxelIndex>;
 template class ITMSceneReconstructionEngine_CPU<ITMVoxel, ITMVoxelIndex>;
+template class ITMSwappingEngine_CPU<ITMVoxel, ITMVoxelIndex>;
+template class ITMTrackerFactory<ITMVoxel, ITMVoxelIndex>;
+template class ITMVisualisationEngine<ITMVoxel, ITMVoxelIndex>;
+template class ITMVisualisationEngine_CPU<ITMVoxel, ITMVoxelIndex>;
+
+
+template class ITMDenseSurfelMapper<ITMSurfel_grey>;
+template class ITMDenseSurfelMapper<ITMSurfel_rgb>;
 template class ITMSurfelSceneReconstructionEngine<ITMSurfel_grey>;
 template class ITMSurfelSceneReconstructionEngine<ITMSurfel_rgb>;
 template class ITMSurfelSceneReconstructionEngine_CPU<ITMSurfel_grey>;
@@ -46,9 +52,4 @@ template class ITMSurfelVisualisationEngine_CPU<ITMSurfel_grey>;
 template class ITMSurfelVisualisationEngine_CPU<ITMSurfel_rgb>;
 template struct ITMSurfelVisualisationEngineFactory<ITMSurfel_grey>;
 template struct ITMSurfelVisualisationEngineFactory<ITMSurfel_rgb>;
-template class ITMSwappingEngine_CPU<ITMVoxel, ITMVoxelIndex>;
-template class ITMTrackerFactory<ITMVoxel, ITMVoxelIndex>;
-template class ITMVisualisationEngine<ITMVoxel, ITMVoxelIndex>;
-template class ITMVisualisationEngine_CPU<ITMVoxel, ITMVoxelIndex>;
-
 }

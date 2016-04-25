@@ -127,7 +127,7 @@ struct TodoListEntry {
 };
 
 template <typename TVoxel, typename TIndex>
-void ITMMultiEngine<TVoxel,TIndex>::ProcessFrame(ITMUChar4Image *rgbImage, ITMShortImage *rawDepthImage, ITMIMUMeasurement *imuMeasurement)
+ITMTrackingState::TrackingResult ITMMultiEngine<TVoxel,TIndex>::ProcessFrame(ITMUChar4Image *rgbImage, ITMShortImage *rawDepthImage, ITMIMUMeasurement *imuMeasurement)
 {
 	// prepare image and turn it into a depth image
 	if (imuMeasurement==NULL) viewBuilder->UpdateView(&view, rgbImage, rawDepthImage, settings->useBilateralFilter);
@@ -259,6 +259,8 @@ void ITMMultiEngine<TVoxel,TIndex>::ProcessFrame(ITMUChar4Image *rgbImage, ITMSh
 	activeDataManager->maintainActiveData();
 
 	fprintf(stderr, "...done!\n");
+
+    return ITMTrackingState::TRACKING_GOOD;
 }
 
 template <typename TVoxel, typename TIndex>

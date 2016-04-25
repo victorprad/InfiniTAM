@@ -34,16 +34,6 @@ static void CreateDefaultImageSource(ImageSourceEngine* & imageSource, IMUSource
 
 	printf("using calibration file: %s\n", calibFile);
 
-	if ((filename1 != NULL) && (filename_imu == NULL))
-	{
-		imageSource = new InfiniTAM::FFMPEGReader(calibFile, filename1, filename2);
-		if (imageSource->getDepthImageSize().x == 0)
-		{
-			delete imageSource;
-			imageSource = NULL;
-		}
-	}
-
 	if ((imageSource == NULL) && (filename2 != NULL))
 	{
 		printf("using rgb images: %s\nusing depth images: %s\n", filename1, filename2);
@@ -57,6 +47,24 @@ static void CreateDefaultImageSource(ImageSourceEngine* & imageSource, IMUSource
 			printf("using imu data: %s\n", filename_imu);
 			imageSource = new RawFileReader(calibFile, filename1, filename2, Vector2i(320, 240), 0.5f);
 			imuSource = new IMUSourceEngine(filename_imu);
+		}
+
+		if (imageSource->getDepthImageSize().x == 0)
+		{
+			delete imageSource;
+			if (imuSource != NULL) delete imuSource;
+			imuSource = NULL;
+			imageSource = NULL;
+		}
+	}
+
+	if ((imageSource == NULL) && (filename1 != NULL) && (filename_imu == NULL))
+	{
+		imageSource = new InfiniTAM::FFMPEGReader(calibFile, filename1, filename2);
+		if (imageSource->getDepthImageSize().x == 0)
+		{
+			delete imageSource;
+			imageSource = NULL;
 		}
 	}
 

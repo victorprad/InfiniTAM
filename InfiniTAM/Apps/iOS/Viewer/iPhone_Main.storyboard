@@ -3,6 +3,7 @@
     <dependencies>
         <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="10085"/>
+        <capability name="Constraints to layout margins" minToolsVersion="6.0"/>
     </dependencies>
     <scenes>
         <!--View Controller-->
@@ -17,35 +18,59 @@
                         <rect key="frame" x="0.0" y="0.0" width="667" height="375"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <view contentMode="scaleToFill" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="adq-2P-kO8">
-                                <rect key="frame" x="0.0" y="0.0" width="501" height="375"/>
-                                <color key="backgroundColor" red="0.60065498740000001" green="0.60065498740000001" blue="0.60065498740000001" alpha="1" colorSpace="calibratedRGB"/>
-                            </view>
-                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="fc7-hz-MGe">
-                                <rect key="frame" x="516" y="59" width="135" height="43"/>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="fc7-hz-MGe">
+                                <rect key="frame" x="516" y="8" width="135" height="43"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="43" id="Zaz-6N-KJu"/>
+                                </constraints>
                                 <state key="normal" title="Continuous">
                                     <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
                                 </state>
                                 <connections>
-                                    <action selector="bProcessCont_clicked:" destination="GBX-KH-cTe" eventType="touchUpInside" id="hxp-7g-bi5"/>
+                                    <action selector="bProcessCont_clicked:" destination="GBX-KH-cTe" eventType="touchUpInside" id="kdj-n2-7OW"/>
                                 </connections>
                             </button>
-                            <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="lxq-i5-Rhl">
+                            <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="lxq-i5-Rhl">
                                 <rect key="frame" x="516" y="337" width="135" height="30"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                 <textInputTraits key="textInputTraits"/>
                             </textField>
-                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Jw5-ul-gXZ">
-                                <rect key="frame" x="516" y="8" width="135" height="43"/>
-                                <state key="normal" title="One">
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="fgg-Ob-PRO">
+                                <rect key="frame" x="521" y="286" width="125" height="43"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="125" id="BN7-bE-gwk"/>
+                                    <constraint firstAttribute="height" constant="43" id="Nur-Od-qGi"/>
+                                </constraints>
+                                <state key="normal" title="Freeview">
                                     <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
                                 </state>
+                                <variation key="widthClass=regular" fixedFrame="YES">
+                                    <rect key="frame" x="999" y="786" width="177" height="43"/>
+                                </variation>
                                 <connections>
-                                    <action selector="bProcessOne_clicked:" destination="GBX-KH-cTe" eventType="touchUpInside" id="4fo-5s-X43"/>
+                                    <action selector="bFreeviewRenderingPressed:" destination="GBX-KH-cTe" eventType="touchUpInside" id="2Vh-5h-wyW"/>
                                 </connections>
                             </button>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="adq-2P-kO8">
+                                <rect key="frame" x="0.0" y="0.0" width="501" height="375"/>
+                                <color key="backgroundColor" red="0.60065498740000001" green="0.60065498740000001" blue="0.60065498740000001" alpha="1" colorSpace="calibratedRGB"/>
+                            </view>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                        <constraints>
+                            <constraint firstItem="adq-2P-kO8" firstAttribute="bottom" secondItem="pRd-Wt-kHM" secondAttribute="top" id="7t3-W1-SbK"/>
+                            <constraint firstItem="fgg-Ob-PRO" firstAttribute="centerX" secondItem="lxq-i5-Rhl" secondAttribute="centerX" id="AV6-GN-lnr"/>
+                            <constraint firstItem="adq-2P-kO8" firstAttribute="leading" secondItem="4cM-2l-6i1" secondAttribute="leading" id="BkU-tz-mZ8"/>
+                            <constraint firstItem="fgg-Ob-PRO" firstAttribute="leading" secondItem="adq-2P-kO8" secondAttribute="trailing" constant="20" id="D19-GS-in8"/>
+                            <constraint firstItem="fc7-hz-MGe" firstAttribute="trailing" secondItem="lxq-i5-Rhl" secondAttribute="trailing" id="L00-CT-3OF"/>
+                            <constraint firstItem="fc7-hz-MGe" firstAttribute="top" secondItem="vCp-cN-dgg" secondAttribute="bottom" constant="8" symbolic="YES" id="aeI-AF-Dj2"/>
+                            <constraint firstItem="lxq-i5-Rhl" firstAttribute="top" secondItem="fgg-Ob-PRO" secondAttribute="bottom" constant="8" symbolic="YES" id="c4o-IH-kkO"/>
+                            <constraint firstItem="fc7-hz-MGe" firstAttribute="leading" secondItem="lxq-i5-Rhl" secondAttribute="leading" id="iKr-MO-Qzg"/>
+                            <constraint firstItem="fc7-hz-MGe" firstAttribute="leading" secondItem="adq-2P-kO8" secondAttribute="trailing" constant="15" id="kbR-P1-qlR"/>
+                            <constraint firstItem="pRd-Wt-kHM" firstAttribute="top" secondItem="lxq-i5-Rhl" secondAttribute="bottom" constant="8" symbolic="YES" id="lnt-vV-h22"/>
+                            <constraint firstItem="adq-2P-kO8" firstAttribute="top" secondItem="vCp-cN-dgg" secondAttribute="bottom" id="vKw-GR-nz2"/>
+                            <constraint firstAttribute="trailingMargin" secondItem="fgg-Ob-PRO" secondAttribute="trailing" constant="1" id="zG7-BZ-ild"/>
+                        </constraints>
                     </view>
                     <nil key="simulatedStatusBarMetrics"/>
                     <nil key="simulatedTopBarMetrics"/>
@@ -53,8 +78,8 @@
                     <simulatedOrientationMetrics key="simulatedOrientationMetrics" orientation="landscapeRight"/>
                     <simulatedScreenMetrics key="simulatedDestinationMetrics" type="retina47"/>
                     <connections>
-                        <outlet property="renderView" destination="adq-2P-kO8" id="ygG-XR-MpY"/>
-                        <outlet property="tbOut" destination="lxq-i5-Rhl" id="R4x-lQ-p3r"/>
+                        <outlet property="renderView" destination="adq-2P-kO8" id="JUS-V9-wSB"/>
+                        <outlet property="tbOut" destination="lxq-i5-Rhl" id="2NR-Ek-LjL"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="QrS-yb-mX1" userLabel="First Responder" sceneMemberID="firstResponder"/>

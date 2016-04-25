@@ -108,7 +108,7 @@ void ITMExtendedTracker::PrepareForEvaluation()
 	for (int i = 1; i < viewHierarchy->noLevels; i++)
 	{
 		ITMExtendHierarchyLevel *currentLevelView = viewHierarchy->levels[i], *previousLevelView = viewHierarchy->levels[i - 1];
-		
+
 		lowLevelEngine->FilterSubsampleWithHoles(currentLevelView->depth, previousLevelView->depth);
 
 		currentLevelView->intrinsics = previousLevelView->intrinsics * 0.5f;
@@ -243,7 +243,8 @@ void ITMExtendedTracker::UpdatePoseQuality(int noValidPoints_old, float *hessian
 
 void ITMExtendedTracker::TrackCamera(ITMTrackingState *trackingState, const ITMView *view)
 {
-	this->currentFrameNo++;
+	if (trackingState->age_pointCloud >= 0) this->currentFrameNo++;
+	else this->currentFrameNo = 0;
 
 	this->SetEvaluationData(trackingState, view);
 	this->PrepareForEvaluation();
@@ -276,22 +277,23 @@ void ITMExtendedTracker::TrackCamera(ITMTrackingState *trackingState, const ITMV
 			noValidPoints_new = this->ComputeGandH(f_new, nabla_new, hessian_new, approxInvPose);
 
 			// check if error increased. If so, revert
-			if ((noValidPoints_new <= 0) || (f_new > f_old)) {
+			if ((noValidPoints_new <= 0) || (f_new > f_old))
+			{
 				trackingState->pose_d->SetFrom(&lastKnownGoodPose);
 				approxInvPose = trackingState->pose_d->GetInvM();
 				lambda *= 10.0f;
 			}
-			else {
+			else
+			{
 				lastKnownGoodPose.SetFrom(trackingState->pose_d);
 				f_old = f_new;
 				noValidPoints_old = noValidPoints_new;
-
-				//printf("%d -> %f\n", levelId, f_old);
 
 				for (int i = 0; i < 6 * 6; ++i) hessian_good[i] = hessian_new[i] / noValidPoints_new;
 				for (int i = 0; i < 6; ++i) nabla_good[i] = nabla_new[i] / noValidPoints_new;
 				lambda /= 10.0f;
 			}
+
 			for (int i = 0; i < 6 * 6; ++i) A[i] = hessian_good[i];
 			for (int i = 0; i < 6; ++i) A[i + i * 6] *= 1.0f + lambda;
 
@@ -306,8 +308,6 @@ void ITMExtendedTracker::TrackCamera(ITMTrackingState *trackingState, const ITMV
 			if (HasConverged(step)) break;
 		}
 	}
-
-	//printf("----\n");
 
 	this->UpdatePoseQuality(noValidPoints_old, hessian_good, f_old);
 }
