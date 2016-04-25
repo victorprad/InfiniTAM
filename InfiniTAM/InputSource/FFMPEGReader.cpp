@@ -27,7 +27,7 @@ extern "C" {
 #include <deque>
 #include <iostream>
 
-using namespace InfiniTAM;
+using namespace InputSource;
 
 class FFMPEGReader::PrivateData {
 	private:
@@ -547,7 +547,7 @@ Vector2i FFMPEGReader::getRGBImageSize(void)
 
 #else
 
-using namespace InfiniTAM;
+using namespace InputSource;
 
 FFMPEGReader::FFMPEGReader(const char *calibFilename, const char *filename1, const char *filename2)
 	: ImageSourceEngine(calibFilename)

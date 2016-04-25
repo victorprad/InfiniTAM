@@ -4,28 +4,26 @@
 
 #include "../ITMLib/Objects/Misc/ITMIMUMeasurement.h"
 
-namespace InfiniTAM
+namespace InputSource {
+
+class IMUSourceEngine
 {
-	namespace Engine
-	{
-		class IMUSourceEngine
-		{
-		private:
-			static const int BUF_SIZE = 2048;
-			char imuMask[BUF_SIZE];
+private:
+	static const int BUF_SIZE = 2048;
+	char imuMask[BUF_SIZE];
 
-			ITMLib::ITMIMUMeasurement *cached_imu;
+	ITMLib::ITMIMUMeasurement *cached_imu;
 
-			void loadIMUIntoCache();
-			int cachedFrameNo;
-			int currentFrameNo;
+	void loadIMUIntoCache();
+	int cachedFrameNo;
+	int currentFrameNo;
 
-		public:
-			IMUSourceEngine(const char *imuMask);
-			~IMUSourceEngine() { }
+public:
+	IMUSourceEngine(const char *imuMask);
+	~IMUSourceEngine() { }
 
-			bool hasMoreMeasurements(void);
-			void getMeasurement(ITMLib::ITMIMUMeasurement *imu);
-		};
-	}
+	bool hasMoreMeasurements(void);
+	void getMeasurement(ITMLib::ITMIMUMeasurement *imu);
+};
+
 }

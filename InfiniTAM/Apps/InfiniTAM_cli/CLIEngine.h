@@ -17,8 +17,8 @@ namespace InfiniTAM
 		{
 			static CLIEngine* instance;
 
-			ImageSourceEngine *imageSource;
-			IMUSourceEngine *imuSource;
+			InputSource::ImageSourceEngine *imageSource;
+			InputSource::IMUSourceEngine *imuSource;
 			ITMLib::ITMLibSettings internalSettings;
 			ITMLib::ITMMainEngine *mainEngine;
 
@@ -38,7 +38,7 @@ namespace InfiniTAM
 
 			float processedTime;
 
-			void Initialise(ImageSourceEngine *imageSource, IMUSourceEngine *imuSource, ITMLib::ITMMainEngine *mainEngine,
+			void Initialise(InputSource::ImageSourceEngine *imageSource, InputSource::IMUSourceEngine *imuSource, ITMLib::ITMMainEngine *mainEngine,
 				ITMLib::ITMLibSettings::DeviceType deviceType);
 			void Shutdown();
 

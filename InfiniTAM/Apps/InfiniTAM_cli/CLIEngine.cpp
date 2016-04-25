@@ -7,6 +7,7 @@
 #include "../../ORUtils/FileUtils.h"
 
 using namespace InfiniTAM::Engine;
+using namespace InputSource;
 using namespace ITMLib;
 
 CLIEngine* CLIEngine::instance;

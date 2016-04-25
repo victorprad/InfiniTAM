@@ -12,6 +12,7 @@
 #include "../../ITMLib/Core/ITMBasicEngine.h"
 
 using namespace InfiniTAM::Engine;
+using namespace InputSource;
 using namespace ITMLib;
 
 int main(int argc, char** argv)

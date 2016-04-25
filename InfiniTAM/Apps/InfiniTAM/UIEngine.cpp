@@ -25,6 +25,7 @@
 #include "../../InputSource/FFMPEGWriter.h"
 
 using namespace InfiniTAM::Engine;
+using namespace InputSource;
 using namespace ITMLib;
 
 UIEngine* UIEngine::instance;

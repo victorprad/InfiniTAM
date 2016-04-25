@@ -11,7 +11,7 @@
 
 #pragma comment(lib, "kinect20.lib")
 
-using namespace InfiniTAM::Engine;
+using namespace InputSource;
 
 // Safe release for interfaces
 template<class Interface>
@@ -132,7 +132,7 @@ Vector2i Kinect2Engine::getRGBImageSize(void) { return imageSize_rgb; }
 
 #else
 
-using namespace InfiniTAM::Engine;
+using namespace InputSource;
 
 Kinect2Engine::Kinect2Engine(const char *calibFilename) : ImageSourceEngine(calibFilename)
 {

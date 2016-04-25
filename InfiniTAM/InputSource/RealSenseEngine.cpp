@@ -11,7 +11,7 @@
 
 #include "librealsense/rs.hpp"
 
-using namespace InfiniTAM::Engine;
+using namespace InputSource;
 using namespace ITMLib;
 
 class RealSenseEngine::PrivateData
@@ -108,7 +108,7 @@ Vector2i RealSenseEngine::getRGBImageSize(void) { return (data!=NULL)?imageSize_
 
 #else
 
-using namespace InfiniTAM::Engine;
+using namespace InputSource;
 
 RealSenseEngine::RealSenseEngine(const char *calibFilename, Vector2i requested_imageSize_rgb, Vector2i requested_imageSize_d)
 	: ImageSourceEngine(calibFilename)

@@ -6,7 +6,7 @@
 
 #include <stdio.h>
 
-using namespace InfiniTAM::Engine;
+using namespace InputSource;
 using namespace ITMLib;
 
 IMUSourceEngine::IMUSourceEngine(const char *imuMask)

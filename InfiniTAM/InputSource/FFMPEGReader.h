@@ -4,9 +4,10 @@
 
 #include "ImageSourceEngine.h"
 
-namespace InfiniTAM {
+namespace InputSource {
 
-class FFMPEGReader : public InfiniTAM::Engine::ImageSourceEngine {
+class FFMPEGReader : public ImageSourceEngine
+{
 	public:
 	class PrivateData;
 
@@ -26,4 +27,3 @@ class FFMPEGReader : public InfiniTAM::Engine::ImageSourceEngine {
 };
 
 }
-
