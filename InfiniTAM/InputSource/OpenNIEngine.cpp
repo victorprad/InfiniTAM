@@ -14,15 +14,38 @@
 
 using namespace InputSource;
 
+class EOFListener;
+
 class OpenNIEngine::PrivateData {
 	public:
-	PrivateData(void) : streams(NULL) {}
+	PrivateData(void) : streams(NULL), eofListener(NULL), eofReached(false) {}
 	openni::Device device;
 	openni::VideoStream depthStream, colorStream;
 
 	openni::VideoFrameRef depthFrame;
 	openni::VideoFrameRef colorFrame;
 	openni::VideoStream **streams;
+
+	EOFListener *eofListener;
+	bool eofReached;
+};
+
+class EOFListener : public openni::OpenNI::DeviceStateChangedListener
+{
+	public:
+	EOFListener(bool *flagPtr) : eofFlagPtr(flagPtr){}
+
+	void onDeviceStateChanged(const openni::DeviceInfo*, openni::DeviceState newState)
+	{
+		if(newState == openni::DEVICE_STATE_EOF)
+		{
+			printf("OpenNI: Reached end of file\n");
+			*eofFlagPtr = true;
+		}
+	}
+
+	private:
+	bool *eofFlagPtr;
 };
 
 static openni::VideoMode findBestMode(const openni::SensorInfo *sensorInfo, int requiredResolutionX = -1, int requiredResolutionY = -1, openni::PixelFormat requiredPixelFormat = (openni::PixelFormat)-1)
@@ -115,6 +138,9 @@ OpenNIEngine::OpenNIEngine(const char *calibFilename, const char *deviceURI, con
 		std::cout << message;
 		return;
 	}
+
+	data->eofListener = new EOFListener(&data->eofReached);
+	openni::OpenNI::addDeviceStateChangedListener(data->eofListener);
 
 	openni::PlaybackControl *control = data->device.getPlaybackControl();
 	if (control != NULL) {
@@ -245,6 +271,9 @@ OpenNIEngine::~OpenNIEngine()
 		}
 		data->device.close();
 
+		openni::OpenNI::removeDeviceStateChangedListener(data->eofListener);
+		delete data->eofListener;
+
 		delete[] data->streams;
 		delete data;
 	}
@@ -297,7 +326,7 @@ void OpenNIEngine::getImages(ITMUChar4Image *rgbImage, ITMShortImage *rawDepthIm
 	return /*true*/;
 }
 
-bool OpenNIEngine::hasMoreImages(void) { return (data!=NULL); }
+bool OpenNIEngine::hasMoreImages(void) { return (data!=NULL && !data->eofReached); }
 Vector2i OpenNIEngine::getDepthImageSize(void) { return (data!=NULL)?imageSize_d:Vector2i(0,0); }
 Vector2i OpenNIEngine::getRGBImageSize(void) { return (data!=NULL)?imageSize_rgb:Vector2i(0,0); }
 
