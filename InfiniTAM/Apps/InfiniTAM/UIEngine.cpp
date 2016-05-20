@@ -337,11 +337,39 @@ void UIEngine::glutMouseMoveFunction(int x, int y)
 {
 	UIEngine *uiEngine = UIEngine::Instance();
 
-	if (!uiEngine->freeviewActive) return;
+	if (!uiEngine->freeviewActive || uiEngine->mouseState == 0) return;
 
 	Vector2i movement;
 	movement.x = x - uiEngine->mouseLastClick.x;
 	movement.y = y - uiEngine->mouseLastClick.y;
+
+	bool warpNeeded = false;
+
+	if(x < 0)
+	{
+		x += uiEngine->winSize.width;
+		warpNeeded = true;
+	}
+	else if(x >= uiEngine->winSize.width)
+	{
+		x -= uiEngine->winSize.width;
+		warpNeeded = true;
+	}
+
+	if(y < 0)
+	{
+		y += uiEngine->winSize.height;
+		warpNeeded = true;
+	}
+	else if(y >= uiEngine->winSize.height)
+	{
+		y -= uiEngine->winSize.height;
+		warpNeeded = true;
+	}
+
+	if(warpNeeded)
+		glutWarpPointer(x, y);
+
 	uiEngine->mouseLastClick.x = x;
 	uiEngine->mouseLastClick.y = y;
 
