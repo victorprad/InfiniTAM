@@ -62,6 +62,14 @@ IF(${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
   set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -stdlib=libstdc++")
 ENDIF()
 
+# If on Linux and CUDA is enabled, work around an Ubuntu 16.04 compilation error:
+IF(${CMAKE_SYSTEM} MATCHES "Linux"
+   AND ${WITH_CUDA}
+   AND ${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU"
+   AND ${CMAKE_CXX_COMPILER_VERSION} VERSION_GREATER 5.0)
+  set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} -D_FORCE_INLINES)
+ENDIF()
+
 add_subdirectory(ORUtils)
 add_subdirectory(ITMLib)
 add_subdirectory(RelocLib)
