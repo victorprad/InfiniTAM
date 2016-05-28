@@ -30,9 +30,19 @@ IF(WITH_CUDA)
     SET(CUDA_NVCC_FLAGS -Xcompiler -stdlib=libstdc++; -Xlinker -stdlib=libstdc++; ${CUDA_NVCC_FLAGS})
   ENDIF()
 
-  # If on Linux, make sure that C++11 support is enabled when compiling with nvcc.
+  # If on Linux:
   IF(${CMAKE_SYSTEM} MATCHES "Linux")
-    SET(CUDA_NVCC_FLAGS -std=c++11; ${CUDA_NVCC_FLAGS})
+    # Make sure that C++11 support is enabled when compiling with nvcc. From CMake 3.5 onwards,
+    # the host flag -std=c++11 is automatically propagated to nvcc. Manually setting it prevents
+    # the project from building.
+    IF(${CMAKE_VERSION} VERSION_LESS 3.5)
+      SET(CUDA_NVCC_FLAGS -std=c++11; ${CUDA_NVCC_FLAGS})
+    ENDIF()
+
+    # Work around an Ubuntu 16.04 compilation error.
+    IF(${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU" AND ${CMAKE_CXX_COMPILER_VERSION} VERSION_GREATER 5.0)
+      ADD_DEFINITIONS(-D_FORCE_INLINES)
+    ENDIF()
   ENDIF()
 
   # If not on Windows, disable some annoying nvcc warnings.
