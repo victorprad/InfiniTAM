@@ -203,6 +203,9 @@ void ITMSceneReconstructionEngine_CPU<TVoxel, ITMVoxelBlockHash>::AllocateSceneF
 				{
 					// Mark entry as not visible since we couldn't allocate it but buildHashAllocAndVisibleTypePP changed its state.
 					entriesVisibleType[targetIdx] = 0;
+
+					// Restore previous value to avoid leaks.
+					lastFreeVoxelBlockId++;
 				}
 
 				break;
@@ -230,6 +233,9 @@ void ITMSceneReconstructionEngine_CPU<TVoxel, ITMVoxelBlockHash>::AllocateSceneF
 				else
 				{
 					// No need to mark the entry as not visible since buildHashAllocAndVisibleTypePP did not mark it.
+					// Restore previous value to avoid leaks.
+					lastFreeVoxelBlockId++;
+					lastFreeExcessListId++;
 				}
 
 				break;
@@ -291,6 +297,7 @@ void ITMSceneReconstructionEngine_CPU<TVoxel, ITMVoxelBlockHash>::AllocateSceneF
 			{
 				vbaIdx = lastFreeVoxelBlockId; lastFreeVoxelBlockId--;
 				if (vbaIdx >= 0) hashTable[targetIdx].ptr = voxelAllocationList[vbaIdx];
+				else lastFreeVoxelBlockId++; // Avoid leaks
 			}
 		}
 	}

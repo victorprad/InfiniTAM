@@ -410,6 +410,9 @@ __global__ void allocateVoxelBlocksList_device(int *voxelAllocationList, int *ex
 		{
 			// Mark entry as not visible since we couldn't allocate it but buildHashAllocAndVisibleTypePP changed its state.
 			entriesVisibleType[targetIdx] = 0;
+
+			// Restore the previous value to avoid leaks.
+			atomicAdd(&allocData->noAllocatedVoxelEntries, 1);
 		}
 		break;
 
@@ -437,6 +440,9 @@ __global__ void allocateVoxelBlocksList_device(int *voxelAllocationList, int *ex
 		else
 		{
 			// No need to mark the entry as not visible since buildHashAllocAndVisibleTypePP did not mark it.
+			// Restore the previous values to avoid leaks.
+			atomicAdd(&allocData->noAllocatedVoxelEntries, 1);
+			atomicAdd(&allocData->noAllocatedExcessEntries, 1);
 		}
 
 		break;
@@ -456,6 +462,7 @@ __global__ void reAllocateSwappedOutVoxelBlocks_device(int *voxelAllocationList,
 	{
 		vbaIdx = atomicSub(&allocData->noAllocatedVoxelEntries, 1);
 		if (vbaIdx >= 0) hashTable[targetIdx].ptr = voxelAllocationList[vbaIdx];
+		else atomicAdd(&allocData->noAllocatedVoxelEntries, 1);
 	}
 }
 
