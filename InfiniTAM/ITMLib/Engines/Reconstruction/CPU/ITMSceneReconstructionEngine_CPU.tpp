@@ -199,6 +199,11 @@ void ITMSceneReconstructionEngine_CPU<TVoxel, ITMVoxelBlockHash>::AllocateSceneF
 
 					hashTable[targetIdx] = hashEntry;
 				}
+				else
+				{
+					// Mark entry as not visible since we couldn't allocate it but buildHashAllocAndVisibleTypePP changed its state.
+					entriesVisibleType[targetIdx] = 0;
+				}
 
 				break;
 			case 2: //needs allocation in the excess list
@@ -221,6 +226,10 @@ void ITMSceneReconstructionEngine_CPU<TVoxel, ITMVoxelBlockHash>::AllocateSceneF
 					hashTable[SDF_BUCKET_NUM + exlOffset] = hashEntry; //add child to the excess list
 
 					entriesVisibleType[SDF_BUCKET_NUM + exlOffset] = 1; //make child visible and in memory
+				}
+				else
+				{
+					// No need to mark the entry as not visible since buildHashAllocAndVisibleTypePP did not mark it.
 				}
 
 				break;
