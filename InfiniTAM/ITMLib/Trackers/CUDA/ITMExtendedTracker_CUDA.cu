@@ -289,6 +289,8 @@ __device__ void exDepthTrackerOneLevel_g_rt_device_main(ITMExtendedTracker_CUDA:
 		if (locId_local == 0) atomicAdd(&(accu->numPoints), (int)dim_shared1[locId_local]);
 	}
 
+	__syncthreads();
+
 	{ //reduction for energy function value
 		dim_shared1[locId_local] = rho(b, spaceThresh) * depthWeight;
 		__syncthreads();
@@ -444,6 +446,8 @@ __device__ void exRGBTrackerOneLevel_g_rt_device_main(ITMExtendedTracker_CUDA::A
 
 		if (locId_local == 0) atomicAdd(&(accu->numPoints), (int)dim_shared1[locId_local]);
 	}
+
+	__syncthreads();
 
 	{ //reduction for energy function value
 		dim_shared1[locId_local] = b;
