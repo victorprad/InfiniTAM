@@ -64,12 +64,15 @@ void ITMColorTracker_CUDA::F_oneLevel(float *f, ORUtils::SE3Pose *pose)
 	dim3 blockSize(128, 1);
 	dim3 gridSize((int)ceil((float)noTotalPoints / (float)blockSize.x), 1);
 
-	ORcudaSafeCall(cudaMemset(f_device, 0, sizeof(Vector2f) * gridSize.x));
+	if (gridSize.x > 0)
+	{
+		ORcudaSafeCall(cudaMemset(f_device, 0, sizeof(Vector2f) * gridSize.x));
 
-	colorTrackerOneLevel_f_device << <gridSize, blockSize >> >(f_device, locations, colours, rgb, noTotalPoints, M, projParams, imgSize);
-	ORcudaKernelCheck;
+		colorTrackerOneLevel_f_device << <gridSize, blockSize >> >(f_device, locations, colours, rgb, noTotalPoints, M, projParams, imgSize);
+		ORcudaKernelCheck;
 
-	ORcudaSafeCall(cudaMemcpy(f_host, f_device, sizeof(Vector2f)* gridSize.x, cudaMemcpyDeviceToHost));
+		ORcudaSafeCall(cudaMemcpy(f_host, f_device, sizeof(Vector2f)* gridSize.x, cudaMemcpyDeviceToHost));
+	}
 
 	final_f = 0; countedPoints_valid = 0;
 	for (size_t i = 0; i < gridSize.x; i++) { final_f += f_host[i].x; countedPoints_valid += (int)f_host[i].y; }
@@ -110,27 +113,30 @@ void ITMColorTracker_CUDA::G_oneLevel(float *gradient, float *hessian, ORUtils::
 	dim3 blockSize(128, 1);
 	dim3 gridSize((int)ceil((float)noTotalPoints / (float)blockSize.x), 1);
 
-	if (rotationOnly)
+	if (gridSize.x > 0)
 	{
-		ORcudaSafeCall(cudaMemset(g_device, 0, sizeof(float) * gridSize.x * 3));
-		ORcudaSafeCall(cudaMemset(h_device, 0, sizeof(float) * gridSize.x * 6));
+		if (rotationOnly)
+		{
+			ORcudaSafeCall(cudaMemset(g_device, 0, sizeof(float) * gridSize.x * 3));
+			ORcudaSafeCall(cudaMemset(h_device, 0, sizeof(float) * gridSize.x * 6));
 
-		colorTrackerOneLevel_g_ro_device << <gridSize, blockSize >> >(g_device, h_device, locations, colours, gx, gy, rgb, noTotalPoints, 
-			M, projParams, imgSize);
-		ORcudaKernelCheck;
+			colorTrackerOneLevel_g_ro_device << <gridSize, blockSize >> >(g_device, h_device, locations, colours, gx, gy, rgb, noTotalPoints,
+				M, projParams, imgSize);
+			ORcudaKernelCheck;
+		}
+		else
+		{
+			ORcudaSafeCall(cudaMemset(g_device, 0, sizeof(float) * gridSize.x * 6));
+			ORcudaSafeCall(cudaMemset(h_device, 0, sizeof(float) * gridSize.x * 21));
+
+			colorTrackerOneLevel_g_rt_device << <gridSize, blockSize >> >(g_device, h_device, locations, colours, gx, gy, rgb, noTotalPoints,
+				M, projParams, imgSize);
+			ORcudaKernelCheck;
+		}
+
+		ORcudaSafeCall(cudaMemcpy(g_host, g_device, sizeof(float)* gridSize.x * numPara, cudaMemcpyDeviceToHost));
+		ORcudaSafeCall(cudaMemcpy(h_host, h_device, sizeof(float)* gridSize.x * numParaSQ, cudaMemcpyDeviceToHost));
 	}
-	else
-	{
-		ORcudaSafeCall(cudaMemset(g_device, 0, sizeof(float) * gridSize.x * 6));
-		ORcudaSafeCall(cudaMemset(h_device, 0, sizeof(float) * gridSize.x * 21));
-
-		colorTrackerOneLevel_g_rt_device << <gridSize, blockSize >> >(g_device, h_device, locations, colours, gx, gy, rgb, noTotalPoints, 
-			M, projParams, imgSize);
-		ORcudaKernelCheck;
-	}
-
-	ORcudaSafeCall(cudaMemcpy(g_host, g_device, sizeof(float)* gridSize.x * numPara, cudaMemcpyDeviceToHost));
-	ORcudaSafeCall(cudaMemcpy(h_host, h_device, sizeof(float)* gridSize.x * numParaSQ, cudaMemcpyDeviceToHost));
 
 	for (size_t i = 0; i < gridSize.x; i++)
 	{
