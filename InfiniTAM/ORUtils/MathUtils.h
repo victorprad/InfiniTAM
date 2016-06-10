@@ -30,8 +30,21 @@
 #define DEGTORAD float(0.017453292519943295769236907684886)
 #endif
 
+inline float portable_int_as_float(int a)
+{
+	union
+	{
+		int a;
+		float b;
+	} u;
+
+	u.a = a;
+
+	return u.b;
+}
+
 #ifndef MY_INF
-#define MY_INF 0x7f800000
+#define MY_INF (portable_int_as_float(0x7f800000))
 #endif
 
 #ifndef __METALC__
