@@ -82,32 +82,46 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exDepth_Ab(THREADPTR(float) *A,
 	return true;
 }
 
-_CPU_AND_GPU_CODE_ inline bool computePerPointGH_exRGB_Ab(THREADPTR(float) &colourDifferenceSq, THREADPTR(float) *localGradient, THREADPTR(float) *localHessian,
-	const THREADPTR(Vector4f) &pt_model, const THREADPTR(Vector4f) &colour_known, DEVICEPTR(Vector4u) *rgb, const CONSTPTR(Vector2i) & imgSize,
-	int locId_global, Vector4f projParams, Matrix4f M, DEVICEPTR(Vector4s) *gx, DEVICEPTR(Vector4s) *gy, int numPara)
+_CPU_AND_GPU_CODE_ inline bool computePerPointGH_exRGB_Ab(THREADPTR(float) *localGradient, THREADPTR(float) &colourDifferenceSq, THREADPTR(float) *localHessian,
+	THREADPTR(Vector4f) pt_model, const THREADPTR(Vector4u) *rgb_model, DEVICEPTR(Vector4u) *rgb_live, const CONSTPTR(Vector2i) & imgSize,
+	int x, int y, Vector4f projParams, Matrix4f M, Matrix4f scenePose, DEVICEPTR(Vector4s) *gx, DEVICEPTR(Vector4s) *gy, int numPara)
 {
-	Vector4f pt_camera, colour_obs, gx_obs, gy_obs;
+	Vector4f pt_camera, colour_model, colour_obs, gx_obs, gy_obs;
 	Vector3f colour_diff_d, d_pt_cam_dpi, d[6];
-	Vector2f pt_image, d_proj_dpi;
+	Vector2f pt_image_live, pt_image_model, d_proj_dpi;
 
-	pt_camera = M * pt_model;
+	if (pt_model.w <= 0.f) return false;
+
+	pt_model.w = 1.f;
+	pt_camera = M * pt_model; // convert the point in camera coordinates using the candidate pose
 
 	if (pt_camera.z <= 0) return false;
 
-	pt_image.x = projParams.x * pt_camera.x / pt_camera.z + projParams.z;
-	pt_image.y = projParams.y * pt_camera.y / pt_camera.z + projParams.w;
+	// project the point onto the live image
+	pt_image_live.x = projParams.x * pt_camera.x / pt_camera.z + projParams.z;
+	pt_image_live.y = projParams.y * pt_camera.y / pt_camera.z + projParams.w;
 
-	if (pt_image.x < 1 || pt_image.x > imgSize.x - 2 || pt_image.y < 1 || pt_image.y > imgSize.y - 2) return false;
+	if (pt_image_live.x < 1 || pt_image_live.x > imgSize.x - 2 || pt_image_live.y < 1 || pt_image_live.y > imgSize.y - 2) return false;
 
-	colour_obs = interpolateBilinear(rgb, pt_image, imgSize);
-	gx_obs = interpolateBilinear(gx, pt_image, imgSize);
-	gy_obs = interpolateBilinear(gy, pt_image, imgSize);
+	// convert the point in model coordinates
+	Vector4f pt_model_reproj = scenePose * pt_model;
 
-	if (colour_obs.w < 254.0f) return false;
+	// Project the point onto the previous frame
+	pt_image_model.x = projParams.x * pt_model_reproj.x / pt_model_reproj.z + projParams.z;
+	pt_image_model.y = projParams.y * pt_model_reproj.y / pt_model_reproj.z + projParams.w;
 
-	colour_diff_d.x = colour_obs.x - colour_known.x;
-	colour_diff_d.y = colour_obs.y - colour_known.y;
-	colour_diff_d.z = colour_obs.z - colour_known.z;
+	if (pt_image_model.x < 1 || pt_image_model.x > imgSize.x - 2 || pt_image_model.y < 1 || pt_image_model.y > imgSize.y - 2) return false;
+
+	colour_model = interpolateBilinear(rgb_model, pt_image_model, imgSize) / 255.f;
+	colour_obs = interpolateBilinear(rgb_live, pt_image_live, imgSize) / 255.f;
+	gx_obs = interpolateBilinear(gx, pt_image_live, imgSize) / 255.f; // gx and gy are computed from the live image
+	gy_obs = interpolateBilinear(gy, pt_image_live, imgSize) / 255.f;
+
+	if (colour_obs.w <= 1e-7f || colour_model.w <= 1e-7f) return false;
+
+	colour_diff_d.x = colour_obs.x - colour_model.x;
+	colour_diff_d.y = colour_obs.y - colour_model.y;
+	colour_diff_d.z = colour_obs.z - colour_model.z;
 
 	colourDifferenceSq = colour_diff_d.x * colour_diff_d.x + colour_diff_d.y * colour_diff_d.y + colour_diff_d.z * colour_diff_d.z;
 
@@ -128,16 +142,16 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exRGB_Ab(THREADPTR(float) &colo
 			d_proj_dpi.y = projParams.y * pt_camera.x / pt_camera.z;
 			break; //rz
 		case 3: //tx
-			d_proj_dpi.x = projParams.x / pt_camera.z;
+			d_proj_dpi.x = -projParams.x / pt_camera.z;
 			d_proj_dpi.y = 0.0f;
 			break;
 		case 4: //ty
 			d_proj_dpi.x = 0.0f;
-			d_proj_dpi.y = projParams.y / pt_camera.z;
+			d_proj_dpi.y = -projParams.y / pt_camera.z;
 			break;
 		case 5: //tz
-			d_proj_dpi.x = -projParams.x * pt_camera.x / (pt_camera.z * pt_camera.z);
-			d_proj_dpi.y = -projParams.y * pt_camera.y / (pt_camera.z * pt_camera.z);
+			d_proj_dpi.x = projParams.x * pt_camera.x / (pt_camera.z * pt_camera.z);
+			d_proj_dpi.y = projParams.y * pt_camera.y / (pt_camera.z * pt_camera.z);
 			break;
 		};
 

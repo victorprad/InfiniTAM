@@ -26,7 +26,8 @@ namespace ITMLib
         int ComputeGandH(float &f, float *nabla, float *hessian, Matrix4f approxInvPose);
         
     public:
-        ITMExtendedTracker_Metal(Vector2i imgSize, TrackerIterationType *trackingRegime, int noHierarchyLevels,
+        ITMExtendedTracker_Metal(Vector2i imgSize_d, Vector2i imgSize_rgb, bool useDepth, bool useColour,
+        						 TrackerIterationType *trackingRegime, int noHierarchyLevels,
                                  float terminationThreshold, float failureDetectorThreshold, float viewFrustum_min, float viewFrustum_max,
                                  int tukeyCutOff, int framesToSkip, int framesToWeight, const ITMLowLevelEngine *lowLevelEngine);
         ~ITMExtendedTracker_Metal(void);

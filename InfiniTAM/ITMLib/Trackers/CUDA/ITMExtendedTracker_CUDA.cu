@@ -52,10 +52,11 @@ __global__ void exRGBTrackerOneLevel_g_rt_device(ITMExtendedTracker_KernelParame
 
 // host methods
 
-ITMExtendedTracker_CUDA::ITMExtendedTracker_CUDA(Vector2i imgSize, TrackerIterationType *trackingRegime, int noHierarchyLevels,
+ITMExtendedTracker_CUDA::ITMExtendedTracker_CUDA(Vector2i imgSize_d, Vector2i imgSize_rgb, bool useDepth, bool useColour,
+	TrackerIterationType *trackingRegime, int noHierarchyLevels,
 	float terminationThreshold, float failureDetectorThreshold, float viewFrustum_min, float viewFrustum_max, int tukeyCutOff, int framesToSkip, int framesToWeight,
 	const ITMLowLevelEngine *lowLevelEngine)
-	: ITMExtendedTracker(imgSize, trackingRegime, noHierarchyLevels, terminationThreshold, failureDetectorThreshold, viewFrustum_min, viewFrustum_max, 
+	: ITMExtendedTracker(imgSize_d, imgSize_rgb, useDepth, useColour, trackingRegime, noHierarchyLevels, terminationThreshold, failureDetectorThreshold, viewFrustum_min, viewFrustum_max,
 	tukeyCutOff, framesToSkip, framesToWeight, lowLevelEngine, MEMORYDEVICE_CUDA)
 {
 	ORcudaSafeCall(cudaMallocHost((void**)&accu_host, sizeof(AccuCell)));
@@ -157,7 +158,7 @@ int ITMExtendedTracker_CUDA::ComputeGandH_Depth(float &f, float *nabla, float *h
 int ITMExtendedTracker_CUDA::ComputeGandH_RGB(float &f, float *nabla, float *hessian, Matrix4f approxPose)
 {
 	Vector2i sceneImageSize = sceneHierarchyLevel->pointsMap->noDims;
-	Vector2i viewImageSize = viewHierarchyLevel_Depth->depth->noDims;
+	Vector2i viewImageSize = viewHierarchyLevel_RGB->rgb_current->noDims;
 
 	if (iterationType == TRACKER_ITERATION_NONE) return 0;
 
@@ -166,7 +167,7 @@ int ITMExtendedTracker_CUDA::ComputeGandH_RGB(float &f, float *nabla, float *hes
 	int noPara = shortIteration ? 3 : 6;
 
 	dim3 blockSize(16, 16);
-	dim3 gridSize((int)ceil((float)viewImageSize.x / (float)blockSize.x), (int)ceil((float)viewImageSize.y / (float)blockSize.y));
+	dim3 gridSize((int)ceil((float)sceneImageSize.x / (float)blockSize.x), (int)ceil((float)sceneImageSize.y / (float)blockSize.y));
 
 	ORcudaSafeCall(cudaMemset(accu_device, 0, sizeof(AccuCell)));
 
@@ -235,8 +236,8 @@ __device__ float rho_deriv2(float r, float huber_b)
 
 template<bool shortIteration, bool rotationOnly, bool useWeights>
 __device__ void exDepthTrackerOneLevel_g_rt_device_main(ITMExtendedTracker_CUDA::AccuCell *accu, float *depth,
-	Matrix4f approxInvPose, Vector4f *pointsMap, Vector4f *normalsMap, Vector4f sceneIntrinsics, Vector2i sceneImageSize, Matrix4f scenePose, 
-	Vector4f viewIntrinsics, Vector2i viewImageSize, float spaceThresh, float viewFrustum_min, float viewFrustum_max, 
+	Matrix4f approxInvPose, Vector4f *pointsMap, Vector4f *normalsMap, Vector4f sceneIntrinsics, Vector2i sceneImageSize, Matrix4f scenePose,
+	Vector4f viewIntrinsics, Vector2i viewImageSize, float spaceThresh, float viewFrustum_min, float viewFrustum_max,
 	int tukeyCutOff, int framesToSkip, int framesToWeight)
 {
 	int x = threadIdx.x + blockIdx.x * blockDim.x, y = threadIdx.y + blockIdx.y * blockDim.y;
@@ -260,9 +261,9 @@ __device__ void exDepthTrackerOneLevel_g_rt_device_main(ITMExtendedTracker_CUDA:
 	if (x < viewImageSize.x && y < viewImageSize.y)
 	{
 		isValidPoint = computePerPointGH_exDepth_Ab<shortIteration, rotationOnly, useWeights>(A, b, x, y, depth[x + y * viewImageSize.x], depthWeight,
-			viewImageSize, viewIntrinsics, sceneImageSize, sceneIntrinsics, approxInvPose, scenePose, pointsMap, normalsMap, spaceThresh, 
+			viewImageSize, viewIntrinsics, sceneImageSize, sceneIntrinsics, approxInvPose, scenePose, pointsMap, normalsMap, spaceThresh,
 			viewFrustum_min, viewFrustum_max, tukeyCutOff, framesToSkip, framesToWeight);
-		
+
 		if (isValidPoint) should_prefix = true;
 	}
 
@@ -274,7 +275,7 @@ __device__ void exDepthTrackerOneLevel_g_rt_device_main(ITMExtendedTracker_CUDA:
 	__syncthreads();
 
 	if (!should_prefix) return;
-	
+
 	{ //reduction for noValidPoints
 		dim_shared1[locId_local] = isValidPoint;
 		__syncthreads();
@@ -393,9 +394,9 @@ __device__ void exDepthTrackerOneLevel_g_rt_device_main(ITMExtendedTracker_CUDA:
 }
 
 template<bool shortIteration, bool rotationOnly, bool useWeights>
-__device__ void exRGBTrackerOneLevel_g_rt_device_main(ITMExtendedTracker_CUDA::AccuCell *accu, 
-	Vector4f *locations, Vector4f *colours, Vector4s *gx, Vector4s *gy, Vector4u *rgb,
-	Matrix4f M, Vector4f projParams, Vector2i imgSize)
+__device__ void exRGBTrackerOneLevel_g_rt_device_main(ITMExtendedTracker_CUDA::AccuCell *accu,
+	Vector4f *locations, Vector4u *rgb_model, Vector4s *gx, Vector4s *gy, Vector4u *rgb,
+	Matrix4f M, Matrix4f scenePose, Vector4f projParams, Vector2i imgSize, Vector2i sceneSize)
 {
 	int x = threadIdx.x + blockIdx.x * blockDim.x, y = threadIdx.y + blockIdx.y * blockDim.y;
 
@@ -411,20 +412,27 @@ __device__ void exRGBTrackerOneLevel_g_rt_device_main(ITMExtendedTracker_CUDA::A
 
 	const int noPara = shortIteration ? 3 : 6;
 	const int noParaSQ = shortIteration ? 3 + 2 + 1 : 6 + 5 + 4 + 3 + 2 + 1;
-	float A[noPara]; float b;
+	float localHessian[noParaSQ];
+	float A[noPara];
+	float b;
 
 	bool isValidPoint = false;
 
-	if (x < imgSize.x && y < imgSize.y)
+	if (x < sceneSize.x && y < sceneSize.y)
 	{
-		//isValidPoint = computePerPointGH_exDepth_Ab<shortIteration, rotationOnly, useWeights>(A, b, x, y, depth[x + y * viewImageSize.x], depthWeight,
-		//	viewImageSize, viewIntrinsics, sceneImageSize, sceneIntrinsics, approxInvPose, scenePose, pointsMap, normalsMap, spaceThresh,
-		//	viewFrustum_min, viewFrustum_max, tukeyCutOff, framesToSkip, framesToWeight);
+		// FIXME Translation only not implemented yet
+		if(!shortIteration || rotationOnly)
+		{
+			isValidPoint = computePerPointGH_exRGB_Ab(A, b, localHessian, locations[x + y * sceneSize.x], rgb_model, rgb, imgSize, x, y,
+					projParams, M, scenePose, gx, gy, noPara);
+		}
 
 		if (isValidPoint) should_prefix = true;
 	}
 
-	if (!isValidPoint) {
+	if (!isValidPoint)
+	{
+		for (int i = 0; i < noParaSQ; i++) localHessian[i] = 0.0f;
 		for (int i = 0; i < noPara; i++) A[i] = 0.0f;
 		b = 0.0f;
 	}
@@ -439,6 +447,7 @@ __device__ void exRGBTrackerOneLevel_g_rt_device_main(ITMExtendedTracker_CUDA::A
 
 		if (locId_local < 128) dim_shared1[locId_local] += dim_shared1[locId_local + 128];
 		__syncthreads();
+
 		if (locId_local < 64) dim_shared1[locId_local] += dim_shared1[locId_local + 64];
 		__syncthreads();
 
@@ -502,18 +511,6 @@ __device__ void exRGBTrackerOneLevel_g_rt_device_main(ITMExtendedTracker_CUDA::A
 
 	__syncthreads();
 
-	float localHessian[noParaSQ];
-#if (defined(__CUDACC__) && defined(__CUDA_ARCH__)) || (defined(__METALC__))
-#pragma unroll
-#endif
-	for (unsigned char r = 0, counter = 0; r < noPara; r++)
-	{
-#if (defined(__CUDACC__) && defined(__CUDA_ARCH__)) || (defined(__METALC__))
-#pragma unroll
-#endif
-		for (int c = 0; c <= r; c++, counter++) localHessian[counter] = A[r] * A[c];
-	}
-
 	//reduction for hessian
 	for (unsigned char paraId = 0; paraId < noParaSQ; paraId += 3)
 	{
@@ -554,16 +551,14 @@ template<bool shortIteration, bool rotationOnly, bool useWeights>
 __global__ void exDepthTrackerOneLevel_g_rt_device(ITMExtendedTracker_KernelParameters_Depth para)
 {
 	exDepthTrackerOneLevel_g_rt_device_main<shortIteration, rotationOnly, useWeights>(para.accu, para.depth,
-		para.approxInvPose, para.pointsMap, para.normalsMap, para.sceneIntrinsics, para.sceneImageSize, para.scenePose, 
-		para.viewIntrinsics, para.viewImageSize, para.spaceThresh, para.viewFrustum_min, para.viewFrustum_max, 
+		para.approxInvPose, para.pointsMap, para.normalsMap, para.sceneIntrinsics, para.sceneImageSize, para.scenePose,
+		para.viewIntrinsics, para.viewImageSize, para.spaceThresh, para.viewFrustum_min, para.viewFrustum_max,
 		para.tukeyCutOff, para.framesToSkip, para.framesToWeight);
 }
 
 template<bool shortIteration, bool rotationOnly, bool useWeights>
 __global__ void exRGBTrackerOneLevel_g_rt_device(ITMExtendedTracker_KernelParameters_RGB para)
 {
-	//exDepthTrackerOneLevel_g_rt_device_main<shortIteration, rotationOnly, useWeights>(para.accu, para.depth,
-	//	para.approxInvPose, para.pointsMap, para.normalsMap, para.sceneIntrinsics, para.sceneImageSize, para.scenePose,
-	//	para.viewIntrinsics, para.viewImageSize, para.spaceThresh, para.viewFrustum_min, para.viewFrustum_max,
-	//	para.tukeyCutOff, para.framesToSkip, para.framesToWeight);
+	exRGBTrackerOneLevel_g_rt_device_main<shortIteration, rotationOnly, useWeights>(para.accu, para.pointsMap,
+		para.rgb_model, para.gx, para.gy, para.rgb_live, para.approxPose, para.scenePose, para.projParams, para.viewImageSize, para.sceneImageSize);
 }

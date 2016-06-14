@@ -77,7 +77,8 @@ namespace ITMLib
 
 		void SetupLevels(int numIterCoarse, int numIterFine, float spaceThreshCoarse, float spaceThreshFine);
 
-		ITMExtendedTracker(Vector2i imgSize, TrackerIterationType *trackingRegime, int noHierarchyLevels,
+		ITMExtendedTracker(Vector2i imgSize_d, Vector2i imgSize_rgb, bool useDepth, bool useColour,
+			TrackerIterationType *trackingRegime, int noHierarchyLevels,
 			float terminationThreshold, float failureDetectorThreshold, 
 			float viewFrustum_min, float viewFrustum_max, int tukeyCutOff, int framesToSkip, int framesToWeight,
 			const ITMLowLevelEngine *lowLevelEngine, MemoryDeviceType memoryType);

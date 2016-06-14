@@ -16,10 +16,10 @@ struct ExtendedTracker_metalBits
 
 static ExtendedTracker_metalBits et_metalBits;
 
-ITMExtendedTracker_Metal::ITMExtendedTracker_Metal(Vector2i imgSize, TrackerIterationType *trackingRegime, int noHierarchyLevels,
+ITMExtendedTracker_Metal::ITMExtendedTracker_Metal(Vector2i imgSize_d, Vector2i imgSize_rgb, bool useDepth, bool useColour, TrackerIterationType *trackingRegime, int noHierarchyLevels,
                                                    float terminationThreshold, float failureDetectorThreshold, float viewFrustum_min, float viewFrustum_max, int tukeyCutOff, int framesToSkip, int framesToWeight,
                                                    const ITMLowLevelEngine *lowLevelEngine)
-:ITMExtendedTracker(imgSize, trackingRegime, noHierarchyLevels, terminationThreshold, failureDetectorThreshold, viewFrustum_min, viewFrustum_max, tukeyCutOff, framesToSkip, framesToWeight, lowLevelEngine, MEMORYDEVICE_CPU)
+:ITMExtendedTracker(imgSize_d, imgSize_rgb, useDepth, useColour, trackingRegime, noHierarchyLevels, terminationThreshold, failureDetectorThreshold, viewFrustum_min, viewFrustum_max, tukeyCutOff, framesToSkip, framesToWeight, lowLevelEngine, MEMORYDEVICE_CPU)
 {
     allocImgSize = imgSize;
 
@@ -27,7 +27,7 @@ ITMExtendedTracker_Metal::ITMExtendedTracker_Metal(Vector2i imgSize, TrackerIter
     allocateMetalData((void**)&ATA_metal, (void**)&ATA_metal_mb, allocImgSize.x * allocImgSize.y * 21 * sizeof(float), true);
     allocateMetalData((void**)&noValidPoints_metal, (void**)&noValidPoints_metal_mb, allocImgSize.x * allocImgSize.y * sizeof(float), true);
     allocateMetalData((void**)&f_metal, (void**)&f_metal_mb, allocImgSize.x * allocImgSize.y * sizeof(float), true);
-    
+
     NSError *errors;
     et_metalBits.f_extendedTrackerOneLevel_rt_device = [[[MetalContext instance]library]newFunctionWithName:@"extendedTrackerOneLevel_g_rt_device"];
     et_metalBits.p_extendedTrackerOneLevel_rt_device = [[[MetalContext instance]device]newComputePipelineStateWithFunction:et_metalBits.f_extendedTrackerOneLevel_rt_device error:&errors];
@@ -49,24 +49,24 @@ int ITMExtendedTracker_Metal::ComputeGandH(float &f, float *nabla, float *hessia
     Vector2i sceneImageSize = sceneHierarchyLevel->pointsMap->noDims;
     Vector4f viewIntrinsics = viewHierarchyLevel->intrinsics;
     Vector2i viewImageSize = viewHierarchyLevel->depth->noDims;
-    
+
     if (iterationType == TRACKER_ITERATION_NONE) return 0;
-    
+
     bool shortIteration = (iterationType == TRACKER_ITERATION_ROTATION) || (iterationType == TRACKER_ITERATION_TRANSLATION);
-    
+
     float sumHessian[6 * 6], sumNabla[6], sumF; int noValidPoints;
     int noPara = shortIteration ? 3 : 6, noParaSQ = shortIteration ? 3 + 2 + 1 : 6 + 5 + 4 + 3 + 2 + 1;
-    
+
     noValidPoints = 0; sumF = 0.0f;
     memset(sumHessian, 0, sizeof(float) * noParaSQ);
     memset(sumNabla, 0, sizeof(float) * noPara);
-    
+
     int viewImageTotalSize = viewImageSize.x * viewImageSize.y;
     int pointsPerThread = 4;
-    
+
     id<MTLCommandBuffer> commandBuffer = [[[MetalContext instance]commandQueue]commandBuffer];
     id<MTLComputeCommandEncoder> commandEncoder = [commandBuffer computeCommandEncoder];
-    
+
     ExtendedTrackerOneLevel_rt_Params *params = (ExtendedTrackerOneLevel_rt_Params*)[et_metalBits.paramsBuffer contents];
     params->approxInvPose = approxInvPose; params->sceneIntrinsics = sceneIntrinsics;
     params->sceneImageSize = sceneImageSize; params->scenePose = scenePose;
@@ -80,7 +80,7 @@ int ITMExtendedTracker_Metal::ComputeGandH(float &f, float *nabla, float *hessia
     params->others2.z = framesToSkip;
     params->others2.w = framesToWeight;
     params->others3.x = currentFrameNo;
-    
+
     [commandEncoder setComputePipelineState:et_metalBits.p_extendedTrackerOneLevel_rt_device];
     [commandEncoder setBuffer:(__bridge id<MTLBuffer>) noValidPoints_metal_mb                               offset:0 atIndex:0];
     [commandEncoder setBuffer:(__bridge id<MTLBuffer>) f_metal_mb                                           offset:0 atIndex:1];
@@ -90,21 +90,21 @@ int ITMExtendedTracker_Metal::ComputeGandH(float &f, float *nabla, float *hessia
     [commandEncoder setBuffer:(__bridge id<MTLBuffer>) sceneHierarchyLevel->pointsMap->GetMetalBuffer()     offset:0 atIndex:5];
     [commandEncoder setBuffer:(__bridge id<MTLBuffer>) sceneHierarchyLevel->normalsMap->GetMetalBuffer()    offset:0 atIndex:6];
     [commandEncoder setBuffer:et_metalBits.paramsBuffer                                                     offset:0 atIndex:7];
-    
+
     MTLSize blockSize = {4, 4, 1};
     MTLSize gridSize = {(NSUInteger)ceil(((float)viewImageSize.x / pointsPerThread) / (float)blockSize.width),
         (NSUInteger)ceil(((float)viewImageSize.y / pointsPerThread) / (float)blockSize.height), 1};
-    
+
     memset(noValidPoints_metal, 0, sizeof(float) * viewImageTotalSize);
     memset(f_metal, 0, sizeof(float) * viewImageTotalSize);
-    
+
     [commandEncoder dispatchThreadgroups:gridSize threadsPerThreadgroup:blockSize];
     [commandEncoder endEncoding];
 
     [commandBuffer commit];
 
     [commandBuffer waitUntilCompleted];
-    
+
     for (int locId = 0; locId < (viewImageTotalSize / (pointsPerThread * pointsPerThread)); locId++)
     {
         if (noValidPoints_metal[locId] > 0)
@@ -115,12 +115,12 @@ int ITMExtendedTracker_Metal::ComputeGandH(float &f, float *nabla, float *hessia
             for (int i = 0; i < noParaSQ; i++) sumHessian[i] += ATA_metal[i + noParaSQ * locId];
         }
     }
-    
+
     for (int r = 0, counter = 0; r < noPara; r++) for (int c = 0; c <= r; c++, counter++) hessian[r + c * 6] = sumHessian[counter];
     for (int r = 0; r < noPara; ++r) for (int c = r + 1; c < noPara; c++) hessian[r + c * 6] = hessian[c + r * 6];
-    
+
     memcpy(nabla, sumNabla, noPara * sizeof(float));
     f = (noValidPoints > 100) ? sqrt(sumF) / noValidPoints : 1e5f;
-    
+
     return noValidPoints;
 }
