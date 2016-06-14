@@ -44,10 +44,10 @@ inline void __cudaSafeCall( cudaError err, const char *file, const int line )
 #ifndef ORcudaKernelCheck
 
 // For normal operation
-#define ORcudaKernelCheck
+//#define ORcudaKernelCheck
 
 // For debugging purposes
-//#define ORcudaKernelCheck { cudaDeviceSynchronize(); ORUtils::__cudaSafeCall(cudaPeekAtLastError(), __FILE__, __LINE__); }
+#define ORcudaKernelCheck { cudaDeviceSynchronize(); ORUtils::__cudaSafeCall(cudaPeekAtLastError(), __FILE__, __LINE__); }
 
 #endif
 
