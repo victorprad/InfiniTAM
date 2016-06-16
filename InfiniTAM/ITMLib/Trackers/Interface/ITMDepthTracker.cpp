@@ -224,6 +224,10 @@ void ITMDepthTracker::UpdatePoseQuality(int noValidPoints_old, float *hessian_go
 		else if (score > -10.0f) trackingState->trackerResult = ITMTrackingState::TRACKING_POOR;
 		else trackingState->trackerResult = ITMTrackingState::TRACKING_FAILED;
 	}
+	else
+	{
+		trackingState->trackerResult = ITMTrackingState::TRACKING_FAILED;
+	}
 }
 
 void ITMDepthTracker::TrackCamera(ITMTrackingState *trackingState, const ITMView *view)
