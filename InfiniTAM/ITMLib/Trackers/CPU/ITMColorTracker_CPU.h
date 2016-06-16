@@ -9,7 +9,7 @@ namespace ITMLib
 	class ITMColorTracker_CPU : public ITMColorTracker
 	{
 	public:
-		void F_oneLevel(float *f, ORUtils::SE3Pose *pose);
+		int F_oneLevel(float *f, ORUtils::SE3Pose *pose);
 		void G_oneLevel(float *gradient, float *hessian, ORUtils::SE3Pose *pose) const;
 
 		ITMColorTracker_CPU(Vector2i imgSize, TrackerIterationType *trackingRegime, int noHierarchyLevels,

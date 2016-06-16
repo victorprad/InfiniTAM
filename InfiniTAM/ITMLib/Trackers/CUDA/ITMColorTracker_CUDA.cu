@@ -43,7 +43,7 @@ ITMColorTracker_CUDA::~ITMColorTracker_CUDA(void)
 	delete[] h_host;
 }
 
-void ITMColorTracker_CUDA::F_oneLevel(float *f, ORUtils::SE3Pose *pose)
+int ITMColorTracker_CUDA::F_oneLevel(float *f, ORUtils::SE3Pose *pose)
 {
 	int noTotalPoints = trackingState->pointCloud->noTotalPoints;
 
@@ -77,10 +77,12 @@ void ITMColorTracker_CUDA::F_oneLevel(float *f, ORUtils::SE3Pose *pose)
 	final_f = 0; countedPoints_valid = 0;
 	for (size_t i = 0; i < gridSize.x; i++) { final_f += f_host[i].x; countedPoints_valid += (int)f_host[i].y; }
 
-	if (countedPoints_valid == 0) { final_f = MY_INF; scaleForOcclusions = 1.0; }
+	if (countedPoints_valid == 0) { final_f = 1e10; scaleForOcclusions = 1.0; }
 	else { scaleForOcclusions = (float)noTotalPoints / countedPoints_valid; }
 
 	f[0] = final_f * scaleForOcclusions;
+
+	return countedPoints_valid;
 }
 
 void ITMColorTracker_CUDA::G_oneLevel(float *gradient, float *hessian, ORUtils::SE3Pose *pose) const
