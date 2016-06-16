@@ -210,6 +210,8 @@ void ITMDepthTracker::UpdatePoseQuality(int noValidPoints_old, float *hessian_go
 	float finalResidual_v2 = sqrt(((float)noValidPoints_old * f_old + (float)(noValidPointsMax - noValidPoints_old) * distThresh[0]) / (float)noValidPointsMax);
 	float percentageInliers_v2 = (float)noValidPoints_old / (float)noValidPointsMax;
 
+	trackingState->trackerResult = ITMTrackingState::TRACKING_FAILED;
+
 	if (noValidPointsMax != 0 && noTotalPoints != 0 && det_norm_v1 > 0 && det_norm_v2 > 0) {
 		Vector4f inputVector(log(det_norm_v1), log(det_norm_v2), finalResidual_v2, percentageInliers_v2);
 
@@ -222,11 +224,6 @@ void ITMDepthTracker::UpdatePoseQuality(int noValidPoints_old, float *hessian_go
 
 		if (score > 0) trackingState->trackerResult = ITMTrackingState::TRACKING_GOOD;
 		else if (score > -10.0f) trackingState->trackerResult = ITMTrackingState::TRACKING_POOR;
-		else trackingState->trackerResult = ITMTrackingState::TRACKING_FAILED;
-	}
-	else
-	{
-		trackingState->trackerResult = ITMTrackingState::TRACKING_FAILED;
 	}
 }
 
