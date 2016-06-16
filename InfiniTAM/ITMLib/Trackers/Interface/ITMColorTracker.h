@@ -47,6 +47,8 @@ namespace ITMLib
 				if (cacheHessian != NULL) delete[] cacheHessian;
 			}
 
+			int getNumValidPoints(void) const { return mValidPoints; }
+
 		protected:
 			void computeGradients(bool requiresHessian);
 
@@ -56,6 +58,7 @@ namespace ITMLib
 			float cacheF;
 			float *cacheNabla;
 			float *cacheHessian;
+			int mValidPoints;
 		};
 
 		EvaluationPoint* evaluateAt(ORUtils::SE3Pose *para) const
@@ -65,7 +68,7 @@ namespace ITMLib
 
 		int numParameters(void) const { return (iterationType == TRACKER_ITERATION_ROTATION) ? 3 : 6; }
 
-		virtual void F_oneLevel(float *f, ORUtils::SE3Pose *pose) = 0;
+		virtual int F_oneLevel(float *f, ORUtils::SE3Pose *pose) = 0;
 		virtual void G_oneLevel(float *gradient, float *hessian, ORUtils::SE3Pose *pose) const = 0;
 
 		void ApplyDelta(const ORUtils::SE3Pose & para_old, const float *delta, ORUtils::SE3Pose & para_new) const;
