@@ -84,7 +84,7 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exDepth_Ab(THREADPTR(float) *A,
 
 _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exRGB_Ab(THREADPTR(float) *localGradient, THREADPTR(float) &colourDifferenceSq, THREADPTR(float) *localHessian,
 	THREADPTR(Vector4f) pt_model, const THREADPTR(Vector4u) *rgb_model, DEVICEPTR(Vector4u) *rgb_live, const CONSTPTR(Vector2i) & imgSize,
-	int x, int y, Vector4f projParams, Matrix4f M, Matrix4f scenePose, DEVICEPTR(Vector4s) *gx, DEVICEPTR(Vector4s) *gy, int numPara)
+	int x, int y, Vector4f projParams, Matrix4f approxPose, Matrix4f approxInvPose, Matrix4f scenePose, DEVICEPTR(Vector4s) *gx, DEVICEPTR(Vector4s) *gy, int numPara)
 {
 	Vector4f pt_camera, colour_model, colour_obs, gx_obs, gy_obs;
 	Vector3f colour_diff_d, d_pt_cam_dpi, d[6];
@@ -93,7 +93,7 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exRGB_Ab(THREADPTR(float) *loca
 	if (pt_model.w <= 0.f) return false;
 
 	pt_model.w = 1.f;
-	pt_camera = M * pt_model; // convert the point in camera coordinates using the candidate pose
+	pt_camera = approxPose * pt_model; // convert the point in camera coordinates using the candidate pose
 
 	if (pt_camera.z <= 0) return false;
 
@@ -125,35 +125,90 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exRGB_Ab(THREADPTR(float) *loca
 
 	colourDifferenceSq = colour_diff_d.x * colour_diff_d.x + colour_diff_d.y * colour_diff_d.y + colour_diff_d.z * colour_diff_d.z;
 
+	// Derivatives computed as in
+	// Blanco, J. (2010). A tutorial on se (3) transformation parameterizations and on-manifold optimization.
+	// University of Malaga, Tech. Rep
+	// Equation A.13
+
+	Vector3f d_proj_const_x, d_proj_const_y;
+
+	d_proj_const_x.x = projParams.x / pt_camera.z;
+	d_proj_const_x.y = 0.f;
+	d_proj_const_x.z = -projParams.x * pt_camera.x / (pt_camera.z * pt_camera.z);
+
+	d_proj_const_y.x = 0.f;
+	d_proj_const_y.y = projParams.y / pt_camera.z;
+	d_proj_const_y.z = -projParams.y * pt_camera.y / (pt_camera.z * pt_camera.z);
+
 	for (int para = 0, counter = 0; para < numPara; para++)
 	{
+//		switch (para)
+//		{
+//		case 0: //rx
+//			d_proj_dpi.x = -projParams.x * pt_camera.y * pt_camera.x / (pt_camera.z * pt_camera.z);
+//			d_proj_dpi.y = -projParams.y * (pt_camera.z * pt_camera.z + pt_camera.y * pt_camera.y) / (pt_camera.z * pt_camera.z);
+//			break;
+//		case 1: // ry
+//			d_proj_dpi.x = projParams.x * (pt_camera.z * pt_camera.z + pt_camera.x * pt_camera.x) / (pt_camera.z * pt_camera.z);
+//			d_proj_dpi.y = projParams.y * pt_camera.x * pt_camera.y / (pt_camera.z * pt_camera.z);
+//			break;
+//		case 2: // rz
+//			d_proj_dpi.x = -projParams.x * pt_camera.y / pt_camera.z;
+//			d_proj_dpi.y = projParams.y * pt_camera.x / pt_camera.z;
+//			break; //rz
+//		case 3: //tx
+//			d_proj_dpi.x = projParams.x / pt_camera.z;
+//			d_proj_dpi.y = 0.0f;
+//			break;
+//		case 4: //ty
+//			d_proj_dpi.x = 0.0f;
+//			d_proj_dpi.y = projParams.y / pt_camera.z;
+//			break;
+//		case 5: //tz
+//			d_proj_dpi.x = -projParams.x * pt_camera.x / (pt_camera.z * pt_camera.z);
+//			d_proj_dpi.y = -projParams.y * pt_camera.y / (pt_camera.z * pt_camera.z);
+//			break;
+//		};
+
+		Vector3f d_point_col;
+
 		switch (para)
 		{
 		case 0: //rx
-			d_proj_dpi.x = -projParams.x * pt_camera.y * pt_camera.x / (pt_camera.z * pt_camera.z);
-			d_proj_dpi.y = -projParams.y * (pt_camera.z * pt_camera.z + pt_camera.y * pt_camera.y) / (pt_camera.z * pt_camera.z);
+			d_point_col.x = approxInvPose.m01 * pt_camera.z - approxInvPose.m02 * pt_camera.y;
+			d_point_col.x = approxInvPose.m11 * pt_camera.z - approxInvPose.m12 * pt_camera.y;
+			d_point_col.x = approxInvPose.m21 * pt_camera.z - approxInvPose.m22 * pt_camera.y;
 			break;
 		case 1: // ry
-			d_proj_dpi.x = projParams.x * (pt_camera.z * pt_camera.z + pt_camera.x * pt_camera.x) / (pt_camera.z * pt_camera.z);
-			d_proj_dpi.y = projParams.y * pt_camera.x * pt_camera.y / (pt_camera.z * pt_camera.z);
+			d_point_col.x = approxInvPose.m02 * pt_camera.x - approxInvPose.m00 * pt_camera.z;
+			d_point_col.x = approxInvPose.m12 * pt_camera.x - approxInvPose.m10 * pt_camera.z;
+			d_point_col.x = approxInvPose.m22 * pt_camera.x - approxInvPose.m20 * pt_camera.z;
 			break;
 		case 2: // rz
-			d_proj_dpi.x = -projParams.x * pt_camera.y / pt_camera.z;
-			d_proj_dpi.y = projParams.y * pt_camera.x / pt_camera.z;
+			d_point_col.x = approxInvPose.m00 * pt_camera.y - approxInvPose.m01 * pt_camera.x;
+			d_point_col.x = approxInvPose.m10 * pt_camera.y - approxInvPose.m11 * pt_camera.x;
+			d_point_col.x = approxInvPose.m20 * pt_camera.y - approxInvPose.m21 * pt_camera.x;
 			break; //rz
 		case 3: //tx
-			d_proj_dpi.x = -projParams.x / pt_camera.z;
-			d_proj_dpi.y = 0.0f;
+			// First row negated and transposed (matrix storage is column major, though)
+			d_point_col.x = -approxInvPose.m00;
+			d_point_col.y = -approxInvPose.m10;
+			d_point_col.z = -approxInvPose.m20;
 			break;
 		case 4: //ty
-			d_proj_dpi.x = 0.0f;
-			d_proj_dpi.y = -projParams.y / pt_camera.z;
+			d_point_col.x = -approxInvPose.m01;
+			d_point_col.y = -approxInvPose.m11;
+			d_point_col.z = -approxInvPose.m21;
 			break;
 		case 5: //tz
-			d_proj_dpi.x = projParams.x * pt_camera.x / (pt_camera.z * pt_camera.z);
-			d_proj_dpi.y = projParams.y * pt_camera.y / (pt_camera.z * pt_camera.z);
+			d_point_col.x = -approxInvPose.m02;
+			d_point_col.y = -approxInvPose.m12;
+			d_point_col.z = -approxInvPose.m22;
 			break;
 		};
+
+		d_proj_dpi.x = dot(d_proj_const_x, d_point_col);
+		d_proj_dpi.y = dot(d_proj_const_y, d_point_col);
 
 		d[para].x = d_proj_dpi.x * gx_obs.x + d_proj_dpi.y * gy_obs.x;
 		d[para].y = d_proj_dpi.x * gx_obs.y + d_proj_dpi.y * gy_obs.y;

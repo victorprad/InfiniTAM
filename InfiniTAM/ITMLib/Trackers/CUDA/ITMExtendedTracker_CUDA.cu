@@ -39,6 +39,7 @@ struct ITMExtendedTracker_KernelParameters_RGB {
 	Vector4u *rgb_model;
 	Vector2i viewImageSize;
 	Vector2i sceneImageSize;
+	Matrix4f approxInvPose;
 	Matrix4f approxPose;
 	Matrix4f scenePose;
 	Vector4f projParams;
@@ -155,12 +156,15 @@ int ITMExtendedTracker_CUDA::ComputeGandH_Depth(float &f, float *nabla, float *h
 	return accu_host->numPoints;
 }
 
-int ITMExtendedTracker_CUDA::ComputeGandH_RGB(float &f, float *nabla, float *hessian, Matrix4f approxPose)
+int ITMExtendedTracker_CUDA::ComputeGandH_RGB(float &f, float *nabla, float *hessian, Matrix4f approxInvPose)
 {
 	Vector2i sceneImageSize = sceneHierarchyLevel->pointsMap->noDims;
 	Vector2i viewImageSize = viewHierarchyLevel_RGB->rgb_current->noDims;
 
 	if (iterationType == TRACKER_ITERATION_NONE) return 0;
+
+	Matrix4f approxPose;
+	approxInvPose.inv(approxPose);
 
 	bool shortIteration = (iterationType == TRACKER_ITERATION_ROTATION) || (iterationType == TRACKER_ITERATION_TRANSLATION);
 
@@ -180,6 +184,7 @@ int ITMExtendedTracker_CUDA::ComputeGandH_RGB(float &f, float *nabla, float *hes
 	args.pointsMap = sceneHierarchyLevel->pointsMap->GetData(MEMORYDEVICE_CUDA);
 	args.viewImageSize = viewImageSize;
 	args.sceneImageSize = sceneImageSize;
+	args.approxInvPose = approxInvPose;
 	args.approxPose = approxPose;
 	args.scenePose = scenePose;
 	args.projParams = viewHierarchyLevel_RGB->intrinsics;
@@ -396,7 +401,7 @@ __device__ void exDepthTrackerOneLevel_g_rt_device_main(ITMExtendedTracker_CUDA:
 template<bool shortIteration, bool rotationOnly, bool useWeights>
 __device__ void exRGBTrackerOneLevel_g_rt_device_main(ITMExtendedTracker_CUDA::AccuCell *accu,
 	Vector4f *locations, Vector4u *rgb_model, Vector4s *gx, Vector4s *gy, Vector4u *rgb,
-	Matrix4f M, Matrix4f scenePose, Vector4f projParams, Vector2i imgSize, Vector2i sceneSize)
+	Matrix4f approxPose, Matrix4f approxInvPose, Matrix4f scenePose, Vector4f projParams, Vector2i imgSize, Vector2i sceneSize)
 {
 	int x = threadIdx.x + blockIdx.x * blockDim.x, y = threadIdx.y + blockIdx.y * blockDim.y;
 
@@ -424,7 +429,7 @@ __device__ void exRGBTrackerOneLevel_g_rt_device_main(ITMExtendedTracker_CUDA::A
 		if(!shortIteration || rotationOnly)
 		{
 			isValidPoint = computePerPointGH_exRGB_Ab(A, b, localHessian, locations[x + y * sceneSize.x], rgb_model, rgb, imgSize, x, y,
-					projParams, M, scenePose, gx, gy, noPara);
+					projParams, approxPose, approxInvPose, scenePose, gx, gy, noPara);
 		}
 
 		if (isValidPoint) should_prefix = true;
@@ -560,5 +565,5 @@ template<bool shortIteration, bool rotationOnly, bool useWeights>
 __global__ void exRGBTrackerOneLevel_g_rt_device(ITMExtendedTracker_KernelParameters_RGB para)
 {
 	exRGBTrackerOneLevel_g_rt_device_main<shortIteration, rotationOnly, useWeights>(para.accu, para.pointsMap,
-		para.rgb_model, para.gx, para.gy, para.rgb_live, para.approxPose, para.scenePose, para.projParams, para.viewImageSize, para.sceneImageSize);
+		para.rgb_model, para.gx, para.gy, para.rgb_live, para.approxPose, para.approxInvPose, para.scenePose, para.projParams, para.viewImageSize, para.sceneImageSize);
 }

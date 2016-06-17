@@ -220,31 +220,61 @@ void ITMExtendedTracker::ApplyDelta(const Matrix4f & para_old, const float *delt
 {
 	float step[6];
 
+//	switch (iterationType)
+//	{
+//	case TRACKER_ITERATION_ROTATION:
+//		step[0] = (float)(delta[0]); step[1] = (float)(delta[1]); step[2] = (float)(delta[2]);
+//		step[3] = 0.0f; step[4] = 0.0f; step[5] = 0.0f;
+//		break;
+//	case TRACKER_ITERATION_TRANSLATION:
+//		step[0] = 0.0f; step[1] = 0.0f; step[2] = 0.0f;
+//		step[3] = (float)(delta[0]); step[4] = (float)(delta[1]); step[5] = (float)(delta[2]);
+//		break;
+//	default:
+//	case TRACKER_ITERATION_BOTH:
+//		step[0] = (float)(delta[0]); step[1] = (float)(delta[1]); step[2] = (float)(delta[2]);
+//		step[3] = (float)(delta[3]); step[4] = (float)(delta[4]); step[5] = (float)(delta[5]);
+//		break;
+//	}
+//
+//	Matrix4f Tinc;
+
+//	Tinc.m00 = 1.0f;		Tinc.m10 = step[2];		Tinc.m20 = -step[1];	Tinc.m30 = step[3];
+//	Tinc.m01 = -step[2];	Tinc.m11 = 1.0f;		Tinc.m21 = step[0];		Tinc.m31 = step[4];
+//	Tinc.m02 = step[1];		Tinc.m12 = -step[0];	Tinc.m22 = 1.0f;		Tinc.m32 = step[5];
+//	Tinc.m03 = 0.0f;		Tinc.m13 = 0.0f;		Tinc.m23 = 0.0f;		Tinc.m33 = 1.0f;
+
+//	para_new = Tinc * para_old;
+
 	switch (iterationType)
 	{
-	case TRACKER_ITERATION_ROTATION:
+	case TRACKER_ITERATION_TRANSLATION:
 		step[0] = (float)(delta[0]); step[1] = (float)(delta[1]); step[2] = (float)(delta[2]);
 		step[3] = 0.0f; step[4] = 0.0f; step[5] = 0.0f;
 		break;
-	case TRACKER_ITERATION_TRANSLATION:
+	case TRACKER_ITERATION_ROTATION:
 		step[0] = 0.0f; step[1] = 0.0f; step[2] = 0.0f;
 		step[3] = (float)(delta[0]); step[4] = (float)(delta[1]); step[5] = (float)(delta[2]);
 		break;
 	default:
 	case TRACKER_ITERATION_BOTH:
-		step[0] = (float)(delta[0]); step[1] = (float)(delta[1]); step[2] = (float)(delta[2]);
-		step[3] = (float)(delta[3]); step[4] = (float)(delta[4]); step[5] = (float)(delta[5]);
+		step[3] = (float)(delta[0]); step[4] = (float)(delta[1]); step[5] = (float)(delta[2]);
+		step[0] = (float)(delta[3]); step[1] = (float)(delta[4]); step[2] = (float)(delta[5]);
 		break;
 	}
 
-	Matrix4f Tinc;
+//	for(int i = 0; i < 6; ++i) step[i] = -step[i];
+//	for(int i = 0; i < 3; ++i) step[i] = -step[i];
+//	for(int i = 0; i < 3; ++i) step[i + 3] = -step[i + 3];
 
-	Tinc.m00 = 1.0f;		Tinc.m10 = step[2];		Tinc.m20 = -step[1];	Tinc.m30 = step[3];
-	Tinc.m01 = -step[2];	Tinc.m11 = 1.0f;		Tinc.m21 = step[0];		Tinc.m31 = step[4];
-	Tinc.m02 = step[1];		Tinc.m12 = -step[0];	Tinc.m22 = 1.0f;		Tinc.m32 = step[5];
-	Tinc.m03 = 0.0f;		Tinc.m13 = 0.0f;		Tinc.m23 = 0.0f;		Tinc.m33 = 1.0f;
+	ORUtils::SE3Pose pose_old(para_old);
+	ORUtils::SE3Pose pose_new(step);
 
-	para_new = Tinc * para_old;
+	pose_new.MultiplyWith(&pose_old);
+
+	para_new = pose_new.GetM();
+
+
 }
 
 void ITMExtendedTracker::UpdatePoseQuality(int noValidPoints_old, float *hessian_good, float f_old)
@@ -291,7 +321,8 @@ void ITMExtendedTracker::UpdatePoseQuality(int noValidPoints_old, float *hessian
 	float finalResidual_v2 = sqrt(((float)noValidPoints_old * f_old + (float)(noValidPointsMax - noValidPoints_old) * spaceThresh[0]) / (float)noValidPointsMax);
 	float percentageInliers_v2 = (float)noValidPoints_old / (float)noValidPointsMax;
 
-	trackingState->trackerResult = ITMTrackingState::TRACKING_FAILED;
+	trackingState->trackerResult = ITMTrackingState::TRACKING_GOOD;
+	return;
 
 	if (noValidPointsMax != 0 && noTotalPoints != 0 && det_norm_v1 > 0 && det_norm_v2 > 0) {
 		Vector4f inputVector(log(det_norm_v1), log(det_norm_v2), finalResidual_v2, percentageInliers_v2);
@@ -335,9 +366,9 @@ void ITMExtendedTracker::TrackCamera(ITMTrackingState *trackingState, const ITMV
 		{
 			// temporarily disable color
 			bool tempUseColour = useColour;
-			useColour = false;
-
-			this->SetEvaluationParams(levelId);
+//			useColour = false;
+//
+//			this->SetEvaluationParams(levelId);
 			if (iterationType == TRACKER_ITERATION_NONE) continue;
 
 			Matrix4f approxInvPose = trackingState->pose_d->GetInvM();
@@ -349,7 +380,18 @@ void ITMExtendedTracker::TrackCamera(ITMTrackingState *trackingState, const ITMV
 			for (int iterNo = 0; iterNo < noIterationsPerLevel[levelId]; iterNo++)
 			{
 				// evaluate error function and gradients
-				noValidPoints_new = this->ComputeGandH_Depth(f_new, nabla_new, hessian_new, approxInvPose);
+				noValidPoints_new = this->ComputeGandH_RGB(f_new, nabla_new, hessian_new, approxInvPose);
+
+				printf("Level: %d, Iter: %d, valid points: %d, Energy: %f, Lambda: %f\n", levelId, iterNo, noValidPoints_new, f_new, lambda);
+				std::cout << "Gradient: ";
+				for(int i = 0; i < 6; ++i) std::cout << nabla_new[i] << " ";
+				std::cout << "\nHessian:\n";
+				for(int i = 0; i < 6; ++i)
+				{
+					for(int j = 0; j < 6; ++j) std::cout << hessian_new[i * 6 + j] << " ";
+					std::cout << "\n";
+				}
+				std::cout << std::endl;
 
 				// check if error increased. If so, revert
 				if ((noValidPoints_new <= 0) || (f_new > f_old))
@@ -374,6 +416,12 @@ void ITMExtendedTracker::TrackCamera(ITMTrackingState *trackingState, const ITMV
 
 				// compute a new step and make sure we've got an SE3
 				ComputeDelta(step, nabla_good, A, iterationType != TRACKER_ITERATION_BOTH);
+
+				std::cout << "Step: ";
+				for(int i = 0; i < 6; ++i) std::cout << step[i] << " ";
+				std::cout << std::endl;
+//				return;
+
 				ApplyDelta(approxInvPose, step, approxInvPose);
 				trackingState->pose_d->SetInvM(approxInvPose);
 				trackingState->pose_d->Coerce();
@@ -387,23 +435,23 @@ void ITMExtendedTracker::TrackCamera(ITMTrackingState *trackingState, const ITMV
 			useColour = tempUseColour;
 		}
 
-		if (useColour)
-		{
-			this->SetEvaluationParams(levelId);
-
-			if (iterationType == TRACKER_ITERATION_NONE) continue;
-
-			Matrix4f approxPose = trackingState->pose_d->GetM();
-			ORUtils::SE3Pose lastKnownGoodPose(*(trackingState->pose_d));
-			f_old = 1e20f;
-			noValidPoints_old = 0;
-			float lambda = 1.0;
-
-			for (int iterNo = 0; iterNo < noIterationsPerLevel[levelId]; iterNo++)
-			{
-				// evaluate error function and gradients
-				noValidPoints_new = this->ComputeGandH_RGB(f_new, nabla_new, hessian_new, approxPose);
-
+//		if (useColour)
+//		{
+//			this->SetEvaluationParams(levelId);
+//
+//			if (iterationType == TRACKER_ITERATION_NONE) continue;
+//
+//			Matrix4f approxPose = trackingState->pose_d->GetM();
+//			ORUtils::SE3Pose lastKnownGoodPose(*(trackingState->pose_d));
+//			f_old = 1e20f;
+//			noValidPoints_old = 0;
+//			float lambda = 1.0;
+//
+//			for (int iterNo = 0; iterNo < noIterationsPerLevel[levelId]; iterNo++)
+//			{
+//				// evaluate error function and gradients
+//				noValidPoints_new = this->ComputeGandH_RGB(f_new, nabla_new, hessian_new, approxPose);
+//
 //				printf("Level: %d, Iter: %d, valid points: %d, Energy: %f, Lambda: %f\n", levelId, iterNo, noValidPoints_new, f_new, lambda);
 //				std::cout << "Gradient: ";
 //				for(int i = 0; i < 6; ++i) std::cout << nabla_new[i] << " ";
@@ -414,46 +462,46 @@ void ITMExtendedTracker::TrackCamera(ITMTrackingState *trackingState, const ITMV
 //					std::cout << "\n";
 //				}
 //				std::cout << std::endl;
-	//			return;
-
-				// check if error increased. If so, revert
-				if ((noValidPoints_new <= 0) || (f_new > f_old))
-				{
-					trackingState->pose_d->SetFrom(&lastKnownGoodPose);
-					approxPose = trackingState->pose_d->GetM();
-					lambda *= 10.0f;
-				}
-				else
-				{
-					lastKnownGoodPose.SetFrom(trackingState->pose_d);
-					f_old = f_new;
-					noValidPoints_old = noValidPoints_new;
-
-					for (int i = 0; i < 6 * 6; ++i) hessian_good[i] = hessian_new[i] / noValidPoints_new;
-					for (int i = 0; i < 6; ++i) nabla_good[i] = nabla_new[i] / noValidPoints_new;
-					lambda /= 10.0f;
-				}
-
-				for (int i = 0; i < 6 * 6; ++i) A[i] = hessian_good[i];
-				for (int i = 0; i < 6; ++i) A[i + i * 6] *= 1.0f + lambda;
-
-				// compute a new step and make sure we've got an SE3
-				ComputeDelta(step, nabla_good, A, iterationType != TRACKER_ITERATION_BOTH);
-
-				ApplyDelta(approxPose, step, approxPose);
-
-	//			std::cout << "Step: ";
-	//			for(int i = 0; i < 6; ++i) std::cout << step[i] << " ";
-	//			std::cout << std::endl;
-
-				trackingState->pose_d->SetM(approxPose);
-				trackingState->pose_d->Coerce();
-				approxPose = trackingState->pose_d->GetM();
-
-				// if step is small, assume it's going to decrease the error and finish
-				if (HasConverged(step)) break;
-			}
-		}
+//				return;
+//
+//				// check if error increased. If so, revert
+//				if ((noValidPoints_new <= 0) || (f_new > f_old))
+//				{
+//					trackingState->pose_d->SetFrom(&lastKnownGoodPose);
+//					approxPose = trackingState->pose_d->GetM();
+//					lambda *= 10.0f;
+//				}
+//				else
+//				{
+//					lastKnownGoodPose.SetFrom(trackingState->pose_d);
+//					f_old = f_new;
+//					noValidPoints_old = noValidPoints_new;
+//
+//					for (int i = 0; i < 6 * 6; ++i) hessian_good[i] = hessian_new[i] / noValidPoints_new;
+//					for (int i = 0; i < 6; ++i) nabla_good[i] = nabla_new[i] / noValidPoints_new;
+//					lambda /= 10.0f;
+//				}
+//
+//				for (int i = 0; i < 6 * 6; ++i) A[i] = hessian_good[i];
+//				for (int i = 0; i < 6; ++i) A[i + i * 6] *= 1.0f + lambda;
+//
+//				// compute a new step and make sure we've got an SE3
+//				ComputeDelta(step, nabla_good, A, iterationType != TRACKER_ITERATION_BOTH);
+//
+//				ApplyDelta(approxPose, step, approxPose);
+//
+//	//			std::cout << "Step: ";
+//	//			for(int i = 0; i < 6; ++i) std::cout << step[i] << " ";
+//	//			std::cout << std::endl;
+//
+//				trackingState->pose_d->SetM(approxPose);
+//				trackingState->pose_d->Coerce();
+//				approxPose = trackingState->pose_d->GetM();
+//
+//				// if step is small, assume it's going to decrease the error and finish
+//				if (HasConverged(step)) break;
+//			}
+//		}
 	}
 
 	this->UpdatePoseQuality(noValidPoints_old, hessian_good, f_old);
