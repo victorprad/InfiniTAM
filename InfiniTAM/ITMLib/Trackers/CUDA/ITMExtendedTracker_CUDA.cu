@@ -72,7 +72,7 @@ ITMExtendedTracker_CUDA::~ITMExtendedTracker_CUDA(void)
 
 int ITMExtendedTracker_CUDA::ComputeGandH_Depth(float &f, float *nabla, float *hessian, Matrix4f approxInvPose)
 {
-	Vector2i sceneImageSize = sceneHierarchyLevel->pointsMap->noDims;
+	Vector2i sceneImageSize = sceneHierarchyLevel_Depth->pointsMap->noDims;
 	Vector2i viewImageSize = viewHierarchyLevel_Depth->depth->noDims;
 
 	if (iterationType == TRACKER_ITERATION_NONE) return 0;
@@ -90,9 +90,9 @@ int ITMExtendedTracker_CUDA::ComputeGandH_Depth(float &f, float *nabla, float *h
 	args.accu = accu_device;
 	args.depth = viewHierarchyLevel_Depth->depth->GetData(MEMORYDEVICE_CUDA);
 	args.approxInvPose = approxInvPose;
-	args.pointsMap = sceneHierarchyLevel->pointsMap->GetData(MEMORYDEVICE_CUDA);
-	args.normalsMap = sceneHierarchyLevel->normalsMap->GetData(MEMORYDEVICE_CUDA);
-	args.sceneIntrinsics = sceneHierarchyLevel->intrinsics;
+	args.pointsMap = sceneHierarchyLevel_Depth->pointsMap->GetData(MEMORYDEVICE_CUDA);
+	args.normalsMap = sceneHierarchyLevel_Depth->normalsMap->GetData(MEMORYDEVICE_CUDA);
+	args.sceneIntrinsics = sceneHierarchyLevel_Depth->intrinsics;
 	args.sceneImageSize = sceneImageSize;
 	args.scenePose = scenePose;
 	args.viewIntrinsics = viewHierarchyLevel_Depth->intrinsics;
@@ -158,7 +158,7 @@ int ITMExtendedTracker_CUDA::ComputeGandH_Depth(float &f, float *nabla, float *h
 
 int ITMExtendedTracker_CUDA::ComputeGandH_RGB(float &f, float *nabla, float *hessian, Matrix4f approxInvPose)
 {
-	Vector2i sceneImageSize = sceneHierarchyLevel->pointsMap->noDims;
+	Vector2i sceneImageSize = sceneHierarchyLevel_RGB->pointsMap->noDims;
 	Vector2i viewImageSize = viewHierarchyLevel_RGB->rgb_current->noDims;
 
 	if (iterationType == TRACKER_ITERATION_NONE) return 0;
@@ -181,7 +181,7 @@ int ITMExtendedTracker_CUDA::ComputeGandH_RGB(float &f, float *nabla, float *hes
 	args.rgb_model = viewHierarchyLevel_RGB->rgb_prev->GetData(MEMORYDEVICE_CUDA);
 	args.gx = viewHierarchyLevel_RGB->gX->GetData(MEMORYDEVICE_CUDA);
 	args.gy = viewHierarchyLevel_RGB->gY->GetData(MEMORYDEVICE_CUDA);
-	args.pointsMap = sceneHierarchyLevel->pointsMap->GetData(MEMORYDEVICE_CUDA);
+	args.pointsMap = sceneHierarchyLevel_RGB->pointsMap->GetData(MEMORYDEVICE_CUDA);
 	args.viewImageSize = viewImageSize;
 	args.sceneImageSize = sceneImageSize;
 	args.approxInvPose = approxInvPose;

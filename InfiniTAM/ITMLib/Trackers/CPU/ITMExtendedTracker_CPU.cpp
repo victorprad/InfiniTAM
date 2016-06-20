@@ -17,10 +17,10 @@ ITMExtendedTracker_CPU::~ITMExtendedTracker_CPU(void) { }
 
 int ITMExtendedTracker_CPU::ComputeGandH_Depth(float &f, float *nabla, float *hessian, Matrix4f approxInvPose)
 {
-	Vector4f *pointsMap = sceneHierarchyLevel->pointsMap->GetData(MEMORYDEVICE_CPU);
-	Vector4f *normalsMap = sceneHierarchyLevel->normalsMap->GetData(MEMORYDEVICE_CPU);
-	Vector4f sceneIntrinsics = sceneHierarchyLevel->intrinsics;
-	Vector2i sceneImageSize = sceneHierarchyLevel->pointsMap->noDims;
+	Vector4f *pointsMap = sceneHierarchyLevel_Depth->pointsMap->GetData(MEMORYDEVICE_CPU);
+	Vector4f *normalsMap = sceneHierarchyLevel_Depth->normalsMap->GetData(MEMORYDEVICE_CPU);
+	Vector4f sceneIntrinsics = sceneHierarchyLevel_Depth->intrinsics;
+	Vector2i sceneImageSize = sceneHierarchyLevel_Depth->pointsMap->noDims;
 
 	float *depth = viewHierarchyLevel_Depth->depth->GetData(MEMORYDEVICE_CPU);
 	Vector4f viewIntrinsics = viewHierarchyLevel_Depth->intrinsics;
@@ -89,10 +89,10 @@ int ITMExtendedTracker_CPU::ComputeGandH_Depth(float &f, float *nabla, float *he
 
 int ITMExtendedTracker_CPU::ComputeGandH_RGB(float &f, float *nabla, float *hessian, Matrix4f approxPose)
 {
-	Vector2i sceneImageSize = sceneHierarchyLevel->pointsMap->noDims;
+	Vector2i sceneImageSize = sceneHierarchyLevel_RGB->pointsMap->noDims;
 	Vector2i viewImageSize = viewHierarchyLevel_RGB->rgb_current->noDims;
 
-	Vector4f *locations = sceneHierarchyLevel->pointsMap->GetData(MEMORYDEVICE_CPU);
+	Vector4f *locations = sceneHierarchyLevel_RGB->pointsMap->GetData(MEMORYDEVICE_CPU);
 	Vector4u *rgb_model = viewHierarchyLevel_RGB->rgb_prev->GetData(MEMORYDEVICE_CPU);
 	Vector4u *rgb_live = viewHierarchyLevel_RGB->rgb_current->GetData(MEMORYDEVICE_CPU);
 	Vector4s *gx = viewHierarchyLevel_RGB->gX->GetData(MEMORYDEVICE_CPU);

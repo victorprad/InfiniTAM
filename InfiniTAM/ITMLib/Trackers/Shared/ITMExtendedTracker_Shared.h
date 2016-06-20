@@ -175,35 +175,39 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exRGB_Ab(THREADPTR(float) *loca
 		switch (para)
 		{
 		case 0: //rx
-			d_point_col.x = approxInvPose.m01 * pt_camera.z - approxInvPose.m02 * pt_camera.y;
-			d_point_col.x = approxInvPose.m11 * pt_camera.z - approxInvPose.m12 * pt_camera.y;
-			d_point_col.x = approxInvPose.m21 * pt_camera.z - approxInvPose.m22 * pt_camera.y;
+			d_point_col.x = approxInvPose.m01 * pt_model.z - approxInvPose.m02 * pt_model.y;
+			d_point_col.y = approxInvPose.m11 * pt_model.z - approxInvPose.m12 * pt_model.y;
+			d_point_col.z = approxInvPose.m21 * pt_model.z - approxInvPose.m22 * pt_model.y;
 			break;
 		case 1: // ry
-			d_point_col.x = approxInvPose.m02 * pt_camera.x - approxInvPose.m00 * pt_camera.z;
-			d_point_col.x = approxInvPose.m12 * pt_camera.x - approxInvPose.m10 * pt_camera.z;
-			d_point_col.x = approxInvPose.m22 * pt_camera.x - approxInvPose.m20 * pt_camera.z;
+			d_point_col.x = approxInvPose.m02 * pt_model.x - approxInvPose.m00 * pt_model.z;
+			d_point_col.y = approxInvPose.m12 * pt_model.x - approxInvPose.m10 * pt_model.z;
+			d_point_col.z = approxInvPose.m22 * pt_model.x - approxInvPose.m20 * pt_model.z;
 			break;
 		case 2: // rz
-			d_point_col.x = approxInvPose.m00 * pt_camera.y - approxInvPose.m01 * pt_camera.x;
-			d_point_col.x = approxInvPose.m10 * pt_camera.y - approxInvPose.m11 * pt_camera.x;
-			d_point_col.x = approxInvPose.m20 * pt_camera.y - approxInvPose.m21 * pt_camera.x;
+			d_point_col.x = approxInvPose.m00 * pt_model.y - approxInvPose.m01 * pt_model.x;
+			d_point_col.y = approxInvPose.m10 * pt_model.y - approxInvPose.m11 * pt_model.x;
+			d_point_col.z = approxInvPose.m20 * pt_model.y - approxInvPose.m21 * pt_model.x;
 			break; //rz
 		case 3: //tx
-			// First row negated and transposed (matrix storage is column major, though)
-			d_point_col.x = -approxInvPose.m00;
-			d_point_col.y = -approxInvPose.m10;
-			d_point_col.z = -approxInvPose.m20;
+			// Rotation matrix negated and transposed (matrix storage is column major, though)
+			// We negate it one more time (-> no negation) because the ApplyDelta uses the KinectFusion
+			// skew symmetric matrix, that matrix has negated rotation components.
+			// In order to use the rgb tracker we would need to negate the entire computed step, but given
+			// the peculiar structure of the increment matrix we only need to negate the translation component.
+			d_point_col.x = approxInvPose.m00;
+			d_point_col.y = approxInvPose.m10;
+			d_point_col.z = approxInvPose.m20;
 			break;
 		case 4: //ty
-			d_point_col.x = -approxInvPose.m01;
-			d_point_col.y = -approxInvPose.m11;
-			d_point_col.z = -approxInvPose.m21;
+			d_point_col.x = approxInvPose.m01;
+			d_point_col.y = approxInvPose.m11;
+			d_point_col.z = approxInvPose.m21;
 			break;
 		case 5: //tz
-			d_point_col.x = -approxInvPose.m02;
-			d_point_col.y = -approxInvPose.m12;
-			d_point_col.z = -approxInvPose.m22;
+			d_point_col.x = approxInvPose.m02;
+			d_point_col.y = approxInvPose.m12;
+			d_point_col.z = approxInvPose.m22;
 			break;
 		};
 

@@ -54,7 +54,7 @@ namespace ITMLib
 		TrackerIterationType iterationType;
 
 		Matrix4f scenePose;
-		ITMSceneHierarchyLevel *sceneHierarchyLevel;
+		ITMSceneHierarchyLevel *sceneHierarchyLevel_Depth, *sceneHierarchyLevel_RGB;
 		ITMDepthHierarchyLevel *viewHierarchyLevel_Depth;
 		ITMRGBHierarchyLevel *viewHierarchyLevel_RGB;
 
