@@ -11,7 +11,7 @@
 using namespace ITMLib;
 
 ITMExtendedTracker::ITMExtendedTracker(Vector2i imgSize_d, Vector2i imgSize_rgb, bool useDepth, bool useColour,
-	TrackerIterationType *trackingRegime, int noHierarchyLevels,
+	float colourWeight,	TrackerIterationType *trackingRegime, int noHierarchyLevels,
 	float terminationThreshold, float failureDetectorThreshold, float viewFrustum_min, float viewFrustum_max,
 	int tukeyCutOff, int framesToSkip, int framesToWeight, const ITMLowLevelEngine *lowLevelEngine, MemoryDeviceType memoryType)
 {
@@ -36,6 +36,8 @@ ITMExtendedTracker::ITMExtendedTracker(Vector2i imgSize_d, Vector2i imgSize_rgb,
 	this->lowLevelEngine = lowLevelEngine;
 
 	this->terminationThreshold = terminationThreshold;
+
+	this->colourWeight = colourWeight;
 
 	this->viewFrustum_min = viewFrustum_min;
 	this->viewFrustum_max = viewFrustum_max;
@@ -293,8 +295,7 @@ void ITMExtendedTracker::UpdatePoseQuality(int noValidPoints_old, float *hessian
 	float finalResidual_v2 = sqrt(((float)noValidPoints_old * f_old + (float)(noValidPointsMax - noValidPoints_old) * spaceThresh[0]) / (float)noValidPointsMax);
 	float percentageInliers_v2 = (float)noValidPoints_old / (float)noValidPointsMax;
 
-//	trackingState->trackerResult = ITMTrackingState::TRACKING_GOOD;
-//	return;
+	trackingState->trackerResult = ITMTrackingState::TRACKING_FAILED;
 
 	if (noValidPointsMax != 0 && noTotalPoints != 0 && det_norm_v1 > 0 && det_norm_v2 > 0) {
 		Vector4f inputVector(log(det_norm_v1), log(det_norm_v2), finalResidual_v2, percentageInliers_v2);
@@ -347,20 +348,22 @@ void ITMExtendedTracker::TrackCamera(ITMTrackingState *trackingState, const ITMV
 			// evaluate error function and gradients
 			if (useDepth && useColour)
 			{
+				// First evaluate depth error function
 				noValidPoints_new = this->ComputeGandH_Depth(f_new, nabla_new, hessian_new, approxInvPose);
 
-				// TODO complete implementation
 				float hessian_RGB[6*6], nabla_RGB[6], f_RGB;
 				int noValidPoints_RGB;
+
+				// Then evaluate RGB error function
 				noValidPoints_RGB = this->ComputeGandH_RGB(f_RGB, nabla_RGB, hessian_RGB, approxInvPose);
 
+				// If there are some valid points combine the results
 				if (noValidPoints_RGB > 0)
 				{
-					float rgb_coef = 0.001f; // TODO param
-					f_new += rgb_coef * f_RGB;
+					f_new += colourWeight * f_RGB;
 					noValidPoints_new += noValidPoints_RGB;
-					for (int i = 0; i < 6 * 6; ++i) hessian_new[i] += rgb_coef * hessian_RGB[i];
-					for (int i = 0; i < 6; ++i) nabla_new[i] += rgb_coef * nabla_RGB[i];
+					for (int i = 0; i < 6 * 6; ++i) hessian_new[i] += colourWeight * hessian_RGB[i];
+					for (int i = 0; i < 6; ++i) nabla_new[i] += colourWeight * nabla_RGB[i];
 				}
 			}
 			else if (useDepth)
@@ -373,7 +376,7 @@ void ITMExtendedTracker::TrackCamera(ITMTrackingState *trackingState, const ITMV
 			}
 			else
 			{
-				continue; // Invalid configuration
+				throw std::runtime_error("Cannot track the camera when both useDepth and useColour are false.");
 			}
 
 //			printf("Level: %d, Iter: %d, valid points: %d, Energy: %f, Lambda: %f\n", levelId, iterNo, noValidPoints_new, f_new, lambda);

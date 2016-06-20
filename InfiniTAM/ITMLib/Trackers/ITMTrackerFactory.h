@@ -256,6 +256,7 @@ namespace ITMLib
 		const char *levelSetup = "rrbb";
 		bool useDepth = true;
 		bool useColour = false;
+		float colourWeight = 0.001f;
 		float smallStepSizeCriterion = 1e-4f;
 		float outlierSpaceDistanceFine = 0.004f;
 		float outlierSpaceDistanceCoarse = 0.1f;
@@ -274,6 +275,7 @@ namespace ITMLib
 
 		cfg.parseBoolProperty("useDepth", "use ICP based tracking", useDepth, verbose);
 		cfg.parseBoolProperty("useColour", "use colour based tracking", useColour, verbose);
+		cfg.parseFltProperty("colourWeight", "weight used to scale colour errors and jacobians when both useColour and useWeights are set", colourWeight, verbose);
 		cfg.parseFltProperty("minstep", "step size threshold for convergence", smallStepSizeCriterion, verbose);
 		cfg.parseFltProperty("outlierSpaceC", "space outlier threshold at coarsest level", outlierSpaceDistanceCoarse, verbose);
 		cfg.parseFltProperty("outlierSpaceF", "space outlier threshold at finest level", outlierSpaceDistanceFine, verbose);
@@ -288,18 +290,18 @@ namespace ITMLib
 		switch (deviceType)
 		{
 		case ITMLibSettings::DEVICE_CPU:
-			ret = new ITMExtendedTracker_CPU(imgSize_d, imgSize_rgb, useDepth, useColour, &(levels[0]), static_cast<int>(levels.size()), smallStepSizeCriterion, failureDetectorThd,
+			ret = new ITMExtendedTracker_CPU(imgSize_d, imgSize_rgb, useDepth, useColour, colourWeight, &(levels[0]), static_cast<int>(levels.size()), smallStepSizeCriterion, failureDetectorThd,
 				scene->sceneParams->viewFrustum_min, scene->sceneParams->viewFrustum_max, tukeyCutOff, framesToSkip, framesToWeight, lowLevelEngine);
 			break;
 		case ITMLibSettings::DEVICE_CUDA:
 #ifndef COMPILE_WITHOUT_CUDA
-			ret = new ITMExtendedTracker_CUDA(imgSize_d, imgSize_rgb, useDepth, useColour, &(levels[0]), static_cast<int>(levels.size()), smallStepSizeCriterion, failureDetectorThd,
+			ret = new ITMExtendedTracker_CUDA(imgSize_d, imgSize_rgb, useDepth, useColour, colourWeight, &(levels[0]), static_cast<int>(levels.size()), smallStepSizeCriterion, failureDetectorThd,
 				scene->sceneParams->viewFrustum_min, scene->sceneParams->viewFrustum_max, tukeyCutOff, framesToSkip, framesToWeight, lowLevelEngine);
 #endif
 			break;
 		case ITMLibSettings::DEVICE_METAL:
 #ifdef COMPILE_WITH_METAL
-			ret = new ITMExtendedTracker_Metal(imgSize_d, imgSize_rgb, useDepth, useColour, &(levels[0]), static_cast<int>(levels.size()), smallStepSizeCriterion, failureDetectorThd,
+			ret = new ITMExtendedTracker_Metal(imgSize_d, imgSize_rgb, useDepth, useColour, colourWeight, &(levels[0]), static_cast<int>(levels.size()), smallStepSizeCriterion, failureDetectorThd,
 				scene->sceneParams->viewFrustum_min, scene->sceneParams->viewFrustum_max, tukeyCutOff, framesToSkip, framesToWeight, lowLevelEngine);
 #endif
 			break;
@@ -374,6 +376,7 @@ namespace ITMLib
 		const char *levelSetup = "rrbb";
 		bool useDepth = true;
 		bool useColour = false;
+		float colourWeight = 0.001f;
 		float smallStepSizeCriterion = 1e-4f;
 		float outlierSpaceDistanceFine = 0.004f;
 		float outlierSpaceDistanceCoarse = 0.1f;
@@ -392,6 +395,7 @@ namespace ITMLib
 
 		cfg.parseBoolProperty("useDepth", "use ICP based tracking", useDepth, verbose);
 		cfg.parseBoolProperty("useColour", "use colour based tracking", useColour, verbose);
+		cfg.parseFltProperty("colourWeight", "weight used to scale colour errors and jacobians when both useColour and useWeights are set", colourWeight, verbose);
 		cfg.parseFltProperty("minstep", "step size threshold for convergence", smallStepSizeCriterion, verbose);
 		cfg.parseFltProperty("outlierSpaceC", "space outlier threshold at coarsest level", outlierSpaceDistanceCoarse, verbose);
 		cfg.parseFltProperty("outlierSpaceF", "space outlier threshold at finest level", outlierSpaceDistanceFine, verbose);
@@ -406,18 +410,18 @@ namespace ITMLib
 		switch (deviceType)
 		{
 		case ITMLibSettings::DEVICE_CPU:
-			dTracker = new ITMExtendedTracker_CPU(imgSize_d, imgSize_rgb, useDepth, useColour, &(levels[0]), static_cast<int>(levels.size()), smallStepSizeCriterion, failureDetectorThd,
+			dTracker = new ITMExtendedTracker_CPU(imgSize_d, imgSize_rgb, useDepth, useColour, colourWeight, &(levels[0]), static_cast<int>(levels.size()), smallStepSizeCriterion, failureDetectorThd,
 				scene->sceneParams->viewFrustum_min, scene->sceneParams->viewFrustum_max, tukeyCutOff, framesToSkip, framesToWeight, lowLevelEngine);
 			break;
 		case ITMLibSettings::DEVICE_CUDA:
 #ifndef COMPILE_WITHOUT_CUDA
-			dTracker = new ITMExtendedTracker_CUDA(imgSize_d, imgSize_rgb, useDepth, useColour, &(levels[0]), static_cast<int>(levels.size()), smallStepSizeCriterion, failureDetectorThd,
+			dTracker = new ITMExtendedTracker_CUDA(imgSize_d, imgSize_rgb, useDepth, useColour, colourWeight, &(levels[0]), static_cast<int>(levels.size()), smallStepSizeCriterion, failureDetectorThd,
 				scene->sceneParams->viewFrustum_min, scene->sceneParams->viewFrustum_max, tukeyCutOff, framesToSkip, framesToWeight, lowLevelEngine);
 #endif
 			break;
 		case ITMLibSettings::DEVICE_METAL:
 #ifdef COMPILE_WITH_METAL
-			dTracker = new ITMExtendedTracker_Metal(imgSize_d, imgSize_rgb, useDepth, useColour, &(levels[0]), static_cast<int>(levels.size()), smallStepSizeCriterion, failureDetectorThd,
+			dTracker = new ITMExtendedTracker_Metal(imgSize_d, imgSize_rgb, useDepth, useColour, colourWeight, &(levels[0]), static_cast<int>(levels.size()), smallStepSizeCriterion, failureDetectorThd,
 				scene->sceneParams->viewFrustum_min, scene->sceneParams->viewFrustum_max, tukeyCutOff, framesToSkip, framesToWeight, lowLevelEngine);
 #endif
 			break;

@@ -6,10 +6,10 @@
 using namespace ITMLib;
 
 ITMExtendedTracker_CPU::ITMExtendedTracker_CPU(Vector2i imgSize_d, Vector2i imgSize_rgb, bool useDepth, bool useColour,
-	TrackerIterationType *trackingRegime, int noHierarchyLevels,
+	float colourWeight, TrackerIterationType *trackingRegime, int noHierarchyLevels,
 	float terminationThreshold, float failureDetectorThreshold, float viewFrustum_min, float viewFrustum_max, int tukeyCutOff, int framesToSkip, int framesToWeight,
 	const ITMLowLevelEngine *lowLevelEngine)
-	: ITMExtendedTracker(imgSize_d, imgSize_rgb, useDepth, useColour, trackingRegime, noHierarchyLevels, terminationThreshold, failureDetectorThreshold, viewFrustum_min, viewFrustum_max, tukeyCutOff, framesToSkip,
+	: ITMExtendedTracker(imgSize_d, imgSize_rgb, useDepth, useColour, colourWeight, trackingRegime, noHierarchyLevels, terminationThreshold, failureDetectorThreshold, viewFrustum_min, viewFrustum_max, tukeyCutOff, framesToSkip,
 	framesToWeight, lowLevelEngine, MEMORYDEVICE_CPU)
 { }
 
