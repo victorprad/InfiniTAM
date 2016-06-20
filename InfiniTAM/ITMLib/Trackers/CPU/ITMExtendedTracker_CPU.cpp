@@ -87,7 +87,7 @@ int ITMExtendedTracker_CPU::ComputeGandH_Depth(float &f, float *nabla, float *he
 	return noValidPoints;
 }
 
-int ITMExtendedTracker_CPU::ComputeGandH_RGB(float &f, float *nabla, float *hessian, Matrix4f approxPose)
+int ITMExtendedTracker_CPU::ComputeGandH_RGB(float &f, float *nabla, float *hessian, Matrix4f approxInvPose)
 {
 	Vector2i sceneImageSize = sceneHierarchyLevel_RGB->pointsMap->noDims;
 	Vector2i viewImageSize = viewHierarchyLevel_RGB->rgb_current->noDims;
@@ -99,6 +99,9 @@ int ITMExtendedTracker_CPU::ComputeGandH_RGB(float &f, float *nabla, float *hess
 	Vector4s *gy = viewHierarchyLevel_RGB->gY->GetData(MEMORYDEVICE_CPU);
 
 	Vector4f projParams = viewHierarchyLevel_RGB->intrinsics;
+
+	Matrix4f approxPose;
+	approxInvPose.inv(approxPose);
 
 	if (iterationType == TRACKER_ITERATION_NONE) return 0;
 
@@ -122,9 +125,9 @@ int ITMExtendedTracker_CPU::ComputeGandH_RGB(float &f, float *nabla, float *hess
 
 		if (iterationType != TRACKER_ITERATION_TRANSLATION) // TODO translation not implemented yet
 		{
-//			isValidPoint = computePerPointGH_exRGB_Ab(localNabla, localF, localHessian,
-//				locations[x + y * sceneImageSize.x], rgb_model, rgb_live, viewImageSize, x, y,
-//				projParams, approxPose, scenePose, gx, gy, noPara);
+			isValidPoint = computePerPointGH_exRGB_Ab(localNabla, localF, localHessian,
+				locations[x + y * sceneImageSize.x], rgb_model, rgb_live, viewImageSize, x, y,
+				projParams, approxPose, approxInvPose, scenePose, gx, gy, noPara);
 		}
 
 		if (isValidPoint)
