@@ -33,8 +33,9 @@ ITMExtendedTracker::ITMExtendedTracker(Vector2i imgSize_d, Vector2i imgSize_rgb,
 
 	this->noIterationsPerLevel = new int[noHierarchyLevels];
 	this->spaceThresh = new float[noHierarchyLevels];
+	this->colourThresh = new float[noHierarchyLevels];
 
-	SetupLevels(noHierarchyLevels * 2, 2, 0.01f, 0.002f);
+	SetupLevels(noHierarchyLevels * 2, 2, 0.01f, 0.002f, 0.1f, 0.02f);
 
 	this->lowLevelEngine = lowLevelEngine;
 
@@ -78,12 +79,13 @@ ITMExtendedTracker::~ITMExtendedTracker(void)
 
 	delete[] this->noIterationsPerLevel;
 	delete[] this->spaceThresh;
+	delete[] this->colourThresh;
 
 	delete map;
 	delete svmClassifier;
 }
 
-void ITMExtendedTracker::SetupLevels(int numIterCoarse, int numIterFine, float spaceThreshCoarse, float spaceThreshFine)
+void ITMExtendedTracker::SetupLevels(int numIterCoarse, int numIterFine, float spaceThreshCoarse, float spaceThreshFine, float colourThreshCoarse, float colourThreshFine)
 {
 	int noHierarchyLevels = viewHierarchy->noLevels;
 
@@ -100,6 +102,14 @@ void ITMExtendedTracker::SetupLevels(int numIterCoarse, int numIterFine, float s
 		float val = spaceThreshCoarse;
 		for (int levelId = noHierarchyLevels - 1; levelId >= 0; levelId--) {
 			this->spaceThresh[levelId] = val;
+			val -= step;
+		}
+	}
+	if ((colourThreshCoarse >= 0.0f) && (colourThreshFine >= 0.0f)) {
+		float step = (float)(colourThreshCoarse - colourThreshFine) / (float)(noHierarchyLevels - 1);
+		float val = colourThreshCoarse;
+		for (int levelId = noHierarchyLevels - 1; levelId >= 0; levelId--) {
+			this->colourThresh[levelId] = val;
 			val -= step;
 		}
 	}

@@ -260,6 +260,8 @@ namespace ITMLib
 		float smallStepSizeCriterion = 1e-4f;
 		float outlierSpaceDistanceFine = 0.004f;
 		float outlierSpaceDistanceCoarse = 0.1f;
+		float outlierColourDistanceFine = 0.02f;
+		float outlierColourDistanceCoarse = 0.1f;
 		float failureDetectorThd = 3.0f;
 		int tukeyCutOff = 8;
 		int framesToSkip = 20;
@@ -279,6 +281,8 @@ namespace ITMLib
 		cfg.parseFltProperty("minstep", "step size threshold for convergence", smallStepSizeCriterion, verbose);
 		cfg.parseFltProperty("outlierSpaceC", "space outlier threshold at coarsest level", outlierSpaceDistanceCoarse, verbose);
 		cfg.parseFltProperty("outlierSpaceF", "space outlier threshold at finest level", outlierSpaceDistanceFine, verbose);
+		cfg.parseFltProperty("outlierColourC", "colour outlier threshold at coarsest level", outlierColourDistanceCoarse, verbose);
+		cfg.parseFltProperty("outlierColourF", "colour outlier threshold at finest level", outlierColourDistanceFine, verbose);
 		cfg.parseIntProperty("numiterC", "maximum number of iterations at coarsest level", numIterationsCoarse, verbose);
 		cfg.parseIntProperty("numiterF", "maximum number of iterations at finest level", numIterationsFine, verbose);
 		cfg.parseIntProperty("tukeyCutOff", "cutoff for the tukey m-estimator", tukeyCutOff, verbose);
@@ -308,10 +312,10 @@ namespace ITMLib
 		}
 
 		if (ret == NULL) DIEWITHEXCEPTION("Failed to make extended tracker");
-		ret->SetupLevels(numIterationsCoarse, numIterationsFine, outlierSpaceDistanceCoarse, outlierSpaceDistanceFine);
+		ret->SetupLevels(numIterationsCoarse, numIterationsFine, outlierSpaceDistanceCoarse, outlierSpaceDistanceFine, outlierColourDistanceCoarse, outlierColourDistanceFine);
 		return ret;
 	}
-	
+
 	/**
 	 * \brief Makes an IMU tracker.
 	 */
@@ -373,62 +377,9 @@ namespace ITMLib
 	static ITMTracker* MakeExtendedIMUTracker(const Vector2i& imgSize_rgb, const Vector2i& imgSize_d, ITMLibSettings::DeviceType deviceType, const ORUtils::KeyValueConfig & cfg,
 		const ITMLowLevelEngine *lowLevelEngine, ITMIMUCalibrator *imuCalibrator, ITMScene<TVoxel, TIndex> *scene)
 	{
-		const char *levelSetup = "rrbb";
-		bool useDepth = true;
-		bool useColour = false;
-		float colourWeight = 0.001f;
-		float smallStepSizeCriterion = 1e-4f;
-		float outlierSpaceDistanceFine = 0.004f;
-		float outlierSpaceDistanceCoarse = 0.1f;
-		float failureDetectorThd = 3.0f;
-		int tukeyCutOff = 8;
-		int framesToSkip = 20;
-		int framesToWeight = 50;
-		int numIterationsCoarse = 20;
-		int numIterationsFine = 20;
-
-		int verbose = 0;
-		if (cfg.getProperty("help") != NULL) if (verbose < 10) verbose = 10;
-		// FIXME possible overflow if using more than 4 levels
-		cfg.parseStrProperty("levels", "resolution hierarchy levels", levelSetup, verbose);
-		std::vector<TrackerIterationType> levels = parseLevelConfig(levelSetup);
-
-		cfg.parseBoolProperty("useDepth", "use ICP based tracking", useDepth, verbose);
-		cfg.parseBoolProperty("useColour", "use colour based tracking", useColour, verbose);
-		cfg.parseFltProperty("colourWeight", "weight used to scale colour errors and jacobians when both useColour and useWeights are set", colourWeight, verbose);
-		cfg.parseFltProperty("minstep", "step size threshold for convergence", smallStepSizeCriterion, verbose);
-		cfg.parseFltProperty("outlierSpaceC", "space outlier threshold at coarsest level", outlierSpaceDistanceCoarse, verbose);
-		cfg.parseFltProperty("outlierSpaceF", "space outlier threshold at finest level", outlierSpaceDistanceFine, verbose);
-		cfg.parseIntProperty("numiterC", "maximum number of iterations at coarsest level", numIterationsCoarse, verbose);
-		cfg.parseIntProperty("numiterF", "maximum number of iterations at finest level", numIterationsFine, verbose);
-		cfg.parseIntProperty("tukeyCutOff", "cutoff for the tukey m-estimator", tukeyCutOff, verbose);
-		cfg.parseIntProperty("framesToSkip", "number of frames to skip before depth pixel is used for tracking", framesToSkip, verbose);
-		cfg.parseIntProperty("framesToWeight", "number of frames to weight each depth pixel for before using it fully", framesToWeight, verbose);
-		cfg.parseFltProperty("failureDec", "threshold for the failure detection", failureDetectorThd, verbose);
-
-		ITMExtendedTracker *dTracker = NULL;
-		switch (deviceType)
-		{
-		case ITMLibSettings::DEVICE_CPU:
-			dTracker = new ITMExtendedTracker_CPU(imgSize_d, imgSize_rgb, useDepth, useColour, colourWeight, &(levels[0]), static_cast<int>(levels.size()), smallStepSizeCriterion, failureDetectorThd,
-				scene->sceneParams->viewFrustum_min, scene->sceneParams->viewFrustum_max, tukeyCutOff, framesToSkip, framesToWeight, lowLevelEngine);
-			break;
-		case ITMLibSettings::DEVICE_CUDA:
-#ifndef COMPILE_WITHOUT_CUDA
-			dTracker = new ITMExtendedTracker_CUDA(imgSize_d, imgSize_rgb, useDepth, useColour, colourWeight, &(levels[0]), static_cast<int>(levels.size()), smallStepSizeCriterion, failureDetectorThd,
-				scene->sceneParams->viewFrustum_min, scene->sceneParams->viewFrustum_max, tukeyCutOff, framesToSkip, framesToWeight, lowLevelEngine);
-#endif
-			break;
-		case ITMLibSettings::DEVICE_METAL:
-#ifdef COMPILE_WITH_METAL
-			dTracker = new ITMExtendedTracker_Metal(imgSize_d, imgSize_rgb, useDepth, useColour, colourWeight, &(levels[0]), static_cast<int>(levels.size()), smallStepSizeCriterion, failureDetectorThd,
-				scene->sceneParams->viewFrustum_min, scene->sceneParams->viewFrustum_max, tukeyCutOff, framesToSkip, framesToWeight, lowLevelEngine);
-#endif
-			break;
-		}
-
-		if (dTracker == NULL) DIEWITHEXCEPTION("Failed to make extended tracker");
-		dTracker->SetupLevels(numIterationsCoarse, numIterationsFine, outlierSpaceDistanceCoarse, outlierSpaceDistanceFine);
+		ITMTracker *dTracker = MakeExtendedTracker(imgSize_rgb, imgSize_d, deviceType, cfg,
+				lowLevelEngine, imuCalibrator, scene);
+		if (dTracker == NULL) DIEWITHEXCEPTION("Failed to make extended tracker"); // Should never happen though
 
 		ITMCompositeTracker *compositeTracker = new ITMCompositeTracker(2);
 		compositeTracker->SetTracker(new ITMIMUTracker(imuCalibrator), 0);

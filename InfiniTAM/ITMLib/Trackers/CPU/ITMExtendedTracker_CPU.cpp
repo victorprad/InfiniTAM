@@ -128,7 +128,7 @@ int ITMExtendedTracker_CPU::ComputeGandH_RGB(float &f, float *nabla, float *hess
 		{
 			isValidPoint = computePerPointGH_exRGB_Ab(localNabla, localF, localHessian,
 				locations[x + y * sceneImageSize.x], rgb_model[x + y * sceneImageSize.x], rgb_live, viewImageSize, x, y,
-				projParams, approxPose, approxInvPose, scenePose, gx, gy, noPara);
+				projParams, approxPose, approxInvPose, scenePose, gx, gy, colourThresh[levelId], tukeyCutOff, noPara);
 		}
 
 		if (isValidPoint)

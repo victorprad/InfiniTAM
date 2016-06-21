@@ -43,6 +43,8 @@ struct ITMExtendedTracker_KernelParameters_RGB {
 	Matrix4f approxPose;
 	Matrix4f scenePose;
 	Vector4f projParams;
+	float colourThresh;
+	float tukeyCutoff;
 };
 
 template<bool shortIteration, bool rotationOnly, bool useWeights>
@@ -191,6 +193,8 @@ int ITMExtendedTracker_CUDA::ComputeGandH_RGB(float &f, float *nabla, float *hes
 	args.approxPose = approxPose;
 	args.scenePose = scenePose;
 	args.projParams = viewHierarchyLevel_RGB->intrinsics;
+	args.colourThresh = colourThresh[levelId];
+	args.tukeyCutoff = tukeyCutOff;
 
 	switch (iterationType)
 	{
@@ -423,7 +427,8 @@ __device__ void exDepthTrackerOneLevel_g_rt_device_main(ITMExtendedTracker_CUDA:
 template<bool shortIteration, bool rotationOnly, bool useWeights>
 __device__ void exRGBTrackerOneLevel_g_rt_device_main(ITMExtendedTracker_CUDA::AccuCell *accu,
 	Vector4f *locations, Vector4f *rgb_model, Vector4s *gx, Vector4s *gy, Vector4u *rgb,
-	Matrix4f approxPose, Matrix4f approxInvPose, Matrix4f scenePose, Vector4f projParams, Vector2i imgSize, Vector2i sceneSize)
+	Matrix4f approxPose, Matrix4f approxInvPose, Matrix4f scenePose, Vector4f projParams,
+	Vector2i imgSize, Vector2i sceneSize, float colourThresh, float tukeyCutoff)
 {
 	int x = threadIdx.x + blockIdx.x * blockDim.x, y = threadIdx.y + blockIdx.y * blockDim.y;
 
@@ -451,7 +456,7 @@ __device__ void exRGBTrackerOneLevel_g_rt_device_main(ITMExtendedTracker_CUDA::A
 		if(!shortIteration || rotationOnly)
 		{
 			isValidPoint = computePerPointGH_exRGB_Ab(A, b, localHessian, locations[x + y * sceneSize.x], rgb_model[x + y * sceneSize.x], rgb, imgSize, x, y,
-					projParams, approxPose, approxInvPose, scenePose, gx, gy, noPara);
+					projParams, approxPose, approxInvPose, scenePose, gx, gy, colourThresh, tukeyCutoff, noPara);
 		}
 
 		if (isValidPoint) should_prefix = true;
@@ -486,7 +491,7 @@ __device__ void exRGBTrackerOneLevel_g_rt_device_main(ITMExtendedTracker_CUDA::A
 	__syncthreads();
 
 	{ //reduction for energy function value
-		dim_shared1[locId_local] = b;
+		dim_shared1[locId_local] = rho(b, colourThresh);
 		__syncthreads();
 
 		if (locId_local < 128) dim_shared1[locId_local] += dim_shared1[locId_local + 128];
@@ -504,9 +509,9 @@ __device__ void exRGBTrackerOneLevel_g_rt_device_main(ITMExtendedTracker_CUDA::A
 	//reduction for nabla
 	for (unsigned char paraId = 0; paraId < noPara; paraId += 3)
 	{
-		dim_shared1[locId_local] = A[paraId + 0];
-		dim_shared2[locId_local] = A[paraId + 1];
-		dim_shared3[locId_local] = A[paraId + 2];
+		dim_shared1[locId_local] = rho_deriv(A[paraId + 0], colourThresh);
+		dim_shared2[locId_local] = rho_deriv(A[paraId + 1], colourThresh);
+		dim_shared3[locId_local] = rho_deriv(A[paraId + 2], colourThresh);
 		__syncthreads();
 
 		if (locId_local < 128) {
@@ -541,9 +546,9 @@ __device__ void exRGBTrackerOneLevel_g_rt_device_main(ITMExtendedTracker_CUDA::A
 	//reduction for hessian
 	for (unsigned char paraId = 0; paraId < noParaSQ; paraId += 3)
 	{
-		dim_shared1[locId_local] = localHessian[paraId + 0];
-		dim_shared2[locId_local] = localHessian[paraId + 1];
-		dim_shared3[locId_local] = localHessian[paraId + 2];
+		dim_shared1[locId_local] = rho_deriv2(localHessian[paraId + 0], colourThresh);
+		dim_shared2[locId_local] = rho_deriv2(localHessian[paraId + 1], colourThresh);
+		dim_shared3[locId_local] = rho_deriv2(localHessian[paraId + 2], colourThresh);
 		__syncthreads();
 
 		if (locId_local < 128) {
@@ -587,7 +592,8 @@ template<bool shortIteration, bool rotationOnly, bool useWeights>
 __global__ void exRGBTrackerOneLevel_g_rt_device(ITMExtendedTracker_KernelParameters_RGB para)
 {
 	exRGBTrackerOneLevel_g_rt_device_main<shortIteration, rotationOnly, useWeights>(para.accu, para.pointsMap,
-		para.rgb_model, para.gx, para.gy, para.rgb_live, para.approxPose, para.approxInvPose, para.scenePose, para.projParams, para.viewImageSize, para.sceneImageSize);
+		para.rgb_model, para.gx, para.gy, para.rgb_live, para.approxPose, para.approxInvPose, para.scenePose,
+		para.projParams, para.viewImageSize, para.sceneImageSize, para.colourThresh, para.tukeyCutoff);
 }
 
 __global__ void exRGBTrackerProjectPrevImage_device(Vector4f *out_rgb, Vector4u *in_rgb, Vector4f *in_points, Vector2i imageSize, Vector2i sceneSize, Vector4f intrinsics, Matrix4f scenePose)

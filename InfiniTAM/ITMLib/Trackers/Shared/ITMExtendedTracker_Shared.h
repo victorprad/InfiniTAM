@@ -84,7 +84,8 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exDepth_Ab(THREADPTR(float) *A,
 
 _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exRGB_Ab(THREADPTR(float) *localGradient, THREADPTR(float) &colourDifferenceSq, THREADPTR(float) *localHessian,
 	THREADPTR(Vector4f) pt_model, const THREADPTR(Vector4f) &colour_model, DEVICEPTR(Vector4u) *rgb_live, const CONSTPTR(Vector2i) &imgSize,
-	int x, int y, Vector4f projParams, Matrix4f approxPose, Matrix4f approxInvPose, Matrix4f scenePose, DEVICEPTR(Vector4s) *gx, DEVICEPTR(Vector4s) *gy, int numPara)
+	int x, int y, Vector4f projParams, Matrix4f approxPose, Matrix4f approxInvPose, Matrix4f scenePose, DEVICEPTR(Vector4s) *gx, DEVICEPTR(Vector4s) *gy,
+	float colourThresh, float tukeyCutoff, int numPara)
 {
 	Vector4f pt_camera, colour_obs, gx_obs, gy_obs;
 	Vector3f colour_diff_d, d_pt_cam_dpi, d[6];
@@ -114,6 +115,8 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exRGB_Ab(THREADPTR(float) *loca
 	colour_diff_d.z = colour_obs.z - colour_model.z;
 
 	colourDifferenceSq = colour_diff_d.x * colour_diff_d.x + colour_diff_d.y * colour_diff_d.y + colour_diff_d.z * colour_diff_d.z;
+
+	if (colourDifferenceSq > tukeyCutoff * colourThresh) return false;
 
 	// Derivatives computed as in
 	// Blanco, J. (2010). A tutorial on se (3) transformation parameterizations and on-manifold optimization.
