@@ -83,7 +83,7 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exDepth_Ab(THREADPTR(float) *A,
 }
 
 _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exRGB_Ab(THREADPTR(float) *localGradient, THREADPTR(float) &colourDifferenceSq, THREADPTR(float) *localHessian,
-	THREADPTR(Vector4f) pt_model, const THREADPTR(Vector4f) colour_model, DEVICEPTR(Vector4u) *rgb_live, const CONSTPTR(Vector2i) & imgSize,
+	THREADPTR(Vector4f) pt_model, const THREADPTR(Vector4f) &colour_model, DEVICEPTR(Vector4u) *rgb_live, const CONSTPTR(Vector2i) &imgSize,
 	int x, int y, Vector4f projParams, Matrix4f approxPose, Matrix4f approxInvPose, Matrix4f scenePose, DEVICEPTR(Vector4s) *gx, DEVICEPTR(Vector4s) *gy, int numPara)
 {
 	Vector4f pt_camera, colour_obs, gx_obs, gy_obs;

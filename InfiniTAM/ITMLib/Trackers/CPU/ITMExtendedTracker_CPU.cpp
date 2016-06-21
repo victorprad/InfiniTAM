@@ -93,7 +93,7 @@ int ITMExtendedTracker_CPU::ComputeGandH_RGB(float &f, float *nabla, float *hess
 	Vector2i viewImageSize = viewHierarchyLevel_RGB->rgb_current->noDims;
 
 	Vector4f *locations = sceneHierarchyLevel_RGB->pointsMap->GetData(MEMORYDEVICE_CPU);
-	Vector4u *rgb_model = viewHierarchyLevel_RGB->rgb_prev->GetData(MEMORYDEVICE_CPU);
+	Vector4f *rgb_model = previousProjectedRGBLevel->depth->GetData(MEMORYDEVICE_CPU);
 	Vector4u *rgb_live = viewHierarchyLevel_RGB->rgb_current->GetData(MEMORYDEVICE_CPU);
 	Vector4s *gx = viewHierarchyLevel_RGB->gX->GetData(MEMORYDEVICE_CPU);
 	Vector4s *gy = viewHierarchyLevel_RGB->gY->GetData(MEMORYDEVICE_CPU);
@@ -125,9 +125,9 @@ int ITMExtendedTracker_CPU::ComputeGandH_RGB(float &f, float *nabla, float *hess
 
 		if (iterationType != TRACKER_ITERATION_TRANSLATION) // TODO translation not implemented yet
 		{
-//			isValidPoint = computePerPointGH_exRGB_Ab(localNabla, localF, localHessian,
-//				locations[x + y * sceneImageSize.x], rgb_model, rgb_live, viewImageSize, x, y,
-//				projParams, approxPose, approxInvPose, scenePose, gx, gy, noPara);
+			isValidPoint = computePerPointGH_exRGB_Ab(localNabla, localF, localHessian,
+				locations[x + y * sceneImageSize.x], rgb_model[x + y * sceneImageSize.x], rgb_live, viewImageSize, x, y,
+				projParams, approxPose, approxInvPose, scenePose, gx, gy, noPara);
 		}
 
 		if (isValidPoint)
@@ -146,4 +146,22 @@ int ITMExtendedTracker_CPU::ComputeGandH_RGB(float &f, float *nabla, float *hess
 	f = (noValidPoints > 100) ? sumF / noValidPoints : 1e5f;
 
 	return noValidPoints;
+}
+
+void ITMExtendedTracker_CPU::ProjectPreviousRGBFrame(const Matrix4f &scenePose)
+{
+	Vector2i imageSize = viewHierarchyLevel_RGB->rgb_prev->noDims;
+	Vector2i sceneSize = sceneHierarchyLevel_RGB->pointsMap->noDims;
+
+	previousProjectedRGBLevel->depth->ChangeDims(sceneSize);
+
+	Vector4f projParams = viewHierarchyLevel_RGB->intrinsics;
+	Vector4f *pointsMap = sceneHierarchyLevel_RGB->pointsMap->GetData(MEMORYDEVICE_CPU);
+	Vector4u *rgbIn = viewHierarchyLevel_RGB->rgb_prev->GetData(MEMORYDEVICE_CPU);
+	Vector4f *rgbOut = previousProjectedRGBLevel->depth->GetData(MEMORYDEVICE_CPU);
+
+	for (int y = 0; y < sceneSize.y; y++) for (int x = 0; x < sceneSize.x; x++)
+	{
+		projectPreviousPoint_exRGB(x, y, rgbOut, rgbIn, pointsMap, imageSize, sceneSize, projParams, scenePose);
+	}
 }

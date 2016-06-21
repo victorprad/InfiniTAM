@@ -11,7 +11,7 @@ namespace ITMLib
 	protected:
 		int ComputeGandH_Depth(float &f, float *nabla, float *hessian, Matrix4f approxInvPose);
 		int ComputeGandH_RGB(float &f, float *nabla, float *hessian, Matrix4f approxInvPose);
-		virtual void ProjectPreviousRGBFrame(const Matrix4f &scenePose) {}
+		virtual void ProjectPreviousRGBFrame(const Matrix4f &scenePose);
 
 	public:
 		ITMExtendedTracker_CPU(Vector2i imgSize_d, Vector2i imgSize_rgb, bool useDepth, bool useColour,
