@@ -492,6 +492,7 @@ __device__ void exRGBTrackerOneLevel_g_rt_device_main(ITMExtendedTracker_CUDA::A
 
 	{ //reduction for energy function value
 		dim_shared1[locId_local] = rho(b, colourThresh);
+//		dim_shared1[locId_local] = b;
 		__syncthreads();
 
 		if (locId_local < 128) dim_shared1[locId_local] += dim_shared1[locId_local + 128];
@@ -507,11 +508,16 @@ __device__ void exRGBTrackerOneLevel_g_rt_device_main(ITMExtendedTracker_CUDA::A
 	__syncthreads();
 
 	//reduction for nabla
+	float huber_coef_nabla = rho_deriv(b, colourThresh);
 	for (unsigned char paraId = 0; paraId < noPara; paraId += 3)
 	{
-		dim_shared1[locId_local] = rho_deriv(A[paraId + 0], colourThresh);
-		dim_shared2[locId_local] = rho_deriv(A[paraId + 1], colourThresh);
-		dim_shared3[locId_local] = rho_deriv(A[paraId + 2], colourThresh);
+		dim_shared1[locId_local] = huber_coef_nabla * A[paraId + 0];
+		dim_shared2[locId_local] = huber_coef_nabla * A[paraId + 1];
+		dim_shared3[locId_local] = huber_coef_nabla * A[paraId + 2];
+
+//		dim_shared1[locId_local] = A[paraId + 0];
+//		dim_shared2[locId_local] = A[paraId + 1];
+//		dim_shared3[locId_local] = A[paraId + 2];
 		__syncthreads();
 
 		if (locId_local < 128) {
@@ -544,11 +550,18 @@ __device__ void exRGBTrackerOneLevel_g_rt_device_main(ITMExtendedTracker_CUDA::A
 	__syncthreads();
 
 	//reduction for hessian
+
+	// not completely correct, should be done before the triangular multiplication
+	float huber_coef_hessian = rho_deriv2(b, colourThresh);
 	for (unsigned char paraId = 0; paraId < noParaSQ; paraId += 3)
 	{
-		dim_shared1[locId_local] = rho_deriv2(localHessian[paraId + 0], colourThresh);
-		dim_shared2[locId_local] = rho_deriv2(localHessian[paraId + 1], colourThresh);
-		dim_shared3[locId_local] = rho_deriv2(localHessian[paraId + 2], colourThresh);
+		dim_shared1[locId_local] = huber_coef_hessian * localHessian[paraId + 0];
+		dim_shared2[locId_local] = huber_coef_hessian * localHessian[paraId + 1];
+		dim_shared3[locId_local] = huber_coef_hessian * localHessian[paraId + 2];
+
+//		dim_shared1[locId_local] = localHessian[paraId + 0];
+//		dim_shared2[locId_local] = localHessian[paraId + 1];
+//		dim_shared3[locId_local] = localHessian[paraId + 2];
 		__syncthreads();
 
 		if (locId_local < 128) {
