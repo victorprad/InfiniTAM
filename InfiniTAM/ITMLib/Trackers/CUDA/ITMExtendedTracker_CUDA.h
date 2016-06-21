@@ -18,6 +18,7 @@ namespace ITMLib
 	protected:
 		int ComputeGandH_Depth(float &f, float *nabla, float *hessian, Matrix4f approxInvPose);
 		int ComputeGandH_RGB(float &f, float *nabla, float *hessian, Matrix4f approxInvPose);
+		void ProjectPreviousRGBFrame(const Matrix4f &scenePose);
 
 	public:
 		ITMExtendedTracker_CUDA(Vector2i imgSize_d, Vector2i imgSize_rgb, bool useDepth, bool useColour,

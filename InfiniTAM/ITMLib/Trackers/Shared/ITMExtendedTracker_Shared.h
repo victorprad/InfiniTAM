@@ -83,14 +83,14 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exDepth_Ab(THREADPTR(float) *A,
 }
 
 _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exRGB_Ab(THREADPTR(float) *localGradient, THREADPTR(float) &colourDifferenceSq, THREADPTR(float) *localHessian,
-	THREADPTR(Vector4f) pt_model, const THREADPTR(Vector4u) *rgb_model, DEVICEPTR(Vector4u) *rgb_live, const CONSTPTR(Vector2i) & imgSize,
+	THREADPTR(Vector4f) pt_model, const THREADPTR(Vector4f) colour_model, DEVICEPTR(Vector4u) *rgb_live, const CONSTPTR(Vector2i) & imgSize,
 	int x, int y, Vector4f projParams, Matrix4f approxPose, Matrix4f approxInvPose, Matrix4f scenePose, DEVICEPTR(Vector4s) *gx, DEVICEPTR(Vector4s) *gy, int numPara)
 {
-	Vector4f pt_camera, colour_model, colour_obs, gx_obs, gy_obs;
+	Vector4f pt_camera, colour_obs, gx_obs, gy_obs;
 	Vector3f colour_diff_d, d_pt_cam_dpi, d[6];
 	Vector2f pt_image_live, pt_image_model, d_proj_dpi;
 
-	if (pt_model.w <= 0.f) return false;
+	if (pt_model.w <= 1e-7f || colour_model.w <= 1e-7f) return false;
 
 	pt_model.w = 1.f;
 	pt_camera = approxPose * pt_model; // convert the point in camera coordinates using the candidate pose
@@ -101,23 +101,13 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exRGB_Ab(THREADPTR(float) *loca
 	pt_image_live.x = projParams.x * pt_camera.x / pt_camera.z + projParams.z;
 	pt_image_live.y = projParams.y * pt_camera.y / pt_camera.z + projParams.w;
 
-	if (pt_image_live.x < 1 || pt_image_live.x > imgSize.x - 2 || pt_image_live.y < 1 || pt_image_live.y > imgSize.y - 2) return false;
+	if (pt_image_live.x < 0 || pt_image_live.x >= imgSize.x - 1 || pt_image_live.y < 0 || pt_image_live.y >= imgSize.y - 1) return false;
 
-	// convert the point in model coordinates
-	Vector4f pt_model_reproj = scenePose * pt_model;
-
-	// Project the point onto the previous frame
-	pt_image_model.x = projParams.x * pt_model_reproj.x / pt_model_reproj.z + projParams.z;
-	pt_image_model.y = projParams.y * pt_model_reproj.y / pt_model_reproj.z + projParams.w;
-
-	if (pt_image_model.x < 1 || pt_image_model.x > imgSize.x - 2 || pt_image_model.y < 1 || pt_image_model.y > imgSize.y - 2) return false;
-
-	colour_model = interpolateBilinear(rgb_model, pt_image_model, imgSize) / 255.f;
 	colour_obs = interpolateBilinear(rgb_live, pt_image_live, imgSize) / 255.f;
 	gx_obs = interpolateBilinear(gx, pt_image_live, imgSize) / 255.f; // gx and gy are computed from the live image
 	gy_obs = interpolateBilinear(gy, pt_image_live, imgSize) / 255.f;
 
-	if (colour_obs.w <= 1e-7f || colour_model.w <= 1e-7f) return false;
+	if (colour_obs.w <= 1e-7f) return false;
 
 	colour_diff_d.x = colour_obs.x - colour_model.x;
 	colour_diff_d.y = colour_obs.y - colour_model.y;
@@ -257,5 +247,34 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exDepth(THREADPTR(float) *local
 	}
 
 	return true;
+}
+
+_CPU_AND_GPU_CODE_ inline void projectPreviousPoint_exRGB(THREADPTR(int) x, THREADPTR(int) y, DEVICEPTR(Vector4f) *out_rgb, DEVICEPTR(Vector4u) *in_rgb, DEVICEPTR(Vector4f) *in_points, const CONSTPTR(Vector2i) &imageSize, const CONSTPTR(Vector2i) &sceneSize, const CONSTPTR(Vector4f) &intrinsics, const CONSTPTR(Matrix4f) &scenePose)
+{
+	if(x >= sceneSize.x || y >= sceneSize.y) return;
+
+	int sceneIdx = y * sceneSize.x + x;
+
+	const Vector4f &pt_scene = in_points[sceneIdx];
+	Vector4f pt_image = scenePose * pt_scene;
+
+	if(pt_image.z <= 0)
+	{
+		out_rgb[sceneIdx] = Vector4f(0.f, 0.f, 0.f, 0.f);
+		return;
+	}
+
+	Vector2f pt_image_proj;
+	// Project the point onto the previous frame
+	pt_image_proj.x = intrinsics.x * pt_image.x / pt_image.z + intrinsics.z;
+	pt_image_proj.y = intrinsics.y * pt_image.y / pt_image.z + intrinsics.w;
+
+	if (pt_image_proj.x < 0 || pt_image_proj.x >= imageSize.x - 1 || pt_image_proj.y < 0 || pt_image_proj.y >= imageSize.y - 1)
+	{
+		out_rgb[sceneIdx] = Vector4f(0.f, 0.f, 0.f, 0.f);
+		return;
+	}
+
+	out_rgb[sceneIdx] = interpolateBilinear(in_rgb, pt_image_proj, imageSize) / 255.f;
 }
 

@@ -28,6 +28,9 @@ ITMExtendedTracker::ITMExtendedTracker(Vector2i imgSize_d, Vector2i imgSize_rgb,
 
 	sceneHierarchy = new ITMImageHierarchy<ITMSceneHierarchyLevel>(imgSize_d, trackingRegime, noHierarchyLevels, memoryType, true);
 
+	if (useColour)
+		previousProjectedRGBHierarchy = new ITMImageHierarchy<ITMTemplatedHierarchyLevel<ORUtils::Image<Vector4f> > >(imgSize_d, trackingRegime, noHierarchyLevels, memoryType, false);
+
 	this->noIterationsPerLevel = new int[noHierarchyLevels];
 	this->spaceThresh = new float[noHierarchyLevels];
 
@@ -70,6 +73,8 @@ ITMExtendedTracker::~ITMExtendedTracker(void)
 	delete this->viewHierarchy;
 
 	delete this->sceneHierarchy;
+
+	if (previousProjectedRGBHierarchy) delete previousProjectedRGBHierarchy;
 
 	delete[] this->noIterationsPerLevel;
 	delete[] this->spaceThresh;
@@ -167,6 +172,13 @@ void ITMExtendedTracker::PrepareForEvaluation()
 			lowLevelEngine->FilterSubsampleWithHoles(currentLevel->normalsMap, previousLevel->normalsMap);
 			currentLevel->intrinsics = previousLevel->intrinsics * 0.5f;
 		}
+
+		// Project previous RGB image according to the scene pose and cache it to speed up the energy computation
+		for (int i = 0; i < viewHierarchy->noLevels; ++i)
+		{
+			SetEvaluationParams(i);
+			ProjectPreviousRGBFrame(scenePose);
+		}
 	}
 }
 
@@ -186,6 +198,7 @@ void ITMExtendedTracker::SetEvaluationParams(int levelId)
 	{
 		this->sceneHierarchyLevel_RGB = sceneHierarchy->levels[levelId];
 		this->viewHierarchyLevel_RGB = viewHierarchy->levels_t1[levelId];
+		this->previousProjectedRGBLevel = previousProjectedRGBHierarchy->levels[levelId];
 		iterationType = this->viewHierarchyLevel_RGB->iterationType;
 	}
 }

@@ -36,7 +36,7 @@ struct ITMExtendedTracker_KernelParameters_RGB {
 	Vector4s *gx;
 	Vector4s *gy;
 	Vector4u *rgb_live;
-	Vector4u *rgb_model;
+	Vector4f *rgb_model;
 	Vector2i viewImageSize;
 	Vector2i sceneImageSize;
 	Matrix4f approxInvPose;
@@ -50,6 +50,8 @@ __global__ void exDepthTrackerOneLevel_g_rt_device(ITMExtendedTracker_KernelPara
 
 template<bool shortIteration, bool rotationOnly, bool useWeights>
 __global__ void exRGBTrackerOneLevel_g_rt_device(ITMExtendedTracker_KernelParameters_RGB para);
+
+__global__ void exRGBTrackerProjectPrevImage_device(Vector4f *out_rgb, Vector4u *in_rgb, Vector4f *in_points, Vector2i imageSize, Vector2i sceneSize, Vector4f intrinsics, Matrix4f scenePose);
 
 // host methods
 
@@ -178,7 +180,7 @@ int ITMExtendedTracker_CUDA::ComputeGandH_RGB(float &f, float *nabla, float *hes
 	struct ITMExtendedTracker_KernelParameters_RGB args;
 	args.accu = accu_device;
 	args.rgb_live = viewHierarchyLevel_RGB->rgb_current->GetData(MEMORYDEVICE_CUDA);
-	args.rgb_model = viewHierarchyLevel_RGB->rgb_prev->GetData(MEMORYDEVICE_CUDA);
+	args.rgb_model = previousProjectedRGBLevel->depth->GetData(MEMORYDEVICE_CUDA);
 	args.gx = viewHierarchyLevel_RGB->gX->GetData(MEMORYDEVICE_CUDA);
 	args.gy = viewHierarchyLevel_RGB->gY->GetData(MEMORYDEVICE_CUDA);
 	args.pointsMap = sceneHierarchyLevel_RGB->pointsMap->GetData(MEMORYDEVICE_CUDA);
@@ -215,6 +217,25 @@ int ITMExtendedTracker_CUDA::ComputeGandH_RGB(float &f, float *nabla, float *hes
 	f = (accu_host->numPoints > 100) ? accu_host->f / accu_host->numPoints : 1e5f;
 
 	return accu_host->numPoints;
+}
+
+void ITMExtendedTracker_CUDA::ProjectPreviousRGBFrame(const Matrix4f &scenePose)
+{
+	Vector2i imageSize = viewHierarchyLevel_RGB->rgb_prev->noDims;
+	Vector2i sceneSize = sceneHierarchyLevel_RGB->pointsMap->noDims;
+
+	previousProjectedRGBLevel->depth->ChangeDims(sceneSize);
+
+	Vector4f projParams = viewHierarchyLevel_RGB->intrinsics;
+	Vector4f *pointsMap = sceneHierarchyLevel_RGB->pointsMap->GetData(MEMORYDEVICE_CUDA);
+	Vector4u *rgbIn = viewHierarchyLevel_RGB->rgb_prev->GetData(MEMORYDEVICE_CUDA);
+	Vector4f *rgbOut = previousProjectedRGBLevel->depth->GetData(MEMORYDEVICE_CUDA);
+
+	dim3 blockSize(16, 16);
+	dim3 gridSize((int)ceil((float)sceneSize.x / (float)blockSize.x), (int)ceil((float)sceneSize.y / (float)blockSize.y));
+
+	exRGBTrackerProjectPrevImage_device<<<gridSize, blockSize>>>(rgbOut, rgbIn, pointsMap, imageSize, sceneSize, projParams, scenePose);
+	ORcudaKernelCheck;
 }
 
 // device functions
@@ -400,7 +421,7 @@ __device__ void exDepthTrackerOneLevel_g_rt_device_main(ITMExtendedTracker_CUDA:
 
 template<bool shortIteration, bool rotationOnly, bool useWeights>
 __device__ void exRGBTrackerOneLevel_g_rt_device_main(ITMExtendedTracker_CUDA::AccuCell *accu,
-	Vector4f *locations, Vector4u *rgb_model, Vector4s *gx, Vector4s *gy, Vector4u *rgb,
+	Vector4f *locations, Vector4f *rgb_model, Vector4s *gx, Vector4s *gy, Vector4u *rgb,
 	Matrix4f approxPose, Matrix4f approxInvPose, Matrix4f scenePose, Vector4f projParams, Vector2i imgSize, Vector2i sceneSize)
 {
 	int x = threadIdx.x + blockIdx.x * blockDim.x, y = threadIdx.y + blockIdx.y * blockDim.y;
@@ -428,7 +449,7 @@ __device__ void exRGBTrackerOneLevel_g_rt_device_main(ITMExtendedTracker_CUDA::A
 		// FIXME Translation only not implemented yet
 		if(!shortIteration || rotationOnly)
 		{
-			isValidPoint = computePerPointGH_exRGB_Ab(A, b, localHessian, locations[x + y * sceneSize.x], rgb_model, rgb, imgSize, x, y,
+			isValidPoint = computePerPointGH_exRGB_Ab(A, b, localHessian, locations[x + y * sceneSize.x], rgb_model[x + y * sceneSize.x], rgb, imgSize, x, y,
 					projParams, approxPose, approxInvPose, scenePose, gx, gy, noPara);
 		}
 
@@ -566,4 +587,12 @@ __global__ void exRGBTrackerOneLevel_g_rt_device(ITMExtendedTracker_KernelParame
 {
 	exRGBTrackerOneLevel_g_rt_device_main<shortIteration, rotationOnly, useWeights>(para.accu, para.pointsMap,
 		para.rgb_model, para.gx, para.gy, para.rgb_live, para.approxPose, para.approxInvPose, para.scenePose, para.projParams, para.viewImageSize, para.sceneImageSize);
+}
+
+__global__ void exRGBTrackerProjectPrevImage_device(Vector4f *out_rgb, Vector4u *in_rgb, Vector4f *in_points, Vector2i imageSize, Vector2i sceneSize, Vector4f intrinsics, Matrix4f scenePose)
+{
+	int x = threadIdx.x + blockIdx.x * blockDim.x;
+	int y = threadIdx.y + blockIdx.y * blockDim.y;
+
+	projectPreviousPoint_exRGB(x, y, out_rgb, in_rgb, in_points, imageSize, sceneSize, intrinsics, scenePose);
 }
