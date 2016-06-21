@@ -167,6 +167,7 @@ int ITMExtendedTracker_CUDA::ComputeGandH_RGB(float &f, float *nabla, float *hes
 
 	Matrix4f approxPose;
 	approxInvPose.inv(approxPose);
+	approxPose = depthToRGBTransform * approxPose;
 
 	bool shortIteration = (iterationType == TRACKER_ITERATION_ROTATION) || (iterationType == TRACKER_ITERATION_TRANSLATION);
 

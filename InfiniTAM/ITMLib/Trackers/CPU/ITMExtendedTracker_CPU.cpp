@@ -102,6 +102,7 @@ int ITMExtendedTracker_CPU::ComputeGandH_RGB(float &f, float *nabla, float *hess
 
 	Matrix4f approxPose;
 	approxInvPose.inv(approxPose);
+	approxPose = depthToRGBTransform * approxPose;
 
 	if (iterationType == TRACKER_ITERATION_NONE) return 0;
 

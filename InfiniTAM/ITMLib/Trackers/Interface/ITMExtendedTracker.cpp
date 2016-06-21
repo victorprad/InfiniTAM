@@ -130,6 +130,7 @@ void ITMExtendedTracker::SetEvaluationData(ITMTrackingState *trackingState, cons
 	sceneHierarchy->levels[0]->normalsMap = trackingState->pointCloud->colours;
 
 	scenePose = trackingState->pose_pointCloud->GetM();
+	depthToRGBTransform = view->calib->trafo_rgb_to_depth.calib_inv;
 }
 
 void ITMExtendedTracker::PrepareForEvaluation()
@@ -177,7 +178,7 @@ void ITMExtendedTracker::PrepareForEvaluation()
 		for (int i = 0; i < viewHierarchy->noLevels; ++i)
 		{
 			SetEvaluationParams(i);
-			ProjectPreviousRGBFrame(scenePose);
+			ProjectPreviousRGBFrame(view->calib->trafo_rgb_to_depth.calib_inv * scenePose);
 		}
 	}
 }
