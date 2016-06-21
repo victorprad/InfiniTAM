@@ -249,32 +249,42 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exDepth(THREADPTR(float) *local
 	return true;
 }
 
-_CPU_AND_GPU_CODE_ inline void projectPreviousPoint_exRGB(THREADPTR(int) x, THREADPTR(int) y, DEVICEPTR(Vector4f) *out_rgb, DEVICEPTR(Vector4u) *in_rgb, DEVICEPTR(Vector4f) *in_points, const CONSTPTR(Vector2i) &imageSize, const CONSTPTR(Vector2i) &sceneSize, const CONSTPTR(Vector4f) &intrinsics, const CONSTPTR(Matrix4f) &scenePose)
+_CPU_AND_GPU_CODE_ inline bool computePerPointProjectedColour_exRGB(THREADPTR(int) x, THREADPTR(int) y, DEVICEPTR(Vector4f) *out_rgb, DEVICEPTR(Vector4u) *in_rgb, DEVICEPTR(Vector4f) *in_points, const CONSTPTR(Vector2i) &imageSize, const CONSTPTR(int) sceneIdx, const CONSTPTR(Vector4f) &intrinsics, const CONSTPTR(Matrix4f) &scenePose)
 {
-	if(x >= sceneSize.x || y >= sceneSize.y) return;
+	Vector4f pt_scene = in_points[sceneIdx];
 
-	int sceneIdx = y * sceneSize.x + x;
+	// Invalid point
+	if (pt_scene.w <= 0) return false;
 
-	const Vector4f &pt_scene = in_points[sceneIdx];
+	pt_scene.w = 1.f; // Coerce it to be a point
 	Vector4f pt_image = scenePose * pt_scene;
 
-	if(pt_image.z <= 0)
-	{
-		out_rgb[sceneIdx] = Vector4f(0.f, 0.f, 0.f, 0.f);
-		return;
-	}
+	// Point behind the camera
+	if(pt_image.z <= 0) return false;
 
 	Vector2f pt_image_proj;
 	// Project the point onto the previous frame
 	pt_image_proj.x = intrinsics.x * pt_image.x / pt_image.z + intrinsics.z;
 	pt_image_proj.y = intrinsics.y * pt_image.y / pt_image.z + intrinsics.w;
 
-	if (pt_image_proj.x < 0 || pt_image_proj.x >= imageSize.x - 1 || pt_image_proj.y < 0 || pt_image_proj.y >= imageSize.y - 1)
-	{
-		out_rgb[sceneIdx] = Vector4f(0.f, 0.f, 0.f, 0.f);
-		return;
-	}
+	// Projection outside the previous rgb frame
+	if (pt_image_proj.x < 0 || pt_image_proj.x >= imageSize.x - 1 ||
+		pt_image_proj.y < 0 || pt_image_proj.y >= imageSize.y - 1) return false;
 
 	out_rgb[sceneIdx] = interpolateBilinear(in_rgb, pt_image_proj, imageSize) / 255.f;
+	return true;
+}
+
+_CPU_AND_GPU_CODE_ inline void projectPreviousPoint_exRGB(THREADPTR(int) x, THREADPTR(int) y, DEVICEPTR(Vector4f) *out_rgb, DEVICEPTR(Vector4u) *in_rgb, DEVICEPTR(Vector4f) *in_points, const CONSTPTR(Vector2i) &imageSize, const CONSTPTR(Vector2i) &sceneSize, const CONSTPTR(Vector4f) &intrinsics, const CONSTPTR(Matrix4f) &scenePose)
+{
+	if (x >= sceneSize.x || y >= sceneSize.y) return;
+
+	int sceneIdx = y * sceneSize.x + x;
+
+	if (!computePerPointProjectedColour_exRGB(x, y, out_rgb, in_rgb, in_points,
+		 imageSize, sceneIdx, intrinsics, scenePose))
+	{
+		out_rgb[sceneIdx] = Vector4f(0.f, 0.f, 0.f, 0.f);
+	}
 }
 
