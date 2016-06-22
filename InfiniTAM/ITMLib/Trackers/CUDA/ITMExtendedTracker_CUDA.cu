@@ -44,7 +44,7 @@ struct ITMExtendedTracker_KernelParameters_RGB {
 	Matrix4f scenePose;
 	Vector4f projParams;
 	float colourThresh;
-	float tukeyCutoff;
+	float tukeyCutOff, framesToSkip, framesToWeight;
 };
 
 template<bool shortIteration, bool rotationOnly, bool useWeights>
@@ -194,7 +194,9 @@ int ITMExtendedTracker_CUDA::ComputeGandH_RGB(float &f, float *nabla, float *hes
 	args.scenePose = scenePose;
 	args.projParams = viewHierarchyLevel_RGB->intrinsics;
 	args.colourThresh = colourThresh[levelId];
-	args.tukeyCutoff = tukeyCutOff;
+	args.tukeyCutOff = tukeyCutOff;
+	args.framesToSkip = framesToSkip;
+	args.framesToWeight = framesToWeight;
 
 	switch (iterationType)
 	{
@@ -428,7 +430,7 @@ template<bool shortIteration, bool rotationOnly, bool useWeights>
 __device__ void exRGBTrackerOneLevel_g_rt_device_main(ITMExtendedTracker_CUDA::AccuCell *accu,
 	Vector4f *locations, Vector4f *rgb_model, Vector4s *gx, Vector4s *gy, Vector4u *rgb,
 	Matrix4f approxPose, Matrix4f approxInvPose, Matrix4f scenePose, Vector4f projParams,
-	Vector2i imgSize, Vector2i sceneSize, float colourThresh, float tukeyCutoff)
+	Vector2i imgSize, Vector2i sceneSize, float colourThresh, float tukeyCutoff, float framesToSkip, float framesToWeight)
 {
 	int x = threadIdx.x + blockIdx.x * blockDim.x, y = threadIdx.y + blockIdx.y * blockDim.y;
 
@@ -447,6 +449,7 @@ __device__ void exRGBTrackerOneLevel_g_rt_device_main(ITMExtendedTracker_CUDA::A
 	float localHessian[noParaSQ];
 	float A[noPara];
 	float b;
+	float depthWeight = 1.0f;
 
 	bool isValidPoint = false;
 
@@ -455,8 +458,8 @@ __device__ void exRGBTrackerOneLevel_g_rt_device_main(ITMExtendedTracker_CUDA::A
 		// FIXME Translation only not implemented yet
 		if(!shortIteration || rotationOnly)
 		{
-			isValidPoint = computePerPointGH_exRGB_Ab(A, b, localHessian, locations[x + y * sceneSize.x], rgb_model[x + y * sceneSize.x], rgb, imgSize, x, y,
-					projParams, approxPose, approxInvPose, scenePose, gx, gy, colourThresh, tukeyCutoff, noPara);
+			isValidPoint = computePerPointGH_exRGB_Ab(A, b, localHessian, depthWeight, locations[x + y * sceneSize.x], rgb_model[x + y * sceneSize.x], rgb, imgSize, x, y,
+					projParams, approxPose, approxInvPose, scenePose, gx, gy, colourThresh, tukeyCutoff, framesToSkip, framesToWeight, noPara);
 		}
 
 		if (isValidPoint) should_prefix = true;
@@ -491,7 +494,7 @@ __device__ void exRGBTrackerOneLevel_g_rt_device_main(ITMExtendedTracker_CUDA::A
 	__syncthreads();
 
 	{ //reduction for energy function value
-		dim_shared1[locId_local] = rho(b, colourThresh);
+		dim_shared1[locId_local] = rho(b, colourThresh) * depthWeight;
 //		dim_shared1[locId_local] = b;
 		__syncthreads();
 
@@ -508,7 +511,7 @@ __device__ void exRGBTrackerOneLevel_g_rt_device_main(ITMExtendedTracker_CUDA::A
 	__syncthreads();
 
 	//reduction for nabla
-	float huber_coef_nabla = rho_deriv(b, colourThresh);
+	float huber_coef_nabla = rho_deriv(b, colourThresh) * depthWeight;
 	for (unsigned char paraId = 0; paraId < noPara; paraId += 3)
 	{
 		dim_shared1[locId_local] = huber_coef_nabla * A[paraId + 0];
@@ -552,7 +555,7 @@ __device__ void exRGBTrackerOneLevel_g_rt_device_main(ITMExtendedTracker_CUDA::A
 	//reduction for hessian
 
 	// not completely correct, should be done before the triangular multiplication
-	float huber_coef_hessian = rho_deriv2(b, colourThresh);
+	float huber_coef_hessian = rho_deriv2(b, colourThresh) * depthWeight;
 	for (unsigned char paraId = 0; paraId < noParaSQ; paraId += 3)
 	{
 		dim_shared1[locId_local] = huber_coef_hessian * localHessian[paraId + 0];
@@ -606,7 +609,7 @@ __global__ void exRGBTrackerOneLevel_g_rt_device(ITMExtendedTracker_KernelParame
 {
 	exRGBTrackerOneLevel_g_rt_device_main<shortIteration, rotationOnly, useWeights>(para.accu, para.pointsMap,
 		para.rgb_model, para.gx, para.gy, para.rgb_live, para.approxPose, para.approxInvPose, para.scenePose,
-		para.projParams, para.viewImageSize, para.sceneImageSize, para.colourThresh, para.tukeyCutoff);
+		para.projParams, para.viewImageSize, para.sceneImageSize, para.colourThresh, para.tukeyCutOff, para.framesToSkip, para.framesToWeight);
 }
 
 __global__ void exRGBTrackerProjectPrevImage_device(Vector4f *out_rgb, Vector4u *in_rgb, Vector4f *in_points, Vector2i imageSize, Vector2i sceneSize, Vector4f intrinsics, Matrix4f scenePose)

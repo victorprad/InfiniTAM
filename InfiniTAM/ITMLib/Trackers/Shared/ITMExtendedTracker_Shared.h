@@ -82,16 +82,19 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exDepth_Ab(THREADPTR(float) *A,
 	return true;
 }
 
-_CPU_AND_GPU_CODE_ inline bool computePerPointGH_exRGB_Ab(THREADPTR(float) *localGradient, THREADPTR(float) &colourDifferenceSq, THREADPTR(float) *localHessian,
+_CPU_AND_GPU_CODE_ inline bool computePerPointGH_exRGB_Ab(THREADPTR(float) *localGradient, THREADPTR(float) &colourDifferenceSq, THREADPTR(float) *localHessian, THREADPTR(float) &depthWeight,
 	THREADPTR(Vector4f) pt_model, const THREADPTR(Vector4f) &colour_model, DEVICEPTR(Vector4u) *rgb_live, const CONSTPTR(Vector2i) &imgSize,
 	int x, int y, Vector4f projParams, Matrix4f approxPose, Matrix4f approxInvPose, Matrix4f scenePose, DEVICEPTR(Vector4s) *gx, DEVICEPTR(Vector4s) *gy,
-	float colourThresh, float tukeyCutoff, int numPara)
+	float colourThresh, float tukeyCutoff, float framesToSkip, float framesToWeight, int numPara)
 {
 	Vector4f pt_camera, colour_obs, gx_obs, gy_obs;
 	Vector3f colour_diff_d, d_pt_cam_dpi, d[6];
 	Vector2f pt_image_live, pt_image_model, d_proj_dpi;
 
 	if (pt_model.w <= 1e-7f || colour_model.w <= 1e-7f) return false;
+
+	if (pt_model.w < framesToSkip) return false;
+	depthWeight *= (pt_model.w - framesToSkip) / framesToWeight;
 
 	pt_model.w = 1.f;
 	pt_camera = approxPose * pt_model; // convert the point in camera coordinates using the candidate pose

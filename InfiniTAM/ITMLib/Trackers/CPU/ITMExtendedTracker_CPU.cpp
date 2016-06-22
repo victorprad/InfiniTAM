@@ -123,12 +123,13 @@ int ITMExtendedTracker_CPU::ComputeGandH_RGB(float &f, float *nabla, float *hess
 		for (int i = 0; i < noParaSQ; i++) localHessian[i] = 0.0f;
 
 		bool isValidPoint = false;
+		float depthWeight = 1.f;
 
 		if (iterationType != TRACKER_ITERATION_TRANSLATION) // TODO translation not implemented yet
 		{
-			isValidPoint = computePerPointGH_exRGB_Ab(localNabla, localF, localHessian,
+			isValidPoint = computePerPointGH_exRGB_Ab(localNabla, localF, localHessian, depthWeight,
 				locations[x + y * sceneImageSize.x], rgb_model[x + y * sceneImageSize.x], rgb_live, viewImageSize, x, y,
-				projParams, approxPose, approxInvPose, scenePose, gx, gy, colourThresh[levelId], tukeyCutOff, noPara);
+				projParams, approxPose, approxInvPose, scenePose, gx, gy, colourThresh[levelId], tukeyCutOff, framesToSkip, framesToWeight, noPara);
 		}
 
 		if (isValidPoint)
