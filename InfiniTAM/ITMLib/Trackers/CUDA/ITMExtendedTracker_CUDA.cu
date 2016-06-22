@@ -44,6 +44,7 @@ struct ITMExtendedTracker_KernelParameters_RGB {
 	Matrix4f scenePose;
 	Vector4f projParams;
 	float colourThresh;
+	float viewFrustum_min, viewFrustum_max;
 	float tukeyCutOff, framesToSkip, framesToWeight;
 };
 
@@ -194,6 +195,8 @@ int ITMExtendedTracker_CUDA::ComputeGandH_RGB(float &f, float *nabla, float *hes
 	args.scenePose = scenePose;
 	args.projParams = viewHierarchyLevel_RGB->intrinsics;
 	args.colourThresh = colourThresh[levelId];
+	args.viewFrustum_min = viewFrustum_min;
+	args.viewFrustum_max = viewFrustum_max;
 	args.tukeyCutOff = tukeyCutOff;
 	args.framesToSkip = framesToSkip;
 	args.framesToWeight = framesToWeight;
@@ -452,7 +455,8 @@ template<bool shortIteration, bool rotationOnly, bool useWeights>
 __device__ void exRGBTrackerOneLevel_g_rt_device_main(ITMExtendedTracker_CUDA::AccuCell *accu,
 	Vector4f *locations, Vector4f *rgb_model, Vector4s *gx, Vector4s *gy, Vector4u *rgb,
 	Matrix4f approxPose, Matrix4f approxInvPose, Matrix4f scenePose, Vector4f projParams,
-	Vector2i imgSize, Vector2i sceneSize, float colourThresh, float tukeyCutoff, float framesToSkip, float framesToWeight)
+	Vector2i imgSize, Vector2i sceneSize, float colourThresh, float viewFrustum_min, float viewFrustum_max,
+	float tukeyCutoff, float framesToSkip, float framesToWeight)
 {
 	int x = threadIdx.x + blockIdx.x * blockDim.x, y = threadIdx.y + blockIdx.y * blockDim.y;
 
@@ -481,7 +485,7 @@ __device__ void exRGBTrackerOneLevel_g_rt_device_main(ITMExtendedTracker_CUDA::A
 		if(!shortIteration || rotationOnly)
 		{
 			isValidPoint = computePerPointGH_exRGB_Ab<useWeights>(A, b, localHessian, depthWeight, locations[x + y * sceneSize.x], rgb_model[x + y * sceneSize.x], rgb, imgSize, x, y,
-					projParams, approxPose, approxInvPose, scenePose, gx, gy, colourThresh, tukeyCutoff, framesToSkip, framesToWeight, noPara);
+					projParams, approxPose, approxInvPose, scenePose, gx, gy, colourThresh, viewFrustum_min, viewFrustum_max, tukeyCutoff, framesToSkip, framesToWeight, noPara);
 		}
 
 		if (isValidPoint) should_prefix = true;
@@ -631,7 +635,7 @@ __global__ void exRGBTrackerOneLevel_g_rt_device(ITMExtendedTracker_KernelParame
 {
 	exRGBTrackerOneLevel_g_rt_device_main<shortIteration, rotationOnly, useWeights>(para.accu, para.pointsMap,
 		para.rgb_model, para.gx, para.gy, para.rgb_live, para.approxPose, para.approxInvPose, para.scenePose,
-		para.projParams, para.viewImageSize, para.sceneImageSize, para.colourThresh, para.tukeyCutOff, para.framesToSkip, para.framesToWeight);
+		para.projParams, para.viewImageSize, para.sceneImageSize, para.colourThresh, para.viewFrustum_min, para.viewFrustum_max, para.tukeyCutOff, para.framesToSkip, para.framesToWeight);
 }
 
 __global__ void exRGBTrackerProjectPrevImage_device(Vector4f *out_rgb, Vector4u *in_rgb, Vector4f *in_points, Vector2i imageSize, Vector2i sceneSize, Vector4f intrinsics, Matrix4f scenePose)

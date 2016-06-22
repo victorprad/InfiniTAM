@@ -130,11 +130,11 @@ int ITMExtendedTracker_CPU::ComputeGandH_RGB(float &f, float *nabla, float *hess
 			if (currentFrameNo < 100)
 				isValidPoint = computePerPointGH_exRGB_Ab<false>(localNabla, localF, localHessian, depthWeight,
 					locations[x + y * sceneImageSize.x], rgb_model[x + y * sceneImageSize.x], rgb_live, viewImageSize, x, y,
-					projParams, approxPose, approxInvPose, scenePose, gx, gy, colourThresh[levelId], tukeyCutOff, framesToSkip, framesToWeight, noPara);
+					projParams, approxPose, approxInvPose, scenePose, gx, gy, colourThresh[levelId], viewFrustum_min, viewFrustum_max, tukeyCutOff, framesToSkip, framesToWeight, noPara);
 			else
 				isValidPoint = computePerPointGH_exRGB_Ab<true>(localNabla, localF, localHessian, depthWeight,
-									locations[x + y * sceneImageSize.x], rgb_model[x + y * sceneImageSize.x], rgb_live, viewImageSize, x, y,
-									projParams, approxPose, approxInvPose, scenePose, gx, gy, colourThresh[levelId], tukeyCutOff, framesToSkip, framesToWeight, noPara);
+					locations[x + y * sceneImageSize.x], rgb_model[x + y * sceneImageSize.x], rgb_live, viewImageSize, x, y,
+					projParams, approxPose, approxInvPose, scenePose, gx, gy, colourThresh[levelId], viewFrustum_min, viewFrustum_max, tukeyCutOff, framesToSkip, framesToWeight, noPara);
 		}
 
 		if (isValidPoint)
