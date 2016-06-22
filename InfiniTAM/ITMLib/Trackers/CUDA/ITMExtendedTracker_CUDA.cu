@@ -198,21 +198,43 @@ int ITMExtendedTracker_CUDA::ComputeGandH_RGB(float &f, float *nabla, float *hes
 	args.framesToSkip = framesToSkip;
 	args.framesToWeight = framesToWeight;
 
-	switch (iterationType)
+	if (currentFrameNo < 100)
 	{
-	case TRACKER_ITERATION_ROTATION:
-		exRGBTrackerOneLevel_g_rt_device<true, true, false> << <gridSize, blockSize >> >(args);
-		ORcudaKernelCheck;
-		break;
-	case TRACKER_ITERATION_TRANSLATION:
-		exRGBTrackerOneLevel_g_rt_device<true, false, false> << <gridSize, blockSize >> >(args);
-		ORcudaKernelCheck;
-		break;
-	case TRACKER_ITERATION_BOTH:
-		exRGBTrackerOneLevel_g_rt_device<false, false, false> << <gridSize, blockSize >> >(args);
-		ORcudaKernelCheck;
-		break;
-	default: break;
+		switch (iterationType)
+		{
+		case TRACKER_ITERATION_ROTATION:
+			exRGBTrackerOneLevel_g_rt_device<true, true, false> << <gridSize, blockSize >> >(args);
+			ORcudaKernelCheck;
+			break;
+		case TRACKER_ITERATION_TRANSLATION:
+			exRGBTrackerOneLevel_g_rt_device<true, false, false> << <gridSize, blockSize >> >(args);
+			ORcudaKernelCheck;
+			break;
+		case TRACKER_ITERATION_BOTH:
+			exRGBTrackerOneLevel_g_rt_device<false, false, false> << <gridSize, blockSize >> >(args);
+			ORcudaKernelCheck;
+			break;
+		default: break;
+		}
+	}
+	else
+	{
+		switch (iterationType)
+		{
+		case TRACKER_ITERATION_ROTATION:
+			exRGBTrackerOneLevel_g_rt_device<true, true, true> << <gridSize, blockSize >> >(args);
+			ORcudaKernelCheck;
+			break;
+		case TRACKER_ITERATION_TRANSLATION:
+			exRGBTrackerOneLevel_g_rt_device<true, false, true> << <gridSize, blockSize >> >(args);
+			ORcudaKernelCheck;
+			break;
+		case TRACKER_ITERATION_BOTH:
+			exRGBTrackerOneLevel_g_rt_device<false, false, true> << <gridSize, blockSize >> >(args);
+			ORcudaKernelCheck;
+			break;
+		default: break;
+		}
 	}
 
 	ORcudaSafeCall(cudaMemcpy(accu_host, accu_device, sizeof(AccuCell), cudaMemcpyDeviceToHost));
@@ -458,7 +480,7 @@ __device__ void exRGBTrackerOneLevel_g_rt_device_main(ITMExtendedTracker_CUDA::A
 		// FIXME Translation only not implemented yet
 		if(!shortIteration || rotationOnly)
 		{
-			isValidPoint = computePerPointGH_exRGB_Ab(A, b, localHessian, depthWeight, locations[x + y * sceneSize.x], rgb_model[x + y * sceneSize.x], rgb, imgSize, x, y,
+			isValidPoint = computePerPointGH_exRGB_Ab<useWeights>(A, b, localHessian, depthWeight, locations[x + y * sceneSize.x], rgb_model[x + y * sceneSize.x], rgb, imgSize, x, y,
 					projParams, approxPose, approxInvPose, scenePose, gx, gy, colourThresh, tukeyCutoff, framesToSkip, framesToWeight, noPara);
 		}
 
