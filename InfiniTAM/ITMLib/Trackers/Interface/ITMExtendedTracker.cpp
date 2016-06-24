@@ -376,6 +376,12 @@ void ITMExtendedTracker::TrackCamera(ITMTrackingState *trackingState, const ITMV
 				// First evaluate depth error function
 				noValidPoints_new = this->ComputeGandH_Depth(f_new, nabla_new, hessian_new, approxInvPose);
 
+				if(noValidPoints_new <= 100)
+				{
+					noValidPoints_new = 0;
+					f_new = 0.f; // Reset energy, no need to reset hessian and nabla
+				}
+
 				float hessian_RGB[6*6], nabla_RGB[6], f_RGB;
 				int noValidPoints_RGB;
 
