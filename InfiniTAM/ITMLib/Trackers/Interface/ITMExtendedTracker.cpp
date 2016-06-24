@@ -387,7 +387,7 @@ void ITMExtendedTracker::TrackCamera(ITMTrackingState *trackingState, const ITMV
 				{
 					f_new += colourWeight * f_RGB;
 					noValidPoints_new += noValidPoints_RGB;
-					for (int i = 0; i < 6 * 6; ++i) hessian_new[i] += colourWeight * hessian_RGB[i];
+					for (int i = 0; i < 6 * 6; ++i) hessian_new[i] += colourWeight * colourWeight * hessian_RGB[i];
 					for (int i = 0; i < 6; ++i) nabla_new[i] += colourWeight * nabla_RGB[i];
 				}
 			}
