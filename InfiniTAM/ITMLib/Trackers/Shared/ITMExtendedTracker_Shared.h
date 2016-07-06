@@ -121,6 +121,7 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exRGB_Ab(THREADPTR(float) *loca
 	gy_obs = interpolateBilinear(gy, pt_image_live, imgSize) / 255.f;
 
 	if (colour_obs.w <= 1e-7f) return false;
+	if (dot(gx_obs, gx_obs) + dot(gy_obs, gy_obs) < 1e-3) return false;
 
 	colour_diff_d.x = colour_obs.x - colour_model.x;
 	colour_diff_d.y = colour_obs.y - colour_model.y;
