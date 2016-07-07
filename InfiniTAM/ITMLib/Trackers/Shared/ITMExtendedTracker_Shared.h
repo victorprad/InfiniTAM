@@ -137,64 +137,34 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exRGB_Ab(THREADPTR(float) *loca
 	// University of Malaga, Tech. Rep
 	// Equation A.13
 
-	Vector3f d_proj_const_x, d_proj_const_y;
+	const Vector3f rot_row_0 = approxInvPose.getRow(0).toVector3();
+	const Vector3f rot_row_1 = approxInvPose.getRow(1).toVector3();
+	const Vector3f rot_row_2 = approxInvPose.getRow(2).toVector3();
 
-	d_proj_const_x.x = projParams.x / pt_camera.z;
-	d_proj_const_x.y = 0.f;
-	d_proj_const_x.z = -projParams.x * pt_camera.x / (pt_camera.z * pt_camera.z);
+	Vector3f d_proj_x, d_proj_y;
 
-	d_proj_const_y.x = 0.f;
-	d_proj_const_y.y = projParams.y / pt_camera.z;
-	d_proj_const_y.z = -projParams.y * pt_camera.y / (pt_camera.z * pt_camera.z);
+	d_proj_x.x = projParams.x / pt_camera.z;
+	d_proj_x.y = 0.f;
+	d_proj_x.z = -projParams.x * pt_camera.x / (pt_camera.z * pt_camera.z);
+
+	d_proj_y.x = 0.f;
+	d_proj_y.y = projParams.y / pt_camera.z;
+	d_proj_y.z = -projParams.y * pt_camera.y / (pt_camera.z * pt_camera.z);
 
 	for (int para = 0, counter = 0; para < numPara; para++)
 	{
-//		switch (para)
-//		{
-//		case 0: //rx
-//			d_proj_dpi.x = -projParams.x * pt_camera.y * pt_camera.x / (pt_camera.z * pt_camera.z);
-//			d_proj_dpi.y = -projParams.y * (pt_camera.z * pt_camera.z + pt_camera.y * pt_camera.y) / (pt_camera.z * pt_camera.z);
-//			break;
-//		case 1: // ry
-//			d_proj_dpi.x = projParams.x * (pt_camera.z * pt_camera.z + pt_camera.x * pt_camera.x) / (pt_camera.z * pt_camera.z);
-//			d_proj_dpi.y = projParams.y * pt_camera.x * pt_camera.y / (pt_camera.z * pt_camera.z);
-//			break;
-//		case 2: // rz
-//			d_proj_dpi.x = -projParams.x * pt_camera.y / pt_camera.z;
-//			d_proj_dpi.y = projParams.y * pt_camera.x / pt_camera.z;
-//			break; //rz
-//		case 3: //tx
-//			d_proj_dpi.x = projParams.x / pt_camera.z;
-//			d_proj_dpi.y = 0.0f;
-//			break;
-//		case 4: //ty
-//			d_proj_dpi.x = 0.0f;
-//			d_proj_dpi.y = projParams.y / pt_camera.z;
-//			break;
-//		case 5: //tz
-//			d_proj_dpi.x = -projParams.x * pt_camera.x / (pt_camera.z * pt_camera.z);
-//			d_proj_dpi.y = -projParams.y * pt_camera.y / (pt_camera.z * pt_camera.z);
-//			break;
-//		};
-
 		Vector3f d_point_col;
 
 		switch (para)
 		{
 		case 0: //rx
-			d_point_col.x = approxInvPose.m01 * pt_model.z - approxInvPose.m02 * pt_model.y;
-			d_point_col.y = approxInvPose.m11 * pt_model.z - approxInvPose.m12 * pt_model.y;
-			d_point_col.z = approxInvPose.m21 * pt_model.z - approxInvPose.m22 * pt_model.y;
+			d_point_col = rot_row_1 * pt_model.z - rot_row_2 * pt_model.y;
 			break;
 		case 1: // ry
-			d_point_col.x = approxInvPose.m02 * pt_model.x - approxInvPose.m00 * pt_model.z;
-			d_point_col.y = approxInvPose.m12 * pt_model.x - approxInvPose.m10 * pt_model.z;
-			d_point_col.z = approxInvPose.m22 * pt_model.x - approxInvPose.m20 * pt_model.z;
+			d_point_col = rot_row_2 * pt_model.x - rot_row_0 * pt_model.z;
 			break;
 		case 2: // rz
-			d_point_col.x = approxInvPose.m00 * pt_model.y - approxInvPose.m01 * pt_model.x;
-			d_point_col.y = approxInvPose.m10 * pt_model.y - approxInvPose.m11 * pt_model.x;
-			d_point_col.z = approxInvPose.m20 * pt_model.y - approxInvPose.m21 * pt_model.x;
+			d_point_col = rot_row_0 * pt_model.y - rot_row_1 * pt_model.x;
 			break; //rz
 		case 3: //tx
 			// Rotation matrix negated and transposed (matrix storage is column major, though)
@@ -202,24 +172,18 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exRGB_Ab(THREADPTR(float) *loca
 			// skew symmetric matrix, that matrix has negated rotation components.
 			// In order to use the rgb tracker we would need to negate the entire computed step, but given
 			// the peculiar structure of the increment matrix we only need to negate the translation component.
-			d_point_col.x = approxInvPose.m00;
-			d_point_col.y = approxInvPose.m10;
-			d_point_col.z = approxInvPose.m20;
+			d_point_col = rot_row_0;
 			break;
 		case 4: //ty
-			d_point_col.x = approxInvPose.m01;
-			d_point_col.y = approxInvPose.m11;
-			d_point_col.z = approxInvPose.m21;
+			d_point_col = rot_row_1;
 			break;
 		case 5: //tz
-			d_point_col.x = approxInvPose.m02;
-			d_point_col.y = approxInvPose.m12;
-			d_point_col.z = approxInvPose.m22;
+			d_point_col = rot_row_2;
 			break;
 		};
 
-		d_proj_dpi.x = dot(d_proj_const_x, d_point_col);
-		d_proj_dpi.y = dot(d_proj_const_y, d_point_col);
+		d_proj_dpi.x = dot(d_proj_x, d_point_col);
+		d_proj_dpi.y = dot(d_proj_y, d_point_col);
 
 		d[para].x = d_proj_dpi.x * gx_obs.x + d_proj_dpi.y * gy_obs.x;
 		d[para].y = d_proj_dpi.x * gx_obs.y + d_proj_dpi.y * gy_obs.y;
