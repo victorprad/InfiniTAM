@@ -129,7 +129,7 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exRGB_Ab(THREADPTR(float) *loca
 
 	colourDifferenceSq = colour_diff_d.x * colour_diff_d.x + colour_diff_d.y * colour_diff_d.y + colour_diff_d.z * colour_diff_d.z;
 
-	colourDifferenceSq = sqrtf(colourDifferenceSq);
+//	colourDifferenceSq = sqrtf(colourDifferenceSq);
 	if (colourDifferenceSq > tukeyCutoff * colourThresh) return false;
 
 	// Derivatives computed as in
