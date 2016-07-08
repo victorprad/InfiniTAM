@@ -88,8 +88,8 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exRGB_Ab(THREADPTR(float) *loca
 	int x, int y, Vector4f projParams, Matrix4f approxPose, Matrix4f approxInvPose, Matrix4f scenePose, DEVICEPTR(Vector4s) *gx, DEVICEPTR(Vector4s) *gy,
 	float colourThresh, float viewFrustum_min, float viewFrustum_max, float tukeyCutoff, float framesToSkip, float framesToWeight, int numPara)
 {
-	Vector4f pt_camera, colour_obs, gx_obs, gy_obs;
-	Vector3f colour_diff_d, d_pt_cam_dpi, d[6];
+	Vector4f pt_camera, colour_obs;
+	Vector3f gx_obs, gy_obs, colour_diff_d, d_pt_cam_dpi, d[6];
 	Vector2f pt_image_live, pt_image_model, d_proj_dpi;
 
 	if (pt_model.w <= 1e-7f || colour_model.w <= 1e-7f) return false;
@@ -114,14 +114,15 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exRGB_Ab(THREADPTR(float) *loca
 	pt_image_live.x = projParams.x * pt_camera.x / pt_camera.z + projParams.z;
 	pt_image_live.y = projParams.y * pt_camera.y / pt_camera.z + projParams.w;
 
-	if (pt_image_live.x < 0 || pt_image_live.x >= imgSize.x - 1 || pt_image_live.y < 0 || pt_image_live.y >= imgSize.y - 1) return false;
+//	if (pt_image_live.x < 0 || pt_image_live.x >= imgSize.x - 1 || pt_image_live.y < 0 || pt_image_live.y >= imgSize.y - 1) return false;
+	if (!(pt_image_live.x >= 0.f && pt_image_live.x <= imgSize.x - 2.f && pt_image_live.y >= 0.f && pt_image_live.y <= imgSize.y - 2)) return false;
 
 	colour_obs = interpolateBilinear(rgb_live, pt_image_live, imgSize) / 255.f;
-	gx_obs = interpolateBilinear(gx, pt_image_live, imgSize) / 255.f; // gx and gy are computed from the live image
-	gy_obs = interpolateBilinear(gy, pt_image_live, imgSize) / 255.f;
+	gx_obs = interpolateBilinear(gx, pt_image_live, imgSize).toVector3() / 255.f; // gx and gy are computed from the live image
+	gy_obs = interpolateBilinear(gy, pt_image_live, imgSize).toVector3() / 255.f;
 
-	if (colour_obs.w <= 1e-7f) return false;
-	if (dot(gx_obs, gx_obs) + dot(gy_obs, gy_obs) < 1e-3) return false;
+	if (colour_obs.w <= 1e-5f) return false;
+	if (dot(gx_obs, gx_obs) < 1e-5 || dot(gy_obs, gy_obs) < 1e-5) return false;
 
 	colour_diff_d.x = colour_obs.x - colour_model.x;
 	colour_diff_d.y = colour_obs.y - colour_model.y;
@@ -189,10 +190,10 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exRGB_Ab(THREADPTR(float) *loca
 		d[para].y = d_proj_dpi.x * gx_obs.y + d_proj_dpi.y * gy_obs.y;
 		d[para].z = d_proj_dpi.x * gx_obs.z + d_proj_dpi.y * gy_obs.z;
 
-		localGradient[para] = 2.0f * (d[para].x * colour_diff_d.x + d[para].y * colour_diff_d.y + d[para].z * colour_diff_d.z);
+		localGradient[para] = 2.f * dot(d[para], colour_diff_d);
 
 		for (int col = 0; col <= para; col++)
-			localHessian[counter++] = 2.0f * (d[para].x * d[col].x + d[para].y * d[col].y + d[para].z * d[col].z);
+			localHessian[counter++] = 2.f * dot(d[para], d[col]);
 	}
 
 	return true;
