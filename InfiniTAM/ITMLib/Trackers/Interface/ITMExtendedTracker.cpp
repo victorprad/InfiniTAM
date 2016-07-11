@@ -434,8 +434,8 @@ void ITMExtendedTracker::TrackCamera(ITMTrackingState *trackingState, const ITMV
 				f_old = f_new;
 				noValidPoints_old = noValidPoints_new;
 
-				for (int i = 0; i < 6 * 6; ++i) hessian_good[i] = hessian_new[i] / noValidPoints_new;
-				for (int i = 0; i < 6; ++i) nabla_good[i] = nabla_new[i] / noValidPoints_new;
+				for (int i = 0; i < 6 * 6; ++i) hessian_good[i] = hessian_new[i];
+				for (int i = 0; i < 6; ++i) nabla_good[i] = nabla_new[i];
 				lambda /= 10.0f;
 			}
 
