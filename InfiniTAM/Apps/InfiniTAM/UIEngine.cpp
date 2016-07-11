@@ -303,8 +303,14 @@ void UIEngine::glutMouseButtonFunction(int button, int state, int x, int y)
 		}
 		uiEngine->mouseLastClick.x = x;
 		uiEngine->mouseLastClick.y = y;
+
+		glutSetCursor(GLUT_CURSOR_NONE);
 	}
-	else if (state == GLUT_UP && !uiEngine->mouseWarped) uiEngine->mouseState = 0;
+	else if (state == GLUT_UP && !uiEngine->mouseWarped)
+	{
+		uiEngine->mouseState = 0;
+		glutSetCursor(GLUT_CURSOR_INHERIT);
+	}
 }
 
 static inline Matrix3f createRotation(const Vector3f & _axis, float angle)
