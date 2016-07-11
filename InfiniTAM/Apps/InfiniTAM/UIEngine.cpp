@@ -350,27 +350,33 @@ void UIEngine::glutMouseMoveFunction(int x, int y)
 	movement.x = x - uiEngine->mouseLastClick.x;
 	movement.y = y - uiEngine->mouseLastClick.y;
 
+	Vector2i realWinSize(glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT));
+	// Does not work if the window is smaller than 40x40
+	Vector2i activeWinTopLeft(20, 20);
+	Vector2i activeWinBottomRight(realWinSize.width - 20, realWinSize.height - 20);
+	Vector2i activeWinSize(realWinSize.width - 40, realWinSize.height - 40);
+
 	bool warpNeeded = false;
 
-	if(x < 0)
+	if(x < activeWinTopLeft.x)
 	{
-		x += uiEngine->winSize.width;
+		x += activeWinSize.x;
 		warpNeeded = true;
 	}
-	else if(x >= uiEngine->winSize.width)
+	else if(x >= activeWinBottomRight.x)
 	{
-		x -= uiEngine->winSize.width;
+		x -= activeWinSize.x;
 		warpNeeded = true;
 	}
 
-	if(y < 0)
+	if(y < activeWinTopLeft.y)
 	{
-		y += uiEngine->winSize.height;
+		y += activeWinSize.y;
 		warpNeeded = true;
 	}
-	else if(y >= uiEngine->winSize.height)
+	else if(y >= activeWinBottomRight.y)
 	{
-		y -= uiEngine->winSize.height;
+		y -= activeWinSize.y;
 		warpNeeded = true;
 	}
 
