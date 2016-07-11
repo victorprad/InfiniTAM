@@ -343,7 +343,6 @@ void UIEngine::glutMouseMoveFunction(int x, int y)
 		return;
 	}
 
-
 	if (!uiEngine->freeviewActive || uiEngine->mouseState == 0) return;
 
 	Vector2i movement;
