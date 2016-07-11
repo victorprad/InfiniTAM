@@ -84,7 +84,7 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exDepth_Ab(THREADPTR(float) *A,
 
 template<bool useWeights>
 _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exRGB_Ab(THREADPTR(float) *localGradient, THREADPTR(float) &colourDifferenceSq, THREADPTR(float) *localHessian, THREADPTR(float) &depthWeight,
-	THREADPTR(Vector4f) pt_model, const THREADPTR(Vector4f) &colour_model, DEVICEPTR(Vector4u) *rgb_live, const CONSTPTR(Vector2i) &imgSize,
+	THREADPTR(Vector4f) pt_world, const THREADPTR(Vector4f) &colour_world, DEVICEPTR(Vector4u) *rgb_live, const CONSTPTR(Vector2i) &imgSize,
 	int x, int y, Vector4f projParams, Matrix4f approxPose, Matrix4f approxInvPose, Matrix4f scenePose, DEVICEPTR(Vector4s) *gx, DEVICEPTR(Vector4s) *gy,
 	float colourThresh, float viewFrustum_min, float viewFrustum_max, float tukeyCutoff, float framesToSkip, float framesToWeight, int numPara)
 {
@@ -92,13 +92,13 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exRGB_Ab(THREADPTR(float) *loca
 	Vector3f gx_obs, gy_obs, colour_diff_d, d_pt_cam_dpi, d[6];
 	Vector2f pt_image_live, pt_image_model, d_proj_dpi;
 
-	if (pt_model.w <= 1e-7f || colour_model.w <= 1e-7f) return false;
-	if (useWeights && pt_model.w < framesToSkip) return false;
+	if (pt_world.w <= 1e-7f || colour_world.w <= 1e-7f) return false;
+	if (useWeights && pt_world.w < framesToSkip) return false;
 
-	float pt_weight = pt_model.w;
+	float pt_weight = pt_world.w;
 
-	pt_model.w = 1.f;
-	pt_camera = approxPose * pt_model; // convert the point in camera coordinates using the candidate pose
+	pt_world.w = 1.f;
+	pt_camera = approxPose * pt_world; // convert the point in camera coordinates using the candidate pose
 
 	if (pt_camera.z <= 0) return false;
 
@@ -124,9 +124,9 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exRGB_Ab(THREADPTR(float) *loca
 	if (colour_obs.w <= 1e-5f) return false;
 	if (dot(gx_obs, gx_obs) < 1e-5 || dot(gy_obs, gy_obs) < 1e-5) return false;
 
-	colour_diff_d.x = colour_obs.x - colour_model.x;
-	colour_diff_d.y = colour_obs.y - colour_model.y;
-	colour_diff_d.z = colour_obs.z - colour_model.z;
+	colour_diff_d.x = colour_obs.x - colour_world.x;
+	colour_diff_d.y = colour_obs.y - colour_world.y;
+	colour_diff_d.z = colour_obs.z - colour_world.z;
 
 	colourDifferenceSq = colour_diff_d.x * colour_diff_d.x + colour_diff_d.y * colour_diff_d.y + colour_diff_d.z * colour_diff_d.z;
 	if (colourDifferenceSq > tukeyCutoff * colourThresh) return false;
@@ -157,13 +157,13 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exRGB_Ab(THREADPTR(float) *loca
 		switch (para)
 		{
 		case 0: //rx
-			d_point_col = rot_row_1 * pt_model.z - rot_row_2 * pt_model.y;
+			d_point_col = rot_row_1 * pt_world.z - rot_row_2 * pt_world.y;
 			break;
 		case 1: // ry
-			d_point_col = rot_row_2 * pt_model.x - rot_row_0 * pt_model.z;
+			d_point_col = rot_row_2 * pt_world.x - rot_row_0 * pt_world.z;
 			break;
 		case 2: // rz
-			d_point_col = rot_row_0 * pt_model.y - rot_row_1 * pt_model.x;
+			d_point_col = rot_row_0 * pt_world.y - rot_row_1 * pt_world.x;
 			break; //rz
 		case 3: //tx
 			// Rotation matrix negated and transposed (matrix storage is column major, though)
@@ -231,13 +231,13 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exDepth(THREADPTR(float) *local
 
 _CPU_AND_GPU_CODE_ inline bool computePerPointProjectedColour_exRGB(THREADPTR(int) x, THREADPTR(int) y, DEVICEPTR(Vector4f) *out_rgb, DEVICEPTR(Vector4u) *in_rgb, DEVICEPTR(Vector4f) *in_points, const CONSTPTR(Vector2i) &imageSize, const CONSTPTR(int) sceneIdx, const CONSTPTR(Vector4f) &intrinsics, const CONSTPTR(Matrix4f) &scenePose)
 {
-	Vector4f pt_scene = in_points[sceneIdx];
+	Vector4f pt_world = in_points[sceneIdx];
 
 	// Invalid point
-	if (pt_scene.w <= 0) return false;
+	if (pt_world.w <= 0) return false;
 
-	pt_scene.w = 1.f; // Coerce it to be a point
-	Vector4f pt_image = scenePose * pt_scene;
+	pt_world.w = 1.f; // Coerce it to be a point
+	Vector4f pt_image = scenePose * pt_world;
 
 	// Point behind the camera
 	if(pt_image.z <= 0) return false;
