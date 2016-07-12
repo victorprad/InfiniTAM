@@ -293,27 +293,6 @@ void ITMExtendedTracker_CUDA::ProjectPreviousRGBFrame(const Matrix4f &scenePose)
 }
 
 // device functions
-
-// huber norm
-
-__device__ float rho(float r, float huber_b)
-{
-	float tmp = fabs(r) - huber_b;
-	tmp = MAX(tmp, 0.0f);
-	return r*r - tmp*tmp;
-}
-
-__device__ float rho_deriv(float r, float huber_b)
-{
-	return 2.0f * CLAMP(r, -huber_b, huber_b);
-}
-
-__device__ float rho_deriv2(float r, float huber_b)
-{
-	if (fabs(r) < huber_b) return 2.0f;
-	return 0.0f;
-}
-
 template<bool shortIteration, bool rotationOnly, bool useWeights>
 __device__ void exDepthTrackerOneLevel_g_rt_device_main(ITMExtendedTracker_CUDA::AccuCell *accu, float *depth,
 	Matrix4f approxInvPose, Vector4f *pointsMap, Vector4f *normalsMap, Vector4f sceneIntrinsics, Vector2i sceneImageSize, Matrix4f scenePose,
@@ -542,8 +521,7 @@ __device__ void exRGBTrackerOneLevel_g_rt_device_main(ITMExtendedTracker_CUDA::A
 	__syncthreads();
 
 	{ //reduction for energy function value
-		dim_shared1[locId_local] = rho(b, colourThresh) * depthWeight;
-//		dim_shared1[locId_local] = b;
+		dim_shared1[locId_local] = b;
 		__syncthreads();
 
 		if (locId_local < 128) dim_shared1[locId_local] += dim_shared1[locId_local + 128];
@@ -552,6 +530,7 @@ __device__ void exRGBTrackerOneLevel_g_rt_device_main(ITMExtendedTracker_CUDA::A
 		__syncthreads();
 
 		if (locId_local < 32) warpReduce(dim_shared1, locId_local);
+		__syncthreads();
 
 		if (locId_local == 0) atomicAdd(&(accu->f), dim_shared1[locId_local]);
 	}
@@ -559,16 +538,11 @@ __device__ void exRGBTrackerOneLevel_g_rt_device_main(ITMExtendedTracker_CUDA::A
 	__syncthreads();
 
 	//reduction for nabla
-	float huber_coef_nabla = rho_deriv(b, colourThresh) * depthWeight;
 	for (unsigned char paraId = 0; paraId < noPara; paraId += 3)
 	{
-		dim_shared1[locId_local] = huber_coef_nabla * A[paraId + 0];
-		dim_shared2[locId_local] = huber_coef_nabla * A[paraId + 1];
-		dim_shared3[locId_local] = huber_coef_nabla * A[paraId + 2];
-
-//		dim_shared1[locId_local] = A[paraId + 0];
-//		dim_shared2[locId_local] = A[paraId + 1];
-//		dim_shared3[locId_local] = A[paraId + 2];
+		dim_shared1[locId_local] = A[paraId + 0];
+		dim_shared2[locId_local] = A[paraId + 1];
+		dim_shared3[locId_local] = A[paraId + 2];
 		__syncthreads();
 
 		if (locId_local < 128) {
@@ -601,18 +575,11 @@ __device__ void exRGBTrackerOneLevel_g_rt_device_main(ITMExtendedTracker_CUDA::A
 	__syncthreads();
 
 	//reduction for hessian
-
-	// not completely correct, should be done before the triangular multiplication
-	float huber_coef_hessian = rho_deriv2(b, colourThresh) * depthWeight;
 	for (unsigned char paraId = 0; paraId < noParaSQ; paraId += 3)
 	{
-		dim_shared1[locId_local] = huber_coef_hessian * localHessian[paraId + 0];
-		dim_shared2[locId_local] = huber_coef_hessian * localHessian[paraId + 1];
-		dim_shared3[locId_local] = huber_coef_hessian * localHessian[paraId + 2];
-
-//		dim_shared1[locId_local] = localHessian[paraId + 0];
-//		dim_shared2[locId_local] = localHessian[paraId + 1];
-//		dim_shared3[locId_local] = localHessian[paraId + 2];
+		dim_shared1[locId_local] = localHessian[paraId + 0];
+		dim_shared2[locId_local] = localHessian[paraId + 1];
+		dim_shared3[locId_local] = localHessian[paraId + 2];
 		__syncthreads();
 
 		if (locId_local < 128) {

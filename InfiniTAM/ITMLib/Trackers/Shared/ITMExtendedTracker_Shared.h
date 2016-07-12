@@ -4,6 +4,25 @@
 
 #include "../../Utils/ITMPixelUtils.h"
 
+// huber norm
+_CPU_AND_GPU_CODE_ inline float rho(float r, float huber_b)
+{
+	float tmp = fabs(r) - huber_b;
+	tmp = MAX(tmp, 0.0f);
+	return r*r - tmp*tmp;
+}
+
+_CPU_AND_GPU_CODE_ inline float rho_deriv(float r, float huber_b)
+{
+	return 2.0f * CLAMP(r, -huber_b, huber_b);
+}
+
+_CPU_AND_GPU_CODE_ inline float rho_deriv2(float r, float huber_b)
+{
+	if (fabs(r) < huber_b) return 2.0f;
+	return 0.0f;
+}
+
 template<bool shortIteration, bool rotationOnly, bool useWeights>
 _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exDepth_Ab(THREADPTR(float) *A, THREADPTR(float) &b,
 	const THREADPTR(int) & x, const THREADPTR(int) & y, const CONSTPTR(float) &depth, THREADPTR(float) &depthWeight,
@@ -38,7 +57,7 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exDepth_Ab(THREADPTR(float) *A,
 
 	curr3Dpoint = interpolateBilinear_withHoles(pointsMap, tmp2Dpoint, sceneImageSize);
 	if (curr3Dpoint.w < 0.0f) return false;
-	
+
 	ptDiff.x = curr3Dpoint.x - tmp3Dpoint.x;
 	ptDiff.y = curr3Dpoint.y - tmp3Dpoint.y;
 	ptDiff.z = curr3Dpoint.z - tmp3Dpoint.z;
@@ -188,19 +207,23 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exRGB_Ab(THREADPTR(float) *loca
 		d[para].y = d_proj_dpi.x * gx_obs.y + d_proj_dpi.y * gy_obs.y;
 		d[para].z = d_proj_dpi.x * gx_obs.z + d_proj_dpi.y * gy_obs.z;
 
-		localGradient[para] = 2.f * dot(d[para], colour_diff_d);
+		localGradient[para] = rho_deriv(colourDifferenceSq, colourThresh) * depthWeight
+				* 2.f * dot(d[para], colour_diff_d);
 
 		for (int col = 0; col <= para; col++)
-			localHessian[counter++] = 2.f * dot(d[para], d[col]);
+			localHessian[counter++] = rho_deriv2(colourDifferenceSq, colourThresh) * depthWeight
+				* 2.f * dot(d[para], d[col]);
 	}
+
+	colourDifferenceSq = rho(colourDifferenceSq, colourThresh) * depthWeight;
 
 	return true;
 }
 
 template<bool shortIteration, bool rotationOnly, bool useWeights>
 _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exDepth(THREADPTR(float) *localNabla, THREADPTR(float) *localHessian, THREADPTR(float) &localF,
-	const THREADPTR(int) & x, const THREADPTR(int) & y, const CONSTPTR(float) &depth, THREADPTR(float) &depthWeight, CONSTPTR(Vector2i) & viewImageSize, const CONSTPTR(Vector4f) & viewIntrinsics, 
-	const CONSTPTR(Vector2i) & sceneImageSize, const CONSTPTR(Vector4f) & sceneIntrinsics, const CONSTPTR(Matrix4f) & approxInvPose, const CONSTPTR(Matrix4f) & scenePose, 
+	const THREADPTR(int) & x, const THREADPTR(int) & y, const CONSTPTR(float) &depth, THREADPTR(float) &depthWeight, CONSTPTR(Vector2i) & viewImageSize, const CONSTPTR(Vector4f) & viewIntrinsics,
+	const CONSTPTR(Vector2i) & sceneImageSize, const CONSTPTR(Vector4f) & sceneIntrinsics, const CONSTPTR(Matrix4f) & approxInvPose, const CONSTPTR(Matrix4f) & scenePose,
 	const CONSTPTR(Vector4f) *pointsMap, const CONSTPTR(Vector4f) *normalsMap, float spaceThreash, float viewFrustum_min, float viewFrustum_max, int tukeyCutOff, int framesToSkip, int framesToWeight)
 {
 	const int noPara = shortIteration ? 3 : 6;
@@ -208,22 +231,22 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exDepth(THREADPTR(float) *local
 	float b;
 
 	bool ret = computePerPointGH_exDepth_Ab<shortIteration, rotationOnly, useWeights>(A, b, x, y, depth, depthWeight, viewImageSize, viewIntrinsics, sceneImageSize, sceneIntrinsics,
-		approxInvPose, scenePose, pointsMap, normalsMap, spaceThreash, viewFrustum_min, viewFrustum_max, tukeyCutOff, framesToSkip, framesToWeight);
+		approxInvPose, scenePose, pointsMap, normalsMap, spaceThresh, viewFrustum_min, viewFrustum_max, tukeyCutOff, framesToSkip, framesToWeight);
 
 	if (!ret) return false;
 
-	localF = b * b;
+	localF = rho(b, spaceThresh) * depthWeight;
 
 #if (defined(__CUDACC__) && defined(__CUDA_ARCH__)) || (defined(__METALC__))
 #pragma unroll
 #endif
 	for (int r = 0, counter = 0; r < noPara; r++)
 	{
-		localNabla[r] = b * A[r];
+		localNabla[r] = rho_deriv(b, spaceThresh) * depthWeight * A[r];
 #if (defined(__CUDACC__) && defined(__CUDA_ARCH__)) || (defined(__METALC__))
 #pragma unroll
 #endif
-		for (int c = 0; c <= r; c++, counter++) localHessian[counter] = A[r] * A[c];
+		for (int c = 0; c <= r; c++, counter++) localHessian[counter] = rho_deriv2(b, spaceThresh) * depthWeight * A[r] * A[c];
 	}
 
 	return true;
@@ -267,4 +290,3 @@ _CPU_AND_GPU_CODE_ inline void projectPreviousPoint_exRGB(THREADPTR(int) x, THRE
 		out_rgb[sceneIdx] = Vector4f(0.f, 0.f, 0.f, 0.f);
 	}
 }
-
