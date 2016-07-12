@@ -72,7 +72,8 @@ int ITMExtendedTracker_CPU::ComputeGandH_Depth(float &f, float *nabla, float *he
 
 		if (isValidPoint)
 		{
-			noValidPoints++; sumF += localF;
+			noValidPoints++;
+			sumF += localF;
 			for (int i = 0; i < noPara; i++) sumNabla[i] += localNabla[i];
 			for (int i = 0; i < noParaSQ; i++) sumHessian[i] += localHessian[i];
 		}
@@ -82,7 +83,18 @@ int ITMExtendedTracker_CPU::ComputeGandH_Depth(float &f, float *nabla, float *he
 	for (int r = 0; r < noPara; ++r) for (int c = r + 1; c < noPara; c++) hessian[r + c * 6] = hessian[c + r * 6];
 
 	memcpy(nabla, sumNabla, noPara * sizeof(float));
-	f = (noValidPoints > 100) ? sumF / noValidPoints : 1e5f;
+
+	if (noValidPoints > 100)
+	{
+		for (int i = 0; i < 6 * 6; ++i) hessian[i] = hessian[i] / noValidPoints;
+		for (int i = 0; i < 6; ++i) nabla[i] = nabla[i] / noValidPoints;
+
+		f = sumF / noValidPoints;
+	}
+	else
+	{
+		f = 1e5f;
+	}
 
 	return noValidPoints;
 }
@@ -150,7 +162,18 @@ int ITMExtendedTracker_CPU::ComputeGandH_RGB(float &f, float *nabla, float *hess
 	for (int r = 0; r < noPara; ++r) for (int c = r + 1; c < noPara; c++) hessian[r + c * 6] = hessian[c + r * 6];
 
 	memcpy(nabla, sumNabla, noPara * sizeof(float));
-	f = (noValidPoints > 100) ? sumF / noValidPoints : 1e5f;
+
+	if (noValidPoints > 100)
+	{
+		for (int i = 0; i < 6 * 6; ++i) hessian[i] = hessian[i] / noValidPoints;
+		for (int i = 0; i < 6; ++i) nabla[i] = nabla[i] / noValidPoints;
+
+		f = sumF / noValidPoints;
+	}
+	else
+	{
+		f = 1e5f;
+	}
 
 	return noValidPoints;
 }
