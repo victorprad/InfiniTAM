@@ -45,7 +45,7 @@ ITMLibSettings::ITMLibSettings(void)
 	trackerConfig = "type=extended,levels=rrbb,useDepth=1,useColour=1,colourWeight=0.025,minstep=1e-4,"
 			"outlierColourC=0.035,outlierColourF=0.025,"
 			"outlierSpaceC=0.1,outlierSpaceF=0.004,"
-			"numiterC=20,numiterF=20,tukeyCutOff=8,framesToSkip=20,framesToWeight=50,failureDec=20.0";
+			"numiterC=20,numiterF=50,tukeyCutOff=8,framesToSkip=20,framesToWeight=50,failureDec=20.0";
 	//trackerConfig = "type=rgb,levels=rrbb";
 	//trackerConfig = "type=ren,levels=bb";
 	//trackerConfig = "type=imuicp,levels=tb,minstep=1e-3,outlierC=0.01,outlierF=0.005,numiterC=4,numiterF=2";
