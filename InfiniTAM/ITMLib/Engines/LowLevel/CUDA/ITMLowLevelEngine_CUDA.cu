@@ -190,7 +190,7 @@ __global__ void gradientX_device(Vector4s *grad, const Vector4u *image, Vector2i
 {
 	int x = threadIdx.x + blockIdx.x * blockDim.x, y = threadIdx.y + blockIdx.y * blockDim.y;
 
-	if (x < 2 || x > imgSize.x - 2 || y < 2 || y > imgSize.y - 2) return;
+	if (x < 1 || x > imgSize.x - 2 || y < 1 || y > imgSize.y - 2) return;
 
 	gradientX(grad, x, y, image, imgSize);
 }
@@ -199,7 +199,7 @@ __global__ void gradientY_device(Vector4s *grad, const Vector4u *image, Vector2i
 {
 	int x = threadIdx.x + blockIdx.x * blockDim.x, y = threadIdx.y + blockIdx.y * blockDim.y;
 
-	if (x < 2 || x > imgSize.x - 2 || y < 2 || y > imgSize.y - 2) return;
+	if (x < 1 || x > imgSize.x - 2 || y < 1 || y > imgSize.y - 2) return;
 
 	gradientY(grad, x, y, image, imgSize);
 }
