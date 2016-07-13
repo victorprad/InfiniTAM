@@ -303,8 +303,14 @@ void UIEngine::glutMouseButtonFunction(int button, int state, int x, int y)
 		}
 		uiEngine->mouseLastClick.x = x;
 		uiEngine->mouseLastClick.y = y;
+
+		glutSetCursor(GLUT_CURSOR_NONE);
 	}
-	else if (state == GLUT_UP) uiEngine->mouseState = 0;
+	else if (state == GLUT_UP && !uiEngine->mouseWarped)
+	{
+		uiEngine->mouseState = 0;
+		glutSetCursor(GLUT_CURSOR_INHERIT);
+	}
 }
 
 static inline Matrix3f createRotation(const Vector3f & _axis, float angle)
@@ -337,11 +343,54 @@ void UIEngine::glutMouseMoveFunction(int x, int y)
 {
 	UIEngine *uiEngine = UIEngine::Instance();
 
-	if (!uiEngine->freeviewActive) return;
+	if(uiEngine->mouseWarped)
+	{
+		uiEngine->mouseWarped = false;
+		return;
+	}
+
+	if (!uiEngine->freeviewActive || uiEngine->mouseState == 0) return;
 
 	Vector2i movement;
 	movement.x = x - uiEngine->mouseLastClick.x;
 	movement.y = y - uiEngine->mouseLastClick.y;
+
+	Vector2i realWinSize(glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT));
+	// Does not work if the window is smaller than 40x40
+	Vector2i activeWinTopLeft(20, 20);
+	Vector2i activeWinBottomRight(realWinSize.width - 20, realWinSize.height - 20);
+	Vector2i activeWinSize(realWinSize.width - 40, realWinSize.height - 40);
+
+	bool warpNeeded = false;
+
+	if(x < activeWinTopLeft.x)
+	{
+		x += activeWinSize.x;
+		warpNeeded = true;
+	}
+	else if(x >= activeWinBottomRight.x)
+	{
+		x -= activeWinSize.x;
+		warpNeeded = true;
+	}
+
+	if(y < activeWinTopLeft.y)
+	{
+		y += activeWinSize.y;
+		warpNeeded = true;
+	}
+	else if(y >= activeWinBottomRight.y)
+	{
+		y -= activeWinSize.y;
+		warpNeeded = true;
+	}
+
+	if(warpNeeded)
+	{
+		glutWarpPointer(x, y);
+		uiEngine->mouseWarped = true;
+	}
+
 	uiEngine->mouseLastClick.x = x;
 	uiEngine->mouseLastClick.y = y;
 
@@ -398,6 +447,7 @@ void UIEngine::Initialise(int & argc, char** argv, ImageSourceEngine *imageSourc
 	this->intergrationActive = true;
 	this->currentColourMode = 0;
 	this->colourModes_main.push_back(UIColourMode("shaded greyscale", ITMMainEngine::InfiniTAM_IMAGE_SCENERAYCAST));
+	if (ITMVoxel::hasColorInformation) this->colourModes_main.push_back(UIColourMode("integrated colours", ITMMainEngine::InfiniTAM_IMAGE_COLOUR_FROM_VOLUME));
 	this->colourModes_main.push_back(UIColourMode("surface normals", ITMMainEngine::InfiniTAM_IMAGE_COLOUR_FROM_NORMAL));
 	this->colourModes_main.push_back(UIColourMode("confidence", ITMMainEngine::InfiniTAM_IMAGE_COLOUR_FROM_CONFIDENCE));
 	this->colourModes_freeview.push_back(UIColourMode("shaded greyscale", ITMMainEngine::InfiniTAM_IMAGE_FREECAMERA_SHADED));
@@ -478,6 +528,7 @@ void UIEngine::Initialise(int & argc, char** argv, ImageSourceEngine *imageSourc
 
 	mainLoopAction = PROCESS_PAUSED;
 	mouseState = 0;
+	mouseWarped = false;
 	needsRefresh = false;
 	processedFrameNo = 0;
 	processedTime = 0.0f;
