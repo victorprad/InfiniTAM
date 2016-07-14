@@ -102,45 +102,48 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exDepth_Ab(THREADPTR(float) *A,
 }
 
 template<bool useWeights>
-_CPU_AND_GPU_CODE_ inline bool computePerPointGH_exRGB_Ab(THREADPTR(float) *localGradient, THREADPTR(float) &colourDifferenceSq, THREADPTR(float) *localHessian, THREADPTR(float) &depthWeight,
-	THREADPTR(Vector4f) pt_world, const THREADPTR(Vector4f) &colour_world, DEVICEPTR(Vector4u) *rgb_live, const CONSTPTR(Vector2i) &imgSize,
-	int x, int y, Vector4f projParams, Matrix4f approxPose, Matrix4f approxInvPose, Matrix4f scenePose, DEVICEPTR(Vector4s) *gx, DEVICEPTR(Vector4s) *gy,
-	float colourThresh, float viewFrustum_min, float viewFrustum_max, float tukeyCutoff, float framesToSkip, float framesToWeight, int numPara)
+_CPU_AND_GPU_CODE_ inline bool computePerPointGH_exRGB_Ab(THREADPTR(float) *localGradient, THREADPTR(float) &colourDifferenceSq, THREADPTR(float) *localHessian,
+	THREADPTR(float) &depthWeight, const THREADPTR(Vector4f) &pt_world, const THREADPTR(Vector4f) &colour_world, const DEVICEPTR(Vector4u) *rgb_live,
+	const CONSTPTR(Vector2i) &imgSize, int x, int y, const Vector4f &projParams, const Matrix4f &approxPose, const Matrix4f &approxInvPose,
+	const Matrix4f &scenePose, const DEVICEPTR(Vector4s) *gx, const DEVICEPTR(Vector4s) *gy, float colourThresh, float viewFrustum_min, float viewFrustum_max,
+	float tukeyCutoff, float framesToSkip, float framesToWeight, int numPara)
 {
 	Vector4f pt_camera, colour_obs;
-	Vector3f gx_obs, gy_obs, colour_diff_d, d_pt_cam_dpi, d[6];
-	Vector2f pt_image_live, pt_image_model, d_proj_dpi;
+	Vector3f gx_obs, gy_obs, colour_diff_d, d[6];
+	Vector2f pt_image_live, pt_image_model;
 
 	if (pt_world.w <= 1e-7f || colour_world.w <= 1e-7f) return false;
 	if (useWeights && pt_world.w < framesToSkip) return false;
 
-	float pt_weight = pt_world.w;
-
-	pt_world.w = 1.f;
-	pt_camera = approxPose * pt_world; // convert the point in camera coordinates using the candidate pose
+	// convert the point in camera coordinates using the candidate pose
+	pt_camera = pt_world;
+	pt_camera.w = 1.f; // Coerce it to be a point
+	pt_camera = approxPose * pt_camera;
 
 	if (pt_camera.z <= 0) return false;
 
-	depthWeight = CLAMP(1.0f - (pt_camera.z - viewFrustum_min) / (viewFrustum_max - viewFrustum_min), 0.f, 1.f);
+	depthWeight = 1.0f - (pt_camera.z - viewFrustum_min) / (viewFrustum_max - viewFrustum_min); // Evaluate outside of the macro
+	depthWeight = CLAMP(depthWeight, 0.f, 1.f);
 	depthWeight *= depthWeight;
 
 	if (useWeights)
 	{
-		depthWeight *= (pt_weight - framesToSkip) / framesToWeight;
+		depthWeight *= (pt_world.w - framesToSkip) / framesToWeight;
 	}
 
 	// project the point onto the live image
 	pt_image_live.x = projParams.x * pt_camera.x / pt_camera.z + projParams.z;
 	pt_image_live.y = projParams.y * pt_camera.y / pt_camera.z + projParams.w;
 
-//	if (pt_image_live.x < 0 || pt_image_live.x >= imgSize.x - 1 || pt_image_live.y < 0 || pt_image_live.y >= imgSize.y - 1) return false;
-	if (!(pt_image_live.x >= 0.f && pt_image_live.x <= imgSize.x - 2.f && pt_image_live.y >= 0.f && pt_image_live.y <= imgSize.y - 2)) return false;
+	if (pt_image_live.x < 0 || pt_image_live.x >= imgSize.x - 1 ||
+		pt_image_live.y < 0 || pt_image_live.y >= imgSize.y - 1) return false;
+//	if (!(pt_image_live.x >= 0.f && pt_image_live.x <= imgSize.x - 2.f && pt_image_live.y >= 0.f && pt_image_live.y <= imgSize.y - 2)) return false;
 
 	colour_obs = interpolateBilinear(rgb_live, pt_image_live, imgSize) / 255.f;
 	gx_obs = interpolateBilinear(gx, pt_image_live, imgSize).toVector3() / 255.f; // gx and gy are computed from the live image
 	gy_obs = interpolateBilinear(gy, pt_image_live, imgSize).toVector3() / 255.f;
 
-	if (colour_obs.w <= 1e-5f) return false;
+	if (colour_obs.w <= 1e-7f) return false;
 	if (dot(gx_obs, gx_obs) < 1e-5 || dot(gy_obs, gy_obs) < 1e-5) return false;
 
 	colour_diff_d.x = colour_obs.x - colour_world.x;
@@ -149,6 +152,13 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exRGB_Ab(THREADPTR(float) *loca
 
 	colourDifferenceSq = colour_diff_d.x * colour_diff_d.x + colour_diff_d.y * colour_diff_d.y + colour_diff_d.z * colour_diff_d.z;
 	if (colourDifferenceSq > tukeyCutoff * colourThresh) return false;
+
+	const float huber_coeff_energy = rho(colourDifferenceSq, colourThresh) * depthWeight;
+	const float huber_coeff_gradient = rho_deriv(colourDifferenceSq, colourThresh) * depthWeight;
+	const float huber_coeff_hessian = rho_deriv2(colourDifferenceSq, colourThresh) * depthWeight;
+
+	// Finally set the computed energy
+	colourDifferenceSq = huber_coeff_energy;
 
 	// Derivatives computed as in
 	// Blanco, J. (2010). A tutorial on se (3) transformation parameterizations and on-manifold optimization.
@@ -159,8 +169,8 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exRGB_Ab(THREADPTR(float) *loca
 	const Vector3f rot_row_1 = approxInvPose.getRow(1).toVector3();
 	const Vector3f rot_row_2 = approxInvPose.getRow(2).toVector3();
 
+	// Derivatives of the projection operation
 	Vector3f d_proj_x, d_proj_y;
-
 	d_proj_x.x = projParams.x / pt_camera.z;
 	d_proj_x.y = 0.f;
 	d_proj_x.z = -projParams.x * pt_camera.x / (pt_camera.z * pt_camera.z);
@@ -171,6 +181,7 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exRGB_Ab(THREADPTR(float) *loca
 
 	for (int para = 0, counter = 0; para < numPara; para++)
 	{
+		// Derivatives wrt. the pose
 		Vector3f d_point_col;
 
 		switch (para)
@@ -200,22 +211,22 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exRGB_Ab(THREADPTR(float) *loca
 			break;
 		};
 
+		// Chain rule projection-pose
+		Vector2f d_proj_dpi;
 		d_proj_dpi.x = dot(d_proj_x, d_point_col);
 		d_proj_dpi.y = dot(d_proj_y, d_point_col);
 
+		// Chain rule image gradient-projection-pose
 		d[para].x = d_proj_dpi.x * gx_obs.x + d_proj_dpi.y * gy_obs.x;
 		d[para].y = d_proj_dpi.x * gx_obs.y + d_proj_dpi.y * gy_obs.y;
 		d[para].z = d_proj_dpi.x * gx_obs.z + d_proj_dpi.y * gy_obs.z;
 
-		localGradient[para] = rho_deriv(colourDifferenceSq, colourThresh) * depthWeight
-				* 2.f * dot(d[para], colour_diff_d);
+		// Chain rule huber-l2 norm-gradient-projection-pose
+		localGradient[para] = huber_coeff_gradient * 2.f * dot(d[para], colour_diff_d);
 
 		for (int col = 0; col <= para; col++)
-			localHessian[counter++] = rho_deriv2(colourDifferenceSq, colourThresh) * depthWeight
-				* 2.f * dot(d[para], d[col]);
+			localHessian[counter++] = huber_coeff_hessian * 2.f * dot(d[para], d[col]);
 	}
-
-	colourDifferenceSq = rho(colourDifferenceSq, colourThresh) * depthWeight;
 
 	return true;
 }
@@ -252,7 +263,7 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exDepth(THREADPTR(float) *local
 	return true;
 }
 
-_CPU_AND_GPU_CODE_ inline bool computePerPointProjectedColour_exRGB(THREADPTR(int) x, THREADPTR(int) y, DEVICEPTR(Vector4f) *out_rgb, DEVICEPTR(Vector4u) *in_rgb, DEVICEPTR(Vector4f) *in_points, const CONSTPTR(Vector2i) &imageSize, const CONSTPTR(int) sceneIdx, const CONSTPTR(Vector4f) &intrinsics, const CONSTPTR(Matrix4f) &scenePose)
+_CPU_AND_GPU_CODE_ inline bool computePerPointProjectedColour_exRGB(THREADPTR(int) x, THREADPTR(int) y, DEVICEPTR(Vector4f) *out_rgb, const DEVICEPTR(Vector4u) *in_rgb, const DEVICEPTR(Vector4f) *in_points, const CONSTPTR(Vector2i) &imageSize, const CONSTPTR(int) sceneIdx, const CONSTPTR(Vector4f) &intrinsics, const CONSTPTR(Matrix4f) &scenePose)
 {
 	Vector4f pt_world = in_points[sceneIdx];
 
@@ -278,7 +289,7 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointProjectedColour_exRGB(THREADPTR(in
 	return true;
 }
 
-_CPU_AND_GPU_CODE_ inline void projectPreviousPoint_exRGB(THREADPTR(int) x, THREADPTR(int) y, DEVICEPTR(Vector4f) *out_rgb, DEVICEPTR(Vector4u) *in_rgb, DEVICEPTR(Vector4f) *in_points, const CONSTPTR(Vector2i) &imageSize, const CONSTPTR(Vector2i) &sceneSize, const CONSTPTR(Vector4f) &intrinsics, const CONSTPTR(Matrix4f) &scenePose)
+_CPU_AND_GPU_CODE_ inline void projectPreviousPoint_exRGB(THREADPTR(int) x, THREADPTR(int) y, DEVICEPTR(Vector4f) *out_rgb, const DEVICEPTR(Vector4u) *in_rgb, const DEVICEPTR(Vector4f) *in_points, const CONSTPTR(Vector2i) &imageSize, const CONSTPTR(Vector2i) &sceneSize, const CONSTPTR(Vector4f) &intrinsics, const CONSTPTR(Matrix4f) &scenePose)
 {
 	if (x >= sceneSize.x || y >= sceneSize.y) return;
 

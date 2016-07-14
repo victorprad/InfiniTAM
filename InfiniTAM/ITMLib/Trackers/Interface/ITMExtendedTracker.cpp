@@ -30,7 +30,10 @@ ITMExtendedTracker::ITMExtendedTracker(Vector2i imgSize_d, Vector2i imgSize_rgb,
 	sceneHierarchy = new ITMImageHierarchy<ITMSceneHierarchyLevel>(imgSize_d, trackingRegime, noHierarchyLevels, memoryType, true);
 
 	if (useColour)
+	{
+		// Don't skip allocation for level 0
 		previousProjectedRGBHierarchy = new ITMImageHierarchy<ITMTemplatedHierarchyLevel<ORUtils::Image<Vector4f> > >(imgSize_d, trackingRegime, noHierarchyLevels, memoryType, false);
+	}
 
 	this->noIterationsPerLevel = new int[noHierarchyLevels];
 	this->spaceThresh = new float[noHierarchyLevels];
