@@ -178,119 +178,280 @@ int ITMExtendedTracker_CUDA::ComputeGandH_RGB(float &f, float *nabla, float *hes
 	Vector2i sceneImageSize = sceneHierarchyLevel_RGB->pointsMap->noDims;
 	Vector2i viewImageSize = viewHierarchyLevel_RGB->rgb_current->noDims;
 
-	if (iterationType == TRACKER_ITERATION_NONE) return 0;
+	sceneHierarchyLevel_RGB->pointsMap->UpdateHostFromDevice();
+	previousProjectedRGBLevel->depth->UpdateHostFromDevice();
+	viewHierarchyLevel_RGB->rgb_current->UpdateHostFromDevice();
+	viewHierarchyLevel_RGB->gX->UpdateHostFromDevice();
+	viewHierarchyLevel_RGB->gY->UpdateHostFromDevice();
+
+	Vector4f *locations = sceneHierarchyLevel_RGB->pointsMap->GetData(MEMORYDEVICE_CPU);
+	Vector4f *rgb_model = previousProjectedRGBLevel->depth->GetData(MEMORYDEVICE_CPU);
+	Vector4u *rgb_live = viewHierarchyLevel_RGB->rgb_current->GetData(MEMORYDEVICE_CPU);
+	Vector4s *gx = viewHierarchyLevel_RGB->gX->GetData(MEMORYDEVICE_CPU);
+	Vector4s *gy = viewHierarchyLevel_RGB->gY->GetData(MEMORYDEVICE_CPU);
+
+	Vector4f projParams = viewHierarchyLevel_RGB->intrinsics;
 
 	Matrix4f approxPose;
 	approxInvPose.inv(approxPose);
-	approxPose = depthToRGBTransform * approxPose;
+//	approxPose = depthToRGBTransform * approxPose;
+//	approxPose = approxPose;
+
+	if (iterationType == TRACKER_ITERATION_NONE) return 0;
 
 	bool shortIteration = (iterationType == TRACKER_ITERATION_ROTATION) || (iterationType == TRACKER_ITERATION_TRANSLATION);
 
-	int noPara = shortIteration ? 3 : 6;
+	float sumHessian[6 * 6], sumNabla[6], sumF; int noValidPoints;
+	int noPara = shortIteration ? 3 : 6, noParaSQ = shortIteration ? 3 + 2 + 1 : 6 + 5 + 4 + 3 + 2 + 1;
 
-	dim3 blockSize(16, 16);
-	dim3 gridSize((int)ceil((float)sceneImageSize.x / (float)blockSize.x), (int)ceil((float)sceneImageSize.y / (float)blockSize.y));
+	noValidPoints = 0; sumF = 0.0f;
+	memset(sumHessian, 0, sizeof(float) * noParaSQ);
+	memset(sumNabla, 0, sizeof(float) * noPara);
 
-	ORcudaSafeCall(cudaMemset(accu_device, 0, sizeof(AccuCell)));
+	float minF = 1e10, maxF = 0.f;
+	float minNabla[6], maxNabla[6];
+	float minHessian[noParaSQ], maxHessian[noParaSQ];
 
-	struct ITMExtendedTracker_KernelParameters_RGB args;
-	args.accu = accu_device;
-	args.rgb_live = viewHierarchyLevel_RGB->rgb_current->GetData(MEMORYDEVICE_CUDA);
-	args.rgb_model = previousProjectedRGBLevel->depth->GetData(MEMORYDEVICE_CUDA);
-	args.gx = viewHierarchyLevel_RGB->gX->GetData(MEMORYDEVICE_CUDA);
-	args.gy = viewHierarchyLevel_RGB->gY->GetData(MEMORYDEVICE_CUDA);
-	args.pointsMap = sceneHierarchyLevel_RGB->pointsMap->GetData(MEMORYDEVICE_CUDA);
-	args.viewImageSize = viewImageSize;
-	args.sceneImageSize = sceneImageSize;
-	args.approxInvPose = approxInvPose;
-	args.approxPose = approxPose;
-	args.scenePose = scenePose;
-	args.projParams = viewHierarchyLevel_RGB->intrinsics;
-	args.colourThresh = colourThresh[levelId];
-	args.viewFrustum_min = viewFrustum_min;
-	args.viewFrustum_max = viewFrustum_max;
-	args.tukeyCutOff = tukeyCutOff;
-	args.framesToSkip = framesToSkip;
-	args.framesToWeight = framesToWeight;
-
-	if (currentFrameNo < 100)
+	for(int i = 0; i < noPara; ++i)
 	{
-		switch (iterationType)
-		{
-		case TRACKER_ITERATION_ROTATION:
-			exRGBTrackerOneLevel_g_rt_device<true, true, false> << <gridSize, blockSize >> >(args);
-			ORcudaKernelCheck;
-			break;
-		case TRACKER_ITERATION_TRANSLATION:
-			exRGBTrackerOneLevel_g_rt_device<true, false, false> << <gridSize, blockSize >> >(args);
-			ORcudaKernelCheck;
-			break;
-		case TRACKER_ITERATION_BOTH:
-			exRGBTrackerOneLevel_g_rt_device<false, false, false> << <gridSize, blockSize >> >(args);
-			ORcudaKernelCheck;
-			break;
-		default: break;
-		}
-	}
-	else
-	{
-		switch (iterationType)
-		{
-		case TRACKER_ITERATION_ROTATION:
-			exRGBTrackerOneLevel_g_rt_device<true, true, true> << <gridSize, blockSize >> >(args);
-			ORcudaKernelCheck;
-			break;
-		case TRACKER_ITERATION_TRANSLATION:
-			exRGBTrackerOneLevel_g_rt_device<true, false, true> << <gridSize, blockSize >> >(args);
-			ORcudaKernelCheck;
-			break;
-		case TRACKER_ITERATION_BOTH:
-			exRGBTrackerOneLevel_g_rt_device<false, false, true> << <gridSize, blockSize >> >(args);
-			ORcudaKernelCheck;
-			break;
-		default: break;
-		}
+		minNabla[i] = 1e10f;
+		maxNabla[i] = -1e10f;
 	}
 
-	ORcudaSafeCall(cudaMemcpy(accu_host, accu_device, sizeof(AccuCell), cudaMemcpyDeviceToHost));
+	for(int i = 0; i < noParaSQ; ++i)
+	{
+		minHessian[i] = 1e10f;
+		maxHessian[i] = -1e10f;
+	}
 
-	for (int r = 0, counter = 0; r < noPara; r++) for (int c = 0; c <= r; c++, counter++) hessian[r + c * 6] = accu_host->h[counter];
+	for (int y = 0; y < viewImageSize.y; y++) for (int x = 0; x < viewImageSize.x; x++)
+	{
+		float localHessian[6 + 5 + 4 + 3 + 2 + 1], localNabla[6], localF = 0;
+
+		for (int i = 0; i < noPara; i++) localNabla[i] = 0.0f;
+		for (int i = 0; i < noParaSQ; i++) localHessian[i] = 0.0f;
+
+		bool isValidPoint = false;
+		float depthWeight = 1.f;
+
+		if (iterationType != TRACKER_ITERATION_TRANSLATION) // TODO translation not implemented yet
+		{
+			if (currentFrameNo < 100)
+				isValidPoint = computePerPointGH_exRGB_Ab<false>(localNabla, localF, localHessian, depthWeight,
+					locations[x + y * sceneImageSize.x], rgb_model[x + y * sceneImageSize.x], rgb_live, viewImageSize, x, y,
+					projParams, approxPose, approxInvPose, scenePose, gx, gy, colourThresh[levelId], viewFrustum_min, viewFrustum_max, tukeyCutOff, framesToSkip, framesToWeight, noPara);
+			else
+				isValidPoint = computePerPointGH_exRGB_Ab<true>(localNabla, localF, localHessian, depthWeight,
+					locations[x + y * sceneImageSize.x], rgb_model[x + y * sceneImageSize.x], rgb_live, viewImageSize, x, y,
+					projParams, approxPose, approxInvPose, scenePose, gx, gy, colourThresh[levelId], viewFrustum_min, viewFrustum_max, tukeyCutOff, framesToSkip, framesToWeight, noPara);
+		}
+
+		if (isValidPoint)
+		{
+			noValidPoints++;
+			sumF += localF;
+			for (int i = 0; i < noPara; i++) sumNabla[i] += localNabla[i];
+			for (int i = 0; i < noParaSQ; i++) sumHessian[i] += localHessian[i];
+
+			minF = MIN(minF, localF);
+			maxF = MAX(maxF, localF);
+
+			for (int i = 0; i < noPara; i++)
+			{
+				minNabla[i] = MIN(minNabla[i], localNabla[i]);
+				maxNabla[i] = MAX(maxNabla[i], localNabla[i]);
+			}
+
+			for (int i = 0; i < noParaSQ; i++)
+			{
+				minHessian[i] = MIN(minHessian[i], localHessian[i]);
+				maxHessian[i] = MAX(maxHessian[i], localHessian[i]);
+			}
+		}
+	}
+
+	printf("Min F: %g - Max F: %g\n", minF, maxF);
+	printf("Min Nabla: ");
+	for (int i = 0; i < noPara; i++)
+	{
+		printf("%g - ", minNabla[i]);
+	}
+	printf("\nMax Nabla: ");
+	for (int i = 0; i < noPara; i++)
+	{
+		printf("%g - ", maxNabla[i]);
+	}
+	printf("\n");
+	printf("Min Hessian: ");
+	for (int i = 0; i < noParaSQ; i++)
+	{
+		printf("%g - ", minHessian[i]);
+	}
+	printf("\nMax Hessian: ");
+	for (int i = 0; i < noParaSQ; i++)
+	{
+		printf("%g - ", maxHessian[i]);
+	}
+	printf("\n\n");
+
+	for (int r = 0, counter = 0; r < noPara; r++) for (int c = 0; c <= r; c++, counter++) hessian[r + c * 6] = sumHessian[counter];
 	for (int r = 0; r < noPara; ++r) for (int c = r + 1; c < noPara; c++) hessian[r + c * 6] = hessian[c + r * 6];
 
-	memcpy(nabla, accu_host->g, noPara * sizeof(float));
+	memcpy(nabla, sumNabla, noPara * sizeof(float));
 
-	if (accu_host->numPoints > 100)
+	if (noValidPoints > 100)
 	{
-		for (int i = 0; i < 6 * 6; ++i) hessian[i] = hessian[i] / accu_host->numPoints;
-		for (int i = 0; i < 6; ++i) nabla[i] = nabla[i] / accu_host->numPoints;
+		for (int i = 0; i < 6 * 6; ++i) hessian[i] = hessian[i] / noValidPoints;
+		for (int i = 0; i < 6; ++i) nabla[i] = nabla[i] / noValidPoints;
 
-		f = accu_host->f / accu_host->numPoints;
+		f = sumF / noValidPoints;
 	}
 	else
 	{
 		f = 1e5f;
 	}
 
-	return accu_host->numPoints;
+	return noValidPoints;
+
+//	Vector2i sceneImageSize = sceneHierarchyLevel_RGB->pointsMap->noDims;
+//	Vector2i viewImageSize = viewHierarchyLevel_RGB->rgb_current->noDims;
+//
+//	if (iterationType == TRACKER_ITERATION_NONE) return 0;
+//
+//	Matrix4f approxPose;
+//	approxInvPose.inv(approxPose);
+//	approxPose = depthToRGBTransform * approxPose;
+//
+//	bool shortIteration = (iterationType == TRACKER_ITERATION_ROTATION) || (iterationType == TRACKER_ITERATION_TRANSLATION);
+//
+//	int noPara = shortIteration ? 3 : 6;
+//
+//	dim3 blockSize(16, 16);
+//	dim3 gridSize((int)ceil((float)sceneImageSize.x / (float)blockSize.x), (int)ceil((float)sceneImageSize.y / (float)blockSize.y));
+//
+//	ORcudaSafeCall(cudaMemset(accu_device, 0, sizeof(AccuCell)));
+//
+//	struct ITMExtendedTracker_KernelParameters_RGB args;
+//	args.accu = accu_device;
+//	args.rgb_live = viewHierarchyLevel_RGB->rgb_current->GetData(MEMORYDEVICE_CUDA);
+//	args.rgb_model = previousProjectedRGBLevel->depth->GetData(MEMORYDEVICE_CUDA);
+//	args.gx = viewHierarchyLevel_RGB->gX->GetData(MEMORYDEVICE_CUDA);
+//	args.gy = viewHierarchyLevel_RGB->gY->GetData(MEMORYDEVICE_CUDA);
+//	args.pointsMap = sceneHierarchyLevel_RGB->pointsMap->GetData(MEMORYDEVICE_CUDA);
+//	args.viewImageSize = viewImageSize;
+//	args.sceneImageSize = sceneImageSize;
+//	args.approxInvPose = approxInvPose;
+//	args.approxPose = approxPose;
+//	args.scenePose = scenePose;
+//	args.projParams = viewHierarchyLevel_RGB->intrinsics;
+//	args.colourThresh = colourThresh[levelId];
+//	args.viewFrustum_min = viewFrustum_min;
+//	args.viewFrustum_max = viewFrustum_max;
+//	args.tukeyCutOff = tukeyCutOff;
+//	args.framesToSkip = framesToSkip;
+//	args.framesToWeight = framesToWeight;
+//
+//	if (currentFrameNo < 100)
+//	{
+//		switch (iterationType)
+//		{
+//		case TRACKER_ITERATION_ROTATION:
+//			exRGBTrackerOneLevel_g_rt_device<true, true, false> << <gridSize, blockSize >> >(args);
+//			ORcudaKernelCheck;
+//			break;
+//		case TRACKER_ITERATION_TRANSLATION:
+//			exRGBTrackerOneLevel_g_rt_device<true, false, false> << <gridSize, blockSize >> >(args);
+//			ORcudaKernelCheck;
+//			break;
+//		case TRACKER_ITERATION_BOTH:
+//			exRGBTrackerOneLevel_g_rt_device<false, false, false> << <gridSize, blockSize >> >(args);
+//			ORcudaKernelCheck;
+//			break;
+//		default: break;
+//		}
+//	}
+//	else
+//	{
+//		switch (iterationType)
+//		{
+//		case TRACKER_ITERATION_ROTATION:
+//			exRGBTrackerOneLevel_g_rt_device<true, true, true> << <gridSize, blockSize >> >(args);
+//			ORcudaKernelCheck;
+//			break;
+//		case TRACKER_ITERATION_TRANSLATION:
+//			exRGBTrackerOneLevel_g_rt_device<true, false, true> << <gridSize, blockSize >> >(args);
+//			ORcudaKernelCheck;
+//			break;
+//		case TRACKER_ITERATION_BOTH:
+//			exRGBTrackerOneLevel_g_rt_device<false, false, true> << <gridSize, blockSize >> >(args);
+//			ORcudaKernelCheck;
+//			break;
+//		default: break;
+//		}
+//	}
+//
+//	ORcudaSafeCall(cudaMemcpy(accu_host, accu_device, sizeof(AccuCell), cudaMemcpyDeviceToHost));
+//
+//	for (int r = 0, counter = 0; r < noPara; r++) for (int c = 0; c <= r; c++, counter++) hessian[r + c * 6] = accu_host->h[counter];
+//	for (int r = 0; r < noPara; ++r) for (int c = r + 1; c < noPara; c++) hessian[r + c * 6] = hessian[c + r * 6];
+//
+//	memcpy(nabla, accu_host->g, noPara * sizeof(float));
+//
+//	if (accu_host->numPoints > 100)
+//	{
+//		for (int i = 0; i < 6 * 6; ++i) hessian[i] = hessian[i] / accu_host->numPoints;
+//		for (int i = 0; i < 6; ++i) nabla[i] = nabla[i] / accu_host->numPoints;
+//
+//		f = accu_host->f / accu_host->numPoints;
+//	}
+//	else
+//	{
+//		f = 1e5f;
+//	}
+//
+//	return accu_host->numPoints;
 }
 
 void ITMExtendedTracker_CUDA::ProjectPreviousRGBFrame(const Matrix4f &scenePose)
 {
 	Vector2i imageSize = viewHierarchyLevel_RGB->rgb_prev->noDims;
-	Vector2i sceneSize = sceneHierarchyLevel_RGB->pointsMap->noDims; // Also the size of the projected image
+	Vector2i sceneSize = sceneHierarchyLevel_RGB->pointsMap->noDims;
 
-	previousProjectedRGBLevel->depth->ChangeDims(sceneSize); // Actual reallocation should happen only once per run.
+	previousProjectedRGBLevel->depth->ChangeDims(sceneSize);
+
+	sceneHierarchyLevel_RGB->pointsMap->UpdateHostFromDevice();
+	viewHierarchyLevel_RGB->rgb_prev->UpdateHostFromDevice();
+	previousProjectedRGBLevel->depth->UpdateHostFromDevice();
 
 	Vector4f projParams = viewHierarchyLevel_RGB->intrinsics;
-	const Vector4f *pointsMap = sceneHierarchyLevel_RGB->pointsMap->GetData(MEMORYDEVICE_CUDA);
-	const Vector4u *rgbIn = viewHierarchyLevel_RGB->rgb_prev->GetData(MEMORYDEVICE_CUDA);
-	Vector4f *rgbOut = previousProjectedRGBLevel->depth->GetData(MEMORYDEVICE_CUDA);
+	Vector4f *pointsMap = sceneHierarchyLevel_RGB->pointsMap->GetData(MEMORYDEVICE_CPU);
+	Vector4u *rgbIn = viewHierarchyLevel_RGB->rgb_prev->GetData(MEMORYDEVICE_CPU);
+	Vector4f *rgbOut = previousProjectedRGBLevel->depth->GetData(MEMORYDEVICE_CPU);
 
-	dim3 blockSize(16, 16);
-	dim3 gridSize((int)ceil((float)sceneSize.x / (float)blockSize.x), (int)ceil((float)sceneSize.y / (float)blockSize.y));
+	for (int y = 0; y < sceneSize.y; y++) for (int x = 0; x < sceneSize.x; x++)
+	{
+		projectPreviousPoint_exRGB(x, y, rgbOut, rgbIn, pointsMap, imageSize, sceneSize, projParams, scenePose);
+	}
 
-	exRGBTrackerProjectPrevImage_device<<<gridSize, blockSize>>>(rgbOut, rgbIn, pointsMap, imageSize, sceneSize, projParams, scenePose);
-	ORcudaKernelCheck;
+	sceneHierarchyLevel_RGB->pointsMap->UpdateDeviceFromHost();
+	viewHierarchyLevel_RGB->rgb_prev->UpdateDeviceFromHost();
+	previousProjectedRGBLevel->depth->UpdateDeviceFromHost();
+
+//	Vector2i imageSize = viewHierarchyLevel_RGB->rgb_prev->noDims;
+//	Vector2i sceneSize = sceneHierarchyLevel_RGB->pointsMap->noDims; // Also the size of the projected image
+//
+//	previousProjectedRGBLevel->depth->ChangeDims(sceneSize); // Actual reallocation should happen only once per run.
+//
+//	Vector4f projParams = viewHierarchyLevel_RGB->intrinsics;
+//	const Vector4f *pointsMap = sceneHierarchyLevel_RGB->pointsMap->GetData(MEMORYDEVICE_CUDA);
+//	const Vector4u *rgbIn = viewHierarchyLevel_RGB->rgb_prev->GetData(MEMORYDEVICE_CUDA);
+//	Vector4f *rgbOut = previousProjectedRGBLevel->depth->GetData(MEMORYDEVICE_CUDA);
+//
+//	dim3 blockSize(16, 16);
+//	dim3 gridSize((int)ceil((float)sceneSize.x / (float)blockSize.x), (int)ceil((float)sceneSize.y / (float)blockSize.y));
+//
+//	exRGBTrackerProjectPrevImage_device<<<gridSize, blockSize>>>(rgbOut, rgbIn, pointsMap, imageSize, sceneSize, projParams, scenePose);
+//	ORcudaKernelCheck;
 }
 
 // device functions

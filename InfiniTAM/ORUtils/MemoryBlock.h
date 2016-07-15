@@ -94,11 +94,13 @@ namespace ORUtils
 			this->isAllocated_CUDA = false;
 			this->isMetalCompatible = false;
 
-			switch (memoryType)
-			{
-			case MEMORYDEVICE_CPU: Allocate(dataSize, true, false, true); break;
-			case MEMORYDEVICE_CUDA: Allocate(dataSize, false, true, true); break;
-			}
+			Allocate(dataSize, true, true, true);
+
+//			switch (memoryType)
+//			{
+//			case MEMORYDEVICE_CPU: Allocate(dataSize, true, false, true); break;
+//			case MEMORYDEVICE_CUDA: Allocate(dataSize, false, true, true); break;
+//			}
 
 			Clear();
 		}
