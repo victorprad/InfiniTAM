@@ -604,6 +604,8 @@ void UIEngine::ProcessFrame()
 	processedTime = sdkGetAverageTimerValue(&timer_average);
 
 	currentFrameNo++;
+
+	if (currentFrameNo == 50) mainLoopAction = UIEngine::EXIT;
 }
 
 void UIEngine::Run() { glutMainLoop(); }

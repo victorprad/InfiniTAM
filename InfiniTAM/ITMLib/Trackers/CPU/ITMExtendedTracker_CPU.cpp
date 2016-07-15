@@ -37,6 +37,22 @@ int ITMExtendedTracker_CPU::ComputeGandH_Depth(float &f, float *nabla, float *he
 	memset(sumHessian, 0, sizeof(float) * noParaSQ);
 	memset(sumNabla, 0, sizeof(float) * noPara);
 
+	float minF = 1e10, maxF = 0.f;
+	float minNabla[6], maxNabla[6];
+	float minHessian[noParaSQ], maxHessian[noParaSQ];
+
+	for(int i = 0; i < noPara; ++i)
+	{
+		minNabla[i] = 1e10f;
+		maxNabla[i] = -1e10f;
+	}
+
+	for(int i = 0; i < noParaSQ; ++i)
+	{
+		minHessian[i] = 1e10f;
+		maxHessian[i] = -1e10f;
+	}
+
 	for (int y = 0; y < viewImageSize.y; y++) for (int x = 0; x < viewImageSize.x; x++)
 	{
 		float localHessian[6 + 5 + 4 + 3 + 2 + 1], localNabla[6], localF = 0;
@@ -76,8 +92,47 @@ int ITMExtendedTracker_CPU::ComputeGandH_Depth(float &f, float *nabla, float *he
 			sumF += localF;
 			for (int i = 0; i < noPara; i++) sumNabla[i] += localNabla[i];
 			for (int i = 0; i < noParaSQ; i++) sumHessian[i] += localHessian[i];
+
+			minF = MIN(minF, localF);
+			maxF = MAX(maxF, localF);
+
+			for (int i = 0; i < noPara; i++)
+			{
+				minNabla[i] = MIN(minNabla[i], localNabla[i]);
+				maxNabla[i] = MAX(maxNabla[i], localNabla[i]);
+			}
+
+			for (int i = 0; i < noParaSQ; i++)
+			{
+				minHessian[i] = MIN(minHessian[i], localHessian[i]);
+				maxHessian[i] = MAX(maxHessian[i], localHessian[i]);
+			}
 		}
 	}
+
+	printf("Min F: %g - Max F: %g\n", minF, maxF);
+	printf("Min Nabla: ");
+	for (int i = 0; i < noPara; i++)
+	{
+		printf("%g - ", minNabla[i]);
+	}
+	printf("\nMax Nabla: ");
+	for (int i = 0; i < noPara; i++)
+	{
+		printf("%g - ", maxNabla[i]);
+	}
+	printf("\n");
+	printf("Min Hessian: ");
+	for (int i = 0; i < noParaSQ; i++)
+	{
+		printf("%g - ", minHessian[i]);
+	}
+	printf("\nMax Hessian: ");
+	for (int i = 0; i < noParaSQ; i++)
+	{
+		printf("%g - ", maxHessian[i]);
+	}
+	printf("\n\n");
 
 	for (int r = 0, counter = 0; r < noPara; r++) for (int c = 0; c <= r; c++, counter++) hessian[r + c * 6] = sumHessian[counter];
 	for (int r = 0; r < noPara; ++r) for (int c = r + 1; c < noPara; c++) hessian[r + c * 6] = hessian[c + r * 6];
@@ -114,7 +169,8 @@ int ITMExtendedTracker_CPU::ComputeGandH_RGB(float &f, float *nabla, float *hess
 
 	Matrix4f approxPose;
 	approxInvPose.inv(approxPose);
-	approxPose = depthToRGBTransform * approxPose;
+//	approxPose = depthToRGBTransform * approxPose;
+//	approxPose = approxPose;
 
 	if (iterationType == TRACKER_ITERATION_NONE) return 0;
 
@@ -126,6 +182,22 @@ int ITMExtendedTracker_CPU::ComputeGandH_RGB(float &f, float *nabla, float *hess
 	noValidPoints = 0; sumF = 0.0f;
 	memset(sumHessian, 0, sizeof(float) * noParaSQ);
 	memset(sumNabla, 0, sizeof(float) * noPara);
+
+	float minF = 1e10, maxF = 0.f;
+	float minNabla[6], maxNabla[6];
+	float minHessian[noParaSQ], maxHessian[noParaSQ];
+
+	for(int i = 0; i < noPara; ++i)
+	{
+		minNabla[i] = 1e10f;
+		maxNabla[i] = -1e10f;
+	}
+
+	for(int i = 0; i < noParaSQ; ++i)
+	{
+		minHessian[i] = 1e10f;
+		maxHessian[i] = -1e10f;
+	}
 
 	for (int y = 0; y < viewImageSize.y; y++) for (int x = 0; x < viewImageSize.x; x++)
 	{
@@ -155,8 +227,47 @@ int ITMExtendedTracker_CPU::ComputeGandH_RGB(float &f, float *nabla, float *hess
 			sumF += localF;
 			for (int i = 0; i < noPara; i++) sumNabla[i] += localNabla[i];
 			for (int i = 0; i < noParaSQ; i++) sumHessian[i] += localHessian[i];
+
+			minF = MIN(minF, localF);
+			maxF = MAX(maxF, localF);
+
+			for (int i = 0; i < noPara; i++)
+			{
+				minNabla[i] = MIN(minNabla[i], localNabla[i]);
+				maxNabla[i] = MAX(maxNabla[i], localNabla[i]);
+			}
+
+			for (int i = 0; i < noParaSQ; i++)
+			{
+				minHessian[i] = MIN(minHessian[i], localHessian[i]);
+				maxHessian[i] = MAX(maxHessian[i], localHessian[i]);
+			}
 		}
 	}
+
+	printf("Min F: %g - Max F: %g\n", minF, maxF);
+	printf("Min Nabla: ");
+	for (int i = 0; i < noPara; i++)
+	{
+		printf("%g - ", minNabla[i]);
+	}
+	printf("\nMax Nabla: ");
+	for (int i = 0; i < noPara; i++)
+	{
+		printf("%g - ", maxNabla[i]);
+	}
+	printf("\n");
+	printf("Min Hessian: ");
+	for (int i = 0; i < noParaSQ; i++)
+	{
+		printf("%g - ", minHessian[i]);
+	}
+	printf("\nMax Hessian: ");
+	for (int i = 0; i < noParaSQ; i++)
+	{
+		printf("%g - ", maxHessian[i]);
+	}
+	printf("\n\n");
 
 	for (int r = 0, counter = 0; r < noPara; r++) for (int c = 0; c <= r; c++, counter++) hessian[r + c * 6] = sumHessian[counter];
 	for (int r = 0; r < noPara; ++r) for (int c = r + 1; c < noPara; c++) hessian[r + c * 6] = hessian[c + r * 6];
