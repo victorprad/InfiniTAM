@@ -103,7 +103,7 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exDepth_Ab(THREADPTR(float) *A,
 
 template<bool useWeights>
 _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exRGB_Ab(THREADPTR(float) *localGradient, THREADPTR(float) &colourDifferenceSq, THREADPTR(float) *localHessian,
-	THREADPTR(float) &depthWeight, const THREADPTR(Vector4f) &pt_world, const THREADPTR(Vector4f) &colour_world, const DEVICEPTR(Vector4u) *rgb_live,
+	THREADPTR(float) &depthWeight, const THREADPTR(Vector4f) &pt_world,  THREADPTR(Vector4f) colour_world, const DEVICEPTR(Vector4u) *rgb_live,
 	const CONSTPTR(Vector2i) &imgSize, int x, int y, const Vector4f &projParams, const Matrix4f &approxPose, const Matrix4f &approxInvPose,
 	const Matrix4f &scenePose, const DEVICEPTR(Vector4s) *gx, const DEVICEPTR(Vector4s) *gy, float colourThresh, float viewFrustum_min, float viewFrustum_max,
 	float tukeyCutoff, float framesToSkip, float framesToWeight, int numPara)
@@ -143,19 +143,31 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exRGB_Ab(THREADPTR(float) *loca
 	gx_obs = interpolateBilinear(gx, pt_image_live, imgSize).toVector3() / 255.f; // gx and gy are computed from the live image
 	gy_obs = interpolateBilinear(gy, pt_image_live, imgSize).toVector3() / 255.f;
 
+//	colour_obs.x = (colour_obs.x + colour_obs.y + colour_obs.z) / 3.f;
+//	colour_world.x = (colour_world.x + colour_world.y + colour_world.z) / 3.f;
+//	gx_obs.x = (gx_obs.x + gx_obs.y + gx_obs.z) / 3.f;
+//	gy_obs.x = (gy_obs.x + gy_obs.y + gy_obs.z) / 3.f;
+
 	if (colour_obs.w <= 1e-7f) return false;
-	if (dot(gx_obs, gx_obs) < 1e-5 || dot(gy_obs, gy_obs) < 1e-5) return false;
+//	if (dot(gx_obs, gx_obs) < 1e-5 || dot(gy_obs, gy_obs) < 1e-5) return false;
 
 	colour_diff_d.x = colour_obs.x - colour_world.x;
 	colour_diff_d.y = colour_obs.y - colour_world.y;
 	colour_diff_d.z = colour_obs.z - colour_world.z;
 
 	colourDifferenceSq = colour_diff_d.x * colour_diff_d.x + colour_diff_d.y * colour_diff_d.y + colour_diff_d.z * colour_diff_d.z;
+//	colourDifferenceSq = colour_diff_d.x * colour_diff_d.x;
 	if (colourDifferenceSq > tukeyCutoff * colourThresh) return false;
 
-	const float huber_coeff_energy = rho(colourDifferenceSq, colourThresh) * depthWeight;
-	const float huber_coeff_gradient = rho_deriv(colourDifferenceSq, colourThresh) * depthWeight;
-	const float huber_coeff_hessian = rho_deriv2(colourDifferenceSq, colourThresh) * depthWeight;
+//	colour_diff_d.x *= colourThresh;
+
+	const float huber_coeff_energy = colourDifferenceSq;
+	const float huber_coeff_gradient = 1.f;
+	const float huber_coeff_hessian = 1.f;
+
+//	const float huber_coeff_energy = rho(colourDifferenceSq, colourThresh) * depthWeight;
+//	const float huber_coeff_gradient = rho_deriv(colourDifferenceSq, colourThresh) * depthWeight;
+//	const float huber_coeff_hessian = rho_deriv2(colourDifferenceSq, colourThresh) * depthWeight;
 
 	// Finally set the computed energy
 	colourDifferenceSq = huber_coeff_energy;
@@ -223,9 +235,11 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exRGB_Ab(THREADPTR(float) *loca
 
 		// Chain rule huber-l2 norm-gradient-projection-pose
 		localGradient[para] = huber_coeff_gradient * 2.f * dot(d[para], colour_diff_d);
+//		localGradient[para] = huber_coeff_gradient * 2.f * colour_diff_d.x * d[para].x;
 
 		for (int col = 0; col <= para; col++)
-			localHessian[counter++] = huber_coeff_hessian * 2.f * dot(d[para], d[col]);
+//			localHessian[counter++] = huber_coeff_hessian * 2.f * dot(d[para], d[col]);
+			localHessian[counter++] = huber_coeff_hessian * localGradient[para] * localGradient[col];
 	}
 
 	return true;
