@@ -27,7 +27,7 @@ ITMLibSettings::ITMLibSettings(void)
 #endif
 #endif
 
-	//deviceType = DEVICE_CPU;
+	deviceType = DEVICE_CPU;
 
 	/// how swapping works: disabled, fully enabled (still with dragons) and delete what's not visible
 	swappingMode = SWAPPINGMODE_DISABLED;
@@ -42,7 +42,7 @@ ITMLibSettings::ITMLibSettings(void)
 	behaviourOnFailure = FAILUREMODE_IGNORE;
     
 	//trackerConfig = "type=icp,levels=rrrbb,minstep=1e-3,outlierC=0.01,outlierF=0.002,numiterC=10,numiterF=2,failureDec=3.0";
-	trackerConfig = "type=extended,levels=rrbb,useDepth=1,useColour=1,colourWeight=0.025,minstep=1e-4,"
+	trackerConfig = "type=extended,levels=rrbb,useDepth=0,useColour=1,colourWeight=0.025,minstep=1e-4,"
 			"outlierColourC=0.035,outlierColourF=0.025,"
 			"outlierSpaceC=0.1,outlierSpaceF=0.004,"
 			"numiterC=20,numiterF=50,tukeyCutOff=8,framesToSkip=20,framesToWeight=50,failureDec=20.0";
