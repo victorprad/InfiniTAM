@@ -280,6 +280,9 @@ void ITMExtendedTracker::ApplyDelta(const Matrix4f & para_old, const float *delt
 
 void ITMExtendedTracker::UpdatePoseQuality(int noValidPoints_old, float *hessian_good, float f_old)
 {
+	trackingState->trackerResult = ITMTrackingState::TRACKING_GOOD;
+	return;
+
 	int noTotalPoints = 0;
 
 	if (useDepth && useColour)
