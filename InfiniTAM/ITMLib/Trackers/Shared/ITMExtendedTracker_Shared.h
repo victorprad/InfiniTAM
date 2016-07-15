@@ -120,7 +120,7 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exRGB_Ab(THREADPTR(float) *loca
 	pt_camera.w = 1.f; // Coerce it to be a point
 	pt_camera = approxPose * pt_camera;
 
-	if (pt_camera.z <= 0) return false;
+	if (pt_camera.z <= 0 || pt_camera.z >= viewFrustum_max) return false;
 
 	depthWeight = 1.0f - (pt_camera.z - viewFrustum_min) / (viewFrustum_max - viewFrustum_min); // Evaluate outside of the macro
 	depthWeight = CLAMP(depthWeight, 0.f, 1.f);
