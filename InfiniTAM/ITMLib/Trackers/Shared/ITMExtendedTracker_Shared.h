@@ -108,15 +108,11 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exRGB_Ab(THREADPTR(float) *loca
 	const Matrix4f &scenePose, const DEVICEPTR(Vector4s) *gx, const DEVICEPTR(Vector4s) *gy, float colourThresh, float viewFrustum_min, float viewFrustum_max,
 	float tukeyCutoff, float framesToSkip, float framesToWeight, int numPara)
 {
-	Vector4f pt_camera, colour_obs;
-	Vector3f gx_obs, gy_obs, colour_diff_d, d[6];
-	Vector2f pt_image_live, pt_image_model;
-
-	if (pt_world.w <= 1e-7f || colour_world.w <= 1e-7f) return false;
+	if (pt_world.w <= 1e-3f || colour_world.w <= 1e-3f) return false;
 	if (useWeights && pt_world.w < framesToSkip) return false;
 
 	// convert the point in camera coordinates using the candidate pose
-	pt_camera = pt_world;
+	Vector4f pt_camera = pt_world;
 	pt_camera.w = 1.f; // Coerce it to be a point
 	pt_camera = approxPose * pt_camera;
 
@@ -131,35 +127,30 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exRGB_Ab(THREADPTR(float) *loca
 		depthWeight *= (pt_world.w - framesToSkip) / framesToWeight;
 	}
 
+	const float inv_cam_z = 1.f / pt_camera.z;
+	const float inv_cam_z_sq = inv_cam_z * inv_cam_z;
+
 	// project the point onto the live image
-	pt_image_live.x = projParams.x * pt_camera.x / pt_camera.z + projParams.z;
-	pt_image_live.y = projParams.y * pt_camera.y / pt_camera.z + projParams.w;
+	const Vector2f pt_image_live(projParams.x * pt_camera.x * inv_cam_z + projParams.z,
+								 projParams.y * pt_camera.y * inv_cam_z + projParams.w);
 
 	if (pt_image_live.x < 0 || pt_image_live.x >= imgSize.x - 1 ||
 		pt_image_live.y < 0 || pt_image_live.y >= imgSize.y - 1) return false;
-//	if (!(pt_image_live.x >= 0.f && pt_image_live.x <= imgSize.x - 2.f && pt_image_live.y >= 0.f && pt_image_live.y <= imgSize.y - 2)) return false;
 
-	colour_obs = interpolateBilinear(rgb_live, pt_image_live, imgSize) / 255.f;
-	gx_obs = interpolateBilinear(gx, pt_image_live, imgSize).toVector3() / 255.f; // gx and gy are computed from the live image
-	gy_obs = interpolateBilinear(gy, pt_image_live, imgSize).toVector3() / 255.f;
+	const Vector4f colour_obs = interpolateBilinear(rgb_live, pt_image_live, imgSize) / 255.f;
+	const Vector3f gx_obs = interpolateBilinear(gx, pt_image_live, imgSize).toVector3() / 255.f; // gx and gy are computed from the live image
+	const Vector3f gy_obs = interpolateBilinear(gy, pt_image_live, imgSize).toVector3() / 255.f;
 
-//	colour_obs.x = (colour_obs.x + colour_obs.y + colour_obs.z) / 3.f;
-//	colour_world.x = (colour_world.x + colour_world.y + colour_world.z) / 3.f;
-//	gx_obs.x = (gx_obs.x + gx_obs.y + gx_obs.z) / 3.f;
-//	gy_obs.x = (gy_obs.x + gy_obs.y + gy_obs.z) / 3.f;
-
-	if (colour_obs.w <= 1e-7f) return false;
+	if (colour_obs.w <= 1e-3f) return false;
 	if (dot(gx_obs, gx_obs) < 1e-5 || dot(gy_obs, gy_obs) < 1e-5) return false;
 
-	colour_diff_d.x = colour_obs.x - colour_world.x;
-	colour_diff_d.y = colour_obs.y - colour_world.y;
-	colour_diff_d.z = colour_obs.z - colour_world.z;
+	const Vector3f colour_diff_d(colour_obs.x - colour_world.x,
+								 colour_obs.y - colour_world.y,
+								 colour_obs.z - colour_world.z);
 
-	colourDifferenceSq = colour_diff_d.x * colour_diff_d.x + colour_diff_d.y * colour_diff_d.y + colour_diff_d.z * colour_diff_d.z;
-//	colourDifferenceSq = colour_diff_d.x * colour_diff_d.x;
-	if (colourDifferenceSq > tukeyCutoff * colourThresh) return false;
-
-//	colour_diff_d.x *= colourThresh;
+	colourDifferenceSq = dot(colour_diff_d, colour_diff_d);
+//	if (colourDifferenceSq > tukeyCutoff * colourThresh) return false;
+	if (colourDifferenceSq > 0.0075) return false;
 
 	const float huber_coeff_energy = colourDifferenceSq;
 	const float huber_coeff_gradient = 1.f;
@@ -182,18 +173,17 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exRGB_Ab(THREADPTR(float) *loca
 	const Vector3f rot_row_2 = approxInvPose.getRow(2).toVector3();
 
 	// Derivatives of the projection operation
-	Vector3f d_proj_x, d_proj_y;
-	d_proj_x.x = projParams.x / pt_camera.z;
-	d_proj_x.y = 0.f;
-	d_proj_x.z = -projParams.x * pt_camera.x / (pt_camera.z * pt_camera.z);
+	const Vector3f d_proj_x(projParams.x * inv_cam_z,
+							0.f,
+							-projParams.x * pt_camera.x * inv_cam_z_sq);
 
-	d_proj_y.x = 0.f;
-	d_proj_y.y = projParams.y / pt_camera.z;
-	d_proj_y.z = -projParams.y * pt_camera.y / (pt_camera.z * pt_camera.z);
+	const Vector3f d_proj_y(0.f,
+							projParams.y * inv_cam_z,
+							-projParams.y * pt_camera.y * inv_cam_z_sq);
 
 	for (int para = 0, counter = 0; para < numPara; para++)
 	{
-		// Derivatives wrt. the pose
+		// Derivatives wrt. the current parameter
 		Vector3f d_point_col;
 
 		switch (para)
@@ -229,13 +219,13 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exRGB_Ab(THREADPTR(float) *loca
 		d_proj_dpi.y = dot(d_proj_y, d_point_col);
 
 		// Chain rule image gradient-projection-pose
-		d[para].x = d_proj_dpi.x * gx_obs.x + d_proj_dpi.y * gy_obs.x;
-		d[para].y = d_proj_dpi.x * gx_obs.y + d_proj_dpi.y * gy_obs.y;
-		d[para].z = d_proj_dpi.x * gx_obs.z + d_proj_dpi.y * gy_obs.z;
+		Vector3f d;
+		d.x = d_proj_dpi.x * gx_obs.x + d_proj_dpi.y * gy_obs.x;
+		d.y = d_proj_dpi.x * gx_obs.y + d_proj_dpi.y * gy_obs.y;
+		d.z = d_proj_dpi.x * gx_obs.z + d_proj_dpi.y * gy_obs.z;
 
 		// Chain rule huber-l2 norm-gradient-projection-pose
-		localGradient[para] = huber_coeff_gradient * 2.f * dot(d[para], colour_diff_d);
-//		localGradient[para] = huber_coeff_gradient * 2.f * colour_diff_d.x * d[para].x;
+		localGradient[para] = huber_coeff_gradient * 2.f * dot(d, colour_diff_d);
 
 		for (int col = 0; col <= para; col++)
 //			localHessian[counter++] = huber_coeff_hessian * 2.f * dot(d[para], d[col]);
@@ -282,7 +272,7 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointProjectedColour_exRGB(THREADPTR(in
 	Vector4f pt_world = in_points[sceneIdx];
 
 	// Invalid point
-	if (pt_world.w <= 0) return false;
+	if (pt_world.w <= 1e-3f) return false;
 
 	pt_world.w = 1.f; // Coerce it to be a point
 	Vector4f pt_image = scenePose * pt_world;
@@ -312,6 +302,6 @@ _CPU_AND_GPU_CODE_ inline void projectPreviousPoint_exRGB(THREADPTR(int) x, THRE
 	if (!computePerPointProjectedColour_exRGB(x, y, out_rgb, in_rgb, in_points,
 		 imageSize, sceneIdx, intrinsics, scenePose))
 	{
-		out_rgb[sceneIdx] = Vector4f(0.f, 0.f, 0.f, 0.f);
+		out_rgb[sceneIdx] = Vector4f(0.f, 0.f, 0.f, -1.f);
 	}
 }
