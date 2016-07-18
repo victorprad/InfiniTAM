@@ -34,7 +34,6 @@ struct ITMExtendedTracker_KernelParameters_Depth {
 struct ITMExtendedTracker_KernelParameters_RGB {
 	ITMExtendedTracker_CUDA::AccuCell *accu;
 	Vector4f *pointsMap;
-	float *depth;
 	Vector4s *gx;
 	Vector4s *gy;
 	Vector4u *rgb_live;
@@ -184,14 +183,12 @@ int ITMExtendedTracker_CUDA::ComputeGandH_RGB(float &f, float *nabla, float *hes
 	viewHierarchyLevel_RGB->rgb_current->UpdateHostFromDevice();
 	viewHierarchyLevel_RGB->gX->UpdateHostFromDevice();
 	viewHierarchyLevel_RGB->gY->UpdateHostFromDevice();
-	viewHierarchyLevel_Depth->depth->UpdateHostFromDevice();
 
 	Vector4f *locations = sceneHierarchyLevel_RGB->pointsMap->GetData(MEMORYDEVICE_CPU);
 	Vector4f *rgb_model = previousProjectedRGBLevel->depth->GetData(MEMORYDEVICE_CPU);
 	Vector4u *rgb_live = viewHierarchyLevel_RGB->rgb_current->GetData(MEMORYDEVICE_CPU);
 	Vector4s *gx = viewHierarchyLevel_RGB->gX->GetData(MEMORYDEVICE_CPU);
 	Vector4s *gy = viewHierarchyLevel_RGB->gY->GetData(MEMORYDEVICE_CPU);
-	float *depth_live = viewHierarchyLevel_Depth->depth->GetData(MEMORYDEVICE_CPU);
 
 	Vector4f projParams = viewHierarchyLevel_RGB->intrinsics;
 
@@ -243,11 +240,11 @@ int ITMExtendedTracker_CUDA::ComputeGandH_RGB(float &f, float *nabla, float *hes
 		{
 			if (currentFrameNo < 100)
 				isValidPoint = computePerPointGH_exRGB_Ab<false>(localNabla, localF, localHessian, depthWeight,
-					locations[x + y * sceneImageSize.x], depth_live, rgb_model[x + y * sceneImageSize.x], rgb_live, viewImageSize, x, y,
+					locations[x + y * sceneImageSize.x], rgb_model[x + y * sceneImageSize.x], rgb_live, viewImageSize, x, y,
 					projParams, approxPose, approxInvPose, scenePose, gx, gy, colourThresh[levelId], viewFrustum_min, viewFrustum_max, tukeyCutOff, framesToSkip, framesToWeight, noPara);
 			else
 				isValidPoint = computePerPointGH_exRGB_Ab<true>(localNabla, localF, localHessian, depthWeight,
-					locations[x + y * sceneImageSize.x], depth_live, rgb_model[x + y * sceneImageSize.x], rgb_live, viewImageSize, x, y,
+					locations[x + y * sceneImageSize.x], rgb_model[x + y * sceneImageSize.x], rgb_live, viewImageSize, x, y,
 					projParams, approxPose, approxInvPose, scenePose, gx, gy, colourThresh[levelId], viewFrustum_min, viewFrustum_max, tukeyCutOff, framesToSkip, framesToWeight, noPara);
 		}
 

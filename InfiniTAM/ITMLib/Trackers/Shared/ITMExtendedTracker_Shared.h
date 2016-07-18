@@ -103,7 +103,7 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exDepth_Ab(THREADPTR(float) *A,
 
 template<bool useWeights>
 _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exRGB_Ab(THREADPTR(float) *localGradient, THREADPTR(float) &colourDifferenceSq, THREADPTR(float) *localHessian,
-	THREADPTR(float) &depthWeight, const THREADPTR(Vector4f) &pt_world, const DEVICEPTR(float) *depth_live, THREADPTR(Vector4f) colour_world, const DEVICEPTR(Vector4u) *rgb_live,
+	THREADPTR(float) &depthWeight, const THREADPTR(Vector4f) &pt_world,  THREADPTR(Vector4f) colour_world, const DEVICEPTR(Vector4u) *rgb_live,
 	const CONSTPTR(Vector2i) &imgSize, int x, int y, const Vector4f &projParams, const Matrix4f &approxPose, const Matrix4f &approxInvPose,
 	const Matrix4f &scenePose, const DEVICEPTR(Vector4s) *gx, const DEVICEPTR(Vector4s) *gy, float colourThresh, float viewFrustum_min, float viewFrustum_max,
 	float tukeyCutoff, float framesToSkip, float framesToWeight, int numPara)
@@ -140,26 +140,9 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exRGB_Ab(THREADPTR(float) *loca
 	const Vector4f colour_obs = interpolateBilinear(rgb_live, pt_image_live, imgSize) / 255.f;
 	const Vector3f gx_obs = interpolateBilinear(gx, pt_image_live, imgSize).toVector3() / 255.f; // gx and gy are computed from the live image
 	const Vector3f gy_obs = interpolateBilinear(gy, pt_image_live, imgSize).toVector3() / 255.f;
-	const float depth_obs = interpolateBilinear_withHoles_single(depth_live, pt_image_live, imgSize); // TODO imgsize has to be changed
 
-	if (depth_obs <= 0.f) return false;
 	if (colour_obs.w <= 1e-3f) return false;
 	if (dot(gx_obs, gx_obs) < 1e-5 || dot(gy_obs, gy_obs) < 1e-5) return false;
-
-	// convert the point in camera coordinates using the previous pose
-	Vector4f pt_model = pt_world;
-	pt_model.w = 1.f; // Coerce it to be a point
-	pt_model = approxPose * pt_model;
-
-	Vector4f pt_camera_real; // TODO check intrinsics
-	pt_camera_real.x = depth_obs * ((float(x) - projParams.z) / projParams.x);
-	pt_camera_real.y = depth_obs * ((float(y) - projParams.w) / projParams.y);
-	pt_camera_real.z = depth_obs;
-	pt_camera_real.w = 1.0f;
-
-	Vector3f pt_diff = pt_camera_real.toVector3() - pt_model.toVector3();
-
-	if (sqrtf(dot(pt_diff, pt_diff)) >= 0.07f) return false; // TODO hardcoded difference
 
 	const Vector3f colour_diff_d(colour_obs.x - colour_world.x,
 								 colour_obs.y - colour_world.y,
