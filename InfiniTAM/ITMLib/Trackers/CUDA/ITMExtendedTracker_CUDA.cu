@@ -224,7 +224,9 @@ int ITMExtendedTracker_CUDA::ComputeGandH_RGB(float &f, float *nabla, float *hes
 		maxHessian[i] = -1e10f;
 	}
 
-	for (int y = 0; y < viewImageSize.y; y++) for (int x = 0; x < viewImageSize.x; x++)
+	for (int y = 0; y < sceneImageSize.y; y++) for (int x = 0; x < sceneImageSize.x; x++)
+//	for (int y = 0; y < sceneImageSize.y; y++) for (int x = sceneImageSize.x - 1; x >= 0; x--)
+//	for (int y = sceneImageSize.y - 1; y >= 0; y--) for (int x = sceneImageSize.x - 1; x >= 0; x--)
 	{
 		float localHessian[6 + 5 + 4 + 3 + 2 + 1], localNabla[6], localF = 0;
 
@@ -321,6 +323,12 @@ int ITMExtendedTracker_CUDA::ComputeGandH_RGB(float &f, float *nabla, float *hes
 
 	return noValidPoints;
 
+//	sceneHierarchyLevel_RGB->pointsMap->UpdateDeviceFromHost();
+//	previousProjectedRGBLevel->depth->UpdateDeviceFromHost();
+//	viewHierarchyLevel_RGB->rgb_current->UpdateDeviceFromHost();
+//	viewHierarchyLevel_RGB->gX->UpdateDeviceFromHost();
+//	viewHierarchyLevel_RGB->gY->UpdateDeviceFromHost();
+//
 //	Vector2i sceneImageSize = sceneHierarchyLevel_RGB->pointsMap->noDims;
 //	Vector2i viewImageSize = viewHierarchyLevel_RGB->rgb_current->noDims;
 //
