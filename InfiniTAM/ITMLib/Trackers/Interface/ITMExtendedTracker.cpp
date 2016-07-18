@@ -19,7 +19,7 @@ ITMExtendedTracker::ITMExtendedTracker(Vector2i imgSize_d, Vector2i imgSize_rgb,
 	this->useDepth = useDepth;
 	this->useColour = useColour;
 
-	if (useColour && useDepth)
+	if (true || useColour && useDepth)
 		viewHierarchy = new ITMTwoImageHierarchy<ITMDepthHierarchyLevel, ITMRGBHierarchyLevel>(imgSize_d, imgSize_rgb, trackingRegime, noHierarchyLevels, memoryType, true);
 	else
 	{
@@ -127,7 +127,7 @@ void ITMExtendedTracker::SetEvaluationData(ITMTrackingState *trackingState, cons
 	// the image hierarchy allows pointers to external data at level 0
 	sceneHierarchy->levels[0]->intrinsics = view->calib->intrinsics_d.projectionParamsSimple.all;
 
-	if (useDepth)
+//	if (useDepth)
 	{
 		viewHierarchy->levels_t0[0]->intrinsics = view->calib->intrinsics_d.projectionParamsSimple.all;
 		viewHierarchy->levels_t0[0]->depth = view->depth;
@@ -154,7 +154,7 @@ void ITMExtendedTracker::SetEvaluationData(ITMTrackingState *trackingState, cons
 
 void ITMExtendedTracker::PrepareForEvaluation()
 {
-	if (useDepth)
+//	if (useDepth)
 	{
 		for (int i = 1; i < viewHierarchy->noLevels; i++)
 		{
@@ -216,7 +216,7 @@ void ITMExtendedTracker::SetEvaluationParams(int levelId)
 {
 	this->levelId = levelId;
 
-	if (useDepth)
+//	if (useDepth)
 	{
 		this->sceneHierarchyLevel_Depth = sceneHierarchy->levels[0];
 		this->viewHierarchyLevel_Depth = viewHierarchy->levels_t0[levelId];
