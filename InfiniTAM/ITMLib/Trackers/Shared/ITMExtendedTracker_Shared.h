@@ -40,12 +40,13 @@ _CPU_AND_GPU_CODE_ inline Vector3f rho_deriv_v3f(const Vector3f &r, float huber_
 						   CLAMP(r.z, -huber_b, huber_b));
 }
 
-_CPU_AND_GPU_CODE_ inline Vector3f rho_deriv2_v3f(const Vector3f &r, Vector3f A, float huber_b)
+_CPU_AND_GPU_CODE_ inline Vector3f rho_deriv2_v3f(const Vector3f &r, float huber_b)
 {
-	A.x = (fabs(r.x) < huber_b) ? 2.f * A.x : 0.f;
-	A.y = (fabs(r.y) < huber_b) ? 2.f * A.y : 0.f;
-	A.z = (fabs(r.z) < huber_b) ? 2.f * A.z : 0.f;
-	return A;
+	Vector3f tmp;
+	tmp.x = (fabs(r.x) < huber_b) ? 2.f : 0.f;
+	tmp.y = (fabs(r.y) < huber_b) ? 2.f : 0.f;
+	tmp.z = (fabs(r.z) < huber_b) ? 2.f : 0.f;
+	return tmp;
 }
 
 template<bool shortIteration, bool rotationOnly, bool useWeights>
@@ -244,16 +245,22 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exRGB_Ab(THREADPTR(float) *loca
 		A[para].z = d_proj_dpi.x * gx_obs.z + d_proj_dpi.y * gy_obs.z;
 	}
 
+	const Vector3f huber_coef_gradient = rho_deriv_v3f(colour_diff_d, colourThresh);
+	const Vector3f huber_coef_hessian = rho_deriv2_v3f(colour_diff_d, colourThresh);
+
 	for (int para = 0, counter = 0; para < numPara; para++)
 	{
 		// Equivalent of Ab
-		localGradient[para] = depthWeight * dot(rho_deriv_v3f(colour_diff_d, colourThresh), A[para]);
+		localGradient[para] = depthWeight * dot(huber_coef_gradient, A[para]);
 
 		// compute triangular part of A'A
+		const Vector3f weighted_A_para(huber_coef_hessian.x * A[para].x,
+									   huber_coef_hessian.y * A[para].y,
+									   huber_coef_hessian.z * A[para].z);
 		for (int col = 0; col <= para; col++)
 		{
 			// dot(A[para],A[col]) but with huber weighting
-			localHessian[counter++] = depthWeight * depthWeight * dot(rho_deriv2_v3f(colour_diff_d, A[para], colourThresh), A[col]);
+			localHessian[counter++] = depthWeight * depthWeight * dot(weighted_A_para, A[col]);
 		}
 	}
 
