@@ -23,6 +23,31 @@ _CPU_AND_GPU_CODE_ inline float rho_deriv2(float r, float huber_b)
 	return 0.0f;
 }
 
+_CPU_AND_GPU_CODE_ inline float rho_v3f(const Vector3f &r, float huber_b)
+{
+	Vector3f tmp(fabs(r.x) - huber_b, fabs(r.y) - huber_b, fabs(r.z) - huber_b);
+	tmp.x = MAX(tmp.x, 0.0f);
+	tmp.y = MAX(tmp.y, 0.0f);
+	tmp.z = MAX(tmp.z, 0.0f);
+
+	return (r.x*r.x - tmp.x*tmp.x) + (r.y*r.y - tmp.y*tmp.y) + (r.z*r.z - tmp.z*tmp.z);
+}
+
+_CPU_AND_GPU_CODE_ inline Vector3f rho_deriv_v3f(const Vector3f &r, float huber_b)
+{
+	return 2.0f * Vector3f(CLAMP(r.x, -huber_b, huber_b),
+						   CLAMP(r.y, -huber_b, huber_b),
+						   CLAMP(r.z, -huber_b, huber_b));
+}
+
+_CPU_AND_GPU_CODE_ inline Vector3f rho_deriv2_v3f(const Vector3f &r, Vector3f A, float huber_b)
+{
+	A.x = (fabs(r.x) < huber_b) ? 2.f * A.x : 0.f;
+	A.y = (fabs(r.y) < huber_b) ? 2.f * A.y : 0.f;
+	A.z = (fabs(r.z) < huber_b) ? 2.f * A.z : 0.f;
+	return A;
+}
+
 template<bool shortIteration, bool rotationOnly, bool useWeights>
 _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exDepth_Ab(THREADPTR(float) *A, THREADPTR(float) &b,
 	const THREADPTR(int) & x, const THREADPTR(int) & y, const CONSTPTR(float) &depth, THREADPTR(float) &depthWeight,
@@ -116,10 +141,10 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exRGB_Ab(THREADPTR(float) *loca
 	pt_camera.w = 1.f; // Coerce it to be a point
 	pt_camera = approxPose * pt_camera;
 
-	if (pt_camera.z <= 0 || pt_camera.z >= viewFrustum_max) return false;
+	if (pt_camera.z <= viewFrustum_min || pt_camera.z >= viewFrustum_max) return false;
 
 	depthWeight = 1.0f - (pt_camera.z - viewFrustum_min) / (viewFrustum_max - viewFrustum_min); // Evaluate outside of the macro
-	depthWeight = CLAMP(depthWeight, 0.f, 1.f);
+	depthWeight = MAX(depthWeight, 0.f);
 	depthWeight *= depthWeight;
 
 	if (useWeights)
@@ -127,12 +152,16 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exRGB_Ab(THREADPTR(float) *loca
 		depthWeight *= (pt_world.w - framesToSkip) / framesToWeight;
 	}
 
+	const float fx = projParams.x;
+	const float fy = projParams.y;
+	const float cx = projParams.z;
+	const float cy = projParams.w;
 	const float inv_cam_z = 1.f / pt_camera.z;
 	const float inv_cam_z_sq = inv_cam_z * inv_cam_z;
 
 	// project the point onto the live image
-	const Vector2f pt_image_live(projParams.x * pt_camera.x * inv_cam_z + projParams.z,
-								 projParams.y * pt_camera.y * inv_cam_z + projParams.w);
+	const Vector2f pt_image_live(fx * pt_camera.x * inv_cam_z + cx,
+								 fy * pt_camera.y * inv_cam_z + cy);
 
 	if (pt_image_live.x < 0 || pt_image_live.x >= imgSize.x - 1 ||
 		pt_image_live.y < 0 || pt_image_live.y >= imgSize.y - 1) return false;
@@ -148,20 +177,9 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exRGB_Ab(THREADPTR(float) *loca
 								 colour_obs.y - colour_world.y,
 								 colour_obs.z - colour_world.z);
 
-	colourDifferenceSq = dot(colour_diff_d, colour_diff_d);
-//	if (colourDifferenceSq > tukeyCutoff * colourThresh) return false;
-	if (colourDifferenceSq > 0.0075) return false;
-
-	const float huber_coeff_energy = colourDifferenceSq;
-	const float huber_coeff_gradient = 1.f;
-	const float huber_coeff_hessian = 1.f;
-
-//	const float huber_coeff_energy = rho(colourDifferenceSq, colourThresh) * depthWeight;
-//	const float huber_coeff_gradient = rho_deriv(colourDifferenceSq, colourThresh) * depthWeight;
-//	const float huber_coeff_hessian = rho_deriv2(colourDifferenceSq, colourThresh) * depthWeight;
-
-	// Finally set the computed energy
-	colourDifferenceSq = huber_coeff_energy;
+	if (colour_diff_d.x > tukeyCutoff * colourThresh &&
+		colour_diff_d.y > tukeyCutoff * colourThresh &&
+		colour_diff_d.z > tukeyCutoff * colourThresh) return false;
 
 	// Derivatives computed as in
 	// Blanco, J. (2010). A tutorial on se (3) transformation parameterizations and on-manifold optimization.
@@ -173,15 +191,17 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exRGB_Ab(THREADPTR(float) *loca
 	const Vector3f rot_row_2 = approxInvPose.getRow(2).toVector3();
 
 	// Derivatives of the projection operation
-	const Vector3f d_proj_x(projParams.x * inv_cam_z,
+	const Vector3f d_proj_x(fx * inv_cam_z,
 							0.f,
-							-projParams.x * pt_camera.x * inv_cam_z_sq);
+							-fx * pt_camera.x * inv_cam_z_sq);
 
 	const Vector3f d_proj_y(0.f,
-							projParams.y * inv_cam_z,
-							-projParams.y * pt_camera.y * inv_cam_z_sq);
+							fy * inv_cam_z,
+							-fy * pt_camera.y * inv_cam_z_sq);
 
-	for (int para = 0, counter = 0; para < numPara; para++)
+	Vector3f A[6];
+
+	for (int para = 0; para < numPara; para++)
 	{
 		// Derivatives wrt. the current parameter
 		Vector3f d_point_col;
@@ -219,18 +239,26 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exRGB_Ab(THREADPTR(float) *loca
 		d_proj_dpi.y = dot(d_proj_y, d_point_col);
 
 		// Chain rule image gradient-projection-pose
-		Vector3f d;
-		d.x = d_proj_dpi.x * gx_obs.x + d_proj_dpi.y * gy_obs.x;
-		d.y = d_proj_dpi.x * gx_obs.y + d_proj_dpi.y * gy_obs.y;
-		d.z = d_proj_dpi.x * gx_obs.z + d_proj_dpi.y * gy_obs.z;
-
-		// Chain rule huber-l2 norm-gradient-projection-pose
-		localGradient[para] = huber_coeff_gradient * 2.f * dot(d, colour_diff_d);
-
-		for (int col = 0; col <= para; col++)
-//			localHessian[counter++] = huber_coeff_hessian * 2.f * dot(d[para], d[col]);
-			localHessian[counter++] = huber_coeff_hessian * localGradient[para] * localGradient[col];
+		A[para].x = d_proj_dpi.x * gx_obs.x + d_proj_dpi.y * gy_obs.x;
+		A[para].y = d_proj_dpi.x * gx_obs.y + d_proj_dpi.y * gy_obs.y;
+		A[para].z = d_proj_dpi.x * gx_obs.z + d_proj_dpi.y * gy_obs.z;
 	}
+
+	for (int para = 0, counter = 0; para < numPara; para++)
+	{
+		// Equivalent of Ab
+		localGradient[para] = depthWeight * dot(rho_deriv_v3f(colour_diff_d, colourThresh), A[para]);
+
+		// compute triangular part of A'A
+		for (int col = 0; col <= para; col++)
+		{
+			// dot(A[para],A[col]) but with huber weighting
+			localHessian[counter++] = depthWeight * depthWeight * dot(rho_deriv2_v3f(colour_diff_d, A[para], colourThresh), A[col]);
+		}
+	}
+
+	// compute b
+	colourDifferenceSq = depthWeight * rho_v3f(colour_diff_d, colourThresh);
 
 	return true;
 }
@@ -278,7 +306,7 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointProjectedColour_exRGB(THREADPTR(in
 	Vector4f pt_image = scenePose * pt_world;
 
 	// Point behind the camera
-	if(pt_image.z <= 0) return false;
+	if(pt_image.z <= 0.f) return false;
 
 	Vector2f pt_image_proj;
 	// Project the point onto the previous frame
