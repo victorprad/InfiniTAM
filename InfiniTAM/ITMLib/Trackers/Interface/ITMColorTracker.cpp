@@ -110,7 +110,7 @@ ITMColorTracker::EvaluationPoint::EvaluationPoint(ORUtils::SE3Pose *pos, const I
 
 	ITMColorTracker *parent = (ITMColorTracker *)mParent;
 
-	parent->F_oneLevel(localF, mPara);
+	mValidPoints = parent->F_oneLevel(localF, mPara);
 
 	cacheF = localF[0];
 
@@ -154,7 +154,7 @@ static inline bool minimizeLM(const ITMColorTracker & tracker, ORUtils::SE3Pose 
 	ITMColorTracker::EvaluationPoint *x = tracker.evaluateAt(new ORUtils::SE3Pose(initialization));
 	ITMColorTracker::EvaluationPoint *x2 = NULL;
 
-	if (!portable_finite(x->f())) { delete[] d; delete x; return false; }
+	if (x->getNumValidPoints()<100) { delete[] d; delete x; return false; }
 
 	do
 	{
@@ -202,6 +202,8 @@ static inline bool minimizeLM(const ITMColorTracker & tracker, ORUtils::SE3Pose 
 			double rho = stepQuality(x, x2, &(d[0]), grad, B, numPara);
 			if (rho > TR_QUALITY_GAMMA1) lambda = lambda / TR_REGION_INCREASE;
 			else if (rho <= TR_QUALITY_GAMMA2) { success = false; lambda = lambda / TR_REGION_DECREASE; }
+
+			if (x2->getNumValidPoints() < 100) success = false;
 		}
 		else
 		{

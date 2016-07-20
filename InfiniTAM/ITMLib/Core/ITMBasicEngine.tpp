@@ -322,6 +322,7 @@ void ITMBasicEngine<TVoxel,TIndex>::GetImage(ITMUChar4Image *out, GetImageType g
 
 		break;
 	case ITMBasicEngine::InfiniTAM_IMAGE_SCENERAYCAST:
+	case ITMBasicEngine::InfiniTAM_IMAGE_COLOUR_FROM_VOLUME:
 	case ITMBasicEngine::InfiniTAM_IMAGE_COLOUR_FROM_NORMAL:
 	case ITMBasicEngine::InfiniTAM_IMAGE_COLOUR_FROM_CONFIDENCE:
 		{
@@ -338,6 +339,9 @@ void ITMBasicEngine<TVoxel,TIndex>::GetImage(ITMUChar4Image *out, GetImageType g
 			break;
 		case ITMBasicEngine::InfiniTAM_IMAGE_COLOUR_FROM_NORMAL:
 			imageType = IITMVisualisationEngine::RENDER_COLOUR_FROM_NORMAL;
+			break;
+		case ITMBasicEngine::InfiniTAM_IMAGE_COLOUR_FROM_VOLUME:
+			imageType = IITMVisualisationEngine::RENDER_COLOUR_FROM_VOLUME;
 			break;
 		default:
 			imageType = IITMVisualisationEngine::RENDER_SHADED_GREYSCALE_IMAGENORMALS;

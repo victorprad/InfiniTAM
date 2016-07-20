@@ -30,19 +30,7 @@
 #define DEGTORAD float(0.017453292519943295769236907684886)
 #endif
 
-#ifndef MY_INF
-#define MY_INF 0x7f800000
-#endif
-
 #ifndef __METALC__
-
-inline bool portable_finite(float a)
-{
-	volatile float temp = a;
-	if (temp != a) return false;
-	if ((temp - a) != 0.0) return false;
-	return true;
-}
 
 inline void matmul(const float *A, const float *b, float *x, int numRows, int numCols)
 {
