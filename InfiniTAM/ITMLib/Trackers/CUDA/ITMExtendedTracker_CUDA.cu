@@ -309,7 +309,7 @@ int ITMExtendedTracker_CUDA::ComputeGandH_RGB(float &f, float *nabla, float *hes
 	for (int r = 0; r < noPara; ++r) for (int c = r + 1; c < noPara; c++) hessian[r + c * 6] = hessian[c + r * 6];
 
 //	memcpy(nabla, sumNabla, noPara * sizeof(float));
-	for (int r = 0, counter = 0; r < noPara; r++) nabla[r] = sumNabla[r];
+	for (int r = 0; r < noPara; r++) nabla[r] = sumNabla[r];
 
 	if (noValidPoints > 100)
 	{
