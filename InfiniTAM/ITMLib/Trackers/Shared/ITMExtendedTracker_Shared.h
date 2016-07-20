@@ -172,7 +172,9 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exRGB_Ab(THREADPTR(float) *loca
 	const Vector3f gy_obs = interpolateBilinear(gy, pt_image_live, imgSize).toVector3() / 255.f;
 
 	if (colour_obs.w <= 1e-3f) return false;
-	if (dot(gx_obs, gx_obs) < 1e-5 || dot(gy_obs, gy_obs) < 1e-5) return false;
+//	if (dot(gx_obs, gx_obs) < 1e-5 || dot(gy_obs, gy_obs) < 1e-5) return false;
+	if (fabs(gx_obs.x) <= 1e-4f || fabs(gx_obs.y) <= 1e-4f || fabs(gx_obs.z) <= 1e-4f ||
+		fabs(gy_obs.x) <= 1e-4f || fabs(gy_obs.y) <= 1e-4f || fabs(gy_obs.z) <= 1e-4f) return false;
 
 	const Vector3f colour_diff_d(colour_obs.x - colour_world.x,
 								 colour_obs.y - colour_world.y,
