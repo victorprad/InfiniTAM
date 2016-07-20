@@ -29,8 +29,8 @@ ITMLibSettings::ITMLibSettings(void)
 
 	//deviceType = DEVICE_CPU;
 
-	/// enables or disables swapping. HERE BE DRAGONS: It should work, but requires more testing
-	useSwapping = false;
+	/// how swapping works: disabled, fully enabled (still with dragons) and delete what's not visible
+	swappingMode = SWAPPINGMODE_DISABLED;
 
 	/// enables or disables approximate raycast
 	useApproximateRaycast = false;

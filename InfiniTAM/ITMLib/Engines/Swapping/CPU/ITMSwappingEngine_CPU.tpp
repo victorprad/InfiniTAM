@@ -174,3 +174,44 @@ void ITMSwappingEngine_CPU<TVoxel, ITMVoxelBlockHash>::SaveToGlobalMemory(ITMSce
 		}
 	}
 }
+
+template<class TVoxel>
+void ITMSwappingEngine_CPU<TVoxel, ITMVoxelBlockHash>::CleanLocalMemory(ITMScene<TVoxel, ITMVoxelBlockHash> *scene, ITMRenderState *renderState)
+{
+	ITMHashEntry *hashTable = scene->index.GetEntries();
+	uchar *entriesVisibleType = ((ITMRenderState_VH*)renderState)->GetEntriesVisibleType();
+
+	TVoxel *localVBA = scene->localVBA.GetVoxelBlocks();
+	int *voxelAllocationList = scene->localVBA.GetAllocationList();
+
+	int noTotalEntries = scene->index.noTotalEntries;
+
+	int noNeededEntries = 0;
+	int noAllocatedVoxelEntries = scene->localVBA.lastFreeBlockId;
+
+	for (int entryDestId = 0; entryDestId < noTotalEntries; entryDestId++)
+	{
+		if (noNeededEntries >= SDF_TRANSFER_BLOCK_NUM) break;
+
+		int localPtr = hashTable[entryDestId].ptr;
+
+		if (localPtr >= 0 && entriesVisibleType[entryDestId] == 0)
+		{
+			TVoxel *localVBALocation = localVBA + localPtr * SDF_BLOCK_SIZE3;
+
+			int vbaIdx = noAllocatedVoxelEntries;
+			if (vbaIdx < SDF_BUCKET_NUM - 1)
+			{
+				noAllocatedVoxelEntries++;
+				voxelAllocationList[vbaIdx + 1] = localPtr;
+				hashTable[entryDestId].ptr = -1;
+
+				for (int i = 0; i < SDF_BLOCK_SIZE3; i++) localVBALocation[i] = TVoxel();
+			}
+
+			noNeededEntries++;
+		}
+	}
+
+	scene->localVBA.lastFreeBlockId = noAllocatedVoxelEntries;
+}

@@ -24,11 +24,15 @@ namespace ITMLib
             FAILUREMODE_STOP_INTEGRATION
         } FailureMode;
         
+		typedef enum
+		{
+			SWAPPINGMODE_DISABLED,
+			SWAPPINGMODE_ENABLED,
+			SWAPPINGMODE_DELETE
+		} SwappingMode;
+
 		/// Select the type of device to use
 		DeviceType deviceType;
-
-		/// Enables swapping between host and device.
-		bool useSwapping;
 
 		bool useApproximateRaycast;
 
@@ -40,9 +44,7 @@ namespace ITMLib
         bool createMeshingEngine;
         
         FailureMode behaviourOnFailure;
-        
-//		bool useRelocalisation;
-//		bool useTrackingFailureDetection;
+		SwappingMode swappingMode;
 
 		const char *trackerConfig;
 
