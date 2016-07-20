@@ -51,7 +51,7 @@ class FFMPEGReader::PrivateData {
 
 	~PrivateData(void)
 	{
-		av_free_packet(&packet);
+		av_packet_unref(&packet);
 		av_frame_free(&frame);
 	}
 
