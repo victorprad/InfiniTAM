@@ -178,9 +178,9 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exRGB_Ab(THREADPTR(float) *loca
 								 colour_obs.y - colour_world.y,
 								 colour_obs.z - colour_world.z);
 
-	if (colour_diff_d.x > tukeyCutoff * colourThresh &&
-		colour_diff_d.y > tukeyCutoff * colourThresh &&
-		colour_diff_d.z > tukeyCutoff * colourThresh) return false;
+	if (fabs(colour_diff_d.x) > tukeyCutoff * colourThresh &&
+		fabs(colour_diff_d.y) > tukeyCutoff * colourThresh &&
+		fabs(colour_diff_d.z) > tukeyCutoff * colourThresh) return false;
 
 	// Derivatives computed as in
 	// Blanco, J. (2010). A tutorial on se (3) transformation parameterizations and on-manifold optimization.
