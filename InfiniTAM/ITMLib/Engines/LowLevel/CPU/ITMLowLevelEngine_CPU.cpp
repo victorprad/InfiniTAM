@@ -33,6 +33,18 @@ void ITMLowLevelEngine_CPU::CopyImage(ITMFloat4Image *image_out, const ITMFloat4
 	memcpy(dest, src, image_in->dataSize * sizeof(Vector4f));
 }
 
+void ITMLowLevelEngine_CPU::ConvertColourToIntensity(ITMFloatImage *image_out, const ITMUChar4Image *image_in) const
+{
+	const Vector2i dims = image_in->noDims;
+	image_out->ChangeDims(dims);
+
+	float *dest = image_out->GetData(MEMORYDEVICE_CPU);
+	const Vector4u *src = image_in->GetData(MEMORYDEVICE_CPU);
+
+	for (int y = 0; y < dims.y; y++) for (int x = 0; x < dims.x; x++)
+		convertColourToIntensity(dest, x, y, dims, src);
+}
+
 void ITMLowLevelEngine_CPU::FilterSubsample(ITMUChar4Image *image_out, const ITMUChar4Image *image_in) const
 {
 	Vector2i oldDims = image_in->noDims;

@@ -20,6 +20,8 @@ ITMLowLevelEngine_CUDA::~ITMLowLevelEngine_CUDA(void)
 	ORcudaSafeCall(cudaFreeHost(counterTempData_host));
 }
 
+__global__ void convertColourToIntensity_device(float *imageData_out, Vector2i dims, const Vector4u *imageData_in);
+
 __global__ void filterSubsample_device(Vector4u *imageData_out, Vector2i newDims, const Vector4u *imageData_in, Vector2i oldDims);
 
 __global__ void filterSubsampleWithHoles_device(float *imageData_out, Vector2i newDims, const float *imageData_in, Vector2i oldDims);
@@ -54,6 +56,21 @@ void ITMLowLevelEngine_CUDA::CopyImage(ITMFloat4Image *image_out, const ITMFloat
 	const Vector4f *src = image_in->GetData(MEMORYDEVICE_CUDA);
 
 	ORcudaSafeCall(cudaMemcpy(dest, src, image_in->dataSize * sizeof(Vector4f), cudaMemcpyDeviceToDevice));
+}
+
+void ITMLowLevelEngine_CUDA::ConvertColourToIntensity(ITMFloatImage *image_out, const ITMUChar4Image *image_in) const
+{
+	const Vector2i dims = image_in->noDims;
+	image_out->ChangeDims(dims);
+
+	float *dest = image_out->GetData(MEMORYDEVICE_CUDA);
+	const Vector4u *src = image_in->GetData(MEMORYDEVICE_CUDA);
+
+	dim3 blockSize(16, 16);
+	dim3 gridSize((int)ceil((float)dims.x / (float)blockSize.x), (int)ceil((float)dims.y / (float)blockSize.y));
+
+	convertColourToIntensity_device << <gridSize, blockSize >> >(dest, dims, src);
+	ORcudaKernelCheck;
 }
 
 void ITMLowLevelEngine_CUDA::FilterSubsample(ITMUChar4Image *image_out, const ITMUChar4Image *image_in) const
@@ -158,6 +175,15 @@ int ITMLowLevelEngine_CUDA::CountValidDepths(const ITMFloatImage *image_in) cons
 }
 
 // device functions
+
+__global__ void convertColourToIntensity_device(float *imageData_out, Vector2i dims, const Vector4u *imageData_in)
+{
+	int x = threadIdx.x + blockIdx.x * blockDim.x, y = threadIdx.y + blockIdx.y * blockDim.y;
+
+	if (x > dims.x - 1 || y > dims.y - 1) return;
+
+	convertColourToIntensity(imageData_out, x, y, dims, imageData_in);
+}
 
 __global__ void filterSubsample_device(Vector4u *imageData_out, Vector2i newDims, const Vector4u *imageData_in, Vector2i oldDims)
 {

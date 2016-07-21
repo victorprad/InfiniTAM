@@ -14,6 +14,8 @@ namespace ITMLib
 		virtual void CopyImage(ITMFloatImage *image_out, const ITMFloatImage *image_in) const = 0;
 		virtual void CopyImage(ITMFloat4Image *image_out, const ITMFloat4Image *image_in) const = 0;
 
+		virtual void ConvertColourToIntensity(ITMFloatImage *image_out, const ITMUChar4Image *image_in) const = 0;
+
 		virtual void FilterSubsample(ITMUChar4Image *image_out, const ITMUChar4Image *image_in) const = 0;
 		virtual void FilterSubsampleWithHoles(ITMFloatImage *image_out, const ITMFloatImage *image_in) const = 0;
 		virtual void FilterSubsampleWithHoles(ITMFloat4Image *image_out, const ITMFloat4Image *image_in) const = 0;

@@ -13,6 +13,8 @@ namespace ITMLib
 		void CopyImage(ITMFloatImage *image_out, const ITMFloatImage *image_in) const;
 		void CopyImage(ITMFloat4Image *image_out, const ITMFloat4Image *image_in) const;
 
+		void ConvertColourToIntensity(ITMFloatImage *image_out, const ITMUChar4Image *image_in) const;
+
 		void FilterSubsample(ITMUChar4Image *image_out, const ITMUChar4Image *image_in) const;
 		void FilterSubsampleWithHoles(ITMFloatImage *image_out, const ITMFloatImage *image_in) const;
 		void FilterSubsampleWithHoles(ITMFloat4Image *image_out, const ITMFloat4Image *image_in) const;
