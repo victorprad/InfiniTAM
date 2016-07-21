@@ -33,10 +33,9 @@ _CPU_AND_GPU_CODE_ inline void filterSubsample(DEVICEPTR(Vector4u) *imageData_ou
 	imageData_out[x + y * newDims.x] = pixel_out;
 }
 
-_CPU_AND_GPU_CODE_ inline void filterSubsample(DEVICEPTR(float) *imageData_out, int x, int y, Vector2i newDims,
-	const CONSTPTR(float) *imageData_in, Vector2i oldDims)
+_CPU_AND_GPU_CODE_ inline void filterGauss5x5(DEVICEPTR(float) *imageData_out, int x_out, int y_out, Vector2i newDims,
+	const CONSTPTR(float) *imageData_in, int x_in, int y_in, Vector2i oldDims)
 {
-	int src_pos_x = x * 2, src_pos_y = y * 2;
 	float pixel_out = 0.f;
 
 	// Could be improved by properly caching the separable kernel results.
@@ -47,12 +46,12 @@ _CPU_AND_GPU_CODE_ inline void filterSubsample(DEVICEPTR(float) *imageData_out, 
 		float row_conv = 0.f;
 		for (int i = 0; i < 5; ++i)
 		{
-			row_conv += gauss_kernel[i] * imageData_in[(src_pos_y - 2 + j) * oldDims.x + (src_pos_x - 2 + i)];
+			row_conv += gauss_kernel[i] * imageData_in[(y_in - 2 + j) * oldDims.x + (x_in - 2 + i)];
 		}
 		pixel_out += gauss_kernel[j] * row_conv;
 	}
 
-	imageData_out[x + y * newDims.x] = pixel_out;
+	imageData_out[x_out + y_out * newDims.x] = pixel_out;
 }
 
 _CPU_AND_GPU_CODE_ inline void filterSubsampleWithHoles(DEVICEPTR(float) *imageData_out, int x, int y, Vector2i newDims, 

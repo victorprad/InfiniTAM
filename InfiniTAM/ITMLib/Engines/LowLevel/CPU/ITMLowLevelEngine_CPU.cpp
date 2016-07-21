@@ -45,6 +45,20 @@ void ITMLowLevelEngine_CPU::ConvertColourToIntensity(ITMFloatImage *image_out, c
 		convertColourToIntensity(dest, x, y, dims, src);
 }
 
+void ITMLowLevelEngine_CPU::FilterIntensity(ITMFloatImage *image_out, const ITMFloatImage *image_in) const
+{
+	Vector2i dims = image_in->noDims;
+
+	image_out->ChangeDims(dims);
+	image_out->Clear(0);
+
+	const float *imageData_in = image_in->GetData(MEMORYDEVICE_CPU);
+	float *imageData_out = image_out->GetData(MEMORYDEVICE_CPU);
+
+	for (int y = 2; y < dims.y - 2; y++) for (int x = 2; x < dims.x - 2; x++)
+		filterGauss5x5(imageData_out, x, y, dims, imageData_in, x, y, dims);
+}
+
 void ITMLowLevelEngine_CPU::FilterSubsample(ITMUChar4Image *image_out, const ITMUChar4Image *image_in) const
 {
 	Vector2i oldDims = image_in->noDims;
@@ -71,7 +85,7 @@ void ITMLowLevelEngine_CPU::FilterSubsample(ITMFloatImage *image_out, const ITMF
 	float *imageData_out = image_out->GetData(MEMORYDEVICE_CPU);
 
 	for (int y = 1; y < newDims.y - 1; y++) for (int x = 1; x < newDims.x - 1; x++)
-		filterSubsample(imageData_out, x, y, newDims, imageData_in, oldDims);
+		filterGauss5x5(imageData_out, x, y, newDims, imageData_in, x * 2, y * 2, oldDims);
 }
 
 void ITMLowLevelEngine_CPU::FilterSubsampleWithHoles(ITMFloatImage *image_out, const ITMFloatImage *image_in) const

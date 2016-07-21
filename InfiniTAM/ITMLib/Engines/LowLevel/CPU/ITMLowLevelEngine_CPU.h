@@ -15,6 +15,8 @@ namespace ITMLib
 
 		void ConvertColourToIntensity(ITMFloatImage *image_out, const ITMUChar4Image *image_in) const;
 
+		void FilterIntensity(ITMFloatImage *image_out, const ITMFloatImage *image_in) const;
+
 		void FilterSubsample(ITMUChar4Image *image_out, const ITMUChar4Image *image_in) const;
 		void FilterSubsample(ITMFloatImage *image_out, const ITMFloatImage *image_in) const;
 		void FilterSubsampleWithHoles(ITMFloatImage *image_out, const ITMFloatImage *image_in) const;
