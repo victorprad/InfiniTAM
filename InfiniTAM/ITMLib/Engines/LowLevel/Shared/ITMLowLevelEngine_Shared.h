@@ -131,3 +131,22 @@ _CPU_AND_GPU_CODE_ inline void gradientY(DEVICEPTR(Vector4s) *grad, int x, int y
 
 	grad[x + y * imgSize.x] = d_out;
 }
+
+_CPU_AND_GPU_CODE_ inline void gradientXY(DEVICEPTR(Vector2f) *grad, int x, int y, const CONSTPTR(float) *image, Vector2i imgSize)
+{
+	Vector2f d1, d2, d3, d_out;
+
+	// Compute gradient in the X direction
+	d1.x = image[(y - 1) * imgSize.x + (x + 1)] - image[(y - 1) * imgSize.x + (x - 1)];
+	d2.x = image[(y    ) * imgSize.x + (x + 1)] - image[(y    ) * imgSize.x + (x - 1)];
+	d3.x = image[(y + 1) * imgSize.x + (x + 1)] - image[(y + 1) * imgSize.x + (x - 1)];
+	d_out.x = (d1.x + 2.f * d2.x + d3.x) / 8.f;
+
+	// Compute gradient in the Y direction
+	d1.y = image[(y + 1) * imgSize.x + (x - 1)] - image[(y - 1) * imgSize.x + (x - 1)];
+	d2.y = image[(y + 1) * imgSize.x + (x    )] - image[(y - 1) * imgSize.x + (x    )];
+	d3.y = image[(y + 1) * imgSize.x + (x + 1)] - image[(y - 1) * imgSize.x + (x + 1)];
+	d_out.y = (d1.y + 2.f * d2.y + d3.y) / 8.f;
+
+	grad[y * imgSize.x + x] = d_out;
+}

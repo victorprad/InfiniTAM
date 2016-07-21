@@ -29,6 +29,7 @@ __global__ void filterSubsampleWithHoles_device(Vector4f *imageData_out, Vector2
 
 __global__ void gradientX_device(Vector4s *grad, const Vector4u *image, Vector2i imgSize);
 __global__ void gradientY_device(Vector4s *grad, const Vector4u *image, Vector2i imgSize);
+__global__ void gradientXY_device(Vector2f *grad, const float *image, Vector2i imgSize);
 
 __global__ void countValidDepths_device(const float *imageData_in, int imgSizeTotal, int *counterTempData_device);
 
@@ -158,6 +159,23 @@ void ITMLowLevelEngine_CUDA::GradientY(ITMShort4Image *grad_out, const ITMUChar4
 	ORcudaKernelCheck;
 }
 
+void ITMLowLevelEngine_CUDA::GradientXY(ITMFloat2Image *grad_out, const ITMFloatImage *image_in) const
+{
+	Vector2i imgSize = image_in->noDims;
+	grad_out->ChangeDims(imgSize);
+
+	Vector2f *grad = grad_out->GetData(MEMORYDEVICE_CUDA);
+	const float *image = image_in->GetData(MEMORYDEVICE_CUDA);
+
+	dim3 blockSize(16, 16);
+	dim3 gridSize((int)ceil((float)imgSize.x / (float)blockSize.x), (int)ceil((float)imgSize.y / (float)blockSize.y));
+
+	ORcudaSafeCall(cudaMemset(grad, 0, imgSize.x * imgSize.y * sizeof(Vector2f)));
+
+	gradientXY_device << <gridSize, blockSize >> >(grad, image, imgSize);
+	ORcudaKernelCheck;
+}
+
 int ITMLowLevelEngine_CUDA::CountValidDepths(const ITMFloatImage *image_in) const
 {
 	const float *imageData_in = image_in->GetData(MEMORYDEVICE_CUDA);
@@ -228,6 +246,15 @@ __global__ void gradientY_device(Vector4s *grad, const Vector4u *image, Vector2i
 	if (x < 1 || x > imgSize.x - 2 || y < 1 || y > imgSize.y - 2) return;
 
 	gradientY(grad, x, y, image, imgSize);
+}
+
+__global__ void gradientXY_device(Vector2f *grad, const float *image, Vector2i imgSize)
+{
+	int x = threadIdx.x + blockIdx.x * blockDim.x, y = threadIdx.y + blockIdx.y * blockDim.y;
+
+	if (x < 1 || x > imgSize.x - 2 || y < 1 || y > imgSize.y - 2) return;
+
+	gradientXY(grad, x, y, image, imgSize);
 }
 
 __global__ void countValidDepths_device(const float *imageData_in, int imgSizeTotal, int *counterTempData_device)

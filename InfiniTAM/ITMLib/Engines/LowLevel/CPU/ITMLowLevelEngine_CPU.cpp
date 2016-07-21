@@ -115,6 +115,20 @@ void ITMLowLevelEngine_CPU::GradientY(ITMShort4Image *grad_out, const ITMUChar4I
 		gradientY(grad, x, y, image, imgSize);
 }
 
+void ITMLowLevelEngine_CPU::GradientXY(ITMFloat2Image *grad_out, const ITMFloatImage *image_in) const
+{
+	Vector2i imgSize = image_in->noDims;
+	grad_out->ChangeDims(imgSize);
+
+	Vector2f *grad = grad_out->GetData(MEMORYDEVICE_CPU);
+	const float *image = image_in->GetData(MEMORYDEVICE_CPU);
+
+	memset(grad, 0, imgSize.x * imgSize.y * sizeof(Vector2f));
+
+	for (int y = 1; y < imgSize.y - 1; y++) for (int x = 1; x < imgSize.x - 1; x++)
+		gradientXY(grad, x, y, image, imgSize);
+}
+
 int ITMLowLevelEngine_CPU::CountValidDepths(const ITMFloatImage *image_in) const
 {
 	int noValidPoints = 0;
