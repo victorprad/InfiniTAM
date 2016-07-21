@@ -7,7 +7,7 @@
 #include "../../Objects/Tracking/ITMImageHierarchy.h"
 #include "../../Objects/Tracking/ITMTwoImageHierarchy.h"
 #include "../../Objects/Tracking/ITMDepthHierarchyLevel.h"
-#include "../../Objects/Tracking/ITMRGBHierarchyLevel.h"
+#include "../../Objects/Tracking/ITMIntensityHierarchyLevel.h"
 #include "../../Objects/Tracking/ITMSceneHierarchyLevel.h"
 #include "../../Objects/Tracking/ITMTemplatedHierarchyLevel.h"
 #include "../../Objects/Tracking/TrackerIterationType.h"
@@ -26,8 +26,8 @@ namespace ITMLib
 	private:
 		const ITMLowLevelEngine *lowLevelEngine;
 		ITMImageHierarchy<ITMSceneHierarchyLevel> *sceneHierarchy;
-		ITMTwoImageHierarchy<ITMDepthHierarchyLevel, ITMRGBHierarchyLevel> *viewHierarchy;
-		ITMImageHierarchy<ITMTemplatedHierarchyLevel<ORUtils::Image<Vector4f> > > *previousProjectedRGBHierarchy;
+		ITMTwoImageHierarchy<ITMDepthHierarchyLevel, ITMIntensityHierarchyLevel> *viewHierarchy;
+		ITMImageHierarchy<ITMTemplatedHierarchyLevel<ITMFloatImage> > *previousProjectedIntensityHierarchy;
 
 		ITMTrackingState *trackingState; const ITMView *view;
 
@@ -62,8 +62,8 @@ namespace ITMLib
 		Matrix4f depthToRGBTransform;
 		ITMSceneHierarchyLevel *sceneHierarchyLevel_Depth, *sceneHierarchyLevel_RGB;
 		ITMDepthHierarchyLevel *viewHierarchyLevel_Depth;
-		ITMRGBHierarchyLevel *viewHierarchyLevel_RGB;
-		ITMTemplatedHierarchyLevel<ORUtils::Image<Vector4f> > *previousProjectedRGBLevel;
+		ITMIntensityHierarchyLevel *viewHierarchyLevel_Intensity;
+		ITMTemplatedHierarchyLevel<ITMFloatImage > *previousProjectedIntensityLevel;
 
 		int currentFrameNo;
 

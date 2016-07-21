@@ -14,17 +14,18 @@ ITMExtendedTracker::ITMExtendedTracker(Vector2i imgSize_d, Vector2i imgSize_rgb,
 	float colourWeight,	TrackerIterationType *trackingRegime, int noHierarchyLevels,
 	float terminationThreshold, float failureDetectorThreshold, float viewFrustum_min, float viewFrustum_max,
 	int tukeyCutOff, int framesToSkip, int framesToWeight, const ITMLowLevelEngine *lowLevelEngine, MemoryDeviceType memoryType) :
-	previousProjectedRGBHierarchy(NULL)
+		previousProjectedIntensityHierarchy(NULL)
 {
 	this->useDepth = useDepth;
 	this->useColour = useColour;
 
+	// TODO: restore skipallocation to true
 	if (useColour && useDepth)
-		viewHierarchy = new ITMTwoImageHierarchy<ITMDepthHierarchyLevel, ITMRGBHierarchyLevel>(imgSize_d, imgSize_rgb, trackingRegime, noHierarchyLevels, memoryType, true);
+		viewHierarchy = new ITMTwoImageHierarchy<ITMDepthHierarchyLevel, ITMIntensityHierarchyLevel>(imgSize_d, imgSize_rgb, trackingRegime, noHierarchyLevels, memoryType, false);
 	else
 	{
-		if (useDepth) viewHierarchy = new ITMTwoImageHierarchy<ITMDepthHierarchyLevel, ITMRGBHierarchyLevel>(imgSize_d, trackingRegime, noHierarchyLevels, memoryType, 0, true);
-		else viewHierarchy = new ITMTwoImageHierarchy<ITMDepthHierarchyLevel, ITMRGBHierarchyLevel>(imgSize_rgb, trackingRegime, noHierarchyLevels, memoryType, 1, true);
+		if (useDepth) viewHierarchy = new ITMTwoImageHierarchy<ITMDepthHierarchyLevel, ITMIntensityHierarchyLevel>(imgSize_d, trackingRegime, noHierarchyLevels, memoryType, 0, false);
+		else viewHierarchy = new ITMTwoImageHierarchy<ITMDepthHierarchyLevel, ITMIntensityHierarchyLevel>(imgSize_rgb, trackingRegime, noHierarchyLevels, memoryType, 1, false);
 	}
 
 	sceneHierarchy = new ITMImageHierarchy<ITMSceneHierarchyLevel>(imgSize_d, trackingRegime, noHierarchyLevels, memoryType, true);
@@ -32,7 +33,7 @@ ITMExtendedTracker::ITMExtendedTracker(Vector2i imgSize_d, Vector2i imgSize_rgb,
 	if (useColour)
 	{
 		// Don't skip allocation for level 0
-		previousProjectedRGBHierarchy = new ITMImageHierarchy<ITMTemplatedHierarchyLevel<ORUtils::Image<Vector4f> > >(imgSize_d, trackingRegime, noHierarchyLevels, memoryType, false);
+		previousProjectedIntensityHierarchy = new ITMImageHierarchy<ITMTemplatedHierarchyLevel<ITMFloatImage> >(imgSize_d, trackingRegime, noHierarchyLevels, memoryType, false);
 	}
 
 	this->noIterationsPerLevel = new int[noHierarchyLevels];
@@ -79,7 +80,7 @@ ITMExtendedTracker::~ITMExtendedTracker(void)
 
 	delete this->sceneHierarchy;
 
-	if (previousProjectedRGBHierarchy) delete previousProjectedRGBHierarchy;
+	if (previousProjectedIntensityHierarchy) delete previousProjectedIntensityHierarchy;
 
 	delete[] this->noIterationsPerLevel;
 	delete[] this->spaceThresh;
@@ -137,10 +138,11 @@ void ITMExtendedTracker::SetEvaluationData(ITMTrackingState *trackingState, cons
 	if (useColour)
 	{
 		viewHierarchy->levels_t1[0]->intrinsics = view->calib->intrinsics_rgb.projectionParamsSimple.all;
-		viewHierarchy->levels_t1[0]->rgb_current = view->rgb;
-		viewHierarchy->levels_t1[0]->rgb_current->UpdateDeviceFromHost();
-		viewHierarchy->levels_t1[0]->rgb_prev = view->rgb_prev;
-		viewHierarchy->levels_t1[0]->rgb_prev->UpdateDeviceFromHost();
+		// TODO: should do the intensity conversion in the viewbuilder to cache the previous image
+		lowLevelEngine->ConvertColourToIntensity(viewHierarchy->levels_t1[0]->intensity_current, view->rgb);
+		lowLevelEngine->ConvertColourToIntensity(viewHierarchy->levels_t1[0]->intensity_prev, view->rgb_prev);
+		viewHierarchy->levels_t1[0]->intensity_current->UpdateDeviceFromHost();
+		viewHierarchy->levels_t1[0]->intensity_prev->UpdateDeviceFromHost();
 	}
 
 	sceneHierarchy->levels[0]->pointsMap = trackingState->pointCloud->locations;
@@ -170,26 +172,23 @@ void ITMExtendedTracker::PrepareForEvaluation()
 	{
 		for (int i = 1; i < viewHierarchy->noLevels; i++)
 		{
-			ITMRGBHierarchyLevel *currentLevel = viewHierarchy->levels_t1[i], *previousLevel = viewHierarchy->levels_t1[i - 1];
+			ITMIntensityHierarchyLevel *currentLevel = viewHierarchy->levels_t1[i], *previousLevel = viewHierarchy->levels_t1[i - 1];
 
-			lowLevelEngine->FilterSubsample(currentLevel->rgb_current, previousLevel->rgb_current);
-			lowLevelEngine->FilterSubsample(currentLevel->rgb_prev, previousLevel->rgb_prev);
+			lowLevelEngine->FilterSubsample(currentLevel->intensity_current, previousLevel->intensity_current);
+			lowLevelEngine->FilterSubsample(currentLevel->intensity_prev, previousLevel->intensity_prev);
 
-			currentLevel->rgb_current->UpdateDeviceFromHost();
-			currentLevel->rgb_prev->UpdateDeviceFromHost();
+			currentLevel->intensity_current->UpdateDeviceFromHost();
+			currentLevel->intensity_prev->UpdateDeviceFromHost();
 
 			currentLevel->intrinsics = previousLevel->intrinsics * 0.5f;
 		}
 
 		for (int i = 0; i < viewHierarchy->noLevels; i++)
 		{
-			ITMRGBHierarchyLevel *currentLevel = viewHierarchy->levels_t1[i];
+			ITMIntensityHierarchyLevel *currentLevel = viewHierarchy->levels_t1[i];
 
-			lowLevelEngine->GradientX(currentLevel->gX, currentLevel->rgb_current);
-			lowLevelEngine->GradientY(currentLevel->gY, currentLevel->rgb_current);
-
-			currentLevel->gX->UpdateDeviceFromHost();
-			currentLevel->gY->UpdateDeviceFromHost();
+			lowLevelEngine->GradientXY(currentLevel->gradients, currentLevel->intensity_current);
+			currentLevel->gradients->UpdateDeviceFromHost();
 		}
 
 		for (int i = 1; i < sceneHierarchy->noLevels; i++)
@@ -227,9 +226,9 @@ void ITMExtendedTracker::SetEvaluationParams(int levelId)
 	if (useColour)
 	{
 		this->sceneHierarchyLevel_RGB = sceneHierarchy->levels[levelId];
-		this->viewHierarchyLevel_RGB = viewHierarchy->levels_t1[levelId];
-		this->previousProjectedRGBLevel = previousProjectedRGBHierarchy->levels[levelId];
-		iterationType = this->viewHierarchyLevel_RGB->iterationType;
+		this->viewHierarchyLevel_Intensity = viewHierarchy->levels_t1[levelId];
+		this->previousProjectedIntensityLevel = previousProjectedIntensityHierarchy->levels[levelId];
+		iterationType = this->viewHierarchyLevel_Intensity->iterationType;
 	}
 }
 

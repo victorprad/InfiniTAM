@@ -34,10 +34,9 @@ struct ITMExtendedTracker_KernelParameters_Depth {
 struct ITMExtendedTracker_KernelParameters_RGB {
 	ITMExtendedTracker_CUDA::AccuCell *accu;
 	Vector4f *pointsMap;
-	Vector4s *gx;
-	Vector4s *gy;
-	Vector4u *rgb_live;
-	Vector4f *rgb_model;
+	Vector2f *gradients;
+	float *intensity_live;
+	float *intensity_model;
 	Vector2i viewImageSize;
 	Vector2i sceneImageSize;
 	Matrix4f approxInvPose;
@@ -55,7 +54,7 @@ __global__ void exDepthTrackerOneLevel_g_rt_device(ITMExtendedTracker_KernelPara
 template<bool shortIteration, bool rotationOnly, bool useWeights>
 __global__ void exRGBTrackerOneLevel_g_rt_device(ITMExtendedTracker_KernelParameters_RGB para);
 
-__global__ void exRGBTrackerProjectPrevImage_device(Vector4f *out_rgb, const Vector4u *in_rgb, const Vector4f *in_points, Vector2i imageSize, Vector2i sceneSize, Vector4f intrinsics, Matrix4f scenePose);
+__global__ void exRGBTrackerProjectPrevImage_device(float *out_rgb, const float *in_rgb, const Vector4f *in_points, Vector2i imageSize, Vector2i sceneSize, Vector4f intrinsics, Matrix4f scenePose);
 
 // host methods
 
@@ -176,21 +175,19 @@ int ITMExtendedTracker_CUDA::ComputeGandH_Depth(float &f, float *nabla, float *h
 int ITMExtendedTracker_CUDA::ComputeGandH_RGB(float &f, float *nabla, float *hessian, Matrix4f approxInvPose)
 {
 	Vector2i sceneImageSize = sceneHierarchyLevel_RGB->pointsMap->noDims;
-	Vector2i viewImageSize = viewHierarchyLevel_RGB->rgb_current->noDims;
+	Vector2i viewImageSize = viewHierarchyLevel_Intensity->intensity_current->noDims;
 
 	sceneHierarchyLevel_RGB->pointsMap->UpdateHostFromDevice();
-	previousProjectedRGBLevel->depth->UpdateHostFromDevice();
-	viewHierarchyLevel_RGB->rgb_current->UpdateHostFromDevice();
-	viewHierarchyLevel_RGB->gX->UpdateHostFromDevice();
-	viewHierarchyLevel_RGB->gY->UpdateHostFromDevice();
+	previousProjectedIntensityLevel->depth->UpdateHostFromDevice();
+	viewHierarchyLevel_Intensity->intensity_current->UpdateHostFromDevice();
+	viewHierarchyLevel_Intensity->gradients->UpdateHostFromDevice();
 
 	Vector4f *locations = sceneHierarchyLevel_RGB->pointsMap->GetData(MEMORYDEVICE_CPU);
-	Vector4f *rgb_model = previousProjectedRGBLevel->depth->GetData(MEMORYDEVICE_CPU);
-	Vector4u *rgb_live = viewHierarchyLevel_RGB->rgb_current->GetData(MEMORYDEVICE_CPU);
-	Vector4s *gx = viewHierarchyLevel_RGB->gX->GetData(MEMORYDEVICE_CPU);
-	Vector4s *gy = viewHierarchyLevel_RGB->gY->GetData(MEMORYDEVICE_CPU);
+	float *rgb_model = previousProjectedIntensityLevel->depth->GetData(MEMORYDEVICE_CPU);
+	float *rgb_live = viewHierarchyLevel_Intensity->intensity_current->GetData(MEMORYDEVICE_CPU);
+	Vector2f *gradients = viewHierarchyLevel_Intensity->gradients->GetData(MEMORYDEVICE_CPU);
 
-	Vector4f projParams = viewHierarchyLevel_RGB->intrinsics;
+	Vector4f projParams = viewHierarchyLevel_Intensity->intrinsics;
 
 	Matrix4f approxPose;
 	approxInvPose.inv(approxPose);
@@ -201,13 +198,13 @@ int ITMExtendedTracker_CUDA::ComputeGandH_RGB(float &f, float *nabla, float *hes
 
 	bool shortIteration = (iterationType == TRACKER_ITERATION_ROTATION) || (iterationType == TRACKER_ITERATION_TRANSLATION);
 
-	double sumHessian[6 * 6], sumNabla[6], sumF;
+	float sumHessian[6 * 6], sumNabla[6], sumF;
 	int noValidPoints;
 	int noPara = shortIteration ? 3 : 6, noParaSQ = shortIteration ? 3 + 2 + 1 : 6 + 5 + 4 + 3 + 2 + 1;
 
 	noValidPoints = 0; sumF = 0.0f;
-	memset(sumHessian, 0, sizeof(double) * noParaSQ);
-	memset(sumNabla, 0, sizeof(double) * noPara);
+	memset(sumHessian, 0, sizeof(float) * noParaSQ);
+	memset(sumNabla, 0, sizeof(float) * noPara);
 
 	float minF = 1e10, maxF = 0.f;
 	float minNabla[6], maxNabla[6];
@@ -225,8 +222,8 @@ int ITMExtendedTracker_CUDA::ComputeGandH_RGB(float &f, float *nabla, float *hes
 		maxHessian[i] = -1e10f;
 	}
 
-//	for (int y = 0; y < sceneImageSize.y; y++) for (int x = 0; x < sceneImageSize.x; x++)
-	for (int y = 0; y < sceneImageSize.y; y++) for (int x = sceneImageSize.x - 1; x >= 0; x--)
+	for (int y = 0; y < sceneImageSize.y; y++) for (int x = 0; x < sceneImageSize.x; x++)
+//	for (int y = 0; y < sceneImageSize.y; y++) for (int x = sceneImageSize.x - 1; x >= 0; x--)
 //	for (int y = sceneImageSize.y - 1; y >= 0; y--) for (int x = sceneImageSize.x - 1; x >= 0; x--)
 	{
 		float localHessian[6 + 5 + 4 + 3 + 2 + 1], localNabla[6], localF = 0;
@@ -242,11 +239,11 @@ int ITMExtendedTracker_CUDA::ComputeGandH_RGB(float &f, float *nabla, float *hes
 			if (currentFrameNo < 100)
 				isValidPoint = computePerPointGH_exRGB_Ab<false>(localNabla, localF, localHessian, depthWeight,
 					locations[x + y * sceneImageSize.x], rgb_model[x + y * sceneImageSize.x], rgb_live, viewImageSize, x, y,
-					projParams, approxPose, approxInvPose, scenePose, gx, gy, colourThresh[levelId], viewFrustum_min, viewFrustum_max, tukeyCutOff, framesToSkip, framesToWeight, noPara);
+					projParams, approxPose, approxInvPose, scenePose, gradients, colourThresh[levelId], viewFrustum_min, viewFrustum_max, tukeyCutOff, framesToSkip, framesToWeight, noPara);
 			else
 				isValidPoint = computePerPointGH_exRGB_Ab<true>(localNabla, localF, localHessian, depthWeight,
 					locations[x + y * sceneImageSize.x], rgb_model[x + y * sceneImageSize.x], rgb_live, viewImageSize, x, y,
-					projParams, approxPose, approxInvPose, scenePose, gx, gy, colourThresh[levelId], viewFrustum_min, viewFrustum_max, tukeyCutOff, framesToSkip, framesToWeight, noPara);
+					projParams, approxPose, approxInvPose, scenePose, gradients, colourThresh[levelId], viewFrustum_min, viewFrustum_max, tukeyCutOff, framesToSkip, framesToWeight, noPara);
 		}
 
 		if (isValidPoint)
@@ -255,6 +252,8 @@ int ITMExtendedTracker_CUDA::ComputeGandH_RGB(float &f, float *nabla, float *hes
 			sumF += localF;
 			for (int i = 0; i < noPara; i++) sumNabla[i] += localNabla[i];
 			for (int i = 0; i < noParaSQ; i++) sumHessian[i] += localHessian[i];
+
+//			std::cerr << localNabla[0] << " " << localNabla[1] << "\n";
 
 			if(localF != 0.f)
 			{
@@ -456,18 +455,18 @@ void ITMExtendedTracker_CUDA::ProjectPreviousRGBFrame(const Matrix4f &scenePose)
 //	previousProjectedRGBLevel->depth->UpdateDeviceFromHost();
 
 	sceneHierarchyLevel_RGB->pointsMap->UpdateDeviceFromHost();
-	viewHierarchyLevel_RGB->rgb_prev->UpdateDeviceFromHost();
-	previousProjectedRGBLevel->depth->UpdateDeviceFromHost();
+	viewHierarchyLevel_Intensity->intensity_prev->UpdateDeviceFromHost();
+	previousProjectedIntensityLevel->depth->UpdateDeviceFromHost();
 
-	Vector2i imageSize = viewHierarchyLevel_RGB->rgb_prev->noDims;
+	Vector2i imageSize = viewHierarchyLevel_Intensity->intensity_prev->noDims;
 	Vector2i sceneSize = sceneHierarchyLevel_RGB->pointsMap->noDims; // Also the size of the projected image
 
-	previousProjectedRGBLevel->depth->ChangeDims(sceneSize); // Actual reallocation should happen only once per run.
+	previousProjectedIntensityLevel->depth->ChangeDims(sceneSize); // Actual reallocation should happen only once per run.
 
-	Vector4f projParams = viewHierarchyLevel_RGB->intrinsics;
+	Vector4f projParams = viewHierarchyLevel_Intensity->intrinsics;
 	const Vector4f *pointsMap = sceneHierarchyLevel_RGB->pointsMap->GetData(MEMORYDEVICE_CUDA);
-	const Vector4u *rgbIn = viewHierarchyLevel_RGB->rgb_prev->GetData(MEMORYDEVICE_CUDA);
-	Vector4f *rgbOut = previousProjectedRGBLevel->depth->GetData(MEMORYDEVICE_CUDA);
+	const float *rgbIn = viewHierarchyLevel_Intensity->intensity_prev->GetData(MEMORYDEVICE_CUDA);
+	float *rgbOut = previousProjectedIntensityLevel->depth->GetData(MEMORYDEVICE_CUDA);
 
 	dim3 blockSize(16, 16);
 	dim3 gridSize((int)ceil((float)sceneSize.x / (float)blockSize.x), (int)ceil((float)sceneSize.y / (float)blockSize.y));
@@ -476,8 +475,8 @@ void ITMExtendedTracker_CUDA::ProjectPreviousRGBFrame(const Matrix4f &scenePose)
 	ORcudaKernelCheck;
 
 	sceneHierarchyLevel_RGB->pointsMap->UpdateHostFromDevice();
-	viewHierarchyLevel_RGB->rgb_prev->UpdateHostFromDevice();
-	previousProjectedRGBLevel->depth->UpdateHostFromDevice();
+	viewHierarchyLevel_Intensity->intensity_prev->UpdateHostFromDevice();
+	previousProjectedIntensityLevel->depth->UpdateHostFromDevice();
 }
 
 // device functions
@@ -808,16 +807,16 @@ __global__ void exDepthTrackerOneLevel_g_rt_device(ITMExtendedTracker_KernelPara
 		para.tukeyCutOff, para.framesToSkip, para.framesToWeight);
 }
 
-template<bool shortIteration, bool rotationOnly, bool useWeights>
-__global__ void exRGBTrackerOneLevel_g_rt_device(ITMExtendedTracker_KernelParameters_RGB para)
-{
-	exRGBTrackerOneLevel_g_rt_device_main<shortIteration, rotationOnly, useWeights>(para.accu, para.pointsMap,
-		para.rgb_model, para.gx, para.gy, para.rgb_live, para.approxPose, para.approxInvPose, para.scenePose,
-		para.projParams, para.viewImageSize, para.sceneImageSize, para.colourThresh, para.viewFrustum_min, para.viewFrustum_max,
-		para.tukeyCutOff, para.framesToSkip, para.framesToWeight);
-}
+//template<bool shortIteration, bool rotationOnly, bool useWeights>
+//__global__ void exRGBTrackerOneLevel_g_rt_device(ITMExtendedTracker_KernelParameters_RGB para)
+//{
+//	exRGBTrackerOneLevel_g_rt_device_main<shortIteration, rotationOnly, useWeights>(para.accu, para.pointsMap,
+//		para.intensity_model, para.gradients, para.gy, para.intensity_live, para.approxPose, para.approxInvPose, para.scenePose,
+//		para.projParams, para.viewImageSize, para.sceneImageSize, para.colourThresh, para.viewFrustum_min, para.viewFrustum_max,
+//		para.tukeyCutOff, para.framesToSkip, para.framesToWeight);
+//}
 
-__global__ void exRGBTrackerProjectPrevImage_device(Vector4f *out_rgb, const Vector4u *in_rgb, const Vector4f *in_points, Vector2i imageSize, Vector2i sceneSize, Vector4f intrinsics, Matrix4f scenePose)
+__global__ void exRGBTrackerProjectPrevImage_device(float *out_rgb, const float *in_rgb, const Vector4f *in_points, Vector2i imageSize, Vector2i sceneSize, Vector4f intrinsics, Matrix4f scenePose)
 {
 	int x = threadIdx.x + blockIdx.x * blockDim.x;
 	int y = threadIdx.y + blockIdx.y * blockDim.y;
