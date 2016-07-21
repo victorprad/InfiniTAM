@@ -34,6 +34,9 @@ ITMExtendedTracker::ITMExtendedTracker(Vector2i imgSize_d, Vector2i imgSize_rgb,
 	{
 		// Don't skip allocation for level 0
 		previousProjectedIntensityHierarchy = new ITMImageHierarchy<ITMTemplatedHierarchyLevel<ITMFloatImage> >(imgSize_d, trackingRegime, noHierarchyLevels, memoryType, false);
+
+		// Also allocate a buffer for the non smoothed level0 image
+		smoothedTempIntensity = new ITMFloatImage(imgSize_rgb, memoryType);
 	}
 
 	this->noIterationsPerLevel = new int[noHierarchyLevels];
@@ -81,6 +84,7 @@ ITMExtendedTracker::~ITMExtendedTracker(void)
 	delete this->sceneHierarchy;
 
 	if (previousProjectedIntensityHierarchy) delete previousProjectedIntensityHierarchy;
+	if (smoothedTempIntensity) delete smoothedTempIntensity;
 
 	delete[] this->noIterationsPerLevel;
 	delete[] this->spaceThresh;
@@ -143,6 +147,11 @@ void ITMExtendedTracker::SetEvaluationData(ITMTrackingState *trackingState, cons
 		lowLevelEngine->ConvertColourToIntensity(viewHierarchy->levels_t1[0]->intensity_prev, view->rgb_prev);
 		viewHierarchy->levels_t1[0]->intensity_current->UpdateDeviceFromHost();
 		viewHierarchy->levels_t1[0]->intensity_prev->UpdateDeviceFromHost();
+
+		// compute first level gradients by smoothing the image beforehand (smoothing for the other layers is done during the subsampling operation)
+		lowLevelEngine->FilterIntensity(smoothedTempIntensity, viewHierarchy->levels_t1[0]->intensity_current);
+		lowLevelEngine->GradientXY(viewHierarchy->levels_t1[0]->gradients, smoothedTempIntensity);
+		viewHierarchy->levels_t1[0]->gradients->UpdateDeviceFromHost();
 	}
 
 	sceneHierarchy->levels[0]->pointsMap = trackingState->pointCloud->locations;
@@ -181,12 +190,8 @@ void ITMExtendedTracker::PrepareForEvaluation()
 			currentLevel->intensity_prev->UpdateDeviceFromHost();
 
 			currentLevel->intrinsics = previousLevel->intrinsics * 0.5f;
-		}
 
-		for (int i = 0; i < viewHierarchy->noLevels; i++)
-		{
-			ITMIntensityHierarchyLevel *currentLevel = viewHierarchy->levels_t1[i];
-
+			// Also compute gradients
 			lowLevelEngine->GradientXY(currentLevel->gradients, currentLevel->intensity_current);
 			currentLevel->gradients->UpdateDeviceFromHost();
 		}

@@ -28,6 +28,7 @@ namespace ITMLib
 		ITMImageHierarchy<ITMSceneHierarchyLevel> *sceneHierarchy;
 		ITMTwoImageHierarchy<ITMDepthHierarchyLevel, ITMIntensityHierarchyLevel> *viewHierarchy;
 		ITMImageHierarchy<ITMTemplatedHierarchyLevel<ITMFloatImage> > *previousProjectedIntensityHierarchy;
+		ITMFloatImage *smoothedTempIntensity;
 
 		ITMTrackingState *trackingState; const ITMView *view;
 
