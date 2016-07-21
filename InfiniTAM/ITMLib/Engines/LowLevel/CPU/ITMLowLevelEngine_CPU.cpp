@@ -59,6 +59,20 @@ void ITMLowLevelEngine_CPU::FilterSubsample(ITMUChar4Image *image_out, const ITM
 		filterSubsample(imageData_out, x, y, newDims, imageData_in, oldDims);
 }
 
+void ITMLowLevelEngine_CPU::FilterSubsample(ITMFloatImage *image_out, const ITMFloatImage *image_in) const
+{
+	Vector2i oldDims = image_in->noDims;
+	Vector2i newDims; newDims.x = image_in->noDims.x / 2; newDims.y = image_in->noDims.y / 2;
+
+	image_out->ChangeDims(newDims);
+
+	const float *imageData_in = image_in->GetData(MEMORYDEVICE_CPU);
+	float *imageData_out = image_out->GetData(MEMORYDEVICE_CPU);
+
+	for (int y = 0; y < newDims.y; y++) for (int x = 0; x < newDims.x; x++)
+		filterSubsample(imageData_out, x, y, newDims, imageData_in, oldDims);
+}
+
 void ITMLowLevelEngine_CPU::FilterSubsampleWithHoles(ITMFloatImage *image_out, const ITMFloatImage *image_in) const
 {
 	Vector2i oldDims = image_in->noDims;

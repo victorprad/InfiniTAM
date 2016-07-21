@@ -22,6 +22,7 @@ ITMLowLevelEngine_CUDA::~ITMLowLevelEngine_CUDA(void)
 
 __global__ void convertColourToIntensity_device(float *imageData_out, Vector2i dims, const Vector4u *imageData_in);
 
+__global__ void filterSubsample_device(float *imageData_out, Vector2i newDims, const float *imageData_in, Vector2i oldDims);
 __global__ void filterSubsample_device(Vector4u *imageData_out, Vector2i newDims, const Vector4u *imageData_in, Vector2i oldDims);
 
 __global__ void filterSubsampleWithHoles_device(float *imageData_out, Vector2i newDims, const float *imageData_in, Vector2i oldDims);
@@ -83,6 +84,23 @@ void ITMLowLevelEngine_CUDA::FilterSubsample(ITMUChar4Image *image_out, const IT
 
 	const Vector4u *imageData_in = image_in->GetData(MEMORYDEVICE_CUDA);
 	Vector4u *imageData_out = image_out->GetData(MEMORYDEVICE_CUDA);
+
+	dim3 blockSize(16, 16);
+	dim3 gridSize((int)ceil((float)newDims.x / (float)blockSize.x), (int)ceil((float)newDims.y / (float)blockSize.y));
+
+	filterSubsample_device << <gridSize, blockSize >> >(imageData_out, newDims, imageData_in, oldDims);
+	ORcudaKernelCheck;
+}
+
+void ITMLowLevelEngine_CUDA::FilterSubsample(ITMFloatImage *image_out, const ITMFloatImage *image_in) const
+{
+	Vector2i oldDims = image_in->noDims;
+	Vector2i newDims; newDims.x = image_in->noDims.x / 2; newDims.y = image_in->noDims.y / 2;
+
+	image_out->ChangeDims(newDims);
+
+	const float *imageData_in = image_in->GetData(MEMORYDEVICE_CUDA);
+	float *imageData_out = image_out->GetData(MEMORYDEVICE_CUDA);
 
 	dim3 blockSize(16, 16);
 	dim3 gridSize((int)ceil((float)newDims.x / (float)blockSize.x), (int)ceil((float)newDims.y / (float)blockSize.y));
@@ -204,6 +222,15 @@ __global__ void convertColourToIntensity_device(float *imageData_out, Vector2i d
 }
 
 __global__ void filterSubsample_device(Vector4u *imageData_out, Vector2i newDims, const Vector4u *imageData_in, Vector2i oldDims)
+{
+	int x = threadIdx.x + blockIdx.x * blockDim.x, y = threadIdx.y + blockIdx.y * blockDim.y;
+
+	if (x > newDims.x - 1 || y > newDims.y - 1) return;
+
+	filterSubsample(imageData_out, x, y, newDims, imageData_in, oldDims);
+}
+
+__global__ void filterSubsample_device(float *imageData_out, Vector2i newDims, const float *imageData_in, Vector2i oldDims)
 {
 	int x = threadIdx.x + blockIdx.x * blockDim.x, y = threadIdx.y + blockIdx.y * blockDim.y;
 

@@ -33,6 +33,22 @@ _CPU_AND_GPU_CODE_ inline void filterSubsample(DEVICEPTR(Vector4u) *imageData_ou
 	imageData_out[x + y * newDims.x] = pixel_out;
 }
 
+_CPU_AND_GPU_CODE_ inline void filterSubsample(DEVICEPTR(float) *imageData_out, int x, int y, Vector2i newDims,
+	const CONSTPTR(float) *imageData_in, Vector2i oldDims)
+{
+	int src_pos_x = x * 2, src_pos_y = y * 2;
+	float pixel_out, pixels_in[4];
+
+	pixels_in[0] = imageData_in[(src_pos_x + 0) + (src_pos_y + 0) * oldDims.x];
+	pixels_in[1] = imageData_in[(src_pos_x + 1) + (src_pos_y + 0) * oldDims.x];
+	pixels_in[2] = imageData_in[(src_pos_x + 0) + (src_pos_y + 1) * oldDims.x];
+	pixels_in[3] = imageData_in[(src_pos_x + 1) + (src_pos_y + 1) * oldDims.x];
+
+	pixel_out.x = (pixels_in[0].x + pixels_in[1].x + pixels_in[2].x + pixels_in[3].x) / 4;
+
+	imageData_out[x + y * newDims.x] = pixel_out;
+}
+
 _CPU_AND_GPU_CODE_ inline void filterSubsampleWithHoles(DEVICEPTR(float) *imageData_out, int x, int y, Vector2i newDims, 
 	const CONSTPTR(float) *imageData_in, Vector2i oldDims)
 {
