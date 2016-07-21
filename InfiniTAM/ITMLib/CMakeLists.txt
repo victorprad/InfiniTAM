@@ -341,6 +341,7 @@ Objects/Tracking/ITMTwoImageHierarchy.h
 Objects/Tracking/ITMSceneHierarchyLevel.h
 Objects/Tracking/ITMTemplatedHierarchyLevel.h
 Objects/Tracking/ITMDepthHierarchyLevel.h
+Objects/Tracking/ITMIntensityHierarchyLevel.h
 Objects/Tracking/ITMRGBHierarchyLevel.h
 Objects/Tracking/ITMTrackingState.h
 Objects/Tracking/ITMViewHierarchyLevel.h
