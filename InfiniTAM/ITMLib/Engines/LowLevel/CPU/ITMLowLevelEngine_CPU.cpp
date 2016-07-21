@@ -65,11 +65,12 @@ void ITMLowLevelEngine_CPU::FilterSubsample(ITMFloatImage *image_out, const ITMF
 	Vector2i newDims; newDims.x = image_in->noDims.x / 2; newDims.y = image_in->noDims.y / 2;
 
 	image_out->ChangeDims(newDims);
+	image_out->Clear(0);
 
 	const float *imageData_in = image_in->GetData(MEMORYDEVICE_CPU);
 	float *imageData_out = image_out->GetData(MEMORYDEVICE_CPU);
 
-	for (int y = 0; y < newDims.y; y++) for (int x = 0; x < newDims.x; x++)
+	for (int y = 1; y < newDims.y - 1; y++) for (int x = 1; x < newDims.x - 1; x++)
 		filterSubsample(imageData_out, x, y, newDims, imageData_in, oldDims);
 }
 

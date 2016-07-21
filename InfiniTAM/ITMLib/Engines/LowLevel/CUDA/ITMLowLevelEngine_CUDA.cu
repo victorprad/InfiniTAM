@@ -98,6 +98,7 @@ void ITMLowLevelEngine_CUDA::FilterSubsample(ITMFloatImage *image_out, const ITM
 	Vector2i newDims; newDims.x = image_in->noDims.x / 2; newDims.y = image_in->noDims.y / 2;
 
 	image_out->ChangeDims(newDims);
+	image_out->Clear(0);
 
 	const float *imageData_in = image_in->GetData(MEMORYDEVICE_CUDA);
 	float *imageData_out = image_out->GetData(MEMORYDEVICE_CUDA);
@@ -234,7 +235,7 @@ __global__ void filterSubsample_device(float *imageData_out, Vector2i newDims, c
 {
 	int x = threadIdx.x + blockIdx.x * blockDim.x, y = threadIdx.y + blockIdx.y * blockDim.y;
 
-	if (x > newDims.x - 1 || y > newDims.y - 1) return;
+	if (x > newDims.x - 2 || y > newDims.y - 2 || x < 1 || y < 1) return;
 
 	filterSubsample(imageData_out, x, y, newDims, imageData_in, oldDims);
 }

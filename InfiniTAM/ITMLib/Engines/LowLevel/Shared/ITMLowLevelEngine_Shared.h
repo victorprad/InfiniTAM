@@ -37,14 +37,20 @@ _CPU_AND_GPU_CODE_ inline void filterSubsample(DEVICEPTR(float) *imageData_out, 
 	const CONSTPTR(float) *imageData_in, Vector2i oldDims)
 {
 	int src_pos_x = x * 2, src_pos_y = y * 2;
-	float pixel_out, pixels_in[4];
+	float pixel_out = 0.f;
 
-	pixels_in[0] = imageData_in[(src_pos_x + 0) + (src_pos_y + 0) * oldDims.x];
-	pixels_in[1] = imageData_in[(src_pos_x + 1) + (src_pos_y + 0) * oldDims.x];
-	pixels_in[2] = imageData_in[(src_pos_x + 0) + (src_pos_y + 1) * oldDims.x];
-	pixels_in[3] = imageData_in[(src_pos_x + 1) + (src_pos_y + 1) * oldDims.x];
+	// Could be improved by properly caching the separable kernel results.
+	float gauss_kernel[5] = { 0.0625f, 0.25f, 0.375f, 0.25f, 0.0625f };
 
-	pixel_out.x = (pixels_in[0].x + pixels_in[1].x + pixels_in[2].x + pixels_in[3].x) / 4;
+	for (int j = 0; j < 5; ++j)
+	{
+		float row_conv = 0.f;
+		for (int i = 0; i < 5; ++i)
+		{
+			row_conv += gauss_kernel[i] * imageData_in[(src_pos_y - 2 + j) * oldDims.x + (src_pos_x - 2 + i)];
+		}
+		pixel_out += gauss_kernel[j] * row_conv;
+	}
 
 	imageData_out[x + y * newDims.x] = pixel_out;
 }
@@ -156,12 +162,13 @@ _CPU_AND_GPU_CODE_ inline void gradientXY(DEVICEPTR(Vector2f) *grad, int x, int 
 	d1.x = image[(y - 1) * imgSize.x + (x + 1)] - image[(y - 1) * imgSize.x + (x - 1)];
 	d2.x = image[(y    ) * imgSize.x + (x + 1)] - image[(y    ) * imgSize.x + (x - 1)];
 	d3.x = image[(y + 1) * imgSize.x + (x + 1)] - image[(y + 1) * imgSize.x + (x - 1)];
-	d_out.x = (d1.x + 2.f * d2.x + d3.x) / 8.f;
 
 	// Compute gradient in the Y direction
 	d1.y = image[(y + 1) * imgSize.x + (x - 1)] - image[(y - 1) * imgSize.x + (x - 1)];
 	d2.y = image[(y + 1) * imgSize.x + (x    )] - image[(y - 1) * imgSize.x + (x    )];
 	d3.y = image[(y + 1) * imgSize.x + (x + 1)] - image[(y - 1) * imgSize.x + (x + 1)];
+
+	d_out.x = (d1.x + 2.f * d2.x + d3.x) / 8.f;
 	d_out.y = (d1.y + 2.f * d2.y + d3.y) / 8.f;
 
 	grad[y * imgSize.x + x] = d_out;
