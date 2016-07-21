@@ -38,6 +38,58 @@ template<typename T> _CPU_AND_GPU_CODE_ inline Vector4f interpolateBilinear(cons
 	return result;
 }
 
+template<typename T> _CPU_AND_GPU_CODE_ inline float interpolateBilinear_single(const CONSTPTR(T) *source,
+	const THREADPTR(Vector2f) & position, const CONSTPTR(Vector2i) & imgSize)
+{
+	T a, b, c, d;
+	float result;
+	Vector2i p; Vector2f delta;
+
+	p.x = (int)floor(position.x); p.y = (int)floor(position.y);
+	delta.x = position.x - (float)p.x; delta.y = position.y - (float)p.y;
+
+	b = 0;
+	c = 0;
+	d = 0;
+
+	a = source[p.x + p.y * imgSize.x];
+	if (delta.x != 0) b = source[(p.x + 1) + p.y * imgSize.x];
+	if (delta.y != 0) c = source[p.x + (p.y + 1) * imgSize.x];
+	if (delta.x != 0 && delta.y != 0) d = source[(p.x + 1) + (p.y + 1) * imgSize.x];
+
+	result = ((float)a * (1.0f - delta.x) * (1.0f - delta.y) + (float)b * delta.x * (1.0f - delta.y) +
+		(float)c * (1.0f - delta.x) * delta.y + (float)d * delta.x * delta.y);
+
+	return result;
+}
+
+template<typename T> _CPU_AND_GPU_CODE_ inline Vector2f interpolateBilinear_Vector2(const CONSTPTR(T) *source,
+	const THREADPTR(Vector2f) & position, const CONSTPTR(Vector2i) & imgSize)
+{
+	T a, b, c, d;
+	Vector2f result;
+	Vector2i p; Vector2f delta;
+
+	p.x = (int)floor(position.x); p.y = (int)floor(position.y);
+	delta.x = position.x - (float)p.x; delta.y = position.y - (float)p.y;
+
+	b.x = 0; b.y = 0;
+	c.x = 0; c.y = 0;
+	d.x = 0; d.y = 0;
+
+	a = source[p.x + p.y * imgSize.x];
+	if (delta.x != 0) b = source[(p.x + 1) + p.y * imgSize.x];
+	if (delta.y != 0) c = source[p.x + (p.y + 1) * imgSize.x];
+	if (delta.x != 0 && delta.y != 0) d = source[(p.x + 1) + (p.y + 1) * imgSize.x];
+
+	result.x = ((float)a.x * (1.0f - delta.x) * (1.0f - delta.y) + (float)b.x * delta.x * (1.0f - delta.y) +
+		(float)c.x * (1.0f - delta.x) * delta.y + (float)d.x * delta.x * delta.y);
+	result.y = ((float)a.y * (1.0f - delta.x) * (1.0f - delta.y) + (float)b.y * delta.x * (1.0f - delta.y) +
+		(float)c.y * (1.0f - delta.x) * delta.y + (float)d.y * delta.x * delta.y);
+
+	return result;
+}
+
 template<typename T> _CPU_AND_GPU_CODE_ inline Vector4f interpolateBilinear_withHoles(const CONSTPTR(T) *source,
 	const THREADPTR(Vector2f) & position, const CONSTPTR(Vector2i) & imgSize)
 {
