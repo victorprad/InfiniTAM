@@ -174,8 +174,8 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exRGB_Ab(THREADPTR(float) *loca
 //	if (dot(gx_obs, gx_obs) < 1e-5 || dot(gy_obs, gy_obs) < 1e-5) return false;
 //	if (fabs(gx_obs.x) <= 1e-4f || fabs(gx_obs.y) <= 1e-4f || fabs(gx_obs.z) <= 1e-4f ||
 //		fabs(gy_obs.x) <= 1e-4f || fabs(gy_obs.y) <= 1e-4f || fabs(gy_obs.z) <= 1e-4f) return false;
-	if (fabs(gradient_obs.x) > 0.05f || fabs(gradient_obs.y) > 0.05f) return false; // removes most outliers
-//	if (fabs(gradient_obs.x) < 0.001f || fabs(gradient_obs.y) < 0.001f) return false;
+	if (fabs(gradient_obs.x) > 0.02f || fabs(gradient_obs.y) > 0.02f) return false; // removes most outliers
+	if (fabs(gradient_obs.x) < 1e-5f || fabs(gradient_obs.y) < 1e-5f) return false;
 
 	const float colour_diff = colour_obs - intensity_world;
 
