@@ -129,7 +129,7 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exDepth_Ab(THREADPTR(float) *A,
 
 template<bool useWeights>
 _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exRGB_Ab(THREADPTR(float) *localGradient, THREADPTR(float) &colourDifferenceSq, THREADPTR(float) *localHessian,
-	THREADPTR(float) &depthWeight, const THREADPTR(Vector4f) &pt_world,  THREADPTR(float) intensity_world, const DEVICEPTR(float) *intensity_live,
+	THREADPTR(float) &depthWeight, const THREADPTR(Vector4f) &pt_world, const THREADPTR(float) intensity_world, const DEVICEPTR(float) *intensity_live,
 	const CONSTPTR(Vector2i) &imgSize, int x, int y, const Vector4f &projParams, const Matrix4f &approxPose, const Matrix4f &approxInvPose,
 	const Matrix4f &scenePose, const DEVICEPTR(Vector2f) *intensity_gradients, float colourThresh, float viewFrustum_min, float viewFrustum_max,
 	float tukeyCutoff, float framesToSkip, float framesToWeight, int numPara)

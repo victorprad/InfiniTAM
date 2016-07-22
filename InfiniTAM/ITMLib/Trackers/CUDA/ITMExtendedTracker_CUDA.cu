@@ -640,8 +640,8 @@ __device__ void exDepthTrackerOneLevel_g_rt_device_main(ITMExtendedTracker_CUDA:
 }
 
 template<bool shortIteration, bool rotationOnly, bool useWeights>
-__device__ void exRGBTrackerOneLevel_g_rt_device_main(ITMExtendedTracker_CUDA::AccuCell *accu,
-	Vector4f *locations, Vector4f *rgb_model, Vector4s *gx, Vector4s *gy, Vector4u *rgb,
+__device__ void exRGBTrackerOneLevel_g_rt_device_main(ITMExtendedTracker_CUDA::AccuCell *accu, 
+	const Vector4f *locations, const float *intensity_model, const Vector2f *gradients, const float *intensity_live,
 	Matrix4f approxPose, Matrix4f approxInvPose, Matrix4f scenePose, Vector4f projParams,
 	Vector2i imgSize, Vector2i sceneSize, float colourThresh, float viewFrustum_min, float viewFrustum_max,
 	float tukeyCutoff, float framesToSkip, float framesToWeight)
@@ -661,8 +661,8 @@ __device__ void exRGBTrackerOneLevel_g_rt_device_main(ITMExtendedTracker_CUDA::A
 	const int noPara = shortIteration ? 3 : 6;
 	const int noParaSQ = shortIteration ? 3 + 2 + 1 : 6 + 5 + 4 + 3 + 2 + 1;
 	float localHessian[noParaSQ];
-	float A[noPara];
-	float b;
+	float localNabla[noPara];
+	float localF;
 	float depthWeight = 1.0f;
 
 	bool isValidPoint = false;
@@ -672,9 +672,9 @@ __device__ void exRGBTrackerOneLevel_g_rt_device_main(ITMExtendedTracker_CUDA::A
 		// FIXME Translation only not implemented yet
 		if(!shortIteration || rotationOnly)
 		{
-			isValidPoint = computePerPointGH_exRGB_Ab<useWeights>(A, b, localHessian, depthWeight, locations[x + y * sceneSize.x],
-				rgb_model[x + y * sceneSize.x], rgb, imgSize, x, y,	projParams, approxPose, approxInvPose, scenePose, gx, gy,
-				colourThresh, viewFrustum_min, viewFrustum_max, tukeyCutoff, framesToSkip, framesToWeight, noPara);
+			isValidPoint = computePerPointGH_exRGB_Ab<useWeights>(localNabla, localF, localHessian, depthWeight,
+				locations[x + y * sceneSize.x], intensity_model[x + y * sceneSize.x], intensity_live, imgSize, x, y,
+				projParams, approxPose, approxInvPose, scenePose, gradients, colourThresh, viewFrustum_min, viewFrustum_max, tukeyCutoff, framesToSkip, framesToWeight, noPara);
 		}
 
 		if (isValidPoint) should_prefix = true;
@@ -683,8 +683,8 @@ __device__ void exRGBTrackerOneLevel_g_rt_device_main(ITMExtendedTracker_CUDA::A
 	if (!isValidPoint)
 	{
 		for (int i = 0; i < noParaSQ; i++) localHessian[i] = 0.0f;
-		for (int i = 0; i < noPara; i++) A[i] = 0.0f;
-		b = 0.0f;
+		for (int i = 0; i < noPara; i++) localNabla[i] = 0.0f;
+		localF = 0.0f;
 	}
 
 	__syncthreads();
@@ -709,7 +709,7 @@ __device__ void exRGBTrackerOneLevel_g_rt_device_main(ITMExtendedTracker_CUDA::A
 	__syncthreads();
 
 	{ //reduction for energy function value
-		dim_shared1[locId_local] = b;
+		dim_shared1[locId_local] = localF;
 		__syncthreads();
 
 		if (locId_local < 128) dim_shared1[locId_local] += dim_shared1[locId_local + 128];
@@ -728,9 +728,9 @@ __device__ void exRGBTrackerOneLevel_g_rt_device_main(ITMExtendedTracker_CUDA::A
 	//reduction for nabla
 	for (unsigned char paraId = 0; paraId < noPara; paraId += 3)
 	{
-		dim_shared1[locId_local] = A[paraId + 0];
-		dim_shared2[locId_local] = A[paraId + 1];
-		dim_shared3[locId_local] = A[paraId + 2];
+		dim_shared1[locId_local] = localNabla[paraId + 0];
+		dim_shared2[locId_local] = localNabla[paraId + 1];
+		dim_shared3[locId_local] = localNabla[paraId + 2];
 		__syncthreads();
 
 		if (locId_local < 128) {
@@ -807,14 +807,14 @@ __global__ void exDepthTrackerOneLevel_g_rt_device(ITMExtendedTracker_KernelPara
 		para.tukeyCutOff, para.framesToSkip, para.framesToWeight);
 }
 
-//template<bool shortIteration, bool rotationOnly, bool useWeights>
-//__global__ void exRGBTrackerOneLevel_g_rt_device(ITMExtendedTracker_KernelParameters_RGB para)
-//{
-//	exRGBTrackerOneLevel_g_rt_device_main<shortIteration, rotationOnly, useWeights>(para.accu, para.pointsMap,
-//		para.intensity_model, para.gradients, para.gy, para.intensity_live, para.approxPose, para.approxInvPose, para.scenePose,
-//		para.projParams, para.viewImageSize, para.sceneImageSize, para.colourThresh, para.viewFrustum_min, para.viewFrustum_max,
-//		para.tukeyCutOff, para.framesToSkip, para.framesToWeight);
-//}
+template<bool shortIteration, bool rotationOnly, bool useWeights>
+__global__ void exRGBTrackerOneLevel_g_rt_device(ITMExtendedTracker_KernelParameters_RGB para)
+{
+	exRGBTrackerOneLevel_g_rt_device_main<shortIteration, rotationOnly, useWeights>(para.accu, para.pointsMap,
+		para.intensity_model, para.gradients, para.intensity_live, para.approxPose, para.approxInvPose, para.scenePose,
+		para.projParams, para.viewImageSize, para.sceneImageSize, para.colourThresh, para.viewFrustum_min, para.viewFrustum_max,
+		para.tukeyCutOff, para.framesToSkip, para.framesToWeight);
+}
 
 __global__ void exRGBTrackerProjectPrevImage_device(float *out_rgb, const float *in_rgb, const Vector4f *in_points, Vector2i imageSize, Vector2i sceneSize, Vector4f intrinsics, Matrix4f scenePose)
 {
