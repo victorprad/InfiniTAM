@@ -135,23 +135,23 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exRGB_Ab(THREADPTR(float) *loca
 	float tukeyCutoff, float framesToSkip, float framesToWeight, int numPara)
 {
 	if (pt_world.w <= 1e-3f || intensity_world < 0.f) return false;
-	if (useWeights && pt_world.w < framesToSkip) return false;
+//	if (useWeights && pt_world.w < framesToSkip) return false;
 
 	// convert the point in camera coordinates using the candidate pose
 	Vector4f pt_camera = pt_world;
 	pt_camera.w = 1.f; // Coerce it to be a point
 	pt_camera = approxPose * pt_camera;
 
-	if (pt_camera.z <= viewFrustum_min || pt_camera.z >= viewFrustum_max) return false;
+	if (pt_camera.z <= 1e-3f || pt_camera.z >= viewFrustum_max) return false;
 
 	depthWeight = 1.0f - (pt_camera.z - viewFrustum_min) / (viewFrustum_max - viewFrustum_min); // Evaluate outside of the macro
 	depthWeight = MAX(depthWeight, 0.f);
 	depthWeight *= depthWeight;
 
-	if (useWeights)
-	{
-		depthWeight *= (pt_world.w - framesToSkip) / framesToWeight;
-	}
+//	if (useWeights)
+//	{
+//		depthWeight *= (pt_world.w - framesToSkip) / framesToWeight;
+//	}
 
 	const float fx = projParams.x;
 	const float fy = projParams.y;
@@ -164,8 +164,8 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exRGB_Ab(THREADPTR(float) *loca
 	const Vector2f pt_image_live(fx * pt_camera.x * inv_cam_z + cx,
 								 fy * pt_camera.y * inv_cam_z + cy);
 
-	if (pt_image_live.x < 0 || pt_image_live.x >= imgSize.x - 1 ||
-		pt_image_live.y < 0 || pt_image_live.y >= imgSize.y - 1) return false;
+	if (pt_image_live.x < 3 || pt_image_live.x >= imgSize.x - 3 ||
+		pt_image_live.y < 3 || pt_image_live.y >= imgSize.y - 3) return false;
 
 	const float colour_obs = interpolateBilinear_single(intensity_live, pt_image_live, imgSize);
 	const Vector2f gradient_obs = interpolateBilinear_Vector2(intensity_gradients, pt_image_live, imgSize);
@@ -174,8 +174,8 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exRGB_Ab(THREADPTR(float) *loca
 //	if (dot(gx_obs, gx_obs) < 1e-5 || dot(gy_obs, gy_obs) < 1e-5) return false;
 //	if (fabs(gx_obs.x) <= 1e-4f || fabs(gx_obs.y) <= 1e-4f || fabs(gx_obs.z) <= 1e-4f ||
 //		fabs(gy_obs.x) <= 1e-4f || fabs(gy_obs.y) <= 1e-4f || fabs(gy_obs.z) <= 1e-4f) return false;
-	if (fabs(gradient_obs.x) > 0.02f || fabs(gradient_obs.y) > 0.02f) return false; // removes most outliers
-	if (fabs(gradient_obs.x) < 1e-5f || fabs(gradient_obs.y) < 1e-5f) return false;
+//	if (fabs(gradient_obs.x) > 0.02f || fabs(gradient_obs.y) > 0.02f) return false; // removes most outliers
+	if (fabs(gradient_obs.x) < 0.01f || fabs(gradient_obs.y) < 0.01f) return false;
 
 	const float colour_diff = colour_obs - intensity_world;
 
@@ -240,6 +240,8 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exRGB_Ab(THREADPTR(float) *loca
 
 		// Chain rule image gradient-projection-pose
 		A[para] = d_proj_dpi.x * gradient_obs.x + d_proj_dpi.y * gradient_obs.y;
+//		A[para] = d_proj_dpi.x + d_proj_dpi.y;
+//		A[para] = d_point_col.x + d_point_col.y + d_point_col.z;
 	}
 
 	const float huber_coef_gradient = rho_deriv(colour_diff, colourThresh);
@@ -249,6 +251,8 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exRGB_Ab(THREADPTR(float) *loca
 	{
 		// Equivalent of Ab
 		localGradient[para] = depthWeight * huber_coef_gradient * A[para];
+//		localGradient[para] = huber_coef_gradient * A[para];
+//		localGradient[para] = A[para];
 
 		// compute triangular part of A'A
 		for (int col = 0; col <= para; col++)
