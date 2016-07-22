@@ -21,11 +21,11 @@ ITMExtendedTracker::ITMExtendedTracker(Vector2i imgSize_d, Vector2i imgSize_rgb,
 
 	// TODO: restore skipallocation to true
 	if (useColour && useDepth)
-		viewHierarchy = new ITMTwoImageHierarchy<ITMDepthHierarchyLevel, ITMIntensityHierarchyLevel>(imgSize_d, imgSize_rgb, trackingRegime, noHierarchyLevels, memoryType, false);
+		viewHierarchy = new ITMTwoImageHierarchy<ITMDepthHierarchyLevel, ITMIntensityHierarchyLevel>(imgSize_d, imgSize_rgb, trackingRegime, noHierarchyLevels, memoryType, true);
 	else
 	{
-		if (useDepth) viewHierarchy = new ITMTwoImageHierarchy<ITMDepthHierarchyLevel, ITMIntensityHierarchyLevel>(imgSize_d, trackingRegime, noHierarchyLevels, memoryType, 0, false);
-		else viewHierarchy = new ITMTwoImageHierarchy<ITMDepthHierarchyLevel, ITMIntensityHierarchyLevel>(imgSize_rgb, trackingRegime, noHierarchyLevels, memoryType, 1, false);
+		if (useDepth) viewHierarchy = new ITMTwoImageHierarchy<ITMDepthHierarchyLevel, ITMIntensityHierarchyLevel>(imgSize_d, trackingRegime, noHierarchyLevels, memoryType, 0, true);
+		else viewHierarchy = new ITMTwoImageHierarchy<ITMDepthHierarchyLevel, ITMIntensityHierarchyLevel>(imgSize_rgb, trackingRegime, noHierarchyLevels, memoryType, 1, true);
 	}
 
 	sceneHierarchy = new ITMImageHierarchy<ITMSceneHierarchyLevel>(imgSize_d, trackingRegime, noHierarchyLevels, memoryType, true);
@@ -37,6 +37,10 @@ ITMExtendedTracker::ITMExtendedTracker(Vector2i imgSize_d, Vector2i imgSize_rgb,
 
 		// Also allocate a buffer for the non smoothed level0 image
 		smoothedTempIntensity = new ITMFloatImage(imgSize_rgb, memoryType);
+
+		// Allocate level0 intensity images (TODO: once the intensity will be stored in the view we will be able to not allocate the level0)
+		viewHierarchy->levels_t1[0]->intensity_current = new ITMFloatImage(imgSize_rgb, memoryType);
+		viewHierarchy->levels_t1[0]->intensity_prev = new ITMFloatImage(imgSize_rgb, memoryType);
 	}
 
 	this->noIterationsPerLevel = new int[noHierarchyLevels];
