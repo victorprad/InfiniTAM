@@ -290,8 +290,6 @@ namespace ITMLib
 		cfg.parseIntProperty("framesToWeight", "number of frames to weight each depth pixel for before using it fully", framesToWeight, verbose);
 		cfg.parseFltProperty("failureDec", "threshold for the failure detection", failureDetectorThd, verbose);
 
-		deviceType = ITMLibSettings::DEVICE_CUDA;
-
 		ITMExtendedTracker *ret = NULL;
 		switch (deviceType)
 		{

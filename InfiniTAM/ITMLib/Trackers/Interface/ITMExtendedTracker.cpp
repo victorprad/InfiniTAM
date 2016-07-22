@@ -136,7 +136,6 @@ void ITMExtendedTracker::SetEvaluationData(ITMTrackingState *trackingState, cons
 	{
 		viewHierarchy->levels_t0[0]->intrinsics = view->calib->intrinsics_d.projectionParamsSimple.all;
 		viewHierarchy->levels_t0[0]->depth = view->depth;
-		viewHierarchy->levels_t0[0]->depth->UpdateDeviceFromHost();
 	}
 
 	if (useColour)
@@ -145,19 +144,14 @@ void ITMExtendedTracker::SetEvaluationData(ITMTrackingState *trackingState, cons
 		// TODO: should do the intensity conversion in the viewbuilder to cache the previous image
 		lowLevelEngine->ConvertColourToIntensity(viewHierarchy->levels_t1[0]->intensity_current, view->rgb);
 		lowLevelEngine->ConvertColourToIntensity(viewHierarchy->levels_t1[0]->intensity_prev, view->rgb_prev);
-		viewHierarchy->levels_t1[0]->intensity_current->UpdateDeviceFromHost();
-		viewHierarchy->levels_t1[0]->intensity_prev->UpdateDeviceFromHost();
 
 		// compute first level gradients by smoothing the image beforehand (smoothing for the other layers is done during the subsampling operation)
 		lowLevelEngine->FilterIntensity(smoothedTempIntensity, viewHierarchy->levels_t1[0]->intensity_current);
 		lowLevelEngine->GradientXY(viewHierarchy->levels_t1[0]->gradients, smoothedTempIntensity);
-		viewHierarchy->levels_t1[0]->gradients->UpdateDeviceFromHost();
 	}
 
 	sceneHierarchy->levels[0]->pointsMap = trackingState->pointCloud->locations;
-	sceneHierarchy->levels[0]->pointsMap->UpdateDeviceFromHost();
 	sceneHierarchy->levels[0]->normalsMap = trackingState->pointCloud->colours;
-	sceneHierarchy->levels[0]->normalsMap->UpdateDeviceFromHost();
 
 	scenePose = trackingState->pose_pointCloud->GetM();
 	depthToRGBTransform = view->calib->trafo_rgb_to_depth.calib_inv;
@@ -171,7 +165,6 @@ void ITMExtendedTracker::PrepareForEvaluation()
 		{
 			ITMDepthHierarchyLevel *currentLevel = viewHierarchy->levels_t0[i], *previousLevel = viewHierarchy->levels_t0[i - 1];
 			lowLevelEngine->FilterSubsampleWithHoles(currentLevel->depth, previousLevel->depth);
-			currentLevel->depth->UpdateDeviceFromHost();
 
 			currentLevel->intrinsics = previousLevel->intrinsics * 0.5f;
 		}
@@ -186,14 +179,10 @@ void ITMExtendedTracker::PrepareForEvaluation()
 			lowLevelEngine->FilterSubsample(currentLevel->intensity_current, previousLevel->intensity_current);
 			lowLevelEngine->FilterSubsample(currentLevel->intensity_prev, previousLevel->intensity_prev);
 
-			currentLevel->intensity_current->UpdateDeviceFromHost();
-			currentLevel->intensity_prev->UpdateDeviceFromHost();
-
 			currentLevel->intrinsics = previousLevel->intrinsics * 0.5f;
 
 			// Also compute gradients
 			lowLevelEngine->GradientXY(currentLevel->gradients, currentLevel->intensity_current);
-			currentLevel->gradients->UpdateDeviceFromHost();
 		}
 
 		for (int i = 1; i < sceneHierarchy->noLevels; i++)
@@ -202,9 +191,6 @@ void ITMExtendedTracker::PrepareForEvaluation()
 			lowLevelEngine->FilterSubsampleWithHoles(currentLevel->pointsMap, previousLevel->pointsMap);
 			lowLevelEngine->FilterSubsampleWithHoles(currentLevel->normalsMap, previousLevel->normalsMap);
 			currentLevel->intrinsics = previousLevel->intrinsics * 0.5f;
-
-			currentLevel->pointsMap->UpdateDeviceFromHost();
-			currentLevel->normalsMap->UpdateDeviceFromHost();
 		}
 
 		// Project previous RGB image according to the scene pose and cache it to speed up the energy computation
@@ -367,15 +353,8 @@ void ITMExtendedTracker::TrackCamera(ITMTrackingState *trackingState, const ITMV
 	if (trackingState->age_pointCloud >= 0) this->currentFrameNo++;
 	else this->currentFrameNo = 0;
 
-	trackingState->pointCloud->UpdateDeviceFromHost();
-	view->depth->UpdateDeviceFromHost();
-	view->rgb->UpdateDeviceFromHost();
-	view->rgb_prev->UpdateDeviceFromHost();
-
 	this->SetEvaluationData(trackingState, view);
 	this->PrepareForEvaluation();
-
-
 
 	float f_old = 1e10, f_new;
 	int noValidPoints_new = 0;
