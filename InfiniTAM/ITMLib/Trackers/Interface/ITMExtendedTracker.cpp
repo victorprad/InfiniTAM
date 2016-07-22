@@ -404,7 +404,7 @@ void ITMExtendedTracker::TrackCamera(ITMTrackingState *trackingState, const ITMV
 				noValidPoints_RGB = this->ComputeGandH_RGB(f_RGB, nabla_RGB, hessian_RGB, approxInvPose);
 
 				// If there are some valid points combine the results
-				if (noValidPoints_RGB > 0)
+				if (noValidPoints_RGB > 100)
 				{
 					f_new += colourWeight * f_RGB;
 					noValidPoints_new += noValidPoints_RGB;
