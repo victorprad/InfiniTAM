@@ -419,9 +419,6 @@ void ITMExtendedTracker::TrackCamera(ITMTrackingState *trackingState, const ITMV
 			else if (useColour)
 			{
 				noValidPoints_new = this->ComputeGandH_RGB(f_new, nabla_new, hessian_new, approxInvPose);
-				f_new *= colourWeight;
-				for (int i = 0; i < 6 * 6; ++i) hessian_new[i] += colourWeight * colourWeight * hessian_new[i];
-				for (int i = 0; i < 6; ++i) nabla_new[i] += colourWeight * nabla_new[i];
 			}
 			else
 			{
