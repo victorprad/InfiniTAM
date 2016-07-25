@@ -258,7 +258,7 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exRGB_Ab(THREADPTR(float) *loca
 		for (int col = 0; col <= para; col++)
 		{
 			// dot(A[para],A[col]) but with huber weighting
-			localHessian[counter++] = depthWeight * depthWeight * huber_coef_hessian * A[para] * A[col];
+			localHessian[counter++] = depthWeight * huber_coef_hessian * A[para] * A[col];
 		}
 	}
 
