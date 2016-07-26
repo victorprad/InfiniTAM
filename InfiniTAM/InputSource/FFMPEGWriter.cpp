@@ -60,6 +60,8 @@ class FFMPEGWriter::PrivateData {
 
 int FFMPEGWriter::PrivateData::open(const char *filename, int size_x, int size_y, bool isDepth, int fps)
 {
+	printf("saving to video file: %s\n", filename);
+
 	AVStream *out_stream;
 	AVCodecContext *enc_ctx;
 	AVCodec *encoder;

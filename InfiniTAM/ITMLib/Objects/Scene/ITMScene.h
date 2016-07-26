@@ -16,8 +16,6 @@ namespace ITMLib
 	class ITMScene
 	{
 	public:
-		bool useSwapping;
-
 		/** Scene parameters like voxel size etc. */
 		const ITMSceneParams *sceneParams;
 
@@ -31,14 +29,15 @@ namespace ITMLib
 		ITMGlobalCache<TVoxel> *globalCache;
 
 		ITMScene(const ITMSceneParams *_sceneParams, bool _useSwapping, MemoryDeviceType _memoryType)
-			: useSwapping(_useSwapping), sceneParams(_sceneParams), index(_memoryType), localVBA(_memoryType, index.getNumAllocatedVoxelBlocks(), index.getVoxelBlockSize())
+			: sceneParams(_sceneParams), index(_memoryType), localVBA(_memoryType, index.getNumAllocatedVoxelBlocks(), index.getVoxelBlockSize())
 		{
 			if (_useSwapping) globalCache = new ITMGlobalCache<TVoxel>();
+			else globalCache = NULL;
 		}
 
 		~ITMScene(void)
 		{
-			if (useSwapping) delete globalCache;
+			if (globalCache != NULL) delete globalCache;
 		}
 
 		// Suppress the default copy constructor and assignment operator

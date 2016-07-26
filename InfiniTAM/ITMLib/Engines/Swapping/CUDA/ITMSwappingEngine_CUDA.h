@@ -12,6 +12,7 @@ namespace ITMLib
 	public:
 		void IntegrateGlobalIntoLocal(ITMScene<TVoxel, TIndex> *scene, ITMRenderState *renderState) {}
 		void SaveToGlobalMemory(ITMScene<TVoxel, TIndex> *scene, ITMRenderState *renderState) {}
+		void CleanLocalMemory(ITMScene<TVoxel, ITMVoxelBlockHash> *scene, ITMRenderState *renderState) {}
 	};
 
 	template<class TVoxel>
@@ -19,11 +20,14 @@ namespace ITMLib
 	{
 	private:
 		int *noNeededEntries_device, *noAllocatedVoxelEntries_device;
+		int *entriesToClean_device;
+
 		int LoadFromGlobalMemory(ITMScene<TVoxel, ITMVoxelBlockHash> *scene);
 
 	public:
 		void IntegrateGlobalIntoLocal(ITMScene<TVoxel, ITMVoxelBlockHash> *scene, ITMRenderState *renderState);
 		void SaveToGlobalMemory(ITMScene<TVoxel, ITMVoxelBlockHash> *scene, ITMRenderState *renderState);
+		void CleanLocalMemory(ITMScene<TVoxel, ITMVoxelBlockHash> *scene, ITMRenderState *renderState);
 
 		ITMSwappingEngine_CUDA(void);
 		~ITMSwappingEngine_CUDA(void);
