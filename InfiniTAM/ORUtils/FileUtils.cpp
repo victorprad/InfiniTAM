@@ -105,7 +105,7 @@ static bool png_readdata(FILE *f, int xsize, int ysize, PNGReaderData & internal
 	/* read file */
 	if (setjmp(png_jmpbuf(internal.png_ptr))) return false;
 
-	int bytesPerRow = png_get_rowbytes(internal.png_ptr, internal.info_ptr);
+	int bytesPerRow = (int)png_get_rowbytes(internal.png_ptr, internal.info_ptr);
 
 	png_byte *data = (png_byte*)data_ext;
 	png_bytep *row_pointers = new png_bytep[ysize];
