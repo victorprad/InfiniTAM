@@ -277,6 +277,9 @@ namespace ORUtils
 			std::swap(this->dataSize, rhs.dataSize);
 			std::swap(this->data_cpu, rhs.data_cpu);
 			std::swap(this->data_cuda, rhs.data_cuda);
+#ifdef COMPILE_WITH_METAL
+			std::swap(this->data_metalBuffer, rhs.data_metalBuffer);
+#endif
 			std::swap(this->isAllocated_CPU, rhs.isAllocated_CPU);
 			std::swap(this->isAllocated_CUDA, rhs.isAllocated_CUDA);
 			std::swap(this->isMetalCompatible, rhs.isMetalCompatible);
