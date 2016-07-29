@@ -272,6 +272,16 @@ namespace ORUtils
 			}
 		}
 
+		void Swap(MemoryBlock<T>& rhs)
+		{
+			std::swap(this->dataSize, rhs.dataSize);
+			std::swap(this->data_cpu, rhs.data_cpu);
+			std::swap(this->data_cuda, rhs.data_cuda);
+			std::swap(this->isAllocated_CPU, rhs.isAllocated_CPU);
+			std::swap(this->isAllocated_CUDA, rhs.isAllocated_CUDA);
+			std::swap(this->isMetalCompatible, rhs.isMetalCompatible);
+		}
+
 		// Suppress the default copy constructor and assignment operator
 		MemoryBlock(const MemoryBlock&);
 		MemoryBlock& operator=(const MemoryBlock&);
