@@ -13,7 +13,13 @@ using namespace ITMLib;
 
 ImageSourceEngine::ImageSourceEngine(const char *calibFilename)
 {
-	if(!readRGBDCalib(calibFilename, calib) && strlen(calibFilename) > 0)
+	if(!calibFilename || strlen(calibFilename) == 0)
+	{
+		printf("Calibration filename not specified. Using default parameters.\n");
+		return;
+	}
+
+	if(!readRGBDCalib(calibFilename, calib))
 		DIEWITHEXCEPTION("error: path to the calibration file was specified but data could not be read");
 }
 
