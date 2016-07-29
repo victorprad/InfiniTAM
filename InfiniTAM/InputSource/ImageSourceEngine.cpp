@@ -13,7 +13,8 @@ using namespace ITMLib;
 
 ImageSourceEngine::ImageSourceEngine(const char *calibFilename)
 {
-	readRGBDCalib(calibFilename, calib);
+	if(!readRGBDCalib(calibFilename, calib) && strlen(calibFilename) > 0)
+		DIEWITHEXCEPTION("error: path to the calibration file was specified but data could not be read");
 }
 
 ImageMaskPathGenerator::ImageMaskPathGenerator(const char *rgbImageMask_, const char *depthImageMask_)
