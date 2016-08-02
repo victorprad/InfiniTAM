@@ -38,6 +38,8 @@ ENDIF()
 INCLUDE(${PROJECT_SOURCE_DIR}/cmake/OfferInputMirroring.cmake)
 
 add_library(InputSource
+CompositeImageSourceEngine.cpp
+CompositeImageSourceEngine.h
 ImageSourceEngine.cpp
 ImageSourceEngine.h
 IMUSourceEngine.cpp

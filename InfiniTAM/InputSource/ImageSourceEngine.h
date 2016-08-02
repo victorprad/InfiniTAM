@@ -14,7 +14,7 @@ class ImageSourceEngine
 public:
 	ITMLib::ITMRGBDCalib calib;
 
-	ImageSourceEngine(const char *calibFilename);
+	explicit ImageSourceEngine(const char *calibFilename);
 	virtual ~ImageSourceEngine() {}
 
 	virtual bool hasMoreImages(void) = 0;
