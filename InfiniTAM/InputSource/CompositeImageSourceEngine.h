@@ -9,7 +9,7 @@
 namespace InputSource {
 
 /**
- * \brief TODO
+ * \brief An instance of this class can be used to compose multiple image source engines sequentially.
  */
 class CompositeImageSourceEngine : public ImageSourceEngine
 {
@@ -18,7 +18,7 @@ private:
   /** The index of the current sub-engine. */
   size_t m_curSubengineIndex;
 
-  /** TODO */
+  /** The sequence of image source engines from which the composite will yield images. */
   std::vector<ImageSourceEngine*> m_subengines;
 
   //#################### CONSTRUCTORS ####################
@@ -44,7 +44,9 @@ private:
   //#################### PUBLIC MEMBER FUNCTIONS ####################
 public:
   /**
-   * \brief TODO
+   * \brief Adds an image source engine to the composite.
+   *
+   * \param subengine The image source engine to add.
    */
   void addSubengine(ImageSourceEngine *subengine);
 
@@ -70,7 +72,9 @@ public:
   //#################### PRIVATE MEMBER FUNCTIONS ####################
 private:
   /**
-   * \brief TODO
+   * \brief Advances to the sub-engine (if any) that can provide the next images.
+   *
+   * \return  The sub-engine, if any, that can provide the next images, or NULL if there are no more images to provide.
    */
   ImageSourceEngine *advanceToNextImages(void);
 };
