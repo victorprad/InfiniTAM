@@ -427,7 +427,7 @@ bool FFMPEGReader::PrivateData::close(void)
 }
 
 FFMPEGReader::FFMPEGReader(const char *calibFilename, const char *filename1, const char *filename2)
-	: ImageSourceEngine(calibFilename)
+	: BaseImageSourceEngine(calibFilename)
 {
 	mData1 = new PrivateData();
 	isValid = mData1->open(filename1);
