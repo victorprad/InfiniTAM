@@ -27,6 +27,12 @@ void CompositeImageSourceEngine::addSubengine(ImageSourceEngine *subengine)
   m_subengines.push_back(subengine);
 }
 
+ITMLib::ITMRGBDCalib& CompositeImageSourceEngine::getCalib(void)
+{
+  if(!m_subengines.empty()) return m_subengines[0]->getCalib();
+  else throw std::runtime_error("Cannot get calibration parameters from an empty composite image source engine");
+}
+
 ImageSourceEngine *CompositeImageSourceEngine::getCurrentSubengine(void)
 {
   return m_curSubengineIndex < m_subengines.size() ? m_subengines[m_curSubengineIndex] : NULL;

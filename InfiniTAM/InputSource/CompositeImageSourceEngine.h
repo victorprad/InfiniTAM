@@ -50,6 +50,9 @@ public:
    */
   void addSubengine(ImageSourceEngine *subengine);
 
+  /** Override */
+  virtual ITMLib::ITMRGBDCalib& getCalib(void);
+
   /**
    * \brief Gets the current sub-engine.
    *
