@@ -134,7 +134,7 @@ Vector2i Kinect2Engine::getRGBImageSize(void) { return imageSize_rgb; }
 
 using namespace InputSource;
 
-Kinect2Engine::Kinect2Engine(const char *calibFilename) : ImageSourceEngine(calibFilename)
+Kinect2Engine::Kinect2Engine(const char *calibFilename) : BaseImageSourceEngine(calibFilename)
 {
 	printf("compiled without Kinect 2 support\n");
 }

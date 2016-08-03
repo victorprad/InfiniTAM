@@ -24,9 +24,9 @@ private:
   //#################### CONSTRUCTORS ####################
 public:
   /**
-   * \brief TODO
+   * \brief Constructs a composite image source engine.
    */
-  explicit CompositeImageSourceEngine(const char *calibFilename);
+  CompositeImageSourceEngine();
 
   //#################### DESTRUCTOR ####################
 public:

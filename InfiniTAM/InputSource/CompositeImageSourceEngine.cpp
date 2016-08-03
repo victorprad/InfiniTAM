@@ -6,8 +6,8 @@ namespace InputSource {
 
 //#################### CONSTRUCTORS ####################
 
-CompositeImageSourceEngine::CompositeImageSourceEngine(const char *calibFilename)
-: ImageSourceEngine(calibFilename), m_curSubengineIndex(0)
+CompositeImageSourceEngine::CompositeImageSourceEngine()
+: m_curSubengineIndex(0)
 {}
 
 //#################### DESTRUCTOR ####################

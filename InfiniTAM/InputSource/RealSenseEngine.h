@@ -14,7 +14,7 @@
 
 namespace InputSource {
 
-class RealSenseEngine : public ImageSourceEngine
+class RealSenseEngine : public BaseImageSourceEngine
 {
 private:
 	class PrivateData;

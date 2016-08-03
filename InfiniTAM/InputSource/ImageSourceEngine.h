@@ -12,15 +12,24 @@ namespace InputSource {
 class ImageSourceEngine
 {
 public:
-	ITMLib::ITMRGBDCalib calib;
-
-	explicit ImageSourceEngine(const char *calibFilename);
 	virtual ~ImageSourceEngine() {}
 
-	virtual bool hasMoreImages(void) = 0;
-	virtual void getImages(ITMUChar4Image *rgb, ITMShortImage *rawDepth) = 0;
+	virtual ITMLib::ITMRGBDCalib& getCalib() = 0;
 	virtual Vector2i getDepthImageSize(void) = 0;
+	virtual void getImages(ITMUChar4Image *rgb, ITMShortImage *rawDepth) = 0;
 	virtual Vector2i getRGBImageSize(void) = 0;
+	virtual bool hasMoreImages(void) = 0;
+};
+
+class BaseImageSourceEngine : public ImageSourceEngine
+{
+protected:
+	ITMLib::ITMRGBDCalib calib;
+
+public:
+	explicit BaseImageSourceEngine(const char *calibFilename);
+
+	ITMLib::ITMRGBDCalib& getCalib();
 };
 
 class ImageMaskPathGenerator
@@ -52,7 +61,7 @@ public:
 };
 
 template <typename PathGenerator>
-class ImageFileReader : public ImageSourceEngine
+class ImageFileReader : public BaseImageSourceEngine
 {
 private:
 	ITMUChar4Image *cached_rgb;
@@ -75,7 +84,7 @@ public:
 	Vector2i getRGBImageSize(void);
 };
 
-class CalibSource : public ImageSourceEngine
+class CalibSource : public BaseImageSourceEngine
 {
 private:
 	Vector2i imgSize;
@@ -91,7 +100,7 @@ public:
 	Vector2i getRGBImageSize(void) { return imgSize; }
 };
 
-class RawFileReader : public ImageSourceEngine
+class RawFileReader : public BaseImageSourceEngine
 {
 private:
 	static const int BUF_SIZE = 2048;

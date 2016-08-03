@@ -380,7 +380,7 @@ Vector2i LibUVCEngine::getRGBImageSize(void) { return imageSize_rgb; }
 #else
 
 LibUVCEngine::LibUVCEngine(const char *calibFilename, Vector2i requested_imageSize_rgb, Vector2i requested_imageSize_d)
-	: ImageSourceEngine(calibFilename)
+	: BaseImageSourceEngine(calibFilename)
 {
 	printf("compiled without LibUVC support\n");
 }

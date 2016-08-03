@@ -550,7 +550,7 @@ Vector2i FFMPEGReader::getRGBImageSize(void)
 using namespace InputSource;
 
 FFMPEGReader::FFMPEGReader(const char *calibFilename, const char *filename1, const char *filename2)
-	: ImageSourceEngine(calibFilename)
+	: BaseImageSourceEngine(calibFilename)
 {
 	printf("compiled without FFMPEG\n");
 }

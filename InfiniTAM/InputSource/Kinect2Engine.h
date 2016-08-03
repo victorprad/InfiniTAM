@@ -12,7 +12,7 @@ namespace InputSource {
 		artefacts in the depth images of the Kinect 2, so the
 		results look a bit weird on objects with reflections.
 */
-class Kinect2Engine : public ImageSourceEngine
+class Kinect2Engine : public BaseImageSourceEngine
 {
 private:
 	class PrivateData;
