@@ -66,7 +66,7 @@ private:
 	PathGenerator pathGenerator;
 public:
 
-	ImageFileReader(const char *calibFilename, const PathGenerator& pathGenerator_);
+	ImageFileReader(const char *calibFilename, const PathGenerator& pathGenerator_, size_t initialFrameNo = 0);
 	~ImageFileReader();
 
 	bool hasMoreImages(void);
