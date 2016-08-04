@@ -14,7 +14,7 @@ ITMExtendedTracker::ITMExtendedTracker(Vector2i imgSize_d, Vector2i imgSize_rgb,
 	float colourWeight,	TrackerIterationType *trackingRegime, int noHierarchyLevels,
 	float terminationThreshold, float failureDetectorThreshold, float viewFrustum_min, float viewFrustum_max,
 	int tukeyCutOff, int framesToSkip, int framesToWeight, const ITMLowLevelEngine *lowLevelEngine, MemoryDeviceType memoryType) :
-		previousProjectedIntensityHierarchy(NULL)
+		previousProjectedIntensityHierarchy(NULL), smoothedTempIntensity(NULL)
 {
 	this->useDepth = useDepth;
 	this->useColour = useColour;
