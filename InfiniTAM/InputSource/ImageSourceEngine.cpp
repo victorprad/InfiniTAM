@@ -66,11 +66,11 @@ size_t ImageListPathGenerator::imageCount() const
 }
 
 template <typename PathGenerator>
-ImageFileReader<PathGenerator>::ImageFileReader(const char *calibFilename, const PathGenerator& pathGenerator_)
+ImageFileReader<PathGenerator>::ImageFileReader(const char *calibFilename, const PathGenerator& pathGenerator_, size_t initialFrameNo)
 	: ImageSourceEngine(calibFilename),
 	  pathGenerator(pathGenerator_)
 {
-	currentFrameNo = 0;
+	currentFrameNo = initialFrameNo;
 	cachedFrameNo = -1;
 
 	cached_rgb = new ITMUChar4Image(true, false);
