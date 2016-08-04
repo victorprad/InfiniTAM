@@ -98,14 +98,14 @@ int ITMExtendedTracker_CPU::ComputeGandH_Depth(float &f, float *nabla, float *he
 
 			for (int i = 0; i < noPara; i++)
 			{
-				minNabla[i] = MIN(minNabla[i], localNabla[i]);
-				maxNabla[i] = MAX(maxNabla[i], localNabla[i]);
+				minNabla[i] = MIN(minNabla[i], fabs(localNabla[i]));
+				maxNabla[i] = MAX(maxNabla[i], fabs(localNabla[i]));
 			}
 
 			for (int i = 0; i < noParaSQ; i++)
 			{
-				minHessian[i] = MIN(minHessian[i], localHessian[i]);
-				maxHessian[i] = MAX(maxHessian[i], localHessian[i]);
+				minHessian[i] = MIN(minHessian[i], fabs(localHessian[i]));
+				maxHessian[i] = MAX(maxHessian[i], fabs(localHessian[i]));
 			}
 		}
 	}
