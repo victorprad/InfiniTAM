@@ -10,7 +10,7 @@
 
 namespace InputSource {
 
-class OpenNIEngine : public ImageSourceEngine
+class OpenNIEngine : public BaseImageSourceEngine
 {
 private:
 	class PrivateData;

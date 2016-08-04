@@ -10,7 +10,7 @@
 
 namespace InputSource {
 
-class LibUVCEngine : public ImageSourceEngine
+class LibUVCEngine : public BaseImageSourceEngine
 {
 public:
 	class PrivateData;

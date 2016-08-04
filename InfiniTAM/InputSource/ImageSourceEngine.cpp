@@ -11,7 +11,7 @@
 using namespace InputSource;
 using namespace ITMLib;
 
-ImageSourceEngine::ImageSourceEngine(const char *calibFilename)
+BaseImageSourceEngine::BaseImageSourceEngine(const char *calibFilename)
 {
 	if(!calibFilename || strlen(calibFilename) == 0)
 	{
@@ -21,6 +21,11 @@ ImageSourceEngine::ImageSourceEngine(const char *calibFilename)
 
 	if(!readRGBDCalib(calibFilename, calib))
 		DIEWITHEXCEPTION("error: path to the calibration file was specified but data could not be read");
+}
+
+ITMLib::ITMRGBDCalib& BaseImageSourceEngine::getCalib()
+{
+  return calib;
 }
 
 ImageMaskPathGenerator::ImageMaskPathGenerator(const char *rgbImageMask_, const char *depthImageMask_)
@@ -67,7 +72,7 @@ size_t ImageListPathGenerator::imageCount() const
 
 template <typename PathGenerator>
 ImageFileReader<PathGenerator>::ImageFileReader(const char *calibFilename, const PathGenerator& pathGenerator_, size_t initialFrameNo)
-	: ImageSourceEngine(calibFilename),
+	: BaseImageSourceEngine(calibFilename),
 	  pathGenerator(pathGenerator_)
 {
 	currentFrameNo = initialFrameNo;
@@ -142,7 +147,7 @@ Vector2i ImageFileReader<PathGenerator>::getRGBImageSize(void)
 }
 
 CalibSource::CalibSource(const char *calibFilename, Vector2i setImageSize, float ratio)
-	: ImageSourceEngine(calibFilename)
+	: BaseImageSourceEngine(calibFilename)
 {
 	this->imgSize = setImageSize;
 	this->ResizeIntrinsics(calib.intrinsics_d, ratio);
@@ -159,7 +164,7 @@ void CalibSource::ResizeIntrinsics(ITMIntrinsics &intrinsics, float ratio)
 }
 
 RawFileReader::RawFileReader(const char *calibFilename, const char *rgbImageMask, const char *depthImageMask, Vector2i setImageSize, float ratio)
-	: ImageSourceEngine(calibFilename)
+	: BaseImageSourceEngine(calibFilename)
 {
 	this->imgSize = setImageSize;
 	this->ResizeIntrinsics(calib.intrinsics_d, ratio);

@@ -32,7 +32,7 @@ class Kinect2Engine::PrivateData {
 	IDepthFrameReader* depthFrameReader;
 };
 
-Kinect2Engine::Kinect2Engine(const char *calibFilename) : ImageSourceEngine(calibFilename)
+Kinect2Engine::Kinect2Engine(const char *calibFilename) : BaseImageSourceEngine(calibFilename)
 {
 	imageSize_d = Vector2i(512, 424);
 	imageSize_rgb = Vector2i(640, 480);
@@ -134,7 +134,7 @@ Vector2i Kinect2Engine::getRGBImageSize(void) { return imageSize_rgb; }
 
 using namespace InputSource;
 
-Kinect2Engine::Kinect2Engine(const char *calibFilename) : ImageSourceEngine(calibFilename)
+Kinect2Engine::Kinect2Engine(const char *calibFilename) : BaseImageSourceEngine(calibFilename)
 {
 	printf("compiled without Kinect 2 support\n");
 }

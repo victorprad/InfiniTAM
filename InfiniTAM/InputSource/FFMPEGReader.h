@@ -6,7 +6,7 @@
 
 namespace InputSource {
 
-class FFMPEGReader : public ImageSourceEngine
+class FFMPEGReader : public BaseImageSourceEngine
 {
 	public:
 	class PrivateData;

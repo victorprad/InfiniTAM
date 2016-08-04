@@ -33,6 +33,7 @@ INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseUVC.cmake)
 #############################
 
 SET(sources
+CompositeImageSourceEngine.cpp
 FFMPEGReader.cpp
 FFMPEGWriter.cpp
 ImageSourceEngine.cpp
@@ -44,6 +45,7 @@ RealSenseEngine.cpp
 )
 
 SET(headers
+CompositeImageSourceEngine.h
 FFMPEGReader.h
 FFMPEGWriter.h
 ImageSourceEngine.h
