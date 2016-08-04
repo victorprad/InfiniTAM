@@ -270,7 +270,7 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exRGB_Ab(THREADPTR(float) *loca
 //	const float huber_coef_hessian = rho_deriv2(colour_diff, colourThresh);
 
 	// compute b
-	colourDifferenceSq = depthWeight * huber_rho(colour_diff, colourThresh);
+	colourDifferenceSq = huber_rho(colour_diff, colourThresh);
 
 	for (int para = 0, counter = 0; para < numPara; para++)
 	{
