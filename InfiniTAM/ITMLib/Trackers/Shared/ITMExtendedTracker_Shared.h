@@ -4,7 +4,26 @@
 
 #include "../../Utils/ITMPixelUtils.h"
 
-// huber norm
+// Huber loss
+_CPU_AND_GPU_CODE_ inline float huber_rho(float r, float huber_b)
+{
+	float abs_r = fabs(r);
+	if(abs_r <= huber_b)
+	{
+		return 0.5f * r * r;
+	}
+	else
+	{
+		return huber_b * (abs_r - 0.5f * huber_b);
+	}
+}
+
+_CPU_AND_GPU_CODE_ inline float huber_rho_deriv(float r, float huber_b)
+{
+	return CLAMP(r, -huber_b, huber_b);
+}
+
+// Depth Tracker Norm
 _CPU_AND_GPU_CODE_ inline float rho(float r, float huber_b)
 {
 	float tmp = fabs(r) - huber_b;
@@ -199,6 +218,8 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exRGB_Ab(THREADPTR(float) *loca
 							fy * inv_cam_z,
 							-fy * pt_camera.y * inv_cam_z_sq);
 
+	const float d_huber_loss = huber_rho_deriv(colour_diff, colourThresh);
+
 	float A[6];
 
 	for (int para = 0; para < numPara; para++)
@@ -242,31 +263,35 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exRGB_Ab(THREADPTR(float) *loca
 		A[para] = d_proj_dpi.x * gradient_obs.x + d_proj_dpi.y * gradient_obs.y;
 //		A[para] = d_proj_dpi.x + d_proj_dpi.y;
 //		A[para] = d_point_col.x + d_point_col.y + d_point_col.z;
-	}
 
-	const float huber_coef_gradient = rho_deriv(colour_diff, colourThresh);
-	const float huber_coef_hessian = rho_deriv2(colour_diff, colourThresh);
+		// Apply Huber norm
+		A[para] = d_huber_loss * A[para];
+	}
+//	const float huber_coef_hessian = rho_deriv2(colour_diff, colourThresh);
+
+	// compute b
+	colourDifferenceSq = depthWeight * huber_rho(colour_diff, colourThresh);
 
 	for (int para = 0, counter = 0; para < numPara; para++)
 	{
 		// Equivalent of Ab
-		localGradient[para] = depthWeight * huber_coef_gradient * A[para];
+//		localGradient[para] = depthWeight * huber_coef_gradient * A[para];
+//		localGradient[para] = depthWeight * A[para];
 //		localGradient[para] = huber_coef_gradient * A[para];
-//		localGradient[para] = A[para];
+		localGradient[para] = colourDifferenceSq * A[para];
 
 		// compute triangular part of A'A
 		for (int col = 0; col <= para; col++)
 		{
 			// dot(A[para],A[col]) but with huber weighting
-			localHessian[counter++] = depthWeight * huber_coef_hessian * A[para] * A[col];
+//			localHessian[counter++] = depthWeight * huber_coef_hessian * A[para] * A[col];
+			localHessian[counter++] = A[para] * A[col];
 		}
 	}
 
 //	localGradient[0] = gradient_obs.x;
 //	localGradient[1] = gradient_obs.y;
 
-	// compute b
-	colourDifferenceSq = depthWeight * rho(colour_diff, colourThresh);
 
 	return true;
 }
