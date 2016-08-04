@@ -218,7 +218,7 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exRGB_Ab(THREADPTR(float) *loca
 							fy * inv_cam_z,
 							-fy * pt_camera.y * inv_cam_z_sq);
 
-	const float d_huber_loss = huber_rho_deriv(colour_diff, colourThresh);
+	const float d_huber_loss = depthWeight * huber_rho_deriv(colour_diff, colourThresh);
 
 	float A[6];
 
@@ -270,7 +270,7 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exRGB_Ab(THREADPTR(float) *loca
 //	const float huber_coef_hessian = rho_deriv2(colour_diff, colourThresh);
 
 	// compute b
-	colourDifferenceSq = huber_rho(colour_diff, colourThresh);
+	colourDifferenceSq = depthWeight * huber_rho(colour_diff, colourThresh);
 
 	for (int para = 0, counter = 0; para < numPara; para++)
 	{
