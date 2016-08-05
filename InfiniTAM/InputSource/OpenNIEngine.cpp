@@ -211,9 +211,7 @@ OpenNIEngine::OpenNIEngine(const char *calibFilename, const char *deviceURI, con
 				(float)imageSize_d.x / (2.0f * tan(h_fov/2.0f)),
 				(float)imageSize_d.y / (2.0f * tan(v_fov/2.0f)),
 				(float)imageSize_d.x / 2.0f,
-				(float)imageSize_d.y / 2.0f,
-				(float)imageSize_d.x,
-				(float)imageSize_d.y);
+				(float)imageSize_d.y / 2.0f);
 		}
 		if (colorAvailable) {
 			float h_fov = data->colorStream.getHorizontalFieldOfView();
@@ -222,9 +220,7 @@ OpenNIEngine::OpenNIEngine(const char *calibFilename, const char *deviceURI, con
 				(float)imageSize_rgb.x / (2.0f * tan(h_fov/2.0f)),
 				(float)imageSize_rgb.y / (2.0f * tan(v_fov/2.0f)),
 				(float)imageSize_rgb.x / 2.0f,
-				(float)imageSize_rgb.y / 2.0f,
-				(float)imageSize_rgb.x,
-				(float)imageSize_rgb.y);
+				(float)imageSize_rgb.y / 2.0f);
 		}
 	}
 }

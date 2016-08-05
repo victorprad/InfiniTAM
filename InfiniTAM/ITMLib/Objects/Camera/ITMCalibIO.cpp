@@ -17,7 +17,7 @@ bool ITMLib::readIntrinsics(std::istream & src, ITMIntrinsics & dest)
 	src >> centerPoint[0] >> centerPoint[1];
 	if (src.fail()) return false;
 
-	dest.SetFrom(focalLength[0], focalLength[1], centerPoint[0], centerPoint[1], sizeX, sizeY);
+	dest.SetFrom(focalLength[0], focalLength[1], centerPoint[0], centerPoint[1]);
 	return true;
 }
 
