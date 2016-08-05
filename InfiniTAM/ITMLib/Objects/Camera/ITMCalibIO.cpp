@@ -116,7 +116,7 @@ void ITMLib::writeIntrinsics(std::ostream & dest, const ITMIntrinsics & src)
 	// Note: The size parameters are no longer used, but we don't want to change the calibration file format.
 	const float dummySizeX = 640, dummySizeY = 480;
 
-	dest << dummySizeX << ' ' << 480 << '\n';
+	dest << dummySizeX << ' ' << dummySizeY << '\n';
 	dest << src.projectionParamsSimple.fx << ' ' << src.projectionParamsSimple.fy << '\n';
 	dest << src.projectionParamsSimple.px << ' ' << src.projectionParamsSimple.py << '\n';
 }
