@@ -185,7 +185,7 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exDepth_Ab(THREADPTR(float) *A,
 }
 
 template<bool useWeights>
-_CPU_AND_GPU_CODE_ inline bool computePerPointGH_exRGB_Ab(THREADPTR(float) *localGradient, THREADPTR(float) &colourDifferenceSq, THREADPTR(float) *localHessian,
+_CPU_AND_GPU_CODE_ inline bool computePerPointGH_exRGB_Ab(THREADPTR(float) *localGradient, THREADPTR(float) &localResidual, THREADPTR(float) *localHessian,
 	THREADPTR(float) &depthWeight, const THREADPTR(Vector4f) &pt_world, const THREADPTR(float) intensity_world, const DEVICEPTR(float) *intensity_live,
 	const CONSTPTR(Vector2i) &imgSize, int x, int y, const Vector4f &projParams, const Matrix4f &approxPose, const Matrix4f &approxInvPose,
 	const Matrix4f &scenePose, const DEVICEPTR(Vector2f) *intensity_gradients, float colourThresh, float viewFrustum_min, float viewFrustum_max,
@@ -261,7 +261,7 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exRGB_Ab(THREADPTR(float) *loca
 //	const float d_loss = colour_diff;
 //	const float d_loss = depthWeight * huber_rho_deriv(colour_diff, colourThresh);
 
-	float A[6];
+	float nabla[6];
 
 	for (int para = 0; para < numPara; para++)
 	{
@@ -301,35 +301,36 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exRGB_Ab(THREADPTR(float) *loca
 		d_proj_dpi.y = dot(d_proj_y, d_point_col);
 
 		// Chain rule image gradient-projection-pose
-		A[para] = d_proj_dpi.x * gradient_obs.x + d_proj_dpi.y * gradient_obs.y;
-//		A[para] = d_proj_dpi.x + d_proj_dpi.y;
-//		A[para] = d_point_col.x + d_point_col.y + d_point_col.z;
+		nabla[para] = d_proj_dpi.x * gradient_obs.x + d_proj_dpi.y * gradient_obs.y;
+//		nabla[para] = d_proj_dpi.x + d_proj_dpi.y;
+//		nabla[para] = d_point_col.x + d_point_col.y + d_point_col.z;
 
 		// Apply Huber norm
-		A[para] = d_loss * A[para];
+		nabla[para] = d_loss * nabla[para];
 	}
 //	const float huber_coef_hessian = rho_deriv2(colour_diff, colourThresh);
 
-	// compute b
-//	colourDifferenceSq = depthWeight * huber_rho(colour_diff, colourThresh);
-	colourDifferenceSq = huber_rho(colour_diff, colourThresh);
-//	colourDifferenceSq = tukey_rho(colour_diff, colourThresh);
-//	colourDifferenceSq = colour_diff * colour_diff;
+	// compute the residual
+//	localResidual = depthWeight * huber_rho(colour_diff, colourThresh);
+	localResidual = huber_rho(colour_diff, colourThresh);
+//	localResidual = tukey_rho(colour_diff, colourThresh);
+//	localResidual = colour_diff * colour_diff;
 
 	for (int para = 0, counter = 0; para < numPara; para++)
 	{
-		// Equivalent of Ab
-//		localGradient[para] = depthWeight * huber_coef_gradient * A[para];
-//		localGradient[para] = depthWeight * A[para];
-//		localGradient[para] = huber_coef_gradient * A[para];
-		localGradient[para] = colourDifferenceSq * A[para];
+		// Compute b
+//		localGradient[para] = depthWeight * huber_coef_gradient * nabla[para];
+//		localGradient[para] = depthWeight * nabla[para];
+//		localGradient[para] = huber_coef_gradient * nabla[para];
+		localGradient[para] = localResidual * nabla[para];
+//		localGradient[para] = nabla[para];
 
 		// compute triangular part of A'A
 		for (int col = 0; col <= para; col++)
 		{
 			// dot(A[para],A[col]) but with huber weighting
-//			localHessian[counter++] = depthWeight * huber_coef_hessian * A[para] * A[col];
-			localHessian[counter++] = A[para] * A[col];
+//			localHessian[counter++] = depthWeight * huber_coef_hessian * nabla[para] * nabla[col];
+			localHessian[counter++] = nabla[para] * nabla[col];
 		}
 	}
 
