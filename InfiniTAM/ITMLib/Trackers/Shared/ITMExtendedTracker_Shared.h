@@ -4,6 +4,44 @@
 
 #include "../../Utils/ITMPixelUtils.h"
 
+// Tukey loss
+_CPU_AND_GPU_CODE_ inline float tukey_rho(float r, float c)
+{
+	const float abs_r = fabs(r);
+	const float c_sq_6 = c * c / 6.f;
+	if(abs_r <= c)
+	{
+		float tukey_r = r / c;
+		tukey_r *= tukey_r;
+		tukey_r = 1 - tukey_r;
+		tukey_r = tukey_r * tukey_r * tukey_r;
+
+		return c_sq_6 * (1.f - tukey_r);
+	}
+	else
+	{
+		return c_sq_6;
+	}
+}
+
+_CPU_AND_GPU_CODE_ inline float tukey_rho_deriv(float r, float c)
+{
+	const float abs_r = fabs(r);
+	if(abs_r <= c)
+	{
+		float tukey_r = r / c;
+		tukey_r *= tukey_r;
+		tukey_r = 1 - tukey_r;
+		tukey_r *= tukey_r;
+
+		return r * tukey_r;
+	}
+	else
+	{
+		return 0.f;
+	}
+}
+
 // Huber loss
 _CPU_AND_GPU_CODE_ inline float huber_rho(float r, float huber_b)
 {
@@ -218,7 +256,10 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exRGB_Ab(THREADPTR(float) *loca
 							fy * inv_cam_z,
 							-fy * pt_camera.y * inv_cam_z_sq);
 
-	const float d_huber_loss = depthWeight * huber_rho_deriv(colour_diff, colourThresh);
+	const float d_loss = huber_rho_deriv(colour_diff, colourThresh);
+//	const float d_loss = tukey_rho_deriv(colour_diff, colourThresh);
+//	const float d_loss = colour_diff;
+//	const float d_loss = depthWeight * huber_rho_deriv(colour_diff, colourThresh);
 
 	float A[6];
 
@@ -265,12 +306,15 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exRGB_Ab(THREADPTR(float) *loca
 //		A[para] = d_point_col.x + d_point_col.y + d_point_col.z;
 
 		// Apply Huber norm
-		A[para] = d_huber_loss * A[para];
+		A[para] = d_loss * A[para];
 	}
 //	const float huber_coef_hessian = rho_deriv2(colour_diff, colourThresh);
 
 	// compute b
-	colourDifferenceSq = depthWeight * huber_rho(colour_diff, colourThresh);
+//	colourDifferenceSq = depthWeight * huber_rho(colour_diff, colourThresh);
+	colourDifferenceSq = huber_rho(colour_diff, colourThresh);
+//	colourDifferenceSq = tukey_rho(colour_diff, colourThresh);
+//	colourDifferenceSq = colour_diff * colour_diff;
 
 	for (int para = 0, counter = 0; para < numPara; para++)
 	{
