@@ -17,4 +17,9 @@ namespace ITMLib
 	bool readRGBDCalib(std::istream & src, ITMRGBDCalib & dest);
 	bool readRGBDCalib(const char *fileName, ITMRGBDCalib & dest);
 	bool readRGBDCalib(const char *rgbIntrinsicsFile, const char *depthIntrinsicsFile, const char *disparityCalibFile, const char *extrinsicsFile, ITMRGBDCalib & dest);
+	void writeIntrinsics(std::ostream & dest, const ITMIntrinsics & src);
+	void writeExtrinsics(std::ostream & dest, const ITMExtrinsics & src);
+	void writeDisparityCalib(std::ostream & dest, const ITMDisparityCalib & src);
+	void writeRGBDCalib(std::ostream & dest, const ITMRGBDCalib & src);
+	void writeRGBDCalib(const char *fileName, const ITMRGBDCalib & src);
 }

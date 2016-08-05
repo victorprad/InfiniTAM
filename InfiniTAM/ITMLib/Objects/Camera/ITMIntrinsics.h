@@ -27,10 +27,8 @@ namespace ITMLib
 			@param fy Focal length in y direction
 			@param cx Principal point in x direction
 			@param cy Principal point in y direction
-			@param sizeX Image size in x direction
-			@param sizeY Image size in y direction
 		*/
-		void SetFrom(float fx, float fy, float cx, float cy, float sizeX, float sizeY)
+		void SetFrom(float fx, float fy, float cx, float cy)
 		{
 			projectionParamsSimple.fx = fx; 
 			projectionParamsSimple.fy = fy;
@@ -47,7 +45,7 @@ namespace ITMLib
 		{
 			// standard calibration parameters for Kinect RGB camera. Not at all
 			// accurate, though...
-			SetFrom(580, 580, 320, 240, 640, 480);
+			SetFrom(580, 580, 320, 240);
 		}
 	};
 }
