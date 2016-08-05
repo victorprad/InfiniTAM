@@ -4,6 +4,7 @@
 
 #include <fstream>
 #include <sstream>
+#include <stdexcept>
 
 using namespace ITMLib;
 
@@ -108,4 +109,54 @@ bool ITMLib::readRGBDCalib(const char *rgbIntrinsicsFile, const char *depthIntri
 	ret &= ITMLib::readExtrinsics(extrinsicsFile, dest.trafo_rgb_to_depth);
 	ret &= ITMLib::readDisparityCalib(disparityCalibFile, dest.disparityCalib);
 	return ret;
+}
+
+void ITMLib::writeIntrinsics(std::ostream & dest, const ITMIntrinsics & src)
+{
+	// Note: The size parameters are no longer used, but we don't want to change the calibration file format.
+	const float dummySizeX = 640, dummySizeY = 480;
+
+	dest << dummySizeX << ' ' << 480 << '\n';
+	dest << src.projectionParamsSimple.fx << ' ' << src.projectionParamsSimple.fy << '\n';
+	dest << src.projectionParamsSimple.px << ' ' << src.projectionParamsSimple.py << '\n';
+}
+
+void ITMLib::writeExtrinsics(std::ostream & dest, const ITMExtrinsics & src)
+{
+	const Matrix4f& calib = src.calib;
+	dest << calib.m00 << ' ' << calib.m10 << ' ' << calib.m20 << ' ' << calib.m30 << '\n';
+	dest << calib.m01 << ' ' << calib.m11 << ' ' << calib.m21 << ' ' << calib.m31 << '\n';
+	dest << calib.m02 << ' ' << calib.m12 << ' ' << calib.m22 << ' ' << calib.m32 << '\n';
+}
+
+void ITMLib::writeDisparityCalib(std::ostream & dest, const ITMDisparityCalib & src)
+{
+	switch(src.type)
+	{
+		case ITMDisparityCalib::TRAFO_AFFINE:
+			dest << "affine " << src.params.x << ' ' << src.params.y << '\n';
+			break;
+		case ITMDisparityCalib::TRAFO_KINECT:
+			dest << src.params.x << ' ' << src.params.y << '\n';
+			break;
+		default:
+			throw std::runtime_error("Error: Unknown disparity calibration type");
+	}
+}
+
+void ITMLib::writeRGBDCalib(std::ostream & dest, const ITMRGBDCalib & src)
+{
+	writeIntrinsics(dest, src.intrinsics_rgb);
+	dest << '\n';
+	writeIntrinsics(dest, src.intrinsics_d);
+	dest << '\n';
+	writeExtrinsics(dest, src.trafo_rgb_to_depth);
+	dest << '\n';
+	writeDisparityCalib(dest, src.disparityCalib);
+}
+
+void ITMLib::writeRGBDCalib(const char *fileName, const ITMRGBDCalib & src)
+{
+	std::ofstream f(fileName);
+	writeRGBDCalib(f, src);
 }
