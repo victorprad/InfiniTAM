@@ -42,8 +42,10 @@ ImageSourceEngine *CompositeImageSourceEngine::getCurrentSubengine(void)
 
 Vector2i CompositeImageSourceEngine::getDepthImageSize(void)
 {
-  ImageSourceEngine *curSubengine = getCurrentSubengine();
-  return curSubengine ? curSubengine->getDepthImageSize() : Vector2i(0,0);
+  // There is an assumption being made that the depth image sizes for all the sub-engines are the same,
+  // although this is not currently being enforced.
+  if(!m_subengines.empty()) return m_subengines[0]->getDepthImageSize();
+  else throw std::runtime_error("Cannot get the depth image size from an empty composite image source engine");
 }
 
 void CompositeImageSourceEngine::getImages(ITMUChar4Image *rgb, ITMShortImage *rawDepth)
@@ -54,8 +56,10 @@ void CompositeImageSourceEngine::getImages(ITMUChar4Image *rgb, ITMShortImage *r
 
 Vector2i CompositeImageSourceEngine::getRGBImageSize(void)
 {
-  ImageSourceEngine *curSubengine = getCurrentSubengine();
-  return curSubengine ? curSubengine->getRGBImageSize() : Vector2i(0,0);
+  // There is an assumption being made that the RGB image sizes for all the sub-engines are the same,
+  // although this is not currently being enforced.
+  if(!m_subengines.empty()) return m_subengines[0]->getRGBImageSize();
+  else throw std::runtime_error("Cannot get the RGB image size from an empty composite image source engine");
 }
 
 bool CompositeImageSourceEngine::hasMoreImages(void)
