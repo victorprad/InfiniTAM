@@ -425,16 +425,16 @@ void ITMExtendedTracker::TrackCamera(ITMTrackingState *trackingState, const ITMV
 				throw std::runtime_error("Cannot track the camera when both useDepth and useColour are false.");
 			}
 
-//			printf("Level: %d, Iter: %d, valid points: %d, Energy: %f, Lambda: %f\n", levelId, iterNo, noValidPoints_new, f_new, lambda);
-//			std::cout << "Gradient: ";
-//			for(int i = 0; i < 6; ++i) std::cout << nabla_new[i] << " ";
-//			std::cout << "\nHessian:\n";
-//			for(int i = 0; i < 6; ++i)
-//			{
-//				for(int j = 0; j < 6; ++j) std::cout << hessian_new[i * 6 + j] << " ";
-//				std::cout << "\n";
-//			}
-//			std::cout << std::endl;
+			printf("Level: %d, Iter: %d, valid points: %d, Energy: %f, Lambda: %f\n", levelId, iterNo, noValidPoints_new, f_new, lambda);
+			std::cout << "Gradient: ";
+			for(int i = 0; i < 6; ++i) std::cout << nabla_new[i] << " ";
+			std::cout << "\nHessian:\n";
+			for(int i = 0; i < 6; ++i)
+			{
+				for(int j = 0; j < 6; ++j) std::cout << hessian_new[i * 6 + j] << " ";
+				std::cout << "\n";
+			}
+			std::cout << std::endl;
 
 			// check if error increased. If so, revert
 			if ((noValidPoints_new <= 0) || (f_new > f_old))
@@ -460,9 +460,9 @@ void ITMExtendedTracker::TrackCamera(ITMTrackingState *trackingState, const ITMV
 			// compute a new step and make sure we've got an SE3
 			ComputeDelta(step, nabla_good, A, iterationType != TRACKER_ITERATION_BOTH);
 
-//			std::cout << "Step: ";
-//			for(int i = 0; i < 6; ++i) std::cout << step[i] << " ";
-//			std::cout << std::endl;
+			std::cout << "Step: ";
+			for(int i = 0; i < 6; ++i) std::cout << step[i] << " ";
+			std::cout << std::endl;
 //			return;
 
 			ApplyDelta(approxInvPose, step, approxInvPose);
