@@ -29,6 +29,8 @@ void CompositeImageSourceEngine::addSubengine(ImageSourceEngine *subengine)
 
 ITMLib::ITMRGBDCalib& CompositeImageSourceEngine::getCalib(void)
 {
+  // There is an assumption being made that the calibrations for all the sub-engines are the same,
+  // although this is not currently being enforced.
   if(!m_subengines.empty()) return m_subengines[0]->getCalib();
   else throw std::runtime_error("Cannot get calibration parameters from an empty composite image source engine");
 }
