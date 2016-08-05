@@ -110,7 +110,7 @@ int ITMExtendedTracker_CPU::ComputeGandH_Depth(float &f, float *nabla, float *he
 		}
 	}
 
-	printf("Min F: %g - Max F: %g\n", minF, maxF);
+	printf("Depth:\nMin F: %g - Max F: %g\n", minF, maxF);
 	printf("Min Nabla: ");
 	for (int i = 0; i < noPara; i++)
 	{
@@ -257,7 +257,7 @@ int ITMExtendedTracker_CPU::ComputeGandH_RGB(float &f, float *nabla, float *hess
 		}
 	}
 
-	printf("Min F: %g - Max F: %g\n", minF, maxF);
+	printf("RGB:\nMin F: %g - Max F: %g\n", minF, maxF);
 	printf("Min Nabla: ");
 	for (int i = 0; i < noPara; i++)
 	{
