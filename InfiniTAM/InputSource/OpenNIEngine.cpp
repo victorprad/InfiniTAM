@@ -86,7 +86,7 @@ void mirrorHorizontally(ORUtils::Image<T> *img)
 
 OpenNIEngine::OpenNIEngine(const char *calibFilename, const char *deviceURI, const bool useInternalCalibration,
 	Vector2i requested_imageSize_rgb, Vector2i requested_imageSize_d)
-	: ImageSourceEngine(calibFilename)
+	: BaseImageSourceEngine(calibFilename)
 {
 	// images from openni always come in millimeters...
 	this->calib.disparityCalib.type = ITMLib::ITMDisparityCalib::TRAFO_AFFINE;
@@ -306,7 +306,7 @@ Vector2i OpenNIEngine::getRGBImageSize(void) { return (data!=NULL)?imageSize_rgb
 using namespace InputSource;
 
 OpenNIEngine::OpenNIEngine(const char *calibFilename, const char *deviceURI, const bool useInternalCalibration, Vector2i requested_imageSize_rgb, Vector2i requested_imageSize_d)
-	: ImageSourceEngine(calibFilename)
+	: BaseImageSourceEngine(calibFilename)
 {
 	printf("compiled without OpenNI support\n");
 }

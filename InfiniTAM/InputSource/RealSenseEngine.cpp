@@ -23,7 +23,7 @@ class RealSenseEngine::PrivateData
 };
 
 RealSenseEngine::RealSenseEngine(const char *calibFilename, Vector2i requested_imageSize_rgb, Vector2i requested_imageSize_d)
-	: ImageSourceEngine(calibFilename)
+	: BaseImageSourceEngine(calibFilename)
 {
 	// images from openni always come in millimeters...
 	this->calib.disparityCalib.type = ITMDisparityCalib::TRAFO_AFFINE;
@@ -111,7 +111,7 @@ Vector2i RealSenseEngine::getRGBImageSize(void) { return (data!=NULL)?imageSize_
 using namespace InputSource;
 
 RealSenseEngine::RealSenseEngine(const char *calibFilename, Vector2i requested_imageSize_rgb, Vector2i requested_imageSize_d)
-	: ImageSourceEngine(calibFilename)
+	: BaseImageSourceEngine(calibFilename)
 {
 	printf("compiled without RealSense Windows support\n");
 }
