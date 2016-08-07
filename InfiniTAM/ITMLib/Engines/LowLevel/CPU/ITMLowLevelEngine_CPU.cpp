@@ -83,7 +83,7 @@ void ITMLowLevelEngine_CPU::GradientX(ITMShort4Image *grad_out, const ITMUChar4I
 	Vector4s *grad = grad_out->GetData(MEMORYDEVICE_CPU);
 	const Vector4u *image = image_in->GetData(MEMORYDEVICE_CPU);
 
-	memset(grad, 0, imgSize.x * imgSize.y * sizeof(Vector3s));
+	memset(grad, 0, imgSize.x * imgSize.y * sizeof(Vector4s));
 
 	for (int y = 1; y < imgSize.y - 1; y++) for (int x = 1; x < imgSize.x - 1; x++)
 		gradientX(grad, x, y, image, imgSize);
@@ -97,7 +97,7 @@ void ITMLowLevelEngine_CPU::GradientY(ITMShort4Image *grad_out, const ITMUChar4I
 	Vector4s *grad = grad_out->GetData(MEMORYDEVICE_CPU);
 	const Vector4u *image = image_in->GetData(MEMORYDEVICE_CPU);
 
-	memset(grad, 0, imgSize.x * imgSize.y * sizeof(Vector3s));
+	memset(grad, 0, imgSize.x * imgSize.y * sizeof(Vector4s));
 
 	for (int y = 1; y < imgSize.y - 1; y++) for (int x = 1; x < imgSize.x - 1; x++)
 		gradientY(grad, x, y, image, imgSize);
