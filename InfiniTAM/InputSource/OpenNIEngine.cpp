@@ -256,7 +256,7 @@ OpenNIEngine::OpenNIEngine(const char *calibFilename, const char *deviceURI, con
 
 OpenNIEngine::~OpenNIEngine()
 {
-	if (data != NULL)
+	if (data)
 	{
 		if (depthAvailable)
 		{
@@ -325,7 +325,7 @@ void OpenNIEngine::getImages(ITMUChar4Image *rgbImage, ITMShortImage *rawDepthIm
 	return /*true*/;
 }
 
-bool OpenNIEngine::hasMoreImages(void) { return (data!=NULL && data->eofListener && !data->eofListener->reachedEOF()); }
+bool OpenNIEngine::hasMoreImages(void) { return data && !data->eofListener->reachedEOF(); }
 Vector2i OpenNIEngine::getDepthImageSize(void) { return (data!=NULL)?imageSize_d:Vector2i(0,0); }
 Vector2i OpenNIEngine::getRGBImageSize(void) { return (data!=NULL)?imageSize_rgb:Vector2i(0,0); }
 
