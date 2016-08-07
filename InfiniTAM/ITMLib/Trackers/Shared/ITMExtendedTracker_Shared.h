@@ -304,7 +304,7 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exRGB_Ab(THREADPTR(float) *loca
 
 	// compute the residual
 //	localResidual = depthWeight * huber_rho(colour_diff, colourThresh);
-	localResidual = huber_rho(colour_diff, colourThresh);
+	localResidual = depthWeight * huber_rho(colour_diff, colourThresh);
 //	localResidual = tukey_rho(colour_diff, colourThresh);
 //	localResidual = colour_diff * colour_diff;
 
@@ -319,7 +319,7 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exRGB_Ab(THREADPTR(float) *loca
 		// Compute b
 //		localGradient[para] = depthWeight * huber_coef_gradient * nabla[para];
 //		localGradient[para] = depthWeight * nabla[para];
-		localGradient[para] = d_loss * nabla[para];
+		localGradient[para] = depthWeight * d_loss * nabla[para];
 //		localGradient[para] = fabs(colour_diff) <= colourThresh ? colour_diff * nabla[para] : (colour_diff < 0 ? -colourThresh : colourThresh);
 //		localGradient[para] = nabla[para];
 
@@ -328,7 +328,7 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exRGB_Ab(THREADPTR(float) *loca
 		{
 			// dot(A[para],A[col]) but with huber weighting
 //			localHessian[counter++] = depthWeight * huber_coef_hessian * nabla[para] * nabla[col];
-			localHessian[counter++] = fabs(colour_diff) <= colourThresh ? nabla[para] * nabla[col] : 0;
+			localHessian[counter++] = depthWeight * (fabs(colour_diff) <= colourThresh ? nabla[para] * nabla[col] : 0);
 		}
 	}
 
