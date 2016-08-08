@@ -157,14 +157,18 @@ int ITMExtendedTracker_CPU::ComputeGandH_Depth(float &f, float *nabla, float *he
 int ITMExtendedTracker_CPU::ComputeGandH_RGB(float &f, float *nabla, float *hessian, Matrix4f approxInvPose)
 {
 	const Vector2i sceneImageSize = sceneHierarchyLevel_RGB->pointsMap->noDims;
-	const Vector2i viewImageSize = viewHierarchyLevel_Intensity->intensity_current->noDims;
+	const Vector2i viewImageSize_depth = viewHierarchyLevel_Depth->depth->noDims;
+	const Vector2i viewImageSize_rgb = viewHierarchyLevel_Intensity->intensity_current->noDims;
 
 	const Vector4f *locations = sceneHierarchyLevel_RGB->pointsMap->GetData(MEMORYDEVICE_CPU);
-	const float *intensity_model = previousProjectedIntensityLevel->depth->GetData(MEMORYDEVICE_CPU);
-	const float *intensity_live = viewHierarchyLevel_Intensity->intensity_current->GetData(MEMORYDEVICE_CPU);
+	const float *depths_curr = viewHierarchyLevel_Depth->depth->GetData(MEMORYDEVICE_CPU);
+//	const float *intensities_prev = previousProjectedIntensityLevel->depth->GetData(MEMORYDEVICE_CPU);
+	const float *intensities_prev = viewHierarchyLevel_Intensity->intensity_prev->GetData(MEMORYDEVICE_CPU);
+	const float *intensities_current = viewHierarchyLevel_Intensity->intensity_current->GetData(MEMORYDEVICE_CPU);
 	const Vector2f *gradients = viewHierarchyLevel_Intensity->gradients->GetData(MEMORYDEVICE_CPU);
 
-	Vector4f projParams = viewHierarchyLevel_Intensity->intrinsics;
+	Vector4f projParams_rgb = viewHierarchyLevel_Intensity->intrinsics;
+	Vector4f projParams_depth = viewHierarchyLevel_Depth->intrinsics;
 
 	Matrix4f approxPose;
 	approxInvPose.inv(approxPose);
@@ -213,14 +217,41 @@ int ITMExtendedTracker_CPU::ComputeGandH_RGB(float &f, float *nabla, float *hess
 
 		if (iterationType != TRACKER_ITERATION_TRANSLATION) // TODO translation not implemented yet
 		{
-			if (currentFrameNo < 100)
-				isValidPoint = computePerPointGH_exRGB_Ab<false>(localNabla, localF, localHessian, depthWeight,
-					locations[x + y * sceneImageSize.x], intensity_model[x + y * sceneImageSize.x], intensity_live, viewImageSize, x, y,
-					projParams, approxPose, approxInvPose, scenePose, gradients, colourThresh[levelId], viewFrustum_min, viewFrustum_max, tukeyCutOff, framesToSkip, framesToWeight, noPara);
-			else
-				isValidPoint = computePerPointGH_exRGB_Ab<true>(localNabla, localF, localHessian, depthWeight,
-					locations[x + y * sceneImageSize.x], intensity_model[x + y * sceneImageSize.x], intensity_live, viewImageSize, x, y,
-					projParams, approxPose, approxInvPose, scenePose, gradients, colourThresh[levelId], viewFrustum_min, viewFrustum_max, tukeyCutOff, framesToSkip, framesToWeight, noPara);
+//			if (currentFrameNo < 100)
+//				isValidPoint = computePerPointGH_exRGB_Ab<false>(localNabla, localF, localHessian, depthWeight,
+//					locations[x + y * sceneImageSize.x], intensities_prev[x + y * sceneImageSize.x], intensities_current, viewImageSize_rgb, x, y,
+//					projParams_rgb, approxPose, approxInvPose, scenePose, gradients, colourThresh[levelId], viewFrustum_min, viewFrustum_max, tukeyCutOff, framesToSkip, framesToWeight, noPara);
+//			else
+//				isValidPoint = computePerPointGH_exRGB_Ab<true>(localNabla, localF, localHessian, depthWeight,
+//					locations[x + y * sceneImageSize.x], intensities_prev[x + y * sceneImageSize.x], intensities_current, viewImageSize_rgb, x, y,
+//					projParams_rgb, approxPose, approxInvPose, scenePose, gradients, colourThresh[levelId], viewFrustum_min, viewFrustum_max, tukeyCutOff, framesToSkip, framesToWeight, noPara);
+
+			isValidPoint = computePerPointGH_exRGB_inv_Ab<false>(
+					localF,
+					localNabla,
+					localHessian,
+					depthWeight,
+					x,
+					y,
+					depths_curr,
+					intensities_current,
+					intensities_prev,
+					gradients,
+					viewImageSize_depth,
+					viewImageSize_rgb,
+					projParams_depth,
+					projParams_rgb,
+					approxPose,
+					approxInvPose,
+					scenePose,
+					colourThresh[levelId],
+					viewFrustum_min,
+					viewFrustum_max,
+					tukeyCutOff,
+					framesToSkip,
+					framesToWeight,
+					noPara
+					);
 		}
 
 		if (isValidPoint)

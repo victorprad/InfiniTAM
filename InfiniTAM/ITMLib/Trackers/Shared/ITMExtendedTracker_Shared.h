@@ -339,6 +339,147 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exRGB_Ab(THREADPTR(float) *loca
 	return true;
 }
 
+template<bool useWeights>
+_CPU_AND_GPU_CODE_ inline bool computePerPointGH_exRGB_inv_Ab(
+		THREADPTR(float) &localResidual,
+		THREADPTR(float) *localGradient,
+		THREADPTR(float) *localHessian,
+		THREADPTR(float) &depthWeight,
+		int x,
+		int y,
+		const DEVICEPTR(float) *depths_curr,
+		const DEVICEPTR(float) *intensities_curr,
+		const DEVICEPTR(float) *intensities_prev,
+		const DEVICEPTR(Vector2f) *gradients,
+		const CONSTPTR(Vector2i) &imgSize_depth,
+		const CONSTPTR(Vector2i) &imgSize_rgb,
+		const Vector4f &intrinsics_depth,
+		const Vector4f &intrinsics_rgb,
+		const Matrix4f &approxPose,
+		const Matrix4f &approxInvPose,
+		const Matrix4f &scenePose,
+		float colourThresh,
+		float viewFrustum_min,
+		float viewFrustum_max,
+		float tukeyCutoff,
+		float framesToSkip,
+		float framesToWeight,
+		int numPara
+		)
+{
+	if (x >= imgSize_depth.x || y >= imgSize_depth.y) return false;
+	if (x >= imgSize_rgb.x || y >= imgSize_rgb.y) return false;
+
+	// Point in current camera coordinates
+	const float depth_curr = depths_curr[y * imgSize_depth.x + x];
+	const Vector4f pt_curr(depth_curr * ((float(x) - intrinsics_depth.z) / intrinsics_depth.x),
+						   depth_curr * ((float(y) - intrinsics_depth.w) / intrinsics_depth.y),
+						   depth_curr,
+						   1.f);
+
+	// Transform the point in world coordinates
+	const Vector4f pt_world = approxInvPose * pt_curr;
+
+	// Transform the point in previous camera coordinates
+	const Vector4f pt_prev = scenePose * pt_world;
+
+	if (pt_prev.z <= 0.0f) return false; // Point behind the camera
+
+	// Project the point in the previous intensity frame
+	const Vector2f pt_prev_proj(intrinsics_rgb.x * pt_prev.x / pt_prev.z + intrinsics_rgb.z,
+								intrinsics_rgb.y * pt_prev.y / pt_prev.z + intrinsics_rgb.w);
+
+	if (pt_prev_proj.x < 0 || pt_prev_proj.x >= imgSize_rgb.x - 1 ||
+		pt_prev_proj.y < 0 || pt_prev_proj.y >= imgSize_rgb.y - 1) return false; // Outside the image plane
+
+	// Point should be valid, sample intensities and gradients
+	const float intensity_curr = intensities_curr[y * imgSize_rgb.x + x];
+	const float intensity_prev = interpolateBilinear_single(intensities_prev, pt_prev_proj, imgSize_rgb);
+	const Vector2f gradient_prev = interpolateBilinear_Vector2(gradients, pt_prev_proj, imgSize_rgb);
+
+	const float intensity_diff = intensity_prev - intensity_curr; // TODO Different from EF, check!
+
+	// Cache rows of the scenePose rotation matrix, to be used in the pose derivative
+	const Vector3f scene_rot_row_0 = scenePose.getRow(0).toVector3();
+	const Vector3f scene_rot_row_1 = scenePose.getRow(1).toVector3();
+	const Vector3f scene_rot_row_2 = scenePose.getRow(2).toVector3();
+
+	// Precompute projection derivatives
+	const Vector3f d_proj_x(intrinsics_rgb.x / pt_prev.z,
+							0.f,
+							-intrinsics_rgb.x * pt_prev.x / (pt_prev.z * pt_prev.z));
+	const Vector3f d_proj_y(0.f,
+							intrinsics_rgb.y / pt_prev.z,
+							-intrinsics_rgb.y * pt_prev.y / (pt_prev.z * pt_prev.z));
+
+	float nabla[6];
+	for (int para = 0; para < numPara; para++)
+	{
+		// Derivatives of approxInvPose wrt. the current parameter
+		Vector3f d_point_col;
+		switch (para)
+		{
+		case 0: //rx
+			d_point_col = Vector3f(0, -pt_world.z, pt_world.y);
+			break;
+		case 1: // ry
+			d_point_col = Vector3f(pt_world.z, 0, -pt_world.x);
+			break;
+		case 2: // rz
+			d_point_col = Vector3f(-pt_world.y, pt_world.x, 0);
+			break; //rz
+		case 3: //tx
+			// Rotation matrix negated and transposed (matrix storage is column major, though)
+			// We negate it one more time (-> no negation) because the ApplyDelta uses the KinectFusion
+			// skew symmetric matrix, that matrix has negated rotation components.
+			// In order to use the rgb tracker we would need to negate the entire computed step, but given
+			// the peculiar structure of the increment matrix we only need to negate the translation component.
+			d_point_col = -Vector3f(1,0,0);
+			break;
+		case 4: //ty
+			d_point_col = -Vector3f(0,1,0);
+			break;
+		case 5: //tz
+			d_point_col = -Vector3f(0,0,1);
+			break;
+		};
+
+		// Chain the above with scenePose
+		const Vector3f d_point_col_rot(dot(scene_rot_row_0, d_point_col),
+									   dot(scene_rot_row_1, d_point_col),
+									   dot(scene_rot_row_2, d_point_col));
+
+		// Chain with the projection
+		const Vector2f d_proj_point(dot(d_proj_x, d_point_col_rot),
+									dot(d_proj_y, d_point_col_rot));
+
+		// Chain with the intensity gradient
+		nabla[para] = dot(gradient_prev, d_proj_point);
+	}
+
+	// TODO depthWeight is not currently handled, also need to handle transform between rgb and depth cameras
+
+	// Compute the residual
+	localResidual = huber_rho(intensity_diff, colourThresh);
+
+	// Precompute huber derivatives
+	const float huber_coeff_gradient = huber_rho_deriv(intensity_diff, colourThresh);
+	const float huber_coeff_hessian = fabs(intensity_diff) <= colourThresh ? 1.f : 0.f;
+
+	// Fill gradient and hessian
+	for (int para = 0, counter = 0; para < numPara; para++)
+	{
+		localGradient[para] = huber_coeff_gradient * nabla[para];
+
+		for (int col = 0; col <= para; col++)
+		{
+			localHessian[counter++] = huber_coeff_hessian * nabla[para] * nabla[col];
+		}
+	}
+
+	return true;
+}
+
 template<bool shortIteration, bool rotationOnly, bool useWeights>
 _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exDepth(THREADPTR(float) *localNabla, THREADPTR(float) *localHessian, THREADPTR(float) &localF,
 	const THREADPTR(int) & x, const THREADPTR(int) & y, const CONSTPTR(float) &depth, THREADPTR(float) &depthWeight, CONSTPTR(Vector2i) & viewImageSize, const CONSTPTR(Vector4f) & viewIntrinsics,

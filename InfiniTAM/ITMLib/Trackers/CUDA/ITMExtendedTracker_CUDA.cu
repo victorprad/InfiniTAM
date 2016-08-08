@@ -34,9 +34,10 @@ struct ITMExtendedTracker_KernelParameters_Depth {
 struct ITMExtendedTracker_KernelParameters_RGB {
 	ITMExtendedTracker_CUDA::AccuCell *accu;
 	Vector4f *pointsMap;
+	const float *depths_curr;
 	Vector2f *gradients;
-	float *intensity_live;
-	float *intensity_model;
+	float *intensities_curr;
+	float *intensities_prev;
 	Vector2i viewImageSize;
 	Vector2i sceneImageSize;
 	Matrix4f approxInvPose;
@@ -344,8 +345,9 @@ int ITMExtendedTracker_CUDA::ComputeGandH_RGB(float &f, float *nabla, float *hes
 
 	struct ITMExtendedTracker_KernelParameters_RGB args;
 	args.accu = accu_device;
-	args.intensity_live = viewHierarchyLevel_Intensity->intensity_current->GetData(MEMORYDEVICE_CUDA);
-	args.intensity_model = previousProjectedIntensityLevel->depth->GetData(MEMORYDEVICE_CUDA);
+	args.depths_curr = viewHierarchyLevel_Depth->depth->GetData(MEMORYDEVICE_CUDA);
+	args.intensities_curr = viewHierarchyLevel_Intensity->intensity_current->GetData(MEMORYDEVICE_CUDA);
+	args.intensities_prev = viewHierarchyLevel_Intensity->intensity_prev->GetData(MEMORYDEVICE_CUDA);
 	args.gradients = viewHierarchyLevel_Intensity->gradients->GetData(MEMORYDEVICE_CUDA);
 	args.pointsMap = sceneHierarchyLevel_RGB->pointsMap->GetData(MEMORYDEVICE_CUDA);
 	args.viewImageSize = viewImageSize;
@@ -626,7 +628,7 @@ __device__ void exDepthTrackerOneLevel_g_rt_device_main(ITMExtendedTracker_CUDA:
 
 template<bool shortIteration, bool rotationOnly, bool useWeights>
 __device__ void exRGBTrackerOneLevel_g_rt_device_main(ITMExtendedTracker_CUDA::AccuCell *accu, 
-	const Vector4f *locations, const float *intensity_model, const Vector2f *gradients, const float *intensity_live,
+	const float *depths_curr, const float *intensities_prev, const Vector2f *gradients, const float *intensities_curr,
 	Matrix4f approxPose, Matrix4f approxInvPose, Matrix4f scenePose, Vector4f projParams,
 	Vector2i imgSize, Vector2i sceneSize, float colourThresh, float viewFrustum_min, float viewFrustum_max,
 	float tukeyCutoff, float framesToSkip, float framesToWeight)
@@ -657,9 +659,36 @@ __device__ void exRGBTrackerOneLevel_g_rt_device_main(ITMExtendedTracker_CUDA::A
 		// FIXME Translation only not implemented yet
 		if(!shortIteration || rotationOnly)
 		{
-			isValidPoint = computePerPointGH_exRGB_Ab<useWeights>(localNabla, localF, localHessian, depthWeight,
-				locations[x + y * sceneSize.x], intensity_model[x + y * sceneSize.x], intensity_live, imgSize, x, y,
-				projParams, approxPose, approxInvPose, scenePose, gradients, colourThresh, viewFrustum_min, viewFrustum_max, tukeyCutoff, framesToSkip, framesToWeight, noPara);
+//			isValidPoint = computePerPointGH_exRGB_Ab<useWeights>(localNabla, localF, localHessian, depthWeight,
+//				locations[x + y * sceneSize.x], intensity_model[x + y * sceneSize.x], intensity_live, imgSize, x, y,
+//				projParams, approxPose, approxInvPose, scenePose, gradients, colourThresh, viewFrustum_min, viewFrustum_max, tukeyCutoff, framesToSkip, framesToWeight, noPara);
+
+			isValidPoint = computePerPointGH_exRGB_inv_Ab<false>(
+					localF,
+					localNabla,
+					localHessian,
+					depthWeight,
+					x,
+					y,
+					depths_curr,
+					intensities_curr,
+					intensities_prev,
+					gradients,
+					imgSize,
+					imgSize,
+					projParams,
+					projParams,
+					approxPose,
+					approxInvPose,
+					scenePose,
+					colourThresh,
+					viewFrustum_min,
+					viewFrustum_max,
+					tukeyCutoff,
+					framesToSkip,
+					framesToWeight,
+					noPara
+					);
 		}
 
 		if (isValidPoint) should_prefix = true;
@@ -795,8 +824,8 @@ __global__ void exDepthTrackerOneLevel_g_rt_device(ITMExtendedTracker_KernelPara
 template<bool shortIteration, bool rotationOnly, bool useWeights>
 __global__ void exRGBTrackerOneLevel_g_rt_device(ITMExtendedTracker_KernelParameters_RGB para)
 {
-	exRGBTrackerOneLevel_g_rt_device_main<shortIteration, rotationOnly, useWeights>(para.accu, para.pointsMap,
-		para.intensity_model, para.gradients, para.intensity_live, para.approxPose, para.approxInvPose, para.scenePose,
+	exRGBTrackerOneLevel_g_rt_device_main<shortIteration, rotationOnly, useWeights>(para.accu, para.depths_curr,
+		para.intensities_prev, para.gradients, para.intensities_curr, para.approxPose, para.approxInvPose, para.scenePose,
 		para.projParams, para.viewImageSize, para.sceneImageSize, para.colourThresh, para.viewFrustum_min, para.viewFrustum_max,
 		para.tukeyCutOff, para.framesToSkip, para.framesToWeight);
 }
