@@ -605,7 +605,7 @@ void UIEngine::ProcessFrame()
 
 	currentFrameNo++;
 
-	if (currentFrameNo == 50) mainLoopAction = UIEngine::EXIT;
+//	if (currentFrameNo == 50) mainLoopAction = UIEngine::EXIT;
 }
 
 void UIEngine::Run() { glutMainLoop(); }
