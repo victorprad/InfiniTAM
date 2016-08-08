@@ -49,9 +49,9 @@ kernel void extendedTrackerOneLevel_g_rt_device(DEVICEPTR(float) *noValidPoints 
     int pointsPerThread = (int)params->others1.z;
     float viewFrustum_min = params->others1.w;
     float viewFrustum_max = params->others2.x;
-    float tukeyCutOff = params->others2.y;
-    float framesToSkip = params->others2.z;
-    float framesToWeight = params->others2.w;
+    int tukeyCutOff = params->others2.y;
+    int framesToSkip = params->others2.z;
+    int framesToWeight = params->others2.w;
     int currentFrameNo = (int)params->others3.x;
     float depthWeight = 1.0f;
     
