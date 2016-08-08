@@ -371,9 +371,9 @@ namespace ITMLib
 		float outlierSpaceDistanceFine = 0.004f;
 		float outlierSpaceDistanceCoarse = 0.1f;
 		float failureDetectorThd = 3.0f;
-		float tukeyCutOff = 8.0f;
-		float framesToSkip = 20.0f;
-		float framesToWeight = 50.0f;
+		int tukeyCutOff = 8;
+		int framesToSkip = 20;
+		int framesToWeight = 50;
 		int numIterationsCoarse = 20;
 		int numIterationsFine = 20;
 
@@ -387,9 +387,9 @@ namespace ITMLib
 		cfg.parseFltProperty("outlierSpaceF", "space outlier threshold at finest level", outlierSpaceDistanceFine, verbose);
 		cfg.parseIntProperty("numiterC", "maximum number of iterations at coarsest level", numIterationsCoarse, verbose);
 		cfg.parseIntProperty("numiterF", "maximum number of iterations at finest level", numIterationsFine, verbose);
-		cfg.parseIntProperty("tukeyCutOff", "cutff for the tukey m-estimator", numIterationsFine, verbose);
-		cfg.parseIntProperty("framesToSkip", "number of frames to skip before depth pixel is used for tracking", numIterationsFine, verbose);
-		cfg.parseIntProperty("framesToWeight", "number of frames to weight each depth pixel for before using it fully", numIterationsFine, verbose);
+		cfg.parseIntProperty("tukeyCutOff", "cutff for the tukey m-estimator", tukeyCutOff, verbose);
+		cfg.parseIntProperty("framesToSkip", "number of frames to skip before depth pixel is used for tracking", framesToSkip, verbose);
+		cfg.parseIntProperty("framesToWeight", "number of frames to weight each depth pixel for before using it fully", framesToWeight, verbose);
 		cfg.parseFltProperty("failureDec", "threshold for the failure detection", failureDetectorThd, verbose);
 
 		ITMExtendedTracker *dTracker = NULL;

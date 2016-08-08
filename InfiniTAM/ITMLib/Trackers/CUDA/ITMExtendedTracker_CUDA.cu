@@ -27,7 +27,7 @@ struct ITMExtendedTracker_KernelParameters {
 	Vector2i viewImageSize;
 	float spaceThresh;
 	float viewFrustum_min, viewFrustum_max;
-	float tukeyCutOff, framesToSkip, framesToWeight;
+	int tukeyCutOff, framesToSkip, framesToWeight;
 };
 
 template<bool shortIteration, bool rotationOnly, bool useWeights>
@@ -36,7 +36,7 @@ __global__ void exDepthTrackerOneLevel_g_rt_device(ITMExtendedTracker_KernelPara
 // host methods
 
 ITMExtendedTracker_CUDA::ITMExtendedTracker_CUDA(Vector2i imgSize, TrackerIterationType *trackingRegime, int noHierarchyLevels,
-	float terminationThreshold, float failureDetectorThreshold, float viewFrustum_min, float viewFrustum_max, float tukeyCutOff, float framesToSkip, float framesToWeight,
+	float terminationThreshold, float failureDetectorThreshold, float viewFrustum_min, float viewFrustum_max, int tukeyCutOff, int framesToSkip, int framesToWeight,
 	const ITMLowLevelEngine *lowLevelEngine)
 	: ITMExtendedTracker(imgSize, trackingRegime, noHierarchyLevels, terminationThreshold, failureDetectorThreshold, viewFrustum_min, viewFrustum_max, 
 	tukeyCutOff, framesToSkip, framesToWeight, lowLevelEngine, MEMORYDEVICE_CUDA)
@@ -163,7 +163,7 @@ template<bool shortIteration, bool rotationOnly, bool useWeights>
 __device__ void exDepthTrackerOneLevel_g_rt_device_main(ITMExtendedTracker_CUDA::AccuCell *accu, float *depth,
 	Matrix4f approxInvPose, Vector4f *pointsMap, Vector4f *normalsMap, Vector4f sceneIntrinsics, Vector2i sceneImageSize, Matrix4f scenePose, 
 	Vector4f viewIntrinsics, Vector2i viewImageSize, float spaceThresh, float viewFrustum_min, float viewFrustum_max, 
-	float tukeyCutOff, float framesToSkip, float framesToWeight)
+	int tukeyCutOff, int framesToSkip, int framesToWeight)
 {
 	int x = threadIdx.x + blockIdx.x * blockDim.x, y = threadIdx.y + blockIdx.y * blockDim.y;
 
