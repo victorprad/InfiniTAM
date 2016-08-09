@@ -402,6 +402,8 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exRGB_inv_Ab(
 
 	const float intensity_diff = intensity_prev - intensity_curr; // TODO Different from EF, check!
 
+	if (fabs(intensity_diff) >= tukeyCutoff * colourThresh) return false; // Difference too big
+
 	// Cache rows of the scenePose rotation matrix, to be used in the pose derivative
 	const Vector3f scene_rot_row_0 = scenePose.getRow(0).toVector3();
 	const Vector3f scene_rot_row_1 = scenePose.getRow(1).toVector3();
@@ -460,14 +462,17 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exRGB_inv_Ab(
 		nabla[para] = dot(gradient_prev, d_proj_point);
 	}
 
-	// TODO depthWeight is not currently handled, also need to handle transform between rgb and depth cameras
+	// TODO also need to handle transform between rgb and depth cameras
+	depthWeight = 1.0f - (depth_curr - viewFrustum_min) / (viewFrustum_max - viewFrustum_min); // Evaluate outside of the macro
+	depthWeight = MAX(depthWeight, 0.f);
+	depthWeight *= depthWeight;
 
 	// Compute the residual
-	localResidual = huber_rho(intensity_diff, colourThresh);
+	localResidual = depthWeight * huber_rho(intensity_diff, colourThresh);
 
 	// Precompute huber derivatives
-	const float huber_coeff_gradient = huber_rho_deriv(intensity_diff, colourThresh);
-	const float huber_coeff_hessian = fabs(intensity_diff) <= colourThresh ? 1.f : 0.f;
+	const float huber_coeff_gradient = depthWeight * huber_rho_deriv(intensity_diff, colourThresh);
+	const float huber_coeff_hessian = depthWeight * (fabs(intensity_diff) <= colourThresh ? 1.f : 0.f);
 
 	// Fill gradient and hessian
 	for (int para = 0, counter = 0; para < numPara; para++)
