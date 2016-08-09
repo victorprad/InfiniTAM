@@ -375,16 +375,15 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exRGB_inv_Ab(
 
 	if (depth_curr <= 1e-8f || depth_curr > viewFrustum_max) return false; // Invalid point or too far away
 
-	const Vector4f pt_curr(depth_curr * ((float(x) - intrinsics_depth.z) / intrinsics_depth.x),
+	const Vector3f pt_curr(depth_curr * ((float(x) - intrinsics_depth.z) / intrinsics_depth.x),
 						   depth_curr * ((float(y) - intrinsics_depth.w) / intrinsics_depth.y),
-						   depth_curr,
-						   1.f);
+						   depth_curr);
 
 	// Transform the point in world coordinates
-	const Vector4f pt_world = approxInvPose * pt_curr;
+	const Vector3f pt_world = approxInvPose * pt_curr;
 
 	// Transform the point in previous camera coordinates
-	const Vector4f pt_prev = scenePose * pt_world;
+	const Vector3f pt_prev = scenePose * pt_world;
 
 	if (pt_prev.z <= 0.0f) return false; // Point behind the camera
 
