@@ -27,7 +27,7 @@ namespace ITMLib
 		const ITMLowLevelEngine *lowLevelEngine;
 		ITMImageHierarchy<ITMSceneHierarchyLevel> *sceneHierarchy;
 		ITMTwoImageHierarchy<ITMDepthHierarchyLevel, ITMIntensityHierarchyLevel> *viewHierarchy;
-		ITMImageHierarchy<ITMTemplatedHierarchyLevel<ITMFloatImage> > *previousProjectedIntensityHierarchy;
+		ITMImageHierarchy<ITMTemplatedHierarchyLevel<ITMFloatImage> > *projectedIntensityHierarchy;
 		ITMFloatImage *smoothedTempIntensity;
 
 		ITMTrackingState *trackingState; const ITMView *view;
@@ -64,7 +64,7 @@ namespace ITMLib
 		ITMSceneHierarchyLevel *sceneHierarchyLevel_Depth;
 		ITMDepthHierarchyLevel *viewHierarchyLevel_Depth;
 		ITMIntensityHierarchyLevel *viewHierarchyLevel_Intensity;
-		ITMTemplatedHierarchyLevel<ITMFloatImage > *previousProjectedIntensityLevel;
+		ITMTemplatedHierarchyLevel<ITMFloatImage > *projectedIntensityLevel;
 
 		int currentFrameNo;
 
@@ -76,7 +76,7 @@ namespace ITMLib
 
 		virtual int ComputeGandH_Depth(float &f, float *nabla, float *hessian, Matrix4f approxInvPose) = 0;
 		virtual int ComputeGandH_RGB(float &f, float *nabla, float *hessian, Matrix4f approxPose) = 0;
-		virtual void ProjectPreviousRGBFrame(const Matrix4f &scenePose) = 0;
+		virtual void ProjectCurrentIntensityFrame(const Matrix4f &scenePose) = 0;
 
 	public:
 		void TrackCamera(ITMTrackingState *trackingState, const ITMView *view);

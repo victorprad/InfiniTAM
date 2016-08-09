@@ -13,8 +13,8 @@ using namespace ITMLib;
 ITMExtendedTracker::ITMExtendedTracker(Vector2i imgSize_d, Vector2i imgSize_rgb, bool useDepth, bool useColour,
 	float colourWeight,	TrackerIterationType *trackingRegime, int noHierarchyLevels,
 	float terminationThreshold, float failureDetectorThreshold, float viewFrustum_min, float viewFrustum_max,
-	int tukeyCutOff, int framesToSkip, int framesToWeight, const ITMLowLevelEngine *lowLevelEngine, MemoryDeviceType memoryType) :
-		previousProjectedIntensityHierarchy(NULL), smoothedTempIntensity(NULL)
+	int tukeyCutOff, int framesToSkip, int framesToWeight, const ITMLowLevelEngine *lowLevelEngine, MemoryDeviceType memoryType)
+		: projectedIntensityHierarchy(NULL), smoothedTempIntensity(NULL)
 {
 	this->useDepth = useDepth;
 	this->useColour = useColour;
@@ -43,7 +43,7 @@ ITMExtendedTracker::ITMExtendedTracker(Vector2i imgSize_d, Vector2i imgSize_rgb,
 	if (useColour)
 	{
 		// Don't skip allocation for level 0
-		previousProjectedIntensityHierarchy = new ITMImageHierarchy<ITMTemplatedHierarchyLevel<ITMFloatImage> >(imgSize_d, trackingRegime, noHierarchyLevels, memoryType, false);
+		projectedIntensityHierarchy = new ITMImageHierarchy<ITMTemplatedHierarchyLevel<ITMFloatImage> >(imgSize_d, trackingRegime, noHierarchyLevels, memoryType, false);
 
 		// Also allocate a buffer for the non smoothed level0 image
 		smoothedTempIntensity = new ITMFloatImage(imgSize_rgb, memoryType);
@@ -97,7 +97,7 @@ ITMExtendedTracker::~ITMExtendedTracker(void)
 
 	if (sceneHierarchy) delete sceneHierarchy;
 
-	if (previousProjectedIntensityHierarchy) delete previousProjectedIntensityHierarchy;
+	if (projectedIntensityHierarchy) delete projectedIntensityHierarchy;
 	if (smoothedTempIntensity) delete smoothedTempIntensity;
 
 	delete[] noIterationsPerLevel;
@@ -202,13 +202,12 @@ void ITMExtendedTracker::PrepareForEvaluation()
 			lowLevelEngine->GradientXY(currentLevel->gradients, currentLevel->intensity_prev);
 		}
 
-		// TODO: do the same thing but with the current frame
-//		// Project previous RGB image according to the scene pose and cache it to speed up the energy computation
-//		for (int i = 0; i < viewHierarchy->noLevels; ++i)
-//		{
-//			SetEvaluationParams(i);
-//			ProjectPreviousRGBFrame(view->calib->trafo_rgb_to_depth.calib_inv * scenePose);
-//		}
+		// Project previous RGB image according to the scene pose and cache it to speed up the energy computation
+		for (int i = 0; i < viewHierarchy->noLevels; ++i)
+		{
+			SetEvaluationParams(i);
+			ProjectCurrentIntensityFrame(view->calib->trafo_rgb_to_depth.calib_inv);
+		}
 	}
 
 	// Create raycasted pyramid
@@ -226,22 +225,22 @@ void ITMExtendedTracker::PrepareForEvaluation()
 
 void ITMExtendedTracker::SetEvaluationParams(int levelId)
 {
-	this->currentLevelId = levelId;
-	this->viewHierarchyLevel_Depth = viewHierarchy->levels_t0[levelId];
+	currentLevelId = levelId;
+	viewHierarchyLevel_Depth = viewHierarchy->levels_t0[levelId];
 	// TODO: split this into Depth/RGB pairs?
-	currentIterationType = this->viewHierarchyLevel_Depth->iterationType;
+	currentIterationType = viewHierarchyLevel_Depth->iterationType;
 
 	if (useDepth)
 	{
 		// During the optimization, every level of the depth frame pyramid is matched to the full resolution raycast
-		this->sceneHierarchyLevel_Depth = sceneHierarchy->levels[0];
+		sceneHierarchyLevel_Depth = sceneHierarchy->levels[0];
 	}
 
 	if (useColour)
 	{
 //		this->sceneHierarchyLevel_RGB = sceneHierarchy->levels[levelId];
-		this->viewHierarchyLevel_Intensity = viewHierarchy->levels_t1[levelId];
-//		this->previousProjectedIntensityLevel = previousProjectedIntensityHierarchy->levels[levelId];
+		viewHierarchyLevel_Intensity = viewHierarchy->levels_t1[levelId];
+		projectedIntensityLevel = projectedIntensityHierarchy->levels[levelId];
 	}
 }
 

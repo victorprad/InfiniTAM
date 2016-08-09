@@ -55,7 +55,7 @@ __global__ void exDepthTrackerOneLevel_g_rt_device(ITMExtendedTracker_KernelPara
 template<bool shortIteration, bool rotationOnly, bool useWeights>
 __global__ void exRGBTrackerOneLevel_g_rt_device(ITMExtendedTracker_KernelParameters_RGB para);
 
-__global__ void exRGBTrackerProjectPrevImage_device(float *out_rgb, const float *in_rgb, const Vector4f *in_points, Vector2i imageSize, Vector2i sceneSize, Vector4f intrinsics, Matrix4f scenePose);
+__global__ void exRGBTrackerProjectPrevImage_device(float *out_rgb, const float *in_rgb, const float *in_points, Vector2i imageSize, Vector2i sceneSize, Vector4f intrinsics_depth, Vector4f intrinsics_rgb, Matrix4f scenePose);
 
 // host methods
 
@@ -426,7 +426,7 @@ int ITMExtendedTracker_CUDA::ComputeGandH_RGB(float &f, float *nabla, float *hes
 	return accu_host->numPoints;
 }
 
-void ITMExtendedTracker_CUDA::ProjectPreviousRGBFrame(const Matrix4f &scenePose)
+void ITMExtendedTracker_CUDA::ProjectCurrentIntensityFrame(const Matrix4f &scenePose)
 {
 //	Vector2i imageSize = viewHierarchyLevel_Intensity->intensity_prev->noDims;
 //	Vector2i sceneSize = sceneHierarchyLevel_RGB->pointsMap->noDims; // Also the size of the projected image
@@ -451,21 +451,22 @@ void ITMExtendedTracker_CUDA::ProjectPreviousRGBFrame(const Matrix4f &scenePose)
 //	viewHierarchyLevel_Intensity->intensity_prev->UpdateDeviceFromHost();
 //	previousProjectedIntensityLevel->depth->UpdateDeviceFromHost();
 
-//	Vector2i imageSize = viewHierarchyLevel_Intensity->intensity_prev->noDims;
-//	Vector2i sceneSize = sceneHierarchyLevel_RGB->pointsMap->noDims; // Also the size of the projected image
-//
-//	previousProjectedIntensityLevel->depth->ChangeDims(sceneSize); // Actual reallocation should happen only once per run.
-//
-//	Vector4f projParams = viewHierarchyLevel_Intensity->intrinsics;
-//	const Vector4f *pointsMap = sceneHierarchyLevel_RGB->pointsMap->GetData(MEMORYDEVICE_CUDA);
-//	const float *rgbIn = viewHierarchyLevel_Intensity->intensity_prev->GetData(MEMORYDEVICE_CUDA);
-//	float *rgbOut = previousProjectedIntensityLevel->depth->GetData(MEMORYDEVICE_CUDA);
-//
-//	dim3 blockSize(16, 16);
-//	dim3 gridSize((int)ceil((float)sceneSize.x / (float)blockSize.x), (int)ceil((float)sceneSize.y / (float)blockSize.y));
-//
-//	exRGBTrackerProjectPrevImage_device<<<gridSize, blockSize>>>(rgbOut, rgbIn, pointsMap, imageSize, sceneSize, projParams, scenePose);
-//	ORcudaKernelCheck;
+	Vector2i imageSize = viewHierarchyLevel_Intensity->intensity_prev->noDims;
+	Vector2i sceneSize = viewHierarchyLevel_Depth->depth->noDims; // Also the size of the projected image
+
+	projectedIntensityLevel->depth->ChangeDims(sceneSize); // Actual reallocation should happen only once per run.
+
+	Vector4f projParams_rgb = viewHierarchyLevel_Intensity->intrinsics;
+	Vector4f projParams_depth = viewHierarchyLevel_Depth->intrinsics;
+	const float *depths = viewHierarchyLevel_Depth->depth->GetData(MEMORYDEVICE_CUDA);
+	const float *rgbIn = viewHierarchyLevel_Intensity->intensity_prev->GetData(MEMORYDEVICE_CUDA);
+	float *rgbOut = projectedIntensityLevel->depth->GetData(MEMORYDEVICE_CUDA);
+
+	dim3 blockSize(16, 16);
+	dim3 gridSize((int)ceil((float)sceneSize.x / (float)blockSize.x), (int)ceil((float)sceneSize.y / (float)blockSize.y));
+
+	exRGBTrackerProjectPrevImage_device<<<gridSize, blockSize>>>(rgbOut, rgbIn, depths, imageSize, sceneSize, projParams_depth, projParams_rgb, scenePose);
+	ORcudaKernelCheck;
 }
 
 // device functions
@@ -832,10 +833,10 @@ __global__ void exRGBTrackerOneLevel_g_rt_device(ITMExtendedTracker_KernelParame
 		para.tukeyCutOff, para.framesToSkip, para.framesToWeight);
 }
 
-__global__ void exRGBTrackerProjectPrevImage_device(float *out_rgb, const float *in_rgb, const Vector4f *in_points, Vector2i imageSize, Vector2i sceneSize, Vector4f intrinsics, Matrix4f scenePose)
+__global__ void exRGBTrackerProjectPrevImage_device(float *out_rgb, const float *in_rgb, const float *in_points, Vector2i imageSize, Vector2i sceneSize, Vector4f intrinsics_depth, Vector4f intrinsics_rgb, Matrix4f scenePose)
 {
 	int x = threadIdx.x + blockIdx.x * blockDim.x;
 	int y = threadIdx.y + blockIdx.y * blockDim.y;
 
-	projectPreviousPoint_exRGB(x, y, out_rgb, in_rgb, in_points, imageSize, sceneSize, intrinsics, scenePose);
+	projectPreviousPoint_exRGB(x, y, out_rgb, in_rgb, in_points, imageSize, sceneSize, intrinsics_depth, intrinsics_rgb, scenePose);
 }

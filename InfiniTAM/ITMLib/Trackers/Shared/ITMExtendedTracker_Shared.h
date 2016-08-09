@@ -522,23 +522,37 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exDepth(THREADPTR(float) *local
 	return true;
 }
 
-_CPU_AND_GPU_CODE_ inline bool computePerPointProjectedColour_exRGB(THREADPTR(int) x, THREADPTR(int) y, DEVICEPTR(float) *out_rgb, const DEVICEPTR(float) *in_rgb, const DEVICEPTR(Vector4f) *in_points, const CONSTPTR(Vector2i) &imageSize, const CONSTPTR(int) sceneIdx, const CONSTPTR(Vector4f) &intrinsics, const CONSTPTR(Matrix4f) &scenePose)
+_CPU_AND_GPU_CODE_ inline bool computePerPointProjectedColour_exRGB(
+		THREADPTR(int) x,
+		THREADPTR(int) y,
+		DEVICEPTR(float) *out_rgb,
+		const DEVICEPTR(float) *in_rgb,
+		const DEVICEPTR(float) *in_depths,
+		const CONSTPTR(Vector2i) &imageSize,
+		const CONSTPTR(int) sceneIdx,
+		const CONSTPTR(Vector4f) &intrinsics_depth,
+		const CONSTPTR(Vector4f) &intrinsics_rgb,
+		const CONSTPTR(Matrix4f) &scenePose)
 {
-	Vector4f pt_world = in_points[sceneIdx];
+	float depth_camera = in_depths[sceneIdx];
 
 	// Invalid point
-	if (pt_world.w <= 1e-3f) return false;
+	if (depth_camera <= 0.f) return false;
 
-	pt_world.w = 1.f; // Coerce it to be a point
-	Vector4f pt_image = scenePose * pt_world;
+	Vector3f pt_camera(depth_camera * ((float(x) - intrinsics_depth.z) / intrinsics_depth.x),
+					   depth_camera * ((float(y) - intrinsics_depth.w) / intrinsics_depth.y),
+					   depth_camera);
+
+	// Transform the point in the RGB sensor frame
+	Vector3f pt_image = scenePose * pt_camera;
 
 	// Point behind the camera
 	if(pt_image.z <= 0.f) return false;
 
 	Vector2f pt_image_proj;
 	// Project the point onto the previous frame
-	pt_image_proj.x = intrinsics.x * pt_image.x / pt_image.z + intrinsics.z;
-	pt_image_proj.y = intrinsics.y * pt_image.y / pt_image.z + intrinsics.w;
+	pt_image_proj.x = intrinsics_rgb.x * pt_image.x / pt_image.z + intrinsics_rgb.z;
+	pt_image_proj.y = intrinsics_rgb.y * pt_image.y / pt_image.z + intrinsics_rgb.w;
 
 	// Projection outside the previous rgb frame
 	if (pt_image_proj.x < 0 || pt_image_proj.x >= imageSize.x - 1 ||
@@ -548,14 +562,24 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointProjectedColour_exRGB(THREADPTR(in
 	return true;
 }
 
-_CPU_AND_GPU_CODE_ inline void projectPreviousPoint_exRGB(THREADPTR(int) x, THREADPTR(int) y, DEVICEPTR(float) *out_rgb, const DEVICEPTR(float) *in_rgb, const DEVICEPTR(Vector4f) *in_points, const CONSTPTR(Vector2i) &imageSize, const CONSTPTR(Vector2i) &sceneSize, const CONSTPTR(Vector4f) &intrinsics, const CONSTPTR(Matrix4f) &scenePose)
+_CPU_AND_GPU_CODE_ inline void projectPreviousPoint_exRGB(
+		THREADPTR(int) x,
+		THREADPTR(int) y,
+		DEVICEPTR(float) *out_rgb,
+		const DEVICEPTR(float) *in_rgb,
+		const DEVICEPTR(float) *in_points,
+		const CONSTPTR(Vector2i) &imageSize,
+		const CONSTPTR(Vector2i) &sceneSize,
+		const CONSTPTR(Vector4f) &intrinsics_depth,
+		const CONSTPTR(Vector4f) &intrinsics_rgb,
+		const CONSTPTR(Matrix4f) &scenePose)
 {
 	if (x >= sceneSize.x || y >= sceneSize.y) return;
 
 	int sceneIdx = y * sceneSize.x + x;
 
 	if (!computePerPointProjectedColour_exRGB(x, y, out_rgb, in_rgb, in_points,
-		 imageSize, sceneIdx, intrinsics, scenePose))
+		 imageSize, sceneIdx, intrinsics_depth, intrinsics_rgb, scenePose))
 	{
 		out_rgb[sceneIdx] = -1.f;
 	}

@@ -335,18 +335,19 @@ int ITMExtendedTracker_CPU::ComputeGandH_RGB(float &f, float *nabla, float *hess
 	return noValidPoints;
 }
 
-void ITMExtendedTracker_CPU::ProjectPreviousRGBFrame(const Matrix4f &scenePose)
+void ITMExtendedTracker_CPU::ProjectCurrentIntensityFrame(const Matrix4f &scenePose)
 {
-//	const Vector2i imageSize = viewHierarchyLevel_Intensity->intensity_prev->noDims;
-//	const Vector2i sceneSize = sceneHierarchyLevel_RGB->pointsMap->noDims; // Also the size of the projected image
-//
-//	previousProjectedIntensityLevel->depth->ChangeDims(sceneSize); // Actual reallocation should happen only once per run.
-//
-//	Vector4f projParams = viewHierarchyLevel_Intensity->intrinsics;
-//	const Vector4f *pointsMap = sceneHierarchyLevel_RGB->pointsMap->GetData(MEMORYDEVICE_CPU);
-//	const float *intensityIn = viewHierarchyLevel_Intensity->intensity_prev->GetData(MEMORYDEVICE_CPU);
-//	float *intensityOut = previousProjectedIntensityLevel->depth->GetData(MEMORYDEVICE_CPU);
-//
-//	for (int y = 0; y < sceneSize.y; y++) for (int x = 0; x < sceneSize.x; x++)
-//		projectPreviousPoint_exRGB(x, y, intensityOut, intensityIn, pointsMap, imageSize, sceneSize, projParams, scenePose);
+	const Vector2i imageSize = viewHierarchyLevel_Intensity->intensity_prev->noDims;
+	const Vector2i sceneSize = viewHierarchyLevel_Depth->depth->noDims; // Also the size of the projected image
+
+	projectedIntensityLevel->depth->ChangeDims(sceneSize); // Actual reallocation should happen only once per run.
+
+	Vector4f projParams_rgb = viewHierarchyLevel_Intensity->intrinsics;
+	Vector4f projParams_depth = viewHierarchyLevel_Depth->intrinsics;
+	const float *depths = viewHierarchyLevel_Depth->depth->GetData(MEMORYDEVICE_CPU);
+	const float *intensityIn = viewHierarchyLevel_Intensity->intensity_prev->GetData(MEMORYDEVICE_CPU);
+	float *intensityOut = projectedIntensityLevel->depth->GetData(MEMORYDEVICE_CPU);
+
+	for (int y = 0; y < sceneSize.y; y++) for (int x = 0; x < sceneSize.x; x++)
+		projectPreviousPoint_exRGB(x, y, intensityOut, intensityIn, depths, imageSize, sceneSize, projParams_depth, projParams_rgb, scenePose);
 }
