@@ -226,10 +226,10 @@ void ITMExtendedTracker::PrepareForEvaluation()
 
 void ITMExtendedTracker::SetEvaluationParams(int levelId)
 {
-	this->levelId = levelId;
+	this->currentLevelId = levelId;
 	this->viewHierarchyLevel_Depth = viewHierarchy->levels_t0[levelId];
 	// TODO: split this into Depth/RGB pairs?
-	iterationType = this->viewHierarchyLevel_Depth->iterationType;
+	currentIterationType = this->viewHierarchyLevel_Depth->iterationType;
 
 	if (useDepth)
 	{
@@ -288,7 +288,7 @@ void ITMExtendedTracker::ApplyDelta(const Matrix4f & para_old, const float *delt
 {
 	float step[6];
 
-	switch (iterationType)
+	switch (currentIterationType)
 	{
 	case TRACKER_ITERATION_ROTATION:
 		step[0] = (float)(delta[0]); step[1] = (float)(delta[1]); step[2] = (float)(delta[2]);
@@ -342,14 +342,14 @@ void ITMExtendedTracker::UpdatePoseQuality(int noValidPoints_old, float *hessian
 	float normFactor_v2 = (float)noValidPoints_old / (float)noValidPointsMax;
 
 	float det = 0.0f;
-	if (iterationType == TRACKER_ITERATION_BOTH) {
+	if (currentIterationType == TRACKER_ITERATION_BOTH) {
 		ORUtils::Cholesky cholA(hessian_good, 6);
 		det = cholA.Determinant();
 		if (isnan(det)) det = 0.0f;
 	}
 
 	float det_norm_v1 = 0.0f;
-	if (iterationType == TRACKER_ITERATION_BOTH) {
+	if (currentIterationType == TRACKER_ITERATION_BOTH) {
 		float h[6 * 6];
 		for (int i = 0; i < 6 * 6; ++i) h[i] = hessian_good[i] * normFactor_v1;
 		ORUtils::Cholesky cholA(h, 6);
@@ -358,7 +358,7 @@ void ITMExtendedTracker::UpdatePoseQuality(int noValidPoints_old, float *hessian
 	}
 
 	float det_norm_v2 = 0.0f;
-	if (iterationType == TRACKER_ITERATION_BOTH) {
+	if (currentIterationType == TRACKER_ITERATION_BOTH) {
 		float h[6 * 6];
 		for (int i = 0; i < 6 * 6; ++i) h[i] = hessian_good[i] * normFactor_v2;
 		ORUtils::Cholesky cholA(h, 6);
@@ -409,7 +409,7 @@ void ITMExtendedTracker::TrackCamera(ITMTrackingState *trackingState, const ITMV
 	{
 		SetEvaluationParams(levelId);
 
-		if (iterationType == TRACKER_ITERATION_NONE) continue;
+		if (currentIterationType == TRACKER_ITERATION_NONE) continue;
 
 		Matrix4f approxInvPose = trackingState->pose_d->GetInvM();
 		ORUtils::SE3Pose lastKnownGoodPose(*(trackingState->pose_d));
@@ -492,7 +492,7 @@ void ITMExtendedTracker::TrackCamera(ITMTrackingState *trackingState, const ITMV
 			for (int i = 0; i < 6; ++i) A[i + i * 6] *= 1.0f + lambda;
 
 			// compute a new step and make sure we've got an SE3
-			ComputeDelta(step, nabla_good, A, iterationType != TRACKER_ITERATION_BOTH);
+			ComputeDelta(step, nabla_good, A, currentIterationType != TRACKER_ITERATION_BOTH);
 
 //			std::cout << "Step: ";
 //			for(int i = 0; i < 6; ++i) std::cout << step[i] << " ";

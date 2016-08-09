@@ -56,12 +56,12 @@ namespace ITMLib
 		float *spaceThresh;
 		float *colourThresh;
 
-		int levelId;
-		TrackerIterationType iterationType;
+		int currentLevelId;
+		TrackerIterationType currentIterationType;
 
 		Matrix4f scenePose;
 		Matrix4f depthToRGBTransform;
-		ITMSceneHierarchyLevel *sceneHierarchyLevel_Depth, *sceneHierarchyLevel_RGB;
+		ITMSceneHierarchyLevel *sceneHierarchyLevel_Depth;
 		ITMDepthHierarchyLevel *viewHierarchyLevel_Depth;
 		ITMIntensityHierarchyLevel *viewHierarchyLevel_Intensity;
 		ITMTemplatedHierarchyLevel<ITMFloatImage > *previousProjectedIntensityLevel;

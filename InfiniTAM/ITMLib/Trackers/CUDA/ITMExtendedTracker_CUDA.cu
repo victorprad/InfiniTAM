@@ -81,9 +81,10 @@ int ITMExtendedTracker_CUDA::ComputeGandH_Depth(float &f, float *nabla, float *h
 	Vector2i sceneImageSize = sceneHierarchyLevel_Depth->pointsMap->noDims;
 	Vector2i viewImageSize = viewHierarchyLevel_Depth->depth->noDims;
 
-	if (iterationType == TRACKER_ITERATION_NONE) return 0;
+	if (currentIterationType == TRACKER_ITERATION_NONE) return 0;
 
-	bool shortIteration = (iterationType == TRACKER_ITERATION_ROTATION) || (iterationType == TRACKER_ITERATION_TRANSLATION);
+	bool shortIteration = (currentIterationType == TRACKER_ITERATION_ROTATION)
+						   || (currentIterationType == TRACKER_ITERATION_TRANSLATION);
 
 	int noPara = shortIteration ? 3 : 6;
 
@@ -103,7 +104,7 @@ int ITMExtendedTracker_CUDA::ComputeGandH_Depth(float &f, float *nabla, float *h
 	args.scenePose = scenePose;
 	args.viewIntrinsics = viewHierarchyLevel_Depth->intrinsics;
 	args.viewImageSize = viewHierarchyLevel_Depth->depth->noDims;
-	args.spaceThresh = spaceThresh[levelId];
+	args.spaceThresh = spaceThresh[currentLevelId];
 	args.viewFrustum_min = viewFrustum_min;
 	args.viewFrustum_max = viewFrustum_max;
 	args.tukeyCutOff = tukeyCutOff;
@@ -114,7 +115,7 @@ int ITMExtendedTracker_CUDA::ComputeGandH_Depth(float &f, float *nabla, float *h
 
 	if (currentFrameNo < 100)
 	{
-		switch (iterationType)
+		switch (currentIterationType)
 		{
 		case TRACKER_ITERATION_ROTATION:
 			exDepthTrackerOneLevel_g_rt_device<true, true, false> << <gridSize, blockSize >> >(args);
@@ -133,7 +134,7 @@ int ITMExtendedTracker_CUDA::ComputeGandH_Depth(float &f, float *nabla, float *h
 	}
 	else
 	{
-		switch (iterationType)
+		switch (currentIterationType)
 		{
 		case TRACKER_ITERATION_ROTATION:
 			exDepthTrackerOneLevel_g_rt_device<true, true, true> << <gridSize, blockSize >> >(args);
@@ -328,13 +329,14 @@ int ITMExtendedTracker_CUDA::ComputeGandH_RGB(float &f, float *nabla, float *hes
 	Vector2i sceneImageSize = viewHierarchyLevel_Depth->depth->noDims;
 	Vector2i viewImageSize = viewHierarchyLevel_Intensity->intensity_current->noDims;
 
-	if (iterationType == TRACKER_ITERATION_NONE) return 0;
+	if (currentIterationType == TRACKER_ITERATION_NONE) return 0;
 
 	Matrix4f approxPose;
 	approxInvPose.inv(approxPose);
 	approxPose = depthToRGBTransform * approxPose;
 
-	bool shortIteration = (iterationType == TRACKER_ITERATION_ROTATION) || (iterationType == TRACKER_ITERATION_TRANSLATION);
+	bool shortIteration = (currentIterationType == TRACKER_ITERATION_ROTATION)
+						   || (currentIterationType == TRACKER_ITERATION_TRANSLATION);
 
 	int noPara = shortIteration ? 3 : 6;
 
@@ -356,7 +358,7 @@ int ITMExtendedTracker_CUDA::ComputeGandH_RGB(float &f, float *nabla, float *hes
 	args.approxPose = approxPose;
 	args.scenePose = scenePose;
 	args.projParams = viewHierarchyLevel_Intensity->intrinsics;
-	args.colourThresh = colourThresh[levelId];
+	args.colourThresh = colourThresh[currentLevelId];
 	args.viewFrustum_min = viewFrustum_min;
 	args.viewFrustum_max = viewFrustum_max;
 	args.tukeyCutOff = tukeyCutOff;
@@ -365,7 +367,7 @@ int ITMExtendedTracker_CUDA::ComputeGandH_RGB(float &f, float *nabla, float *hes
 
 	if (currentFrameNo < 100)
 	{
-		switch (iterationType)
+		switch (currentIterationType)
 		{
 		case TRACKER_ITERATION_ROTATION:
 			exRGBTrackerOneLevel_g_rt_device<true, true, false> << <gridSize, blockSize >> >(args);
@@ -384,7 +386,7 @@ int ITMExtendedTracker_CUDA::ComputeGandH_RGB(float &f, float *nabla, float *hes
 	}
 	else
 	{
-		switch (iterationType)
+		switch (currentIterationType)
 		{
 		case TRACKER_ITERATION_ROTATION:
 			exRGBTrackerOneLevel_g_rt_device<true, true, true> << <gridSize, blockSize >> >(args);
@@ -449,21 +451,21 @@ void ITMExtendedTracker_CUDA::ProjectPreviousRGBFrame(const Matrix4f &scenePose)
 //	viewHierarchyLevel_Intensity->intensity_prev->UpdateDeviceFromHost();
 //	previousProjectedIntensityLevel->depth->UpdateDeviceFromHost();
 
-	Vector2i imageSize = viewHierarchyLevel_Intensity->intensity_prev->noDims;
-	Vector2i sceneSize = sceneHierarchyLevel_RGB->pointsMap->noDims; // Also the size of the projected image
-
-	previousProjectedIntensityLevel->depth->ChangeDims(sceneSize); // Actual reallocation should happen only once per run.
-
-	Vector4f projParams = viewHierarchyLevel_Intensity->intrinsics;
-	const Vector4f *pointsMap = sceneHierarchyLevel_RGB->pointsMap->GetData(MEMORYDEVICE_CUDA);
-	const float *rgbIn = viewHierarchyLevel_Intensity->intensity_prev->GetData(MEMORYDEVICE_CUDA);
-	float *rgbOut = previousProjectedIntensityLevel->depth->GetData(MEMORYDEVICE_CUDA);
-
-	dim3 blockSize(16, 16);
-	dim3 gridSize((int)ceil((float)sceneSize.x / (float)blockSize.x), (int)ceil((float)sceneSize.y / (float)blockSize.y));
-
-	exRGBTrackerProjectPrevImage_device<<<gridSize, blockSize>>>(rgbOut, rgbIn, pointsMap, imageSize, sceneSize, projParams, scenePose);
-	ORcudaKernelCheck;
+//	Vector2i imageSize = viewHierarchyLevel_Intensity->intensity_prev->noDims;
+//	Vector2i sceneSize = sceneHierarchyLevel_RGB->pointsMap->noDims; // Also the size of the projected image
+//
+//	previousProjectedIntensityLevel->depth->ChangeDims(sceneSize); // Actual reallocation should happen only once per run.
+//
+//	Vector4f projParams = viewHierarchyLevel_Intensity->intrinsics;
+//	const Vector4f *pointsMap = sceneHierarchyLevel_RGB->pointsMap->GetData(MEMORYDEVICE_CUDA);
+//	const float *rgbIn = viewHierarchyLevel_Intensity->intensity_prev->GetData(MEMORYDEVICE_CUDA);
+//	float *rgbOut = previousProjectedIntensityLevel->depth->GetData(MEMORYDEVICE_CUDA);
+//
+//	dim3 blockSize(16, 16);
+//	dim3 gridSize((int)ceil((float)sceneSize.x / (float)blockSize.x), (int)ceil((float)sceneSize.y / (float)blockSize.y));
+//
+//	exRGBTrackerProjectPrevImage_device<<<gridSize, blockSize>>>(rgbOut, rgbIn, pointsMap, imageSize, sceneSize, projParams, scenePose);
+//	ORcudaKernelCheck;
 }
 
 // device functions
