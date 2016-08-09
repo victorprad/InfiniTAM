@@ -251,12 +251,22 @@ void ITMExtendedTracker::ComputeDelta(float *step, float *nabla, float *hessian,
 
 bool ITMExtendedTracker::HasConverged(float *step) const
 {
-	float stepLength = 0.0f;
-	for (int i = 0; i < 6; i++) stepLength += step[i] * step[i];
+//	float stepLength = 0.0f;
+//	for (int i = 0; i < 6; i++) stepLength += step[i] * step[i];
+//
+//	if (sqrt(stepLength) / 6 < terminationThreshold) return true; //converged
+//
+//	return false;
 
-	if (sqrt(stepLength) / 6 < terminationThreshold) return true; //converged
+	bool terminate = true;
+	for (int i = 0; i < 6; i++)
+		if (fabs(step[i]) > terminationThreshold)
+		{
+			terminate = false;
+			break;
+		}
 
-	return false;
+	return terminate;
 }
 
 void ITMExtendedTracker::ApplyDelta(const Matrix4f & para_old, const float *delta, Matrix4f & para_new) const
