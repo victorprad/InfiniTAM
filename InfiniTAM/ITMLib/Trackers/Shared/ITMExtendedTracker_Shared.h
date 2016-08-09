@@ -468,10 +468,12 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exRGB_inv_Ab(
 	depthWeight *= depthWeight;
 
 	// Compute the residual
-	localResidual = depthWeight * huber_rho(intensity_diff, colourThresh);
+//	localResidual = depthWeight * huber_rho(intensity_diff, colourThresh);
+	localResidual = depthWeight * tukey_rho(intensity_diff, colourThresh);
 
 	// Precompute huber derivatives
-	const float huber_coeff_gradient = depthWeight * huber_rho_deriv(intensity_diff, colourThresh);
+//	const float huber_coeff_gradient = depthWeight * huber_rho_deriv(intensity_diff, colourThresh);
+	const float huber_coeff_gradient = depthWeight * tukey_rho_deriv(intensity_diff, colourThresh);
 	const float huber_coeff_hessian = depthWeight * (fabs(intensity_diff) <= colourThresh ? 1.f : 0.f);
 
 	// Fill gradient and hessian
