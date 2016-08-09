@@ -373,7 +373,7 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exRGB_inv_Ab(
 	// Point in current camera coordinates
 	const float depth_curr = depths_curr[y * imgSize_depth.x + x];
 
-	if (depth_curr <= 1e-8f) return false; // Invalid point
+	if (depth_curr <= 1e-8f || depth_curr > viewFrustum_max) return false; // Invalid point or too far away
 
 	const Vector4f pt_curr(depth_curr * ((float(x) - intrinsics_depth.z) / intrinsics_depth.x),
 						   depth_curr * ((float(y) - intrinsics_depth.w) / intrinsics_depth.y),
@@ -403,6 +403,7 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exRGB_inv_Ab(
 	const float intensity_diff = intensity_prev - intensity_curr; // TODO Different from EF, check!
 
 	if (fabs(intensity_diff) >= tukeyCutoff * colourThresh) return false; // Difference too big
+	if (fabs(gradient_prev.x) < 0.01f || fabs(gradient_prev.y) < 0.01f) return false; // Gradient too small
 
 	// Cache rows of the scenePose rotation matrix, to be used in the pose derivative
 	const Vector3f scene_rot_row_0 = scenePose.getRow(0).toVector3();
