@@ -368,10 +368,13 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exRGB_inv_Ab(
 		)
 {
 	if (x >= imgSize_depth.x || y >= imgSize_depth.y) return false;
-	if (x >= imgSize_rgb.x || y >= imgSize_rgb.y) return false;
+	if (x >= imgSize_rgb.x || y >= imgSize_rgb.y) return false; // Should be redundant
 
 	// Point in current camera coordinates
 	const float depth_curr = depths_curr[y * imgSize_depth.x + x];
+
+	if (depth_curr <= 1e-8f) return false; // Invalid point
+
 	const Vector4f pt_curr(depth_curr * ((float(x) - intrinsics_depth.z) / intrinsics_depth.x),
 						   depth_curr * ((float(y) - intrinsics_depth.w) / intrinsics_depth.y),
 						   depth_curr,
