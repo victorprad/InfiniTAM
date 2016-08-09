@@ -156,11 +156,11 @@ int ITMExtendedTracker_CPU::ComputeGandH_Depth(float &f, float *nabla, float *he
 
 int ITMExtendedTracker_CPU::ComputeGandH_RGB(float &f, float *nabla, float *hessian, Matrix4f approxInvPose)
 {
-	const Vector2i sceneImageSize = sceneHierarchyLevel_RGB->pointsMap->noDims;
+//	const Vector2i sceneImageSize = sceneHierarchyLevel_RGB->pointsMap->noDims;
 	const Vector2i viewImageSize_depth = viewHierarchyLevel_Depth->depth->noDims;
 	const Vector2i viewImageSize_rgb = viewHierarchyLevel_Intensity->intensity_current->noDims;
 
-	const Vector4f *locations = sceneHierarchyLevel_RGB->pointsMap->GetData(MEMORYDEVICE_CPU);
+//	const Vector4f *locations = sceneHierarchyLevel_RGB->pointsMap->GetData(MEMORYDEVICE_CPU);
 	const float *depths_curr = viewHierarchyLevel_Depth->depth->GetData(MEMORYDEVICE_CPU);
 //	const float *intensities_prev = previousProjectedIntensityLevel->depth->GetData(MEMORYDEVICE_CPU);
 	const float *intensities_prev = viewHierarchyLevel_Intensity->intensity_prev->GetData(MEMORYDEVICE_CPU);
@@ -203,9 +203,9 @@ int ITMExtendedTracker_CPU::ComputeGandH_RGB(float &f, float *nabla, float *hess
 		maxHessian[i] = -1e10f;
 	}
 
-	for (int y = 0; y < sceneImageSize.y; y++) for (int x = 0; x < sceneImageSize.x; x++)
-//	for (int y = 0; y < sceneImageSize.y; y++) for (int x = sceneImageSize.x - 1; x >= 0; x--)
-//	for (int y = sceneImageSize.y - 1; y >= 0; y--) for (int x = sceneImageSize.x - 1; x >= 0; x--)
+	for (int y = 0; y < viewImageSize_depth.y; y++) for (int x = 0; x < viewImageSize_depth.x; x++)
+//	for (int y = 0; y < viewImageSize_depth.y; y++) for (int x = viewImageSize_depth.x - 1; x >= 0; x--)
+//	for (int y = viewImageSize_depth.y - 1; y >= 0; y--) for (int x = viewImageSize_depth.x - 1; x >= 0; x--)
 	{
 		float localHessian[6 + 5 + 4 + 3 + 2 + 1], localNabla[6], localF = 0;
 

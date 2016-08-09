@@ -33,7 +33,7 @@ struct ITMExtendedTracker_KernelParameters_Depth {
 
 struct ITMExtendedTracker_KernelParameters_RGB {
 	ITMExtendedTracker_CUDA::AccuCell *accu;
-	Vector4f *pointsMap;
+//	Vector4f *pointsMap;
 	const float *depths_curr;
 	Vector2f *gradients;
 	float *intensities_curr;
@@ -325,7 +325,7 @@ int ITMExtendedTracker_CUDA::ComputeGandH_RGB(float &f, float *nabla, float *hes
 //
 //	return noValidPoints;
 
-	Vector2i sceneImageSize = sceneHierarchyLevel_RGB->pointsMap->noDims;
+	Vector2i sceneImageSize = viewHierarchyLevel_Depth->depth->noDims;
 	Vector2i viewImageSize = viewHierarchyLevel_Intensity->intensity_current->noDims;
 
 	if (iterationType == TRACKER_ITERATION_NONE) return 0;
@@ -349,7 +349,7 @@ int ITMExtendedTracker_CUDA::ComputeGandH_RGB(float &f, float *nabla, float *hes
 	args.intensities_curr = viewHierarchyLevel_Intensity->intensity_current->GetData(MEMORYDEVICE_CUDA);
 	args.intensities_prev = viewHierarchyLevel_Intensity->intensity_prev->GetData(MEMORYDEVICE_CUDA);
 	args.gradients = viewHierarchyLevel_Intensity->gradients->GetData(MEMORYDEVICE_CUDA);
-	args.pointsMap = sceneHierarchyLevel_RGB->pointsMap->GetData(MEMORYDEVICE_CUDA);
+//	args.pointsMap = sceneHierarchyLevel_RGB->pointsMap->GetData(MEMORYDEVICE_CUDA);
 	args.viewImageSize = viewImageSize;
 	args.sceneImageSize = sceneImageSize;
 	args.approxInvPose = approxInvPose;
