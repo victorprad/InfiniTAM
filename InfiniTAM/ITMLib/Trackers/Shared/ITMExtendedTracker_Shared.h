@@ -466,7 +466,7 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exRGB_inv_Ab(
 
 	depthWeight = 1.0f - (pt_curr.z - viewFrustum_min) / (viewFrustum_max - viewFrustum_min); // Evaluate outside of the macro
 	depthWeight = MAX(depthWeight, 0.f);
-//	depthWeight *= depthWeight;
+	depthWeight *= depthWeight;
 
 	// Compute the residual
 //	localResidual = depthWeight * huber_rho(intensity_diff, colourThresh);
