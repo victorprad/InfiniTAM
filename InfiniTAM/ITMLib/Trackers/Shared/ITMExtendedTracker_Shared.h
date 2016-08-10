@@ -351,7 +351,7 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exRGB_inv_Ab(
 		const DEVICEPTR(float) *intensities_curr,
 		const DEVICEPTR(float) *intensities_prev,
 		const DEVICEPTR(Vector2f) *gradients,
-		const CONSTPTR(Vector2i) &imgSize_depth,
+		const CONSTPTR(Vector2i) &imgSize_depth, // and also size of intensities_curr due to the caching
 		const CONSTPTR(Vector2i) &imgSize_rgb,
 		const Vector4f &intrinsics_depth,
 		const Vector4f &intrinsics_rgb,
@@ -570,14 +570,14 @@ _CPU_AND_GPU_CODE_ inline void projectPoint_exRGB(
 		const DEVICEPTR(float) *in_rgb,
 		const DEVICEPTR(float) *in_depths,
 		const CONSTPTR(Vector2i) &imageSize_rgb,
-		const CONSTPTR(Vector2i) &sceneSize_depth,
+		const CONSTPTR(Vector2i) &imageSize_depth,
 		const CONSTPTR(Vector4f) &intrinsics_rgb,
 		const CONSTPTR(Vector4f) &intrinsics_depth,
 		const CONSTPTR(Matrix4f) &scenePose)
 {
-	if (x >= sceneSize_depth.x || y >= sceneSize_depth.y) return;
+	if (x >= imageSize_depth.x || y >= imageSize_depth.y) return;
 
-	int sceneIdx = y * sceneSize_depth.x + x;
+	int sceneIdx = y * imageSize_depth.x + x;
 
 	if (!computePerPointProjectedColour_exRGB(x, y, out_rgb, in_rgb, in_depths,
 		 imageSize_rgb, sceneIdx, intrinsics_rgb, intrinsics_depth, scenePose))
