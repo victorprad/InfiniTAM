@@ -3,6 +3,7 @@
 #pragma once
 
 #include "../../Utils/ITMPixelUtils.h"
+#include "../../Utils/ITMProjectionUtils.h"
 
 // Tukey loss
 _CPU_AND_GPU_CODE_ inline float tukey_rho(float r, float c)
@@ -377,9 +378,7 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exRGB_inv_Ab(
 	// Invalid point or too far away
 	if (depth_curr <= 1e-8f || depth_curr > viewFrustum_max || intensity_curr < 0.f) return false;
 
-	const Vector3f pt_curr(depth_curr * ((float(x) - intrinsics_depth.z) / intrinsics_depth.x),
-						   depth_curr * ((float(y) - intrinsics_depth.w) / intrinsics_depth.y),
-						   depth_curr);
+	const Vector3f pt_curr = reproject(x, y, depth_curr, intrinsics_depth);
 
 	// Transform the point in world coordinates
 	const Vector3f pt_world = approxInvPose * pt_curr;
@@ -390,8 +389,7 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exRGB_inv_Ab(
 	if (pt_prev.z <= 0.0f) return false; // Point behind the camera
 
 	// Project the point in the previous intensity frame
-	const Vector2f pt_prev_proj(intrinsics_rgb.x * pt_prev.x / pt_prev.z + intrinsics_rgb.z,
-								intrinsics_rgb.y * pt_prev.y / pt_prev.z + intrinsics_rgb.w);
+	const Vector2f pt_prev_proj = project(pt_prev, intrinsics_rgb);
 
 	if (pt_prev_proj.x < 0 || pt_prev_proj.x >= imgSize_rgb.x - 1 ||
 		pt_prev_proj.y < 0 || pt_prev_proj.y >= imgSize_rgb.y - 1) return false; // Outside the image plane
@@ -540,20 +538,16 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointProjectedColour_exRGB(
 	// Invalid point
 	if (depth_camera <= 0.f) return false;
 
-	Vector3f pt_camera(depth_camera * ((float(x) - intrinsics_depth.z) / intrinsics_depth.x),
-					   depth_camera * ((float(y) - intrinsics_depth.w) / intrinsics_depth.y),
-					   depth_camera);
+	const Vector3f pt_camera = reproject(x, y, depth_camera, intrinsics_depth);
 
 	// Transform the point in the RGB sensor frame
-	Vector3f pt_image = scenePose * pt_camera;
+	const Vector3f pt_image = scenePose * pt_camera;
 
 	// Point behind the camera
 	if(pt_image.z <= 0.f) return false;
 
-	Vector2f pt_image_proj;
 	// Project the point onto the previous frame
-	pt_image_proj.x = intrinsics_rgb.x * pt_image.x / pt_image.z + intrinsics_rgb.z;
-	pt_image_proj.y = intrinsics_rgb.y * pt_image.y / pt_image.z + intrinsics_rgb.w;
+	const Vector2f pt_image_proj = project(pt_image, intrinsics_rgb);
 
 	// Projection outside the previous rgb frame
 	if (pt_image_proj.x < 0 || pt_image_proj.x >= imageSize.x - 1 ||

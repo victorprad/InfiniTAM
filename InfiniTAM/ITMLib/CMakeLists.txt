@@ -428,6 +428,7 @@ Utils/ITMImageTypes.h
 Utils/ITMLibSettings.h
 Utils/ITMMath.h
 Utils/ITMPixelUtils.h
+Utils/ITMProjectionUtils.h
 Utils/ITMSceneParams.h
 Utils/ITMSurfelSceneParams.h
 )
