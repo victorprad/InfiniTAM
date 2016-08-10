@@ -355,7 +355,7 @@ int ITMExtendedTracker_CUDA::ComputeGandH_RGB(float &f, float *nabla, float *hes
 	args.sceneImageSize = sceneImageSize;
 	args.approxInvPose = approxInvPose;
 	args.approxPose = approxPose;
-	args.scenePose = scenePose;
+	args.scenePose = depthToRGBTransform * scenePose;
 	args.projParams = viewHierarchyLevel_Intensity->intrinsics;
 	args.colourThresh = colourThresh[currentLevelId];
 	args.viewFrustum_min = viewFrustum_min;

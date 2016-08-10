@@ -242,7 +242,7 @@ int ITMExtendedTracker_CPU::ComputeGandH_RGB(float &f, float *nabla, float *hess
 					projParams_rgb,
 					approxPose,
 					approxInvPose,
-					scenePose,
+					depthToRGBTransform * scenePose,
 					colourThresh[currentLevelId],
 					viewFrustum_min,
 					viewFrustum_max,
