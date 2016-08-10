@@ -157,7 +157,6 @@ void ITMExtendedTracker::SetEvaluationData(ITMTrackingState *trackingState, cons
 		lowLevelEngine->ConvertColourToIntensity(viewHierarchy->levels_t1[0]->intensity_prev, view->rgb_prev);
 
 		// compute first level gradients by smoothing the image beforehand (smoothing for the other layers is done during the subsampling operation)
-//		lowLevelEngine->FilterIntensity(smoothedTempIntensity, viewHierarchy->levels_t1[0]->intensity_current);
 //		lowLevelEngine->FilterIntensity(smoothedTempIntensity, viewHierarchy->levels_t1[0]->intensity_prev);
 //		lowLevelEngine->GradientXY(viewHierarchy->levels_t1[0]->gradients, smoothedTempIntensity);
 		lowLevelEngine->GradientXY(viewHierarchy->levels_t1[0]->gradients, viewHierarchy->levels_t1[0]->intensity_prev);
