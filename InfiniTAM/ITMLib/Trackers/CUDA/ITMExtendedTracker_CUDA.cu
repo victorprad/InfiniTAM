@@ -41,7 +41,6 @@ struct ITMExtendedTracker_KernelParameters_RGB {
 	Vector2i imageSize_rgb;
 	Vector2i imageSize_depth;
 	Matrix4f approxInvPose;
-	Matrix4f approxPose;
 	Matrix4f scenePose;
 	Vector4f projParams_depth;
 	Vector4f projParams_rgb;
@@ -182,10 +181,6 @@ int ITMExtendedTracker_CUDA::ComputeGandH_RGB(float &f, float *nabla, float *hes
 
 	if (currentIterationType == TRACKER_ITERATION_NONE) return 0;
 
-	Matrix4f approxPose;
-	approxInvPose.inv(approxPose);
-	approxPose = depthToRGBTransform * approxPose;
-
 	bool shortIteration = (currentIterationType == TRACKER_ITERATION_ROTATION)
 						   || (currentIterationType == TRACKER_ITERATION_TRANSLATION);
 
@@ -205,7 +200,6 @@ int ITMExtendedTracker_CUDA::ComputeGandH_RGB(float &f, float *nabla, float *hes
 	args.imageSize_rgb = imageSize_rgb;
 	args.imageSize_depth = imageSize_depth;
 	args.approxInvPose = approxInvPose;
-	args.approxPose = approxPose;
 	args.scenePose = depthToRGBTransform * scenePose;
 	args.projParams_depth = viewHierarchyLevel_Depth->intrinsics;
 	args.projParams_rgb = viewHierarchyLevel_Intensity->intrinsics;
@@ -463,7 +457,7 @@ __device__ void exDepthTrackerOneLevel_g_rt_device_main(ITMExtendedTracker_CUDA:
 template<bool shortIteration, bool rotationOnly, bool useWeights>
 __device__ void exRGBTrackerOneLevel_g_rt_device_main(ITMExtendedTracker_CUDA::AccuCell *accu, 
 	const float *depths_curr, const float *intensities_prev, const Vector2f *gradients, const float *intensities_curr,
-	Matrix4f approxPose, Matrix4f approxInvPose, Matrix4f scenePose, Vector4f projParams_depth, Vector4f projParams_rgb,
+	Matrix4f approxInvPose, Matrix4f scenePose, Vector4f projParams_depth, Vector4f projParams_rgb,
 	Vector2i imageSize_rgb, Vector2i imageSize_depth, float colourThresh, float viewFrustum_min, float viewFrustum_max,
 	float tukeyCutoff, float framesToSkip, float framesToWeight)
 {
@@ -512,7 +506,6 @@ __device__ void exRGBTrackerOneLevel_g_rt_device_main(ITMExtendedTracker_CUDA::A
 					imageSize_rgb,
 					projParams_depth,
 					projParams_rgb,
-					approxPose,
 					approxInvPose,
 					scenePose,
 					colourThresh,
@@ -659,7 +652,7 @@ template<bool shortIteration, bool rotationOnly, bool useWeights>
 __global__ void exRGBTrackerOneLevel_g_rt_device(ITMExtendedTracker_KernelParameters_RGB para)
 {
 	exRGBTrackerOneLevel_g_rt_device_main<shortIteration, rotationOnly, useWeights>(para.accu, para.depths_curr,
-		para.intensities_prev, para.gradients, para.intensities_curr, para.approxPose, para.approxInvPose, para.scenePose,
+		para.intensities_prev, para.gradients, para.intensities_curr, para.approxInvPose, para.scenePose,
 		para.projParams_depth, para.projParams_rgb, para.imageSize_rgb, para.imageSize_depth, para.colourThresh, para.viewFrustum_min, para.viewFrustum_max,
 		para.tukeyCutOff, para.framesToSkip, para.framesToWeight);
 }

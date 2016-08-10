@@ -168,11 +168,6 @@ int ITMExtendedTracker_CPU::ComputeGandH_RGB(float &f, float *nabla, float *hess
 	Vector4f projParams_rgb = viewHierarchyLevel_Intensity->intrinsics;
 	Vector4f projParams_depth = viewHierarchyLevel_Depth->intrinsics;
 
-	Matrix4f approxPose;
-	approxInvPose.inv(approxPose);
-//	approxPose = depthToRGBTransform * approxPose;
-//	approxPose = approxPose;
-
 	if (currentIterationType == TRACKER_ITERATION_NONE) return 0;
 
 	bool shortIteration = (currentIterationType == TRACKER_ITERATION_ROTATION)
@@ -240,7 +235,6 @@ int ITMExtendedTracker_CPU::ComputeGandH_RGB(float &f, float *nabla, float *hess
 					viewImageSize_rgb,
 					projParams_depth,
 					projParams_rgb,
-					approxPose,
 					approxInvPose,
 					depthToRGBTransform * scenePose,
 					colourThresh[currentLevelId],

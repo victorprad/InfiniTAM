@@ -356,7 +356,6 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exRGB_inv_Ab(
 		const CONSTPTR(Vector2i) &imgSize_rgb,
 		const Vector4f &intrinsics_depth,
 		const Vector4f &intrinsics_rgb,
-		const Matrix4f &approxPose,
 		const Matrix4f &approxInvPose,
 		const Matrix4f &scenePose,
 		float colourThresh,
