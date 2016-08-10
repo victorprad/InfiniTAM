@@ -202,7 +202,7 @@ void ITMExtendedTracker::PrepareForEvaluation()
 			lowLevelEngine->GradientXY(currentLevel->gradients, currentLevel->intensity_prev);
 		}
 
-		// Project previous RGB image according to the scene pose and cache it to speed up the energy computation
+		// Project RGB image according to the depth->rgb transform and cache it to speed up the energy computation
 		for (int i = 0; i < viewHierarchy->noLevels; ++i)
 		{
 			SetEvaluationParams(i);

@@ -372,8 +372,10 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exRGB_inv_Ab(
 
 	// Point in current camera coordinates
 	const float depth_curr = depths_curr[y * imgSize_depth.x + x];
+	const float intensity_curr = intensities_curr[y * imgSize_depth.x + x];
 
-	if (depth_curr <= 1e-8f || depth_curr > viewFrustum_max) return false; // Invalid point or too far away
+	// Invalid point or too far away
+	if (depth_curr <= 1e-8f || depth_curr > viewFrustum_max || intensity_curr < 0.f) return false;
 
 	const Vector3f pt_curr(depth_curr * ((float(x) - intrinsics_depth.z) / intrinsics_depth.x),
 						   depth_curr * ((float(y) - intrinsics_depth.w) / intrinsics_depth.y),
@@ -395,7 +397,6 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exRGB_inv_Ab(
 		pt_prev_proj.y < 0 || pt_prev_proj.y >= imgSize_rgb.y - 1) return false; // Outside the image plane
 
 	// Point should be valid, sample intensities and gradients
-	const float intensity_curr = intensities_curr[y * imgSize_rgb.x + x];
 	const float intensity_prev = interpolateBilinear_single(intensities_prev, pt_prev_proj, imgSize_rgb);
 	const Vector2f gradient_prev = interpolateBilinear_Vector2(gradients, pt_prev_proj, imgSize_rgb);
 
@@ -530,8 +531,8 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointProjectedColour_exRGB(
 		const DEVICEPTR(float) *in_depths,
 		const CONSTPTR(Vector2i) &imageSize,
 		const CONSTPTR(int) sceneIdx,
-		const CONSTPTR(Vector4f) &intrinsics_depth,
 		const CONSTPTR(Vector4f) &intrinsics_rgb,
+		const CONSTPTR(Vector4f) &intrinsics_depth,
 		const CONSTPTR(Matrix4f) &scenePose)
 {
 	float depth_camera = in_depths[sceneIdx];
@@ -562,25 +563,25 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointProjectedColour_exRGB(
 	return true;
 }
 
-_CPU_AND_GPU_CODE_ inline void projectPreviousPoint_exRGB(
+_CPU_AND_GPU_CODE_ inline void projectPoint_exRGB(
 		THREADPTR(int) x,
 		THREADPTR(int) y,
 		DEVICEPTR(float) *out_rgb,
 		const DEVICEPTR(float) *in_rgb,
-		const DEVICEPTR(float) *in_points,
-		const CONSTPTR(Vector2i) &imageSize,
-		const CONSTPTR(Vector2i) &sceneSize,
-		const CONSTPTR(Vector4f) &intrinsics_depth,
+		const DEVICEPTR(float) *in_depths,
+		const CONSTPTR(Vector2i) &imageSize_rgb,
+		const CONSTPTR(Vector2i) &sceneSize_depth,
 		const CONSTPTR(Vector4f) &intrinsics_rgb,
+		const CONSTPTR(Vector4f) &intrinsics_depth,
 		const CONSTPTR(Matrix4f) &scenePose)
 {
-	if (x >= sceneSize.x || y >= sceneSize.y) return;
+	if (x >= sceneSize_depth.x || y >= sceneSize_depth.y) return;
 
-	int sceneIdx = y * sceneSize.x + x;
+	int sceneIdx = y * sceneSize_depth.x + x;
 
-	if (!computePerPointProjectedColour_exRGB(x, y, out_rgb, in_rgb, in_points,
-		 imageSize, sceneIdx, intrinsics_depth, intrinsics_rgb, scenePose))
+	if (!computePerPointProjectedColour_exRGB(x, y, out_rgb, in_rgb, in_depths,
+		 imageSize_rgb, sceneIdx, intrinsics_rgb, intrinsics_depth, scenePose))
 	{
-		out_rgb[sceneIdx] = -1.f;
+		out_rgb[sceneIdx] = -1.f; // Mark as invalid
 	}
 }

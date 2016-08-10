@@ -157,15 +157,12 @@ int ITMExtendedTracker_CPU::ComputeGandH_Depth(float &f, float *nabla, float *he
 
 int ITMExtendedTracker_CPU::ComputeGandH_RGB(float &f, float *nabla, float *hessian, Matrix4f approxInvPose)
 {
-//	const Vector2i sceneImageSize = sceneHierarchyLevel_RGB->pointsMap->noDims;
 	const Vector2i viewImageSize_depth = viewHierarchyLevel_Depth->depth->noDims;
 	const Vector2i viewImageSize_rgb = viewHierarchyLevel_Intensity->intensity_current->noDims;
 
-//	const Vector4f *locations = sceneHierarchyLevel_RGB->pointsMap->GetData(MEMORYDEVICE_CPU);
 	const float *depths_curr = viewHierarchyLevel_Depth->depth->GetData(MEMORYDEVICE_CPU);
-//	const float *intensities_prev = previousProjectedIntensityLevel->depth->GetData(MEMORYDEVICE_CPU);
 	const float *intensities_prev = viewHierarchyLevel_Intensity->intensity_prev->GetData(MEMORYDEVICE_CPU);
-	const float *intensities_current = viewHierarchyLevel_Intensity->intensity_current->GetData(MEMORYDEVICE_CPU);
+	const float *intensities_current = projectedIntensityLevel->image->GetData(MEMORYDEVICE_CPU);
 	const Vector2f *gradients = viewHierarchyLevel_Intensity->gradients->GetData(MEMORYDEVICE_CPU);
 
 	Vector4f projParams_rgb = viewHierarchyLevel_Intensity->intrinsics;
@@ -337,17 +334,17 @@ int ITMExtendedTracker_CPU::ComputeGandH_RGB(float &f, float *nabla, float *hess
 
 void ITMExtendedTracker_CPU::ProjectCurrentIntensityFrame(const Matrix4f &scenePose)
 {
-	const Vector2i imageSize = viewHierarchyLevel_Intensity->intensity_prev->noDims;
-	const Vector2i sceneSize = viewHierarchyLevel_Depth->depth->noDims; // Also the size of the projected image
+	const Vector2i imageSize_rgb = viewHierarchyLevel_Intensity->intensity_prev->noDims;
+	const Vector2i imageSize_depth = viewHierarchyLevel_Depth->depth->noDims; // Also the size of the projected image
 
-	projectedIntensityLevel->depth->ChangeDims(sceneSize); // Actual reallocation should happen only once per run.
+	projectedIntensityLevel->image->ChangeDims(imageSize_depth); // Actual reallocation should happen only once per run.
 
 	Vector4f projParams_rgb = viewHierarchyLevel_Intensity->intrinsics;
 	Vector4f projParams_depth = viewHierarchyLevel_Depth->intrinsics;
 	const float *depths = viewHierarchyLevel_Depth->depth->GetData(MEMORYDEVICE_CPU);
-	const float *intensityIn = viewHierarchyLevel_Intensity->intensity_prev->GetData(MEMORYDEVICE_CPU);
-	float *intensityOut = projectedIntensityLevel->depth->GetData(MEMORYDEVICE_CPU);
+	const float *intensityIn = viewHierarchyLevel_Intensity->intensity_current->GetData(MEMORYDEVICE_CPU);
+	float *intensityOut = projectedIntensityLevel->image->GetData(MEMORYDEVICE_CPU);
 
-	for (int y = 0; y < sceneSize.y; y++) for (int x = 0; x < sceneSize.x; x++)
-		projectPreviousPoint_exRGB(x, y, intensityOut, intensityIn, depths, imageSize, sceneSize, projParams_depth, projParams_rgb, scenePose);
+	for (int y = 0; y < imageSize_depth.y; y++) for (int x = 0; x < imageSize_depth.x; x++)
+		projectPoint_exRGB(x, y, intensityOut, intensityIn, depths, imageSize_rgb, imageSize_depth, projParams_rgb, projParams_depth, scenePose);
 }
