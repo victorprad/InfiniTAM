@@ -245,7 +245,6 @@ void ITMExtendedTracker::SetEvaluationParams(int levelId)
 
 	if (useColour)
 	{
-//		this->sceneHierarchyLevel_RGB = sceneHierarchy->levels[levelId];
 		viewHierarchyLevel_Intensity = viewHierarchy->levels_t1[levelId];
 		reprojectedPointsLevel = preProjectedHierarchy->levels_t0[levelId];
 		projectedIntensityLevel = preProjectedHierarchy->levels_t1[levelId];
