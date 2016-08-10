@@ -43,6 +43,12 @@ _CPU_AND_GPU_CODE_ inline float tukey_rho_deriv(float r, float c)
 	}
 }
 
+_CPU_AND_GPU_CODE_ inline float tukey_rho_deriv2(float r, float c)
+{
+	if (fabs(r) < c) return 1.0f;
+	return 0.0f;
+}
+
 // Huber loss
 _CPU_AND_GPU_CODE_ inline float huber_rho(float r, float huber_b)
 {
@@ -458,10 +464,9 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exRGB_inv_Ab(
 		nabla[para] = dot(gradient_prev, d_proj_point);
 	}
 
-	// TODO also need to handle transform between rgb and depth cameras
 	depthWeight = 1.0f - (pt_curr.z - viewFrustum_min) / (viewFrustum_max - viewFrustum_min); // Evaluate outside of the macro
 	depthWeight = MAX(depthWeight, 0.f);
-	depthWeight *= depthWeight;
+//	depthWeight *= depthWeight;
 
 	// Compute the residual
 //	localResidual = depthWeight * huber_rho(intensity_diff, colourThresh);
@@ -470,7 +475,7 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exRGB_inv_Ab(
 	// Precompute huber derivatives
 //	const float huber_coeff_gradient = depthWeight * huber_rho_deriv(intensity_diff, colourThresh);
 	const float huber_coeff_gradient = depthWeight * tukey_rho_deriv(intensity_diff, colourThresh);
-	const float huber_coeff_hessian = depthWeight * (fabs(intensity_diff) <= colourThresh ? 1.f : 0.f);
+	const float huber_coeff_hessian = depthWeight * tukey_rho_deriv2(intensity_diff, colourThresh);
 
 	// Fill gradient and hessian
 	for (int para = 0, counter = 0; para < numPara; para++)
