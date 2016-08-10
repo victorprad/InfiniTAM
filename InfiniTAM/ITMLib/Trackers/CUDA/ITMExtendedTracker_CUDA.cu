@@ -38,8 +38,8 @@ struct ITMExtendedTracker_KernelParameters_RGB {
 	Vector2f *gradients;
 	float *intensities_curr;
 	float *intensities_prev;
-	Vector2i viewImageSize;
-	Vector2i sceneImageSize;
+	Vector2i imageSize_rgb;
+	Vector2i imageSize_depth;
 	Matrix4f approxInvPose;
 	Matrix4f approxPose;
 	Matrix4f scenePose;
@@ -177,158 +177,8 @@ int ITMExtendedTracker_CUDA::ComputeGandH_Depth(float &f, float *nabla, float *h
 
 int ITMExtendedTracker_CUDA::ComputeGandH_RGB(float &f, float *nabla, float *hessian, Matrix4f approxInvPose)
 {
-//	Vector2i sceneImageSize = sceneHierarchyLevel_RGB->pointsMap->noDims;
-//	Vector2i viewImageSize = viewHierarchyLevel_Intensity->intensity_current->noDims;
-//
-//	sceneHierarchyLevel_RGB->pointsMap->UpdateHostFromDevice();
-//	previousProjectedIntensityLevel->depth->UpdateHostFromDevice();
-//	viewHierarchyLevel_Intensity->intensity_current->UpdateHostFromDevice();
-//	viewHierarchyLevel_Intensity->gradients->UpdateHostFromDevice();
-//
-//	Vector4f *locations = sceneHierarchyLevel_RGB->pointsMap->GetData(MEMORYDEVICE_CPU);
-//	float *rgb_model = previousProjectedIntensityLevel->depth->GetData(MEMORYDEVICE_CPU);
-//	float *rgb_live = viewHierarchyLevel_Intensity->intensity_current->GetData(MEMORYDEVICE_CPU);
-//	Vector2f *gradients = viewHierarchyLevel_Intensity->gradients->GetData(MEMORYDEVICE_CPU);
-//
-//	Vector4f projParams = viewHierarchyLevel_Intensity->intrinsics;
-//
-//	Matrix4f approxPose;
-//	approxInvPose.inv(approxPose);
-////	approxPose = depthToRGBTransform * approxPose;
-////	approxPose = approxPose;
-//
-//	if (iterationType == TRACKER_ITERATION_NONE) return 0;
-//
-//	bool shortIteration = (iterationType == TRACKER_ITERATION_ROTATION) || (iterationType == TRACKER_ITERATION_TRANSLATION);
-//
-//	float sumHessian[6 * 6], sumNabla[6], sumF;
-//	int noValidPoints;
-//	int noPara = shortIteration ? 3 : 6, noParaSQ = shortIteration ? 3 + 2 + 1 : 6 + 5 + 4 + 3 + 2 + 1;
-//
-//	noValidPoints = 0; sumF = 0.0f;
-//	memset(sumHessian, 0, sizeof(float) * noParaSQ);
-//	memset(sumNabla, 0, sizeof(float) * noPara);
-//
-//	float minF = 1e10, maxF = 0.f;
-//	float minNabla[6], maxNabla[6];
-//	float minHessian[noParaSQ], maxHessian[noParaSQ];
-//
-//	for(int i = 0; i < noPara; ++i)
-//	{
-//		minNabla[i] = 1e10f;
-//		maxNabla[i] = -1e10f;
-//	}
-//
-//	for(int i = 0; i < noParaSQ; ++i)
-//	{
-//		minHessian[i] = 1e10f;
-//		maxHessian[i] = -1e10f;
-//	}
-//
-//	for (int y = 0; y < sceneImageSize.y; y++) for (int x = 0; x < sceneImageSize.x; x++)
-////	for (int y = 0; y < sceneImageSize.y; y++) for (int x = sceneImageSize.x - 1; x >= 0; x--)
-////	for (int y = sceneImageSize.y - 1; y >= 0; y--) for (int x = sceneImageSize.x - 1; x >= 0; x--)
-//	{
-//		float localHessian[6 + 5 + 4 + 3 + 2 + 1], localNabla[6], localF = 0;
-//
-//		for (int i = 0; i < noPara; i++) localNabla[i] = 0.0f;
-//		for (int i = 0; i < noParaSQ; i++) localHessian[i] = 0.0f;
-//
-//		bool isValidPoint = false;
-//		float depthWeight = 1.f;
-//
-//		if (iterationType != TRACKER_ITERATION_TRANSLATION) // TODO translation not implemented yet
-//		{
-//			if (currentFrameNo < 100)
-//				isValidPoint = computePerPointGH_exRGB_Ab<false>(localNabla, localF, localHessian, depthWeight,
-//					locations[x + y * sceneImageSize.x], rgb_model[x + y * sceneImageSize.x], rgb_live, viewImageSize, x, y,
-//					projParams, approxPose, approxInvPose, scenePose, gradients, colourThresh[levelId], viewFrustum_min, viewFrustum_max, tukeyCutOff, framesToSkip, framesToWeight, noPara);
-//			else
-//				isValidPoint = computePerPointGH_exRGB_Ab<true>(localNabla, localF, localHessian, depthWeight,
-//					locations[x + y * sceneImageSize.x], rgb_model[x + y * sceneImageSize.x], rgb_live, viewImageSize, x, y,
-//					projParams, approxPose, approxInvPose, scenePose, gradients, colourThresh[levelId], viewFrustum_min, viewFrustum_max, tukeyCutOff, framesToSkip, framesToWeight, noPara);
-//		}
-//
-//		if (isValidPoint)
-//		{
-//			noValidPoints++;
-//			sumF += localF;
-//			for (int i = 0; i < noPara; i++) sumNabla[i] += localNabla[i];
-//			for (int i = 0; i < noParaSQ; i++) sumHessian[i] += localHessian[i];
-//
-////			std::cerr << localNabla[0] << " " << localNabla[1] << "\n";
-//
-//			if(localF != 0.f)
-//			{
-//				minF = MIN(minF, localF);
-//				maxF = MAX(maxF, localF);
-//			}
-//
-//
-//			for (int i = 0; i < noPara; i++)
-//			{
-//				if(localNabla[i] != 0.f)
-//				{
-//					minNabla[i] = MIN(minNabla[i], fabs(localNabla[i]));
-//					maxNabla[i] = MAX(maxNabla[i], fabs(localNabla[i]));
-//				}
-//			}
-//
-//			for (int i = 0; i < noParaSQ; i++)
-//				if(localHessian[i] != 0.f)
-//				{
-//					minHessian[i] = MIN(minHessian[i], fabs(localHessian[i]));
-//					maxHessian[i] = MAX(maxHessian[i], fabs(localHessian[i]));
-//				}
-//		}
-//	}
-//
-//	printf("Min F: %g - Max F: %g\n", minF, maxF);
-//	printf("Min Nabla: ");
-//	for (int i = 0; i < noPara; i++)
-//	{
-//		printf("%g - ", minNabla[i]);
-//	}
-//	printf("\nMax Nabla: ");
-//	for (int i = 0; i < noPara; i++)
-//	{
-//		printf("%g - ", maxNabla[i]);
-//	}
-//	printf("\n");
-//	printf("Min Hessian: ");
-//	for (int i = 0; i < noParaSQ; i++)
-//	{
-//		printf("%g - ", minHessian[i]);
-//	}
-//	printf("\nMax Hessian: ");
-//	for (int i = 0; i < noParaSQ; i++)
-//	{
-//		printf("%g - ", maxHessian[i]);
-//	}
-//	printf("\n\n");
-//
-//	for (int r = 0, counter = 0; r < noPara; r++) for (int c = 0; c <= r; c++, counter++) hessian[r + c * 6] = sumHessian[counter];
-//	for (int r = 0; r < noPara; ++r) for (int c = r + 1; c < noPara; c++) hessian[r + c * 6] = hessian[c + r * 6];
-//
-////	memcpy(nabla, sumNabla, noPara * sizeof(float));
-//	for (int r = 0; r < noPara; r++) nabla[r] = sumNabla[r];
-//
-//	if (noValidPoints > 100)
-//	{
-//		for (int i = 0; i < 6 * 6; ++i) hessian[i] = hessian[i] / noValidPoints;
-//		for (int i = 0; i < 6; ++i) nabla[i] = nabla[i] / noValidPoints;
-//
-//		f = sumF / noValidPoints;
-//	}
-//	else
-//	{
-//		f = 1e25f;
-//	}
-//
-//	return noValidPoints;
-
-	Vector2i sceneImageSize = viewHierarchyLevel_Depth->depth->noDims;
-	Vector2i viewImageSize = viewHierarchyLevel_Intensity->intensity_prev->noDims;
+	Vector2i imageSize_depth = viewHierarchyLevel_Depth->depth->noDims;
+	Vector2i imageSize_rgb = viewHierarchyLevel_Intensity->intensity_prev->noDims;
 
 	if (currentIterationType == TRACKER_ITERATION_NONE) return 0;
 
@@ -342,7 +192,7 @@ int ITMExtendedTracker_CUDA::ComputeGandH_RGB(float &f, float *nabla, float *hes
 	int noPara = shortIteration ? 3 : 6;
 
 	dim3 blockSize(16, 16);
-	dim3 gridSize((int)ceil((float)sceneImageSize.x / (float)blockSize.x), (int)ceil((float)sceneImageSize.y / (float)blockSize.y));
+	dim3 gridSize((int)ceil((float)imageSize_depth.x / (float)blockSize.x), (int)ceil((float)imageSize_depth.y / (float)blockSize.y));
 
 	ORcudaSafeCall(cudaMemset(accu_device, 0, sizeof(AccuCell)));
 
@@ -352,8 +202,8 @@ int ITMExtendedTracker_CUDA::ComputeGandH_RGB(float &f, float *nabla, float *hes
 	args.intensities_curr = projectedIntensityLevel->image->GetData(MEMORYDEVICE_CUDA);
 	args.intensities_prev = viewHierarchyLevel_Intensity->intensity_prev->GetData(MEMORYDEVICE_CUDA);
 	args.gradients = viewHierarchyLevel_Intensity->gradients->GetData(MEMORYDEVICE_CUDA);
-	args.viewImageSize = viewImageSize;
-	args.sceneImageSize = sceneImageSize;
+	args.imageSize_rgb = imageSize_rgb;
+	args.imageSize_depth = imageSize_depth;
 	args.approxInvPose = approxInvPose;
 	args.approxPose = approxPose;
 	args.scenePose = depthToRGBTransform * scenePose;
@@ -614,7 +464,7 @@ template<bool shortIteration, bool rotationOnly, bool useWeights>
 __device__ void exRGBTrackerOneLevel_g_rt_device_main(ITMExtendedTracker_CUDA::AccuCell *accu, 
 	const float *depths_curr, const float *intensities_prev, const Vector2f *gradients, const float *intensities_curr,
 	Matrix4f approxPose, Matrix4f approxInvPose, Matrix4f scenePose, Vector4f projParams_depth, Vector4f projParams_rgb,
-	Vector2i imgSize, Vector2i sceneSize, float colourThresh, float viewFrustum_min, float viewFrustum_max,
+	Vector2i imageSize_rgb, Vector2i imageSize_depth, float colourThresh, float viewFrustum_min, float viewFrustum_max,
 	float tukeyCutoff, float framesToSkip, float framesToWeight)
 {
 	int x = threadIdx.x + blockIdx.x * blockDim.x, y = threadIdx.y + blockIdx.y * blockDim.y;
@@ -638,7 +488,7 @@ __device__ void exRGBTrackerOneLevel_g_rt_device_main(ITMExtendedTracker_CUDA::A
 
 	bool isValidPoint = false;
 
-	if (x < sceneSize.x && y < sceneSize.y)
+	if (x < imageSize_depth.x && y < imageSize_depth.y)
 	{
 		// FIXME Translation only not implemented yet
 		if(!shortIteration || rotationOnly)
@@ -658,8 +508,8 @@ __device__ void exRGBTrackerOneLevel_g_rt_device_main(ITMExtendedTracker_CUDA::A
 					intensities_curr,
 					intensities_prev,
 					gradients,
-					sceneSize,
-					imgSize,
+					imageSize_depth,
+					imageSize_rgb,
 					projParams_depth,
 					projParams_rgb,
 					approxPose,
@@ -810,7 +660,7 @@ __global__ void exRGBTrackerOneLevel_g_rt_device(ITMExtendedTracker_KernelParame
 {
 	exRGBTrackerOneLevel_g_rt_device_main<shortIteration, rotationOnly, useWeights>(para.accu, para.depths_curr,
 		para.intensities_prev, para.gradients, para.intensities_curr, para.approxPose, para.approxInvPose, para.scenePose,
-		para.projParams_depth, para.projParams_rgb, para.viewImageSize, para.sceneImageSize, para.colourThresh, para.viewFrustum_min, para.viewFrustum_max,
+		para.projParams_depth, para.projParams_rgb, para.imageSize_rgb, para.imageSize_depth, para.colourThresh, para.viewFrustum_min, para.viewFrustum_max,
 		para.tukeyCutOff, para.framesToSkip, para.framesToWeight);
 }
 
