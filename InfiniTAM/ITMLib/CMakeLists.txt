@@ -585,16 +585,11 @@ if(WITH_CUDA)
     set(CUDA_ARCH_OPTIONS "${CUDA_ARCH_OPTIONS} -gencode arch=compute_${a},code=compute_${a}")
   endforeach()
   include_directories(${CUDA_INCLUDE_DIRS})
-#  cuda_add_library(ITMLib
-#	${ITMLIB_CPU_OBJECTS}
-#	${ITMLIB_CUDA_OBJECTS}
-#	${ITMLIB_COMMON_OBJECTS}
-#	OPTIONS "${CUDA_ARCH_OPTIONS} --use_fast_math")
   cuda_add_library(ITMLib
 	${ITMLIB_CPU_OBJECTS}
 	${ITMLIB_CUDA_OBJECTS}
 	${ITMLIB_COMMON_OBJECTS}
-	OPTIONS "${CUDA_ARCH_OPTIONS} --fmad=false")
+	OPTIONS "${CUDA_ARCH_OPTIONS} --use_fast_math")
   target_link_libraries(ITMLib ${CUDA_LIBRARY})
 else()
   add_definitions(-DCOMPILE_WITHOUT_CUDA)
