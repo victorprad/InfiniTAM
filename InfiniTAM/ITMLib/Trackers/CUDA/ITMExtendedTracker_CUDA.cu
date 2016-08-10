@@ -33,11 +33,10 @@ struct ITMExtendedTracker_KernelParameters_Depth {
 
 struct ITMExtendedTracker_KernelParameters_RGB {
 	ITMExtendedTracker_CUDA::AccuCell *accu;
-//	Vector4f *pointsMap;
-	const float *depths_curr;
-	Vector2f *gradients;
-	float *intensities_curr;
-	float *intensities_prev;
+	const Vector4f *points_curr;
+	const Vector2f *gradients;
+	const float *intensities_curr;
+	const float *intensities_prev;
 	Vector2i imageSize_rgb;
 	Vector2i imageSize_depth;
 	Matrix4f approxInvPose;
@@ -55,7 +54,7 @@ __global__ void exDepthTrackerOneLevel_g_rt_device(ITMExtendedTracker_KernelPara
 template<bool shortIteration, bool rotationOnly, bool useWeights>
 __global__ void exRGBTrackerOneLevel_g_rt_device(ITMExtendedTracker_KernelParameters_RGB para);
 
-__global__ void exRGBTrackerProjectPrevImage_device(float *out_rgb, const float *in_rgb, const float *in_points, Vector2i imageSize, Vector2i sceneSize, Vector4f intrinsics_depth, Vector4f intrinsics_rgb, Matrix4f scenePose);
+__global__ void exRGBTrackerProjectPrevImage_device(Vector4f *out_points, float *out_rgb, const float *in_rgb, const float *in_points, Vector2i imageSize, Vector2i sceneSize, Vector4f intrinsics_depth, Vector4f intrinsics_rgb, Matrix4f scenePose);
 
 // host methods
 
@@ -193,7 +192,7 @@ int ITMExtendedTracker_CUDA::ComputeGandH_RGB(float &f, float *nabla, float *hes
 
 	struct ITMExtendedTracker_KernelParameters_RGB args;
 	args.accu = accu_device;
-	args.depths_curr = viewHierarchyLevel_Depth->depth->GetData(MEMORYDEVICE_CUDA);
+	args.points_curr = reprojectedPointsLevel->data->GetData(MEMORYDEVICE_CUDA);
 	args.intensities_curr = projectedIntensityLevel->image->GetData(MEMORYDEVICE_CUDA);
 	args.intensities_prev = viewHierarchyLevel_Intensity->intensity_prev->GetData(MEMORYDEVICE_CUDA);
 	args.gradients = viewHierarchyLevel_Intensity->gradients->GetData(MEMORYDEVICE_CUDA);
@@ -271,7 +270,8 @@ int ITMExtendedTracker_CUDA::ComputeGandH_RGB(float &f, float *nabla, float *hes
 	return accu_host->numPoints;
 }
 
-void ITMExtendedTracker_CUDA::ProjectCurrentIntensityFrame(ITMFloatImage *intensity_out,
+void ITMExtendedTracker_CUDA::ProjectCurrentIntensityFrame(ITMFloat4Image *points_out,
+														   ITMFloatImage *intensity_out,
 														   const ITMFloatImage *intensity_in,
 														   const ITMFloatImage *depth_in,
 														   const Vector4f &intrinsics_depth,
@@ -281,16 +281,18 @@ void ITMExtendedTracker_CUDA::ProjectCurrentIntensityFrame(ITMFloatImage *intens
 	const Vector2i imageSize_rgb = intensity_in->noDims;
 	const Vector2i imageSize_depth = depth_in->noDims; // Also the size of the projected image
 
+	points_out->ChangeDims(imageSize_depth); // Actual reallocation should happen only once per run.
 	intensity_out->ChangeDims(imageSize_depth); // Actual reallocation should happen only once per run.
 
 	const float *depths = depth_in->GetData(MEMORYDEVICE_CUDA);
 	const float *intensityIn = intensity_in->GetData(MEMORYDEVICE_CUDA);
+	Vector4f *pointsOut = points_out->GetData(MEMORYDEVICE_CUDA);
 	float *intensityOut = intensity_out->GetData(MEMORYDEVICE_CUDA);
 
 	dim3 blockSize(16, 16);
 	dim3 gridSize((int)ceil((float)imageSize_depth.x / (float)blockSize.x), (int)ceil((float)imageSize_depth.y / (float)blockSize.y));
 
-	exRGBTrackerProjectPrevImage_device<<<gridSize, blockSize>>>(intensityOut, intensityIn, depths, imageSize_rgb, imageSize_depth, intrinsics_rgb, intrinsics_depth, scenePose);
+	exRGBTrackerProjectPrevImage_device<<<gridSize, blockSize>>>(pointsOut, intensityOut, intensityIn, depths, imageSize_rgb, imageSize_depth, intrinsics_rgb, intrinsics_depth, scenePose);
 	ORcudaKernelCheck;
 }
 
@@ -456,7 +458,7 @@ __device__ void exDepthTrackerOneLevel_g_rt_device_main(ITMExtendedTracker_CUDA:
 
 template<bool shortIteration, bool rotationOnly, bool useWeights>
 __device__ void exRGBTrackerOneLevel_g_rt_device_main(ITMExtendedTracker_CUDA::AccuCell *accu, 
-	const float *depths_curr, const float *intensities_prev, const Vector2f *gradients, const float *intensities_curr,
+	const Vector4f *points_curr, const float *intensities_prev, const Vector2f *gradients, const float *intensities_curr,
 	Matrix4f approxInvPose, Matrix4f scenePose, Vector4f projParams_depth, Vector4f projParams_rgb,
 	Vector2i imageSize_rgb, Vector2i imageSize_depth, float colourThresh, float viewFrustum_min, float viewFrustum_max,
 	float tukeyCutoff, float framesToSkip, float framesToWeight)
@@ -498,7 +500,7 @@ __device__ void exRGBTrackerOneLevel_g_rt_device_main(ITMExtendedTracker_CUDA::A
 					depthWeight,
 					x,
 					y,
-					depths_curr,
+					points_curr,
 					intensities_curr,
 					intensities_prev,
 					gradients,
@@ -651,16 +653,16 @@ __global__ void exDepthTrackerOneLevel_g_rt_device(ITMExtendedTracker_KernelPara
 template<bool shortIteration, bool rotationOnly, bool useWeights>
 __global__ void exRGBTrackerOneLevel_g_rt_device(ITMExtendedTracker_KernelParameters_RGB para)
 {
-	exRGBTrackerOneLevel_g_rt_device_main<shortIteration, rotationOnly, useWeights>(para.accu, para.depths_curr,
+	exRGBTrackerOneLevel_g_rt_device_main<shortIteration, rotationOnly, useWeights>(para.accu, para.points_curr,
 		para.intensities_prev, para.gradients, para.intensities_curr, para.approxInvPose, para.scenePose,
 		para.projParams_depth, para.projParams_rgb, para.imageSize_rgb, para.imageSize_depth, para.colourThresh, para.viewFrustum_min, para.viewFrustum_max,
 		para.tukeyCutOff, para.framesToSkip, para.framesToWeight);
 }
 
-__global__ void exRGBTrackerProjectPrevImage_device(float *out_rgb, const float *in_rgb, const float *in_points, Vector2i imageSize, Vector2i sceneSize, Vector4f intrinsics_depth, Vector4f intrinsics_rgb, Matrix4f scenePose)
+__global__ void exRGBTrackerProjectPrevImage_device(Vector4f *out_points, float *out_rgb, const float *in_rgb, const float *in_points, Vector2i imageSize, Vector2i sceneSize, Vector4f intrinsics_depth, Vector4f intrinsics_rgb, Matrix4f scenePose)
 {
 	int x = threadIdx.x + blockIdx.x * blockDim.x;
 	int y = threadIdx.y + blockIdx.y * blockDim.y;
 
-	projectPoint_exRGB(x, y, out_rgb, in_rgb, in_points, imageSize, sceneSize, intrinsics_depth, intrinsics_rgb, scenePose);
+	projectPoint_exRGB(x, y, out_points, out_rgb, in_rgb, in_points, imageSize, sceneSize, intrinsics_depth, intrinsics_rgb, scenePose);
 }

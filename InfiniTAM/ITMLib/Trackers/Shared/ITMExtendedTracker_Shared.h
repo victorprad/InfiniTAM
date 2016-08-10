@@ -348,7 +348,7 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exRGB_inv_Ab(
 		THREADPTR(float) &depthWeight,
 		int x,
 		int y,
-		const DEVICEPTR(float) *depths_curr,
+		const DEVICEPTR(Vector4f) *points_curr,
 		const DEVICEPTR(float) *intensities_curr,
 		const DEVICEPTR(float) *intensities_prev,
 		const DEVICEPTR(Vector2f) *gradients,
@@ -371,16 +371,14 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exRGB_inv_Ab(
 	if (x >= imgSize_rgb.x || y >= imgSize_rgb.y) return false; // Should be redundant
 
 	// Point in current camera coordinates
-	const float depth_curr = depths_curr[y * imgSize_depth.x + x];
+	const Vector4f pt_curr = points_curr[y * imgSize_depth.x + x];
 	const float intensity_curr = intensities_curr[y * imgSize_depth.x + x];
 
 	// Invalid point or too far away
-	if (depth_curr <= 1e-8f || depth_curr > viewFrustum_max || intensity_curr < 0.f) return false;
-
-	const Vector3f pt_curr = reproject(x, y, depth_curr, intrinsics_depth);
+	if (pt_curr.w < 0.f || pt_curr.z < 1e-3f || pt_curr.z > viewFrustum_max || intensity_curr < 0.f) return false;
 
 	// Transform the point in world coordinates
-	const Vector3f pt_world = approxInvPose * pt_curr;
+	const Vector3f pt_world = approxInvPose * pt_curr.toVector3();
 
 	// Transform the point in previous camera coordinates
 	const Vector3f pt_prev = scenePose * pt_world;
@@ -461,7 +459,7 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exRGB_inv_Ab(
 	}
 
 	// TODO also need to handle transform between rgb and depth cameras
-	depthWeight = 1.0f - (depth_curr - viewFrustum_min) / (viewFrustum_max - viewFrustum_min); // Evaluate outside of the macro
+	depthWeight = 1.0f - (pt_curr.z - viewFrustum_min) / (viewFrustum_max - viewFrustum_min); // Evaluate outside of the macro
 	depthWeight = MAX(depthWeight, 0.f);
 	depthWeight *= depthWeight;
 
@@ -523,6 +521,7 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exDepth(THREADPTR(float) *local
 _CPU_AND_GPU_CODE_ inline bool computePerPointProjectedColour_exRGB(
 		THREADPTR(int) x,
 		THREADPTR(int) y,
+		DEVICEPTR(Vector4f) *out_points,
 		DEVICEPTR(float) *out_rgb,
 		const DEVICEPTR(float) *in_rgb,
 		const DEVICEPTR(float) *in_depths,
@@ -553,12 +552,14 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointProjectedColour_exRGB(
 		pt_image_proj.y < 0 || pt_image_proj.y >= imageSize.y - 1) return false;
 
 	out_rgb[sceneIdx] = interpolateBilinear_single(in_rgb, pt_image_proj, imageSize);
+	out_points[sceneIdx] = Vector4f(pt_camera, 1.f);
 	return true;
 }
 
 _CPU_AND_GPU_CODE_ inline void projectPoint_exRGB(
 		THREADPTR(int) x,
 		THREADPTR(int) y,
+		DEVICEPTR(Vector4f) *out_points,
 		DEVICEPTR(float) *out_rgb,
 		const DEVICEPTR(float) *in_rgb,
 		const DEVICEPTR(float) *in_depths,
@@ -572,9 +573,10 @@ _CPU_AND_GPU_CODE_ inline void projectPoint_exRGB(
 
 	int sceneIdx = y * imageSize_depth.x + x;
 
-	if (!computePerPointProjectedColour_exRGB(x, y, out_rgb, in_rgb, in_depths,
+	if (!computePerPointProjectedColour_exRGB(x, y, out_points, out_rgb, in_rgb, in_depths,
 		 imageSize_rgb, sceneIdx, intrinsics_rgb, intrinsics_depth, scenePose))
 	{
 		out_rgb[sceneIdx] = -1.f; // Mark as invalid
+		out_points[sceneIdx] = Vector4f(0.f, 0.f, 0.f, -1.f); // Mark as invalid
 	}
 }

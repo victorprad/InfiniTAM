@@ -14,7 +14,7 @@ ITMExtendedTracker::ITMExtendedTracker(Vector2i imgSize_d, Vector2i imgSize_rgb,
 	float colourWeight,	TrackerIterationType *trackingRegime, int noHierarchyLevels,
 	float terminationThreshold, float failureDetectorThreshold, float viewFrustum_min, float viewFrustum_max,
 	int tukeyCutOff, int framesToSkip, int framesToWeight, const ITMLowLevelEngine *lowLevelEngine, MemoryDeviceType memoryType)
-		: projectedIntensityHierarchy(NULL), smoothedTempIntensity(NULL)
+		: preProjectedHierarchy(NULL), smoothedTempIntensity(NULL)
 {
 	this->useDepth = useDepth;
 	this->useColour = useColour;
@@ -43,7 +43,7 @@ ITMExtendedTracker::ITMExtendedTracker(Vector2i imgSize_d, Vector2i imgSize_rgb,
 	if (useColour)
 	{
 		// Don't skip allocation for level 0
-		projectedIntensityHierarchy = new ITMImageHierarchy<ITMTemplatedHierarchyLevel<ITMFloatImage> >(imgSize_d, trackingRegime, noHierarchyLevels, memoryType, false);
+		preProjectedHierarchy = new ITMTwoImageHierarchy<ITMTemplatedHierarchyLevel<ITMFloat4Image>, ITMTemplatedHierarchyLevel<ITMFloatImage> >(imgSize_d, imgSize_d, trackingRegime, noHierarchyLevels, memoryType, false);
 
 		// Also allocate a buffer for the non smoothed level0 image
 		smoothedTempIntensity = new ITMFloatImage(imgSize_rgb, memoryType);
@@ -97,7 +97,7 @@ ITMExtendedTracker::~ITMExtendedTracker(void)
 
 	if (sceneHierarchy) delete sceneHierarchy;
 
-	if (projectedIntensityHierarchy) delete projectedIntensityHierarchy;
+	if (preProjectedHierarchy) delete preProjectedHierarchy;
 	if (smoothedTempIntensity) delete smoothedTempIntensity;
 
 	delete[] noIterationsPerLevel;
@@ -205,14 +205,15 @@ void ITMExtendedTracker::PrepareForEvaluation()
 		// Project RGB image according to the depth->rgb transform and cache it to speed up the energy computation
 		for (int i = 0; i < viewHierarchy->noLevels; ++i)
 		{
-			ITMTemplatedHierarchyLevel<ITMFloatImage> *intensityOut = projectedIntensityHierarchy->levels[i];
+			ITMTemplatedHierarchyLevel<ITMFloat4Image> *pointsOut = preProjectedHierarchy->levels_t0[i];
+			ITMTemplatedHierarchyLevel<ITMFloatImage> *intensityOut = preProjectedHierarchy->levels_t1[i];
 			ITMIntensityHierarchyLevel *intensityIn = viewHierarchy->levels_t1[i];
 			ITMDepthHierarchyLevel *depthIn = viewHierarchy->levels_t0[i];
 
 			Vector4f intrinsics_rgb = intensityIn->intrinsics;
 			Vector4f intrinsics_depth = depthIn->intrinsics;
 
-			ProjectCurrentIntensityFrame(intensityOut->image, intensityIn->intensity_current, depthIn->depth, intrinsics_depth, intrinsics_rgb, view->calib->trafo_rgb_to_depth.calib_inv);
+			ProjectCurrentIntensityFrame(pointsOut->image, intensityOut->image, intensityIn->intensity_current, depthIn->depth, intrinsics_depth, intrinsics_rgb, view->calib->trafo_rgb_to_depth.calib_inv);
 		}
 	}
 
@@ -246,7 +247,8 @@ void ITMExtendedTracker::SetEvaluationParams(int levelId)
 	{
 //		this->sceneHierarchyLevel_RGB = sceneHierarchy->levels[levelId];
 		viewHierarchyLevel_Intensity = viewHierarchy->levels_t1[levelId];
-		projectedIntensityLevel = projectedIntensityHierarchy->levels[levelId];
+		reprojectedPointsLevel = preProjectedHierarchy->levels_t0[levelId];
+		projectedIntensityLevel = preProjectedHierarchy->levels_t1[levelId];
 	}
 }
 

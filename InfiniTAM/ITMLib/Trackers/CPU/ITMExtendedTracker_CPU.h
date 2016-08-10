@@ -11,7 +11,8 @@ namespace ITMLib
 	protected:
 		int ComputeGandH_Depth(float &f, float *nabla, float *hessian, Matrix4f approxInvPose);
 		int ComputeGandH_RGB(float &f, float *nabla, float *hessian, Matrix4f approxInvPose);
-		virtual void ProjectCurrentIntensityFrame(ITMFloatImage *intensity_out,
+		virtual void ProjectCurrentIntensityFrame(ITMFloat4Image *points_out,
+												  ITMFloatImage *intensity_out,
 												  const ITMFloatImage *intensity_in,
 												  const ITMFloatImage *depth_in,
 												  const Vector4f &intrinsics_depth,
