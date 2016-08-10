@@ -205,8 +205,14 @@ void ITMExtendedTracker::PrepareForEvaluation()
 		// Project RGB image according to the depth->rgb transform and cache it to speed up the energy computation
 		for (int i = 0; i < viewHierarchy->noLevels; ++i)
 		{
-			SetEvaluationParams(i);
-			ProjectCurrentIntensityFrame(view->calib->trafo_rgb_to_depth.calib_inv);
+			ITMTemplatedHierarchyLevel<ITMFloatImage> *intensityOut = projectedIntensityHierarchy->levels[i];
+			ITMIntensityHierarchyLevel *intensityIn = viewHierarchy->levels_t1[i];
+			ITMDepthHierarchyLevel *depthIn = viewHierarchy->levels_t0[i];
+
+			Vector4f intrinsics_rgb = intensityIn->intrinsics;
+			Vector4f intrinsics_depth = depthIn->intrinsics;
+
+			ProjectCurrentIntensityFrame(intensityOut->image, intensityIn->intensity_current, depthIn->depth, intrinsics_depth, intrinsics_rgb, view->calib->trafo_rgb_to_depth.calib_inv);
 		}
 	}
 

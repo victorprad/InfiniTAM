@@ -76,7 +76,12 @@ namespace ITMLib
 
 		virtual int ComputeGandH_Depth(float &f, float *nabla, float *hessian, Matrix4f approxInvPose) = 0;
 		virtual int ComputeGandH_RGB(float &f, float *nabla, float *hessian, Matrix4f approxPose) = 0;
-		virtual void ProjectCurrentIntensityFrame(const Matrix4f &scenePose) = 0;
+		virtual void ProjectCurrentIntensityFrame(ITMFloatImage *intensity_out,
+												  const ITMFloatImage *intensity_in,
+												  const ITMFloatImage *depth_in,
+												  const Vector4f &intrinsics_depth,
+												  const Vector4f &intrinsics_rgb,
+												  const Matrix4f &scenePose) = 0;
 
 	public:
 		void TrackCamera(ITMTrackingState *trackingState, const ITMView *view);

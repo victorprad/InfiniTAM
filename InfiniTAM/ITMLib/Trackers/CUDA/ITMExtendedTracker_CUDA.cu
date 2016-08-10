@@ -327,7 +327,7 @@ int ITMExtendedTracker_CUDA::ComputeGandH_RGB(float &f, float *nabla, float *hes
 //	return noValidPoints;
 
 	Vector2i sceneImageSize = viewHierarchyLevel_Depth->depth->noDims;
-	Vector2i viewImageSize = viewHierarchyLevel_Intensity->intensity_current->noDims;
+	Vector2i viewImageSize = viewHierarchyLevel_Intensity->intensity_prev->noDims;
 
 	if (currentIterationType == TRACKER_ITERATION_NONE) return 0;
 
@@ -425,46 +425,26 @@ int ITMExtendedTracker_CUDA::ComputeGandH_RGB(float &f, float *nabla, float *hes
 	return accu_host->numPoints;
 }
 
-void ITMExtendedTracker_CUDA::ProjectCurrentIntensityFrame(const Matrix4f &scenePose)
+void ITMExtendedTracker_CUDA::ProjectCurrentIntensityFrame(ITMFloatImage *intensity_out,
+														   const ITMFloatImage *intensity_in,
+														   const ITMFloatImage *depth_in,
+														   const Vector4f &intrinsics_depth,
+														   const Vector4f &intrinsics_rgb,
+														   const Matrix4f &scenePose)
 {
-//	Vector2i imageSize = viewHierarchyLevel_Intensity->intensity_prev->noDims;
-//	Vector2i sceneSize = sceneHierarchyLevel_RGB->pointsMap->noDims; // Also the size of the projected image
-//
-//	previousProjectedIntensityLevel->depth->ChangeDims(sceneSize);
-//
-//	sceneHierarchyLevel_RGB->pointsMap->UpdateHostFromDevice();
-//	viewHierarchyLevel_Intensity->intensity_prev->UpdateHostFromDevice();
-//	previousProjectedIntensityLevel->depth->UpdateHostFromDevice();
-//
-//	Vector4f projParams = viewHierarchyLevel_Intensity->intrinsics;
-//	const Vector4f *pointsMap = sceneHierarchyLevel_RGB->pointsMap->GetData(MEMORYDEVICE_CPU);
-//	const float *rgbIn = viewHierarchyLevel_Intensity->intensity_prev->GetData(MEMORYDEVICE_CPU);
-//	float *rgbOut = previousProjectedIntensityLevel->depth->GetData(MEMORYDEVICE_CPU);
-//
-//	for (int y = 0; y < sceneSize.y; y++) for (int x = 0; x < sceneSize.x; x++)
-//	{
-//		projectPreviousPoint_exRGB(x, y, rgbOut, rgbIn, pointsMap, imageSize, sceneSize, projParams, scenePose);
-//	}
-//
-//	sceneHierarchyLevel_RGB->pointsMap->UpdateDeviceFromHost();
-//	viewHierarchyLevel_Intensity->intensity_prev->UpdateDeviceFromHost();
-//	previousProjectedIntensityLevel->depth->UpdateDeviceFromHost();
+	const Vector2i imageSize_rgb = intensity_in->noDims;
+	const Vector2i imageSize_depth = depth_in->noDims; // Also the size of the projected image
 
-	Vector2i imageSize = viewHierarchyLevel_Intensity->intensity_prev->noDims;
-	Vector2i sceneSize = viewHierarchyLevel_Depth->depth->noDims; // Also the size of the projected image
+	intensity_out->ChangeDims(imageSize_depth); // Actual reallocation should happen only once per run.
 
-	projectedIntensityLevel->image->ChangeDims(sceneSize); // Actual reallocation should happen only once per run.
-
-	Vector4f projParams_rgb = viewHierarchyLevel_Intensity->intrinsics;
-	Vector4f projParams_depth = viewHierarchyLevel_Depth->intrinsics;
-	const float *depths = viewHierarchyLevel_Depth->depth->GetData(MEMORYDEVICE_CUDA);
-	const float *rgbIn = viewHierarchyLevel_Intensity->intensity_current->GetData(MEMORYDEVICE_CUDA);
-	float *rgbOut = projectedIntensityLevel->image->GetData(MEMORYDEVICE_CUDA);
+	const float *depths = depth_in->GetData(MEMORYDEVICE_CUDA);
+	const float *intensityIn = intensity_in->GetData(MEMORYDEVICE_CUDA);
+	float *intensityOut = intensity_out->GetData(MEMORYDEVICE_CUDA);
 
 	dim3 blockSize(16, 16);
-	dim3 gridSize((int)ceil((float)sceneSize.x / (float)blockSize.x), (int)ceil((float)sceneSize.y / (float)blockSize.y));
+	dim3 gridSize((int)ceil((float)imageSize_depth.x / (float)blockSize.x), (int)ceil((float)imageSize_depth.y / (float)blockSize.y));
 
-	exRGBTrackerProjectPrevImage_device<<<gridSize, blockSize>>>(rgbOut, rgbIn, depths, imageSize, sceneSize, projParams_rgb, projParams_depth, scenePose);
+	exRGBTrackerProjectPrevImage_device<<<gridSize, blockSize>>>(intensityOut, intensityIn, depths, imageSize_rgb, imageSize_depth, intrinsics_rgb, intrinsics_depth, scenePose);
 	ORcudaKernelCheck;
 }
 
