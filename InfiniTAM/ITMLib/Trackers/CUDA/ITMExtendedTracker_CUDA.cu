@@ -43,7 +43,8 @@ struct ITMExtendedTracker_KernelParameters_RGB {
 	Matrix4f approxInvPose;
 	Matrix4f approxPose;
 	Matrix4f scenePose;
-	Vector4f projParams;
+	Vector4f projParams_depth;
+	Vector4f projParams_rgb;
 	float colourThresh;
 	float viewFrustum_min, viewFrustum_max;
 	float tukeyCutOff, framesToSkip, framesToWeight;
@@ -356,7 +357,8 @@ int ITMExtendedTracker_CUDA::ComputeGandH_RGB(float &f, float *nabla, float *hes
 	args.approxInvPose = approxInvPose;
 	args.approxPose = approxPose;
 	args.scenePose = depthToRGBTransform * scenePose;
-	args.projParams = viewHierarchyLevel_Intensity->intrinsics;
+	args.projParams_depth = viewHierarchyLevel_Depth->intrinsics;
+	args.projParams_rgb = viewHierarchyLevel_Intensity->intrinsics;
 	args.colourThresh = colourThresh[currentLevelId];
 	args.viewFrustum_min = viewFrustum_min;
 	args.viewFrustum_max = viewFrustum_max;
@@ -611,7 +613,7 @@ __device__ void exDepthTrackerOneLevel_g_rt_device_main(ITMExtendedTracker_CUDA:
 template<bool shortIteration, bool rotationOnly, bool useWeights>
 __device__ void exRGBTrackerOneLevel_g_rt_device_main(ITMExtendedTracker_CUDA::AccuCell *accu, 
 	const float *depths_curr, const float *intensities_prev, const Vector2f *gradients, const float *intensities_curr,
-	Matrix4f approxPose, Matrix4f approxInvPose, Matrix4f scenePose, Vector4f projParams,
+	Matrix4f approxPose, Matrix4f approxInvPose, Matrix4f scenePose, Vector4f projParams_depth, Vector4f projParams_rgb,
 	Vector2i imgSize, Vector2i sceneSize, float colourThresh, float viewFrustum_min, float viewFrustum_max,
 	float tukeyCutoff, float framesToSkip, float framesToWeight)
 {
@@ -656,10 +658,10 @@ __device__ void exRGBTrackerOneLevel_g_rt_device_main(ITMExtendedTracker_CUDA::A
 					intensities_curr,
 					intensities_prev,
 					gradients,
+					sceneSize,
 					imgSize,
-					imgSize,
-					projParams,
-					projParams,
+					projParams_depth,
+					projParams_rgb,
 					approxPose,
 					approxInvPose,
 					scenePose,
@@ -808,7 +810,7 @@ __global__ void exRGBTrackerOneLevel_g_rt_device(ITMExtendedTracker_KernelParame
 {
 	exRGBTrackerOneLevel_g_rt_device_main<shortIteration, rotationOnly, useWeights>(para.accu, para.depths_curr,
 		para.intensities_prev, para.gradients, para.intensities_curr, para.approxPose, para.approxInvPose, para.scenePose,
-		para.projParams, para.viewImageSize, para.sceneImageSize, para.colourThresh, para.viewFrustum_min, para.viewFrustum_max,
+		para.projParams_depth, para.projParams_rgb, para.viewImageSize, para.sceneImageSize, para.colourThresh, para.viewFrustum_min, para.viewFrustum_max,
 		para.tukeyCutOff, para.framesToSkip, para.framesToWeight);
 }
 
