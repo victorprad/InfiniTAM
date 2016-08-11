@@ -71,9 +71,12 @@ static void CreateDefaultImageSource(ImageSourceEngine* & imageSource, IMUSource
 
 	if (imageSource == NULL)
 	{
-		printf("trying OpenNI device: %s\n", (filename1 == NULL) ? "<OpenNI default device>" : filename1);
 		// If no calibration file specified, use the factory default calibration
 		bool useInternalCalibration = !calibFile || strlen(calibFile) == 0;
+
+		printf("trying OpenNI device: %s - calibration: %s\n",
+				(filename1 == NULL) ? "<OpenNI default device>" : filename1,
+				useInternalCalibration ? "internal" : "from file");
 		imageSource = new OpenNIEngine(calibFile, filename1, useInternalCalibration);
 		if (imageSource->getDepthImageSize().x == 0)
 		{
