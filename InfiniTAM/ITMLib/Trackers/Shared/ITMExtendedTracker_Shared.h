@@ -306,8 +306,8 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exRGB_inv_Ab(
 		nabla[para] = dot(gradient_prev, d_proj_point);
 	}
 
-	// Weight less points far away from the camera
-	float depthWeight = 1.0f - (pt_curr.z - viewFrustum_min) / (viewFrustum_max - viewFrustum_min); // Evaluate outside of the macro
+	// Weigh less the points far away from the camera
+	float depthWeight = 1.0f - (pt_curr.z - viewFrustum_min) / (viewFrustum_max - viewFrustum_min);
 	depthWeight = MAX(depthWeight, 0.f);
 	depthWeight *= depthWeight;
 
