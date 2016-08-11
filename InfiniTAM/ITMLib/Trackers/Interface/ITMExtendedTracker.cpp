@@ -14,7 +14,7 @@ ITMExtendedTracker::ITMExtendedTracker(Vector2i imgSize_d, Vector2i imgSize_rgb,
 	float colourWeight,	TrackerIterationType *trackingRegime, int noHierarchyLevels,
 	float terminationThreshold, float failureDetectorThreshold, float viewFrustum_min, float viewFrustum_max,
 	int tukeyCutOff, int framesToSkip, int framesToWeight, const ITMLowLevelEngine *lowLevelEngine, MemoryDeviceType memoryType)
-		: preProjectedHierarchy(NULL), smoothedTempIntensity(NULL)
+		: preProjectedHierarchy(NULL)
 {
 	this->useDepth = useDepth;
 	this->useColour = useColour;
@@ -44,9 +44,6 @@ ITMExtendedTracker::ITMExtendedTracker(Vector2i imgSize_d, Vector2i imgSize_rgb,
 	{
 		// Don't skip allocation for level 0
 		preProjectedHierarchy = new ITMTwoImageHierarchy<ITMTemplatedHierarchyLevel<ITMFloat4Image>, ITMTemplatedHierarchyLevel<ITMFloatImage> >(imgSize_d, imgSize_d, trackingRegime, noHierarchyLevels, memoryType, false);
-
-		// Also allocate a buffer for the non smoothed level0 image
-		smoothedTempIntensity = new ITMFloatImage(imgSize_rgb, memoryType);
 
 		// Allocate level0 intensity images (TODO: store the intensity in the view and reuse that instead of allocating stuff here)
 		viewHierarchy->levels_t1[0]->intensity_current = new ITMFloatImage(imgSize_rgb, memoryType);
@@ -98,7 +95,6 @@ ITMExtendedTracker::~ITMExtendedTracker(void)
 	if (sceneHierarchy) delete sceneHierarchy;
 
 	if (preProjectedHierarchy) delete preProjectedHierarchy;
-	if (smoothedTempIntensity) delete smoothedTempIntensity;
 
 	delete[] noIterationsPerLevel;
 	delete[] spaceThresh;
@@ -156,9 +152,7 @@ void ITMExtendedTracker::SetEvaluationData(ITMTrackingState *trackingState, cons
 		lowLevelEngine->ConvertColourToIntensity(viewHierarchy->levels_t1[0]->intensity_current, view->rgb);
 		lowLevelEngine->ConvertColourToIntensity(viewHierarchy->levels_t1[0]->intensity_prev, view->rgb_prev);
 
-		// compute first level gradients by smoothing the image beforehand (smoothing for the other layers is done during the subsampling operation)
-//		lowLevelEngine->FilterIntensity(smoothedTempIntensity, viewHierarchy->levels_t1[0]->intensity_prev);
-//		lowLevelEngine->GradientXY(viewHierarchy->levels_t1[0]->gradients, smoothedTempIntensity);
+		// Compute first level gradients
 		lowLevelEngine->GradientXY(viewHierarchy->levels_t1[0]->gradients, viewHierarchy->levels_t1[0]->intensity_prev);
 	}
 
