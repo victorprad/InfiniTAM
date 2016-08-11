@@ -207,7 +207,6 @@ int ITMExtendedTracker_CPU::ComputeGandH_RGB(float &f, float *nabla, float *hess
 		for (int i = 0; i < noParaSQ; i++) localHessian[i] = 0.0f;
 
 		bool isValidPoint = false;
-		float depthWeight = 1.f;
 
 		if (currentIterationType != TRACKER_ITERATION_TRANSLATION) // TODO translation not implemented yet
 		{
@@ -215,7 +214,6 @@ int ITMExtendedTracker_CPU::ComputeGandH_RGB(float &f, float *nabla, float *hess
 					localF,
 					localNabla,
 					localHessian,
-					depthWeight,
 					x,
 					y,
 					points_curr,
@@ -232,8 +230,6 @@ int ITMExtendedTracker_CPU::ComputeGandH_RGB(float &f, float *nabla, float *hess
 					viewFrustum_min,
 					viewFrustum_max,
 					tukeyCutOff,
-					framesToSkip,
-					framesToWeight,
 					noPara
 					);
 		}

@@ -45,7 +45,7 @@ struct ITMExtendedTracker_KernelParameters_RGB {
 	Vector4f projParams_rgb;
 	float colourThresh;
 	float viewFrustum_min, viewFrustum_max;
-	float tukeyCutOff, framesToSkip, framesToWeight;
+	float tukeyCutOff;
 };
 
 template<bool shortIteration, bool rotationOnly, bool useWeights>
@@ -206,8 +206,6 @@ int ITMExtendedTracker_CUDA::ComputeGandH_RGB(float &f, float *nabla, float *hes
 	args.viewFrustum_min = viewFrustum_min;
 	args.viewFrustum_max = viewFrustum_max;
 	args.tukeyCutOff = tukeyCutOff;
-	args.framesToSkip = framesToSkip;
-	args.framesToWeight = framesToWeight;
 
 	if (currentFrameNo < 100)
 	{
@@ -457,11 +455,23 @@ __device__ void exDepthTrackerOneLevel_g_rt_device_main(ITMExtendedTracker_CUDA:
 }
 
 template<bool shortIteration, bool rotationOnly, bool useWeights>
-__device__ void exRGBTrackerOneLevel_g_rt_device_main(ITMExtendedTracker_CUDA::AccuCell *accu, 
-	const Vector4f *points_curr, const float *intensities_prev, const Vector2f *gradients, const float *intensities_curr,
-	Matrix4f approxInvPose, Matrix4f scenePose, Vector4f projParams_depth, Vector4f projParams_rgb,
-	Vector2i imageSize_rgb, Vector2i imageSize_depth, float colourThresh, float viewFrustum_min, float viewFrustum_max,
-	float tukeyCutoff, float framesToSkip, float framesToWeight)
+__device__ void exRGBTrackerOneLevel_g_rt_device_main(
+		ITMExtendedTracker_CUDA::AccuCell *accu,
+		const Vector4f *points_curr,
+		const float *intensities_prev,
+		const Vector2f *gradients,
+		const float *intensities_curr,
+		const Matrix4f &approxInvPose,
+		const Matrix4f &scenePose,
+		const Vector4f &projParams_depth,
+		const Vector4f &projParams_rgb,
+		const Vector2i &imageSize_rgb,
+		const Vector2i &imageSize_depth,
+		float colourThresh,
+		float viewFrustum_min,
+		float viewFrustum_max,
+		float tukeyCutoff
+		)
 {
 	int x = threadIdx.x + blockIdx.x * blockDim.x, y = threadIdx.y + blockIdx.y * blockDim.y;
 
@@ -480,7 +490,6 @@ __device__ void exRGBTrackerOneLevel_g_rt_device_main(ITMExtendedTracker_CUDA::A
 	float localHessian[noParaSQ];
 	float localNabla[noPara];
 	float localF;
-	float depthWeight = 1.0f;
 
 	bool isValidPoint = false;
 
@@ -493,7 +502,6 @@ __device__ void exRGBTrackerOneLevel_g_rt_device_main(ITMExtendedTracker_CUDA::A
 					localF,
 					localNabla,
 					localHessian,
-					depthWeight,
 					x,
 					y,
 					points_curr,
@@ -510,8 +518,6 @@ __device__ void exRGBTrackerOneLevel_g_rt_device_main(ITMExtendedTracker_CUDA::A
 					viewFrustum_min,
 					viewFrustum_max,
 					tukeyCutoff,
-					framesToSkip,
-					framesToWeight,
 					noPara
 					);
 		}
@@ -649,10 +655,23 @@ __global__ void exDepthTrackerOneLevel_g_rt_device(ITMExtendedTracker_KernelPara
 template<bool shortIteration, bool rotationOnly, bool useWeights>
 __global__ void exRGBTrackerOneLevel_g_rt_device(ITMExtendedTracker_KernelParameters_RGB para)
 {
-	exRGBTrackerOneLevel_g_rt_device_main<shortIteration, rotationOnly, useWeights>(para.accu, para.points_curr,
-		para.intensities_prev, para.gradients, para.intensities_curr, para.approxInvPose, para.scenePose,
-		para.projParams_depth, para.projParams_rgb, para.imageSize_rgb, para.imageSize_depth, para.colourThresh, para.viewFrustum_min, para.viewFrustum_max,
-		para.tukeyCutOff, para.framesToSkip, para.framesToWeight);
+	exRGBTrackerOneLevel_g_rt_device_main<shortIteration, rotationOnly, useWeights>(
+			para.accu,
+			para.points_curr,
+			para.intensities_prev,
+			para.gradients,
+			para.intensities_curr,
+			para.approxInvPose,
+			para.scenePose,
+			para.projParams_depth,
+			para.projParams_rgb,
+			para.imageSize_rgb,
+			para.imageSize_depth,
+			para.colourThresh,
+			para.viewFrustum_min,
+			para.viewFrustum_max,
+			para.tukeyCutOff
+			);
 }
 
 __global__ void exRGBTrackerProjectPrevImage_device(Vector4f *out_points, float *out_rgb, const float *in_rgb, const float *in_points, Vector2i imageSize, Vector2i sceneSize, Vector4f intrinsics_depth, Vector4f intrinsics_rgb, Matrix4f scenePose)

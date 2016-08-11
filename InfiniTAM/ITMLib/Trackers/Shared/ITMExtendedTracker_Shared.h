@@ -192,166 +192,10 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exDepth_Ab(THREADPTR(float) *A,
 }
 
 template<bool useWeights>
-_CPU_AND_GPU_CODE_ inline bool computePerPointGH_exRGB_Ab(THREADPTR(float) *localGradient, THREADPTR(float) &localResidual, THREADPTR(float) *localHessian,
-	THREADPTR(float) &depthWeight, const THREADPTR(Vector4f) &pt_world, const THREADPTR(float) intensity_world, const DEVICEPTR(float) *intensity_live,
-	const CONSTPTR(Vector2i) &imgSize, int x, int y, const Vector4f &projParams, const Matrix4f &approxPose, const Matrix4f &approxInvPose,
-	const Matrix4f &scenePose, const DEVICEPTR(Vector2f) *intensity_gradients, float colourThresh, float viewFrustum_min, float viewFrustum_max,
-	float tukeyCutoff, float framesToSkip, float framesToWeight, int numPara)
-{
-	if (pt_world.w <= 1e-3f || intensity_world < 0.f) return false;
-//	if (useWeights && pt_world.w < framesToSkip) return false;
-
-	// convert the point in camera coordinates using the candidate pose
-	Vector4f pt_camera = pt_world;
-	pt_camera.w = 1.f; // Coerce it to be a point
-	pt_camera = approxPose * pt_camera;
-
-	if (pt_camera.z <= 1e-3f || pt_camera.z >= viewFrustum_max) return false;
-
-	depthWeight = 1.0f - (pt_camera.z - viewFrustum_min) / (viewFrustum_max - viewFrustum_min); // Evaluate outside of the macro
-	depthWeight = MAX(depthWeight, 0.f);
-	depthWeight *= depthWeight;
-
-//	if (useWeights)
-//	{
-//		depthWeight *= (pt_world.w - framesToSkip) / framesToWeight;
-//	}
-
-	const float fx = projParams.x;
-	const float fy = projParams.y;
-	const float cx = projParams.z;
-	const float cy = projParams.w;
-	const float inv_cam_z = 1.f / pt_camera.z;
-	const float inv_cam_z_sq = inv_cam_z * inv_cam_z;
-
-	// project the point onto the live image
-	const Vector2f pt_image_live(fx * pt_camera.x * inv_cam_z + cx,
-								 fy * pt_camera.y * inv_cam_z + cy);
-
-	if (pt_image_live.x < 3 || pt_image_live.x >= imgSize.x - 3 ||
-		pt_image_live.y < 3 || pt_image_live.y >= imgSize.y - 3) return false;
-
-	const float colour_obs = interpolateBilinear_single(intensity_live, pt_image_live, imgSize);
-	const Vector2f gradient_obs = interpolateBilinear_Vector2(intensity_gradients, pt_image_live, imgSize);
-
-//	if (colour_obs.w <= 1e-3f) return false;
-//	if (dot(gx_obs, gx_obs) < 1e-5 || dot(gy_obs, gy_obs) < 1e-5) return false;
-//	if (fabs(gx_obs.x) <= 1e-4f || fabs(gx_obs.y) <= 1e-4f || fabs(gx_obs.z) <= 1e-4f ||
-//		fabs(gy_obs.x) <= 1e-4f || fabs(gy_obs.y) <= 1e-4f || fabs(gy_obs.z) <= 1e-4f) return false;
-//	if (fabs(gradient_obs.x) > 0.02f || fabs(gradient_obs.y) > 0.02f) return false; // removes most outliers
-	if (fabs(gradient_obs.x) < 0.01f || fabs(gradient_obs.y) < 0.01f) return false;
-
-	const float colour_diff = colour_obs - intensity_world;
-
-	if (fabs(colour_diff) > tukeyCutoff * colourThresh) return false;
-
-	// Derivatives computed as in
-	// Blanco, J. (2010). A tutorial on se (3) transformation parameterizations and on-manifold optimization.
-	// University of Malaga, Tech. Rep
-	// Equation A.13
-
-	const Vector3f rot_row_0 = approxInvPose.getRow(0).toVector3();
-	const Vector3f rot_row_1 = approxInvPose.getRow(1).toVector3();
-	const Vector3f rot_row_2 = approxInvPose.getRow(2).toVector3();
-
-	// Derivatives of the projection operation
-	const Vector3f d_proj_x(fx * inv_cam_z,
-							0.f,
-							-fx * pt_camera.x * inv_cam_z_sq);
-
-	const Vector3f d_proj_y(0.f,
-							fy * inv_cam_z,
-							-fy * pt_camera.y * inv_cam_z_sq);
-
-	float nabla[6];
-
-	for (int para = 0; para < numPara; para++)
-	{
-		// Derivatives wrt. the current parameter
-		Vector3f d_point_col;
-
-		switch (para)
-		{
-		case 0: //rx
-			d_point_col = rot_row_1 * pt_world.z - rot_row_2 * pt_world.y;
-			break;
-		case 1: // ry
-			d_point_col = rot_row_2 * pt_world.x - rot_row_0 * pt_world.z;
-			break;
-		case 2: // rz
-			d_point_col = rot_row_0 * pt_world.y - rot_row_1 * pt_world.x;
-			break; //rz
-		case 3: //tx
-			// Rotation matrix negated and transposed (matrix storage is column major, though)
-			// We negate it one more time (-> no negation) because the ApplyDelta uses the KinectFusion
-			// skew symmetric matrix, that matrix has negated rotation components.
-			// In order to use the rgb tracker we would need to negate the entire computed step, but given
-			// the peculiar structure of the increment matrix we only need to negate the translation component.
-			d_point_col = rot_row_0;
-			break;
-		case 4: //ty
-			d_point_col = rot_row_1;
-			break;
-		case 5: //tz
-			d_point_col = rot_row_2;
-			break;
-		};
-
-		// Chain rule projection-pose
-		Vector2f d_proj_dpi;
-		d_proj_dpi.x = dot(d_proj_x, d_point_col);
-		d_proj_dpi.y = dot(d_proj_y, d_point_col);
-
-		// Chain rule image gradient-projection-pose
-		nabla[para] = d_proj_dpi.x * gradient_obs.x + d_proj_dpi.y * gradient_obs.y;
-//		nabla[para] = d_proj_dpi.x + d_proj_dpi.y;
-//		nabla[para] = d_point_col.x + d_point_col.y + d_point_col.z;
-	}
-//	const float huber_coef_hessian = rho_deriv2(colour_diff, colourThresh);
-
-	// compute the residual
-//	localResidual = depthWeight * huber_rho(colour_diff, colourThresh);
-	localResidual = depthWeight * huber_rho(colour_diff, colourThresh);
-//	localResidual = tukey_rho(colour_diff, colourThresh);
-//	localResidual = colour_diff * colour_diff;
-
-
-	const float d_loss = huber_rho_deriv(colour_diff, colourThresh);
-//	const float d_loss = tukey_rho_deriv(colour_diff, colourThresh);
-//	const float d_loss = colour_diff;
-//	const float d_loss = depthWeight * huber_rho_deriv(colour_diff, colourThresh);
-
-	for (int para = 0, counter = 0; para < numPara; para++)
-	{
-		// Compute b
-//		localGradient[para] = depthWeight * huber_coef_gradient * nabla[para];
-//		localGradient[para] = depthWeight * nabla[para];
-		localGradient[para] = depthWeight * d_loss * nabla[para];
-//		localGradient[para] = fabs(colour_diff) <= colourThresh ? colour_diff * nabla[para] : (colour_diff < 0 ? -colourThresh : colourThresh);
-//		localGradient[para] = nabla[para];
-
-		// compute triangular part of A'A
-		for (int col = 0; col <= para; col++)
-		{
-			// dot(A[para],A[col]) but with huber weighting
-//			localHessian[counter++] = depthWeight * huber_coef_hessian * nabla[para] * nabla[col];
-			localHessian[counter++] = depthWeight * (fabs(colour_diff) <= colourThresh ? nabla[para] * nabla[col] : 0);
-		}
-	}
-
-//	localGradient[0] = gradient_obs.x;
-//	localGradient[1] = gradient_obs.y;
-
-
-	return true;
-}
-
-template<bool useWeights>
 _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exRGB_inv_Ab(
 		THREADPTR(float) &localResidual,
 		THREADPTR(float) *localGradient,
 		THREADPTR(float) *localHessian,
-		THREADPTR(float) &depthWeight,
 		int x,
 		int y,
 		const DEVICEPTR(Vector4f) *points_curr,
@@ -368,8 +212,6 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exRGB_inv_Ab(
 		float viewFrustum_min,
 		float viewFrustum_max,
 		float tukeyCutoff,
-		float framesToSkip,
-		float framesToWeight,
 		int numPara
 		)
 {
@@ -464,27 +306,26 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exRGB_inv_Ab(
 		nabla[para] = dot(gradient_prev, d_proj_point);
 	}
 
-	depthWeight = 1.0f - (pt_curr.z - viewFrustum_min) / (viewFrustum_max - viewFrustum_min); // Evaluate outside of the macro
+	// Weight less points far away from the camera
+	float depthWeight = 1.0f - (pt_curr.z - viewFrustum_min) / (viewFrustum_max - viewFrustum_min); // Evaluate outside of the macro
 	depthWeight = MAX(depthWeight, 0.f);
 	depthWeight *= depthWeight;
 
 	// Compute the residual
-//	localResidual = depthWeight * huber_rho(intensity_diff, colourThresh);
 	localResidual = depthWeight * tukey_rho(intensity_diff, colourThresh);
 
-	// Precompute huber derivatives
-//	const float huber_coeff_gradient = depthWeight * huber_rho_deriv(intensity_diff, colourThresh);
-	const float huber_coeff_gradient = depthWeight * tukey_rho_deriv(intensity_diff, colourThresh);
-	const float huber_coeff_hessian = depthWeight * tukey_rho_deriv2(intensity_diff, colourThresh);
+	// Precompute tukey weights
+	const float tukey_coeff_gradient = depthWeight * tukey_rho_deriv(intensity_diff, colourThresh);
+	const float tukey_coeff_hessian = depthWeight * tukey_rho_deriv2(intensity_diff, colourThresh);
 
 	// Fill gradient and hessian
 	for (int para = 0, counter = 0; para < numPara; para++)
 	{
-		localGradient[para] = huber_coeff_gradient * nabla[para];
+		localGradient[para] = tukey_coeff_gradient * nabla[para];
 
 		for (int col = 0; col <= para; col++)
 		{
-			localHessian[counter++] = huber_coeff_hessian * nabla[para] * nabla[col];
+			localHessian[counter++] = tukey_coeff_hessian * nabla[para] * nabla[col];
 		}
 	}
 
