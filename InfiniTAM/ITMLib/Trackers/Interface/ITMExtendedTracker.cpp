@@ -192,7 +192,6 @@ void ITMExtendedTracker::PrepareForEvaluation()
 			currentLevel->intrinsics = previousLevel->intrinsics * 0.5f;
 
 			// Also compute gradients
-//			lowLevelEngine->GradientXY(currentLevel->gradients, currentLevel->intensity_current);
 			lowLevelEngine->GradientXY(currentLevel->gradients, currentLevel->intensity_prev);
 		}
 
@@ -266,20 +265,15 @@ void ITMExtendedTracker::ComputeDelta(float *step, float *nabla, float *hessian,
 
 bool ITMExtendedTracker::HasConverged(float *step) const
 {
-//	float stepLength = 0.0f;
-//	for (int i = 0; i < 6; i++) stepLength += step[i] * step[i];
-//
-//	if (sqrt(stepLength) / 6 < terminationThreshold) return true; //converged
-//
-//	return false;
-
 	bool terminate = true;
 	for (int i = 0; i < 6; i++)
+	{
 		if (fabs(step[i]) > terminationThreshold)
 		{
 			terminate = false;
 			break;
 		}
+	}
 
 	return terminate;
 }
