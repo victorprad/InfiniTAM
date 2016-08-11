@@ -495,32 +495,27 @@ __device__ void exRGBTrackerOneLevel_g_rt_device_main(
 
 	if (x < imageSize_depth.x && y < imageSize_depth.y)
 	{
-		// FIXME Translation only not implemented yet
-		if(!shortIteration || rotationOnly)
-		{
-			isValidPoint = computePerPointGH_exRGB_inv_Ab<false>(
-					localF,
-					localNabla,
-					localHessian,
-					x,
-					y,
-					points_curr,
-					intensities_curr,
-					intensities_prev,
-					gradients,
-					imageSize_depth,
-					imageSize_rgb,
-					projParams_depth,
-					projParams_rgb,
-					approxInvPose,
-					scenePose,
-					colourThresh,
-					viewFrustum_min,
-					viewFrustum_max,
-					tukeyCutoff,
-					noPara
-					);
-		}
+		isValidPoint = computePerPointGH_exRGB_inv_Ab<shortIteration, rotationOnly>(
+				localF,
+				localNabla,
+				localHessian,
+				x,
+				y,
+				points_curr,
+				intensities_curr,
+				intensities_prev,
+				gradients,
+				imageSize_depth,
+				imageSize_rgb,
+				projParams_depth,
+				projParams_rgb,
+				approxInvPose,
+				scenePose,
+				colourThresh,
+				viewFrustum_min,
+				viewFrustum_max,
+				tukeyCutoff
+				);
 
 		if (isValidPoint) should_prefix = true;
 	}

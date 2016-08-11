@@ -191,7 +191,7 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exDepth_Ab(THREADPTR(float) *A,
 	return true;
 }
 
-template<bool useWeights>
+template<bool shortIteration, bool rotationOnly>
 _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exRGB_inv_Ab(
 		THREADPTR(float) &localResidual,
 		THREADPTR(float) *localGradient,
@@ -211,8 +211,7 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exRGB_inv_Ab(
 		float colourThresh,
 		float viewFrustum_min,
 		float viewFrustum_max,
-		float tukeyCutoff,
-		int numPara
+		float tukeyCutoff
 		)
 {
 	if (x >= imgSize_depth.x || y >= imgSize_depth.y) return false;
@@ -262,11 +261,13 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exRGB_inv_Ab(
 							-intrinsics_rgb.y * pt_prev.y / (pt_prev.z * pt_prev.z));
 
 	float nabla[6];
+
+	const int numPara = shortIteration ? 3 : 6;
 	for (int para = 0; para < numPara; para++)
 	{
 		// Derivatives of approxInvPose wrt. the current parameter
 		Vector3f d_point_col;
-		switch (para)
+		switch (para + (shortIteration && !rotationOnly ? 3 : 0))
 		{
 		case 0: //rx
 			d_point_col = Vector3f(0, -pt_world.z, pt_world.y);
@@ -278,9 +279,9 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exRGB_inv_Ab(
 			d_point_col = Vector3f(-pt_world.y, pt_world.x, 0);
 			break; //rz
 		case 3: //tx
-			// Rotation matrix negated and transposed (matrix storage is column major, though)
-			// We negate it one more time (-> no negation) because the ApplyDelta uses the KinectFusion
-			// skew symmetric matrix, that matrix has negated rotation components.
+			// Identity matrix
+			// We negate it because the ApplyDelta function uses the KinectFusion
+			// skew symmetric matrix and that matrix has negated rotation components.
 			// In order to use the rgb tracker we would need to negate the entire computed step, but given
 			// the peculiar structure of the increment matrix we only need to negate the translation component.
 			d_point_col = -Vector3f(1,0,0);
@@ -291,6 +292,8 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exRGB_inv_Ab(
 		case 5: //tz
 			d_point_col = -Vector3f(0,0,1);
 			break;
+		default:
+			d_point_col = Vector3f(0,0,0); // Should not happen
 		};
 
 		// Chain the above with scenePose

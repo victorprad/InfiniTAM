@@ -208,9 +208,10 @@ int ITMExtendedTracker_CPU::ComputeGandH_RGB(float &f, float *nabla, float *hess
 
 		bool isValidPoint = false;
 
-		if (currentIterationType != TRACKER_ITERATION_TRANSLATION) // TODO translation not implemented yet
+		switch (currentIterationType)
 		{
-			isValidPoint = computePerPointGH_exRGB_inv_Ab<false>(
+		case TRACKER_ITERATION_ROTATION:
+			isValidPoint = computePerPointGH_exRGB_inv_Ab<true, true>(
 					localF,
 					localNabla,
 					localHessian,
@@ -229,9 +230,58 @@ int ITMExtendedTracker_CPU::ComputeGandH_RGB(float &f, float *nabla, float *hess
 					colourThresh[currentLevelId],
 					viewFrustum_min,
 					viewFrustum_max,
-					tukeyCutOff,
-					noPara
+					tukeyCutOff
 					);
+			break;
+		case TRACKER_ITERATION_TRANSLATION:
+			isValidPoint = computePerPointGH_exRGB_inv_Ab<true, false>(
+					localF,
+					localNabla,
+					localHessian,
+					x,
+					y,
+					points_curr,
+					intensities_current,
+					intensities_prev,
+					gradients,
+					viewImageSize_depth,
+					viewImageSize_rgb,
+					projParams_depth,
+					projParams_rgb,
+					approxInvPose,
+					depthToRGBTransform * scenePose,
+					colourThresh[currentLevelId],
+					viewFrustum_min,
+					viewFrustum_max,
+					tukeyCutOff
+					);
+			break;
+		case TRACKER_ITERATION_BOTH:
+			isValidPoint = computePerPointGH_exRGB_inv_Ab<false, false>(
+					localF,
+					localNabla,
+					localHessian,
+					x,
+					y,
+					points_curr,
+					intensities_current,
+					intensities_prev,
+					gradients,
+					viewImageSize_depth,
+					viewImageSize_rgb,
+					projParams_depth,
+					projParams_rgb,
+					approxInvPose,
+					depthToRGBTransform * scenePose,
+					colourThresh[currentLevelId],
+					viewFrustum_min,
+					viewFrustum_max,
+					tukeyCutOff
+					);
+			break;
+		default:
+			isValidPoint = false;
+			break;
 		}
 
 		if (isValidPoint)
