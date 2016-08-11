@@ -489,10 +489,6 @@ __device__ void exRGBTrackerOneLevel_g_rt_device_main(ITMExtendedTracker_CUDA::A
 		// FIXME Translation only not implemented yet
 		if(!shortIteration || rotationOnly)
 		{
-//			isValidPoint = computePerPointGH_exRGB_Ab<useWeights>(localNabla, localF, localHessian, depthWeight,
-//				locations[x + y * sceneSize.x], intensity_model[x + y * sceneSize.x], intensity_live, imgSize, x, y,
-//				projParams, approxPose, approxInvPose, scenePose, gradients, colourThresh, viewFrustum_min, viewFrustum_max, tukeyCutoff, framesToSkip, framesToWeight, noPara);
-
 			isValidPoint = computePerPointGH_exRGB_inv_Ab<false>(
 					localF,
 					localNabla,
