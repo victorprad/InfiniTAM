@@ -256,12 +256,12 @@ namespace ITMLib
 		const char *levelSetup = "rrbb";
 		bool useDepth = true;
 		bool useColour = false;
-		float colourWeight = 0.001f;
+		float colourWeight = 0.3f;
 		float smallStepSizeCriterion = 1e-4f;
 		float outlierSpaceDistanceFine = 0.004f;
 		float outlierSpaceDistanceCoarse = 0.1f;
-		float outlierColourDistanceFine = 0.02f;
-		float outlierColourDistanceCoarse = 0.1f;
+		float outlierColourDistanceFine = 0.175f;
+		float outlierColourDistanceCoarse = 0.005f;
 		float failureDetectorThd = 3.0f;
 		int tukeyCutOff = 8;
 		int framesToSkip = 20;
