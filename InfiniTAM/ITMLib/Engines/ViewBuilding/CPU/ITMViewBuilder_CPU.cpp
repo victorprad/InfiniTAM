@@ -15,36 +15,23 @@ void ITMViewBuilder_CPU::UpdateView(ITMView **view_ptr, ITMUChar4Image *rgbImage
 { 
 	if (*view_ptr == NULL)
 	{
-//		*view_ptr = new ITMView(calib, rgbImage->noDims, rawDepthImage->noDims, false);
-//		if (this->shortImage != NULL) delete this->shortImage;
-//		this->shortImage = new ITMShortImage(rawDepthImage->noDims, true, false);
-//		if (this->floatImage != NULL) delete this->floatImage;
-//		this->floatImage = new ITMFloatImage(rawDepthImage->noDims, true, false);
-//
-//		if (modelSensorNoise)
-//		{
-//			(*view_ptr)->depthNormal = new ITMFloat4Image(rawDepthImage->noDims, true, false);
-//			(*view_ptr)->depthUncertainty = new ITMFloatImage(rawDepthImage->noDims, true, false);
-//		}
-
-		*view_ptr = new ITMView(calib, rgbImage->noDims, rawDepthImage->noDims, true);
+		*view_ptr = new ITMView(calib, rgbImage->noDims, rawDepthImage->noDims, false);
 		if (this->shortImage != NULL) delete this->shortImage;
-		this->shortImage = new ITMShortImage(rawDepthImage->noDims, true, true);
+		this->shortImage = new ITMShortImage(rawDepthImage->noDims, true, false);
 		if (this->floatImage != NULL) delete this->floatImage;
-		this->floatImage = new ITMFloatImage(rawDepthImage->noDims, true, true);
+		this->floatImage = new ITMFloatImage(rawDepthImage->noDims, true, false);
 
 		if (modelSensorNoise)
 		{
-			(*view_ptr)->depthNormal = new ITMFloat4Image(rawDepthImage->noDims, true, true);
-			(*view_ptr)->depthUncertainty = new ITMFloatImage(rawDepthImage->noDims, true, true);
+			(*view_ptr)->depthNormal = new ITMFloat4Image(rawDepthImage->noDims, true, false);
+			(*view_ptr)->depthUncertainty = new ITMFloatImage(rawDepthImage->noDims, true, false);
 		}
 	}
 	ITMView *view = *view_ptr;
 
 	if (storePreviousImage)
 	{
-//		if (view->rgb_prev == NULL) view->rgb_prev = new ITMUChar4Image(rgbImage->noDims, true, false);
-		if (view->rgb_prev == NULL) view->rgb_prev = new ITMUChar4Image(rgbImage->noDims, true, true);
+		if (view->rgb_prev == NULL) view->rgb_prev = new ITMUChar4Image(rgbImage->noDims, true, false);
 		else view->rgb_prev->SetFrom(view->rgb, MemoryBlock<Vector4u>::CPU_TO_CPU);
 	}
 
