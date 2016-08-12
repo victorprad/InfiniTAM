@@ -110,8 +110,6 @@ int ITMExtendedTracker_CUDA::ComputeGandH_Depth(float &f, float *nabla, float *h
 	args.framesToSkip = framesToSkip;
 	args.framesToWeight = framesToWeight;
 
-	//printf("%f %f\n", viewFrustum_min, viewFrustum_max);
-
 	if (currentFrameNo < 100)
 	{
 		switch (currentIterationType)

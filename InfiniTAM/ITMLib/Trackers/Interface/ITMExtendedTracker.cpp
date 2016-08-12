@@ -45,7 +45,7 @@ ITMExtendedTracker::ITMExtendedTracker(Vector2i imgSize_d, Vector2i imgSize_rgb,
 		// Don't skip allocation for level 0
 		preProjectedHierarchy = new ITMTwoImageHierarchy<ITMTemplatedHierarchyLevel<ITMFloat4Image>, ITMTemplatedHierarchyLevel<ITMFloatImage> >(imgSize_d, imgSize_d, trackingRegime, noHierarchyLevels, memoryType, false);
 
-		// Allocate level0 intensity images (TODO: store the intensity in the view and reuse that instead of allocating stuff here)
+		// Allocate level 0 intensity images
 		viewHierarchy->levels_t1[0]->intensity_current = new ITMFloatImage(imgSize_rgb, memoryType);
 		viewHierarchy->levels_t1[0]->intensity_prev = new ITMFloatImage(imgSize_rgb, memoryType);
 	}
@@ -148,7 +148,8 @@ void ITMExtendedTracker::SetEvaluationData(ITMTrackingState *trackingState, cons
 	if (useColour)
 	{
 		viewHierarchy->levels_t1[0]->intrinsics = view->calib->intrinsics_rgb.projectionParamsSimple.all;
-		// TODO: should do the intensity conversion in the viewbuilder to cache the previous image
+
+		// Convert RGB to intensity
 		lowLevelEngine->ConvertColourToIntensity(viewHierarchy->levels_t1[0]->intensity_current, view->rgb);
 		lowLevelEngine->ConvertColourToIntensity(viewHierarchy->levels_t1[0]->intensity_prev, view->rgb_prev);
 
@@ -484,17 +485,6 @@ void ITMExtendedTracker::TrackCamera(ITMTrackingState *trackingState, const ITMV
 				throw std::runtime_error("Cannot track the camera when both useDepth and useColour are false.");
 			}
 
-//			printf("Level: %d, Iter: %d, valid points: %d, Energy: %f, Lambda: %f\n", levelId, iterNo, noValidPoints_new, f_new, lambda);
-//			std::cout << "Gradient: ";
-//			for(int i = 0; i < 6; ++i) std::cout << nabla_new[i] << " ";
-//			std::cout << "\nHessian:\n";
-//			for(int i = 0; i < 6; ++i)
-//			{
-//				for(int j = 0; j < 6; ++j) std::cout << hessian_new[i * 6 + j] << " ";
-//				std::cout << "\n";
-//			}
-//			std::cout << std::endl;
-
 			// check if error increased. If so, revert
 			if ((noValidPoints_new <= 0) || (f_new > f_old))
 			{
@@ -525,11 +515,6 @@ void ITMExtendedTracker::TrackCamera(ITMTrackingState *trackingState, const ITMV
 			// compute a new step and make sure we've got an SE3
 			float step[6];
 			ComputeDelta(step, nabla_good, A, currentIterationType != TRACKER_ITERATION_BOTH);
-
-//			std::cout << "Step: ";
-//			for(int i = 0; i < 6; ++i) std::cout << step[i] << " ";
-//			std::cout << std::endl;
-//			return;
 
 			ApplyDelta(approxInvPose, step, approxInvPose);
 			trackingState->pose_d->SetInvM(approxInvPose);

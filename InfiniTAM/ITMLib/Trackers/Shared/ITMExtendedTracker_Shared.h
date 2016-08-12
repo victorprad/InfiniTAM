@@ -49,25 +49,6 @@ _CPU_AND_GPU_CODE_ inline float tukey_rho_deriv2(float r, float c)
 	return 0.0f;
 }
 
-// Huber loss
-_CPU_AND_GPU_CODE_ inline float huber_rho(float r, float huber_b)
-{
-	float abs_r = fabs(r);
-	if(abs_r <= huber_b)
-	{
-		return 0.5f * r * r;
-	}
-	else
-	{
-		return huber_b * (abs_r - 0.5f * huber_b);
-	}
-}
-
-_CPU_AND_GPU_CODE_ inline float huber_rho_deriv(float r, float huber_b)
-{
-	return CLAMP(r, -huber_b, huber_b);
-}
-
 // Depth Tracker Norm
 _CPU_AND_GPU_CODE_ inline float rho(float r, float huber_b)
 {
@@ -85,32 +66,6 @@ _CPU_AND_GPU_CODE_ inline float rho_deriv2(float r, float huber_b)
 {
 	if (fabs(r) < huber_b) return 2.0f;
 	return 0.0f;
-}
-
-_CPU_AND_GPU_CODE_ inline float rho_v3f(const Vector3f &r, float huber_b)
-{
-	Vector3f tmp(fabs(r.x) - huber_b, fabs(r.y) - huber_b, fabs(r.z) - huber_b);
-	tmp.x = MAX(tmp.x, 0.0f);
-	tmp.y = MAX(tmp.y, 0.0f);
-	tmp.z = MAX(tmp.z, 0.0f);
-
-	return (r.x*r.x - tmp.x*tmp.x) + (r.y*r.y - tmp.y*tmp.y) + (r.z*r.z - tmp.z*tmp.z);
-}
-
-_CPU_AND_GPU_CODE_ inline Vector3f rho_deriv_v3f(const Vector3f &r, float huber_b)
-{
-	return 2.0f * Vector3f(CLAMP(r.x, -huber_b, huber_b),
-						   CLAMP(r.y, -huber_b, huber_b),
-						   CLAMP(r.z, -huber_b, huber_b));
-}
-
-_CPU_AND_GPU_CODE_ inline Vector3f rho_deriv2_v3f(const Vector3f &r, float huber_b)
-{
-	Vector3f tmp;
-	tmp.x = (fabs(r.x) < huber_b) ? 2.f : 0.f;
-	tmp.y = (fabs(r.y) < huber_b) ? 2.f : 0.f;
-	tmp.z = (fabs(r.z) < huber_b) ? 2.f : 0.f;
-	return tmp;
 }
 
 template<bool shortIteration, bool rotationOnly, bool useWeights>
@@ -242,7 +197,7 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exRGB_inv_Ab(
 	const float intensity_prev = interpolateBilinear_single(intensities_prev, pt_prev_proj, imgSize_rgb);
 	const Vector2f gradient_prev = interpolateBilinear_Vector2(gradients, pt_prev_proj, imgSize_rgb);
 
-	const float intensity_diff = intensity_prev - intensity_curr; // TODO Different from EF, check!
+	const float intensity_diff = intensity_prev - intensity_curr;
 
 	if (fabs(intensity_diff) >= tukeyCutoff * colourThresh) return false; // Difference too big
 	if (fabs(gradient_prev.x) < 0.01f || fabs(gradient_prev.y) < 0.01f) return false; // Gradient too small
@@ -293,7 +248,7 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exRGB_inv_Ab(
 			d_point_col = -Vector3f(0,0,1);
 			break;
 		default:
-			d_point_col = Vector3f(0,0,0); // Should not happen
+			d_point_col = Vector3f(0,0,0); // Should never happen
 		};
 
 		// Chain the above with scenePose
