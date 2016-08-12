@@ -311,25 +311,14 @@ void ITMExtendedTracker::ApplyDelta(const Matrix4f & para_old, const float *delt
 
 void ITMExtendedTracker::UpdatePoseQuality(int noValidPoints_old, float *hessian_good, float f_old)
 {
-	trackingState->trackerResult = ITMTrackingState::TRACKING_GOOD;
-	return;
-
-	int noTotalPoints = 0;
-
-	if (useDepth && useColour)
+	if (!useDepth)
 	{
-		noTotalPoints = viewHierarchy->levels_t0[0]->depth->noDims.x * viewHierarchy->levels_t0[0]->depth->noDims.y
-				+ viewHierarchy->levels_t1[0]->intensity_current->noDims.x * viewHierarchy->levels_t1[0]->intensity_current->noDims.y;
-	}
-	else if (useDepth)
-	{
-		noTotalPoints = viewHierarchy->levels_t0[0]->depth->noDims.x * viewHierarchy->levels_t0[0]->depth->noDims.y;
-	}
-	else if (useColour)
-	{
-		noTotalPoints = viewHierarchy->levels_t1[0]->intensity_current->noDims.x * viewHierarchy->levels_t1[0]->intensity_current->noDims.y;
+		// Currently we cannot handle colour only tracking
+		trackingState->trackerResult = ITMTrackingState::TRACKING_GOOD;
+		return;
 	}
 
+	int noTotalPoints = viewHierarchy->levels_t0[0]->depth->noDims.x * viewHierarchy->levels_t0[0]->depth->noDims.y;
 	int noValidPointsMax = lowLevelEngine->CountValidDepths(view->depth);
 
 	float normFactor_v1 = (float)noValidPoints_old / (float)noTotalPoints;
@@ -382,22 +371,30 @@ void ITMExtendedTracker::UpdatePoseQuality(int noValidPoints_old, float *hessian
 
 void ITMExtendedTracker::TrackCamera(ITMTrackingState *trackingState, const ITMView *view)
 {
+	static const int MIN_VALID_POINTS_DEPTH = 100;
+	static const int MIN_VALID_POINTS_RGB = 100;
+
 	if (trackingState->age_pointCloud >= 0) this->currentFrameNo++;
 	else this->currentFrameNo = 0;
 
 	this->SetEvaluationData(trackingState, view);
 	this->PrepareForEvaluation();
 
-	float f_old = 1e10, f_new;
-	int noValidPoints_new = 0;
+	float f_old = 1e10;
 	int noValidPoints_old = 0;
 
-	float hessian_good[6 * 6], hessian_new[6 * 6], A[6 * 6];
-	float nabla_good[6], nabla_new[6];
-	float step[6];
+	float hessian_good[6 * 6];
+	float nabla_good[6];
 
 	for (int i = 0; i < 6 * 6; ++i) hessian_good[i] = 0.0f;
 	for (int i = 0; i < 6; ++i) nabla_good[i] = 0.0f;
+
+	// As a workaround to the fact that the SVM has not been updated to handle the Intensity+Depth tracking
+	// cache the last depth results and use them when evaluating the tracking quality
+	float hessian_depth_good[6 * 6];
+	float f_depth_good = 0;
+	int noValidPoints_depth_good = 0;
+	memset(hessian_depth_good, 0, sizeof(hessian_depth_good));
 
 	for (int levelId = viewHierarchy->noLevels - 1; levelId >= 0; levelId--)
 	{
@@ -413,40 +410,74 @@ void ITMExtendedTracker::TrackCamera(ITMTrackingState *trackingState, const ITMV
 
 		for (int iterNo = 0; iterNo < noIterationsPerLevel[levelId]; iterNo++)
 		{
+			float hessian_depth[6 * 6], hessian_RGB[6 * 6];
+			float nabla_depth[6], nabla_RGB[6];
+			float f_depth = 0.f, f_RGB = 0.f;
+			int noValidPoints_depth = 0, noValidPoints_RGB = 0;
+
+			// Reset arrays
+			memset(hessian_depth, 0, sizeof(hessian_depth));
+			memset(hessian_RGB, 0, sizeof(hessian_RGB));
+
+			memset(nabla_depth, 0, sizeof(nabla_depth));
+			memset(nabla_RGB, 0, sizeof(nabla_RGB));
+
 			// evaluate error function and gradients
+			if (useDepth)
+			{
+				noValidPoints_depth = ComputeGandH_Depth(f_depth, nabla_depth, hessian_depth, approxInvPose);
+			}
+
+			if (useColour)
+			{
+				noValidPoints_RGB = ComputeGandH_RGB(f_RGB, nabla_RGB, hessian_RGB, approxInvPose);
+			}
+
+			float hessian_new[6 * 6];
+			float nabla_new[6];
+			float f_new = 0.f;
+			int noValidPoints_new = 0;
+
+			// Combine them in a meaningful way
 			if (useDepth && useColour)
 			{
-				// First evaluate depth error function
-				noValidPoints_new = this->ComputeGandH_Depth(f_new, nabla_new, hessian_new, approxInvPose);
-
-				if(noValidPoints_new <= 100)
+				if (noValidPoints_depth > MIN_VALID_POINTS_DEPTH)
 				{
+					noValidPoints_new = noValidPoints_depth;
+					f_new = f_depth;
+					memcpy(nabla_new, nabla_depth, sizeof(nabla_depth));
+					memcpy(hessian_new, hessian_depth, sizeof(hessian_depth));
+				}
+				else
+				{
+					// Not enough valid depth correspondences, rely only on colour.
 					noValidPoints_new = 0;
-					f_new = 0.f; // Reset energy, no need to reset hessian and nabla
+					f_new = 0.f;
+					memset(nabla_new, 0, sizeof(nabla_new));
+					memset(hessian_new, 0, sizeof(hessian_new));
 				}
 
-				float hessian_RGB[6*6], nabla_RGB[6], f_RGB;
-				int noValidPoints_RGB;
-
-				// Then evaluate RGB error function
-				noValidPoints_RGB = this->ComputeGandH_RGB(f_RGB, nabla_RGB, hessian_RGB, approxInvPose);
-
-				// If there are some valid points combine the results
-				if (noValidPoints_RGB > 100)
+				if (noValidPoints_RGB > MIN_VALID_POINTS_RGB)
 				{
-					f_new += colourWeight * f_RGB;
 					noValidPoints_new += noValidPoints_RGB;
-					for (int i = 0; i < 6 * 6; ++i) hessian_new[i] += colourWeight * colourWeight * hessian_RGB[i];
+					f_new += f_RGB;
 					for (int i = 0; i < 6; ++i) nabla_new[i] += colourWeight * nabla_RGB[i];
+					for (int i = 0; i < 6 * 6; ++i) hessian_new[i] += colourWeight * colourWeight * hessian_RGB[i];
 				}
 			}
 			else if (useDepth)
 			{
-				noValidPoints_new = this->ComputeGandH_Depth(f_new, nabla_new, hessian_new, approxInvPose);
+				noValidPoints_new = noValidPoints_depth;
+				f_new = f_depth;
+				memcpy(nabla_new, nabla_depth, sizeof(nabla_depth));
+				memcpy(hessian_new, hessian_depth, sizeof(hessian_depth));
 			}
 			else if (useColour)
 			{
-				noValidPoints_new = this->ComputeGandH_RGB(f_new, nabla_new, hessian_new, approxInvPose);
+				noValidPoints_new = noValidPoints_RGB;
+				f_new = f_RGB;
+				memcpy(nabla_new, nabla_RGB, sizeof(nabla_RGB));
+				memcpy(hessian_new, hessian_RGB, sizeof(hessian_RGB));
 			}
 			else
 			{
@@ -480,12 +511,19 @@ void ITMExtendedTracker::TrackCamera(ITMTrackingState *trackingState, const ITMV
 				for (int i = 0; i < 6 * 6; ++i) hessian_good[i] = hessian_new[i];
 				for (int i = 0; i < 6; ++i) nabla_good[i] = nabla_new[i];
 				lambda /= 10.0f;
+
+				// Also cache depth results
+				noValidPoints_depth_good = noValidPoints_depth;
+				f_depth_good = f_depth;
+				memcpy(hessian_depth_good, hessian_depth, sizeof(hessian_depth));
 			}
 
+			float A[6 * 6];
 			for (int i = 0; i < 6 * 6; ++i) A[i] = hessian_good[i];
 			for (int i = 0; i < 6; ++i) A[i + i * 6] *= 1.0f + lambda;
 
 			// compute a new step and make sure we've got an SE3
+			float step[6];
 			ComputeDelta(step, nabla_good, A, currentIterationType != TRACKER_ITERATION_BOTH);
 
 //			std::cout << "Step: ";
@@ -503,5 +541,5 @@ void ITMExtendedTracker::TrackCamera(ITMTrackingState *trackingState, const ITMV
 		}
 	}
 
-	this->UpdatePoseQuality(noValidPoints_old, hessian_good, f_old);
+	this->UpdatePoseQuality(noValidPoints_depth_good, hessian_depth_good, f_depth_good);
 }

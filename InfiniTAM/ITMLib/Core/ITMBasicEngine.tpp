@@ -247,6 +247,9 @@ ITMTrackingState::TrackingResult ITMBasicEngine<TVoxel,TIndex>::ProcessFrame(ITM
 		{
 			relocalisationCount = 10;
 
+			// Reset previous rgb frame since the rgb image is likely different than the one acquired when setting the keyframe
+			view->rgb_prev->Clear();
+
 			const RelocLib::PoseDatabase::PoseInScene & keyframe = poseDatabase.retrievePose(NN);
 			trackingState->pose_d->SetFrom(&keyframe.pose);
 
