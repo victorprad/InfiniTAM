@@ -51,7 +51,7 @@ struct ITMExtendedTracker_KernelParameters_RGB {
 template<bool shortIteration, bool rotationOnly, bool useWeights>
 __global__ void exDepthTrackerOneLevel_g_rt_device(ITMExtendedTracker_KernelParameters_Depth para);
 
-template<bool shortIteration, bool rotationOnly, bool useWeights>
+template<bool shortIteration, bool rotationOnly>
 __global__ void exRGBTrackerOneLevel_g_rt_device(ITMExtendedTracker_KernelParameters_RGB para);
 
 __global__ void exRGBTrackerProjectPrevImage_device(Vector4f *out_points, float *out_rgb, const float *in_rgb, const float *in_points, Vector2i imageSize, Vector2i sceneSize, Vector4f intrinsics_depth, Vector4f intrinsics_rgb, Matrix4f scenePose);
@@ -205,43 +205,21 @@ int ITMExtendedTracker_CUDA::ComputeGandH_RGB(float &f, float *nabla, float *hes
 	args.viewFrustum_max = viewFrustum_max;
 	args.tukeyCutOff = tukeyCutOff;
 
-	if (currentFrameNo < 100)
+	switch (currentIterationType)
 	{
-		switch (currentIterationType)
-		{
-		case TRACKER_ITERATION_ROTATION:
-			exRGBTrackerOneLevel_g_rt_device<true, true, false> << <gridSize, blockSize >> >(args);
-			ORcudaKernelCheck;
-			break;
-		case TRACKER_ITERATION_TRANSLATION:
-			exRGBTrackerOneLevel_g_rt_device<true, false, false> << <gridSize, blockSize >> >(args);
-			ORcudaKernelCheck;
-			break;
-		case TRACKER_ITERATION_BOTH:
-			exRGBTrackerOneLevel_g_rt_device<false, false, false> << <gridSize, blockSize >> >(args);
-			ORcudaKernelCheck;
-			break;
-		default: break;
-		}
-	}
-	else
-	{
-		switch (currentIterationType)
-		{
-		case TRACKER_ITERATION_ROTATION:
-			exRGBTrackerOneLevel_g_rt_device<true, true, true> << <gridSize, blockSize >> >(args);
-			ORcudaKernelCheck;
-			break;
-		case TRACKER_ITERATION_TRANSLATION:
-			exRGBTrackerOneLevel_g_rt_device<true, false, true> << <gridSize, blockSize >> >(args);
-			ORcudaKernelCheck;
-			break;
-		case TRACKER_ITERATION_BOTH:
-			exRGBTrackerOneLevel_g_rt_device<false, false, true> << <gridSize, blockSize >> >(args);
-			ORcudaKernelCheck;
-			break;
-		default: break;
-		}
+	case TRACKER_ITERATION_ROTATION:
+		exRGBTrackerOneLevel_g_rt_device<true, true> << <gridSize, blockSize >> >(args);
+		ORcudaKernelCheck;
+		break;
+	case TRACKER_ITERATION_TRANSLATION:
+		exRGBTrackerOneLevel_g_rt_device<true, false> << <gridSize, blockSize >> >(args);
+		ORcudaKernelCheck;
+		break;
+	case TRACKER_ITERATION_BOTH:
+		exRGBTrackerOneLevel_g_rt_device<false, false> << <gridSize, blockSize >> >(args);
+		ORcudaKernelCheck;
+		break;
+	default: break;
 	}
 
 	ORcudaSafeCall(cudaMemcpy(accu_host, accu_device, sizeof(AccuCell), cudaMemcpyDeviceToHost));
@@ -452,7 +430,7 @@ __device__ void exDepthTrackerOneLevel_g_rt_device_main(ITMExtendedTracker_CUDA:
 	}
 }
 
-template<bool shortIteration, bool rotationOnly, bool useWeights>
+template<bool shortIteration, bool rotationOnly>
 __device__ void exRGBTrackerOneLevel_g_rt_device_main(
 		ITMExtendedTracker_CUDA::AccuCell *accu,
 		const Vector4f *points_curr,
@@ -645,10 +623,10 @@ __global__ void exDepthTrackerOneLevel_g_rt_device(ITMExtendedTracker_KernelPara
 		para.tukeyCutOff, para.framesToSkip, para.framesToWeight);
 }
 
-template<bool shortIteration, bool rotationOnly, bool useWeights>
+template<bool shortIteration, bool rotationOnly>
 __global__ void exRGBTrackerOneLevel_g_rt_device(ITMExtendedTracker_KernelParameters_RGB para)
 {
-	exRGBTrackerOneLevel_g_rt_device_main<shortIteration, rotationOnly, useWeights>(
+	exRGBTrackerOneLevel_g_rt_device_main<shortIteration, rotationOnly>(
 			para.accu,
 			para.points_curr,
 			para.intensities_prev,
