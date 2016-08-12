@@ -33,7 +33,7 @@ _CPU_AND_GPU_CODE_ inline void filterSubsample(DEVICEPTR(Vector4u) *imageData_ou
 	imageData_out[x + y * newDims.x] = pixel_out;
 }
 
-_CPU_AND_GPU_CODE_ inline void filterGauss5x5(DEVICEPTR(float) *imageData_out, int x_out, int y_out, Vector2i newDims,
+_CPU_AND_GPU_CODE_ inline void gaussFilter5x5(DEVICEPTR(float) *imageData_out, int x_out, int y_out, Vector2i newDims,
 	const CONSTPTR(float) *imageData_in, int x_in, int y_in, Vector2i oldDims)
 {
 	float pixel_out = 0.f;
@@ -52,6 +52,19 @@ _CPU_AND_GPU_CODE_ inline void filterGauss5x5(DEVICEPTR(float) *imageData_out, i
 	}
 
 	imageData_out[x_out + y_out * newDims.x] = pixel_out;
+}
+
+_CPU_AND_GPU_CODE_ inline void boxFilter2x2(DEVICEPTR(float) *imageData_out, int x_out, int y_out, Vector2i newDims,
+	const CONSTPTR(float) *imageData_in, int x_in, int y_in, Vector2i oldDims)
+{
+	float pixel_out = 0.f;
+
+	pixel_out += imageData_in[(x_in + 0) + (y_in + 0) * oldDims.x];
+	pixel_out += imageData_in[(x_in + 1) + (y_in + 0) * oldDims.x];
+	pixel_out += imageData_in[(x_in + 0) + (y_in + 1) * oldDims.x];
+	pixel_out += imageData_in[(x_in + 1) + (y_in + 1) * oldDims.x];
+
+	imageData_out[x_out + y_out * newDims.x] = pixel_out / 4.f;
 }
 
 _CPU_AND_GPU_CODE_ inline void filterSubsampleWithHoles(DEVICEPTR(float) *imageData_out, int x, int y, Vector2i newDims, 

@@ -22,7 +22,7 @@ ITMLowLevelEngine_CUDA::~ITMLowLevelEngine_CUDA(void)
 
 __global__ void convertColourToIntensity_device(float *imageData_out, Vector2i dims, const Vector4u *imageData_in);
 
-__global__ void filterGauss5x5_device(float *imageData_out, const float *imageData_in, Vector2i dims);
+__global__ void boxFilter2x2_device(float *imageData_out, const float *imageData_in, Vector2i dims);
 
 __global__ void filterSubsample_device(float *imageData_out, Vector2i newDims, const float *imageData_in, Vector2i oldDims);
 __global__ void filterSubsample_device(Vector4u *imageData_out, Vector2i newDims, const Vector4u *imageData_in, Vector2i oldDims);
@@ -90,7 +90,7 @@ void ITMLowLevelEngine_CUDA::FilterIntensity(ITMFloatImage *image_out, const ITM
 	dim3 blockSize(16, 16);
 	dim3 gridSize((int)ceil((float)dims.x / (float)blockSize.x), (int)ceil((float)dims.y / (float)blockSize.y));
 
-	filterGauss5x5_device << <gridSize, blockSize >> >(imageData_out, imageData_in, dims);
+	boxFilter2x2_device << <gridSize, blockSize >> >(imageData_out, imageData_in, dims);
 	ORcudaKernelCheck;
 }
 
@@ -241,13 +241,13 @@ __global__ void convertColourToIntensity_device(float *imageData_out, Vector2i d
 	convertColourToIntensity(imageData_out, x, y, dims, imageData_in);
 }
 
-__global__ void filterGauss5x5_device(float *imageData_out, const float *imageData_in, Vector2i dims)
+__global__ void boxFilter2x2_device(float *imageData_out, const float *imageData_in, Vector2i dims)
 {
 	int x = threadIdx.x + blockIdx.x * blockDim.x, y = threadIdx.y + blockIdx.y * blockDim.y;
 
 	if (x >= dims.x - 2 || y >= dims.y - 2 || x <= 1 || y <= 1) return;
 
-	filterGauss5x5(imageData_out, x, y, dims, imageData_in, x, y, dims);
+	boxFilter2x2(imageData_out, x, y, dims, imageData_in, x, y, dims);
 }
 
 __global__ void filterSubsample_device(Vector4u *imageData_out, Vector2i newDims, const Vector4u *imageData_in, Vector2i oldDims)
@@ -265,7 +265,7 @@ __global__ void filterSubsample_device(float *imageData_out, Vector2i newDims, c
 
 	if (x > newDims.x - 2 || y > newDims.y - 2 || x < 1 || y < 1) return;
 
-	filterGauss5x5(imageData_out, x, y, newDims, imageData_in, x * 2, y * 2, oldDims);
+	boxFilter2x2(imageData_out, x, y, newDims, imageData_in, x * 2, y * 2, oldDims);
 }
 
 __global__ void filterSubsampleWithHoles_device(float *imageData_out, Vector2i newDims, const float *imageData_in, Vector2i oldDims)
