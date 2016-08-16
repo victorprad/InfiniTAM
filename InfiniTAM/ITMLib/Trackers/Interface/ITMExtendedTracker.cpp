@@ -264,17 +264,15 @@ void ITMExtendedTracker::ComputeDelta(float *step, float *nabla, float *hessian,
 
 bool ITMExtendedTracker::HasConverged(float *step) const
 {
-	bool terminate = true;
 	for (int i = 0; i < 6; i++)
 	{
 		if (fabs(step[i]) > terminationThreshold)
 		{
-			terminate = false;
-			break;
+			return false;
 		}
 	}
 
-	return terminate;
+	return true;
 }
 
 void ITMExtendedTracker::ApplyDelta(const Matrix4f & para_old, const float *delta, Matrix4f & para_new) const
