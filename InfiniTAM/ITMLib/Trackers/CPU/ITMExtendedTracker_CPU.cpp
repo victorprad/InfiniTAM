@@ -53,7 +53,7 @@ int ITMExtendedTracker_CPU::ComputeGandH_Depth(float &f, float *nabla, float *he
 		{
 		case TRACKER_ITERATION_ROTATION:
 			isValidPoint = computePerPointGH_exDepth<true, true, false>(localNabla, localHessian, localF, x, y, depth[x + y * viewImageSize.x], depthWeight,
-				viewImageSize, viewIntrinsics, sceneImageSize, sceneIntrinsics, approxInvPose, scenePose, pointsMap, normalsMap, spaceThresh[currentLevelId], 
+				viewImageSize, viewIntrinsics, sceneImageSize, sceneIntrinsics, approxInvPose, scenePose, pointsMap, normalsMap, spaceThresh[currentLevelId],
 				viewFrustum_min, viewFrustum_max, tukeyCutOff, framesToSkip, framesToWeight);
 			break;
 		case TRACKER_ITERATION_TRANSLATION:
@@ -80,8 +80,15 @@ int ITMExtendedTracker_CPU::ComputeGandH_Depth(float &f, float *nabla, float *he
 		}
 	}
 
-	for (int r = 0, counter = 0; r < noPara; r++) for (int c = 0; c <= r; c++, counter++) hessian[r + c * 6] = sumHessian[counter];
-	for (int r = 0; r < noPara; ++r) for (int c = r + 1; c < noPara; c++) hessian[r + c * 6] = hessian[c + r * 6];
+	// Copy the lower triangular part of the matrix.
+	for (int r = 0, counter = 0; r < noPara; r++)
+		for (int c = 0; c <= r; c++, counter++)
+			hessian[r + c * 6] = sumHessian[counter];
+
+	// Transpose to fill the upper triangle.
+	for (int r = 0; r < noPara; ++r)
+		for (int c = r + 1; c < noPara; c++)
+			hessian[r + c * 6] = hessian[c + r * 6];
 
 	memcpy(nabla, sumNabla, noPara * sizeof(float));
 
@@ -210,8 +217,15 @@ int ITMExtendedTracker_CPU::ComputeGandH_RGB(float &f, float *nabla, float *hess
 		}
 	}
 
-	for (int r = 0, counter = 0; r < noPara; r++) for (int c = 0; c <= r; c++, counter++) hessian[r + c * 6] = sumHessian[counter];
-	for (int r = 0; r < noPara; ++r) for (int c = r + 1; c < noPara; c++) hessian[r + c * 6] = hessian[c + r * 6];
+	// Copy the lower triangular part of the matrix.
+	for (int r = 0, counter = 0; r < noPara; r++)
+		for (int c = 0; c <= r; c++, counter++)
+			hessian[r + c * 6] = sumHessian[counter];
+
+	// Transpose to fill the upper triangle.
+	for (int r = 0; r < noPara; ++r)
+		for (int c = r + 1; c < noPara; c++)
+			hessian[r + c * 6] = hessian[c + r * 6];
 
 	memcpy(nabla, sumNabla, noPara * sizeof(float));
 

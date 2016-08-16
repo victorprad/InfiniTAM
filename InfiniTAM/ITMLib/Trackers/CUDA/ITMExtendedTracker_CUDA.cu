@@ -151,8 +151,15 @@ int ITMExtendedTracker_CUDA::ComputeGandH_Depth(float &f, float *nabla, float *h
 
 	ORcudaSafeCall(cudaMemcpy(accu_host, accu_device, sizeof(AccuCell), cudaMemcpyDeviceToHost));
 
-	for (int r = 0, counter = 0; r < noPara; r++) for (int c = 0; c <= r; c++, counter++) hessian[r + c * 6] = accu_host->h[counter];
-	for (int r = 0; r < noPara; ++r) for (int c = r + 1; c < noPara; c++) hessian[r + c * 6] = hessian[c + r * 6];
+	// Copy the lower triangular part of the matrix.
+	for (int r = 0, counter = 0; r < noPara; r++)
+		for (int c = 0; c <= r; c++, counter++)
+			hessian[r + c * 6] = accu_host->h[counter];
+
+	// Transpose to fill the upper triangle.
+	for (int r = 0; r < noPara; ++r)
+		for (int c = r + 1; c < noPara; c++)
+			hessian[r + c * 6] = hessian[c + r * 6];
 
 	memcpy(nabla, accu_host->g, noPara * sizeof(float));
 
@@ -214,8 +221,15 @@ int ITMExtendedTracker_CUDA::ComputeGandH_RGB(float &f, float *nabla, float *hes
 
 	ORcudaSafeCall(cudaMemcpy(accu_host, accu_device, sizeof(AccuCell), cudaMemcpyDeviceToHost));
 
-	for (int r = 0, counter = 0; r < noPara; r++) for (int c = 0; c <= r; c++, counter++) hessian[r + c * 6] = accu_host->h[counter];
-	for (int r = 0; r < noPara; ++r) for (int c = r + 1; c < noPara; c++) hessian[r + c * 6] = hessian[c + r * 6];
+	// Copy the lower triangular part of the matrix.
+	for (int r = 0, counter = 0; r < noPara; r++)
+		for (int c = 0; c <= r; c++, counter++)
+			hessian[r + c * 6] = accu_host->h[counter];
+
+	// Transpose to fill the upper triangle.
+	for (int r = 0; r < noPara; ++r)
+		for (int c = r + 1; c < noPara; c++)
+			hessian[r + c * 6] = hessian[c + r * 6];
 
 	memcpy(nabla, accu_host->g, noPara * sizeof(float));
 
