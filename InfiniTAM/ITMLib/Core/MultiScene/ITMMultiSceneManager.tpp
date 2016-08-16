@@ -27,7 +27,7 @@ template<class TVoxel, class TIndex>
 int ITMMultiSceneManager_instance<TVoxel,TIndex>::createNewScene(void)
 {
 	int newIdx = (int)allData.size();
-	allData.push_back(new ITMLocalScene<TVoxel,TIndex>(settings, visualisationEngine, trackedImageSize));
+	allData.push_back(new ITMLocalScene<TVoxel,TIndex>(settings, trackedImageSize));
 
 	denseMapper->ResetScene(allData[newIdx]->scene);
 	return newIdx;
