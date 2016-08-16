@@ -14,6 +14,26 @@
 
 using namespace InputSource;
 
+class EOFListener : public openni::OpenNI::DeviceStateChangedListener
+{
+	public:
+	EOFListener() : eofReached(false){}
+
+	void onDeviceStateChanged(const openni::DeviceInfo*, openni::DeviceState newState)
+	{
+		if (newState == openni::DEVICE_STATE_EOF)
+		{
+			printf("OpenNI: Reached end of file\n");
+			eofReached = true;
+		}
+	}
+
+	bool reachedEOF() const { return eofReached; }
+
+	private:
+	bool eofReached;
+};
+
 class OpenNIEngine::PrivateData {
 	public:
 	PrivateData(void) : streams(NULL) {}
@@ -23,6 +43,8 @@ class OpenNIEngine::PrivateData {
 	openni::VideoFrameRef depthFrame;
 	openni::VideoFrameRef colorFrame;
 	openni::VideoStream **streams;
+
+	EOFListener eofListener;
 };
 
 static openni::VideoMode findBestMode(const openni::SensorInfo *sensorInfo, int requiredResolutionX = -1, int requiredResolutionY = -1, openni::PixelFormat requiredPixelFormat = (openni::PixelFormat)-1)
@@ -115,6 +137,9 @@ OpenNIEngine::OpenNIEngine(const char *calibFilename, const char *deviceURI, con
 		std::cout << message;
 		return;
 	}
+
+	// Add listener to handle the EOF event and prevent deadlocks while waiting for more frames.
+	openni::OpenNI::addDeviceStateChangedListener(&data->eofListener);
 
 	openni::PlaybackControl *control = data->device.getPlaybackControl();
 	if (control != NULL) {
@@ -227,7 +252,7 @@ OpenNIEngine::OpenNIEngine(const char *calibFilename, const char *deviceURI, con
 
 OpenNIEngine::~OpenNIEngine()
 {
-	if (data != NULL)
+	if (data)
 	{
 		if (depthAvailable)
 		{
@@ -240,6 +265,8 @@ OpenNIEngine::~OpenNIEngine()
 			data->colorStream.destroy();
 		}
 		data->device.close();
+
+		openni::OpenNI::removeDeviceStateChangedListener(&data->eofListener);
 
 		delete[] data->streams;
 		delete data;
@@ -293,9 +320,9 @@ void OpenNIEngine::getImages(ITMUChar4Image *rgbImage, ITMShortImage *rawDepthIm
 	return /*true*/;
 }
 
-bool OpenNIEngine::hasMoreImages(void) { return (data!=NULL); }
-Vector2i OpenNIEngine::getDepthImageSize(void) { return (data!=NULL)?imageSize_d:Vector2i(0,0); }
-Vector2i OpenNIEngine::getRGBImageSize(void) { return (data!=NULL)?imageSize_rgb:Vector2i(0,0); }
+bool OpenNIEngine::hasMoreImages(void) { return data && !data->eofListener.reachedEOF(); }
+Vector2i OpenNIEngine::getDepthImageSize(void) { return data ? imageSize_d : Vector2i(0,0); }
+Vector2i OpenNIEngine::getRGBImageSize(void) { return data ? imageSize_rgb : Vector2i(0,0); }
 
 #else
 
