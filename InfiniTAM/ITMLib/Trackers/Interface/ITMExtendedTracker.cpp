@@ -11,7 +11,7 @@
 using namespace ITMLib;
 
 ITMExtendedTracker::ITMExtendedTracker(Vector2i imgSize_d, Vector2i imgSize_rgb, bool useDepth, bool useColour,
-	float colourWeight,	TrackerIterationType *trackingRegime, int noHierarchyLevels,
+	float colourWeight, TrackerIterationType *trackingRegime, int noHierarchyLevels,
 	float terminationThreshold, float failureDetectorThreshold, float viewFrustum_min, float viewFrustum_max,
 	int tukeyCutOff, int framesToSkip, int framesToWeight, const ITMLowLevelEngine *lowLevelEngine, MemoryDeviceType memoryType)
 		: preProjectedHierarchy(NULL)
