@@ -5,6 +5,7 @@
 #include "../Engines/LowLevel/ITMLowLevelEngineFactory.h"
 #include "../Engines/ViewBuilding/ITMViewBuilderFactory.h"
 #include "../Engines/Visualisation/ITMVisualisationEngineFactory.h"
+#include "../Objects/RenderStates/ITMRenderStateFactory.h"
 #include "../Trackers/ITMTrackerFactory.h"
 using namespace ITMLib;
 
@@ -309,7 +310,12 @@ void ITMMultiEngine<TVoxel,TIndex>::GetImage(ITMUChar4Image *out, GetImageType g
 		ITMLocalScene<TVoxel,TIndex> *activeData = sceneManager->getScene(freeviewSceneIdx);
 		if (getImageType == ITMMultiEngine::InfiniTAM_IMAGE_FREECAMERA_COLOUR_FROM_VOLUME) type = IITMVisualisationEngine::RENDER_COLOUR_FROM_VOLUME;
 		else if (getImageType == ITMMultiEngine::InfiniTAM_IMAGE_FREECAMERA_COLOUR_FROM_NORMAL) type = IITMVisualisationEngine::RENDER_COLOUR_FROM_NORMAL;
-		if (renderState_freeview == NULL) renderState_freeview = visualisationEngine->CreateRenderState(activeData->scene, out->noDims);
+
+		if (renderState_freeview == NULL)
+		{
+			MemoryDeviceType memoryType = settings->deviceType == ITMLibSettings::DEVICE_CUDA ? MEMORYDEVICE_CUDA : MEMORYDEVICE_CPU;
+			renderState_freeview = ITMRenderStateFactory<TIndex>::CreateRenderState(out->noDims, activeData->scene->sceneParams, memoryType);
+		}
 
 		visualisationEngine->FindVisibleBlocks(activeData->scene, pose, intrinsics, renderState_freeview);
 		visualisationEngine->CreateExpectedDepths(activeData->scene, pose, intrinsics, renderState_freeview);

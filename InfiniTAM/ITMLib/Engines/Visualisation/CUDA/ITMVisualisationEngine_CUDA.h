@@ -28,8 +28,6 @@ namespace ITMLib
 		void CreatePointCloud(const ITMScene<TVoxel,TIndex> *scene, const ITMView *view, ITMTrackingState *trackingState, ITMRenderState *renderState, bool skipPoints) const;
 		void CreateICPMaps(const ITMScene<TVoxel,TIndex> *scene, const ITMView *view, ITMTrackingState *trackingState, ITMRenderState *renderState) const;
 		void ForwardRender(const ITMScene<TVoxel,TIndex> *scene, const ITMView *view, ITMTrackingState *trackingState, ITMRenderState *renderState) const;
-
-		ITMRenderState* CreateRenderState(const ITMScene<TVoxel,TIndex> *scene, const Vector2i & imgSize) const;
 	};
 
 	template<class TVoxel>
@@ -54,7 +52,5 @@ namespace ITMLib
 		void CreatePointCloud(const ITMScene<TVoxel,ITMVoxelBlockHash> *scene, const ITMView *view, ITMTrackingState *trackingState, ITMRenderState *renderState, bool skipPoints) const;
 		void CreateICPMaps(const ITMScene<TVoxel,ITMVoxelBlockHash> *scene, const ITMView *view, ITMTrackingState *trackingState, ITMRenderState *renderState) const;
 		void ForwardRender(const ITMScene<TVoxel,ITMVoxelBlockHash> *scene, const ITMView *view, ITMTrackingState *trackingState, ITMRenderState *renderState) const;
-
-		ITMRenderState_VH* CreateRenderState(const ITMScene<TVoxel,ITMVoxelBlockHash> *scene, const Vector2i & imgSize) const;
 	};
 }

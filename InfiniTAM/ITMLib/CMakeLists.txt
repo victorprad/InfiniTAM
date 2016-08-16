@@ -334,6 +334,7 @@ Objects/RenderStates/ITMSurfelRenderState.cpp
 SET(ITMLIB_OBJECTS_RENDERSTATES_HEADERS
 Objects/RenderStates/ITMRenderState.h
 Objects/RenderStates/ITMRenderState_VH.h
+Objects/RenderStates/ITMRenderStateFactory.h
 Objects/RenderStates/ITMSurfelRenderState.h
 )
 
