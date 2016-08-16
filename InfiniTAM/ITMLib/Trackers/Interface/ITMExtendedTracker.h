@@ -24,6 +24,9 @@ namespace ITMLib
 	class ITMExtendedTracker : public ITMTracker
 	{
 	private:
+		static const int MIN_VALID_POINTS_DEPTH;
+		static const int MIN_VALID_POINTS_RGB;
+
 		const ITMLowLevelEngine *lowLevelEngine;
 		ITMImageHierarchy<ITMSceneHierarchyLevel> *sceneHierarchy;
 		ITMTwoImageHierarchy<ITMDepthHierarchyLevel, ITMIntensityHierarchyLevel> *viewHierarchy;

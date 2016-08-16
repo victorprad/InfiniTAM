@@ -10,6 +10,9 @@
 
 using namespace ITMLib;
 
+const int ITMExtendedTracker::MIN_VALID_POINTS_DEPTH = 100;
+const int ITMExtendedTracker::MIN_VALID_POINTS_RGB = 100;
+
 ITMExtendedTracker::ITMExtendedTracker(Vector2i imgSize_d, Vector2i imgSize_rgb, bool useDepth, bool useColour,
 	float colourWeight, TrackerIterationType *trackingRegime, int noHierarchyLevels,
 	float terminationThreshold, float failureDetectorThreshold, float viewFrustum_min, float viewFrustum_max,
@@ -368,9 +371,6 @@ void ITMExtendedTracker::UpdatePoseQuality(int noValidPoints_old, float *hessian
 
 void ITMExtendedTracker::TrackCamera(ITMTrackingState *trackingState, const ITMView *view)
 {
-	static const int MIN_VALID_POINTS_DEPTH = 100;
-	static const int MIN_VALID_POINTS_RGB = 100;
-
 	if (trackingState->age_pointCloud >= 0) this->currentFrameNo++;
 	else this->currentFrameNo = 0;
 
