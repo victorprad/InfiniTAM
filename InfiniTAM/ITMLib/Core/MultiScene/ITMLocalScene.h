@@ -5,7 +5,7 @@
 #include <map>
 
 #include "../../Engines/Visualisation/Interface/ITMVisualisationEngine.h"
-#include "../../Objects/RenderStates/ITMRenderState.h"
+#include "../../Objects/RenderStates/ITMRenderStateFactory.h"
 #include "../../Objects/Scene/ITMScene.h"
 #include "../../Objects/Tracking/ITMTrackingState.h"
 #include "../../Utils/ITMLibSettings.h"
@@ -41,7 +41,7 @@ namespace ITMLib {
 		{
 			MemoryDeviceType memoryType = settings->deviceType == ITMLibSettings::DEVICE_CUDA ? MEMORYDEVICE_CUDA : MEMORYDEVICE_CPU;
 			scene = new ITMScene<TVoxel,TIndex>(&settings->sceneParams, settings->swappingMode == ITMLibSettings::SWAPPINGMODE_ENABLED, memoryType);
-			renderState = visualisationEngine->CreateRenderState(scene, trackedImageSize);
+			renderState = ITMRenderStateFactory<TIndex>::CreateRenderState(trackedImageSize, scene->sceneParams, memoryType);
 			trackingState = new ITMTrackingState(trackedImageSize, memoryType);
 		}
 		~ITMLocalScene(void)

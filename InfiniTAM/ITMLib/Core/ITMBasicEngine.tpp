@@ -6,6 +6,7 @@
 #include "../Engines/Meshing/ITMMeshingEngineFactory.h"
 #include "../Engines/ViewBuilding/ITMViewBuilderFactory.h"
 #include "../Engines/Visualisation/ITMVisualisationEngineFactory.h"
+#include "../Objects/RenderStates/ITMRenderStateFactory.h"
 #include "../Trackers/ITMTrackerFactory.h"
 
 #include "../../ORUtils/NVTimer.h"
@@ -48,8 +49,8 @@ ITMBasicEngine<TVoxel,TIndex>::ITMBasicEngine(const ITMLibSettings *settings, co
 
 	Vector2i trackedImageSize = trackingController->GetTrackedImageSize(imgSize_rgb, imgSize_d);
 
-	renderState_live = visualisationEngine->CreateRenderState(scene, trackedImageSize);
-	renderState_freeview = NULL; //will be created by the visualisation engine
+	renderState_live = ITMRenderStateFactory<TIndex>::CreateRenderState(trackedImageSize, scene->sceneParams, memoryType);
+	renderState_freeview = NULL; //will be created if needed
 
 	trackingState = new ITMTrackingState(trackedImageSize, memoryType);
 	tracker->UpdateInitialPose(trackingState);
@@ -369,7 +370,12 @@ void ITMBasicEngine<TVoxel,TIndex>::GetImage(ITMUChar4Image *out, GetImageType g
 		if (getImageType == ITMBasicEngine::InfiniTAM_IMAGE_FREECAMERA_COLOUR_FROM_VOLUME) type = IITMVisualisationEngine::RENDER_COLOUR_FROM_VOLUME;
 		else if (getImageType == ITMBasicEngine::InfiniTAM_IMAGE_FREECAMERA_COLOUR_FROM_NORMAL) type = IITMVisualisationEngine::RENDER_COLOUR_FROM_NORMAL;
 		else if (getImageType == ITMBasicEngine::InfiniTAM_IMAGE_FREECAMERA_COLOUR_FROM_CONFIDENCE) type = IITMVisualisationEngine::RENDER_COLOUR_FROM_CONFIDENCE;
-		if (renderState_freeview == NULL) renderState_freeview = visualisationEngine->CreateRenderState(scene, out->noDims);
+
+		if (renderState_freeview == NULL)
+		{
+			MemoryDeviceType memoryType = settings->deviceType == ITMLibSettings::DEVICE_CUDA ? MEMORYDEVICE_CUDA : MEMORYDEVICE_CPU;
+			renderState_freeview = ITMRenderStateFactory<TIndex>::CreateRenderState(out->noDims, scene->sceneParams, memoryType);
+		}
 
 		visualisationEngine->FindVisibleBlocks(scene, pose, intrinsics, renderState_freeview);
 		visualisationEngine->CreateExpectedDepths(scene, pose, intrinsics, renderState_freeview);
