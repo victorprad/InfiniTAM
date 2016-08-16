@@ -106,7 +106,7 @@ void ITMExtendedTracker::SetupLevels(int numIterCoarse, int numIterFine, float s
 {
 	int noHierarchyLevels = viewHierarchy->noLevels;
 
-	if ((numIterCoarse != -1) && (numIterFine != -1)) {
+	if (numIterCoarse != -1 && numIterFine != -1) {
 		float step = (float)(numIterCoarse - numIterFine) / (float)(noHierarchyLevels - 1);
 		float val = (float)numIterCoarse;
 		for (int levelId = noHierarchyLevels - 1; levelId >= 0; levelId--) {
@@ -114,7 +114,7 @@ void ITMExtendedTracker::SetupLevels(int numIterCoarse, int numIterFine, float s
 			val -= step;
 		}
 	}
-	if ((spaceThreshCoarse >= 0.0f) && (spaceThreshFine >= 0.0f)) {
+	if (spaceThreshCoarse >= 0.0f && spaceThreshFine >= 0.0f) {
 		float step = (float)(spaceThreshCoarse - spaceThreshFine) / (float)(noHierarchyLevels - 1);
 		float val = spaceThreshCoarse;
 		for (int levelId = noHierarchyLevels - 1; levelId >= 0; levelId--) {
@@ -122,7 +122,7 @@ void ITMExtendedTracker::SetupLevels(int numIterCoarse, int numIterFine, float s
 			val -= step;
 		}
 	}
-	if ((colourThreshCoarse >= 0.0f) && (colourThreshFine >= 0.0f)) {
+	if (colourThreshCoarse >= 0.0f && colourThreshFine >= 0.0f) {
 		float step = (float)(colourThreshCoarse - colourThreshFine) / (float)(noHierarchyLevels - 1);
 		float val = colourThreshCoarse;
 		for (int levelId = noHierarchyLevels - 1; levelId >= 0; levelId--) {
