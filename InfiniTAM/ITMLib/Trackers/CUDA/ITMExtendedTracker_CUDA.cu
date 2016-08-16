@@ -81,8 +81,8 @@ int ITMExtendedTracker_CUDA::ComputeGandH_Depth(float &f, float *nabla, float *h
 
 	if (currentIterationType == TRACKER_ITERATION_NONE) return 0;
 
-	bool shortIteration = (currentIterationType == TRACKER_ITERATION_ROTATION)
-						   || (currentIterationType == TRACKER_ITERATION_TRANSLATION);
+	bool shortIteration = currentIterationType == TRACKER_ITERATION_ROTATION
+						  || currentIterationType == TRACKER_ITERATION_TRANSLATION;
 
 	int noPara = shortIteration ? 3 : 6;
 
@@ -91,7 +91,7 @@ int ITMExtendedTracker_CUDA::ComputeGandH_Depth(float &f, float *nabla, float *h
 
 	ORcudaSafeCall(cudaMemset(accu_device, 0, sizeof(AccuCell)));
 
-	struct ITMExtendedTracker_KernelParameters_Depth args;
+	ITMExtendedTracker_KernelParameters_Depth args;
 	args.accu = accu_device;
 	args.depth = viewHierarchyLevel_Depth->depth->GetData(MEMORYDEVICE_CUDA);
 	args.approxInvPose = approxInvPose;
@@ -174,8 +174,8 @@ int ITMExtendedTracker_CUDA::ComputeGandH_RGB(float &f, float *nabla, float *hes
 
 	if (currentIterationType == TRACKER_ITERATION_NONE) return 0;
 
-	bool shortIteration = (currentIterationType == TRACKER_ITERATION_ROTATION)
-						   || (currentIterationType == TRACKER_ITERATION_TRANSLATION);
+	bool shortIteration = currentIterationType == TRACKER_ITERATION_ROTATION
+						  || currentIterationType == TRACKER_ITERATION_TRANSLATION;
 
 	int noPara = shortIteration ? 3 : 6;
 
@@ -184,7 +184,7 @@ int ITMExtendedTracker_CUDA::ComputeGandH_RGB(float &f, float *nabla, float *hes
 
 	ORcudaSafeCall(cudaMemset(accu_device, 0, sizeof(AccuCell)));
 
-	struct ITMExtendedTracker_KernelParameters_RGB args;
+	ITMExtendedTracker_KernelParameters_RGB args;
 	args.accu = accu_device;
 	args.points_curr = reprojectedPointsLevel->data->GetData(MEMORYDEVICE_CUDA);
 	args.intensities_curr = projectedIntensityLevel->image->GetData(MEMORYDEVICE_CUDA);
