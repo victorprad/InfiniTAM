@@ -6,7 +6,7 @@
 #include "../../../ORUtils/FileUtils.h"
 
 #include <math.h>
-#include <iostream>
+#include <limits>
 
 using namespace ITMLib;
 
@@ -381,7 +381,7 @@ void ITMExtendedTracker::TrackCamera(ITMTrackingState *trackingState, const ITMV
 	this->SetEvaluationData(trackingState, view);
 	this->PrepareForEvaluation();
 
-	float f_old = 1e10;
+	float f_old = std::numeric_limits<float>::max();
 	int noValidPoints_old = 0;
 
 	float hessian_good[6 * 6];
@@ -405,7 +405,7 @@ void ITMExtendedTracker::TrackCamera(ITMTrackingState *trackingState, const ITMV
 
 		Matrix4f approxInvPose = trackingState->pose_d->GetInvM();
 		ORUtils::SE3Pose lastKnownGoodPose(*(trackingState->pose_d));
-		f_old = 1e20f;
+		f_old = std::numeric_limits<float>::max();
 		noValidPoints_old = 0;
 		float lambda = 1.0;
 
@@ -427,11 +427,35 @@ void ITMExtendedTracker::TrackCamera(ITMTrackingState *trackingState, const ITMV
 			if (useDepth)
 			{
 				noValidPoints_depth = ComputeGandH_Depth(f_depth, nabla_depth, hessian_depth, approxInvPose);
+
+				if (noValidPoints_depth > MIN_VALID_POINTS_DEPTH)
+				{
+					// Normalize nabla and hessian
+					for (int i = 0; i < 6 * 6; ++i) hessian_depth[i] /= noValidPoints_depth;
+					for (int i = 0; i < 6; ++i) nabla_depth[i] /= noValidPoints_depth;
+					f_depth /= noValidPoints_depth;
+				}
+				else
+				{
+					f_depth = std::numeric_limits<float>::max();
+				}
 			}
 
 			if (useColour)
 			{
 				noValidPoints_RGB = ComputeGandH_RGB(f_RGB, nabla_RGB, hessian_RGB, approxInvPose);
+
+				if (noValidPoints_RGB > MIN_VALID_POINTS_DEPTH)
+				{
+					// Normalize nabla and hessian
+					for (int i = 0; i < 6 * 6; ++i) hessian_RGB[i] /= noValidPoints_RGB;
+					for (int i = 0; i < 6; ++i) nabla_RGB[i] /= noValidPoints_RGB;
+					f_RGB /= noValidPoints_RGB;
+				}
+				else
+				{
+					f_RGB = std::numeric_limits<float>::max();
+				}
 			}
 
 			float hessian_new[6 * 6];
@@ -439,9 +463,9 @@ void ITMExtendedTracker::TrackCamera(ITMTrackingState *trackingState, const ITMV
 			float f_new = 0.f;
 			int noValidPoints_new = 0;
 
-			// Combine them in a meaningful way
 			if (useDepth && useColour)
 			{
+				// Combine depth and intensity measurements
 				if (noValidPoints_depth > MIN_VALID_POINTS_DEPTH)
 				{
 					noValidPoints_new = noValidPoints_depth;

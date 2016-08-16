@@ -156,17 +156,7 @@ int ITMExtendedTracker_CUDA::ComputeGandH_Depth(float &f, float *nabla, float *h
 
 	memcpy(nabla, accu_host->g, noPara * sizeof(float));
 
-	if (accu_host->numPoints > 100)
-	{
-		for (int i = 0; i < 6 * 6; ++i) hessian[i] = hessian[i] / accu_host->numPoints;
-		for (int i = 0; i < 6; ++i) nabla[i] = nabla[i] / accu_host->numPoints;
-
-		f = accu_host->f / accu_host->numPoints;
-	}
-	else
-	{
-		f = 1e5f;
-	}
+	f = accu_host->f;
 
 	return accu_host->numPoints;
 }
@@ -229,17 +219,7 @@ int ITMExtendedTracker_CUDA::ComputeGandH_RGB(float &f, float *nabla, float *hes
 
 	memcpy(nabla, accu_host->g, noPara * sizeof(float));
 
-	if (accu_host->numPoints > 100)
-	{
-		for (int i = 0; i < 6 * 6; ++i) hessian[i] = hessian[i] / accu_host->numPoints;
-		for (int i = 0; i < 6; ++i) nabla[i] = nabla[i] / accu_host->numPoints;
-
-		f = accu_host->f / accu_host->numPoints;
-	}
-	else
-	{
-		f = 1e5f;
-	}
+	f = accu_host->f;
 
 	return accu_host->numPoints;
 }
