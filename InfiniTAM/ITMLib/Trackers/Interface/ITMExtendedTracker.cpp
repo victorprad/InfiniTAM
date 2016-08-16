@@ -315,7 +315,7 @@ void ITMExtendedTracker::UpdatePoseQuality(int noValidPoints_old, float *hessian
 		return;
 	}
 
-	int noTotalPoints = viewHierarchy->levels_t0[0]->depth->noDims.x * viewHierarchy->levels_t0[0]->depth->noDims.y;
+	int noTotalPoints = viewHierarchy->levels_t0[0]->depth->dataSize;
 	int noValidPointsMax = lowLevelEngine->CountValidDepths(view->depth);
 
 	float normFactor_v1 = (float)noValidPoints_old / (float)noTotalPoints;
