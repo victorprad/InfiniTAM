@@ -53,12 +53,13 @@ namespace ITMLib
 			delete calib;
 
 			delete rgb;
-			if (rgb_prev != NULL) delete rgb_prev;
+			delete rgb_prev;
+
 			delete depth;
 			delete depthConfidence;
 
-			if (depthNormal != NULL) delete depthNormal;
-			if (depthUncertainty != NULL) delete depthUncertainty;
+			delete depthNormal;
+			delete depthUncertainty;
 		}
 
 		// Suppress the default copy constructor and assignment operator
