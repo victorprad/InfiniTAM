@@ -91,10 +91,8 @@ ITMExtendedTracker::ITMExtendedTracker(Vector2i imgSize_d, Vector2i imgSize_rgb,
 ITMExtendedTracker::~ITMExtendedTracker(void)
 {
 	delete viewHierarchy;
-
-	if (sceneHierarchy) delete sceneHierarchy;
-
-	if (preProjectedHierarchy) delete preProjectedHierarchy;
+	delete sceneHierarchy;
+	delete preProjectedHierarchy;
 
 	delete[] noIterationsPerLevel;
 	delete[] spaceThresh;
