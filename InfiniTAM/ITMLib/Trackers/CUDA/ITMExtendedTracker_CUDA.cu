@@ -4,7 +4,6 @@
 #include "../../Utils/ITMCUDAUtils.h"
 #include "../Shared/ITMExtendedTracker_Shared.h"
 #include "../../../ORUtils/CUDADefines.h"
-#include <iostream>
 
 using namespace ITMLib;
 
