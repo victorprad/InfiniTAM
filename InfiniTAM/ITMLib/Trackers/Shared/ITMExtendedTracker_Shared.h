@@ -169,15 +169,18 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exRGB_inv_Ab(
 		float tukeyCutoff
 		)
 {
+	// Before invoking this method, projectPoint_exRGB is invoked to compute the intensity
+	// associated to each depth pixel. Intensities_curr is not the "input" intensity image
+	// but the output of such caching. Its size is therefore the same as imgSize_depth
 	if (x >= imgSize_depth.x || y >= imgSize_depth.y) return false;
-	if (x >= imgSize_rgb.x || y >= imgSize_rgb.y) return false; // Should be redundant
 
 	// Point in current camera coordinates
 	const Vector4f pt_curr = points_curr[y * imgSize_depth.x + x];
+	// no need to interpolate, has already been done in projectPoint_exRGB
 	const float intensity_curr = intensities_curr[y * imgSize_depth.x + x];
 
 	// Invalid point or too far away
-	if (pt_curr.w < 0.f || pt_curr.z < 1e-3f || pt_curr.z > viewFrustum_max || intensity_curr < 0.f) return false;
+	if (pt_curr.w < 0.f || intensity_curr < 0.f || pt_curr.z < 1e-3f || pt_curr.z > viewFrustum_max) return false;
 
 	// Transform the point in world coordinates
 	const Vector3f pt_world = approxInvPose * pt_curr.toVector3();
@@ -190,8 +193,9 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exRGB_inv_Ab(
 	// Project the point in the previous intensity frame
 	const Vector2f pt_prev_proj = project(pt_prev, intrinsics_rgb);
 
+	// Outside the image plane
 	if (pt_prev_proj.x < 0 || pt_prev_proj.x >= imgSize_rgb.x - 1 ||
-		pt_prev_proj.y < 0 || pt_prev_proj.y >= imgSize_rgb.y - 1) return false; // Outside the image plane
+		pt_prev_proj.y < 0 || pt_prev_proj.y >= imgSize_rgb.y - 1) return false;
 
 	// Point should be valid, sample intensities and gradients
 	const float intensity_prev = interpolateBilinear_single(intensities_prev, pt_prev_proj, imgSize_rgb);
@@ -208,12 +212,15 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exRGB_inv_Ab(
 	const Vector3f scene_rot_row_2 = scenePose.getRow(2).toVector3();
 
 	// Precompute projection derivatives
-	const Vector3f d_proj_x(intrinsics_rgb.x / pt_prev.z,
+	const float pt_prev_inv_z = 1.f / pt_prev.z;
+	const float pt_prev_inv_z_sq = pt_prev_inv_z * pt_prev_inv_z;
+
+	const Vector3f d_proj_x(intrinsics_rgb.x * pt_prev_inv_z,
 							0.f,
-							-intrinsics_rgb.x * pt_prev.x / (pt_prev.z * pt_prev.z));
+							-intrinsics_rgb.x * pt_prev.x * pt_prev_inv_z_sq);
 	const Vector3f d_proj_y(0.f,
-							intrinsics_rgb.y / pt_prev.z,
-							-intrinsics_rgb.y * pt_prev.y / (pt_prev.z * pt_prev.z));
+							intrinsics_rgb.y * pt_prev_inv_z,
+							-intrinsics_rgb.y * pt_prev.y  * pt_prev_inv_z_sq);
 
 	float nabla[6];
 
