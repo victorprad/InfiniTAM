@@ -229,7 +229,12 @@ void ITMExtendedTracker::SetEvaluationParams(int levelId)
 {
 	currentLevelId = levelId;
 	viewHierarchyLevel_Depth = viewHierarchy->levels_t0[levelId];
-	// TODO: split this into Depth/RGB pairs?
+
+	// We use a single sequence of iterationTypes, regardless of the colour/depth choice.
+	// Using different strategies for colour and depth does not seem to improve the accuracy (tests by Tommaso, 15/08/2016)
+	// We rely on the one stored in viewHierarchyLevel_Depth because it's guaranteed to be available.
+	// sceneHierarchyLevel_Depth is available only when depth tracking is enabled
+	// viewHierarchyLevel_Intensity is available only when colour is enabled.
 	currentIterationType = viewHierarchyLevel_Depth->iterationType;
 
 	if (useDepth)
