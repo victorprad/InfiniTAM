@@ -63,34 +63,38 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_rt_Color(THREADPTR(float) *loca
 	colour_diff_d.y = 2.0f * (colour_obs.y - 255.0f * colour_known.y);
 	colour_diff_d.z = 2.0f * (colour_obs.z - 255.0f * colour_known.z);
 
+	const float inv_z = 1.f / pt_camera.z;
+	const float z_sq = pt_camera.z * pt_camera.z;
+	const float inv_z_sq = 1.f / z_sq;
+
 	for (int para = 0, counter = 0; para < numPara; para++)
 	{
 		switch (para + startPara)
 		{
-		case 0: //tx
-			d_proj_dpi.x = projParams.x / pt_camera.z; 
+		case 0: // tx
+			d_proj_dpi.x = projParams.x * inv_z;
 			d_proj_dpi.y = 0.0f; 
 			break;
-		case 1: //ty
+		case 1: // ty
 			d_proj_dpi.x = 0.0f; 
-			d_proj_dpi.y = projParams.y / pt_camera.z; 
+			d_proj_dpi.y = projParams.y * inv_z;
 			break;
-		case 2: //tz
-			d_proj_dpi.x = -projParams.x * pt_camera.x / (pt_camera.z * pt_camera.z);
-			d_proj_dpi.y = -projParams.y * pt_camera.y / (pt_camera.z * pt_camera.z);
+		case 2: // tz
+			d_proj_dpi.x = -projParams.x * pt_camera.x * inv_z_sq;
+			d_proj_dpi.y = -projParams.y * pt_camera.y * inv_z_sq;
 			break;
-		case 3: //rx
-			d_proj_dpi.x = -projParams.x * pt_camera.y * pt_camera.x / (pt_camera.z * pt_camera.z);
-			d_proj_dpi.y = -projParams.y * (pt_camera.z * pt_camera.z + pt_camera.y * pt_camera.y) / (pt_camera.z * pt_camera.z);
+		case 3: // rx
+			d_proj_dpi.x = -projParams.x * pt_camera.y * pt_camera.x * inv_z_sq;
+			d_proj_dpi.y = -projParams.y * (z_sq + pt_camera.y * pt_camera.y) * inv_z_sq;
 			break;
 		case 4: // ry
-			d_proj_dpi.x = projParams.x * (pt_camera.z * pt_camera.z + pt_camera.x * pt_camera.x) / (pt_camera.z * pt_camera.z);
-			d_proj_dpi.y = projParams.y * pt_camera.x * pt_camera.y / (pt_camera.z * pt_camera.z);
+			d_proj_dpi.x = projParams.x * (z_sq + pt_camera.x * pt_camera.x) * inv_z_sq;
+			d_proj_dpi.y = projParams.y * pt_camera.x * pt_camera.y * inv_z_sq;
 			break; 
 		case 5: // rz
-			d_proj_dpi.x = -projParams.x * pt_camera.y / pt_camera.z;
-			d_proj_dpi.y = projParams.y * pt_camera.x / pt_camera.z;
-			break; //rz
+			d_proj_dpi.x = -projParams.x * pt_camera.y * inv_z;
+			d_proj_dpi.y = projParams.y * pt_camera.x * inv_z;
+			break;
 		};
 
 		d[para].x = d_proj_dpi.x * gx_obs.x + d_proj_dpi.y * gy_obs.x;
