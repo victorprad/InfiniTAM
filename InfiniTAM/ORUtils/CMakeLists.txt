@@ -25,6 +25,7 @@ CUDADefines.h
 LexicalCast.h
 MemoryBlock.h
 MemoryBlockPersister.h
+MemoryDeviceType.h
 PlatformIndependence.h
 KeyValueConfig.h
 NVTimer.h
