@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "MemoryDeviceType.h"
 #include "PlatformIndependence.h"
 
 #ifndef __METALC__
@@ -16,11 +17,6 @@
 
 #include <stdlib.h>
 #include <string.h>
-
-#ifndef MEMORY_DEVICE_TYPE
-#define MEMORY_DEVICE_TYPE
-enum MemoryDeviceType { MEMORYDEVICE_CPU, MEMORYDEVICE_CUDA };
-#endif 
 
 namespace ORUtils
 {

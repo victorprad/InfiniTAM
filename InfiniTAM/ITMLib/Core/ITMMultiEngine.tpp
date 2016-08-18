@@ -313,8 +313,7 @@ void ITMMultiEngine<TVoxel,TIndex>::GetImage(ITMUChar4Image *out, GetImageType g
 
 		if (renderState_freeview == NULL)
 		{
-			MemoryDeviceType memoryType = settings->deviceType == ITMLibSettings::DEVICE_CUDA ? MEMORYDEVICE_CUDA : MEMORYDEVICE_CPU;
-			renderState_freeview = ITMRenderStateFactory<TIndex>::CreateRenderState(out->noDims, activeData->scene->sceneParams, memoryType);
+			renderState_freeview = ITMRenderStateFactory<TIndex>::CreateRenderState(out->noDims, activeData->scene->sceneParams, settings->GetMemoryType());
 		}
 
 		visualisationEngine->FindVisibleBlocks(activeData->scene, pose, intrinsics, renderState_freeview);

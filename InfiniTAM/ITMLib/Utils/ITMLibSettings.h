@@ -4,6 +4,7 @@
 
 #include "ITMSceneParams.h"
 #include "ITMSurfelSceneParams.h"
+#include "../../ORUtils/MemoryDeviceType.h"
 
 namespace ITMLib
 {
@@ -17,12 +18,12 @@ namespace ITMLib
 			DEVICE_METAL
 		} DeviceType;
 
-        typedef enum
-        {
-            FAILUREMODE_RELOCALISE,
-            FAILUREMODE_IGNORE,
-            FAILUREMODE_STOP_INTEGRATION
-        } FailureMode;
+		typedef enum
+		{
+			FAILUREMODE_RELOCALISE,
+			FAILUREMODE_IGNORE,
+			FAILUREMODE_STOP_INTEGRATION
+		} FailureMode;
         
 		typedef enum
 		{
@@ -41,9 +42,9 @@ namespace ITMLib
 		/// For ITMColorTracker: skip every other point in energy function evaluation.
 		bool skipPoints;
 
-        bool createMeshingEngine;
+		bool createMeshingEngine;
         
-        FailureMode behaviourOnFailure;
+		FailureMode behaviourOnFailure;
 		SwappingMode swappingMode;
 
 		const char *trackerConfig;
@@ -58,5 +59,7 @@ namespace ITMLib
 		// Suppress the default copy constructor and assignment operator
 		ITMLibSettings(const ITMLibSettings&);
 		ITMLibSettings& operator=(const ITMLibSettings&);
+
+		MemoryDeviceType GetMemoryType() const;
 	};
 }
