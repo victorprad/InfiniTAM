@@ -382,9 +382,6 @@ void ITMExtendedTracker::TrackCamera(ITMTrackingState *trackingState, const ITMV
 	this->SetEvaluationData(trackingState, view);
 	this->PrepareForEvaluation();
 
-	float f_old = std::numeric_limits<float>::max();
-	int noValidPoints_old = 0;
-
 	float hessian_good[6 * 6];
 	float nabla_good[6];
 
@@ -406,8 +403,8 @@ void ITMExtendedTracker::TrackCamera(ITMTrackingState *trackingState, const ITMV
 
 		Matrix4f approxInvPose = trackingState->pose_d->GetInvM();
 		ORUtils::SE3Pose lastKnownGoodPose(*(trackingState->pose_d));
-		f_old = std::numeric_limits<float>::max();
-		noValidPoints_old = 0;
+
+		float f_old = std::numeric_limits<float>::max();
 		float lambda = 1.0;
 
 		for (int iterNo = 0; iterNo < noIterationsPerLevel[levelId]; iterNo++)
@@ -521,7 +518,6 @@ void ITMExtendedTracker::TrackCamera(ITMTrackingState *trackingState, const ITMV
 			{
 				lastKnownGoodPose.SetFrom(trackingState->pose_d);
 				f_old = f_new;
-				noValidPoints_old = noValidPoints_new;
 
 				for (int i = 0; i < 6 * 6; ++i) hessian_good[i] = hessian_new[i];
 				for (int i = 0; i < 6; ++i) nabla_good[i] = nabla_new[i];
