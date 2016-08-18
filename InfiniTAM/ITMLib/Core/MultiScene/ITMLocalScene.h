@@ -39,7 +39,7 @@ namespace ITMLib {
 
 		ITMLocalScene(const ITMLibSettings *settings, const Vector2i & trackedImageSize)
 		{
-			MemoryDeviceType memoryType = settings->deviceType == ITMLibSettings::DEVICE_CUDA ? MEMORYDEVICE_CUDA : MEMORYDEVICE_CPU;
+			MemoryDeviceType memoryType = settings->GetMemoryType();
 			scene = new ITMScene<TVoxel,TIndex>(&settings->sceneParams, settings->swappingMode == ITMLibSettings::SWAPPINGMODE_ENABLED, memoryType);
 			renderState = ITMRenderStateFactory<TIndex>::CreateRenderState(trackedImageSize, scene->sceneParams, memoryType);
 			trackingState = new ITMTrackingState(trackedImageSize, memoryType);

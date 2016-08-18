@@ -38,6 +38,7 @@ MathUtils.h
 Matrix.h
 MemoryBlock.h
 MemoryBlockPersister.h
+MemoryDeviceType.h
 NVTimer.h
 PlatformIndependence.h
 SE3Pose.h
