@@ -204,7 +204,7 @@ int FFMPEGReader::PrivateData::init_filter(FilteringContext* fctx, AVCodecContex
 		ret = AVERROR_UNKNOWN;
 		goto end;
 	}
-	snprintf(args, sizeof(args),
+	sprintf(args,
 	         "video_size=%dx%d:pix_fmt=%d:time_base=%d/%d:pixel_aspect=%d/%d",
 	         dec_ctx->width, dec_ctx->height, dec_ctx->pix_fmt,
 	         dec_ctx->time_base.num, dec_ctx->time_base.den,
