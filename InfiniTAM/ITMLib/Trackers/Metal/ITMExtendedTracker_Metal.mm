@@ -16,10 +16,39 @@ struct ExtendedTracker_metalBits
 
 static ExtendedTracker_metalBits et_metalBits;
 
-ITMExtendedTracker_Metal::ITMExtendedTracker_Metal(Vector2i imgSize_d, Vector2i imgSize_rgb, bool useDepth, bool useColour, TrackerIterationType *trackingRegime, int noHierarchyLevels,
-                                                   float terminationThreshold, float failureDetectorThreshold, float viewFrustum_min, float viewFrustum_max, int tukeyCutOff, int framesToSkip, int framesToWeight,
-                                                   const ITMLowLevelEngine *lowLevelEngine)
-:ITMExtendedTracker(imgSize_d, imgSize_rgb, useDepth, useColour, trackingRegime, noHierarchyLevels, terminationThreshold, failureDetectorThreshold, viewFrustum_min, viewFrustum_max, tukeyCutOff, framesToSkip, framesToWeight, lowLevelEngine, MEMORYDEVICE_CPU)
+ITMExtendedTracker_Metal::ITMExtendedTracker_Metal(Vector2i imgSize_d,
+												   Vector2i imgSize_rgb,
+												   bool useDepth,
+												   bool useColour,
+												   float colourWeight,
+												   TrackerIterationType *trackingRegime,
+												   int noHierarchyLevels,
+												   float terminationThreshold,
+												   float failureDetectorThreshold,
+												   float viewFrustum_min,
+												   float viewFrustum_max,
+												   float minColourGradient,
+												   int tukeyCutOff,
+												   int framesToSkip,
+												   int framesToWeight,
+												   const ITMLowLevelEngine *lowLevelEngine)
+: ITMExtendedTracker(imgSize_d,
+					 imgSize_rgb,
+					 useDepth,
+					 useColour,
+					 colourWeight,
+					 trackingRegime,
+					 noHierarchyLevels,
+					 terminationThreshold,
+					 failureDetectorThreshold,
+					 viewFrustum_min,
+					 viewFrustum_max,
+					 minColourGradient,
+					 tukeyCutOff,
+					 framesToSkip,
+					 framesToWeight,
+					 lowLevelEngine,
+					 MEMORYDEVICE_CPU)
 {
     allocImgSize = imgSize;
 
@@ -43,16 +72,17 @@ ITMExtendedTracker_Metal::~ITMExtendedTracker_Metal(void)
     freeMetalData((void**)&f_metal, (void**)&f_metal_mb, allocImgSize.x * allocImgSize.y * sizeof(float), true);
 }
 
-int ITMExtendedTracker_Metal::ComputeGandH(float &f, float *nabla, float *hessian, Matrix4f approxInvPose)
+int ITMExtendedTracker_Metal::ComputeGandH_Depth(float &f, float *nabla, float *hessian, Matrix4f approxInvPose)
 {
-    Vector4f sceneIntrinsics = sceneHierarchyLevel->intrinsics;
-    Vector2i sceneImageSize = sceneHierarchyLevel->pointsMap->noDims;
-    Vector4f viewIntrinsics = viewHierarchyLevel->intrinsics;
-    Vector2i viewImageSize = viewHierarchyLevel->depth->noDims;
+    Vector4f sceneIntrinsics = sceneHierarchyLevel_Depth->intrinsics;
+    Vector2i sceneImageSize = sceneHierarchyLevel_Depth->pointsMap->noDims;
+    Vector4f viewIntrinsics = viewHierarchyLevel_Depth->intrinsics;
+    Vector2i viewImageSize = viewHierarchyLevel_Depth->depth->noDims;
 
-    if (iterationType == TRACKER_ITERATION_NONE) return 0;
+    if (currentIterationType == TRACKER_ITERATION_NONE) return 0;
 
-    bool shortIteration = (iterationType == TRACKER_ITERATION_ROTATION) || (iterationType == TRACKER_ITERATION_TRANSLATION);
+    bool shortIteration = currentIterationType == TRACKER_ITERATION_ROTATION
+						  || currentIterationType == TRACKER_ITERATION_TRANSLATION;
 
     float sumHessian[6 * 6], sumNabla[6], sumF; int noValidPoints;
     int noPara = shortIteration ? 3 : 6, noParaSQ = shortIteration ? 3 + 2 + 1 : 6 + 5 + 4 + 3 + 2 + 1;
@@ -71,8 +101,8 @@ int ITMExtendedTracker_Metal::ComputeGandH(float &f, float *nabla, float *hessia
     params->approxInvPose = approxInvPose; params->sceneIntrinsics = sceneIntrinsics;
     params->sceneImageSize = sceneImageSize; params->scenePose = scenePose;
     params->viewIntrinsics = viewIntrinsics; params->viewImageSize = viewImageSize;
-    params->others1.x = spaceThresh[levelId];
-    params->others1.y = (float)iterationType;
+    params->others1.x = spaceThresh[currentLevelId];
+    params->others1.y = (float)currentIterationType;
     params->others1.z = (float)pointsPerThread;
     params->others1.w = viewFrustum_min;
     params->others2.x = viewFrustum_max;
@@ -86,9 +116,9 @@ int ITMExtendedTracker_Metal::ComputeGandH(float &f, float *nabla, float *hessia
     [commandEncoder setBuffer:(__bridge id<MTLBuffer>) f_metal_mb                                           offset:0 atIndex:1];
     [commandEncoder setBuffer:(__bridge id<MTLBuffer>) ATA_metal_mb                                         offset:0 atIndex:2];
     [commandEncoder setBuffer:(__bridge id<MTLBuffer>) ATb_metal_mb                                         offset:0 atIndex:3];
-    [commandEncoder setBuffer:(__bridge id<MTLBuffer>) viewHierarchyLevel->depth->GetMetalBuffer()          offset:0 atIndex:4];
-    [commandEncoder setBuffer:(__bridge id<MTLBuffer>) sceneHierarchyLevel->pointsMap->GetMetalBuffer()     offset:0 atIndex:5];
-    [commandEncoder setBuffer:(__bridge id<MTLBuffer>) sceneHierarchyLevel->normalsMap->GetMetalBuffer()    offset:0 atIndex:6];
+    [commandEncoder setBuffer:(__bridge id<MTLBuffer>) viewHierarchyLevel_Depth->depth->GetMetalBuffer()          offset:0 atIndex:4];
+    [commandEncoder setBuffer:(__bridge id<MTLBuffer>) sceneHierarchyLevel_Depth->pointsMap->GetMetalBuffer()     offset:0 atIndex:5];
+    [commandEncoder setBuffer:(__bridge id<MTLBuffer>) sceneHierarchyLevel_Depth->normalsMap->GetMetalBuffer()    offset:0 atIndex:6];
     [commandEncoder setBuffer:et_metalBits.paramsBuffer                                                     offset:0 atIndex:7];
 
     MTLSize blockSize = {4, 4, 1};
@@ -123,4 +153,21 @@ int ITMExtendedTracker_Metal::ComputeGandH(float &f, float *nabla, float *hessia
     f = (noValidPoints > 100) ? sqrt(sumF) / noValidPoints : 1e5f;
 
     return noValidPoints;
+}
+
+int ITMExtendedTracker_CPU::ComputeGandH_RGB(float &f, float *nabla, float *hessian, Matrix4f approxInvPose)
+{
+	// TODO: not currently implemented
+	return 0;
+}
+
+void ITMExtendedTracker_CPU::ProjectCurrentIntensityFrame(ITMFloat4Image *points_out,
+														  ITMFloatImage *intensity_out,
+														  const ITMFloatImage *intensity_in,
+														  const ITMFloatImage *depth_in,
+														  const Vector4f &intrinsics_depth,
+														  const Vector4f &intrinsics_rgb,
+														  const Matrix4f &scenePose)
+{
+	// TODO: not currently implemented
 }

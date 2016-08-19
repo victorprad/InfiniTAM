@@ -23,13 +23,33 @@ namespace ITMLib
         void *noValidPoints_metal_mb;
         void *f_metal_mb;
     protected:
-        int ComputeGandH(float &f, float *nabla, float *hessian, Matrix4f approxInvPose);
+		int ComputeGandH_Depth(float &f, float *nabla, float *hessian, Matrix4f approxInvPose);
+		int ComputeGandH_RGB(float &f, float *nabla, float *hessian, Matrix4f approxInvPose);
+		void ProjectCurrentIntensityFrame(ITMFloat4Image *points_out,
+										  ITMFloatImage *intensity_out,
+										  const ITMFloatImage *intensity_in,
+										  const ITMFloatImage *depth_in,
+										  const Vector4f &intrinsics_depth,
+										  const Vector4f &intrinsics_rgb,
+										  const Matrix4f &scenePose);
         
     public:
-        ITMExtendedTracker_Metal(Vector2i imgSize_d, Vector2i imgSize_rgb, bool useDepth, bool useColour,
-        						 TrackerIterationType *trackingRegime, int noHierarchyLevels,
-                                 float terminationThreshold, float failureDetectorThreshold, float viewFrustum_min, float viewFrustum_max,
-                                 int tukeyCutOff, int framesToSkip, int framesToWeight, const ITMLowLevelEngine *lowLevelEngine);
+        ITMExtendedTracker_Metal(Vector2i imgSize_d,
+								 Vector2i imgSize_rgb,
+								 bool useDepth,
+								 bool useColour,
+								 float colourWeight,
+								 TrackerIterationType *trackingRegime,
+								 int noHierarchyLevels,
+								 float terminationThreshold,
+								 float failureDetectorThreshold,
+								 float viewFrustum_min,
+								 float viewFrustum_max,
+								 float minColourGradient,
+								 int tukeyCutOff,
+								 int framesToSkip,
+								 int framesToWeight,
+								 const ITMLowLevelEngine *lowLevelEngine);
         ~ITMExtendedTracker_Metal(void);
     };
 }
