@@ -272,7 +272,6 @@ namespace ITMLib
 
 		int verbose = 0;
 		if (cfg.getProperty("help") != NULL) if (verbose < 10) verbose = 10;
-		// FIXME possible overflow if using more than 4 levels
 		cfg.parseStrProperty("levels", "resolution hierarchy levels", levelSetup, verbose);
 		std::vector<TrackerIterationType> levels = parseLevelConfig(levelSetup);
 
