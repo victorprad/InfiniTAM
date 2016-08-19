@@ -63,6 +63,11 @@ ITMExtendedTracker::ITMExtendedTracker(Vector2i imgSize_d,
 		preProjectedHierarchy = new ITMTwoImageHierarchy<ITMTemplatedHierarchyLevel<ITMFloat4Image>, ITMTemplatedHierarchyLevel<ITMFloatImage> >(imgSize_d, imgSize_d, trackingRegime, noHierarchyLevels, memoryType, false);
 
 		// Allocate level 0 intensity images
+		// (need to allocate them here because they are computed here in the tracker and we
+		// cannot use the trick of just setting the pointer. At the same time, not skipping the allocation
+		// of level 0 in the construction of viewHierarchy would require us to copy the depth image)
+		// NOTE: after the integration of the depth mask pull request this will not be true anymore since the depth
+		// will always be copied
 		viewHierarchy->levels_t1[0]->intensity_current = new ITMFloatImage(imgSize_rgb, memoryType);
 		viewHierarchy->levels_t1[0]->intensity_prev = new ITMFloatImage(imgSize_rgb, memoryType);
 	}
