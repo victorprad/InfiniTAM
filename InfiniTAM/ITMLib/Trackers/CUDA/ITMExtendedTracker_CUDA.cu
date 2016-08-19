@@ -43,6 +43,7 @@ struct ITMExtendedTracker_KernelParameters_RGB {
 	Vector4f projParams_depth;
 	Vector4f projParams_rgb;
 	float colourThresh;
+	float minGradient;
 	float viewFrustum_min, viewFrustum_max;
 	float tukeyCutOff;
 };
@@ -57,12 +58,39 @@ __global__ void exRGBTrackerProjectPrevImage_device(Vector4f *out_points, float 
 
 // host methods
 
-ITMExtendedTracker_CUDA::ITMExtendedTracker_CUDA(Vector2i imgSize_d, Vector2i imgSize_rgb, bool useDepth, bool useColour,
-	float colourWeight, TrackerIterationType *trackingRegime, int noHierarchyLevels,
-	float terminationThreshold, float failureDetectorThreshold, float viewFrustum_min, float viewFrustum_max, int tukeyCutOff, int framesToSkip, int framesToWeight,
-	const ITMLowLevelEngine *lowLevelEngine)
-	: ITMExtendedTracker(imgSize_d, imgSize_rgb, useDepth, useColour, colourWeight, trackingRegime, noHierarchyLevels, terminationThreshold, failureDetectorThreshold, viewFrustum_min, viewFrustum_max,
-	tukeyCutOff, framesToSkip, framesToWeight, lowLevelEngine, MEMORYDEVICE_CUDA)
+ITMExtendedTracker_CUDA::ITMExtendedTracker_CUDA(Vector2i imgSize_d,
+												 Vector2i imgSize_rgb,
+												 bool useDepth,
+												 bool useColour,
+												 float colourWeight,
+												 TrackerIterationType *trackingRegime,
+												 int noHierarchyLevels,
+												 float terminationThreshold,
+												 float failureDetectorThreshold,
+												 float viewFrustum_min,
+												 float viewFrustum_max,
+												 float minColourGradient,
+												 int tukeyCutOff,
+												 int framesToSkip,
+												 int framesToWeight,
+												 const ITMLowLevelEngine *lowLevelEngine)
+	: ITMExtendedTracker(imgSize_d,
+						 imgSize_rgb,
+						 useDepth,
+						 useColour,
+						 colourWeight,
+						 trackingRegime,
+						 noHierarchyLevels,
+						 terminationThreshold,
+						 failureDetectorThreshold,
+						 viewFrustum_min,
+						 viewFrustum_max,
+						 minColourGradient,
+						 tukeyCutOff,
+						 framesToSkip,
+						 framesToWeight,
+						 lowLevelEngine,
+						 MEMORYDEVICE_CUDA)
 {
 	ORcudaSafeCall(cudaMallocHost((void**)&accu_host, sizeof(AccuCell)));
 	ORcudaSafeCall(cudaMalloc((void**)&accu_device, sizeof(AccuCell)));
@@ -197,6 +225,7 @@ int ITMExtendedTracker_CUDA::ComputeGandH_RGB(float &f, float *nabla, float *hes
 	args.projParams_depth = viewHierarchyLevel_Depth->intrinsics;
 	args.projParams_rgb = viewHierarchyLevel_Intensity->intrinsics;
 	args.colourThresh = colourThresh[currentLevelId];
+	args.minGradient = minColourGradient;
 	args.viewFrustum_min = viewFrustum_min;
 	args.viewFrustum_max = viewFrustum_max;
 	args.tukeyCutOff = tukeyCutOff;
@@ -437,6 +466,7 @@ __device__ void exRGBTrackerOneLevel_g_rt_device_main(
 		const Vector2i &imageSize_rgb,
 		const Vector2i &imageSize_depth,
 		float colourThresh,
+		float minGradient,
 		float viewFrustum_min,
 		float viewFrustum_max,
 		float tukeyCutoff
@@ -481,6 +511,7 @@ __device__ void exRGBTrackerOneLevel_g_rt_device_main(
 				approxInvPose,
 				scenePose,
 				colourThresh,
+				minGradient,
 				viewFrustum_min,
 				viewFrustum_max,
 				tukeyCutoff
@@ -632,6 +663,7 @@ __global__ void exRGBTrackerOneLevel_g_rt_device(ITMExtendedTracker_KernelParame
 			para.imageSize_rgb,
 			para.imageSize_depth,
 			para.colourThresh,
+			para.minGradient,
 			para.viewFrustum_min,
 			para.viewFrustum_max,
 			para.tukeyCutOff

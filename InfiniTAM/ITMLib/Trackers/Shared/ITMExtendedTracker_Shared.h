@@ -164,6 +164,7 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exRGB_inv_Ab(
 		const Matrix4f &approxInvPose,
 		const Matrix4f &scenePose,
 		float colourThresh,
+		float minGradient,
 		float viewFrustum_min,
 		float viewFrustum_max,
 		float tukeyCutoff
@@ -204,7 +205,7 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exRGB_inv_Ab(
 	const float intensity_diff = intensity_prev - intensity_curr;
 
 	if (fabs(intensity_diff) >= tukeyCutoff * colourThresh) return false; // Difference too big
-	if (fabs(gradient_prev.x) < 0.01f || fabs(gradient_prev.y) < 0.01f) return false; // Gradient too small
+	if (fabs(gradient_prev.x) < minGradient || fabs(gradient_prev.y) < minGradient) return false; // Gradient too small
 
 	// Cache rows of the scenePose rotation matrix, to be used in the pose derivative
 	const Vector3f scene_rot_row_0 = scenePose.getRow(0).toVector3();

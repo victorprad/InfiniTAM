@@ -74,6 +74,7 @@ namespace ITMLib
 		bool useColour;
 		bool useDepth;
 
+		float minColourGradient;
 		float viewFrustum_min, viewFrustum_max;
 		int tukeyCutOff, framesToSkip, framesToWeight;
 
@@ -95,11 +96,24 @@ namespace ITMLib
 
 		void SetupLevels(int numIterCoarse, int numIterFine, float spaceThreshCoarse, float spaceThreshFine, float colourThreshCoarse, float colourThreshFine);
 
-		ITMExtendedTracker(Vector2i imgSize_d, Vector2i imgSize_rgb, bool useDepth, bool useColour, float colourWeight,
-			TrackerIterationType *trackingRegime, int noHierarchyLevels,
-			float terminationThreshold, float failureDetectorThreshold, 
-			float viewFrustum_min, float viewFrustum_max, int tukeyCutOff, int framesToSkip, int framesToWeight,
-			const ITMLowLevelEngine *lowLevelEngine, MemoryDeviceType memoryType);
+		ITMExtendedTracker(Vector2i imgSize_d,
+						   Vector2i imgSize_rgb,
+						   bool useDepth,
+						   bool useColour,
+						   float colourWeight,
+						   TrackerIterationType *trackingRegime,
+						   int noHierarchyLevels,
+						   float terminationThreshold,
+						   float failureDetectorThreshold,
+						   float viewFrustum_min,
+						   float viewFrustum_max,
+						   float minColourGradient,
+						   int tukeyCutOff,
+						   int framesToSkip,
+						   int framesToWeight,
+						   const ITMLowLevelEngine *lowLevelEngine,
+						   MemoryDeviceType memoryType
+						   );
 		virtual ~ITMExtendedTracker(void);
 	};
 }
