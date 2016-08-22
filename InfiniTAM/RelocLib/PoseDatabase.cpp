@@ -1,4 +1,4 @@
-// Copyright 2014 Isis Innovation Limited and the authors of InfiniTAM
+// Copyright 2014-2016 Isis Innovation Limited and the authors of InfiniTAM
 
 #include "PoseDatabase.h"
 

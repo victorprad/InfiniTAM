@@ -42,6 +42,8 @@ namespace ITMLib
 		/** Stop integration once maxW has been reached. */
 		bool stopIntegratingAtMaxW;
 
+		ITMSceneParams(void) {}
+
 		ITMSceneParams(float mu, int maxW, float voxelSize, 
 			float viewFrustum_min, float viewFrustum_max, bool stopIntegratingAtMaxW)
 		{

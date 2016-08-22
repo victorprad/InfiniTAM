@@ -154,7 +154,7 @@ int FFMPEGWriter::PrivateData::init_filter(FilteringContext* fctx, AVCodecContex
 		ret = AVERROR_UNKNOWN;
 		goto end;
 	}
-	snprintf(args, sizeof(args),
+	sprintf(args, 
 		"video_size=%dx%d:pix_fmt=%d:time_base=%d/%d:pixel_aspect=%d/%d",
 		// TODO: depending on host endianness, the desired format should
 		//       maybe be set to AV_PIX_FMT_GRAY16BE
