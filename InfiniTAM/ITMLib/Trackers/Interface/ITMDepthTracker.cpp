@@ -99,7 +99,7 @@ void ITMDepthTracker::PrepareForEvaluation()
 		lowLevelEngine->FilterSubsampleWithHoles(currentLevelView->depth, previousLevelView->depth);
 		currentLevelView->intrinsics = previousLevelView->intrinsics * 0.5f;
 
-		ITMSceneHierarchyLevel *currentLevelScene = sceneHierarchy->GetLevel(0);
+		ITMSceneHierarchyLevel *currentLevelScene = sceneHierarchy->GetLevel(i);
 		ITMSceneHierarchyLevel *previousLevelScene = sceneHierarchy->GetLevel(i - 1);
 		//lowLevelEngine->FilterSubsampleWithHoles(currentLevelScene->pointsMap, previousLevelScene->pointsMap);
 		//lowLevelEngine->FilterSubsampleWithHoles(currentLevelScene->normalsMap, previousLevelScene->normalsMap);
