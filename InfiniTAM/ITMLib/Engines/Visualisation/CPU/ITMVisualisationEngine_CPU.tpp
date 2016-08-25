@@ -233,6 +233,17 @@ static void RenderImage_common(const ITMScene<TVoxel,TIndex> *scene, const ORUti
     }
     
 	Vector3f lightSource = -Vector3f(invM.getColumn(2));
+
+	// Handle datasets as ICL_NUIM and other non standard inputs where one of the two focal lenghts is negative:
+	// That causes the normals to point away from the camera and thus their angle with the lightSource
+	// becomes negative. This causes valid points to be ignored during visualization and tracking.
+	// The problem presents itself only when computing normals as cross product of raycasted points.
+	if (type == IITMVisualisationEngine::RENDER_SHADED_GREYSCALE_IMAGENORMALS
+		&& intrinsics->projectionParamsSimple.fx * intrinsics->projectionParamsSimple.fy < 0.f)
+	{
+		lightSource = -lightSource;
+	}
+
 	Vector4u *outRendering = outputImage->GetData(MEMORYDEVICE_CPU);
 	const TVoxel *voxelData = scene->localVBA.GetVoxelBlocks();
 	const typename TIndex::IndexData *voxelIndex = scene->index.getIndexData();
@@ -332,6 +343,16 @@ static void CreateICPMaps_common(const ITMScene<TVoxel,TIndex> *scene, const ITM
 	trackingState->pose_pointCloud->SetFrom(trackingState->pose_d);
 
 	Vector3f lightSource = -Vector3f(invM.getColumn(2));
+
+	// Handle datasets as ICL_NUIM and other non standard inputs where one of the two focal lenghts is negative:
+	// That causes the normals to point away from the camera and thus their angle with the lightSource
+	// becomes negative. This causes valid points to be ignored during visualization and tracking.
+	// The problem presents itself only when computing normals as cross product of raycasted points.
+	if (view->calib->intrinsics_d.projectionParamsSimple.fx * view->calib->intrinsics_d.projectionParamsSimple.fy < 0.f)
+	{
+		lightSource = -lightSource;
+	}
+
 	Vector4f *normalsMap = trackingState->pointCloud->colours->GetData(MEMORYDEVICE_CPU);
 	Vector4f *pointsMap = trackingState->pointCloud->locations->GetData(MEMORYDEVICE_CPU);
 	Vector4f *pointsRay = renderState->raycastResult->GetData(MEMORYDEVICE_CPU);

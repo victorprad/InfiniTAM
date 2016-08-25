@@ -65,6 +65,17 @@ static void CreateICPMaps_common_metal(const ITMScene<TVoxel,TIndex> *scene, con
     params->lightSource.z = -Vector3f(params->invM.getColumn(2)).z;
     params->lightSource.w = scene->sceneParams->mu;
 
+    // Handle datasets as ICL_NUIM and other non standard inputs where one of the two focal lenghts is negative:
+    // That causes the normals to point away from the camera and thus their angle with the lightSource
+    // becomes negative. This causes valid points to be ignored during visualization and tracking.
+    // The problem presents itself only when computing normals as cross product of raycasted points.
+    if (view->calib->intrinsics_d.projectionParamsSimple.fx * view->calib->intrinsics_d.projectionParamsSimple.fy < 0.f)
+    {
+        params->lightSource.x = -params->lightSource.x;
+        params->lightSource.y = -params->lightSource.y;
+        params->lightSource.z = -params->lightSource.z;
+    }
+
     [commandEncoder setComputePipelineState:vis_metalBits.p_genericRaycastVH_device];
     [commandEncoder setBuffer:(__bridge id<MTLBuffer>) renderState->raycastResult->GetMetalBuffer()             offset:0 atIndex:0];
     [commandEncoder setBuffer:(__bridge id<MTLBuffer>) entriesVisibleType                                       offset:0 atIndex:1];
@@ -136,6 +147,17 @@ static void RenderImage_common_metal(const ITMScene<TVoxel,ITMVoxelBlockHash> *s
             params->lightSource.z = -Vector3f(params->invM.getColumn(2)).z;
             params->lightSource.w = scene->sceneParams->mu;
 
+            // Handle datasets as ICL_NUIM and other non standard inputs where one of the two focal lenghts is negative:
+            // That causes the normals to point away from the camera and thus their angle with the lightSource
+            // becomes negative. This causes valid points to be ignored during visualization and tracking.
+            // The problem presents itself only when computing normals as cross product of raycasted points.
+            if (intrinsics->projectionParamsSimple.fx * intrinsics->projectionParamsSimple.fy < 0.f)
+            {
+                params->lightSource.x = -params->lightSource.x;
+                params->lightSource.y = -params->lightSource.y;
+                params->lightSource.z = -params->lightSource.z;
+            }
+            
             [commandEncoder setComputePipelineState:vis_metalBits.p_genericRaycastVH_device];
             [commandEncoder setBuffer:(__bridge id<MTLBuffer>) renderState->raycastResult->GetMetalBuffer()             offset:0 atIndex:0];
             [commandEncoder setBuffer:(__bridge id<MTLBuffer>) entriesVisibleType                                       offset:0 atIndex:1];
@@ -159,6 +181,17 @@ static void RenderImage_common_metal(const ITMScene<TVoxel,ITMVoxelBlockHash> *s
     }
 
     Vector3f lightSource = -Vector3f(invM.getColumn(2));
+
+    // Handle datasets as ICL_NUIM and other non standard inputs where one of the two focal lenghts is negative:
+    // That causes the normals to point away from the camera and thus their angle with the lightSource
+    // becomes negative. This causes valid points to be ignored during visualization and tracking.
+    // The problem presents itself only when computing normals as cross product of raycasted points.
+    if (type == IITMVisualisationEngine::RENDER_SHADED_GREYSCALE_IMAGENORMALS
+        && intrinsics->projectionParamsSimple.fx * intrinsics->projectionParamsSimple.fy < 0.f)
+    {
+        lightSource = -lightSource;
+    }
+
     Vector4u *outRendering = outputImage->GetData(MEMORYDEVICE_CPU);
     const TVoxel *voxelData = scene->localVBA.GetVoxelBlocks();
     const typename ITMVoxelBlockHash::IndexData *voxelIndex = scene->index.getIndexData();
