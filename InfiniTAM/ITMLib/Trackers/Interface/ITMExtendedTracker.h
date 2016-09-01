@@ -5,7 +5,6 @@
 #include "ITMTracker.h"
 #include "../../Engines/LowLevel/Interface/ITMLowLevelEngine.h"
 #include "../../Objects/Tracking/ITMImageHierarchy.h"
-#include "../../Objects/Tracking/ITMTwoImageHierarchy.h"
 #include "../../Objects/Tracking/ITMDepthHierarchyLevel.h"
 #include "../../Objects/Tracking/ITMIntensityHierarchyLevel.h"
 #include "../../Objects/Tracking/ITMSceneHierarchyLevel.h"
@@ -29,10 +28,13 @@ namespace ITMLib
 
 		const ITMLowLevelEngine *lowLevelEngine;
 		ITMImageHierarchy<ITMSceneHierarchyLevel> *sceneHierarchy;
-		ITMTwoImageHierarchy<ITMDepthHierarchyLevel, ITMIntensityHierarchyLevel> *viewHierarchy;
-		ITMTwoImageHierarchy<ITMTemplatedHierarchyLevel<ITMFloat4Image>, ITMTemplatedHierarchyLevel<ITMFloatImage> > *preProjectedHierarchy;
+		ITMImageHierarchy<ITMDepthHierarchyLevel> *viewHierarchy_Depth;
+		ITMImageHierarchy<ITMIntensityHierarchyLevel> *viewHierarchy_Intensity;
+		ITMImageHierarchy<ITMTemplatedHierarchyLevel<ITMFloat4Image> > *reprojectedPointsHierarchy;
+		ITMImageHierarchy<ITMTemplatedHierarchyLevel<ITMFloatImage> > *projectedIntensityHierarchy;
 
-		ITMTrackingState *trackingState; const ITMView *view;
+		ITMTrackingState *trackingState;
+		const ITMView *view;
 
 		int *noIterationsPerLevel;
 
