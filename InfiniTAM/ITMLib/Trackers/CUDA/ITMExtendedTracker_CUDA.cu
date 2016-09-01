@@ -215,7 +215,7 @@ int ITMExtendedTracker_CUDA::ComputeGandH_RGB(float &f, float *nabla, float *hes
 	ITMExtendedTracker_KernelParameters_RGB args;
 	args.accu = accu_device;
 	args.points_curr = reprojectedPointsLevel->data->GetData(MEMORYDEVICE_CUDA);
-	args.intensities_curr = projectedIntensityLevel->image->GetData(MEMORYDEVICE_CUDA);
+	args.intensities_curr = projectedIntensityLevel->data->GetData(MEMORYDEVICE_CUDA);
 	args.intensities_prev = viewHierarchyLevel_Intensity->intensity_prev->GetData(MEMORYDEVICE_CUDA);
 	args.gradients = viewHierarchyLevel_Intensity->gradients->GetData(MEMORYDEVICE_CUDA);
 	args.imageSize_rgb = imageSize_rgb;

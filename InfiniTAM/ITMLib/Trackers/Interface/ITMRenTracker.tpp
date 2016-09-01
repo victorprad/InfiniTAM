@@ -84,7 +84,7 @@ void ITMRenTracker<TVoxel, TIndex>::PrepareForEvaluation(const ITMView *view)
 	lowLevelEngine->CopyImage(this->tempImage1, view->depth);
 
 	viewHierarchy->GetLevel(0)->intrinsics = intrinsics;
-	UnprojectDepthToCam(view->depth, viewHierarchy->GetLevel(0)->depth, intrinsics);
+	UnprojectDepthToCam(view->depth, viewHierarchy->GetLevel(0)->data, intrinsics);
 
 	for (int i = 1; i < viewHierarchy->GetNoLevels(); i++)
 	{
@@ -93,7 +93,7 @@ void ITMRenTracker<TVoxel, TIndex>::PrepareForEvaluation(const ITMView *view)
 		lowLevelEngine->FilterSubsampleWithHoles(tempImage2, tempImage1);
 
 		currentLevelView->intrinsics = previousLevelView->intrinsics * 0.5f;
-		UnprojectDepthToCam(tempImage2, currentLevelView->depth, viewHierarchy->GetLevel(i)->intrinsics);
+		UnprojectDepthToCam(tempImage2, currentLevelView->data, viewHierarchy->GetLevel(i)->intrinsics);
 
 		this->tempImage1->noDims = this->tempImage2->noDims;
 		this->tempImage1->dataSize = this->tempImage2->dataSize;

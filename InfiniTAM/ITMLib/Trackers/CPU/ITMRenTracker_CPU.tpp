@@ -16,8 +16,8 @@ ITMRenTracker_CPU<TVoxel,TIndex>::~ITMRenTracker_CPU(void) { }
 template<class TVoxel, class TIndex>
 void ITMRenTracker_CPU<TVoxel,TIndex>::F_oneLevel(float *f, Matrix4f invM)
 {
-	int count = static_cast<int>(this->viewHierarchy->GetLevel(this->levelId)->depth->dataSize);
-	Vector4f *ptList = this->viewHierarchy->GetLevel(this->levelId)->depth->GetData(MEMORYDEVICE_CPU);
+	int count = static_cast<int>(this->viewHierarchy->GetLevel(this->levelId)->data->dataSize);
+	Vector4f *ptList = this->viewHierarchy->GetLevel(this->levelId)->data->GetData(MEMORYDEVICE_CPU);
 
 	const TVoxel *voxelBlocks = this->scene->localVBA.GetVoxelBlocks();
 	const typename TIndex::IndexData *index = this->scene->index.getIndexData();
@@ -37,8 +37,8 @@ void ITMRenTracker_CPU<TVoxel,TIndex>::F_oneLevel(float *f, Matrix4f invM)
 template<class TVoxel, class TIndex>
 void ITMRenTracker_CPU<TVoxel,TIndex>::G_oneLevel(float *gradient, float *hessian, Matrix4f invM) const
 {
-	int count = static_cast<int>(this->viewHierarchy->GetLevel(this->levelId)->depth->dataSize);
-	Vector4f *ptList = this->viewHierarchy->GetLevel(this->levelId)->depth->GetData(MEMORYDEVICE_CPU);
+	int count = static_cast<int>(this->viewHierarchy->GetLevel(this->levelId)->data->dataSize);
+	Vector4f *ptList = this->viewHierarchy->GetLevel(this->levelId)->data->GetData(MEMORYDEVICE_CPU);
 
 	const TVoxel *voxelBlocks = this->scene->localVBA.GetVoxelBlocks();
 	const typename TIndex::IndexData *index = this->scene->index.getIndexData();

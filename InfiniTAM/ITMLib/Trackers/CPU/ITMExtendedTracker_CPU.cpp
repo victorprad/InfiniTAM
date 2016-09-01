@@ -131,7 +131,7 @@ int ITMExtendedTracker_CPU::ComputeGandH_RGB(float &f, float *nabla, float *hess
 
 	const Vector4f *points_curr = reprojectedPointsLevel->data->GetData(MEMORYDEVICE_CPU);
 	const float *intensities_prev = viewHierarchyLevel_Intensity->intensity_prev->GetData(MEMORYDEVICE_CPU);
-	const float *intensities_current = projectedIntensityLevel->image->GetData(MEMORYDEVICE_CPU);
+	const float *intensities_current = projectedIntensityLevel->data->GetData(MEMORYDEVICE_CPU);
 	const Vector2f *gradients = viewHierarchyLevel_Intensity->gradients->GetData(MEMORYDEVICE_CPU);
 
 	Vector4f projParams_rgb = viewHierarchyLevel_Intensity->intrinsics;

@@ -83,7 +83,7 @@ void ITMDepthTracker::SetEvaluationData(ITMTrackingState *trackingState, const I
 	viewHierarchy->GetLevel(0)->intrinsics = view->calib->intrinsics_d.projectionParamsSimple.all;
 
 	// the image hierarchy allows pointers to external data at level 0
-	viewHierarchy->GetLevel(0)->depth = view->depth;
+	viewHierarchy->GetLevel(0)->data = view->depth;
 	sceneHierarchy->GetLevel(0)->pointsMap = trackingState->pointCloud->locations;
 	sceneHierarchy->GetLevel(0)->normalsMap = trackingState->pointCloud->colours;
 
@@ -96,7 +96,7 @@ void ITMDepthTracker::PrepareForEvaluation()
 	{
 		ITMTemplatedHierarchyLevel<ITMFloatImage> *currentLevelView = viewHierarchy->GetLevel(i);
 		ITMTemplatedHierarchyLevel<ITMFloatImage> *previousLevelView = viewHierarchy->GetLevel(i - 1);
-		lowLevelEngine->FilterSubsampleWithHoles(currentLevelView->depth, previousLevelView->depth);
+		lowLevelEngine->FilterSubsampleWithHoles(currentLevelView->data, previousLevelView->data);
 		currentLevelView->intrinsics = previousLevelView->intrinsics * 0.5f;
 
 		ITMSceneHierarchyLevel *currentLevelScene = sceneHierarchy->GetLevel(i);
@@ -177,7 +177,7 @@ void ITMDepthTracker::ApplyDelta(const Matrix4f & para_old, const float *delta, 
 
 void ITMDepthTracker::UpdatePoseQuality(int noValidPoints_old, float *hessian_good, float f_old)
 {
-	int noTotalPoints = viewHierarchy->GetLevel(0)->depth->dataSize;
+	int noTotalPoints = viewHierarchy->GetLevel(0)->data->dataSize;
 
 	int noValidPointsMax = lowLevelEngine->CountValidDepths(view->depth);
 

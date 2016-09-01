@@ -16,12 +16,7 @@ namespace ITMLib
 
 		TrackerIterationType iterationType;
 
-		union
-		{
-			ImageType *data;
-			ImageType *depth;
-			ImageType *image;
-		};
+		ImageType *data;
 
 		Vector4f intrinsics;
 		bool manageData;

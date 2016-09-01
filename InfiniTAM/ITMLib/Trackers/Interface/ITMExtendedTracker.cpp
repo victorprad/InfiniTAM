@@ -232,7 +232,10 @@ void ITMExtendedTracker::PrepareForEvaluation()
 			Vector4f intrinsics_rgb = intensityIn->intrinsics;
 			Vector4f intrinsics_depth = depthIn->intrinsics;
 
-			ProjectCurrentIntensityFrame(pointsOut->image, intensityOut->image, intensityIn->intensity_current, depthIn->depth, intrinsics_depth, intrinsics_rgb, view->calib->trafo_rgb_to_depth.calib_inv);
+			ProjectCurrentIntensityFrame(pointsOut->data, intensityOut->data,
+										 intensityIn->intensity_current, depthIn->depth,
+										 intrinsics_depth, intrinsics_rgb,
+										 view->calib->trafo_rgb_to_depth.calib_inv);
 		}
 	}
 
