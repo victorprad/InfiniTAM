@@ -7,9 +7,9 @@ namespace ITMLib
 	/// The tracker iteration type used to define the tracking iteration regime
 	enum TrackerIterationType
 	{
-		TRACKER_ITERATION_ROTATION = 1,
-		TRACKER_ITERATION_TRANSLATION = 2,
-		TRACKER_ITERATION_BOTH = 3,
-		TRACKER_ITERATION_NONE = 4
+		TRACKER_ITERATION_ROTATION,
+		TRACKER_ITERATION_TRANSLATION,
+		TRACKER_ITERATION_BOTH,
+		TRACKER_ITERATION_NONE
 	};
 }
