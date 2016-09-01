@@ -8,9 +8,8 @@
 // Tukey loss
 _CPU_AND_GPU_CODE_ inline float tukey_rho(float r, float c)
 {
-	const float abs_r = fabs(r);
 	const float c_sq_6 = c * c / 6.f;
-	if(abs_r <= c)
+	if(fabs(r) <= c)
 	{
 		float tukey_r = r / c;
 		tukey_r *= tukey_r;
@@ -27,8 +26,7 @@ _CPU_AND_GPU_CODE_ inline float tukey_rho(float r, float c)
 
 _CPU_AND_GPU_CODE_ inline float tukey_rho_deriv(float r, float c)
 {
-	const float abs_r = fabs(r);
-	if(abs_r <= c)
+	if(fabs(r) <= c)
 	{
 		float tukey_r = r / c;
 		tukey_r *= tukey_r;
@@ -45,8 +43,7 @@ _CPU_AND_GPU_CODE_ inline float tukey_rho_deriv(float r, float c)
 
 _CPU_AND_GPU_CODE_ inline float tukey_rho_deriv2(float r, float c)
 {
-	if (fabs(r) < c) return 1.0f;
-	return 0.0f;
+	return fabs(r) < c ? 1.0f : 0.0f;
 }
 
 // Depth Tracker Norm
@@ -64,8 +61,7 @@ _CPU_AND_GPU_CODE_ inline float rho_deriv(float r, float huber_b)
 
 _CPU_AND_GPU_CODE_ inline float rho_deriv2(float r, float huber_b)
 {
-	if (fabs(r) < huber_b) return 2.0f;
-	return 0.0f;
+	return fabs(r) < huber_b ? 2.0f : 0.0f;
 }
 
 template<bool shortIteration, bool rotationOnly, bool useWeights>
@@ -257,6 +253,7 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_exRGB_inv_Ab(
 			break;
 		default:
 			d_point_col = Vector3f(0,0,0); // Should never happen
+			break;
 		};
 
 		// Chain the above with scenePose
