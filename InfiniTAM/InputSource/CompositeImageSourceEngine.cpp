@@ -35,11 +35,6 @@ ITMLib::ITMRGBDCalib CompositeImageSourceEngine::getCalib(void) const
   else throw std::runtime_error("Cannot get calibration parameters from an empty composite image source engine");
 }
 
-ImageSourceEngine *CompositeImageSourceEngine::getCurrentSubengine(void)
-{
-  return m_curSubengineIndex < m_subengines.size() ? m_subengines[m_curSubengineIndex] : NULL;
-}
-
 const ImageSourceEngine *CompositeImageSourceEngine::getCurrentSubengine(void) const
 {
   return m_curSubengineIndex < m_subengines.size() ? m_subengines[m_curSubengineIndex] : NULL;
@@ -55,8 +50,7 @@ Vector2i CompositeImageSourceEngine::getDepthImageSize(void) const
 
 void CompositeImageSourceEngine::getImages(ITMUChar4Image *rgb, ITMShortImage *rawDepth)
 {
-  const ImageSourceEngine *curSubengine = advanceToNextImages();
-  if(curSubengine) getCurrentSubengine()->getImages(rgb, rawDepth);
+  if(advanceToNextImages()) m_subengines[m_curSubengineIndex]->getImages(rgb, rawDepth);
 }
 
 Vector2i CompositeImageSourceEngine::getRGBImageSize(void) const

@@ -58,13 +58,6 @@ public:
    *
    * \return  The current sub-engine.
    */
-  ImageSourceEngine *getCurrentSubengine(void);
-
-  /**
-   * \brief Gets the current sub-engine.
-   *
-   * \return  The current sub-engine.
-   */
   const ImageSourceEngine *getCurrentSubengine(void) const;
 
   /** Override */
