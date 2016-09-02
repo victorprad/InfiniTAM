@@ -300,11 +300,11 @@ static void CreatePointCloud_common(const ITMScene<TVoxel,TIndex> *scene, const 
 	ITMRenderState *renderState, bool skipPoints)
 {
 	Vector2i imgSize = renderState->raycastResult->noDims;
-	Matrix4f invM = trackingState->pose_d->GetInvM() * view->calib->trafo_rgb_to_depth.calib;
+	Matrix4f invM = trackingState->pose_d->GetInvM() * view->calib.trafo_rgb_to_depth.calib;
 
 	// this one is generally done for the colour tracker, so yes, update
 	// the list of visible blocks if possible
-	GenericRaycast(scene, imgSize, invM, view->calib->intrinsics_rgb.projectionParamsSimple.all, renderState, true);
+	GenericRaycast(scene, imgSize, invM, view->calib.intrinsics_rgb.projectionParamsSimple.all, renderState, true);
 	trackingState->pose_pointCloud->SetFrom(trackingState->pose_d);
 
 	trackingState->pointCloud->noTotalPoints = RenderPointCloud<TVoxel, TIndex>(
@@ -328,7 +328,7 @@ static void CreateICPMaps_common(const ITMScene<TVoxel,TIndex> *scene, const ITM
 
 	// this one is generally done for the ICP tracker, so yes, update
 	// the list of visible blocks if possible
-	GenericRaycast(scene, imgSize, invM, view->calib->intrinsics_d.projectionParamsSimple.all, renderState, true);
+	GenericRaycast(scene, imgSize, invM, view->calib.intrinsics_d.projectionParamsSimple.all, renderState, true);
 	trackingState->pose_pointCloud->SetFrom(trackingState->pose_d);
 
 	Vector3f lightSource = -Vector3f(invM.getColumn(2));
@@ -350,7 +350,7 @@ static void ForwardRender_common(const ITMScene<TVoxel, TIndex> *scene, const IT
 	Vector2i imgSize = renderState->raycastResult->noDims;
 	Matrix4f M = trackingState->pose_d->GetM();
 	Matrix4f invM = trackingState->pose_d->GetInvM();
-	const Vector4f& projParams = view->calib->intrinsics_d.projectionParamsSimple.all;
+	const Vector4f& projParams = view->calib.intrinsics_d.projectionParamsSimple.all;
 
 	const Vector4f *pointsRay = renderState->raycastResult->GetData(MEMORYDEVICE_CPU);
 	Vector4f *forwardProjection = renderState->forwardProjection->GetData(MEMORYDEVICE_CPU);

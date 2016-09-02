@@ -27,7 +27,7 @@ static const int k_loopcloseneighbours = 5;
 static const float F_maxdistattemptreloc = 0.2f;
 
 template <typename TVoxel, typename TIndex>
-ITMMultiEngine<TVoxel,TIndex>::ITMMultiEngine(const ITMLibSettings *settings, const ITMRGBDCalib *calib, Vector2i imgSize_rgb, Vector2i imgSize_d)
+ITMMultiEngine<TVoxel,TIndex>::ITMMultiEngine(const ITMLibSettings *settings, const ITMRGBDCalib& calib, Vector2i imgSize_rgb, Vector2i imgSize_d)
 {
 	this->settings = settings;
 

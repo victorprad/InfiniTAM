@@ -38,7 +38,7 @@ namespace ITMLib
 			else
 			{
 				const bool useRadii = true;
-				visualisationEngine->FindSurface(scene, trackingState->pose_d, &view->calib->intrinsics_d, useRadii, USR_FAUTEDEMIEUX, renderState);
+				visualisationEngine->FindSurface(scene, trackingState->pose_d, &view->calib.intrinsics_d, useRadii, USR_FAUTEDEMIEUX, renderState);
 				trackingState->pose_pointCloud->SetFrom(trackingState->pose_d);
 
 				if(requiresFullRendering)
@@ -65,14 +65,14 @@ namespace ITMLib
 
 			if (requiresColourRendering)
 			{
-				ORUtils::SE3Pose pose_rgb(view->calib->trafo_rgb_to_depth.calib_inv * trackingState->pose_d->GetM());
-				visualisationEngine->CreateExpectedDepths(scene, &pose_rgb, &(view->calib->intrinsics_rgb), renderState);
+				ORUtils::SE3Pose pose_rgb(view->calib.trafo_rgb_to_depth.calib_inv * trackingState->pose_d->GetM());
+				visualisationEngine->CreateExpectedDepths(scene, &pose_rgb, &(view->calib.intrinsics_rgb), renderState);
 				visualisationEngine->CreatePointCloud(scene, view, trackingState, renderState, settings->skipPoints);
 				trackingState->age_pointCloud = 0;
 			}
 			else
 			{
-				visualisationEngine->CreateExpectedDepths(scene, trackingState->pose_d, &(view->calib->intrinsics_d), renderState);
+				visualisationEngine->CreateExpectedDepths(scene, trackingState->pose_d, &(view->calib.intrinsics_d), renderState);
 
 				if (requiresFullRendering)
 				{

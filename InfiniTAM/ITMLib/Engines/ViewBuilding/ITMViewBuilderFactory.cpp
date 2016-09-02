@@ -12,7 +12,7 @@ namespace ITMLib
 
 //#################### PUBLIC STATIC MEMBER FUNCTIONS ####################
 
-ITMViewBuilder *ITMViewBuilderFactory::MakeViewBuilder(const ITMRGBDCalib *calib, ITMLibSettings::DeviceType deviceType)
+ITMViewBuilder *ITMViewBuilderFactory::MakeViewBuilder(const ITMRGBDCalib& calib, ITMLibSettings::DeviceType deviceType)
 {
   ITMViewBuilder *viewBuilder = NULL;
 

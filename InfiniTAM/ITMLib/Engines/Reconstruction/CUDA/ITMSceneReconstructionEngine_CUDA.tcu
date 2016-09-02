@@ -107,7 +107,7 @@ void ITMSceneReconstructionEngine_CUDA<TVoxel, ITMVoxelBlockHash>::AllocateScene
 
 	M_d = trackingState->pose_d->GetM(); M_d.inv(invM_d);
 
-	projParams_d = view->calib->intrinsics_d.projectionParamsSimple.all;
+	projParams_d = view->calib.intrinsics_d.projectionParamsSimple.all;
 	invProjParams_d = projParams_d;
 	invProjParams_d.x = 1.0f / invProjParams_d.x;
 	invProjParams_d.y = 1.0f / invProjParams_d.y;
@@ -206,10 +206,10 @@ void ITMSceneReconstructionEngine_CUDA<TVoxel, ITMVoxelBlockHash>::IntegrateInto
 	if(renderState_vh->noVisibleEntries == 0) return;
 
 	M_d = trackingState->pose_d->GetM();
-	if (TVoxel::hasColorInformation) M_rgb = view->calib->trafo_rgb_to_depth.calib_inv * M_d;
+	if (TVoxel::hasColorInformation) M_rgb = view->calib.trafo_rgb_to_depth.calib_inv * M_d;
 
-	projParams_d = view->calib->intrinsics_d.projectionParamsSimple.all;
-	projParams_rgb = view->calib->intrinsics_rgb.projectionParamsSimple.all;
+	projParams_d = view->calib.intrinsics_d.projectionParamsSimple.all;
+	projParams_rgb = view->calib.intrinsics_rgb.projectionParamsSimple.all;
 
 	float mu = scene->sceneParams->mu; int maxW = scene->sceneParams->maxW;
 
@@ -271,10 +271,10 @@ void ITMSceneReconstructionEngine_CUDA<TVoxel, ITMPlainVoxelArray>::IntegrateInt
 	Vector4f projParams_d, projParams_rgb;
 
 	M_d = trackingState->pose_d->GetM();
-	if (TVoxel::hasColorInformation) M_rgb = view->calib->trafo_rgb_to_depth.calib_inv * M_d;
+	if (TVoxel::hasColorInformation) M_rgb = view->calib.trafo_rgb_to_depth.calib_inv * M_d;
 
-	projParams_d = view->calib->intrinsics_d.projectionParamsSimple.all;
-	projParams_rgb = view->calib->intrinsics_rgb.projectionParamsSimple.all;
+	projParams_d = view->calib.intrinsics_d.projectionParamsSimple.all;
+	projParams_rgb = view->calib.intrinsics_rgb.projectionParamsSimple.all;
 
 	float mu = scene->sceneParams->mu; int maxW = scene->sceneParams->maxW;
 

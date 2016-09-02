@@ -23,7 +23,7 @@ BaseImageSourceEngine::BaseImageSourceEngine(const char *calibFilename)
 		DIEWITHEXCEPTION("error: path to the calibration file was specified but data could not be read");
 }
 
-ITMLib::ITMRGBDCalib& BaseImageSourceEngine::getCalib()
+ITMLib::ITMRGBDCalib BaseImageSourceEngine::getCalib() const
 {
   return calib;
 }
