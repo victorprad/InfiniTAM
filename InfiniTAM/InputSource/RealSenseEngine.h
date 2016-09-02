@@ -27,8 +27,8 @@ public:
 
 	bool hasMoreImages(void);
 	void getImages(ITMUChar4Image *rgb, ITMShortImage *rawDepth);
-	Vector2i getDepthImageSize(void);
-	Vector2i getRGBImageSize(void);
+	Vector2i getDepthImageSize(void) const;
+	Vector2i getRGBImageSize(void) const;
 };
 
 }

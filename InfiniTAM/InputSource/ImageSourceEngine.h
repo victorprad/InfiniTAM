@@ -28,7 +28,7 @@ public:
 	 * \pre     hasMoreImages()
 	 * \return  The size of the next depth image (if any).
 	 */
-	virtual Vector2i getDepthImageSize(void) = 0;
+	virtual Vector2i getDepthImageSize(void) const = 0;
 
 	/**
 	 * \brief Gets the next RGB and depth images (if any).
@@ -45,7 +45,7 @@ public:
 	 * \pre     hasMoreImages()
 	 * \return  The size of the next RGB image (if any).
 	 */
-	virtual Vector2i getRGBImageSize(void) = 0;
+	virtual Vector2i getRGBImageSize(void) const = 0;
 
 	/**
 	 * \brief Determines whether or not the image source engine is able to yield more RGB-D images.
@@ -102,10 +102,10 @@ private:
 	ITMUChar4Image *cached_rgb;
 	ITMShortImage *cached_depth;
 
-	void loadIntoCache();
-	size_t cachedFrameNo;
+	void loadIntoCache() const;
+	mutable size_t cachedFrameNo;
 	size_t currentFrameNo;
-	bool cacheIsValid;
+	mutable bool cacheIsValid;
 
 	PathGenerator pathGenerator;
 public:
@@ -115,8 +115,8 @@ public:
 
 	bool hasMoreImages(void);
 	void getImages(ITMUChar4Image *rgb, ITMShortImage *rawDepth);
-	Vector2i getDepthImageSize(void);
-	Vector2i getRGBImageSize(void);
+	Vector2i getDepthImageSize(void) const;
+	Vector2i getRGBImageSize(void) const;
 };
 
 class CalibSource : public BaseImageSourceEngine
@@ -131,8 +131,8 @@ public:
 
 	bool hasMoreImages(void) { return true; }
 	void getImages(ITMUChar4Image *rgb, ITMShortImage *rawDepth) { }
-	Vector2i getDepthImageSize(void) { return imgSize; }
-	Vector2i getRGBImageSize(void) { return imgSize; }
+	Vector2i getDepthImageSize(void) const { return imgSize; }
+	Vector2i getRGBImageSize(void) const { return imgSize; }
 };
 
 class RawFileReader : public BaseImageSourceEngine
@@ -159,8 +159,8 @@ public:
 	bool hasMoreImages(void);
 	void getImages(ITMUChar4Image *rgb, ITMShortImage *rawDepth);
 
-	Vector2i getDepthImageSize(void) { return imgSize; }
-	Vector2i getRGBImageSize(void) { return imgSize; }
+	Vector2i getDepthImageSize(void) const { return imgSize; }
+	Vector2i getRGBImageSize(void) const { return imgSize; }
 };
 
 }

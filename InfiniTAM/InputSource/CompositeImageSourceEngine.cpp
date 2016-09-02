@@ -40,7 +40,7 @@ ImageSourceEngine *CompositeImageSourceEngine::getCurrentSubengine(void)
   return m_curSubengineIndex < m_subengines.size() ? m_subengines[m_curSubengineIndex] : NULL;
 }
 
-Vector2i CompositeImageSourceEngine::getDepthImageSize(void)
+Vector2i CompositeImageSourceEngine::getDepthImageSize(void) const
 {
   // There is an assumption being made that the depth image sizes for all the sub-engines are the same,
   // although this is not currently being enforced.
@@ -54,7 +54,7 @@ void CompositeImageSourceEngine::getImages(ITMUChar4Image *rgb, ITMShortImage *r
   if(curSubengine) curSubengine->getImages(rgb, rawDepth);
 }
 
-Vector2i CompositeImageSourceEngine::getRGBImageSize(void)
+Vector2i CompositeImageSourceEngine::getRGBImageSize(void) const
 {
   // There is an assumption being made that the RGB image sizes for all the sub-engines are the same,
   // although this is not currently being enforced.

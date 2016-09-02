@@ -91,7 +91,7 @@ ImageFileReader<PathGenerator>::~ImageFileReader()
 }
 
 template <typename PathGenerator>
-void ImageFileReader<PathGenerator>::loadIntoCache(void)
+void ImageFileReader<PathGenerator>::loadIntoCache(void) const
 {
 	if (currentFrameNo == cachedFrameNo) return;
 	cachedFrameNo = currentFrameNo;
@@ -133,14 +133,14 @@ void ImageFileReader<PathGenerator>::getImages(ITMUChar4Image *rgb, ITMShortImag
 }
 
 template <typename PathGenerator>
-Vector2i ImageFileReader<PathGenerator>::getDepthImageSize(void)
+Vector2i ImageFileReader<PathGenerator>::getDepthImageSize(void) const
 {
 	loadIntoCache();
 	return cached_depth->noDims;
 }
 
 template <typename PathGenerator>
-Vector2i ImageFileReader<PathGenerator>::getRGBImageSize(void)
+Vector2i ImageFileReader<PathGenerator>::getRGBImageSize(void) const
 {
 	loadIntoCache();
 	return cached_rgb->noDims;

@@ -61,13 +61,13 @@ public:
   ImageSourceEngine *getCurrentSubengine(void);
 
   /** Override */
-  virtual Vector2i getDepthImageSize(void);
+  virtual Vector2i getDepthImageSize(void) const;
 
   /** Override */
   virtual void getImages(ITMUChar4Image *rgb, ITMShortImage *rawDepth);
 
   /** Override */
-  virtual Vector2i getRGBImageSize(void);
+  virtual Vector2i getRGBImageSize(void) const;
 
   /** Override */
   virtual bool hasMoreImages(void);

@@ -127,8 +127,8 @@ void Kinect2Engine::getImages(ITMUChar4Image *rgbImage, ITMShortImage *rawDepthI
 }
 
 bool Kinect2Engine::hasMoreImages(void) { return true; }
-Vector2i Kinect2Engine::getDepthImageSize(void) { return imageSize_d; }
-Vector2i Kinect2Engine::getRGBImageSize(void) { return imageSize_rgb; }
+Vector2i Kinect2Engine::getDepthImageSize(void) const { return imageSize_d; }
+Vector2i Kinect2Engine::getRGBImageSize(void) const { return imageSize_rgb; }
 
 #else
 
@@ -144,9 +144,9 @@ void Kinect2Engine::getImages(ITMUChar4Image *rgbImage, ITMShortImage *rawDepthI
 { return; }
 bool Kinect2Engine::hasMoreImages(void)
 { return false; }
-Vector2i Kinect2Engine::getDepthImageSize(void)
+Vector2i Kinect2Engine::getDepthImageSize(void) const
 { return Vector2i(0,0); }
-Vector2i Kinect2Engine::getRGBImageSize(void)
+Vector2i Kinect2Engine::getRGBImageSize(void) const
 { return Vector2i(0,0); }
 
 #endif

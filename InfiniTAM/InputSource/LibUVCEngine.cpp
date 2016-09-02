@@ -374,8 +374,8 @@ void LibUVCEngine::getImages(ITMUChar4Image *rgbImage, ITMShortImage *rawDepthIm
 }
 
 bool LibUVCEngine::hasMoreImages(void) { return true; }
-Vector2i LibUVCEngine::getDepthImageSize(void) { return imageSize_d; }
-Vector2i LibUVCEngine::getRGBImageSize(void) { return imageSize_rgb; }
+Vector2i LibUVCEngine::getDepthImageSize(void) const { return imageSize_d; }
+Vector2i LibUVCEngine::getRGBImageSize(void) const { return imageSize_rgb; }
 
 #else
 
@@ -390,9 +390,9 @@ void LibUVCEngine::getImages(ITMUChar4Image *rgbImage, ITMShortImage *rawDepthIm
 { return; }
 bool LibUVCEngine::hasMoreImages(void)
 { return false; }
-Vector2i LibUVCEngine::getDepthImageSize(void)
+Vector2i LibUVCEngine::getDepthImageSize(void) const
 { return Vector2i(0,0); }
-Vector2i LibUVCEngine::getRGBImageSize(void)
+Vector2i LibUVCEngine::getRGBImageSize(void) const
 { return Vector2i(0,0); }
 
 #endif
