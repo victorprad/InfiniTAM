@@ -14,10 +14,44 @@ class ImageSourceEngine
 public:
 	virtual ~ImageSourceEngine() {}
 
+	/**
+	 * \brief Gets the calibration parameters associated with the next RGB-D image (if any).
+	 *
+	 * \pre     hasMoreImages()
+	 * \return  The calibration parameters associated the next RGB-D image (if any).
+	 */
 	virtual ITMLib::ITMRGBDCalib& getCalib() = 0;
+
+	/**
+	 * \brief Gets the size of the next depth image (if any).
+	 *
+	 * \pre     hasMoreImages()
+	 * \return  The size of the next depth image (if any).
+	 */
 	virtual Vector2i getDepthImageSize(void) = 0;
+
+	/**
+	 * \brief Gets the next RGB and depth images (if any).
+	 *
+	 * \pre             hasMoreImages()
+	 * \param rgb       An image into which to store the next RGB image.
+	 * \param rawDepth  An image into which to store the next depth image.
+	 */
 	virtual void getImages(ITMUChar4Image *rgb, ITMShortImage *rawDepth) = 0;
+
+	/**
+	 * \brief Gets the size of the next RGB image (if any).
+	 *
+	 * \pre     hasMoreImages()
+	 * \return  The size of the next RGB image (if any).
+	 */
 	virtual Vector2i getRGBImageSize(void) = 0;
+
+	/**
+	 * \brief Determines whether or not the image source engine is able to yield more RGB-D images.
+	 *
+	 * \return  true, if the image source engine is able to yield more RGB-D images, or false otherwise.
+	 */
 	virtual bool hasMoreImages(void) = 0;
 };
 
