@@ -116,7 +116,7 @@ void ImageFileReader<PathGenerator>::loadIntoCache(void) const
 }
 
 template <typename PathGenerator>
-bool ImageFileReader<PathGenerator>::hasMoreImages(void)
+bool ImageFileReader<PathGenerator>::hasMoreImages(void) const
 {
 	loadIntoCache();
 	return cacheIsValid;
@@ -189,7 +189,7 @@ void RawFileReader::ResizeIntrinsics(ITMIntrinsics &intrinsics, float ratio)
 	intrinsics.projectionParamsSimple.all *= ratio;
 }
 
-void RawFileReader::loadIntoCache(void)
+void RawFileReader::loadIntoCache(void) const
 {
 	if (currentFrameNo == cachedFrameNo) return;
 	cachedFrameNo = currentFrameNo;
@@ -234,7 +234,7 @@ void RawFileReader::loadIntoCache(void)
 }
 
 
-bool RawFileReader::hasMoreImages(void)
+bool RawFileReader::hasMoreImages(void) const
 {
 	loadIntoCache();
 

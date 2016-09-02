@@ -40,6 +40,11 @@ ImageSourceEngine *CompositeImageSourceEngine::getCurrentSubengine(void)
   return m_curSubengineIndex < m_subengines.size() ? m_subengines[m_curSubengineIndex] : NULL;
 }
 
+const ImageSourceEngine *CompositeImageSourceEngine::getCurrentSubengine(void) const
+{
+  return m_curSubengineIndex < m_subengines.size() ? m_subengines[m_curSubengineIndex] : NULL;
+}
+
 Vector2i CompositeImageSourceEngine::getDepthImageSize(void) const
 {
   // There is an assumption being made that the depth image sizes for all the sub-engines are the same,
@@ -50,8 +55,8 @@ Vector2i CompositeImageSourceEngine::getDepthImageSize(void) const
 
 void CompositeImageSourceEngine::getImages(ITMUChar4Image *rgb, ITMShortImage *rawDepth)
 {
-  ImageSourceEngine *curSubengine = advanceToNextImages();
-  if(curSubengine) curSubengine->getImages(rgb, rawDepth);
+  const ImageSourceEngine *curSubengine = advanceToNextImages();
+  if(curSubengine) getCurrentSubengine()->getImages(rgb, rawDepth);
 }
 
 Vector2i CompositeImageSourceEngine::getRGBImageSize(void) const
@@ -62,16 +67,16 @@ Vector2i CompositeImageSourceEngine::getRGBImageSize(void) const
   else throw std::runtime_error("Cannot get the RGB image size from an empty composite image source engine");
 }
 
-bool CompositeImageSourceEngine::hasMoreImages(void)
+bool CompositeImageSourceEngine::hasMoreImages(void) const
 {
   return advanceToNextImages() != NULL;
 }
 
 //#################### PRIVATE MEMBER FUNCTIONS ####################
 
-ImageSourceEngine *CompositeImageSourceEngine::advanceToNextImages(void)
+const ImageSourceEngine *CompositeImageSourceEngine::advanceToNextImages(void) const
 {
-  ImageSourceEngine *curSubengine = getCurrentSubengine();
+  const ImageSourceEngine *curSubengine = getCurrentSubengine();
   while(curSubengine && !curSubengine->hasMoreImages())
   {
     ++m_curSubengineIndex;

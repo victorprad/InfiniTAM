@@ -52,7 +52,7 @@ public:
 	 *
 	 * \return  true, if the image source engine is able to yield more RGB-D images, or false otherwise.
 	 */
-	virtual bool hasMoreImages(void) = 0;
+	virtual bool hasMoreImages(void) const = 0;
 };
 
 class BaseImageSourceEngine : public ImageSourceEngine
@@ -113,7 +113,7 @@ public:
 	ImageFileReader(const char *calibFilename, const PathGenerator& pathGenerator_, size_t initialFrameNo = 0);
 	~ImageFileReader();
 
-	bool hasMoreImages(void);
+	bool hasMoreImages(void) const;
 	void getImages(ITMUChar4Image *rgb, ITMShortImage *rawDepth);
 	Vector2i getDepthImageSize(void) const;
 	Vector2i getRGBImageSize(void) const;
@@ -129,7 +129,7 @@ public:
 	CalibSource(const char *calibFilename, Vector2i setImageSize, float ratio);
 	~CalibSource() { }
 
-	bool hasMoreImages(void) { return true; }
+	bool hasMoreImages(void) const { return true; }
 	void getImages(ITMUChar4Image *rgb, ITMShortImage *rawDepth) { }
 	Vector2i getDepthImageSize(void) const { return imgSize; }
 	Vector2i getRGBImageSize(void) const { return imgSize; }
@@ -142,11 +142,11 @@ private:
 	char rgbImageMask[BUF_SIZE];
 	char depthImageMask[BUF_SIZE];
 
-	ITMUChar4Image *cached_rgb;
-	ITMShortImage *cached_depth;
+	mutable ITMUChar4Image *cached_rgb;
+	mutable ITMShortImage *cached_depth;
 
-	void loadIntoCache();
-	int cachedFrameNo;
+	void loadIntoCache() const;
+	mutable int cachedFrameNo;
 	int currentFrameNo;
 
 	Vector2i imgSize;
@@ -156,7 +156,7 @@ public:
 	RawFileReader(const char *calibFilename, const char *rgbImageMask, const char *depthImageMask, Vector2i setImageSize, float ratio);
 	~RawFileReader() { }
 
-	bool hasMoreImages(void);
+	bool hasMoreImages(void) const;
 	void getImages(ITMUChar4Image *rgb, ITMShortImage *rawDepth);
 
 	Vector2i getDepthImageSize(void) const { return imgSize; }

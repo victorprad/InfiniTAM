@@ -373,7 +373,7 @@ void LibUVCEngine::getImages(ITMUChar4Image *rgbImage, ITMShortImage *rawDepthIm
 	data->got_color = data->got_depth = 0;
 }
 
-bool LibUVCEngine::hasMoreImages(void) { return true; }
+bool LibUVCEngine::hasMoreImages(void) const { return true; }
 Vector2i LibUVCEngine::getDepthImageSize(void) const { return imageSize_d; }
 Vector2i LibUVCEngine::getRGBImageSize(void) const { return imageSize_rgb; }
 
@@ -388,7 +388,7 @@ LibUVCEngine::~LibUVCEngine()
 {}
 void LibUVCEngine::getImages(ITMUChar4Image *rgbImage, ITMShortImage *rawDepthImage)
 { return; }
-bool LibUVCEngine::hasMoreImages(void)
+bool LibUVCEngine::hasMoreImages(void) const
 { return false; }
 Vector2i LibUVCEngine::getDepthImageSize(void) const
 { return Vector2i(0,0); }

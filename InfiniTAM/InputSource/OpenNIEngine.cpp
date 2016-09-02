@@ -319,7 +319,7 @@ void OpenNIEngine::getImages(ITMUChar4Image *rgbImage, ITMShortImage *rawDepthIm
 	return /*true*/;
 }
 
-bool OpenNIEngine::hasMoreImages(void) { return data && !data->eofListener.reachedEOF(); }
+bool OpenNIEngine::hasMoreImages(void) const { return data && !data->eofListener.reachedEOF(); }
 Vector2i OpenNIEngine::getDepthImageSize(void) const { return data ? imageSize_d : Vector2i(0,0); }
 Vector2i OpenNIEngine::getRGBImageSize(void) const { return data ? imageSize_rgb : Vector2i(0,0); }
 
@@ -336,7 +336,7 @@ OpenNIEngine::~OpenNIEngine()
 {}
 void OpenNIEngine::getImages(ITMUChar4Image *rgbImage, ITMShortImage *rawDepthImage)
 { return; }
-bool OpenNIEngine::hasMoreImages(void)
+bool OpenNIEngine::hasMoreImages(void) const
 { return false; }
 Vector2i OpenNIEngine::getDepthImageSize(void) const
 { return Vector2i(0,0); }

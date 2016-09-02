@@ -98,7 +98,7 @@ class FFMPEGReader::PrivateData {
 		return ret;
 	}
 
-	bool hasMoreImages(void)
+	bool hasMoreImages(void) const
 	{
 		//fprintf(stderr, "check: %i %i %i %i\n", providesColor(), hasQueuedColor(), providesDepth(), hasQueuedDepth());
 		if (providesColor()) {
@@ -450,7 +450,7 @@ FFMPEGReader::~FFMPEGReader(void)
 	}
 }
 
-bool FFMPEGReader::hasMoreImages(void)
+bool FFMPEGReader::hasMoreImages(void) const
 {
 	if (!isValid) return false;
 	if (!mData1->hasMoreImages()) return false;
@@ -558,7 +558,7 @@ FFMPEGReader::~FFMPEGReader(void)
 {}
 void FFMPEGReader::getImages(ITMUChar4Image *rgbImage, ITMShortImage *rawDepthImage)
 { return; }
-bool FFMPEGReader::hasMoreImages(void)
+bool FFMPEGReader::hasMoreImages(void) const
 { return false; }
 Vector2i FFMPEGReader::getDepthImageSize(void) const
 { return Vector2i(0,0); }

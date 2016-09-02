@@ -16,7 +16,7 @@ class CompositeImageSourceEngine : public ImageSourceEngine
   //#################### PRIVATE VARIABLES ####################
 private:
   /** The index of the current sub-engine. */
-  size_t m_curSubengineIndex;
+  mutable size_t m_curSubengineIndex;
 
   /** The sequence of image source engines from which the composite will yield images. */
   std::vector<ImageSourceEngine*> m_subengines;
@@ -60,6 +60,13 @@ public:
    */
   ImageSourceEngine *getCurrentSubengine(void);
 
+  /**
+   * \brief Gets the current sub-engine.
+   *
+   * \return  The current sub-engine.
+   */
+  const ImageSourceEngine *getCurrentSubengine(void) const;
+
   /** Override */
   virtual Vector2i getDepthImageSize(void) const;
 
@@ -70,7 +77,7 @@ public:
   virtual Vector2i getRGBImageSize(void) const;
 
   /** Override */
-  virtual bool hasMoreImages(void);
+  virtual bool hasMoreImages(void) const;
 
   //#################### PRIVATE MEMBER FUNCTIONS ####################
 private:
@@ -79,7 +86,7 @@ private:
    *
    * \return  The sub-engine, if any, that can provide the next images, or NULL if there are no more images to provide.
    */
-  ImageSourceEngine *advanceToNextImages(void);
+  const ImageSourceEngine *advanceToNextImages(void) const;
 };
 
 }
