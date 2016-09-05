@@ -35,7 +35,7 @@ namespace ITMLib
 		ITMFloatImage *depthConfidence;
 
 		ITMView(const ITMRGBDCalib& calibration, Vector2i imgSize_rgb, Vector2i imgSize_d, bool useGPU)
-    : calib(calibration)
+		: calib(calibration)
 		{
 			this->rgb = new ITMUChar4Image(imgSize_rgb, true, useGPU);
 			this->depth = new ITMFloatImage(imgSize_d, true, useGPU);
