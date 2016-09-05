@@ -28,7 +28,7 @@ void ITMColorTracker::TrackCamera(ITMTrackingState *trackingState, const ITMView
 
 	this->PrepareForEvaluation(view);
 
-	ORUtils::SE3Pose currentPara(view->calib->trafo_rgb_to_depth.calib_inv * trackingState->pose_d->GetM());
+	ORUtils::SE3Pose currentPara(view->calib.trafo_rgb_to_depth.calib_inv * trackingState->pose_d->GetM());
 	for (int levelId = viewHierarchy->noLevels - 1; levelId >= 0; levelId--)
 	{
 		this->levelId = levelId;
@@ -39,7 +39,7 @@ void ITMColorTracker::TrackCamera(ITMTrackingState *trackingState, const ITMView
 
 	// these following will coerce the result back into the chosen
 	// parameterization for rotations
-	trackingState->pose_d->SetM(view->calib->trafo_rgb_to_depth.calib * currentPara.GetM());
+	trackingState->pose_d->SetM(view->calib.trafo_rgb_to_depth.calib * currentPara.GetM());
 
 	trackingState->pose_d->Coerce();
 

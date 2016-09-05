@@ -8,7 +8,7 @@
 using namespace ITMLib;
 using namespace ORUtils;
 
-ITMViewBuilder_CPU::ITMViewBuilder_CPU(const ITMRGBDCalib *calib):ITMViewBuilder(calib) { }
+ITMViewBuilder_CPU::ITMViewBuilder_CPU(const ITMRGBDCalib& calib):ITMViewBuilder(calib) { }
 ITMViewBuilder_CPU::~ITMViewBuilder_CPU(void) { }
 
 void ITMViewBuilder_CPU::UpdateView(ITMView **view_ptr, ITMUChar4Image *rgbImage, ITMShortImage *rawDepthImage, bool useBilateralFilter, bool modelSensorNoise)
@@ -32,13 +32,13 @@ void ITMViewBuilder_CPU::UpdateView(ITMView **view_ptr, ITMUChar4Image *rgbImage
 	view->rgb->SetFrom(rgbImage, MemoryBlock<Vector4u>::CPU_TO_CPU);
 	this->shortImage->SetFrom(rawDepthImage, MemoryBlock<short>::CPU_TO_CPU);
 
-	switch (view->calib->disparityCalib.GetType())
+	switch (view->calib.disparityCalib.GetType())
 	{
 	case ITMDisparityCalib::TRAFO_KINECT:
-		this->ConvertDisparityToDepth(view->depth, this->shortImage, &(view->calib->intrinsics_d), view->calib->disparityCalib.GetParams());
+		this->ConvertDisparityToDepth(view->depth, this->shortImage, &(view->calib.intrinsics_d), view->calib.disparityCalib.GetParams());
 		break;
 	case ITMDisparityCalib::TRAFO_AFFINE:
-		this->ConvertDepthAffineToFloat(view->depth, this->shortImage, view->calib->disparityCalib.GetParams());
+		this->ConvertDepthAffineToFloat(view->depth, this->shortImage, view->calib.disparityCalib.GetParams());
 		break;
 	default:
 		break;
@@ -57,7 +57,7 @@ void ITMViewBuilder_CPU::UpdateView(ITMView **view_ptr, ITMUChar4Image *rgbImage
 
 	if (modelSensorNoise)
 	{
-		this->ComputeNormalAndWeights(view->depthNormal, view->depthUncertainty, view->depth, view->calib->intrinsics_d.projectionParamsSimple.all);
+		this->ComputeNormalAndWeights(view->depthNormal, view->depthUncertainty, view->depth, view->calib.intrinsics_d.projectionParamsSimple.all);
 	}
 }
 

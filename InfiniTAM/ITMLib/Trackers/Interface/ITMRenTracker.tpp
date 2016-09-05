@@ -77,7 +77,7 @@ ITMRenTracker<TVoxel,TIndex>::~ITMRenTracker(void)
 template<class TVoxel, class TIndex>
 void ITMRenTracker<TVoxel, TIndex>::PrepareForEvaluation(const ITMView *view)
 {
-	Vector4f intrinsics = view->calib->intrinsics_d.projectionParamsSimple.all;
+	Vector4f intrinsics = view->calib.intrinsics_d.projectionParamsSimple.all;
 
 	this->tempImage1->noDims = view->depth->noDims;
 	this->tempImage1->dataSize = view->depth->dataSize;

@@ -20,7 +20,7 @@ public:
 	 * \pre     hasMoreImages()
 	 * \return  The calibration parameters associated the next RGB-D image (if any).
 	 */
-	virtual ITMLib::ITMRGBDCalib& getCalib() = 0;
+	virtual ITMLib::ITMRGBDCalib getCalib() const = 0;
 
 	/**
 	 * \brief Gets the size of the next depth image (if any).
@@ -63,7 +63,8 @@ protected:
 public:
 	explicit BaseImageSourceEngine(const char *calibFilename);
 
-	ITMLib::ITMRGBDCalib& getCalib();
+	/** Override */
+	virtual ITMLib::ITMRGBDCalib getCalib() const;
 };
 
 class ImageMaskPathGenerator

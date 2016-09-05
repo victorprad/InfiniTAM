@@ -17,7 +17,7 @@
 using namespace ITMLib;
 
 template <typename TVoxel, typename TIndex>
-ITMBasicEngine<TVoxel,TIndex>::ITMBasicEngine(const ITMLibSettings *settings, const ITMRGBDCalib *calib, Vector2i imgSize_rgb, Vector2i imgSize_d)
+ITMBasicEngine<TVoxel,TIndex>::ITMBasicEngine(const ITMLibSettings *settings, const ITMRGBDCalib& calib, Vector2i imgSize_rgb, Vector2i imgSize_d)
 {
 	this->settings = settings;
 
@@ -348,7 +348,7 @@ void ITMBasicEngine<TVoxel,TIndex>::GetImage(ITMUChar4Image *out, GetImageType g
 			imageType = IITMVisualisationEngine::RENDER_SHADED_GREYSCALE_IMAGENORMALS;
 		}
 
-		visualisationEngine->RenderImage(scene, trackingState->pose_d, &view->calib->intrinsics_d, renderState_live, renderState_live->raycastImage, imageType, raycastType);
+		visualisationEngine->RenderImage(scene, trackingState->pose_d, &view->calib.intrinsics_d, renderState_live, renderState_live->raycastImage, imageType, raycastType);
 
 		ORUtils::Image<Vector4u> *srcImage = NULL;
 		if (relocalisationCount != 0) srcImage = kfRaycast;

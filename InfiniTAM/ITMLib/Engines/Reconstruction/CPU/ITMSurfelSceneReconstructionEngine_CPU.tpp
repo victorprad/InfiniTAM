@@ -36,9 +36,9 @@ void ITMSurfelSceneReconstructionEngine_CPU<TSurfel>::AddNewSurfels(ITMSurfelSce
   if(newSurfels == NULL) return;
 
   const Vector4u *colourMap = view->rgb->GetData(MEMORYDEVICE_CPU);
-  const Matrix4f& depthToRGB = view->calib->trafo_rgb_to_depth.calib_inv;
+  const Matrix4f& depthToRGB = view->calib.trafo_rgb_to_depth.calib_inv;
   const Vector3f *normalMap = this->m_normalMapMB->GetData(MEMORYDEVICE_CPU);
-  const Vector4f& projParamsRGB = view->calib->intrinsics_rgb.projectionParamsSimple.all;
+  const Vector4f& projParamsRGB = view->calib.intrinsics_rgb.projectionParamsSimple.all;
   const float *radiusMap = this->m_radiusMapMB->GetData(MEMORYDEVICE_CPU);
   const ITMSurfelSceneParams& sceneParams = scene->GetParams();
   const Matrix4f T = trackingState->pose_d->GetInvM();
@@ -91,10 +91,10 @@ void ITMSurfelSceneReconstructionEngine_CPU<TSurfel>::FuseMatchedPoints(ITMSurfe
   const int depthMapHeight = view->depth->noDims.y;
   const int depthMapWidth = view->depth->noDims.x;
   const unsigned int *correspondenceMap = this->m_correspondenceMapMB->GetData(MEMORYDEVICE_CPU);
-  const Matrix4f& depthToRGB = view->calib->trafo_rgb_to_depth.calib_inv;
+  const Matrix4f& depthToRGB = view->calib.trafo_rgb_to_depth.calib_inv;
   const Vector3f *normalMap = this->m_normalMapMB->GetData(MEMORYDEVICE_CPU);
   const int pixelCount = static_cast<int>(view->depth->dataSize);
-  const Vector4f& projParamsRGB = view->calib->intrinsics_rgb.projectionParamsSimple.all;
+  const Vector4f& projParamsRGB = view->calib.intrinsics_rgb.projectionParamsSimple.all;
   const float *radiusMap = this->m_radiusMapMB->GetData(MEMORYDEVICE_CPU);
   const ITMSurfelSceneParams& sceneParams = scene->GetParams();
   TSurfel *surfels = scene->GetSurfels()->GetData(MEMORYDEVICE_CPU);
@@ -211,7 +211,7 @@ void ITMSurfelSceneReconstructionEngine_CPU<TSurfel>::PreprocessDepthMap(const I
 {
   const float *depthMap = view->depth->GetData(MEMORYDEVICE_CPU);
   const int height = view->depth->noDims.y;
-  const ITMIntrinsics& intrinsics = view->calib->intrinsics_d;
+  const ITMIntrinsics& intrinsics = view->calib.intrinsics_d;
   Vector3f *normalMap = this->m_normalMapMB->GetData(MEMORYDEVICE_CPU);
   const int pixelCount = static_cast<int>(view->depth->dataSize);
   float *radiusMap = this->m_radiusMapMB->GetData(MEMORYDEVICE_CPU);

@@ -21,7 +21,7 @@ namespace ITMLib
 
 		void UpdateView(ITMView **view, ITMUChar4Image *rgbImage, ITMShortImage *depthImage, bool useBilateralFilter, ITMIMUMeasurement *imuMeasurement, bool modelSensorNoise = false);
 
-		ITMViewBuilder_CPU(const ITMRGBDCalib *calib);
+		ITMViewBuilder_CPU(const ITMRGBDCalib& calib);
 		~ITMViewBuilder_CPU(void);
 	};
 }

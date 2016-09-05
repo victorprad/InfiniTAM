@@ -332,9 +332,9 @@ static void CreatePointCloud_common(const ITMScene<TVoxel, TIndex> *scene, const
 	bool skipPoints, uint *noTotalPoints_device)
 {
 	Vector2i imgSize = renderState->raycastResult->noDims;
-	Matrix4f invM = trackingState->pose_d->GetInvM() * view->calib->trafo_rgb_to_depth.calib;
+	Matrix4f invM = trackingState->pose_d->GetInvM() * view->calib.trafo_rgb_to_depth.calib;
 
-	GenericRaycast(scene, imgSize, invM, view->calib->intrinsics_rgb.projectionParamsSimple.all, renderState, true);
+	GenericRaycast(scene, imgSize, invM, view->calib.intrinsics_rgb.projectionParamsSimple.all, renderState, true);
 	trackingState->pose_pointCloud->SetFrom(trackingState->pose_d);
 
 	ORcudaSafeCall(cudaMemsetAsync(noTotalPoints_device, 0, sizeof(uint)));
@@ -359,7 +359,7 @@ void CreateICPMaps_common(const ITMScene<TVoxel, TIndex> *scene, const ITMView *
 	Vector2i imgSize = renderState->raycastResult->noDims;
 	Matrix4f invM = trackingState->pose_d->GetInvM();
 
-	GenericRaycast(scene, imgSize, invM, view->calib->intrinsics_d.projectionParamsSimple.all, renderState, true);
+	GenericRaycast(scene, imgSize, invM, view->calib.intrinsics_d.projectionParamsSimple.all, renderState, true);
 	trackingState->pose_pointCloud->SetFrom(trackingState->pose_d);
 
 	Vector4f *pointsMap = trackingState->pointCloud->locations->GetData(MEMORYDEVICE_CUDA);
@@ -381,7 +381,7 @@ static void ForwardRender_common(const ITMScene<TVoxel, TIndex> *scene, const IT
 	Vector2i imgSize = renderState->raycastResult->noDims;
 	Matrix4f M = trackingState->pose_d->GetM();
 	Matrix4f invM = trackingState->pose_d->GetInvM();
-	const Vector4f& projParams = view->calib->intrinsics_d.projectionParamsSimple.all;
+	const Vector4f& projParams = view->calib.intrinsics_d.projectionParamsSimple.all;
 
 	const Vector4f *pointsRay = renderState->raycastResult->GetData(MEMORYDEVICE_CUDA);
 	float *currentDepth = view->depth->GetData(MEMORYDEVICE_CUDA);
