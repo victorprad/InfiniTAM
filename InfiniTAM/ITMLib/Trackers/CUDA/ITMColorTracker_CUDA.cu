@@ -47,7 +47,7 @@ int ITMColorTracker_CUDA::F_oneLevel(float *f, ORUtils::SE3Pose *pose)
 {
 	int noTotalPoints = trackingState->pointCloud->noTotalPoints;
 
-	Vector4f projParams = view->calib->intrinsics_rgb.projectionParamsSimple.all;
+	Vector4f projParams = view->calib.intrinsics_rgb.projectionParamsSimple.all;
 	projParams.x /= 1 << levelId; projParams.y /= 1 << levelId;
 	projParams.z /= 1 << levelId; projParams.w /= 1 << levelId;
 
@@ -89,7 +89,7 @@ void ITMColorTracker_CUDA::G_oneLevel(float *gradient, float *hessian, ORUtils::
 {
 	int noTotalPoints = trackingState->pointCloud->noTotalPoints;
 
-	Vector4f projParams = view->calib->intrinsics_rgb.projectionParamsSimple.all;
+	Vector4f projParams = view->calib.intrinsics_rgb.projectionParamsSimple.all;
 	projParams.x /= 1 << levelId; projParams.y /= 1 << levelId;
 	projParams.z /= 1 << levelId; projParams.w /= 1 << levelId;
 

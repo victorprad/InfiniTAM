@@ -217,7 +217,7 @@ void UIEngine::glutKeyUpFunction(unsigned char key, int x, int y)
 
 			uiEngine->freeviewPose.SetFrom(uiEngine->mainEngine->GetTrackingState()->pose_d);
 			if (uiEngine->mainEngine->GetView() != NULL) {
-				uiEngine->freeviewIntrinsics = uiEngine->mainEngine->GetView()->calib->intrinsics_d;
+				uiEngine->freeviewIntrinsics = uiEngine->mainEngine->GetView()->calib.intrinsics_d;
 				uiEngine->outImage[0]->ChangeDims(uiEngine->mainEngine->GetView()->depth->noDims);
 			}
 			ITMMultiEngine<ITMVoxel,ITMVoxelIndex> *multiEngine = dynamic_cast<ITMMultiEngine<ITMVoxel,ITMVoxelIndex>*>(uiEngine->mainEngine);

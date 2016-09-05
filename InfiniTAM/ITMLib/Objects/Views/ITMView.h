@@ -15,7 +15,7 @@ namespace ITMLib
 	{
 	public:
 		/// Intrinsic calibration information for the view.
-		ITMRGBDCalib *calib;
+		const ITMRGBDCalib calib;
 
 		/// RGB colour image.
 		ITMUChar4Image *rgb; 
@@ -34,9 +34,9 @@ namespace ITMLib
 		// confidence based on distance from center
 		ITMFloatImage *depthConfidence;
 
-		ITMView(const ITMRGBDCalib *calibration, Vector2i imgSize_rgb, Vector2i imgSize_d, bool useGPU)
+		ITMView(const ITMRGBDCalib& calibration, Vector2i imgSize_rgb, Vector2i imgSize_d, bool useGPU)
+		: calib(calibration)
 		{
-			this->calib = new ITMRGBDCalib(*calibration);
 			this->rgb = new ITMUChar4Image(imgSize_rgb, true, useGPU);
 			this->depth = new ITMFloatImage(imgSize_d, true, useGPU);
 			this->depthNormal = NULL;
@@ -46,8 +46,6 @@ namespace ITMLib
 
 		virtual ~ITMView(void)
 		{
-			delete calib;
-
 			delete rgb;
 			delete depth;
 			delete depthConfidence;
