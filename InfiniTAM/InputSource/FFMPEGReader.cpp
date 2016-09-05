@@ -98,7 +98,7 @@ class FFMPEGReader::PrivateData {
 		return ret;
 	}
 
-	bool hasMoreImages(void) const
+	bool hasMoreImages(void)
 	{
 		//fprintf(stderr, "check: %i %i %i %i\n", providesColor(), hasQueuedColor(), providesDepth(), hasQueuedDepth());
 		if (providesColor()) {
