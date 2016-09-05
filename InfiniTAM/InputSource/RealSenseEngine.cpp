@@ -102,9 +102,9 @@ void RealSenseEngine::getImages(ITMUChar4Image *rgbImage, ITMShortImage *rawDept
 	dataAvailable = true;
 }
 
-bool RealSenseEngine::hasMoreImages(void) { return (data!=NULL); }
-Vector2i RealSenseEngine::getDepthImageSize(void) { return (data!=NULL)?imageSize_d:Vector2i(0,0); }
-Vector2i RealSenseEngine::getRGBImageSize(void) { return (data!=NULL)?imageSize_rgb:Vector2i(0,0); }
+bool RealSenseEngine::hasMoreImages(void) const { return (data!=NULL); }
+Vector2i RealSenseEngine::getDepthImageSize(void) const { return (data!=NULL)?imageSize_d:Vector2i(0,0); }
+Vector2i RealSenseEngine::getRGBImageSize(void) const { return (data!=NULL)?imageSize_rgb:Vector2i(0,0); }
 
 #else
 
@@ -119,11 +119,11 @@ RealSenseEngine::~RealSenseEngine()
 {}
 void RealSenseEngine::getImages(ITMUChar4Image *rgbImage, ITMShortImage *rawDepthImage)
 { return; }
-bool RealSenseEngine::hasMoreImages(void)
+bool RealSenseEngine::hasMoreImages(void) const
 { return false; }
-Vector2i RealSenseEngine::getDepthImageSize(void)
+Vector2i RealSenseEngine::getDepthImageSize(void) const
 { return Vector2i(0,0); }
-Vector2i RealSenseEngine::getRGBImageSize(void)
+Vector2i RealSenseEngine::getRGBImageSize(void) const
 { return Vector2i(0,0); }
 
 #endif
