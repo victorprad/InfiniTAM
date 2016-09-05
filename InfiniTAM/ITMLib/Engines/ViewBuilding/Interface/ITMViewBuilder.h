@@ -30,7 +30,7 @@ namespace ITMLib
 		virtual void UpdateView(ITMView **view, ITMUChar4Image *rgbImage, ITMShortImage *depthImage, bool useBilateralFilter, ITMIMUMeasurement *imuMeasurement, bool modelSensorNoise = false) = 0;
 
 		ITMViewBuilder(const ITMRGBDCalib& calib_)
-    : calib(calib_)
+		: calib(calib_)
 		{
 			this->shortImage = NULL;
 			this->floatImage = NULL;
