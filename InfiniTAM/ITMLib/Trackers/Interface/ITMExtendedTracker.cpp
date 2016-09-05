@@ -163,12 +163,12 @@ void ITMExtendedTracker::SetEvaluationData(ITMTrackingState *trackingState, cons
 	// 		 - sceneHierarchy allows pointers to external data at level 0
 
 	// Depth image hierarchy is always used
-	viewHierarchy_Depth->GetLevel(0)->intrinsics = view->calib->intrinsics_d.projectionParamsSimple.all;
+	viewHierarchy_Depth->GetLevel(0)->intrinsics = view->calib.intrinsics_d.projectionParamsSimple.all;
 	viewHierarchy_Depth->GetLevel(0)->depth = view->depth;
 
 	if (useColour)
 	{
-		viewHierarchy_Intensity->GetLevel(0)->intrinsics = view->calib->intrinsics_rgb.projectionParamsSimple.all;
+		viewHierarchy_Intensity->GetLevel(0)->intrinsics = view->calib.intrinsics_rgb.projectionParamsSimple.all;
 
 		// Convert RGB to intensity
 		lowLevelEngine->ConvertColourToIntensity(viewHierarchy_Intensity->GetLevel(0)->intensity_current, view->rgb);
@@ -182,13 +182,13 @@ void ITMExtendedTracker::SetEvaluationData(ITMTrackingState *trackingState, cons
 	// Pointclouds are needed only when the depth tracker is enabled
 	if (useDepth)
 	{
-		sceneHierarchy->GetLevel(0)->intrinsics = view->calib->intrinsics_d.projectionParamsSimple.all;
+		sceneHierarchy->GetLevel(0)->intrinsics = view->calib.intrinsics_d.projectionParamsSimple.all;
 		sceneHierarchy->GetLevel(0)->pointsMap = trackingState->pointCloud->locations;
 		sceneHierarchy->GetLevel(0)->normalsMap = trackingState->pointCloud->colours;
 	}
 
 	scenePose = trackingState->pose_pointCloud->GetM();
-	depthToRGBTransform = view->calib->trafo_rgb_to_depth.calib_inv;
+	depthToRGBTransform = view->calib.trafo_rgb_to_depth.calib_inv;
 }
 
 void ITMExtendedTracker::PrepareForEvaluation()
@@ -236,7 +236,7 @@ void ITMExtendedTracker::PrepareForEvaluation()
 			ProjectCurrentIntensityFrame(pointsOut->data, intensityOut->data,
 										 intensityIn->intensity_current, depthIn->depth,
 										 intrinsics_depth, intrinsics_rgb,
-										 view->calib->trafo_rgb_to_depth.calib_inv);
+										 view->calib.trafo_rgb_to_depth.calib_inv);
 		}
 	}
 

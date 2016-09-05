@@ -131,13 +131,13 @@ void ITMLib::writeExtrinsics(std::ostream & dest, const ITMExtrinsics & src)
 
 void ITMLib::writeDisparityCalib(std::ostream & dest, const ITMDisparityCalib & src)
 {
-	switch(src.type)
+	switch(src.GetType())
 	{
 		case ITMDisparityCalib::TRAFO_AFFINE:
-			dest << "affine " << src.params.x << ' ' << src.params.y << '\n';
+			dest << "affine " << src.GetParams().x << ' ' << src.GetParams().y << '\n';
 			break;
 		case ITMDisparityCalib::TRAFO_KINECT:
-			dest << src.params.x << ' ' << src.params.y << '\n';
+			dest << src.GetParams().x << ' ' << src.GetParams().y << '\n';
 			break;
 		default:
 			throw std::runtime_error("Error: Unknown disparity calibration type");

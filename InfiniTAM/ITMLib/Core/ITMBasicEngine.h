@@ -59,7 +59,7 @@ namespace ITMLib
 		/// Gives access to the internal world representation
 		ITMScene<TVoxel,TIndex>* GetScene(void) { return scene; }
 
-        ITMTrackingState::TrackingResult ProcessFrame(ITMUChar4Image *rgbImage, ITMShortImage *rawDepthImage, ITMIMUMeasurement *imuMeasurement = NULL);
+		ITMTrackingState::TrackingResult ProcessFrame(ITMUChar4Image *rgbImage, ITMShortImage *rawDepthImage, ITMIMUMeasurement *imuMeasurement = NULL);
 
 		/// Gives access to the data structure used internally to store any created meshes
 		ITMMesh* GetMesh(void) { return mesh; }
@@ -94,7 +94,7 @@ namespace ITMLib
 		    Ommitting a separate image size for the depth images
 		    will assume same resolution as for the RGB images.
 		*/
-		ITMBasicEngine(const ITMLibSettings *settings, const ITMRGBDCalib *calib, Vector2i imgSize_rgb, Vector2i imgSize_d = Vector2i(-1,-1));
+		ITMBasicEngine(const ITMLibSettings *settings, const ITMRGBDCalib& calib, Vector2i imgSize_rgb, Vector2i imgSize_d = Vector2i(-1,-1));
 		~ITMBasicEngine();
 	};
 }

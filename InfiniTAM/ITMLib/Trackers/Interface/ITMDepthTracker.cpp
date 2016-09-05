@@ -79,8 +79,8 @@ void ITMDepthTracker::SetEvaluationData(ITMTrackingState *trackingState, const I
 	this->trackingState = trackingState;
 	this->view = view;
 
-	sceneHierarchy->GetLevel(0)->intrinsics = view->calib->intrinsics_d.projectionParamsSimple.all;
-	viewHierarchy->GetLevel(0)->intrinsics = view->calib->intrinsics_d.projectionParamsSimple.all;
+	sceneHierarchy->GetLevel(0)->intrinsics = view->calib.intrinsics_d.projectionParamsSimple.all;
+	viewHierarchy->GetLevel(0)->intrinsics = view->calib.intrinsics_d.projectionParamsSimple.all;
 
 	// the image hierarchy allows pointers to external data at level 0
 	viewHierarchy->GetLevel(0)->data = view->depth;

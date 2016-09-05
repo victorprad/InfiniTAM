@@ -14,11 +14,11 @@ class FFMPEGReader : public BaseImageSourceEngine
 	FFMPEGReader(const char *calibFilename, const char *filename1, const char *filename2 = NULL);
 	~FFMPEGReader(void);
 
-	bool hasMoreImages(void);
+	bool hasMoreImages(void) const;
 	void getImages(ITMUChar4Image *rgb, ITMShortImage *rawDepth);
 
-	Vector2i getDepthImageSize(void);
-	Vector2i getRGBImageSize(void);
+	Vector2i getDepthImageSize(void) const;
+	Vector2i getRGBImageSize(void) const;
 
 	private:
 	PrivateData *mData1;

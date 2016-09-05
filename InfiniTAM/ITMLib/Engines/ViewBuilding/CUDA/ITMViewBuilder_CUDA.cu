@@ -9,7 +9,7 @@
 using namespace ITMLib;
 using namespace ORUtils;
 
-ITMViewBuilder_CUDA::ITMViewBuilder_CUDA(const ITMRGBDCalib *calib):ITMViewBuilder(calib) { }
+ITMViewBuilder_CUDA::ITMViewBuilder_CUDA(const ITMRGBDCalib& calib):ITMViewBuilder(calib) { }
 ITMViewBuilder_CUDA::~ITMViewBuilder_CUDA(void) { }
 
 //---------------------------------------------------------------------------
@@ -58,13 +58,13 @@ void ITMViewBuilder_CUDA::UpdateView(ITMView **view_ptr, ITMUChar4Image *rgbImag
 	view->rgb->SetFrom(rgbImage, MemoryBlock<Vector4u>::CPU_TO_CUDA);
 	this->shortImage->SetFrom(rawDepthImage, MemoryBlock<short>::CPU_TO_CUDA);
 
-	switch (view->calib->disparityCalib.type)
+	switch (view->calib.disparityCalib.GetType())
 	{
 	case ITMDisparityCalib::TRAFO_KINECT:
-		this->ConvertDisparityToDepth(view->depth, this->shortImage, &(view->calib->intrinsics_d), view->calib->disparityCalib.params);
+		this->ConvertDisparityToDepth(view->depth, this->shortImage, &(view->calib.intrinsics_d), view->calib.disparityCalib.GetParams());
 		break;
 	case ITMDisparityCalib::TRAFO_AFFINE:
-		this->ConvertDepthAffineToFloat(view->depth, this->shortImage, view->calib->disparityCalib.params);
+		this->ConvertDepthAffineToFloat(view->depth, this->shortImage, view->calib.disparityCalib.GetParams());
 		break;
 	default:
 		break;
@@ -83,7 +83,7 @@ void ITMViewBuilder_CUDA::UpdateView(ITMView **view_ptr, ITMUChar4Image *rgbImag
 
 	if (modelSensorNoise)
 	{
-		this->ComputeNormalAndWeights(view->depthNormal, view->depthUncertainty, view->depth, view->calib->intrinsics_d.projectionParamsSimple.all);
+		this->ComputeNormalAndWeights(view->depthNormal, view->depthUncertainty, view->depth, view->calib.intrinsics_d.projectionParamsSimple.all);
 	}
 }
 

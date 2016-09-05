@@ -204,7 +204,7 @@ int FFMPEGReader::PrivateData::init_filter(FilteringContext* fctx, AVCodecContex
 		ret = AVERROR_UNKNOWN;
 		goto end;
 	}
-	snprintf(args, sizeof(args),
+	sprintf(args,
 	         "video_size=%dx%d:pix_fmt=%d:time_base=%d/%d:pixel_aspect=%d/%d",
 	         dec_ctx->width, dec_ctx->height, dec_ctx->pix_fmt,
 	         dec_ctx->time_base.num, dec_ctx->time_base.den,
@@ -450,7 +450,7 @@ FFMPEGReader::~FFMPEGReader(void)
 	}
 }
 
-bool FFMPEGReader::hasMoreImages(void)
+bool FFMPEGReader::hasMoreImages(void) const
 {
 	if (!isValid) return false;
 	if (!mData1->hasMoreImages()) return false;
@@ -531,14 +531,14 @@ void FFMPEGReader::getImages(ITMUChar4Image *rgbImage, ITMShortImage *depthImage
 	if (!gotDepth) memset(depth, 0, depthImage->dataSize * sizeof(short));
 }
 
-Vector2i FFMPEGReader::getDepthImageSize(void)
+Vector2i FFMPEGReader::getDepthImageSize(void) const
 {
 	if (mData1->providesDepth()) return mData1->getDepthImageSize();
 	if (mData2 != NULL) if (mData2->providesDepth()) return mData2->getDepthImageSize();
 	return Vector2i(0,0);
 }
 
-Vector2i FFMPEGReader::getRGBImageSize(void)
+Vector2i FFMPEGReader::getRGBImageSize(void) const
 {
 	if (mData1->providesColor()) return mData1->getColorImageSize();
 	if (mData2 != NULL) if (mData2->providesColor()) return mData2->getColorImageSize();
@@ -558,11 +558,11 @@ FFMPEGReader::~FFMPEGReader(void)
 {}
 void FFMPEGReader::getImages(ITMUChar4Image *rgbImage, ITMShortImage *rawDepthImage)
 { return; }
-bool FFMPEGReader::hasMoreImages(void)
+bool FFMPEGReader::hasMoreImages(void) const
 { return false; }
-Vector2i FFMPEGReader::getDepthImageSize(void)
+Vector2i FFMPEGReader::getDepthImageSize(void) const
 { return Vector2i(0,0); }
-Vector2i FFMPEGReader::getRGBImageSize(void)
+Vector2i FFMPEGReader::getRGBImageSize(void) const
 { return Vector2i(0,0); }
 
 #endif

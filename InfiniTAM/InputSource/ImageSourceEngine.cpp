@@ -23,7 +23,7 @@ BaseImageSourceEngine::BaseImageSourceEngine(const char *calibFilename)
 		DIEWITHEXCEPTION("error: path to the calibration file was specified but data could not be read");
 }
 
-ITMLib::ITMRGBDCalib& BaseImageSourceEngine::getCalib()
+ITMLib::ITMRGBDCalib BaseImageSourceEngine::getCalib() const
 {
   return calib;
 }
@@ -91,7 +91,7 @@ ImageFileReader<PathGenerator>::~ImageFileReader()
 }
 
 template <typename PathGenerator>
-void ImageFileReader<PathGenerator>::loadIntoCache(void)
+void ImageFileReader<PathGenerator>::loadIntoCache(void) const
 {
 	if (currentFrameNo == cachedFrameNo) return;
 	cachedFrameNo = currentFrameNo;
@@ -116,7 +116,7 @@ void ImageFileReader<PathGenerator>::loadIntoCache(void)
 }
 
 template <typename PathGenerator>
-bool ImageFileReader<PathGenerator>::hasMoreImages(void)
+bool ImageFileReader<PathGenerator>::hasMoreImages(void) const
 {
 	loadIntoCache();
 	return cacheIsValid;
@@ -133,14 +133,14 @@ void ImageFileReader<PathGenerator>::getImages(ITMUChar4Image *rgb, ITMShortImag
 }
 
 template <typename PathGenerator>
-Vector2i ImageFileReader<PathGenerator>::getDepthImageSize(void)
+Vector2i ImageFileReader<PathGenerator>::getDepthImageSize(void) const
 {
 	loadIntoCache();
 	return cached_depth->noDims;
 }
 
 template <typename PathGenerator>
-Vector2i ImageFileReader<PathGenerator>::getRGBImageSize(void)
+Vector2i ImageFileReader<PathGenerator>::getRGBImageSize(void) const
 {
 	loadIntoCache();
 	return cached_rgb->noDims;
@@ -189,7 +189,7 @@ void RawFileReader::ResizeIntrinsics(ITMIntrinsics &intrinsics, float ratio)
 	intrinsics.projectionParamsSimple.all *= ratio;
 }
 
-void RawFileReader::loadIntoCache(void)
+void RawFileReader::loadIntoCache(void) const
 {
 	if (currentFrameNo == cachedFrameNo) return;
 	cachedFrameNo = currentFrameNo;
@@ -234,7 +234,7 @@ void RawFileReader::loadIntoCache(void)
 }
 
 
-bool RawFileReader::hasMoreImages(void)
+bool RawFileReader::hasMoreImages(void) const
 {
 	loadIntoCache();
 

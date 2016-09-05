@@ -16,7 +16,7 @@ namespace ITMLib
 	public:
 		ITMIMUMeasurement *imu;
 
-		ITMViewIMU(const ITMRGBDCalib *calibration, Vector2i imgSize_rgb, Vector2i imgSize_d, bool useGPU)
+		ITMViewIMU(const ITMRGBDCalib& calibration, Vector2i imgSize_rgb, Vector2i imgSize_d, bool useGPU)
 		 : ITMView(calibration, imgSize_rgb, imgSize_d, useGPU)
 		{
 			imu = new ITMIMUMeasurement();

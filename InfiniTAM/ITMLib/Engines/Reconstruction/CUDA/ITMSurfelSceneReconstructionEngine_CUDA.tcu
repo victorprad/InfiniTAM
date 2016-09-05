@@ -213,8 +213,8 @@ void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::AddNewSurfels(ITMSurfelSc
     view->depth->noDims.y,
     view->rgb->noDims.x,
     view->rgb->noDims.y,
-    view->calib->trafo_rgb_to_depth.calib_inv,
-    view->calib->intrinsics_rgb.projectionParamsSimple.all,
+    view->calib.trafo_rgb_to_depth.calib_inv,
+    view->calib.intrinsics_rgb.projectionParamsSimple.all,
     sceneParams.useGaussianSampleConfidence,
     sceneParams.gaussianConfidenceSigma,
     sceneParams.maxSurfelRadius,
@@ -279,8 +279,8 @@ void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::FuseMatchedPoints(ITMSurf
     view->depth->noDims.y,
     view->rgb->noDims.x,
     view->rgb->noDims.y,
-    view->calib->trafo_rgb_to_depth.calib_inv,
-    view->calib->intrinsics_rgb.projectionParamsSimple.all,
+    view->calib.trafo_rgb_to_depth.calib_inv,
+    view->calib.intrinsics_rgb.projectionParamsSimple.all,
     sceneParams.deltaRadius,
     sceneParams.useGaussianSampleConfidence,
     sceneParams.gaussianConfidenceSigma,
@@ -379,7 +379,7 @@ void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::PreprocessDepthMap(const 
 {
   const float *depthMap = view->depth->GetData(MEMORYDEVICE_CUDA);
   const int height = view->depth->noDims.y;
-  const ITMIntrinsics& intrinsics = view->calib->intrinsics_d;
+  const ITMIntrinsics& intrinsics = view->calib.intrinsics_d;
   Vector3f *normalMap = this->m_normalMapMB->GetData(MEMORYDEVICE_CUDA);
   const int pixelCount = static_cast<int>(view->depth->dataSize);
   float *radiusMap = this->m_radiusMapMB->GetData(MEMORYDEVICE_CUDA);

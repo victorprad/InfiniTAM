@@ -111,8 +111,7 @@ OpenNIEngine::OpenNIEngine(const char *calibFilename, const char *deviceURI, con
 	: BaseImageSourceEngine(calibFilename)
 {
 	// images from openni always come in millimeters...
-	this->calib.disparityCalib.type = ITMLib::ITMDisparityCalib::TRAFO_AFFINE;
-	this->calib.disparityCalib.params = Vector2f(1.0f/1000.0f, 0.0f);
+	this->calib.disparityCalib.SetStandard();
 
 	this->imageSize_d = Vector2i(0,0);
 	this->imageSize_rgb = Vector2i(0,0);
@@ -320,9 +319,9 @@ void OpenNIEngine::getImages(ITMUChar4Image *rgbImage, ITMShortImage *rawDepthIm
 	return /*true*/;
 }
 
-bool OpenNIEngine::hasMoreImages(void) { return data && !data->eofListener.reachedEOF(); }
-Vector2i OpenNIEngine::getDepthImageSize(void) { return data ? imageSize_d : Vector2i(0,0); }
-Vector2i OpenNIEngine::getRGBImageSize(void) { return data ? imageSize_rgb : Vector2i(0,0); }
+bool OpenNIEngine::hasMoreImages(void) const { return data && !data->eofListener.reachedEOF(); }
+Vector2i OpenNIEngine::getDepthImageSize(void) const { return data ? imageSize_d : Vector2i(0,0); }
+Vector2i OpenNIEngine::getRGBImageSize(void) const { return data ? imageSize_rgb : Vector2i(0,0); }
 
 #else
 
@@ -337,11 +336,11 @@ OpenNIEngine::~OpenNIEngine()
 {}
 void OpenNIEngine::getImages(ITMUChar4Image *rgbImage, ITMShortImage *rawDepthImage)
 { return; }
-bool OpenNIEngine::hasMoreImages(void)
+bool OpenNIEngine::hasMoreImages(void) const
 { return false; }
-Vector2i OpenNIEngine::getDepthImageSize(void)
+Vector2i OpenNIEngine::getDepthImageSize(void) const
 { return Vector2i(0,0); }
-Vector2i OpenNIEngine::getRGBImageSize(void)
+Vector2i OpenNIEngine::getRGBImageSize(void) const
 { return Vector2i(0,0); }
 
 #endif

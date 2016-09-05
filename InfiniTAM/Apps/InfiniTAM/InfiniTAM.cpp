@@ -114,14 +114,6 @@ static void CreateDefaultImageSource(ImageSourceEngine* & imageSource, IMUSource
 			imageSource = NULL;
 		}
 	}
-
-	// this is a hack to ensure backwards compatibility in certain configurations
-	if (imageSource == NULL) return;
-	if (imageSource->getCalib().disparityCalib.params == Vector2f(0.0f, 0.0f))
-	{
-		imageSource->getCalib().disparityCalib.type = ITMDisparityCalib::TRAFO_AFFINE;
-		imageSource->getCalib().disparityCalib.params = Vector2f(1.0f / 1000.0f, 0.0f);
-	}
 }
 
 int main(int argc, char** argv)
@@ -168,7 +160,7 @@ try
 	ITMLibSettings *internalSettings = new ITMLibSettings();
 
 	//ITMMainEngine *mainEngine = new ITMMultiEngine<ITMVoxel,ITMVoxelIndex>(internalSettings, &imageSource->calib, imageSource->getRGBImageSize(), imageSource->getDepthImageSize());
-	ITMMainEngine *mainEngine = new ITMBasicEngine<ITMVoxel,ITMVoxelIndex>( internalSettings, &imageSource->getCalib(), imageSource->getRGBImageSize(), imageSource->getDepthImageSize());
+	ITMMainEngine *mainEngine = new ITMBasicEngine<ITMVoxel,ITMVoxelIndex>(internalSettings, imageSource->getCalib(), imageSource->getRGBImageSize(), imageSource->getDepthImageSize());
 
 	UIEngine::Instance()->Initialise(argc, argv, imageSource, imuSource, mainEngine, "./Files/Out", internalSettings->deviceType);
 	UIEngine::Instance()->Run();
