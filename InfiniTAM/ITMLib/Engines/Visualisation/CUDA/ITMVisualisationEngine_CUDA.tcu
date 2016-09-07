@@ -48,9 +48,11 @@ __global__ void genericRaycastMissingPoints_device(Vector4f *forwardProjection, 
 __global__ void forwardProject_device(Vector4f *forwardProjection, const Vector4f *pointsRay, Vector2i imgSize, Matrix4f M,
 	Vector4f projParams, float voxelSize);
 
+template<bool flipNormals>
 __global__ void renderICP_device(Vector4f *pointsMap, Vector4f *normalsMap, const Vector4f *ptsRay,
 	float voxelSize, Vector2i imgSize, Vector3f lightSource);
 
+template<bool flipNormals>
 __global__ void renderGrey_ImageNormals_device(Vector4u *outRendering, const Vector4f *pointsRay, float voxelSize, Vector2i imgSize, Vector3f lightSource);
 
 template<class TVoxel, class TIndex>
@@ -290,17 +292,6 @@ static void RenderImage_common(const ITMScene<TVoxel, TIndex> *scene, const ORUt
 
 	Vector3f lightSource = -Vector3f(invM.getColumn(2));
 
-	// Handle datasets such as ICL_NUIM and other non standard inputs where one of the two focal lengths
-	// is negative: that causes the normals to point away from the camera and thus their angle with lightSource
-	// becomes negative. This causes valid points to be ignored during visualisation and tracking.
-	// The problem presents itself only when computing normals as cross product of the difference vectors
-	// between raycasted points.
-	if (type == IITMVisualisationEngine::RENDER_SHADED_GREYSCALE_IMAGENORMALS
-		&& intrinsics->projectionParamsSimple.fx * intrinsics->projectionParamsSimple.fy < 0.f)
-	{
-		lightSource = -lightSource;
-	}
-
 	Vector4u *outRendering = outputImage->GetData(MEMORYDEVICE_CUDA);
 
 	dim3 cudaBlockSize(8, 8);
@@ -326,8 +317,21 @@ static void RenderImage_common(const ITMScene<TVoxel, TIndex> *scene, const ORUt
 		ORcudaKernelCheck;
 		break;
 	case IITMVisualisationEngine::RENDER_SHADED_GREYSCALE_IMAGENORMALS:
-		renderGrey_ImageNormals_device <<<gridSize, cudaBlockSize>>>(outRendering, pointsRay, scene->sceneParams->voxelSize,
-			imgSize, lightSource);
+		// Handle datasets such as ICL_NUIM and other non standard inputs where one of the two focal lengths
+		// is negative: that causes the normals to point away from the camera. This causes valid points to be ignored during visualisation and tracking.
+		// The problem presents itself only when computing normals as cross product of the difference vectors
+		// between raycasted points and is solved by flipping the normal direction.
+		if (type == IITMVisualisationEngine::RENDER_SHADED_GREYSCALE_IMAGENORMALS
+			&& intrinsics->projectionParamsSimple.fx * intrinsics->projectionParamsSimple.fy < 0.f)
+		{
+			renderGrey_ImageNormals_device<true> <<<gridSize, cudaBlockSize>>>(outRendering, pointsRay, scene->sceneParams->voxelSize,
+				imgSize, lightSource);
+		}
+		else
+		{
+			renderGrey_ImageNormals_device<false> <<<gridSize, cudaBlockSize>>>(outRendering, pointsRay, scene->sceneParams->voxelSize,
+				imgSize, lightSource);
+		}
 		ORcudaKernelCheck;
 		break;
 	case IITMVisualisationEngine::RENDER_SHADED_GREYSCALE:
@@ -379,20 +383,23 @@ void CreateICPMaps_common(const ITMScene<TVoxel, TIndex> *scene, const ITMView *
 	Vector4f *pointsRay = renderState->raycastResult->GetData(MEMORYDEVICE_CUDA);
 	Vector3f lightSource = -Vector3f(invM.getColumn(2));
 
-	// Handle datasets such as ICL_NUIM and other non standard inputs where one of the two focal lengths
-	// is negative: that causes the normals to point away from the camera and thus their angle with lightSource
-	// becomes negative. This causes valid points to be ignored during visualisation and tracking.
-	// The problem presents itself only when computing normals as cross product of the difference vectors
-	// between raycasted points.
-	if (view->calib->intrinsics_d.projectionParamsSimple.fx * view->calib->intrinsics_d.projectionParamsSimple.fy < 0.f)
-	{
-		lightSource = -lightSource;
-	}
-
 	dim3 cudaBlockSize(16, 12);
 	dim3 gridSize((int)ceil((float)imgSize.x / (float)cudaBlockSize.x), (int)ceil((float)imgSize.y / (float)cudaBlockSize.y));
-	renderICP_device<<<gridSize, cudaBlockSize>>>(pointsMap, normalsMap, pointsRay,
-		scene->sceneParams->voxelSize, imgSize, lightSource);
+
+	// Handle datasets such as ICL_NUIM and other non standard inputs where one of the two focal lengths
+	// is negative: that causes the normals to point away from the camera. This causes valid points to be ignored during visualisation and tracking.
+	// The problem presents itself only when computing normals as cross product of the difference vectors
+	// between raycasted points and is solved by flipping the normal direction.
+	if (view->calib.intrinsics_d.projectionParamsSimple.fx * view->calib.intrinsics_d.projectionParamsSimple.fy < 0.f)
+	{
+		renderICP_device<true> <<<gridSize, cudaBlockSize>>>(pointsMap, normalsMap, pointsRay,
+			scene->sceneParams->voxelSize, imgSize, lightSource);
+	}
+	else
+	{
+		renderICP_device<false> <<<gridSize, cudaBlockSize>>>(pointsMap, normalsMap, pointsRay,
+			scene->sceneParams->voxelSize, imgSize, lightSource);
+	}
 	ORcudaKernelCheck;
 }
 
@@ -694,6 +701,7 @@ __global__ void forwardProject_device(Vector4f *forwardProjection, const Vector4
 	if (locId_new >= 0) forwardProjection[locId_new] = pixel;
 }
 
+template<bool flipNormals>
 __global__ void renderICP_device(Vector4f *pointsMap, Vector4f *normalsMap, const Vector4f *pointsRay,
 	float voxelSize, Vector2i imgSize, Vector3f lightSource)
 {
@@ -701,16 +709,17 @@ __global__ void renderICP_device(Vector4f *pointsMap, Vector4f *normalsMap, cons
 
 	if (x >= imgSize.x || y >= imgSize.y) return;
 
-	processPixelICP<true>(pointsMap, normalsMap, pointsRay, imgSize, x, y, voxelSize, lightSource);
+	processPixelICP<true, flipNormals>(pointsMap, normalsMap, pointsRay, imgSize, x, y, voxelSize, lightSource);
 }
 
+template<bool flipNormals>
 __global__ void renderGrey_ImageNormals_device(Vector4u *outRendering, const Vector4f *pointsRay, float voxelSize, Vector2i imgSize, Vector3f lightSource)
 {
 	int x = (threadIdx.x + blockIdx.x * blockDim.x), y = (threadIdx.y + blockIdx.y * blockDim.y);
 
 	if (x >= imgSize.x || y >= imgSize.y) return;
 
-	processPixelGrey_ImageNormals<true>(outRendering, pointsRay, imgSize, x, y, voxelSize, lightSource);
+	processPixelGrey_ImageNormals<true, flipNormals>(outRendering, pointsRay, imgSize, x, y, voxelSize, lightSource);
 }
 
 template<class TVoxel, class TIndex>

@@ -233,18 +233,6 @@ static void RenderImage_common(const ITMScene<TVoxel,TIndex> *scene, const ORUti
     }
     
 	Vector3f lightSource = -Vector3f(invM.getColumn(2));
-
-	// Handle datasets such as ICL_NUIM and other non standard inputs where one of the two focal lengths
-	// is negative: that causes the normals to point away from the camera and thus their angle with lightSource
-	// becomes negative. This causes valid points to be ignored during visualisation and tracking.
-	// The problem presents itself only when computing normals as cross product of the difference vectors
-	// between raycasted points.
-	if (type == IITMVisualisationEngine::RENDER_SHADED_GREYSCALE_IMAGENORMALS
-		&& intrinsics->projectionParamsSimple.fx * intrinsics->projectionParamsSimple.fy < 0.f)
-	{
-		lightSource = -lightSource;
-	}
-
 	Vector4u *outRendering = outputImage->GetData(MEMORYDEVICE_CPU);
 	const TVoxel *voxelData = scene->localVBA.GetVoxelBlocks();
 	const typename TIndex::IndexData *voxelIndex = scene->index.getIndexData();
@@ -291,7 +279,20 @@ static void RenderImage_common(const ITMScene<TVoxel,TIndex> *scene, const ORUti
 		{
 			int y = locId/imgSize.x;
 			int x = locId - y*imgSize.x;
-			processPixelGrey_ImageNormals<true>(outRendering, pointsRay, imgSize, x, y, scene->sceneParams->voxelSize, lightSource);
+
+			// Handle datasets such as ICL_NUIM and other non standard inputs where one of the two focal lengths
+			// is negative: that causes the normals to point away from the camera. This causes valid points to be ignored during visualisation and tracking.
+			// The problem presents itself only when computing normals as cross product of the difference vectors
+			// between raycasted points and is solved by flipping the normal direction.
+			if (type == IITMVisualisationEngine::RENDER_SHADED_GREYSCALE_IMAGENORMALS
+				&& intrinsics->projectionParamsSimple.fx * intrinsics->projectionParamsSimple.fy < 0.f)
+			{
+				processPixelGrey_ImageNormals<true, true>(outRendering, pointsRay, imgSize, x, y, scene->sceneParams->voxelSize, lightSource);
+			}
+			else
+			{
+				processPixelGrey_ImageNormals<true, false>(outRendering, pointsRay, imgSize, x, y, scene->sceneParams->voxelSize, lightSource);
+			}
 		}
 		break;
 	case IITMVisualisationEngine::RENDER_SHADED_GREYSCALE:
@@ -344,17 +345,6 @@ static void CreateICPMaps_common(const ITMScene<TVoxel,TIndex> *scene, const ITM
 	trackingState->pose_pointCloud->SetFrom(trackingState->pose_d);
 
 	Vector3f lightSource = -Vector3f(invM.getColumn(2));
-
-	// Handle datasets such as ICL_NUIM and other non standard inputs where one of the two focal lengths
-	// is negative: that causes the normals to point away from the camera and thus their angle with lightSource
-	// becomes negative. This causes valid points to be ignored during visualisation and tracking.
-	// The problem presents itself only when computing normals as cross product of the difference vectors
-	// between raycasted points.
-	if (view->calib->intrinsics_d.projectionParamsSimple.fx * view->calib->intrinsics_d.projectionParamsSimple.fy < 0.f)
-	{
-		lightSource = -lightSource;
-	}
-
 	Vector4f *normalsMap = trackingState->pointCloud->colours->GetData(MEMORYDEVICE_CPU);
 	Vector4f *pointsMap = trackingState->pointCloud->locations->GetData(MEMORYDEVICE_CPU);
 	Vector4f *pointsRay = renderState->raycastResult->GetData(MEMORYDEVICE_CPU);
@@ -364,7 +354,21 @@ static void CreateICPMaps_common(const ITMScene<TVoxel,TIndex> *scene, const ITM
 	#pragma omp parallel for
 #endif
 	for (int y = 0; y < imgSize.y; y++) for (int x = 0; x < imgSize.x; x++)
-		processPixelICP<true>(pointsMap, normalsMap, pointsRay, imgSize, x, y, voxelSize, lightSource);
+	{
+		// Handle datasets such as ICL_NUIM and other non standard inputs where one of the two focal lengths
+		// is negative: that causes the normals to point away from the camera. This causes valid points to be ignored during visualisation and tracking.
+		// The problem presents itself only when computing normals as cross product of the difference vectors
+		// between raycasted points and is solved by flipping the normal direction.
+		if (view->calib.intrinsics_d.projectionParamsSimple.fx * view->calib.intrinsics_d.projectionParamsSimple.fy < 0.f)
+		{
+			processPixelICP<true, true>(pointsMap, normalsMap, pointsRay, imgSize, x, y, voxelSize, lightSource);
+		}
+		else
+		{
+			processPixelICP<true, false>(pointsMap, normalsMap, pointsRay, imgSize, x, y, voxelSize, lightSource);
+		}
+
+	}
 }
 
 template<class TVoxel, class TIndex>
