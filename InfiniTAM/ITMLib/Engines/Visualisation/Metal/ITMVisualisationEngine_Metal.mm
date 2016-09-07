@@ -135,7 +135,7 @@ static void RenderImage_common_metal(const ITMScene<TVoxel,ITMVoxelBlockHash> *s
             params->lightSource.y = -Vector3f(params->invM.getColumn(2)).y;
             params->lightSource.z = -Vector3f(params->invM.getColumn(2)).z;
             params->lightSource.w = scene->sceneParams->mu;
-            
+
             [commandEncoder setComputePipelineState:vis_metalBits.p_genericRaycastVH_device];
             [commandEncoder setBuffer:(__bridge id<MTLBuffer>) renderState->raycastResult->GetMetalBuffer()             offset:0 atIndex:0];
             [commandEncoder setBuffer:(__bridge id<MTLBuffer>) entriesVisibleType                                       offset:0 atIndex:1];
