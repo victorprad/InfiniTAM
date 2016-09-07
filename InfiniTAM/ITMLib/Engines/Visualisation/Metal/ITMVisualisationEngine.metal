@@ -45,5 +45,5 @@ kernel void renderICP_device(const CONSTPTR(Vector4f) *pointsRay            [[ b
     
     if (x >= params->imgSize.x || y >= params->imgSize.y) return;
     
-    processPixelICP<true>(pointsMap, normalsMap, pointsRay, params->imgSize.xy, x, y, params->voxelSizes.x, TO_VECTOR3(params->lightSource));
+    processPixelICP<true, false>(pointsMap, normalsMap, pointsRay, params->imgSize.xy, x, y, params->voxelSizes.x, TO_VECTOR3(params->lightSource));
 }
