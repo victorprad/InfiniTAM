@@ -279,7 +279,15 @@ static void RenderImage_common(const ITMScene<TVoxel,TIndex> *scene, const ORUti
 		{
 			int y = locId/imgSize.x;
 			int x = locId - y*imgSize.x;
-			processPixelGrey_ImageNormals<true>(outRendering, pointsRay, imgSize, x, y, scene->sceneParams->voxelSize, lightSource);
+
+			if (intrinsics->FocalLengthSignsDiffer())
+			{
+				processPixelGrey_ImageNormals<true, true>(outRendering, pointsRay, imgSize, x, y, scene->sceneParams->voxelSize, lightSource);
+			}
+			else
+			{
+				processPixelGrey_ImageNormals<true, false>(outRendering, pointsRay, imgSize, x, y, scene->sceneParams->voxelSize, lightSource);
+			}
 		}
 		break;
 	case IITMVisualisationEngine::RENDER_SHADED_GREYSCALE:
@@ -341,7 +349,17 @@ static void CreateICPMaps_common(const ITMScene<TVoxel,TIndex> *scene, const ITM
 	#pragma omp parallel for
 #endif
 	for (int y = 0; y < imgSize.y; y++) for (int x = 0; x < imgSize.x; x++)
-		processPixelICP<true>(pointsMap, normalsMap, pointsRay, imgSize, x, y, voxelSize, lightSource);
+	{
+		if (view->calib.intrinsics_d.FocalLengthSignsDiffer())
+		{
+			processPixelICP<true, true>(pointsMap, normalsMap, pointsRay, imgSize, x, y, voxelSize, lightSource);
+		}
+		else
+		{
+			processPixelICP<true, false>(pointsMap, normalsMap, pointsRay, imgSize, x, y, voxelSize, lightSource);
+		}
+
+	}
 }
 
 template<class TVoxel, class TIndex>

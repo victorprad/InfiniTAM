@@ -41,6 +41,23 @@ namespace ITMLib
 			projectionParamsSimple.all.w = cy;
 		}
 
+		/**
+		 * @brief Returns true if the two focal lengths have a different sign.
+		 *
+		 * @note  This is used to handle datasets such as ICL_NUIM and other non standard inputs
+		 * 	      where one of the two focal lengths is negative: that causes the normals to point
+		 * 	      away from the camera. This causes valid points to be ignored during visualisation
+		 * 	      and tracking.
+		 *
+		 * 	      The problem presents itself only when computing normals as cross product of the
+		 * 	      difference vectors between raycasted points and is thus solved by flipping
+		 * 	      the normal direction.
+		 */
+		bool FocalLengthSignsDiffer() const
+		{
+			return projectionParamsSimple.fx * projectionParamsSimple.fy < 0.f;
+		}
+
 		ITMIntrinsics(void)
 		{
 			// standard calibration parameters for Kinect RGB camera. Not at all

@@ -193,7 +193,7 @@ static void RenderImage_common_metal(const ITMScene<TVoxel,ITMVoxelBlockHash> *s
             {
                 int y = locId/imgSize.x;
                 int x = locId - y*imgSize.x;
-                processPixelGrey_ImageNormals<true>(outRendering, pointsRay, imgSize, x, y, scene->sceneParams->voxelSize, lightSource);
+                processPixelGrey_ImageNormals<true, false>(outRendering, pointsRay, imgSize, x, y, scene->sceneParams->voxelSize, lightSource);
             }
             break;
         case IITMVisualisationEngine::RENDER_SHADED_GREYSCALE:
