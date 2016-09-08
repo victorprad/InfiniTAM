@@ -61,8 +61,8 @@ namespace ITMLib
 
 		ITMTrackingState(Vector2i imgSize, MemoryDeviceType memoryType)
 		: pointCloud(new ITMPointCloud(imgSize, memoryType)),
-			pose_d(new ORUtils::SE3Pose),
-			pose_pointCloud(new ORUtils::SE3Pose)
+			pose_pointCloud(new ORUtils::SE3Pose),
+			pose_d(new ORUtils::SE3Pose)
 		{
 			Reset();
 		}
