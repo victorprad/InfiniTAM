@@ -424,6 +424,7 @@ SET(ITMLIB_TRACKERS_INTERFACE_SOURCES
 Trackers/Interface/ITMColorTracker.cpp
 Trackers/Interface/ITMDepthTracker.cpp
 Trackers/Interface/ITMExtendedTracker.cpp
+Trackers/Interface/ITMFileBasedTracker.cpp
 Trackers/Interface/ITMIMUTracker.cpp
 )
 
@@ -432,6 +433,7 @@ Trackers/Interface/ITMColorTracker.h
 Trackers/Interface/ITMCompositeTracker.h
 Trackers/Interface/ITMDepthTracker.h
 Trackers/Interface/ITMExtendedTracker.h
+Trackers/Interface/ITMFileBasedTracker.h
 Trackers/Interface/ITMIMUTracker.h
 Trackers/Interface/ITMTracker.h
 )
