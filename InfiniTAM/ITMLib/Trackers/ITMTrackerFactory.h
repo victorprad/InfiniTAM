@@ -92,12 +92,12 @@ namespace ITMLib
 		//################## PUBLIC MEMBER FUNCTIONS ##################
 	public:
 	/**
-	 * \brief Makes a tracker of the type specified in the settings.
+	 * \brief Makes a tracker of the type specified in the trackerConfig string.
 	 */
-	ITMTracker *Make(const Vector2i & imgSize_rgb, const Vector2i & imgSize_d, const ITMLibSettings *settings, const ITMLowLevelEngine *lowLevelEngine,
+	ITMTracker *Make(const char *trackerConfig, const Vector2i & imgSize_rgb, const Vector2i & imgSize_d, const ITMLibSettings *settings, const ITMLowLevelEngine *lowLevelEngine,
 		ITMIMUCalibrator *imuCalibrator, const ITMSceneParams *sceneParams) const
 	{
-		ORUtils::KeyValueConfig cfg(settings->trackerConfig);
+		ORUtils::KeyValueConfig cfg(trackerConfig);
 		int verbose = 0;
 		if (cfg.getProperty("help") != NULL) if (verbose < 10) verbose = 10;
 
@@ -122,6 +122,15 @@ namespace ITMLib
 		}
 
 		return ret;
+	}
+
+	/**
+	 * \brief Makes a tracker of the type specified in the settings.
+	 */
+	ITMTracker *Make(const Vector2i & imgSize_rgb, const Vector2i & imgSize_d, const ITMLibSettings *settings, const ITMLowLevelEngine *lowLevelEngine,
+		ITMIMUCalibrator *imuCalibrator, const ITMSceneParams *sceneParams) const
+	{
+		return Make(settings->trackerConfig, imgSize_rgb, imgSize_d, settings, lowLevelEngine, imuCalibrator, sceneParams);
 	}
 
 	//#################### PUBLIC STATIC MEMBER FUNCTIONS ####################
