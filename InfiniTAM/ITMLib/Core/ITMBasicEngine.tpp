@@ -121,9 +121,9 @@ void ITMBasicEngine<TVoxel,TIndex>::SaveSceneToMesh(const char *objFileName)
 template <typename TVoxel, typename TIndex>
 void ITMBasicEngine<TVoxel,TIndex>::resetAll()
 {
-    denseMapper->ResetScene(scene);
-	trackingState->pose_d->SetFrom(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
-	trackingState->age_pointCloud = -1;
+	denseMapper->ResetScene(scene);
+	trackingState->Reset();
+
 	delete view->rgb_prev;
 	view->rgb_prev = NULL;
 }

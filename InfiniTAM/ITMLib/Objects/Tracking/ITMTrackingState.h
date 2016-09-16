@@ -37,7 +37,7 @@ namespace ITMLib
 			TRACKING_GOOD,
 			TRACKING_POOR,
 			TRACKING_FAILED
-		}trackerResult;
+		} trackerResult;
 
 		bool TrackerFarFromPointCloud(void) const
 		{
@@ -60,16 +60,11 @@ namespace ITMLib
 		}
 
 		ITMTrackingState(Vector2i imgSize, MemoryDeviceType memoryType)
+		: pointCloud(new ITMPointCloud(imgSize, memoryType)),
+			pose_pointCloud(new ORUtils::SE3Pose),
+			pose_d(new ORUtils::SE3Pose)
 		{
-			this->pointCloud = new ITMPointCloud(imgSize, memoryType);
-
-			this->pose_d = new ORUtils::SE3Pose();
-			this->pose_d->SetFrom(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
-			trackerResult = TRACKING_GOOD;
-
-			this->age_pointCloud = -1;
-			this->pose_pointCloud = new ORUtils::SE3Pose();
-			this->pose_pointCloud->SetFrom(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
+			Reset();
 		}
 
 		~ITMTrackingState(void)
@@ -77,6 +72,14 @@ namespace ITMLib
 			delete pointCloud;
 			delete pose_d;
 			delete pose_pointCloud;
+		}
+
+		void Reset()
+		{
+			this->age_pointCloud = -1;
+			this->pose_d->SetFrom(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
+			this->pose_pointCloud->SetFrom(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
+			this->trackerResult = TRACKING_GOOD;
 		}
 
 		// Suppress the default copy constructor and assignment operator
