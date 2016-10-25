@@ -54,7 +54,7 @@ RealSenseEngine::RealSenseEngine(const char *calibFilename, Vector2i requested_i
 	this->calib.intrinsics_d.SetFrom(intrinsics_depth.fx, intrinsics_depth.fy,
 	                                 intrinsics_depth.ppx, intrinsics_depth.ppy,
 	                                 requested_imageSize_d.x, requested_imageSize_d.y);
-	this->calib.intrinsics_d.SetFrom(intrinsics_rgb.fx, intrinsics_rgb.fy,
+	this->calib.intrinsics_rgb.SetFrom(intrinsics_rgb.fx, intrinsics_rgb.fy,
 	                                 intrinsics_rgb.ppx, intrinsics_rgb.ppy,
 	                                 requested_imageSize_rgb.x, requested_imageSize_rgb.y);
 	this->calib.disparityCalib.params = Vector2f(data->dev->get_depth_scale(), 0.0f);
