@@ -8,7 +8,7 @@
 namespace ITMLib {
 ITMFileBasedTracker::ITMFileBasedTracker(const std::string &poseMask_) :
 		poseMask(poseMask_),
-		frameCount(0)
+		frameCount(1) // Frame 0 is never tracked per InfiniTAM/spaint policy
 {}
 
 ITMFileBasedTracker::~ITMFileBasedTracker() {}
