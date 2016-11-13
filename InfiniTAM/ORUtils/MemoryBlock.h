@@ -112,6 +112,28 @@ namespace ORUtils
 #endif
 		}
 
+		/** Resize a memory block, losing all old data.
+		Essentially any previously allocated data is
+		released, new memory is allocated.
+		*/
+		void ChangeDims(size_t newDim, bool noResize = false)
+		{
+			if (noResize && dataSize > newDim)
+				this->dataSize = newDim;
+			else
+				if (newDim != dataSize)
+				{
+					this->dataSize = newDim;
+
+					bool allocate_CPU = this->isAllocated_CPU;
+					bool allocate_CUDA = this->isAllocated_CUDA;
+					bool metalCompatible = this->isMetalCompatible;
+
+					this->Free();
+					this->Allocate(newDim, allocate_CPU, allocate_CUDA, metalCompatible);
+				}
+		}
+
 		/** Transfer data from CPU to GPU, if possible. */
 		void UpdateDeviceFromHost() const {
 #ifndef COMPILE_WITHOUT_CUDA
