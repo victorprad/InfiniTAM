@@ -36,12 +36,7 @@ namespace ITMLib
 
 		T * GetLevel(int level) const
 		{
-			if (level >= 0 && level < noLevels)
-			{
-				return levels[level];
-			}
-
-			return NULL;
+			return level >= 0 && level < noLevels ? levels[level] : NULL;
 		}
 
 		~ITMImageHierarchy(void)

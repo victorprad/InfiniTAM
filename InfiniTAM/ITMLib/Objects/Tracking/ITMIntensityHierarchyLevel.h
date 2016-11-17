@@ -34,12 +34,20 @@ namespace ITMLib
 				this->intensity_current = new ORUtils::Image<float>(imgSize, memoryType);
 				this->intensity_prev = new ORUtils::Image<float>(imgSize, memoryType);
 			}
+			else
+			{
+				this->intensity_current = NULL;
+				this->intensity_prev = NULL;
+			}
 
 			this->gradients = new ORUtils::Image<Vector2f>(imgSize, memoryType);
 		}
 
 		void UpdateHostFromDevice()
 		{ 
+			if (!this->intensity_current || !this->intensity_prev)
+				throw std::runtime_error("ITMIntensityHierarchyLevel: did not set intensity images.");
+
 			this->intensity_current->UpdateHostFromDevice();
 			this->intensity_prev->UpdateHostFromDevice();
 			this->gradients->UpdateHostFromDevice();
@@ -47,6 +55,9 @@ namespace ITMLib
 
 		void UpdateDeviceFromHost()
 		{ 
+			if (!this->intensity_current || !this->intensity_prev)
+				throw std::runtime_error("ITMIntensityHierarchyLevel: did not set intensity images.");
+
 			this->intensity_current->UpdateDeviceFromHost();
 			this->intensity_prev->UpdateDeviceFromHost();
 			this->gradients->UpdateDeviceFromHost();
