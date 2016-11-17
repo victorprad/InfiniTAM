@@ -51,7 +51,7 @@ void ITMViewBuilder_CUDA::UpdateView(ITMView **view_ptr, ITMUChar4Image *rgbImag
 
 	if (storePreviousImage)
 	{
-		if (view->rgb_prev == NULL) view->rgb_prev = new ITMUChar4Image(rgbImage->noDims, true, true);
+		if (!view->rgb_prev) view->rgb_prev = new ITMUChar4Image(rgbImage->noDims, true, true);
 		else view->rgb_prev->SetFrom(view->rgb, MemoryBlock<Vector4u>::CUDA_TO_CUDA);
 	}	
 

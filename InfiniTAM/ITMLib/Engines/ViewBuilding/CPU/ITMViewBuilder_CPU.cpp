@@ -31,7 +31,7 @@ void ITMViewBuilder_CPU::UpdateView(ITMView **view_ptr, ITMUChar4Image *rgbImage
 
 	if (storePreviousImage)
 	{
-		if (view->rgb_prev == NULL) view->rgb_prev = new ITMUChar4Image(rgbImage->noDims, true, false);
+		if (!view->rgb_prev) view->rgb_prev = new ITMUChar4Image(rgbImage->noDims, true, false);
 		else view->rgb_prev->SetFrom(view->rgb, MemoryBlock<Vector4u>::CPU_TO_CPU);
 	}
 
