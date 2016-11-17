@@ -118,20 +118,19 @@ namespace ORUtils
 		*/
 		void ChangeDims(size_t newDim, bool noResize = false)
 		{
-			if (noResize && dataSize > newDim)
-				this->dataSize = newDim;
-			else
-				if (newDim != dataSize)
-				{
-					this->dataSize = newDim;
+			if(newDim == dataSize) return;
 
-					bool allocate_CPU = this->isAllocated_CPU;
-					bool allocate_CUDA = this->isAllocated_CUDA;
-					bool metalCompatible = this->isMetalCompatible;
+			if(!noResize || dataSize < newDim)
+			{
+				bool allocate_CPU = this->isAllocated_CPU;
+				bool allocate_CUDA = this->isAllocated_CUDA;
+				bool metalCompatible = this->isMetalCompatible;
 
-					this->Free();
-					this->Allocate(newDim, allocate_CPU, allocate_CUDA, metalCompatible);
-				}
+				this->Free();
+				this->Allocate(newDim, allocate_CPU, allocate_CUDA, metalCompatible);
+			}
+
+			this->dataSize = newDim;
 		}
 
 		/** Transfer data from CPU to GPU, if possible. */

@@ -46,20 +46,8 @@ namespace ORUtils
 		*/
 		void ChangeDims(Vector2<int> newDims, bool noResize = false)
 		{
-			if (noResize && noDims.x > newDims.x && noDims.y > newDims.y)
-				this->noDims = newDims;
-			else
-				if (newDims != noDims)
-				{
-					this->noDims = newDims;
-
-					bool allocate_CPU = this->isAllocated_CPU;
-					bool allocate_CUDA = this->isAllocated_CUDA;
-					bool metalCompatible = this->isMetalCompatible;
-
-					this->Free();
-					this->Allocate(newDims.x * newDims.y, allocate_CPU, allocate_CUDA, metalCompatible);
-				}
+			MemoryBlock<T>::ChangeDims(newDims.x * newDims.y, noResize);
+			noDims = newDims;
 		}
 
 		void Swap(Image<T>& rhs)
