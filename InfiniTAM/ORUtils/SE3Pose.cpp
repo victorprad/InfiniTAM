@@ -260,7 +260,7 @@ Vector3<float> SE3Pose::GetT(void) const
 	return T;
 }
 
-void SE3Pose::GetParams(Vector3<float> &translation, Vector3<float> &rotation)
+void SE3Pose::GetParams(Vector3<float> &translation, Vector3<float> &rotation) const
 {
 	translation.x = this->params.each.tx;
 	translation.y = this->params.each.ty;

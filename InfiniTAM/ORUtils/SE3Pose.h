@@ -61,7 +61,7 @@ namespace ORUtils
 		Matrix3<float> GetR(void) const;
 		Vector3<float> GetT(void) const;
 
-		void GetParams(Vector3<float> &translation, Vector3<float> &rotation);
+		void GetParams(Vector3<float> &translation, Vector3<float> &rotation) const;
 		const float* GetParams(void) const { return params.all; }
 
 		void SetM(const Matrix4<float> & M);
