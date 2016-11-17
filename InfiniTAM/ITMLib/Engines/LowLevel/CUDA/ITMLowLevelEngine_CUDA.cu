@@ -201,14 +201,13 @@ void ITMLowLevelEngine_CUDA::GradientXY(ITMFloat2Image *grad_out, const ITMFloat
 {
 	Vector2i imgSize = image_in->noDims;
 	grad_out->ChangeDims(imgSize);
+	grad_out->Clear();
 
 	Vector2f *grad = grad_out->GetData(MEMORYDEVICE_CUDA);
 	const float *image = image_in->GetData(MEMORYDEVICE_CUDA);
 
 	dim3 blockSize(16, 16);
 	dim3 gridSize((int)ceil((float)imgSize.x / (float)blockSize.x), (int)ceil((float)imgSize.y / (float)blockSize.y));
-
-	ORcudaSafeCall(cudaMemset(grad, 0, imgSize.x * imgSize.y * sizeof(Vector2f)));
 
 	gradientXY_device << <gridSize, blockSize >> >(grad, image, imgSize);
 	ORcudaKernelCheck;

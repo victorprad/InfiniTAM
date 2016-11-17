@@ -33,27 +33,6 @@ _CPU_AND_GPU_CODE_ inline void filterSubsample(DEVICEPTR(Vector4u) *imageData_ou
 	imageData_out[x + y * newDims.x] = pixel_out;
 }
 
-_CPU_AND_GPU_CODE_ inline void gaussFilter5x5(DEVICEPTR(float) *imageData_out, int x_out, int y_out, Vector2i newDims,
-	const CONSTPTR(float) *imageData_in, int x_in, int y_in, Vector2i oldDims)
-{
-	float pixel_out = 0.f;
-
-	// Could be improved by properly caching the separable kernel results.
-	float gauss_kernel[5] = { 0.0625f, 0.25f, 0.375f, 0.25f, 0.0625f };
-
-	for (int j = 0; j < 5; ++j)
-	{
-		float row_conv = 0.f;
-		for (int i = 0; i < 5; ++i)
-		{
-			row_conv += gauss_kernel[i] * imageData_in[(y_in - 2 + j) * oldDims.x + (x_in - 2 + i)];
-		}
-		pixel_out += gauss_kernel[j] * row_conv;
-	}
-
-	imageData_out[x_out + y_out * newDims.x] = pixel_out;
-}
-
 _CPU_AND_GPU_CODE_ inline void boxFilter2x2(DEVICEPTR(float) *imageData_out, int x_out, int y_out, Vector2i newDims,
 	const CONSTPTR(float) *imageData_in, int x_in, int y_in, Vector2i oldDims)
 {

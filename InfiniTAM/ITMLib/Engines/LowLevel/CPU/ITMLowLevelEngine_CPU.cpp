@@ -76,10 +76,10 @@ void ITMLowLevelEngine_CPU::FilterSubsample(ITMUChar4Image *image_out, const ITM
 void ITMLowLevelEngine_CPU::FilterSubsample(ITMFloatImage *image_out, const ITMFloatImage *image_in) const
 {
 	Vector2i oldDims = image_in->noDims;
-	Vector2i newDims; newDims.x = image_in->noDims.x / 2; newDims.y = image_in->noDims.y / 2;
+	Vector2i newDims(image_in->noDims.x / 2, image_in->noDims.y / 2);
 
 	image_out->ChangeDims(newDims);
-	image_out->Clear(0);
+	image_out->Clear();
 
 	const float *imageData_in = image_in->GetData(MEMORYDEVICE_CPU);
 	float *imageData_out = image_out->GetData(MEMORYDEVICE_CPU);
@@ -148,11 +148,10 @@ void ITMLowLevelEngine_CPU::GradientXY(ITMFloat2Image *grad_out, const ITMFloatI
 {
 	Vector2i imgSize = image_in->noDims;
 	grad_out->ChangeDims(imgSize);
+	grad_out->Clear();
 
 	Vector2f *grad = grad_out->GetData(MEMORYDEVICE_CPU);
 	const float *image = image_in->GetData(MEMORYDEVICE_CPU);
-
-	memset(grad, 0, imgSize.x * imgSize.y * sizeof(Vector2f));
 
 	for (int y = 1; y < imgSize.y - 1; y++) for (int x = 1; x < imgSize.x - 1; x++)
 		gradientXY(grad, x, y, image, imgSize);
