@@ -151,6 +151,7 @@ namespace ORUtils
 		/** Copy data */
 		void SetFrom(const MemoryBlock<T> *source, MemoryCopyDirection memoryCopyDirection)
 		{
+			Resize(source->dataSize);
 			switch (memoryCopyDirection)
 			{
 			case CPU_TO_CPU:

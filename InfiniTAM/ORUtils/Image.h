@@ -68,6 +68,7 @@ namespace ORUtils
 
 		void SetFrom(const Image<T> *source, MemoryCopyDirection memoryCopyDirection)
 		{
+			ChangeDims(source->noDims);
 			MemoryBlock<T>::SetFrom(source, memoryCopyDirection);
 		}
 
