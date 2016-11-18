@@ -29,10 +29,10 @@ void ITMColorTracker::TrackCamera(ITMTrackingState *trackingState, const ITMView
 	this->PrepareForEvaluation(view);
 
 	ORUtils::SE3Pose currentPara(view->calib.trafo_rgb_to_depth.calib_inv * trackingState->pose_d->GetM());
-	for (int levelId = viewHierarchy->noLevels - 1; levelId >= 0; levelId--)
+	for (int levelId = viewHierarchy->GetNoLevels() - 1; levelId >= 0; levelId--)
 	{
 		this->levelId = levelId;
-		this->iterationType = viewHierarchy->levels[levelId]->iterationType;
+		this->iterationType = viewHierarchy->GetLevel(levelId)->iterationType;
 
 		minimizeLM(*this, currentPara);
 	}
@@ -49,19 +49,19 @@ void ITMColorTracker::TrackCamera(ITMTrackingState *trackingState, const ITMView
 
 void ITMColorTracker::PrepareForEvaluation(const ITMView *view)
 {
-	lowLevelEngine->CopyImage(viewHierarchy->levels[0]->rgb, view->rgb);
+	lowLevelEngine->CopyImage(viewHierarchy->GetLevel(0)->rgb, view->rgb);
 
 	ITMImageHierarchy<ITMViewHierarchyLevel> *hierarchy = viewHierarchy;
 
-	for (int i = 1; i < hierarchy->noLevels; i++)
+	for (int i = 1; i < hierarchy->GetNoLevels(); i++)
 	{
-		ITMViewHierarchyLevel *currentLevel = hierarchy->levels[i], *previousLevel = hierarchy->levels[i - 1];
+		ITMViewHierarchyLevel *currentLevel = hierarchy->GetLevel(i), *previousLevel = hierarchy->GetLevel(i - 1);
 		lowLevelEngine->FilterSubsample(currentLevel->rgb, previousLevel->rgb);
 	}
 
-	for (int i = 0; i < hierarchy->noLevels; i++)
+	for (int i = 0; i < hierarchy->GetNoLevels(); i++)
 	{
-		ITMViewHierarchyLevel *currentLevel = hierarchy->levels[i];
+		ITMViewHierarchyLevel *currentLevel = hierarchy->GetLevel(i);
 
 		lowLevelEngine->GradientX(currentLevel->gradientX_rgb, currentLevel->rgb);
 		lowLevelEngine->GradientY(currentLevel->gradientY_rgb, currentLevel->rgb);

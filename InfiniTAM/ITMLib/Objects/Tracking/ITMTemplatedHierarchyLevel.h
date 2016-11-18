@@ -16,7 +16,8 @@ namespace ITMLib
 
 		TrackerIterationType iterationType;
 
-		ImageType *depth;
+		ImageType *data;
+
 		Vector4f intrinsics;
 		bool manageData;
 
@@ -27,22 +28,22 @@ namespace ITMLib
 			this->levelId = levelId;
 			this->iterationType = iterationType;
 
-			if (!skipAllocation) this->depth = new ImageType(imgSize, memoryType);
+			if (!skipAllocation) this->data = new ImageType(imgSize, memoryType);
 		}
 
 		void UpdateHostFromDevice()
 		{ 
-			this->depth->UpdateHostFromDevice();
+			this->data->UpdateHostFromDevice();
 		}
 
 		void UpdateDeviceFromHost()
 		{ 
-			this->depth->UpdateDeviceFromHost();
+			this->data->UpdateDeviceFromHost();
 		}
 
 		~ITMTemplatedHierarchyLevel(void)
 		{
-			if (manageData) delete depth;
+			if (manageData) delete data;
 		}
 
 		// Suppress the default copy constructor and assignment operator
