@@ -337,7 +337,6 @@ Objects/Scene/ITMVoxelTypes.h
 ##
 SET(ITMLIB_OBJECTS_TRACKING_HEADERS
 Objects/Tracking/ITMImageHierarchy.h
-Objects/Tracking/ITMTwoImageHierarchy.h
 Objects/Tracking/ITMSceneHierarchyLevel.h
 Objects/Tracking/ITMTemplatedHierarchyLevel.h
 Objects/Tracking/ITMDepthHierarchyLevel.h
