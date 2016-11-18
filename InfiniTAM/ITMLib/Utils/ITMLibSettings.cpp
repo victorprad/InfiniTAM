@@ -63,7 +63,6 @@ ITMLibSettings::ITMLibSettings(void)
 	// Colour only tracking, using rendered colours
 	//trackerConfig = "type=rgb,levels=rrbb";
 
-	//trackerConfig = "type=ren,levels=bb";
 	//trackerConfig = "type=imuicp,levels=tb,minstep=1e-3,outlierC=0.01,outlierF=0.005,numiterC=4,numiterF=2";
 	//trackerConfig = "type=extendedimu,levels=ttb,minstep=5e-4,outlierSpaceC=0.1,outlierSpaceF=0.004,numiterC=20,numiterF=5,tukeyCutOff=8,framesToSkip=20,framesToWeight=50,failureDec=20.0";
 }

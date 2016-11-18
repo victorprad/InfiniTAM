@@ -8,7 +8,6 @@
 #include "CPU/ITMColorTracker_CPU.h"
 #include "CPU/ITMDepthTracker_CPU.h"
 #include "CPU/ITMExtendedTracker_CPU.h"
-#include "CPU/ITMRenTracker_CPU.h"
 #include "Interface/ITMCompositeTracker.h"
 #include "Interface/ITMIMUTracker.h"
 #include "Interface/ITMTracker.h"
@@ -19,7 +18,6 @@
 #include "CUDA/ITMColorTracker_CUDA.h"
 #include "CUDA/ITMDepthTracker_CUDA.h"
 #include "CUDA/ITMExtendedTracker_CUDA.h"
-#include "CUDA/ITMRenTracker_CUDA.h"
 #endif
 
 #ifdef COMPILE_WITH_METAL
@@ -48,8 +46,6 @@ namespace ITMLib
 			TRACKER_ICP,
 			//! Identifies a tracker based on depth and color image with various extensions
 			TRACKER_EXTENDED,
-			//! Identifies a tracker based on depth image (Ren et al, 2012)
-			TRACKER_REN,
 			//! Identifies a tracker based on depth image and IMU measurement
 			TRACKER_IMU,
 			//! Identifies a tracker based on depth and colour images and IMU measurement
@@ -82,7 +78,6 @@ namespace ITMLib
 			makers.push_back(Maker("extended", "Depth + colour based tracker", TRACKER_EXTENDED, &MakeExtendedTracker));
 			makers.push_back(Maker("imuicp", "Combined IMU and depth based ICP tracker", TRACKER_IMU, &MakeIMUTracker));
 			makers.push_back(Maker("extendedimu", "Combined IMU and depth + colour ICP tracker", TRACKER_EXTENDEDIMU, &MakeExtendedIMUTracker));
-			makers.push_back(Maker("ren", "Depth based SDF tracker", TRACKER_REN, &MakeRenTracker));
 		}
 
 	public:
@@ -415,41 +410,5 @@ namespace ITMLib
 		compositeTracker->SetTracker(dTracker, 1);
 		return compositeTracker;
 	}
-
-	/**
-	 * \brief Makes a Ren tracker.
-	 */
-	static ITMTracker *MakeRenTracker(const Vector2i& imageSize_rgb, const Vector2i& imgSize_d, ITMLibSettings::DeviceType deviceType, const ORUtils::KeyValueConfig & cfg,
-		const ITMLowLevelEngine *lowLevelEngine, ITMIMUCalibrator *imuCalibrator, ITMScene<TVoxel,TIndex> *scene)
-	{
-		const char *levelSetup = "bb";
-
-		int verbose = 0;
-		if (cfg.getProperty("help") != NULL) if (verbose < 10) verbose = 10;
-		cfg.parseStrProperty("levels", "resolution hierarchy levels", levelSetup, verbose);
-		std::vector<TrackerIterationType> levels = parseLevelConfig(levelSetup);
-
-		switch(deviceType)
-		{
-		case ITMLibSettings::DEVICE_CPU:
-			return new ITMRenTracker_CPU<TVoxel, TIndex>(imgSize_d, &(levels[0]), static_cast<int>(levels.size()), lowLevelEngine, scene);
-		case ITMLibSettings::DEVICE_CUDA:
-#ifndef COMPILE_WITHOUT_CUDA
-			return new ITMRenTracker_CUDA<TVoxel, TIndex>(imgSize_d, &(levels[0]), static_cast<int>(levels.size()), lowLevelEngine, scene);
-#else
-			break;
-#endif
-		case ITMLibSettings::DEVICE_METAL:
-#ifdef COMPILE_WITH_METAL
-			return new ITMRenTracker_CPU<TVoxel, TIndex>(imgSize_d, &(levels[0]), static_cast<int>(levels.size()), lowLevelEngine, scene);
-#else
-			break;
-#endif
-		default: break;
-		}
-
-		DIEWITHEXCEPTION("Failed to make Ren tracker");
-	}
 };
-
 }
