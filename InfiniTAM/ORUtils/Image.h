@@ -13,9 +13,25 @@ namespace ORUtils
 	Represents images, templated on the pixel type
 	*/
 	template <typename T>
-	class Image : public MemoryBlock < T >
+	class Image : private MemoryBlock<T>
 	{
 	public:
+		/** Expose public MemoryBlock<T> member variables. */
+		using MemoryBlock<T>::dataSize;
+
+		/** Expose public MemoryBlock<T> datatypes. */
+		using typename MemoryBlock<T>::MemoryCopyDirection;
+
+		/** Expose public MemoryBlock<T> member functions. */
+		using MemoryBlock<T>::Clear;
+		using MemoryBlock<T>::GetData;
+		using MemoryBlock<T>::GetElement;
+#ifdef COMPILE_WITH_METAL
+		using MemoryBlock<T>::GetMetalBuffer();
+#endif
+		using MemoryBlock<T>::UpdateDeviceFromHost;
+		using MemoryBlock<T>::UpdateHostFromDevice;
+
 		/** Size of the image in pixels. */
 		Vector2<int> noDims;
 
@@ -46,8 +62,13 @@ namespace ORUtils
 		*/
 		void ChangeDims(Vector2<int> newDims, bool noResize = false)
 		{
-			MemoryBlock<T>::ChangeDims(newDims.x * newDims.y, noResize);
+			MemoryBlock<T>::Resize(newDims.x * newDims.y, noResize);
 			noDims = newDims;
+		}
+
+		void SetFrom(const Image<T> *source, MemoryCopyDirection memoryCopyDirection)
+		{
+			MemoryBlock<T>::SetFrom(source, memoryCopyDirection);
 		}
 
 		void Swap(Image<T>& rhs)

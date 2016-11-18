@@ -116,7 +116,7 @@ namespace ORUtils
 		Essentially any previously allocated data is
 		released, new memory is allocated.
 		*/
-		void ChangeDims(size_t newDim, bool noResize = false)
+		void Resize(size_t newDim, bool noResize = false)
 		{
 			if(newDim == dataSize) return;
 
