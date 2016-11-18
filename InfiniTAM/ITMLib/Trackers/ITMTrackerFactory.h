@@ -264,7 +264,7 @@ namespace ITMLib
 		float outlierColourDistanceCoarse = 0.005f;
 		float failureDetectorThd = 3.0f;
 		float minColourGradient = 0.01f;
-		int tukeyCutOff = 8;
+		float tukeyCutOff = 8.0f;
 		int framesToSkip = 20;
 		int framesToWeight = 50;
 		int numIterationsCoarse = 20;
@@ -286,7 +286,7 @@ namespace ITMLib
 		cfg.parseFltProperty("minColourGradient", "minimum colour gradient for a pixel to be used in the tracking", minColourGradient, verbose);
 		cfg.parseIntProperty("numiterC", "maximum number of iterations at coarsest level", numIterationsCoarse, verbose);
 		cfg.parseIntProperty("numiterF", "maximum number of iterations at finest level", numIterationsFine, verbose);
-		cfg.parseIntProperty("tukeyCutOff", "cutoff for the tukey m-estimator", tukeyCutOff, verbose);
+		cfg.parseFltProperty("tukeyCutOff", "cutoff for the tukey m-estimator", tukeyCutOff, verbose);
 		cfg.parseIntProperty("framesToSkip", "number of frames to skip before depth pixel is used for tracking", framesToSkip, verbose);
 		cfg.parseIntProperty("framesToWeight", "number of frames to weight each depth pixel for before using it fully", framesToWeight, verbose);
 		cfg.parseFltProperty("failureDec", "threshold for the failure detection", failureDetectorThd, verbose);

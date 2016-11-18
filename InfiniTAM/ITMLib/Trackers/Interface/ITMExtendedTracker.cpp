@@ -1,5 +1,7 @@
 // Copyright 2014-2015 Isis Innovation Limited and the authors of InfiniTAM
 
+#define NOMINMAX
+
 #include "ITMExtendedTracker.h"
 #include "../../../ORUtils/Cholesky.h"
 
@@ -25,7 +27,7 @@ ITMExtendedTracker::ITMExtendedTracker(Vector2i imgSize_d,
 									   float viewFrustum_min,
 									   float viewFrustum_max,
 									   float minColourGradient,
-									   int tukeyCutOff,
+									   float tukeyCutOff,
 									   int framesToSkip,
 									   int framesToWeight,
 									   const ITMLowLevelEngine *lowLevelEngine,
@@ -353,7 +355,7 @@ void ITMExtendedTracker::UpdatePoseQuality(int noValidPoints_old, float *hessian
 		return;
 	}
 
-	int noTotalPoints = viewHierarchy_Depth->GetLevel(0)->depth->dataSize;
+	size_t noTotalPoints = viewHierarchy_Depth->GetLevel(0)->depth->dataSize;
 	int noValidPointsMax = lowLevelEngine->CountValidDepths(view->depth);
 
 	float normFactor_v1 = (float)noValidPoints_old / (float)noTotalPoints;

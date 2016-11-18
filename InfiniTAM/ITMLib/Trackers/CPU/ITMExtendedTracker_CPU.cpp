@@ -17,7 +17,7 @@ ITMExtendedTracker_CPU::ITMExtendedTracker_CPU(Vector2i imgSize_d,
 											   float viewFrustum_min,
 											   float viewFrustum_max,
 											   float minColourGradient,
-											   int tukeyCutOff,
+											   float tukeyCutOff,
 											   int framesToSkip,
 											   int framesToWeight,
 											   const ITMLowLevelEngine *lowLevelEngine)

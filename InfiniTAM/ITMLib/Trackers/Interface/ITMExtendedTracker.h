@@ -78,7 +78,8 @@ namespace ITMLib
 
 		float minColourGradient;
 		float viewFrustum_min, viewFrustum_max;
-		int tukeyCutOff, framesToSkip, framesToWeight;
+		float tukeyCutOff;
+		int framesToSkip, framesToWeight;
 
 		virtual int ComputeGandH_Depth(float &f, float *nabla, float *hessian, Matrix4f approxInvPose) = 0;
 		virtual int ComputeGandH_RGB(float &f, float *nabla, float *hessian, Matrix4f approxPose) = 0;
@@ -110,7 +111,7 @@ namespace ITMLib
 						   float viewFrustum_min,
 						   float viewFrustum_max,
 						   float minColourGradient,
-						   int tukeyCutOff,
+						   float tukeyCutOff,
 						   int framesToSkip,
 						   int framesToWeight,
 						   const ITMLowLevelEngine *lowLevelEngine,
