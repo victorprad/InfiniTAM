@@ -119,7 +119,7 @@ namespace ITMLib
 
 		ITMTracker *ret = (*(maker->make))(imgSize_rgb, imgSize_d, settings->deviceType, cfg, lowLevelEngine, imuCalibrator, scene);
 		if (ret->requiresColourRendering() && (!TVoxel::hasColorInformation)) {
-			printf("Error: Color tracker requires a voxel type with colour information!\n");
+			throw std::runtime_error("Error: Colour tracker requires a voxel type with colour information!");
 		}
 
 		return ret;
