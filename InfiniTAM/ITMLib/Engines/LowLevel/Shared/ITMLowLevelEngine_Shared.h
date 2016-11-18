@@ -10,7 +10,6 @@ _CPU_AND_GPU_CODE_ inline void convertColourToIntensity(DEVICEPTR(float) *imageD
 	const int linear_pos = y * dims.x + x;
 	const Vector4u colour = imageData_in[linear_pos];
 
-	// TODO: check if storage order is rgb or bgr. current implementation assumes rgb
 	imageData_out[linear_pos] = (0.299f * colour.x + 0.587f * colour.y + 0.114f * colour.z) / 255.f;
 }
 
