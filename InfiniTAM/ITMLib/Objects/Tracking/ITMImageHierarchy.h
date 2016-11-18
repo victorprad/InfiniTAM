@@ -10,10 +10,11 @@ namespace ITMLib
 {
 	template <class T> class ITMImageHierarchy
 	{
-	public:
+	private:
 		int noLevels;
 		T **levels;
 
+	public:
 		ITMImageHierarchy(Vector2i imgSize, TrackerIterationType *trackingRegime, int noHierarchyLevels, 
 			MemoryDeviceType memoryType, bool skipAllocationForLevel0 = false)
 		{
@@ -30,6 +31,13 @@ namespace ITMLib
 
 		void UpdateDeviceFromHost()
 		{ for (int i = 0; i < noLevels; i++) this->levels[i]->UpdateDeviceFromHost(); }
+
+		int GetNoLevels() const { return noLevels; }
+
+		T * GetLevel(int level) const
+		{
+			return level >= 0 && level < noLevels ? levels[level] : NULL;
+		}
 
 		~ITMImageHierarchy(void)
 		{

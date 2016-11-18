@@ -353,10 +353,12 @@ Objects/Scene/ITMVoxelTypes.h
 
 ##
 SET(ITMLIB_OBJECTS_TRACKING_HEADERS
+Objects/Tracking/ITMDepthHierarchyLevel.h
 Objects/Tracking/ITMImageHierarchy.h
+Objects/Tracking/ITMIntensityHierarchyLevel.h
+Objects/Tracking/ITMRGBHierarchyLevel.h
 Objects/Tracking/ITMSceneHierarchyLevel.h
 Objects/Tracking/ITMTemplatedHierarchyLevel.h
-Objects/Tracking/ITMExtendedHierarchyLevel.h
 Objects/Tracking/ITMTrackingState.h
 Objects/Tracking/ITMViewHierarchyLevel.h
 Objects/Tracking/TrackerIterationType.h
@@ -442,6 +444,7 @@ Utils/ITMImageTypes.h
 Utils/ITMLibSettings.h
 Utils/ITMMath.h
 Utils/ITMPixelUtils.h
+Utils/ITMProjectionUtils.h
 Utils/ITMSceneParams.h
 Utils/ITMSurfelSceneParams.h
 )
