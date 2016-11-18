@@ -1,4 +1,4 @@
-// Copyright 2014-2016 Isis Innovation Limited and the authors of InfiniTAM
+// Copyright 2014-2017 Oxford University Innovation Limited and the authors of InfiniTAM
 
 #pragma once
 
@@ -9,32 +9,34 @@
 
 namespace RelocLib {
 
-struct FernTester {
+	struct FernTester {
 	public:
-	ORUtils::Vector2<int> location;
-	float threshold;
-};
+		ORUtils::Vector2<int> location;
+		float threshold;
+	};
 
-class FernConservatory {
+	class FernConservatory {
 	public:
-	FernConservatory(int numFerns, ORUtils::Vector2<int> imgSize, ORUtils::Vector2<float> bounds, int decisionsPerFern = 1);
-	~FernConservatory(void);
+		FernConservatory(int numFerns, ORUtils::Vector2<int> imgSize, ORUtils::Vector2<float> bounds, int decisionsPerFern = 1);
+		~FernConservatory(void);
 
-	// takes a (small) image, applies the binary tests in the ferns, creates
-	// the code fragments as an array
-	void computeCode(const ORUtils::Image<float> *img, char *codeFragments) const;
+		// takes a (small) image, applies the binary tests in the ferns, creates
+		// the code fragments as an array
+		void computeCode(const ORUtils::Image<float> *img, char *codeFragments) const;
 
-	int getNumFerns(void) const
-	{ return mNumFerns; }
+		int getNumFerns(void) const
+		{
+			return mNumFerns;
+		}
 
-	int getNumCodes(void) const
-	{ return (1 << mNumDecisions); }
+		int getNumCodes(void) const
+		{
+			return (1 << mNumDecisions);
+		}
 
 	private:
-	int mNumFerns;
-	int mNumDecisions;
-	FernTester *mEncoders;
-};
-
+		int mNumFerns;
+		int mNumDecisions;
+		FernTester *mEncoders;
+	};
 }
-

@@ -1,4 +1,4 @@
-// Copyright 2014-2015 Isis Innovation Limited and the authors of InfiniTAM
+// Copyright 2014-2017 Oxford University Innovation Limited and the authors of InfiniTAM
 
 #include <cstdlib>
 #include <iostream>
@@ -14,7 +14,6 @@
 #include "../../InputSource/FFMPEGReader.h"
 #include "../../ITMLib/ITMLibDefines.h"
 #include "../../ITMLib/Core/ITMBasicEngine.h"
-#include "../../ITMLib/Core/ITMMultiEngine.h"
 
 using namespace InfiniTAM::Engine;
 using namespace InputSource;
@@ -159,7 +158,6 @@ try
 
 	ITMLibSettings *internalSettings = new ITMLibSettings();
 
-	//ITMMainEngine *mainEngine = new ITMMultiEngine<ITMVoxel,ITMVoxelIndex>(internalSettings, &imageSource->calib, imageSource->getRGBImageSize(), imageSource->getDepthImageSize());
 	ITMMainEngine *mainEngine = new ITMBasicEngine<ITMVoxel,ITMVoxelIndex>(internalSettings, imageSource->getCalib(), imageSource->getRGBImageSize(), imageSource->getDepthImageSize());
 
 	UIEngine::Instance()->Initialise(argc, argv, imageSource, imuSource, mainEngine, "./Files/Out", internalSettings->deviceType);
