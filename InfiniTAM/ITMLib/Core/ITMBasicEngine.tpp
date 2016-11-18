@@ -123,9 +123,6 @@ void ITMBasicEngine<TVoxel,TIndex>::resetAll()
 {
 	denseMapper->ResetScene(scene);
 	trackingState->Reset();
-
-	delete view->rgb_prev;
-	view->rgb_prev = NULL;
 }
 
 #ifdef OUTPUT_TRAJECTORY_QUATERNIONS
