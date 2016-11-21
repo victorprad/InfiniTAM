@@ -19,6 +19,7 @@
 
 #include "../../ITMLib/ITMLibDefines.h"
 #include "../../ITMLib/Core/ITMBasicEngine.h"
+#include "../../ITMLib/Core/ITMMultiEngine.h"
 
 #include "../../ORUtils/FileUtils.h"
 #include "../../InputSource/FFMPEGWriter.h"
@@ -219,6 +220,14 @@ void UIEngine::glutKeyUpFunction(unsigned char key, int x, int y)
 				uiEngine->freeviewIntrinsics = uiEngine->mainEngine->GetView()->calib.intrinsics_d;
 				uiEngine->outImage[0]->ChangeDims(uiEngine->mainEngine->GetView()->depth->noDims);
 			}
+
+			ITMMultiEngine<ITMVoxel, ITMVoxelIndex> *multiEngine = dynamic_cast<ITMMultiEngine<ITMVoxel, ITMVoxelIndex>*>(uiEngine->mainEngine);
+			if (multiEngine != NULL) {
+				int idx = multiEngine->findPrimarySceneIdx();
+				if (idx < 0) idx = 0;
+				multiEngine->setFreeviewSceneIdx(idx);
+			}
+
 			uiEngine->freeviewActive = true;
 		}
 		uiEngine->needsRefresh = true;
@@ -255,6 +264,18 @@ void UIEngine::glutKeyUpFunction(unsigned char key, int x, int y)
 		ITMBasicEngine<ITMVoxel, ITMVoxelIndex> *basicEngine = dynamic_cast<ITMBasicEngine<ITMVoxel, ITMVoxelIndex>*>(uiEngine->mainEngine);
 		if (basicEngine != NULL) {
 			basicEngine->resetAll();
+		}
+	}
+	case '[':
+	case ']':
+	{
+		ITMMultiEngine<ITMVoxel, ITMVoxelIndex> *multiEngine = dynamic_cast<ITMMultiEngine<ITMVoxel, ITMVoxelIndex>*>(uiEngine->mainEngine);
+		if (multiEngine != NULL) {
+			int idx = multiEngine->getFreeviewSceneIdx();
+			if (key == '[') idx--;
+			else idx++;
+			multiEngine->changeFreeviewSceneIdx(&(uiEngine->freeviewPose), idx);
+			uiEngine->needsRefresh = true;
 		}
 	}
 	break;

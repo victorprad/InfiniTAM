@@ -12,6 +12,7 @@
 
 #include "../Engines/MultiScene/ITMActiveSceneManager.h"
 #include "../Engines/MultiScene/ITMGlobalAdjustmentEngine.h"
+#include "../Engines/Visualisation/Interface/ITMMultiVisualisationEngine.h"
 
 #include <vector>
 
@@ -27,6 +28,7 @@ namespace ITMLib
 
 		ITMLowLevelEngine *lowLevelEngine;
 		ITMVisualisationEngine<TVoxel, TIndex> *visualisationEngine;
+		ITMMultiVisualisationEngine<TVoxel, TIndex> *multiVisualisationEngine;
 
 		ITMViewBuilder *viewBuilder;
 		ITMTrackingController *trackingController;
@@ -44,10 +46,8 @@ namespace ITMLib
 
 		Vector2i trackedImageSize;
 		ITMRenderState *renderState_freeview;
-		int freeviewSceneIdx;
-
-		//ITMMultiVisualisationEngine<TVoxel, TIndex> *multiVisualisationEngine;
 		ITMRenderState *renderState_multiscene;
+		int freeviewSceneIdx;
 
 		/// Pointer for storing the current input frame
 		ITMView *view;
@@ -85,7 +85,7 @@ namespace ITMLib
 			Ommitting a separate image size for the depth images
 			will assume same resolution as for the RGB images.
 		*/
-		ITMMultiEngine(const ITMLibSettings *settings, const ITMRGBDCalib *calib, Vector2i imgSize_rgb, Vector2i imgSize_d = Vector2i(-1, -1));
+		ITMMultiEngine(const ITMLibSettings *settings, const ITMRGBDCalib &calib, Vector2i imgSize_rgb, Vector2i imgSize_d = Vector2i(-1, -1));
 		~ITMMultiEngine(void);
 	};
 }

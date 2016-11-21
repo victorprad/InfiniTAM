@@ -42,15 +42,15 @@ ITMLibSettings::ITMLibSettings(void)
 	behaviourOnFailure = FAILUREMODE_IGNORE;
     
 	// Default ICP tracking
-	//trackerConfig = "type=icp,levels=rrrbb,minstep=1e-3,"
-	//				"outlierC=0.01,outlierF=0.002,"
-	//				"numiterC=10,numiterF=2,failureDec=3.0";
+	trackerConfig = "type=icp,levels=rrrbb,minstep=1e-3,"
+					"outlierC=0.01,outlierF=0.002,"
+					"numiterC=10,numiterF=2,failureDec=20.0"; // 5 for normal, 20 for loop closure
 
-	// Depth-only extended tracker:
-	trackerConfig = "type=extended,levels=rrbb,useDepth=1,minstep=1e-4,"
-					  "outlierSpaceC=0.1,outlierSpaceF=0.004,"
-					  "numiterC=20,numiterF=50,tukeyCutOff=8,"
-					  "framesToSkip=20,framesToWeight=50,failureDec=20.0";
+	////// Depth-only extended tracker:
+	//trackerConfig = "type=extended,levels=rrbb,useDepth=1,minstep=1e-4,"
+	//				  "outlierSpaceC=0.1,outlierSpaceF=0.004,"
+	//				  "numiterC=20,numiterF=50,tukeyCutOff=8,"
+	//				  "framesToSkip=20,framesToWeight=50,failureDec=20.0";
 
 	// For hybrid intensity+depth tracking:
 	//trackerConfig = "type=extended,levels=bbb,useDepth=1,useColour=1,"

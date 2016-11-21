@@ -602,3 +602,4 @@ endif()
 
 target_link_libraries(ITMLib ORUtils)
 target_link_libraries(ITMLib RelocLib)
+target_link_libraries(ITMLib MiniSlamGraphLib)
