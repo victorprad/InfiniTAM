@@ -1,4 +1,4 @@
-// Copyright 2014-2015 Isis Innovation Limited and the authors of InfiniTAM
+// Copyright 2014-2017 Oxford University Innovation Limited and the authors of InfiniTAM
 
 #include "ITMLibSettings.h"
 using namespace ITMLib;
@@ -42,15 +42,15 @@ ITMLibSettings::ITMLibSettings(void)
 	behaviourOnFailure = FAILUREMODE_IGNORE;
     
 	// Default ICP tracking
-	trackerConfig = "type=icp,levels=rrrbb,minstep=1e-3,"
-					"outlierC=0.01,outlierF=0.002,"
-					"numiterC=10,numiterF=2,failureDec=3.0";
+	//trackerConfig = "type=icp,levels=rrrbb,minstep=1e-3,"
+	//				"outlierC=0.01,outlierF=0.002,"
+	//				"numiterC=10,numiterF=2,failureDec=3.0";
 
 	// Depth-only extended tracker:
-	//trackerConfig = "type=extended,levels=rrbb,useDepth=1,minstep=1e-4,"
-	//				  "outlierSpaceC=0.1,outlierSpaceF=0.004,"
-	//				  "numiterC=20,numiterF=50,tukeyCutOff=8,"
-	//				  "framesToSkip=20,framesToWeight=50,failureDec=20.0";
+	trackerConfig = "type=extended,levels=rrbb,useDepth=1,minstep=1e-4,"
+					  "outlierSpaceC=0.1,outlierSpaceF=0.004,"
+					  "numiterC=20,numiterF=50,tukeyCutOff=8,"
+					  "framesToSkip=20,framesToWeight=50,failureDec=20.0";
 
 	// For hybrid intensity+depth tracking:
 	//trackerConfig = "type=extended,levels=bbb,useDepth=1,useColour=1,"
@@ -63,7 +63,6 @@ ITMLibSettings::ITMLibSettings(void)
 	// Colour only tracking, using rendered colours
 	//trackerConfig = "type=rgb,levels=rrbb";
 
-	//trackerConfig = "type=ren,levels=bb";
 	//trackerConfig = "type=imuicp,levels=tb,minstep=1e-3,outlierC=0.01,outlierF=0.005,numiterC=4,numiterF=2";
 	//trackerConfig = "type=extendedimu,levels=ttb,minstep=5e-4,outlierSpaceC=0.1,outlierSpaceF=0.004,numiterC=20,numiterF=5,tukeyCutOff=8,framesToSkip=20,framesToWeight=50,failureDec=20.0";
 }

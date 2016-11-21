@@ -37,7 +37,6 @@ SET(ITMLIB_CORE_SOURCES
 Core/ITMBasicEngine.tpp
 Core/ITMDenseMapper.tpp
 Core/ITMDenseSurfelMapper.tpp
-Core/ITMMultiEngine.tpp
 Core/ITMTrackingController.cpp
 )
 
@@ -46,21 +45,7 @@ Core/ITMBasicEngine.h
 Core/ITMDenseMapper.h
 Core/ITMDenseSurfelMapper.h
 Core/ITMMainEngine.h
-Core/ITMMultiEngine.h
 Core/ITMTrackingController.h
-)
-
-##
-SET(ITMLIB_CORE_MULTISCENE_SOURCES
-Core/MultiScene/ITMActiveSceneManager.cpp
-Core/MultiScene/ITMLocalScene.cpp
-Core/MultiScene/ITMMultiSceneManager.tpp
-)
-
-SET(ITMLIB_CORE_MULTISCENE_HEADERS
-Core/MultiScene/ITMActiveSceneManager.h
-Core/MultiScene/ITMLocalScene.h
-Core/MultiScene/ITMMultiSceneManager.h
 )
 
 ##
@@ -276,11 +261,13 @@ Engines/Visualisation/CPU/ITMVisualisationEngine_CPU.h
 SET(ITMLIB_ENGINES_VISUALISATION_CUDA_SOURCES
 Engines/Visualisation/CUDA/ITMSurfelVisualisationEngine_CUDA.tcu
 Engines/Visualisation/CUDA/ITMVisualisationEngine_CUDA.tcu
+Engines/Visualisation/CUDA/ITMVisualisationHelpers_CUDA.cu
 )
 
 SET(ITMLIB_ENGINES_VISUALISATION_CUDA_HEADERS
 Engines/Visualisation/CUDA/ITMSurfelVisualisationEngine_CUDA.h
 Engines/Visualisation/CUDA/ITMVisualisationEngine_CUDA.h
+Engines/Visualisation/CUDA/ITMVisualisationHelpers_CUDA.h
 )
 
 ##
@@ -380,14 +367,12 @@ SET(ITMLIB_TRACKERS_CPU_SOURCES
 Trackers/CPU/ITMColorTracker_CPU.cpp
 Trackers/CPU/ITMDepthTracker_CPU.cpp
 Trackers/CPU/ITMExtendedTracker_CPU.cpp
-Trackers/CPU/ITMRenTracker_CPU.tpp
 )
 
 SET(ITMLIB_TRACKERS_CPU_HEADERS
 Trackers/CPU/ITMColorTracker_CPU.h
 Trackers/CPU/ITMDepthTracker_CPU.h
 Trackers/CPU/ITMExtendedTracker_CPU.h
-Trackers/CPU/ITMRenTracker_CPU.h
 )
 
 ##
@@ -395,7 +380,6 @@ SET(ITMLIB_TRACKERS_CUDA_SOURCES
 Trackers/CUDA/ITMColorTracker_CUDA.cu
 Trackers/CUDA/ITMDepthTracker_CUDA.cu
 Trackers/CUDA/ITMExtendedTracker_CUDA.cu
-Trackers/CUDA/ITMRenTracker_CUDA.tcu
 
 )
 
@@ -403,7 +387,6 @@ SET(ITMLIB_TRACKERS_CUDA_HEADERS
 Trackers/CUDA/ITMColorTracker_CUDA.h
 Trackers/CUDA/ITMDepthTracker_CUDA.h
 Trackers/CUDA/ITMExtendedTracker_CUDA.h
-Trackers/CUDA/ITMRenTracker_CUDA.h
 )
 
 ##
@@ -412,7 +395,6 @@ Trackers/Interface/ITMColorTracker.cpp
 Trackers/Interface/ITMDepthTracker.cpp
 Trackers/Interface/ITMExtendedTracker.cpp
 Trackers/Interface/ITMIMUTracker.cpp
-Trackers/Interface/ITMRenTracker.tpp
 )
 
 SET(ITMLIB_TRACKERS_INTERFACE_HEADERS
@@ -421,7 +403,6 @@ Trackers/Interface/ITMCompositeTracker.h
 Trackers/Interface/ITMDepthTracker.h
 Trackers/Interface/ITMExtendedTracker.h
 Trackers/Interface/ITMIMUTracker.h
-Trackers/Interface/ITMRenTracker.h
 Trackers/Interface/ITMTracker.h
 )
 
@@ -430,7 +411,6 @@ SET(ITMLIB_TRACKERS_SHARED_HEADERS
 Trackers/Shared/ITMColorTracker_Shared.h
 Trackers/Shared/ITMDepthTracker_Shared.h
 Trackers/Shared/ITMExtendedTracker_Shared.h
-Trackers/Shared/ITMRenTracker_Shared.h
 )
 
 ##
@@ -457,7 +437,6 @@ SET(sources
 ${ITMLIB_TOPLEVEL_CPU_SOURCES}
 ${ITMLIB_TOPLEVEL_CUDA_SOURCES}
 ${ITMLIB_CORE_SOURCES}
-${ITMLIB_CORE_MULTISCENE_SOURCES}
 ${ITMLIB_ENGINES_LOWLEVEL_SOURCES}
 ${ITMLIB_ENGINES_LOWLEVEL_CPU_SOURCES}
 ${ITMLIB_ENGINES_LOWLEVEL_CUDA_SOURCES}
@@ -487,7 +466,6 @@ ${ITMLIB_UTILS_SOURCES}
 SET(headers
 ${ITMLIB_TOPLEVEL_HEADERS}
 ${ITMLIB_CORE_HEADERS}
-${ITMLIB_CORE_MULTISCENE_HEADERS}
 ${ITMLIB_ENGINES_LOWLEVEL_HEADERS}
 ${ITMLIB_ENGINES_LOWLEVEL_CPU_HEADERS}
 ${ITMLIB_ENGINES_LOWLEVEL_CUDA_HEADERS}
@@ -539,7 +517,6 @@ ${ITMLIB_UTILS_HEADERS}
 
 SOURCE_GROUP("" FILES ${ITMLIB_TOPLEVEL_CPU_SOURCES} ${ITMLIB_TOPLEVEL_CUDA_SOURCES} ${ITMLIB_TOPLEVEL_HEADERS})
 SOURCE_GROUP(Core FILES ${ITMLIB_CORE_SOURCES} ${ITMLIB_CORE_HEADERS})
-SOURCE_GROUP(Core\\MultiScene FILES ${ITMLIB_CORE_MULTISCENE_SOURCES} ${ITMLIB_CORE_MULTISCENE_HEADERS})
 SOURCE_GROUP(Engines\\LowLevel FILES ${ITMLIB_ENGINES_LOWLEVEL_SOURCES} ${ITMLIB_ENGINES_LOWLEVEL_HEADERS})
 SOURCE_GROUP(Engines\\LowLevel\\CPU FILES ${ITMLIB_ENGINES_LOWLEVEL_CPU_SOURCES} ${ITMLIB_ENGINES_LOWLEVEL_CPU_HEADERS})
 SOURCE_GROUP(Engines\\LowLevel\\CUDA FILES ${ITMLIB_ENGINES_LOWLEVEL_CUDA_SOURCES} ${ITMLIB_ENGINES_LOWLEVEL_CUDA_HEADERS})

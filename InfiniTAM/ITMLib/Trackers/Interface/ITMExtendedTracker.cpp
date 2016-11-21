@@ -1,4 +1,8 @@
-// Copyright 2014-2015 Isis Innovation Limited and the authors of InfiniTAM
+// Copyright 2014-2017 Oxford University Innovation Limited and the authors of InfiniTAM
+
+#ifndef NOMINMAX 
+#define NOMINMAX
+#endif 
 
 #include "ITMExtendedTracker.h"
 #include "../../../ORUtils/Cholesky.h"
