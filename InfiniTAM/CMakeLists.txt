@@ -19,7 +19,7 @@ CANONIFY_BOOL(CUDA_FOUND)
 message(STATUS "CUDA found: " ${CUDA_FOUND})
 OPTION(WITH_CUDA "Build with CUDA support?" ${CUDA_FOUND})
 
-find_package(CSparse)
+find_package(CSparse QUIET)
 CANONIFY_BOOL(CSPARSE_FOUND)
 message(STATUS "CSparse found: ${CSPARSE_FOUND}")
 OPTION(WITH_CSPARSE "Build with CSparse support?" ${CSPARSE_FOUND})
