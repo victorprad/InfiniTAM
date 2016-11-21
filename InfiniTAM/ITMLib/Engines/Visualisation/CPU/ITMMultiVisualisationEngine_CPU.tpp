@@ -89,77 +89,77 @@ void ITMMultiVisualisationEngine_CPU<TVoxel, TIndex>::CreateExpectedDepths(const
 template<class TVoxel, class TIndex>
 void ITMMultiVisualisationEngine_CPU<TVoxel, TIndex>::RenderImage(const ORUtils::SE3Pose *pose, const ITMIntrinsics *intrinsics, ITMRenderState *_renderState, ITMUChar4Image *outputImage, IITMVisualisationEngine::RenderImageType type) const
 {
-	ITMRenderStateMultiScene<TVoxel, TIndex> *renderState = (ITMRenderStateMultiScene<TVoxel, TIndex>*)_renderState;
-
-	Vector2i imgSize = outputImage->noDims;
-	Matrix4f invM = pose->GetInvM();
-
-	// Generic Raycast
-	float voxelSize = renderState->sceneParams.voxelSize;
-	{
-		Vector4f projParams = intrinsics->projectionParamsSimple.all;
-		Vector4f invProjParams = InvertProjectionParams(projParams);
-
-		const Vector2f *minmaximg = renderState->renderingRangeImage->GetData(MEMORYDEVICE_CPU);
-		float mu = renderState->sceneParams.mu;
-		float oneOverVoxelSize = 1.0f / voxelSize;
-		Vector4f *pointsRay = renderState->raycastResult->GetData(MEMORYDEVICE_CPU);
-
-		typedef ITMMultiVoxel<TVoxel> VD;
-		typedef ITMMultiIndex<TIndex> ID;
-
-#ifdef WITH_OPENMP
-#pragma omp parallel for
-#endif
-		for (int locId = 0; locId < imgSize.x*imgSize.y; ++locId)
-		{
-			int y = locId / imgSize.x;
-			int x = locId - y*imgSize.x;
-			int locId2 = (int)floor((float)x / minmaximg_subsample) + (int)floor((float)y / minmaximg_subsample) * imgSize.x;
-
-			castRay<VD, ID>(pointsRay[locId], x, y, &renderState->voxelData_host, &renderState->indexData_host, invM, invProjParams, oneOverVoxelSize, mu, minmaximg[locId2]);
-		}
-	}
-
-	Vector3f lightSource = -Vector3f(invM.getColumn(2));
-	Vector4u *outRendering = outputImage->GetData(MEMORYDEVICE_CPU);
-	Vector4f *pointsRay = renderState->raycastResult->GetData(MEMORYDEVICE_CPU);
-
-	if ((type == IITMVisualisationEngine::RENDER_COLOUR_FROM_VOLUME) &&
-		(!TVoxel::hasColorInformation)) type = IITMVisualisationEngine::RENDER_SHADED_GREYSCALE;
-
-	switch (type) {
-	case IITMVisualisationEngine::RENDER_COLOUR_FROM_VOLUME:
-#ifdef WITH_OPENMP
-#pragma omp parallel for
-#endif
-		for (int locId = 0; locId < imgSize.x * imgSize.y; locId++) {
-			Vector4f ptRay = pointsRay[locId];
-			processPixelColour<ITMMultiVoxel<TVoxel>, ITMMultiIndex<TIndex> >(outRendering[locId], ptRay.toVector3(), ptRay.w > 0, &(renderState->voxelData_host),
-				&(renderState->indexData_host));
-		}
-		break;
-	case IITMVisualisationEngine::RENDER_COLOUR_FROM_NORMAL:
-#ifdef WITH_OPENMP
-#pragma omp parallel for
-#endif
-		for (int locId = 0; locId < imgSize.x * imgSize.y; locId++) {
-			int y = locId / imgSize.x;
-			int x = locId - y*imgSize.x;
-			processPixelSimpleNormal<true>(outRendering, pointsRay, imgSize, x, y, voxelSize, lightSource);
-		}
-		break;
-	case IITMVisualisationEngine::RENDER_SHADED_GREYSCALE:
-	default:
-#ifdef WITH_OPENMP
-#pragma omp parallel for
-#endif
-		for (int locId = 0; locId < imgSize.x * imgSize.y; locId++) {
-			int y = locId / imgSize.x;
-			int x = locId - y*imgSize.x;
-			processPixelGreySimpleNormals<true>(outRendering, pointsRay, imgSize, x, y, voxelSize, lightSource);
-		}
-		break;
-	}
+//	ITMRenderStateMultiScene<TVoxel, TIndex> *renderState = (ITMRenderStateMultiScene<TVoxel, TIndex>*)_renderState;
+//
+//	Vector2i imgSize = outputImage->noDims;
+//	Matrix4f invM = pose->GetInvM();
+//
+//	// Generic Raycast
+//	float voxelSize = renderState->sceneParams.voxelSize;
+//	{
+//		Vector4f projParams = intrinsics->projectionParamsSimple.all;
+//		Vector4f invProjParams = InvertProjectionParams(projParams);
+//
+//		const Vector2f *minmaximg = renderState->renderingRangeImage->GetData(MEMORYDEVICE_CPU);
+//		float mu = renderState->sceneParams.mu;
+//		float oneOverVoxelSize = 1.0f / voxelSize;
+//		Vector4f *pointsRay = renderState->raycastResult->GetData(MEMORYDEVICE_CPU);
+//
+//		typedef ITMMultiVoxel<TVoxel> VD;
+//		typedef ITMMultiIndex<TIndex> ID;
+//
+//#ifdef WITH_OPENMP
+//#pragma omp parallel for
+//#endif
+//		for (int locId = 0; locId < imgSize.x*imgSize.y; ++locId)
+//		{
+//			int y = locId / imgSize.x;
+//			int x = locId - y*imgSize.x;
+//			int locId2 = (int)floor((float)x / minmaximg_subsample) + (int)floor((float)y / minmaximg_subsample) * imgSize.x;
+//
+//			castRay<VD, ID>(pointsRay[locId], x, y, &renderState->voxelData_host, &renderState->indexData_host, invM, invProjParams, oneOverVoxelSize, mu, minmaximg[locId2]);
+//		}
+//	}
+//
+//	Vector3f lightSource = -Vector3f(invM.getColumn(2));
+//	Vector4u *outRendering = outputImage->GetData(MEMORYDEVICE_CPU);
+//	Vector4f *pointsRay = renderState->raycastResult->GetData(MEMORYDEVICE_CPU);
+//
+//	if ((type == IITMVisualisationEngine::RENDER_COLOUR_FROM_VOLUME) &&
+//		(!TVoxel::hasColorInformation)) type = IITMVisualisationEngine::RENDER_SHADED_GREYSCALE;
+//
+//	switch (type) {
+//	case IITMVisualisationEngine::RENDER_COLOUR_FROM_VOLUME:
+//#ifdef WITH_OPENMP
+//#pragma omp parallel for
+//#endif
+//		for (int locId = 0; locId < imgSize.x * imgSize.y; locId++) {
+//			Vector4f ptRay = pointsRay[locId];
+//			processPixelColour<ITMMultiVoxel<TVoxel>, ITMMultiIndex<TIndex> >(outRendering[locId], ptRay.toVector3(), ptRay.w > 0, &(renderState->voxelData_host),
+//				&(renderState->indexData_host));
+//		}
+//		break;
+//	case IITMVisualisationEngine::RENDER_COLOUR_FROM_NORMAL:
+//#ifdef WITH_OPENMP
+//#pragma omp parallel for
+//#endif
+//		for (int locId = 0; locId < imgSize.x * imgSize.y; locId++) {
+//			int y = locId / imgSize.x;
+//			int x = locId - y*imgSize.x;
+//			processPixelColour_ImageNormals<true>(outRendering, pointsRay, imgSize, x, y, voxelSize, lightSource);
+//		}
+//		break;
+//	case IITMVisualisationEngine::RENDER_SHADED_GREYSCALE:
+//	default:
+//#ifdef WITH_OPENMP
+//#pragma omp parallel for
+//#endif
+//		for (int locId = 0; locId < imgSize.x * imgSize.y; locId++) {
+//			int y = locId / imgSize.x;
+//			int x = locId - y*imgSize.x;
+//			processPixelGrey_ImageNormals<true>(outRendering, pointsRay, imgSize, x, y, voxelSize, lightSource);
+//		}
+//		break;
+//	}
 }
 

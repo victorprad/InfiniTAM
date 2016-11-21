@@ -8,31 +8,30 @@
 
 namespace ITMLib {
 
-struct ITMMultiCache {};
+	struct ITMMultiCache {};
 
-template<class TIndex>
-class ITMMultiIndex {
+	template<class TIndex>
+	class ITMMultiIndex {
 	public:
 		typedef TIndex IndexType;
-	struct IndexData {
-		typedef TIndex IndexType;
-		int numScenes;
-		typename TIndex::IndexData *index[MAX_NUM_SCENES];
-		Matrix4f poses_vs[MAX_NUM_SCENES];
-		Matrix4f posesInv[MAX_NUM_SCENES];
+		struct IndexData {
+			typedef TIndex IndexType;
+			int numScenes;
+			typename TIndex::IndexData *index[MAX_NUM_SCENES];
+			Matrix4f poses_vs[MAX_NUM_SCENES];
+			Matrix4f posesInv[MAX_NUM_SCENES];
+		};
+		typedef ITMMultiCache IndexCache;
 	};
-	typedef ITMMultiCache IndexCache;
-};
 
-template<class TVoxel>
-class ITMMultiVoxel {
+	template<class TVoxel>
+	class ITMMultiVoxel {
 	public:
-	typedef TVoxel VoxelType;
-	TVoxel* voxels[MAX_NUM_SCENES];
+		typedef TVoxel VoxelType;
+		TVoxel* voxels[MAX_NUM_SCENES];
 
-	static const CONSTPTR(bool) hasColorInformation = TVoxel::hasColorInformation;
-};
-
+		static const CONSTPTR(bool) hasColorInformation = TVoxel::hasColorInformation;
+	};
 }
 
 template<class TMultiVoxel, class TMultiIndex>
@@ -57,7 +56,7 @@ _CPU_AND_GPU_CODE_ inline float readFromSDF_float_uninterpolated(const TMultiVox
 		sum_weights += v.w_depth;
 	}
 	if (sum_weights == 0) return 1.0f;
-	return TVoxel::SDF_valueToFloat(sum_sdf/(float)sum_weights);
+	return TVoxel::SDF_valueToFloat(sum_sdf / (float)sum_weights);
 }
 
 template<class TVoxel, class TIndex, class TCache>
@@ -67,7 +66,6 @@ _CPU_AND_GPU_CODE_ inline float readFromSDF_float_interpolated(const CONSTPTR(TV
 	float res1, res2, v1, v2;
 	Vector3f coeff; Vector3i pos; TO_INT_FLOOR3(pos, coeff, point);
 
-	int vmIndex;
 	{
 		const TVoxel & v = readVoxel(voxelData, voxelIndex, pos + Vector3i(0, 0, 0), vmIndex, cache);
 		v1 = v.sdf;
@@ -131,10 +129,10 @@ _CPU_AND_GPU_CODE_ inline float readFromSDF_float_interpolated(const TMultiVoxel
 	for (int sceneId = 0; sceneId < voxelIndex->numScenes; ++sceneId) {
 		Vector3f point_local = voxelIndex->poses_vs[sceneId] * point;
 
-		int vmIndex;
+		int isFound;
 		int maxW;
 		typename TIndex::IndexCache cache;
-		float sdf = readFromSDF_float_interpolated(voxelData->voxels[sceneId], voxelIndex->index[sceneId], point_local, vmIndex, cache, maxW);
+		float sdf = readFromSDF_float_interpolated(voxelData->voxels[sceneId], voxelIndex->index[sceneId], point_local, isFound, cache, maxW);
 		if (!isFound) continue;
 		hash_found = true;
 
@@ -142,7 +140,7 @@ _CPU_AND_GPU_CODE_ inline float readFromSDF_float_interpolated(const TMultiVoxel
 		sum_weights += maxW;
 	}
 	if (sum_weights == 0) return 1.0f;
-	return (sum_sdf/(float)sum_weights);
+	return (sum_sdf / (float)sum_weights);
 }
 
 template<class TMultiVoxel, class TMultiIndex>
@@ -161,6 +159,6 @@ _CPU_AND_GPU_CODE_ inline Vector4f readFromSDF_color4u_interpolated(const TMulti
 		accu += (float)maxW * val;
 	}
 	if (accu.w < 0.001f) accu.w = 1.0f;
-	return (accu/accu.w);
+	return (accu / accu.w);
 }
 

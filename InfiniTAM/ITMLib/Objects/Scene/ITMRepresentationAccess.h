@@ -200,7 +200,6 @@ _CPU_AND_GPU_CODE_ inline float readWithConfidenceFromSDF_float_interpolated(THR
 	return TVoxel::valueToFloat((1.0f - coeff.z) * res1 + coeff.z * res2);
 }
 
-
 template<class TVoxel, class TIndex>
 _CPU_AND_GPU_CODE_ inline Vector4f readFromSDF_color4u_interpolated(const CONSTPTR(TVoxel) *voxelData,
 	const CONSTPTR(typename TIndex::IndexData) *voxelIndex, const THREADPTR(Vector3f) & point, 

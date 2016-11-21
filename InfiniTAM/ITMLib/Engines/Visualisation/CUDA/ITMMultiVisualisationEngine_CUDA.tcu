@@ -103,8 +103,9 @@ void ITMMultiVisualisationEngine_CUDA<TVoxel, TIndex>::RenderImage(const ORUtils
 		dim3 gridSize((int)ceil((float)imgSize.x / (float)cudaBlockSize.x), (int)ceil((float)imgSize.y / (float)cudaBlockSize.y));
 		typedef ITMMultiVoxel<TVoxel> VD;
 		typedef ITMMultiIndex<TIndex> ID;
-		genericRaycast_device<VD, ID> << <gridSize, cudaBlockSize >> > (
+		genericRaycast_device<VD, ID, false> << <gridSize, cudaBlockSize >> > (
 			renderState->raycastResult->GetData(MEMORYDEVICE_CUDA),
+			NULL,
 			renderState->voxelData_device,
 			renderState->indexData_device,
 			imgSize,
@@ -134,12 +135,19 @@ void ITMMultiVisualisationEngine_CUDA<TVoxel, TIndex>::RenderImage(const ORUtils
 		ORcudaKernelCheck;
 		break;
 	case IITMVisualisationEngine::RENDER_COLOUR_FROM_NORMAL:
-		renderColourFromSimpleNormal_device << <gridSize, cudaBlockSize >> > (outRendering, pointsRay, imgSize, renderState->sceneParams.voxelSize, lightSource);
+		if (intrinsics->FocalLengthSignsDiffer())
+			renderNormals_ImageNormals_device<true> << <gridSize, cudaBlockSize >> > (outRendering, pointsRay, imgSize, renderState->sceneParams.voxelSize, lightSource);
+		else
+			renderNormals_ImageNormals_device<true> << <gridSize, cudaBlockSize >> > (outRendering, pointsRay, imgSize, renderState->sceneParams.voxelSize, lightSource);
+		
 		ORcudaKernelCheck;
 		break;
 	case IITMVisualisationEngine::RENDER_SHADED_GREYSCALE:
 	default:
-		renderGreySimpleNormals_device << <gridSize, cudaBlockSize >> > (outRendering, pointsRay, imgSize, renderState->sceneParams.voxelSize, lightSource);
+		if (intrinsics->FocalLengthSignsDiffer())
+			renderGrey_ImageNormals_device<true> << <gridSize, cudaBlockSize >> >(outRendering, pointsRay, renderState->sceneParams.voxelSize, imgSize, lightSource);
+		else
+			renderGrey_ImageNormals_device<false> << <gridSize, cudaBlockSize >> >(outRendering, pointsRay, renderState->sceneParams.voxelSize, imgSize, lightSource);
 		ORcudaKernelCheck;
 		break;
 	}
