@@ -49,7 +49,7 @@ namespace ITMLib {
 		{
 			sceneParams = *(sceneManager.getScene(0)->scene->sceneParams);
 
-			int num = sceneManager.numScenes();
+			int num = (int)sceneManager.numScenes();
 			if (num > MAX_NUM_SCENES) num = MAX_NUM_SCENES;
 			indexData_host.numScenes = num;
 			for (int sceneId = 0; sceneId < num; ++sceneId) {

@@ -3,6 +3,7 @@
 #pragma once
 
 #include "ITMMeshingEngine.h"
+#include "../../MultiScene/ITMMultiSceneManager.h"
 
 namespace ITMLib
 {

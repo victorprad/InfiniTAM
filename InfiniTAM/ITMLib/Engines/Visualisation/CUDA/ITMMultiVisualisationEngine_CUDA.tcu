@@ -130,7 +130,7 @@ void ITMMultiVisualisationEngine_CUDA<TVoxel, TIndex>::RenderImage(const ORUtils
 
 	switch (type) {
 	case IITMVisualisationEngine::RENDER_COLOUR_FROM_VOLUME:
-		renderColour_device<ITMMultiVoxel<TVoxel>, ITMMultiIndex<TIndex> > << <gridSize, cudaBlockSize >> > (outRendering, pointsRay, renderState->voxelData_device,
+		renderColour_device<ITMMultiVoxel<TVoxel>, ITMMultiIndex<TIndex> > << <gridSize, cudaBlockSize >> >(outRendering, pointsRay, renderState->voxelData_device,
 			renderState->indexData_device, imgSize);
 		ORcudaKernelCheck;
 		break;

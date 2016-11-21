@@ -43,6 +43,22 @@ ITMVisualisationEngine_CUDA<TVoxel, ITMVoxelBlockHash>::~ITMVisualisationEngine_
 }
 
 template<class TVoxel, class TIndex>
+ITMRenderState* ITMVisualisationEngine_CUDA<TVoxel, TIndex>::CreateRenderState(const ITMScene<TVoxel, TIndex> *scene, const Vector2i & imgSize) const
+{
+	return new ITMRenderState(
+		imgSize, scene->sceneParams->viewFrustum_min, scene->sceneParams->viewFrustum_max, MEMORYDEVICE_CUDA
+	);
+}
+
+template<class TVoxel>
+ITMRenderState_VH* ITMVisualisationEngine_CUDA<TVoxel, ITMVoxelBlockHash>::CreateRenderState(const ITMScene<TVoxel, ITMVoxelBlockHash> *scene, const Vector2i & imgSize) const
+{
+	return new ITMRenderState_VH(
+		ITMVoxelBlockHash::noTotalEntries, imgSize, scene->sceneParams->viewFrustum_min, scene->sceneParams->viewFrustum_max, MEMORYDEVICE_CUDA
+	);
+}
+
+template<class TVoxel, class TIndex>
 void ITMVisualisationEngine_CUDA<TVoxel, TIndex>::FindVisibleBlocks(const ITMScene<TVoxel,TIndex> *scene, const ORUtils::SE3Pose *pose, const ITMIntrinsics *intrinsics, ITMRenderState *renderState) const
 {
 }
@@ -235,7 +251,7 @@ static void RenderImage_common(const ITMScene<TVoxel, TIndex> *scene, const ORUt
 	switch (type) {
 	case IITMVisualisationEngine::RENDER_COLOUR_FROM_VOLUME:
 		renderColour_device<TVoxel, TIndex> <<<gridSize, cudaBlockSize>>>(outRendering, pointsRay, scene->localVBA.GetVoxelBlocks(),
-			scene->index.getIndexData(), imgSize, lightSource);
+			scene->index.getIndexData(), imgSize);
 		ORcudaKernelCheck;
 		break;
 	case IITMVisualisationEngine::RENDER_COLOUR_FROM_NORMAL:

@@ -194,7 +194,7 @@ namespace ITMLib
 
 	template<class TVoxel, class TIndex>
 	__global__ void renderColour_device(Vector4u *outRendering, const Vector4f *ptsRay, const TVoxel *voxelData,
-		const typename TIndex::IndexData *voxelIndex, Vector2i imgSize, Vector3f lightSource)
+		const typename TIndex::IndexData *voxelIndex, Vector2i imgSize)
 	{
 		int x = (threadIdx.x + blockIdx.x * blockDim.x), y = (threadIdx.y + blockIdx.y * blockDim.y);
 
@@ -204,6 +204,6 @@ namespace ITMLib
 
 		Vector4f ptRay = ptsRay[locId];
 
-		processPixelColour<TVoxel, TIndex>(outRendering[locId], ptRay.toVector3(), ptRay.w > 0, voxelData, voxelIndex, lightSource);
+		processPixelColour<TVoxel, TIndex>(outRendering[locId], ptRay.toVector3(), ptRay.w > 0, voxelData, voxelIndex);
 	}
 }

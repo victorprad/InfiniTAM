@@ -11,7 +11,7 @@
 namespace ITMLib
 {
 	/* This helpful abstract interface allows you to ignore the fact that
-	   scenes are templates.
+	scenes are templates.
 	*/
 	class ITMMultiSceneManager
 	{

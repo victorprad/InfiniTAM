@@ -2,30 +2,33 @@
 
 #pragma once
 
-#include "ITMRepresentationAccess.h"
+#include "../../Objects/Scene/ITMRepresentationAccess.h"
 
 #define MAX_NUM_SCENES 32
 
 namespace ITMLib {
-
 	struct ITMMultiCache {};
 
 	template<class TIndex>
-	class ITMMultiIndex {
+	class ITMMultiIndex
+	{
 	public:
 		typedef TIndex IndexType;
-		struct IndexData {
-			typedef TIndex IndexType;
+		typedef ITMMultiCache IndexCache;
+
+		struct IndexData
+		{
 			int numScenes;
+			typedef TIndex IndexType;
 			typename TIndex::IndexData *index[MAX_NUM_SCENES];
 			Matrix4f poses_vs[MAX_NUM_SCENES];
 			Matrix4f posesInv[MAX_NUM_SCENES];
 		};
-		typedef ITMMultiCache IndexCache;
 	};
 
 	template<class TVoxel>
-	class ITMMultiVoxel {
+	class ITMMultiVoxel
+	{
 	public:
 		typedef TVoxel VoxelType;
 		TVoxel* voxels[MAX_NUM_SCENES];
@@ -35,106 +38,47 @@ namespace ITMLib {
 }
 
 template<class TMultiVoxel, class TMultiIndex>
-_CPU_AND_GPU_CODE_ inline float readFromSDF_float_uninterpolated(const TMultiVoxel *voxelData, const TMultiIndex *voxelIndex, const Vector3f & point, bool & hash_found, ITMLib::ITMMultiCache & _cache)
+_CPU_AND_GPU_CODE_ inline float readFromSDF_float_uninterpolated(const TMultiVoxel *voxelData, const TMultiIndex *voxelIndex, const Vector3f & point, int & vmIndex, ITMLib::ITMMultiCache & _cache)
 {
 	typedef typename TMultiVoxel::VoxelType TVoxel;
 	typedef typename TMultiIndex::IndexType TIndex;
 
 	float sum_sdf = 0.0f;
 	int sum_weights = 0;
-	hash_found = false;
+	vmIndex = false;
 	for (int sceneId = 0; sceneId < voxelIndex->numScenes; ++sceneId) {
 		Vector3f point_local = voxelIndex->poses_vs[sceneId] * point;
 
-		bool isFound;
+		int vmIndex_tmp;
 		typename TIndex::IndexCache cache;
-		const TVoxel & v = readVoxel(voxelData->voxels[sceneId], voxelIndex->index[sceneId], Vector3i((int)ROUND(point_local.x), (int)ROUND(point_local.y), (int)ROUND(point_local.z)), isFound, cache);
-		if (!isFound) continue;
+		const TVoxel & v = readVoxel(voxelData->voxels[sceneId], voxelIndex->index[sceneId], Vector3i((int)ROUND(point_local.x), (int)ROUND(point_local.y), (int)ROUND(point_local.z)), vmIndex_tmp, cache);
+		if (!vmIndex_tmp) continue;
 
-		hash_found = true;
+		vmIndex = true;
 		sum_sdf += (float)v.w_depth * (float)v.sdf;
 		sum_weights += v.w_depth;
 	}
 	if (sum_weights == 0) return 1.0f;
-	return TVoxel::SDF_valueToFloat(sum_sdf / (float)sum_weights);
-}
-
-template<class TVoxel, class TIndex, class TCache>
-_CPU_AND_GPU_CODE_ inline float readFromSDF_float_interpolated(const CONSTPTR(TVoxel) *voxelData,
-	const CONSTPTR(TIndex) *voxelIndex, Vector3f point, THREADPTR(int) &vmIndex, THREADPTR(TCache) & cache, int & maxW)
-{
-	float res1, res2, v1, v2;
-	Vector3f coeff; Vector3i pos; TO_INT_FLOOR3(pos, coeff, point);
-
-	{
-		const TVoxel & v = readVoxel(voxelData, voxelIndex, pos + Vector3i(0, 0, 0), vmIndex, cache);
-		v1 = v.sdf;
-		maxW = v.w_depth;
-	}
-	{
-		const TVoxel & v = readVoxel(voxelData, voxelIndex, pos + Vector3i(1, 0, 0), vmIndex, cache);
-		v2 = v.sdf;
-		if (v.w_depth > maxW) maxW = v.w_depth;
-	}
-	res1 = (1.0f - coeff.x) * v1 + coeff.x * v2;
-
-	{
-		const TVoxel & v = readVoxel(voxelData, voxelIndex, pos + Vector3i(0, 1, 0), vmIndex, cache);
-		v1 = v.sdf;
-		if (v.w_depth > maxW) maxW = v.w_depth;
-	}
-	{
-		const TVoxel & v = readVoxel(voxelData, voxelIndex, pos + Vector3i(1, 1, 0), vmIndex, cache);
-		v2 = v.sdf;
-		if (v.w_depth > maxW) maxW = v.w_depth;
-	}
-	res1 = (1.0f - coeff.y) * res1 + coeff.y * ((1.0f - coeff.x) * v1 + coeff.x * v2);
-
-	{
-		const TVoxel & v = readVoxel(voxelData, voxelIndex, pos + Vector3i(0, 0, 1), vmIndex, cache);
-		v1 = v.sdf;
-		if (v.w_depth > maxW) maxW = v.w_depth;
-	}
-	{
-		const TVoxel & v = readVoxel(voxelData, voxelIndex, pos + Vector3i(1, 0, 1), vmIndex, cache);
-		v2 = v.sdf;
-		if (v.w_depth > maxW) maxW = v.w_depth;
-	}
-	res2 = (1.0f - coeff.x) * v1 + coeff.x * v2;
-
-	{
-		const TVoxel & v = readVoxel(voxelData, voxelIndex, pos + Vector3i(0, 1, 1), vmIndex, cache);
-		v1 = v.sdf;
-		if (v.w_depth > maxW) maxW = v.w_depth;
-	}
-	{
-		const TVoxel & v = readVoxel(voxelData, voxelIndex, pos + Vector3i(1, 1, 1), vmIndex, cache);
-		v2 = v.sdf;
-		if (v.w_depth > maxW) maxW = v.w_depth;
-	}
-	res2 = (1.0f - coeff.y) * res2 + coeff.y * ((1.0f - coeff.x) * v1 + coeff.x * v2);
-
-	vmIndex = true;
-	return TVoxel::SDF_valueToFloat((1.0f - coeff.z) * res1 + coeff.z * res2);
+	return TVoxel::valueToFloat(sum_sdf / (float)sum_weights);
 }
 
 template<class TMultiVoxel, class TMultiIndex>
-_CPU_AND_GPU_CODE_ inline float readFromSDF_float_interpolated(const TMultiVoxel *voxelData, const TMultiIndex *voxelIndex, const Vector3f & point, bool & hash_found, ITMLib::ITMMultiCache & _cache)
+_CPU_AND_GPU_CODE_ inline float readFromSDF_float_interpolated(const TMultiVoxel *voxelData, const TMultiIndex *voxelIndex, const Vector3f & point, int & vmIndex, ITMLib::ITMMultiCache & _cache)
 {
 	typedef typename TMultiIndex::IndexType TIndex;
 
 	float sum_sdf = 0.0f;
 	int sum_weights = 0;
-	hash_found = false;
+	vmIndex = false;
 	for (int sceneId = 0; sceneId < voxelIndex->numScenes; ++sceneId) {
 		Vector3f point_local = voxelIndex->poses_vs[sceneId] * point;
 
-		int isFound;
+		int vmIndex_tmp;
 		int maxW;
 		typename TIndex::IndexCache cache;
-		float sdf = readFromSDF_float_interpolated(voxelData->voxels[sceneId], voxelIndex->index[sceneId], point_local, isFound, cache, maxW);
-		if (!isFound) continue;
-		hash_found = true;
+		float sdf = readFromSDF_float_interpolated(voxelData->voxels[sceneId], voxelIndex->index[sceneId], point_local, vmIndex_tmp, cache, maxW);
+		if (!vmIndex_tmp) continue;
+		vmIndex = true;
 
 		sum_sdf += (float)maxW * sdf;
 		sum_weights += maxW;
@@ -146,7 +90,7 @@ _CPU_AND_GPU_CODE_ inline float readFromSDF_float_interpolated(const TMultiVoxel
 template<class TMultiVoxel, class TMultiIndex>
 _CPU_AND_GPU_CODE_ inline Vector4f readFromSDF_color4u_interpolated(const TMultiVoxel *voxelData, const TMultiIndex *voxelIndex, const Vector3f & point, ITMLib::ITMMultiCache & _cache)
 {
-	typedef typename TMultiIndex::IndexData::IndexType TIndex;
+	typedef typename TMultiIndex::IndexType TIndex;
 
 	Vector4f accu = 0.0f;
 	for (int sceneId = 0; sceneId < voxelIndex->numScenes; ++sceneId) {
@@ -162,3 +106,28 @@ _CPU_AND_GPU_CODE_ inline Vector4f readFromSDF_color4u_interpolated(const TMulti
 	return (accu / accu.w);
 }
 
+template<class TMultiVoxel, class TMultiIndex>
+_CPU_AND_GPU_CODE_ inline float readWithConfidenceFromSDF_float_interpolated(THREADPTR(float) &confidence, const CONSTPTR(TMultiVoxel) *voxelData,
+	const CONSTPTR(TMultiIndex) *voxelIndex, Vector3f point, THREADPTR(int) &vmIndex, ITMLib::ITMMultiCache & _cache)
+{
+	typedef typename TMultiIndex::IndexType TIndex;
+
+	float sum_sdf = 0.0f;
+	float sum_confidence = 0.0f;
+	vmIndex = false;
+	for (int sceneId = 0; sceneId < voxelIndex->numScenes; ++sceneId) {
+		Vector3f point_local = voxelIndex->poses_vs[sceneId] * point;
+
+		int vmIndex_tmp;
+		typename TIndex::IndexCache cache;
+		float conf;
+		float sdf = readWithConfidenceFromSDF_float_interpolated(conf, voxelData->voxels[sceneId], voxelIndex->index[sceneId], point_local, vmIndex_tmp, cache);
+		if (!vmIndex_tmp) continue;
+		vmIndex = true;
+
+		sum_sdf += (float)conf * sdf;
+		sum_confidence += conf;
+	}
+	if (sum_confidence == 0.0f) return 1.0f;
+	return (sum_sdf / (float)sum_confidence);
+}

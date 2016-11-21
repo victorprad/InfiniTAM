@@ -38,70 +38,70 @@ int currentFrameNo = 0;
 template <typename TVoxel, typename TIndex>
 ITMMultiEngine<TVoxel, TIndex>::ITMMultiEngine(const ITMLibSettings *settings, const ITMRGBDCalib *calib, Vector2i imgSize_rgb, Vector2i imgSize_d)
 {
-	if ((imgSize_d.x == -1) || (imgSize_d.y == -1)) imgSize_d = imgSize_rgb;
+	//if ((imgSize_d.x == -1) || (imgSize_d.y == -1)) imgSize_d = imgSize_rgb;
 
-	this->settings = settings;
+	//this->settings = settings;
 
-	const ITMLibSettings::DeviceType deviceType = settings->deviceType;
-	lowLevelEngine = ITMLowLevelEngineFactory::MakeLowLevelEngine(deviceType);
-	viewBuilder = ITMViewBuilderFactory::MakeViewBuilder(calib, deviceType);
-	visualisationEngine = ITMVisualisationEngineFactory::MakeVisualisationEngine<TVoxel, TIndex>(deviceType);
+	//const ITMLibSettings::DeviceType deviceType = settings->deviceType;
+	//lowLevelEngine = ITMLowLevelEngineFactory::MakeLowLevelEngine(deviceType);
+	//viewBuilder = ITMViewBuilderFactory::MakeViewBuilder(calib, deviceType);
+	//visualisationEngine = ITMVisualisationEngineFactory::MakeVisualisationEngine<TVoxel, TIndex>(deviceType);
 
-	renderState_freeview = NULL; //will be created by the visualisation engine
+	//renderState_freeview = NULL; //will be created by the visualisation engine
 
-	denseMapper = new ITMDenseMapper<TVoxel, TIndex>(settings);
+	//denseMapper = new ITMDenseMapper<TVoxel, TIndex>(settings);
 
-	imuCalibrator = new ITMIMUCalibrator_iPad();
-	tracker = ITMTrackerFactory<TVoxel, TIndex>::Instance().Make(imgSize_rgb, imgSize_d, settings, lowLevelEngine, imuCalibrator, NULL/*scene TODO: this will fail for Ren Tracker*/);
-	trackingController = new ITMTrackingController(tracker, settings);
-	trackedImageSize = trackingController->GetTrackedImageSize(imgSize_rgb, imgSize_d);
+	//imuCalibrator = new ITMIMUCalibrator_iPad();
+	//tracker = ITMTrackerFactory<TVoxel, TIndex>::Instance().Make(imgSize_rgb, imgSize_d, settings, lowLevelEngine, imuCalibrator, NULL/*scene TODO: this will fail for Ren Tracker*/);
+	//trackingController = new ITMTrackingController(tracker, settings);
+	//trackedImageSize = trackingController->GetTrackedImageSize(imgSize_rgb, imgSize_d);
 
-	freeviewSceneIdx = 0;
-	mSceneManager = new ITMMultiSceneManager_instance<TVoxel, TIndex>(settings, visualisationEngine, denseMapper, trackedImageSize);
-	mActiveDataManager = new ITMActiveSceneManager(mSceneManager);
-	mActiveDataManager->initiateNewScene(true);
+	//freeviewSceneIdx = 0;
+	//mSceneManager = new ITMMultiSceneManager_instance<TVoxel, TIndex>(settings, visualisationEngine, denseMapper, trackedImageSize);
+	//mActiveDataManager = new ITMActiveSceneManager(mSceneManager);
+	//mActiveDataManager->initiateNewScene(true);
 
-	//TODO	tracker->UpdateInitialPose(allData[0]->trackingState);
+	////TODO	tracker->UpdateInitialPose(allData[0]->trackingState);
 
-	view = NULL; // will be allocated by the view builder
+	//view = NULL; // will be allocated by the view builder
 
-	//mLoopClosureDetector = new LCDLib::LoopClosureDetector(imgSize_d, Vector2f(0.3f,5.0f), 0.15f, 4000, 8);
-	mLoopClosureDetector = new LCDLib::LoopClosureDetector(imgSize_d, Vector2f(0.3f, 5.0f), 0.1f, 1000, 4);
-	//mLoopClosureDetector = new LCDLib::LoopClosureDetector(imgSize_d, Vector2f(0.3f,4.0f), 0.1f, 2000, 6);
-	mGlobalAdjustmentEngine = new ITMGlobalAdjustmentEngine();
-	mScheduleGlobalAdjustment = false;
-	if (MultithreadedGlobalAdjustment) mGlobalAdjustmentEngine->startSeparateThread();
+	////mLoopClosureDetector = new LCDLib::LoopClosureDetector(imgSize_d, Vector2f(0.3f,5.0f), 0.15f, 4000, 8);
+	//mLoopClosureDetector = new RelocLib::Relocaliser(imgSize_d, Vector2f(0.3f, 5.0f), 0.1f, 1000, 4);
+	////mLoopClosureDetector = new LCDLib::LoopClosureDetector(imgSize_d, Vector2f(0.3f,4.0f), 0.1f, 2000, 6);
+	//mGlobalAdjustmentEngine = new ITMGlobalAdjustmentEngine();
+	//mScheduleGlobalAdjustment = false;
+	//if (MultithreadedGlobalAdjustment) mGlobalAdjustmentEngine->startSeparateThread();
 
-	//multiVisualisationEngine = ITMMultiVisualisationEngineFactory::MakeVisualisationEngine<TVoxel,TIndex>(deviceType);
-	renderState_multiscene = NULL;
+	////multiVisualisationEngine = ITMMultiVisualisationEngineFactory::MakeVisualisationEngine<TVoxel,TIndex>(deviceType);
+	//renderState_multiscene = NULL;
 }
 
 template <typename TVoxel, typename TIndex>
 ITMMultiEngine<TVoxel, TIndex>::~ITMMultiEngine(void)
 {
-	//delete multiVisualisationEngine;
-	if (renderState_multiscene != NULL) delete renderState_multiscene;
+	////delete multiVisualisationEngine;
+	//if (renderState_multiscene != NULL) delete renderState_multiscene;
 
-	delete mGlobalAdjustmentEngine;
-	delete mActiveDataManager;
-	delete mSceneManager;
+	//delete mGlobalAdjustmentEngine;
+	//delete mActiveDataManager;
+	//delete mSceneManager;
 
-	if (renderState_freeview != NULL) delete renderState_freeview;
+	//if (renderState_freeview != NULL) delete renderState_freeview;
 
-	delete denseMapper;
-	delete trackingController;
+	//delete denseMapper;
+	//delete trackingController;
 
-	delete tracker;
-	delete imuCalibrator;
+	//delete tracker;
+	//delete imuCalibrator;
 
-	delete lowLevelEngine;
-	delete viewBuilder;
+	//delete lowLevelEngine;
+	//delete viewBuilder;
 
-	if (view != NULL) delete view;
+	//if (view != NULL) delete view;
 
-	delete visualisationEngine;
+	//delete visualisationEngine;
 
-	delete mLoopClosureDetector;
+	//delete mLoopClosureDetector;
 }
 
 template <typename TVoxel, typename TIndex>
@@ -387,31 +387,31 @@ void ITMMultiEngine<TVoxel, TIndex>::GetImage(ITMUChar4Image *out, GetImageType 
 	case ITMMultiEngine::InfiniTAM_IMAGE_FREECAMERA_COLOUR_FROM_VOLUME:
 	case ITMMultiEngine::InfiniTAM_IMAGE_FREECAMERA_COLOUR_FROM_NORMAL:
 	{
-		IITMVisualisationEngine::RenderImageType type = IITMVisualisationEngine::RENDER_SHADED_GREYSCALE;
-		if (getImageType == ITMMultiEngine::InfiniTAM_IMAGE_FREECAMERA_COLOUR_FROM_VOLUME) type = IITMVisualisationEngine::RENDER_COLOUR_FROM_VOLUME;
-		else if (getImageType == ITMMultiEngine::InfiniTAM_IMAGE_FREECAMERA_COLOUR_FROM_NORMAL) type = IITMVisualisationEngine::RENDER_COLOUR_FROM_NORMAL;
+		//IITMVisualisationEngine::RenderImageType type = IITMVisualisationEngine::RENDER_SHADED_GREYSCALE;
+		//if (getImageType == ITMMultiEngine::InfiniTAM_IMAGE_FREECAMERA_COLOUR_FROM_VOLUME) type = IITMVisualisationEngine::RENDER_COLOUR_FROM_VOLUME;
+		//else if (getImageType == ITMMultiEngine::InfiniTAM_IMAGE_FREECAMERA_COLOUR_FROM_NORMAL) type = IITMVisualisationEngine::RENDER_COLOUR_FROM_NORMAL;
 
-		if (freeviewSceneIdx >= 0) {
-			ITMLocalScene<TVoxel, TIndex> *activeData = mSceneManager->getScene(freeviewSceneIdx);
-			if (renderState_freeview == NULL) renderState_freeview = visualisationEngine->CreateRenderState(activeData->scene, out->noDims);
+		//if (freeviewSceneIdx >= 0) {
+		//	ITMLocalScene<TVoxel, TIndex> *activeData = mSceneManager->getScene(freeviewSceneIdx);
+		//	if (renderState_freeview == NULL) renderState_freeview = visualisationEngine->CreateRenderState(activeData->scene, out->noDims);
 
-			visualisationEngine->FindVisibleBlocks(activeData->scene, pose, intrinsics, renderState_freeview);
-			visualisationEngine->CreateExpectedDepths(activeData->scene, pose, intrinsics, renderState_freeview);
-			visualisationEngine->RenderImage(activeData->scene, pose, intrinsics, renderState_freeview, renderState_freeview->raycastImage, type);
+		//	visualisationEngine->FindVisibleBlocks(activeData->scene, pose, intrinsics, renderState_freeview);
+		//	visualisationEngine->CreateExpectedDepths(activeData->scene, pose, intrinsics, renderState_freeview);
+		//	visualisationEngine->RenderImage(activeData->scene, pose, intrinsics, renderState_freeview, renderState_freeview->raycastImage, type);
 
-			if (settings->deviceType == ITMLibSettings::DEVICE_CUDA)
-				out->SetFrom(renderState_freeview->raycastImage, ORUtils::MemoryBlock<Vector4u>::CUDA_TO_CPU);
-			else out->SetFrom(renderState_freeview->raycastImage, ORUtils::MemoryBlock<Vector4u>::CPU_TO_CPU);
-		}
-		else {
-			if (renderState_multiscene == NULL) renderState_multiscene = multiVisualisationEngine->CreateRenderState(mSceneManager->getScene(0)->scene, out->noDims);
-			multiVisualisationEngine->PrepareRenderState(*mSceneManager, renderState_multiscene);
-			multiVisualisationEngine->CreateExpectedDepths(pose, intrinsics, renderState_multiscene);
-			multiVisualisationEngine->RenderImage(pose, intrinsics, renderState_multiscene, renderState_multiscene->raycastImage, type);
-			if (settings->deviceType == ITMLibSettings::DEVICE_CUDA)
-				out->SetFrom(renderState_multiscene->raycastImage, ORUtils::MemoryBlock<Vector4u>::CUDA_TO_CPU);
-			else out->SetFrom(renderState_multiscene->raycastImage, ORUtils::MemoryBlock<Vector4u>::CPU_TO_CPU);
-		}
+		//	if (settings->deviceType == ITMLibSettings::DEVICE_CUDA)
+		//		out->SetFrom(renderState_freeview->raycastImage, ORUtils::MemoryBlock<Vector4u>::CUDA_TO_CPU);
+		//	else out->SetFrom(renderState_freeview->raycastImage, ORUtils::MemoryBlock<Vector4u>::CPU_TO_CPU);
+		//}
+		//else {
+		//	if (renderState_multiscene == NULL) renderState_multiscene = multiVisualisationEngine->CreateRenderState(mSceneManager->getScene(0)->scene, out->noDims);
+		//	multiVisualisationEngine->PrepareRenderState(*mSceneManager, renderState_multiscene);
+		//	multiVisualisationEngine->CreateExpectedDepths(pose, intrinsics, renderState_multiscene);
+		//	multiVisualisationEngine->RenderImage(pose, intrinsics, renderState_multiscene, renderState_multiscene->raycastImage, type);
+		//	if (settings->deviceType == ITMLibSettings::DEVICE_CUDA)
+		//		out->SetFrom(renderState_multiscene->raycastImage, ORUtils::MemoryBlock<Vector4u>::CUDA_TO_CPU);
+		//	else out->SetFrom(renderState_multiscene->raycastImage, ORUtils::MemoryBlock<Vector4u>::CPU_TO_CPU);
+		//}
 
 		break;
 	}

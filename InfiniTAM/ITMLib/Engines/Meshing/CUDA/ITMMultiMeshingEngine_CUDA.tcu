@@ -39,7 +39,7 @@ template<class TVoxel>
 void ITMMultiMeshingEngine_CUDA<TVoxel, ITMVoxelBlockHash>::MeshScene(ITMMesh *mesh, const ITMMultiSceneManager_instance<TVoxel, ITMVoxelBlockHash> & sceneManager)
 {
 	const ITMSceneParams & sceneParams = *(sceneManager.getScene(0)->scene->sceneParams);
-	int numScenes = sceneManager.numScenes();
+	int numScenes = (int)sceneManager.numScenes();
 	// prepare MultiIndex etc.
 	{
 		if (numScenes > MAX_NUM_SCENES) numScenes = MAX_NUM_SCENES;
@@ -76,7 +76,7 @@ void ITMMultiMeshingEngine_CUDA<TVoxel, ITMVoxelBlockHash>::MeshScene(ITMMesh *m
 		dim3 cudaBlockSize(256);
 		dim3 gridSize((int)ceil((float)noTotalEntries / (float)cudaBlockSize.x), numScenes);
 
-		findAllocateBlocks<typename ID::IndexData> << <gridSize, cudaBlockSize >> > (visibleBlockGlobalPos_device, indexData_device, noTotalEntries);
+		findAllocateBlocks<typename ID::IndexData> << <gridSize, cudaBlockSize >> >(visibleBlockGlobalPos_device, indexData_device, noTotalEntries);
 		ORcudaKernelCheck;
 	}
 
@@ -84,7 +84,7 @@ void ITMMultiMeshingEngine_CUDA<TVoxel, ITMVoxelBlockHash>::MeshScene(ITMMesh *m
 		dim3 cudaBlockSize(SDF_BLOCK_SIZE, SDF_BLOCK_SIZE, SDF_BLOCK_SIZE);
 		dim3 gridSize(SDF_LOCAL_BLOCK_NUM / 16, 16, numScenes);
 
-		meshScene_device<VD, typename ID::IndexData> << <gridSize, cudaBlockSize >> > (triangles, noTriangles_device, factor, noTotalEntries, noMaxTriangles,
+		meshScene_device<VD, typename ID::IndexData> << <gridSize, cudaBlockSize >> >(triangles, noTriangles_device, factor, noTotalEntries, noMaxTriangles,
 			visibleBlockGlobalPos_device, voxelData_device, indexData_device);
 		ORcudaKernelCheck;
 
@@ -112,49 +112,49 @@ _CPU_AND_GPU_CODE_ inline bool findPointNeighbors2(THREADPTR(Vector3f) *p, THREA
 	const CONSTPTR(TIndex) *hashTables)
 {
 	int hashTableIdx = blockIdx.z;
-	bool isFound; Vector3i localBlockLocation;
+	int vmIndex; Vector3i localBlockLocation;
 
 	ITMMultiCache cache;
 
 	localBlockLocation = blockLocation + Vector3i(0, 0, 0);
 	p[0] = hashTables->posesInv[hashTableIdx] * localBlockLocation.toFloat();
-	sdf[0] = readFromSDF_float_interpolated(localVBA, hashTables, p[0], isFound, cache);
-	if (!isFound || sdf[0] == 1.0f) return false;
+	sdf[0] = readFromSDF_float_interpolated(localVBA, hashTables, p[0], vmIndex, cache);
+	if (!vmIndex || sdf[0] == 1.0f) return false;
 
 	localBlockLocation = blockLocation + Vector3i(1, 0, 0);
 	p[1] = hashTables->posesInv[hashTableIdx] * localBlockLocation.toFloat();
-	sdf[1] = readFromSDF_float_interpolated(localVBA, hashTables, p[1], isFound, cache);
-	if (!isFound || sdf[1] == 1.0f) return false;
+	sdf[1] = readFromSDF_float_interpolated(localVBA, hashTables, p[1], vmIndex, cache);
+	if (!vmIndex || sdf[1] == 1.0f) return false;
 
 	localBlockLocation = blockLocation + Vector3i(1, 1, 0);
 	p[2] = hashTables->posesInv[hashTableIdx] * localBlockLocation.toFloat();
-	sdf[2] = readFromSDF_float_interpolated(localVBA, hashTables, p[2], isFound, cache);
-	if (!isFound || sdf[2] == 1.0f) return false;
+	sdf[2] = readFromSDF_float_interpolated(localVBA, hashTables, p[2], vmIndex, cache);
+	if (!vmIndex || sdf[2] == 1.0f) return false;
 
 	localBlockLocation = blockLocation + Vector3i(0, 1, 0);
 	p[3] = hashTables->posesInv[hashTableIdx] * localBlockLocation.toFloat();
-	sdf[3] = readFromSDF_float_interpolated(localVBA, hashTables, p[3], isFound, cache);
-	if (!isFound || sdf[3] == 1.0f) return false;
+	sdf[3] = readFromSDF_float_interpolated(localVBA, hashTables, p[3], vmIndex, cache);
+	if (!vmIndex || sdf[3] == 1.0f) return false;
 
 	localBlockLocation = blockLocation + Vector3i(0, 0, 1);
 	p[4] = hashTables->posesInv[hashTableIdx] * localBlockLocation.toFloat();
-	sdf[4] = readFromSDF_float_interpolated(localVBA, hashTables, p[4], isFound, cache);
-	if (!isFound || sdf[4] == 1.0f) return false;
+	sdf[4] = readFromSDF_float_interpolated(localVBA, hashTables, p[4], vmIndex, cache);
+	if (!vmIndex || sdf[4] == 1.0f) return false;
 
 	localBlockLocation = blockLocation + Vector3i(1, 0, 1);
 	p[5] = hashTables->posesInv[hashTableIdx] * localBlockLocation.toFloat();
-	sdf[5] = readFromSDF_float_interpolated(localVBA, hashTables, p[5], isFound, cache);
-	if (!isFound || sdf[5] == 1.0f) return false;
+	sdf[5] = readFromSDF_float_interpolated(localVBA, hashTables, p[5], vmIndex, cache);
+	if (!vmIndex || sdf[5] == 1.0f) return false;
 
 	localBlockLocation = blockLocation + Vector3i(1, 1, 1);
 	p[6] = hashTables->posesInv[hashTableIdx] * localBlockLocation.toFloat();
-	sdf[6] = readFromSDF_float_interpolated(localVBA, hashTables, p[6], isFound, cache);
-	if (!isFound || sdf[6] == 1.0f) return false;
+	sdf[6] = readFromSDF_float_interpolated(localVBA, hashTables, p[6], vmIndex, cache);
+	if (!vmIndex || sdf[6] == 1.0f) return false;
 
 	localBlockLocation = blockLocation + Vector3i(0, 1, 1);
 	p[7] = hashTables->posesInv[hashTableIdx] * localBlockLocation.toFloat();
-	sdf[7] = readFromSDF_float_interpolated(localVBA, hashTables, p[7], isFound, cache);
-	if (!isFound || sdf[7] == 1.0f) return false;
+	sdf[7] = readFromSDF_float_interpolated(localVBA, hashTables, p[7], vmIndex, cache);
+	if (!vmIndex || sdf[7] == 1.0f) return false;
 
 	return true;
 }
