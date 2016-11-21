@@ -264,12 +264,14 @@ SET(ITMLIB_ENGINES_VISUALISATION_CUDA_SOURCES
 Engines/Visualisation/CUDA/ITMSurfelVisualisationEngine_CUDA.tcu
 Engines/Visualisation/CUDA/ITMVisualisationEngine_CUDA.tcu
 Engines/Visualisation/CUDA/ITMMultiVisualisationEngine_CUDA.tcu
+Engines/Visualisation/CUDA/ITMVisualisationHelpers_CUDA.cu
 )
 
 SET(ITMLIB_ENGINES_VISUALISATION_CUDA_HEADERS
 Engines/Visualisation/CUDA/ITMSurfelVisualisationEngine_CUDA.h
 Engines/Visualisation/CUDA/ITMVisualisationEngine_CUDA.h
 Engines/Visualisation/CUDA/ITMMultiVisualisationEngine_CUDA.h
+Engines/Visualisation/CUDA/ITMVisualisationHelpers_CUDA.h
 )
 
 ##
