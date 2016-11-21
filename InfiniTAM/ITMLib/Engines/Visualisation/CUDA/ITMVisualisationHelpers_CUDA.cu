@@ -78,6 +78,32 @@ __global__ void ITMLib::projectAndSplitBlocks_device(const ITMHashEntry *hashEnt
 	CreateRenderingBlocks(renderingBlocks, out_offset, upperLeft, lowerRight, zRange);
 }
 
+__global__ void ITMLib::checkProjectAndSplitBlocks_device(const ITMHashEntry *hashEntries, int noHashEntries,
+	const Matrix4f pose_M, const Vector4f intrinsics, const Vector2i imgSize, float voxelSize, RenderingBlock *renderingBlocks,
+	uint *noTotalBlocks)
+{
+	int targetIdx = threadIdx.x + blockDim.x * blockIdx.x;
+	if (targetIdx >= noHashEntries) return;
+
+	const ITMHashEntry & hashEntry = hashEntries[targetIdx];
+
+	Vector2i upperLeft, lowerRight;
+	Vector2f zRange;
+	bool validProjection = false;
+	if (hashEntry.ptr >= 0) validProjection = ProjectSingleBlock(hashEntry.pos, pose_M, intrinsics, imgSize, voxelSize, upperLeft, lowerRight, zRange);
+
+	Vector2i requiredRenderingBlocks(ceilf((float)(lowerRight.x - upperLeft.x + 1) / renderingBlockSizeX),
+		ceilf((float)(lowerRight.y - upperLeft.y + 1) / renderingBlockSizeY));
+	size_t requiredNumBlocks = requiredRenderingBlocks.x * requiredRenderingBlocks.y;
+	if (!validProjection) requiredNumBlocks = 0;
+
+	int out_offset = computePrefixSum_device<uint>(requiredNumBlocks, noTotalBlocks, blockDim.x, threadIdx.x);
+	if (requiredNumBlocks == 0) return;
+	if ((out_offset == -1) || (out_offset + requiredNumBlocks > MAX_RENDERING_BLOCKS)) return;
+
+	CreateRenderingBlocks(renderingBlocks, out_offset, upperLeft, lowerRight, zRange);
+}
+
 __global__ void ITMLib::fillBlocks_device(const uint *noTotalBlocks, const RenderingBlock *renderingBlocks,
 	Vector2i imgSize, Vector2f *minmaxData)
 {

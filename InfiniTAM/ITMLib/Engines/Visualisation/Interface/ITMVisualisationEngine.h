@@ -35,6 +35,9 @@ namespace ITMLib
 		static void WeightToUchar4(ITMUChar4Image *dst, const ITMFloatImage *src);
 	};
 
+	template<class TIndex> struct IndexToRenderState { typedef ITMRenderState type; };
+	template<> struct IndexToRenderState<ITMVoxelBlockHash> { typedef ITMRenderState_VH type; };
+
 	/** \brief
 		Interface to engines helping with the visualisation of
 		the results from the rest of the library.
@@ -51,6 +54,11 @@ namespace ITMLib
 	class ITMVisualisationEngine : public IITMVisualisationEngine
 	{
 	public:
+		/** Creates a render state, containing rendering info
+		for the scene.
+		*/
+		virtual typename IndexToRenderState<TIndex>::type *CreateRenderState(const ITMScene<TVoxel, TIndex> *scene, const Vector2i & imgSize) const = 0;
+
 		/** Given a scene, pose and intrinsics, compute the
 		visible subset of the scene and store it in an
 		appropriate visualisation state object, created
