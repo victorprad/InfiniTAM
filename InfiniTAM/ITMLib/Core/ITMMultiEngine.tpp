@@ -15,7 +15,7 @@ using namespace ITMLib;
 //#define DEBUG_MULTISCENE
 
 // number of nearest neighbours to find in the loop closure detection
-static const int k_loopcloseneighbours = 3;
+static const int k_loopcloseneighbours = 1;
 // maximum distance reported by LCD library to attempt relocalisation
 static const float F_maxdistattemptreloc = 0.1f;
 
@@ -112,18 +112,17 @@ ITMTrackingState* ITMMultiEngine<TVoxel, TIndex>::GetTrackingState(void)
 	return mSceneManager->getScene(idx)->trackingState;
 }
 
-/*
-	- whenever a new local scene is added, add to list of "to be established 3D relations"
-	- whenever a relocalisation is detected, add to the same list, preserving any existing information on that 3D relation
+// -whenever a new local scene is added, add to list of "to be established 3D relations"
+// - whenever a relocalisation is detected, add to the same list, preserving any existing information on that 3D relation
+//
+// - for all 3D relations to be established :
+// -attempt tracking in both scenes
+// - if success, add to list of new candidates
+// - if less than n_overlap "new candidates" in more than n_reloctrialframes frames, discard
+// - if at least n_overlap "new candidates" :
+// 	- try to compute 3D relation, weighting old information accordingly
+//	- if outlier ratio below p_relation_outliers and at least n_overlap inliers, success
 
-	- for all 3D relations to be established:
-	  - attempt tracking in both scenes
-	  - if success, add to list of new candidates
-	  - if less than n_overlap "new candidates" in more than n_reloctrialframes frames, discard
-	  - if at least n_overlap "new candidates":
-		- try to compute 3D relation, weighting old information accordingly
-		- if outlier ratio below p_relation_outliers and at least n_overlap inliers, success
-*/
 struct TodoListEntry {
 	TodoListEntry(int _activeDataID, bool _track, bool _fusion, bool _prepare)
 		: dataID(_activeDataID), track(_track), fusion(_fusion), prepare(_prepare), preprepare(false) {}
