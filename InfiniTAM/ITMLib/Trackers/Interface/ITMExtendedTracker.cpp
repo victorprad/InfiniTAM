@@ -107,8 +107,6 @@ ITMExtendedTracker::ITMExtendedTracker(Vector2i imgSize_d,
 	sigma = Vector4f(68.1654461020426f, 60.6607826748643f, 0.00343068557187040f, 0.0402595570918749f);
 
 	svmClassifier->SetVectors(w, b);
-
-	currentFrameNo = 0;
 }
 
 ITMExtendedTracker::~ITMExtendedTracker(void)
@@ -193,6 +191,7 @@ void ITMExtendedTracker::SetEvaluationData(ITMTrackingState *trackingState, cons
 
 	scenePose = trackingState->pose_pointCloud->GetM();
 	depthToRGBTransform = view->calib.trafo_rgb_to_depth.calib_inv;
+	framesProcessed = trackingState->framesProcessed;
 }
 
 void ITMExtendedTracker::PrepareForEvaluation()
@@ -410,8 +409,8 @@ void ITMExtendedTracker::UpdatePoseQuality(int noValidPoints_old, float *hessian
 
 void ITMExtendedTracker::TrackCamera(ITMTrackingState *trackingState, const ITMView *view)
 {
-	if (trackingState->age_pointCloud >= 0) this->currentFrameNo++;
-	else this->currentFrameNo = 0;
+	if (trackingState->age_pointCloud >= 0) trackingState->framesProcessed++;
+	else trackingState->framesProcessed = 0;
 
 	this->SetEvaluationData(trackingState, view);
 	this->PrepareForEvaluation();

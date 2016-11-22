@@ -26,6 +26,10 @@ namespace ITMLib
 		/// The pose used to generate the point cloud.
 		ORUtils::SE3Pose *pose_pointCloud;
 
+		/// Frames processed from start of tracking
+		/// Used as weight in the extended tracker 
+		int framesProcessed;
+
 		int age_pointCloud;
 
 		/// Current pose of the depth camera.
