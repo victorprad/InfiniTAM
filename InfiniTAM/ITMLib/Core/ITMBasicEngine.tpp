@@ -44,7 +44,7 @@ ITMBasicEngine<TVoxel,TIndex>::ITMBasicEngine(const ITMLibSettings *settings, co
 	denseMapper->ResetScene(scene);
 
 	imuCalibrator = new ITMIMUCalibrator_iPad();
-	tracker = ITMTrackerFactory<TVoxel,TIndex>::Instance().Make(imgSize_rgb, imgSize_d, settings, lowLevelEngine, imuCalibrator, scene);
+	tracker = ITMTrackerFactory::Instance().Make(imgSize_rgb, imgSize_d, settings, lowLevelEngine, imuCalibrator, scene->sceneParams);
 	trackingController = new ITMTrackingController(tracker, settings);
 
 	Vector2i trackedImageSize = trackingController->GetTrackedImageSize(imgSize_rgb, imgSize_d);

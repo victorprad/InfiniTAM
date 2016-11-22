@@ -30,7 +30,6 @@ namespace ITMLib
 	template class ITMMultiSceneManager_instance<ITMVoxel, ITMVoxelIndex>;
 	template class ITMSceneReconstructionEngine_CPU<ITMVoxel, ITMVoxelIndex>;
 	template class ITMSwappingEngine_CPU<ITMVoxel, ITMVoxelIndex>;
-	template class ITMTrackerFactory<ITMVoxel, ITMVoxelIndex>;
 	template class ITMVisualisationEngine<ITMVoxel, ITMVoxelIndex>;
 	template class ITMVisualisationEngine_CPU<ITMVoxel, ITMVoxelIndex>;
 
