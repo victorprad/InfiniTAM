@@ -207,7 +207,7 @@ int ITMActiveSceneManager::findBestVisualisationSceneIdx(void) const
 	return activeData[id].sceneIndex;
 }
 
-void ITMActiveSceneManager::recordTrackingResult(int dataID, int trackingSuccess, bool primaryTrackingSuccess)
+void ITMActiveSceneManager::recordTrackingResult(int dataID, ITMTrackingState::TrackingResult trackingResult, bool primaryTrackingSuccess)
 {
 	ActiveDataDescriptor & data = activeData[dataID];
 
@@ -215,7 +215,7 @@ void ITMActiveSceneManager::recordTrackingResult(int dataID, int trackingSuccess
 	int sceneID = data.sceneIndex;
 	data.trackingAttempts++;
 
-	if (trackingSuccess >= 2)
+	if (trackingResult == ITMTrackingState::TRACKING_GOOD)
 	{
 		if (data.type == RELOCALISATION)
 		{
@@ -232,7 +232,7 @@ void ITMActiveSceneManager::recordTrackingResult(int dataID, int trackingSuccess
 			data.constraints.push_back(Told_to_new);
 		}
 	}
-	else if (trackingSuccess < 1)
+	else if (trackingResult == ITMTrackingState::TRACKING_FAILED)
 	{
 		if (data.type == PRIMARY_SCENE)
 		{

@@ -14,26 +14,12 @@ using namespace ITMLib;
 
 //#define DEBUG_MULTISCENE
 
-#if 0
-// try loop closures for this number of frames
-static const int N_linktrials = 20;
-// at least these many frames have to be tracked successfully
-static const int N_linkoverlap = 10;
-// try relocalisations for this number of frames
-static const int N_reloctrials = 20;
-// at least these many tracking attempts have to succeed for relocalisation
-static const int N_relocsuccess = 10;
-// threshold on number of blucks when a new local scene should be started
-static const int N_maxblocknum = 10000;
-#endif
 // number of nearest neighbours to find in the loop closure detection
 static const int k_loopcloseneighbours = 3;
 // maximum distance reported by LCD library to attempt relocalisation
 static const float F_maxdistattemptreloc = 0.1f;
 
 static const bool MultithreadedGlobalAdjustment = true;
-
-int currentFrameNo = 0;
 
 template <typename TVoxel, typename TIndex>
 ITMMultiEngine<TVoxel, TIndex>::ITMMultiEngine(const ITMLibSettings *settings, const ITMRGBDCalib& calib, Vector2i imgSize_rgb, Vector2i imgSize_d)
@@ -109,7 +95,6 @@ ITMMultiEngine<TVoxel, TIndex>::~ITMMultiEngine(void)
 template <typename TVoxel, typename TIndex>
 void ITMMultiEngine<TVoxel, TIndex>::changeFreeviewSceneIdx(ORUtils::SE3Pose *pose, int newIdx)
 {
-	//	if ((newIdx < 0)||((unsigned)newIdx >= sceneManager->numScenes())) return;
 	if (newIdx < -1) newIdx = (int)mSceneManager->numScenes() - 1;
 	if ((unsigned)newIdx >= mSceneManager->numScenes()) newIdx = -1;
 
@@ -150,7 +135,6 @@ struct TodoListEntry {
 	bool preprepare;
 };
 
-
 template <typename TVoxel, typename TIndex>
 ITMTrackingState::TrackingResult ITMMultiEngine<TVoxel, TIndex>::ProcessFrame(ITMUChar4Image *rgbImage, ITMShortImage *rawDepthImage, ITMIMUMeasurement *imuMeasurement)
 {
@@ -164,13 +148,12 @@ ITMTrackingState::TrackingResult ITMMultiEngine<TVoxel, TIndex>::ProcessFrame(IT
 	int primaryDataIdx = mActiveDataManager->findPrimaryDataIdx();
 
 	// if there is a "primary data index", process it
-	if (primaryDataIdx >= 0) {
-		todoList.push_back(TodoListEntry(primaryDataIdx, true, true, true));
-	}
+	if (primaryDataIdx >= 0) todoList.push_back(TodoListEntry(primaryDataIdx, true, true, true));
 
 	// after primary scene, make sure to process all relocalisations, new
 	// scenes and loop closures
-	for (int i = 0; i < mActiveDataManager->numActiveScenes(); ++i) {
+	for (int i = 0; i < mActiveDataManager->numActiveScenes(); ++i) 
+	{
 		if (mActiveDataManager->getSceneType(i) == ITMActiveSceneManager::NEW_SCENE) todoList.push_back(TodoListEntry(i, true, true, true));
 		else if (mActiveDataManager->getSceneType(i) == ITMActiveSceneManager::LOOP_CLOSURE) todoList.push_back(TodoListEntry(i, true, false, true));
 		else if (mActiveDataManager->getSceneType(i) == ITMActiveSceneManager::RELOCALISATION) todoList.push_back(TodoListEntry(i, true, false, true));
@@ -179,52 +162,43 @@ ITMTrackingState::TrackingResult ITMMultiEngine<TVoxel, TIndex>::ProcessFrame(IT
 	// finally, once all is done, call the loop closure detection engine
 	todoList.push_back(TodoListEntry(-1, false, false, false));
 
-#ifdef DEBUG_MULTISCENE
-	fprintf(stderr, "tracking data blocks:");
-#endif
 	bool primaryTrackingSuccess = false;
 	for (size_t i = 0; i < todoList.size(); ++i)
 	{
-		// - first pass of the todo list is for primary scene and
-		//   ongoing relocalisation and loopclosure attempts
-		// - an element with id -1 marks the end of the first pass,
-		//   a request to call the loop closure detection engine, and
+		// - first pass of the todo list is for primary scene and ongoing relocalisation and loopclosure attempts
+		// - an element with id -1 marks the end of the first pass, a request to call the loop closure detection engine, and
 		//   the start of the second pass
-		// - second tracking pass will be about newly detected loop
-		//   closures, relocalisations, etc.
-		if (todoList[i].dataID == -1) {
+		// - second tracking pass will be about newly detected loop closures, relocalisations, etc.
+
+		if (todoList[i].dataID == -1) 
+		{
 #ifdef DEBUG_MULTISCENE
-			fprintf(stderr, " LCD(%i)", primaryTrackingSuccess);
+			fprintf(stderr, " Reloc(%i)", primaryTrackingSuccess);
 #endif
-			int NN[k_loopcloseneighbours];
-			float distances[k_loopcloseneighbours];
+			int NN[k_loopcloseneighbours]; float distances[k_loopcloseneighbours];
 			view->depth->UpdateHostFromDevice();
+
+			//check if relocaliser has fired
 			int addKeyframeIdx = mLoopClosureDetector->ProcessFrame(view->depth, k_loopcloseneighbours, NN, distances, primaryTrackingSuccess);
+			
 			int primarySceneIdx = -1;
 			if (primaryDataIdx >= 0) primarySceneIdx = mActiveDataManager->getSceneIndex(primaryDataIdx);
 
 			// add keyframe, if necessary
-			if (addKeyframeIdx >= 0)
-			{
-#ifdef DEBUG_MULTISCENE
-				fprintf(stderr, "add keyframe\n");
-#endif
-				mPoseDatabase.storePose(addKeyframeIdx, *(mSceneManager->getScene(primarySceneIdx)->trackingState->pose_d), primarySceneIdx);
-			}
-			else  for (int j = 0; j < k_loopcloseneighbours; ++j)
+			if (addKeyframeIdx >= 0) mPoseDatabase.storePose(addKeyframeIdx, *(mSceneManager->getScene(primarySceneIdx)->trackingState->pose_d), primarySceneIdx);
+			else for (int j = 0; j < k_loopcloseneighbours; ++j)
 			{
 				if (distances[j] > F_maxdistattemptreloc) continue;
 				const RelocLib::PoseDatabase::PoseInScene & keyframe = mPoseDatabase.retrievePose(NN[j]);
 				int newDataIdx = mActiveDataManager->initiateNewLink(keyframe.sceneIdx, keyframe.pose, (primarySceneIdx < 0));
-				//if (currentFrameNo > 3640)
-					//newDataIdx
-				if (newDataIdx >= 0) {
-					// this is a new relocalisation attempt
+				if (newDataIdx >= 0) 
+				{
 					TodoListEntry todoItem(newDataIdx, true, false, true);
 					todoItem.preprepare = true;
 					todoList.push_back(todoItem);
 				}
 			}
+
 			continue;
 		}
 
@@ -234,13 +208,12 @@ ITMTrackingState::TrackingResult ITMMultiEngine<TVoxel, TIndex>::ProcessFrame(IT
 
 		// if a new relocalisation/loopclosure is started, this will
 		// do the initial raycasting before tracking can start
-		if (todoList[i].preprepare) {
+		if (todoList[i].preprepare) 
+		{
 			denseMapper->UpdateVisibleList(view, currentScene->trackingState, currentScene->scene, currentScene->renderState);
 			trackingController->Prepare(currentScene->trackingState, currentScene->scene, view, visualisationEngine, currentScene->renderState);
 		}
 
-		//fprintf(stderr, "scene %i: ", currentSceneIdx);
-				// tracking
 		if (todoList[i].track)
 		{
 			int dataID = todoList[i].dataID;
@@ -252,81 +225,55 @@ ITMTrackingState::TrackingResult ITMMultiEngine<TVoxel, TIndex>::ProcessFrame(IT
 			ORUtils::SE3Pose oldPose(*(currentScene->trackingState->pose_d));
 			trackingController->Track(currentScene->trackingState, view);
 
-			int trackingSuccess = 0;
-			if (currentScene->trackingState->trackerResult == ITMTrackingState::TRACKING_GOOD) trackingSuccess = 2;
-			else if (currentScene->trackingState->trackerResult == ITMTrackingState::TRACKING_POOR) trackingSuccess = 1;
+			// tracking is allowed to be poor only in the primary scenes. 
+			ITMTrackingState::TrackingResult trackingResult = currentScene->trackingState->trackerResult;
+			if (mActiveDataManager->getSceneType(dataID) != ITMActiveSceneManager::PRIMARY_SCENE)
+				if (trackingResult == ITMTrackingState::TRACKING_POOR) trackingResult = ITMTrackingState::TRACKING_FAILED;
 
-			if (currentScene->trackingState->trackerResult == ITMTrackingState::TRACKING_FAILED)
-				printf("tracking failed\n");
-
-			if (trackingSuccess < 2)
-			{
-				todoList[i].fusion = false;
-			}
-			if (trackingSuccess < 1)
+			if (trackingResult != ITMTrackingState::TRACKING_GOOD) todoList[i].fusion = false;
+			if (trackingResult == ITMTrackingState::TRACKING_FAILED)
 			{
 				todoList[i].prepare = false;
 				*(currentScene->trackingState->pose_d) = oldPose;
 			}
 
-			{
-				static int framecounter = 0;
-				if (framecounter++ < 3) todoList[i].fusion = true;
-			}
-			// TODO: mark some more scenes as "LOST" if they are lost... possibly...
-
 			if (mActiveDataManager->getSceneType(dataID) == ITMActiveSceneManager::PRIMARY_SCENE)
 			{
-				if (trackingSuccess >= 2) primaryTrackingSuccess = true;
+				if (trackingResult == ITMTrackingState::TRACKING_GOOD) primaryTrackingSuccess = true;
 
-				else if (trackingSuccess < 1)
+				// we need to relocalise in the primary scene
+				else if (trackingResult == ITMTrackingState::TRACKING_FAILED)
 				{
 					primaryDataIdx = -1;
 					todoList.resize(i + 1);
 					todoList.push_back(TodoListEntry(-1, false, false, false));
-#ifdef DEBUG_MULTISCENE
-					fprintf(stderr, "Lost track of primary scene\n");
-#endif
 				}
 			}
-			mActiveDataManager->recordTrackingResult(dataID, trackingSuccess, primaryTrackingSuccess);
+
+			mActiveDataManager->recordTrackingResult(dataID, trackingResult, primaryTrackingSuccess);
 		}
 
-		// fusion
-		if (todoList[i].fusion) {
-			denseMapper->ProcessFrame(view, currentScene->trackingState, currentScene->scene, currentScene->renderState);
-		}
-		else if (todoList[i].prepare) {
-			denseMapper->UpdateVisibleList(view, currentScene->trackingState, currentScene->scene, currentScene->renderState);
-		}
+		// fusion in any subscene as long as tracking is good for the respective subscene
+		if (todoList[i].fusion) denseMapper->ProcessFrame(view, currentScene->trackingState, currentScene->scene, currentScene->renderState);
+		else if (todoList[i].prepare) denseMapper->UpdateVisibleList(view, currentScene->trackingState, currentScene->scene, currentScene->renderState);
 
 		// raycast to renderState_live for tracking and free visualisation
-		if (todoList[i].prepare) {
-			trackingController->Prepare(currentScene->trackingState, currentScene->scene, view, visualisationEngine, currentScene->renderState);
-		}
+		if (todoList[i].prepare) trackingController->Prepare(currentScene->trackingState, currentScene->scene, view, visualisationEngine, currentScene->renderState);
 	}
 
 	mScheduleGlobalAdjustment |= mActiveDataManager->maintainActiveData();
 
-	if (mScheduleGlobalAdjustment) {
-		if (mGlobalAdjustmentEngine->updateMeasurements(*mSceneManager)) {
+	if (mScheduleGlobalAdjustment) 
+	{
+		if (mGlobalAdjustmentEngine->updateMeasurements(*mSceneManager)) 
+		{
 			if (MultithreadedGlobalAdjustment) mGlobalAdjustmentEngine->wakeupSeparateThread();
 			else mGlobalAdjustmentEngine->runGlobalAdjustment();
+
 			mScheduleGlobalAdjustment = false;
 		}
 	}
 	mGlobalAdjustmentEngine->retrieveNewEstimates(*mSceneManager);
-
-	//	printf("currentFrame = %d\n", currentFrameNo);
-	//	currentFrameNo++;
-	//
-	//{
-	//fprintf(stderr, "submap sizes:");
-	//for (int s = 0; s < mSceneManager->numScenes(); ++s) {
-	//fprintf(stderr, " %i", mSceneManager->getSceneSize(s));
-	//}
-	//fprintf(stderr, "\n");
-	//}
 
 #ifdef DEBUG_MULTISCENE
 	fprintf(stderr, "...done!\n");
