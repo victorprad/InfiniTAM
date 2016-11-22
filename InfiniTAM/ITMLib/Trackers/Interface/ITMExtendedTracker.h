@@ -71,8 +71,6 @@ namespace ITMLib
 		ITMTemplatedHierarchyLevel<ITMFloat4Image> *reprojectedPointsLevel;
 		ITMTemplatedHierarchyLevel<ITMFloatImage > *projectedIntensityLevel;
 
-		int currentFrameNo;
-
 		bool useColour;
 		bool useDepth;
 
@@ -80,6 +78,7 @@ namespace ITMLib
 		float viewFrustum_min, viewFrustum_max;
 		float tukeyCutOff;
 		int framesToSkip, framesToWeight;
+		int framesProcessed;
 
 		virtual int ComputeGandH_Depth(float &f, float *nabla, float *hessian, Matrix4f approxInvPose) = 0;
 		virtual int ComputeGandH_RGB(float &f, float *nabla, float *hessian, Matrix4f approxPose) = 0;
