@@ -9,12 +9,12 @@
 
 #include <mutex>
 #include <thread>
-//nclude <uniqueion_variable>
 #include <condition_variable>
 
 using namespace ITMLib;
 
-struct ITMGlobalAdjustmentEngine::PrivateData {
+struct ITMGlobalAdjustmentEngine::PrivateData 
+{
 	PrivateData(void) { stopThread = false; wakeupSent = false; }
 	std::mutex workingData_mutex;
 	std::mutex processedData_mutex;
@@ -46,7 +46,7 @@ bool ITMGlobalAdjustmentEngine::hasNewEstimates(void) const
 	return (processedData != NULL);
 }
 
-bool ITMGlobalAdjustmentEngine::retrieveNewEstimates(ITMMultiSceneManager & dest)
+bool ITMGlobalAdjustmentEngine::retrieveNewEstimates(ITMMapGraphManager & dest)
 {
 	if (processedData == NULL) return false;
 
@@ -70,12 +70,10 @@ bool ITMGlobalAdjustmentEngine::isBusyEstimating(void) const
 	return false;
 }
 
-bool ITMGlobalAdjustmentEngine::updateMeasurements(const ITMMultiSceneManager & src)
+bool ITMGlobalAdjustmentEngine::updateMeasurements(const ITMMapGraphManager & src)
 {
-	if (!privateData->workingData_mutex.try_lock()) {
-		// busy, can't accept new measurements at the moment
-		return false;
-	}
+	// busy, can't accept new measurements at the moment
+	if (!privateData->workingData_mutex.try_lock()) return false;
 
 	if (workingData == NULL) workingData = new MiniSlamGraph::PoseGraph;
 	MultiSceneToPoseGraph(src, *workingData);
@@ -88,12 +86,8 @@ bool ITMGlobalAdjustmentEngine::runGlobalAdjustment(bool blockingWait)
 	// first make sure there is new data and we have exclusive access to it
 	if (workingData == NULL) return false;
 
-	if (blockingWait) {
-		privateData->workingData_mutex.lock();
-	}
-	else {
-		if (!privateData->workingData_mutex.try_lock()) return false;
-	}
+	if (blockingWait) privateData->workingData_mutex.lock();
+	else if (!privateData->workingData_mutex.try_lock()) return false;
 
 	// now run the actual global adjustment
 	workingData->prepareEvaluations();
@@ -134,7 +128,8 @@ bool ITMGlobalAdjustmentEngine::stopSeparateThread(void)
 
 void ITMGlobalAdjustmentEngine::estimationThreadMain(void)
 {
-	while (!privateData->stopThread) {
+	while (!privateData->stopThread)
+	{
 		runGlobalAdjustment(true);
 		std::unique_lock<std::mutex> lck(privateData->wakeupMutex);
 		if (!privateData->wakeupSent) privateData->wakeupCond.wait(lck);
@@ -149,22 +144,22 @@ void ITMGlobalAdjustmentEngine::wakeupSeparateThread(void)
 	privateData->wakeupCond.notify_all();
 }
 
-void ITMGlobalAdjustmentEngine::MultiSceneToPoseGraph(const ITMMultiSceneManager & src, MiniSlamGraph::PoseGraph & dest)
+void ITMGlobalAdjustmentEngine::MultiSceneToPoseGraph(const ITMMapGraphManager & src, MiniSlamGraph::PoseGraph & dest)
 {
-	//dest.clear();
-	for (int sceneId = 0; sceneId < (int)src.numScenes(); ++sceneId) {
+	for (int sceneId = 0; sceneId < (int)src.numScenes(); ++sceneId)
+	{
 		MiniSlamGraph::GraphNodeSE3 *pose = new MiniSlamGraph::GraphNodeSE3();
 		pose->setId(sceneId);
 		pose->setPose(src.getEstimatedGlobalPose(sceneId));
 		if (sceneId == 0) pose->setFixed(true);
 		dest.addNode(pose);
 	}
-	for (int sceneId = 0; sceneId < (int)src.numScenes(); ++sceneId) {
+
+	for (int sceneId = 0; sceneId < (int)src.numScenes(); ++sceneId) 
+	{
 		const ConstraintList & constraints = src.getConstraints(sceneId);
 		for (ConstraintList::const_iterator it = constraints.begin(); it != constraints.end(); ++it) {
-			//if (it->first<(int)sceneId) continue;
 			MiniSlamGraph::GraphEdgeSE3 *odometry = new MiniSlamGraph::GraphEdgeSE3();
-			//fprintf(stderr, "    PG: adding link %i -> %i\n", (int)sceneId, it->first);
 			odometry->setFromNodeId(sceneId);
 			odometry->setToNodeId(it->first);
 			odometry->setMeasurementSE3(it->second.GetAccumulatedObservations());
@@ -174,9 +169,10 @@ void ITMGlobalAdjustmentEngine::MultiSceneToPoseGraph(const ITMMultiSceneManager
 	}
 }
 
-void ITMGlobalAdjustmentEngine::PoseGraphToMultiScene(const MiniSlamGraph::PoseGraph & src, ITMMultiSceneManager & dest)
+void ITMGlobalAdjustmentEngine::PoseGraphToMultiScene(const MiniSlamGraph::PoseGraph & src, ITMMapGraphManager & dest)
 {
-	for (int sceneId = 0; sceneId < (int)dest.numScenes(); ++sceneId) {
+	for (int sceneId = 0; sceneId < (int)dest.numScenes(); ++sceneId) 
+	{
 		MiniSlamGraph::SlamGraph::NodeIndex::const_iterator it = src.getNodeIndex().find(sceneId);
 		if (it == src.getNodeIndex().end()) continue;
 		const MiniSlamGraph::GraphNodeSE3 *pose = (const MiniSlamGraph::GraphNodeSE3*)it->second;

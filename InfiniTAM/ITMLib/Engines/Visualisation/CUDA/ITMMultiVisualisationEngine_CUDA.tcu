@@ -30,11 +30,11 @@ ITMRenderState* ITMMultiVisualisationEngine_CUDA<TVoxel, TIndex>::CreateRenderSt
 }
 
 template<class TVoxel, class TIndex>
-void ITMMultiVisualisationEngine_CUDA<TVoxel, TIndex>::PrepareRenderState(const ITMMultiSceneManager_instance<TVoxel, TIndex> & sceneManager, ITMRenderState *_state)
+void ITMMultiVisualisationEngine_CUDA<TVoxel, TIndex>::PrepareRenderState(const ITMVoxelMapGraphManager<TVoxel, TIndex> & sceneManager, ITMRenderState *_state)
 {
 	ITMRenderStateMultiScene<TVoxel, TIndex> *state = (ITMRenderStateMultiScene<TVoxel, TIndex>*)_state;
 
-	state->PrepareLocalScenes(sceneManager);
+	state->PrepareLocalMaps(sceneManager);
 }
 
 template<class TVoxel, class TIndex>

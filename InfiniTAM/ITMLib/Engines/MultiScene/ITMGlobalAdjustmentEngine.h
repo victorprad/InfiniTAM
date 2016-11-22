@@ -3,7 +3,7 @@
 #pragma once
 
 #include "../../../MiniSlamGraphLib/PoseGraph.h"
-#include "ITMMultiSceneManager.h"
+#include "ITMMapGraphManager.h"
 
 namespace ITMLib {
 
@@ -36,13 +36,13 @@ namespace ITMLib {
 
 		// Check whether pose graph optimisation has converged and produced a
 		// new result. if it hasn't return false, otherwise copy them over
-		bool retrieveNewEstimates(ITMMultiSceneManager & dest);
+		bool retrieveNewEstimates(ITMMapGraphManager & dest);
 
 		bool isBusyEstimating(void) const;
 
 		// Check whether thread is busy, if it is, return false, otherwise
 		// create a copy of all new measurements and make it busy
-		bool updateMeasurements(const ITMMultiSceneManager & src);
+		bool updateMeasurements(const ITMMapGraphManager & src);
 
 		bool runGlobalAdjustment(bool blockingWait = false);
 
@@ -53,8 +53,8 @@ namespace ITMLib {
 	private:
 		void estimationThreadMain(void);
 
-		static void MultiSceneToPoseGraph(const ITMMultiSceneManager & src, MiniSlamGraph::PoseGraph & dest);
-		static void PoseGraphToMultiScene(const MiniSlamGraph::PoseGraph & src, ITMMultiSceneManager & dest);
+		static void MultiSceneToPoseGraph(const ITMMapGraphManager & src, MiniSlamGraph::PoseGraph & dest);
+		static void PoseGraphToMultiScene(const MiniSlamGraph::PoseGraph & src, ITMMapGraphManager & dest);
 
 		MiniSlamGraph::PoseGraph *workingData;
 		MiniSlamGraph::PoseGraph *processedData;

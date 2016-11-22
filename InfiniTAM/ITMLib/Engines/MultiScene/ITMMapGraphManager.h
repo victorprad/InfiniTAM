@@ -4,7 +4,7 @@
 
 #include <vector>
 
-#include "../../Objects/Scene/ITMLocalScene.h"
+#include "../../Objects/Scene/ITMLocalMap.h"
 #include "../../Core/ITMDenseMapper.h"
 #include "../../Engines/Visualisation/Interface/ITMVisualisationEngine.h"
 
@@ -13,10 +13,10 @@ namespace ITMLib
 	/* This helpful abstract interface allows you to ignore the fact that
 	scenes are templates.
 	*/
-	class ITMMultiSceneManager
+	class ITMMapGraphManager
 	{
 	public:
-		virtual ~ITMMultiSceneManager(void) {}
+		virtual ~ITMMapGraphManager(void) {}
 
 		virtual int createNewScene(void) = 0;
 		virtual void removeScene(int index) = 0;
@@ -38,7 +38,7 @@ namespace ITMLib
 	};
 
 	template<class TVoxel, class TIndex>
-	class ITMMultiSceneManager_instance : public ITMMultiSceneManager
+	class ITMVoxelMapGraphManager : public ITMMapGraphManager
 	{
 	private:
 		const ITMLibSettings *settings;
@@ -46,55 +46,34 @@ namespace ITMLib
 		const ITMDenseMapper<TVoxel, TIndex> *denseMapper;
 		Vector2i trackedImageSize;
 
-		std::vector<ITMLocalScene<TVoxel, TIndex>*> allData;
+		std::vector<ITMLocalMap<TVoxel, TIndex>*> allData;
 
 	public:
-		ITMMultiSceneManager_instance(const ITMLibSettings *settings, const ITMVisualisationEngine<TVoxel, TIndex> *visualisationEngine, const ITMDenseMapper<TVoxel, TIndex> *denseMapper, const Vector2i & trackedImageSize);
-		~ITMMultiSceneManager_instance(void);
+		ITMVoxelMapGraphManager(const ITMLibSettings *settings, const ITMVisualisationEngine<TVoxel, TIndex> *visualisationEngine, const ITMDenseMapper<TVoxel, TIndex> *denseMapper, const Vector2i & trackedImageSize);
+		~ITMVoxelMapGraphManager(void);
 
 		int createNewScene(void);
 		void removeScene(int index);
-		size_t numScenes(void) const
-		{
-			return allData.size();
-		}
+		size_t numScenes(void) const { return allData.size(); }
 
-		const ITMLocalScene<TVoxel, TIndex>* getScene(int sceneID) const
-		{
-			return allData[sceneID];
-		}
+		const ITMLocalMap<TVoxel, TIndex>* getScene(int sceneID) const { return allData[sceneID]; }
 
-		ITMLocalScene<TVoxel, TIndex>* getScene(int sceneID)
-		{
-			return allData[sceneID];
-		}
+		ITMLocalMap<TVoxel, TIndex>* getScene(int sceneID) { return allData[sceneID]; }
 
 		const ITMPoseConstraint & getRelation_const(int fromScene, int toScene) const;
 		ITMPoseConstraint & getRelation(int fromScene, int toScene);
 		void eraseRelation(int fromScene, int toScene);
-		const ConstraintList & getConstraints(int sceneId) const
-		{
-			return allData[sceneId]->relations;
-		}
+		const ConstraintList & getConstraints(int sceneId) const { return allData[sceneId]->relations; }
 
-		void setEstimatedGlobalPose(int sceneID, const ORUtils::SE3Pose & pose)
-		{
-			allData[sceneID]->estimatedGlobalPose = pose;
-		}
-		const ORUtils::SE3Pose & getEstimatedGlobalPose(int sceneID) const
-		{
-			return allData[sceneID]->estimatedGlobalPose;
-		}
+		void setEstimatedGlobalPose(int sceneID, const ORUtils::SE3Pose & pose) { allData[sceneID]->estimatedGlobalPose = pose; }
+		const ORUtils::SE3Pose & getEstimatedGlobalPose(int sceneID) const { return allData[sceneID]->estimatedGlobalPose; }
 
 		bool resetTracking(int sceneID, const ORUtils::SE3Pose & pose);
-		const ORUtils::SE3Pose* getTrackingPose(int sceneID) const
-		{
-			return getScene(sceneID)->trackingState->pose_d;
-		}
+		const ORUtils::SE3Pose* getTrackingPose(int sceneID) const { return getScene(sceneID)->trackingState->pose_d; }
+
 		int getSceneSize(int sceneID) const;
 		int countVisibleBlocks(int sceneID, int minBlockId, int maxBlockId, bool invertIDs) const;
 
-		std::vector<int> getShortestLinkPath(int fromSceneID, int toSceneID) const;
 		ORUtils::SE3Pose findTransformation(int fromSceneID, int toSceneID) const;
 	};
 }

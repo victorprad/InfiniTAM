@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "../../Engines/MultiScene/ITMMultiSceneManager.h"
+#include "../../Engines/MultiScene/ITMMapGraphManager.h"
 #include "../Scene/ITMMultiSceneAccess.h"
 #include "../../Objects/RenderStates/ITMRenderState.h"
 
@@ -16,7 +16,7 @@ namespace ITMLib {
 	public:
 		typedef typename ITMMultiIndex<TIndex>::IndexData MultiIndexData;
 		typedef ITMMultiVoxel<TVoxel> MultiVoxelData;
-		typedef ITMMultiSceneManager_instance<TVoxel, TIndex> MultiSceneManager;
+		typedef ITMVoxelMapGraphManager<TVoxel, TIndex> MultiSceneManager;
 
 		MultiIndexData *indexData_device, indexData_host;
 		MultiVoxelData *voxelData_device, voxelData_host;
@@ -45,7 +45,7 @@ namespace ITMLib {
 #endif
 		}
 
-		void PrepareLocalScenes(const MultiSceneManager & sceneManager)
+		void PrepareLocalMaps(const MultiSceneManager & sceneManager)
 		{
 			sceneParams = *(sceneManager.getScene(0)->scene->sceneParams);
 

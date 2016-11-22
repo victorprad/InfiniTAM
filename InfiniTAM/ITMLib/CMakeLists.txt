@@ -34,15 +34,15 @@ Core/ITMMultiEngine.h
 )
 
 SET(ITMLIB_ENGINES_MULTISCENE_SOURCES
-Engines/MultiScene/ITMActiveSceneManager.cpp
+Engines/MultiScene/ITMActiveMapManager.cpp
 Engines/MultiScene/ITMGlobalAdjustmentEngine.cpp
-Engines/MultiScene/ITMMultiSceneManager.tpp
+Engines/MultiScene/ITMMapGraphManager.tpp
 )
 
 SET(ITMLIB_ENGINES_MULTISCENE_HEADERS
-Engines/MultiScene/ITMActiveSceneManager.h
+Engines/MultiScene/ITMActiveMapManager.h
 Engines/MultiScene/ITMGlobalAdjustmentEngine.h
-Engines/MultiScene/ITMMultiSceneManager.h
+Engines/MultiScene/ITMMapGraphManager.h
 )
 
 ##
@@ -334,7 +334,7 @@ Objects/RenderStates/ITMSurfelRenderState.h
 ##
 SET(ITMLIB_OBJECTS_SCENE_HEADERS
 Objects/Scene/ITMGlobalCache.h
-Objects/Scene/ITMLocalScene.h
+Objects/Scene/ITMLocalMap.h
 Objects/Scene/ITMLocalVBA.h
 Objects/Scene/ITMMultiSceneAccess.h
 Objects/Scene/ITMPlainVoxelArray.h

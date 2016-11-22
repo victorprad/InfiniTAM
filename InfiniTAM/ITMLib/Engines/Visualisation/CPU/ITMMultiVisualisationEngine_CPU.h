@@ -15,7 +15,7 @@ namespace ITMLib
 
 		ITMRenderState* CreateRenderState(const ITMScene<TVoxel, TIndex> *scene, const Vector2i & imgSize) const;
 
-		void PrepareRenderState(const ITMMultiSceneManager_instance<TVoxel, TIndex> & sceneManager, ITMRenderState *state);
+		void PrepareRenderState(const ITMVoxelMapGraphManager<TVoxel, TIndex> & sceneManager, ITMRenderState *state);
 
 		void CreateExpectedDepths(const ORUtils::SE3Pose *pose, const ITMIntrinsics *intrinsics, ITMRenderState *renderState) const;
 

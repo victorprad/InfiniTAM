@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "../../MultiScene/ITMMultiSceneManager.h"
+#include "../../MultiScene/ITMMapGraphManager.h"
 #include "../Interface/ITMVisualisationEngine.h"
 
 namespace ITMLib {
@@ -15,7 +15,7 @@ namespace ITMLib {
 
 		virtual ITMRenderState* CreateRenderState(const ITMScene<TVoxel, TIndex> *scene, const Vector2i & imgSize) const = 0;
 
-		virtual void PrepareRenderState(const ITMMultiSceneManager_instance<TVoxel, TIndex> & sceneManager, ITMRenderState *state) = 0;
+		virtual void PrepareRenderState(const ITMVoxelMapGraphManager<TVoxel, TIndex> & sceneManager, ITMRenderState *state) = 0;
 
 		//skip "FindVisibleBlocks"
 

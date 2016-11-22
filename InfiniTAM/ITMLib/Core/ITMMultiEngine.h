@@ -10,7 +10,7 @@
 #include "../../RelocLib/Relocaliser.h"
 #include "../../RelocLib/PoseDatabase.h"
 
-#include "../Engines/MultiScene/ITMActiveSceneManager.h"
+#include "../Engines/MultiScene/ITMActiveMapManager.h"
 #include "../Engines/MultiScene/ITMGlobalAdjustmentEngine.h"
 #include "../Engines/Visualisation/Interface/ITMMultiVisualisationEngine.h"
 
@@ -39,8 +39,8 @@ namespace ITMLib
 		RelocLib::Relocaliser *mLoopClosureDetector;
 		RelocLib::PoseDatabase mPoseDatabase;
 
-		ITMMultiSceneManager_instance<TVoxel, TIndex> *mSceneManager;
-		ITMActiveSceneManager *mActiveDataManager;
+		ITMVoxelMapGraphManager<TVoxel, TIndex> *mSceneManager;
+		ITMActiveMapManager *mActiveDataManager;
 		ITMGlobalAdjustmentEngine *mGlobalAdjustmentEngine;
 		bool mScheduleGlobalAdjustment;
 

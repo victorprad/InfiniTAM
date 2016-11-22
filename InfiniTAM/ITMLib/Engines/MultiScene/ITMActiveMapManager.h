@@ -2,19 +2,20 @@
 
 #pragma once
 
-#include "ITMMultiSceneManager.h"
+#include "ITMMapGraphManager.h"
 
 namespace ITMLib
 {
 	/** \brief
 	*/
-	class ITMActiveSceneManager
+	class ITMActiveMapManager
 	{
 	public:
 		typedef enum { PRIMARY_SCENE, NEW_SCENE, LOOP_CLOSURE, RELOCALISATION, LOST, LOST_NEW } SceneActivity;
 
 	private:
-		struct ActiveDataDescriptor {
+		struct ActiveDataDescriptor 
+		{
 			int sceneIndex;
 			SceneActivity type;
 			std::vector<Matrix4f> constraints;
@@ -22,7 +23,7 @@ namespace ITMLib
 			int trackingAttempts;
 		};
 
-		ITMMultiSceneManager *localSceneManager;
+		ITMMapGraphManager *localMapManager;
 		std::vector<ActiveDataDescriptor> activeData;
 
 		int CheckSuccess_relocalisation(int dataID) const;
@@ -38,6 +39,7 @@ namespace ITMLib
 		int initiateNewLink(int sceneID, const ORUtils::SE3Pose & pose, bool isRelocalisation);
 
 		void recordTrackingResult(int dataID, ITMTrackingState::TrackingResult trackingResult, bool primaryTrackingSuccess);
+		
 		// return whether or not the scene graph has changed
 		bool maintainActiveData(void);
 
@@ -47,20 +49,11 @@ namespace ITMLib
 		int findBestVisualisationDataIdx(void) const;
 		int findBestVisualisationSceneIdx(void) const;
 
-		int numActiveScenes(void) const
-		{
-			return static_cast<int>(activeData.size());
-		}
-		int getSceneIndex(int dataIdx) const
-		{
-			return activeData[dataIdx].sceneIndex;
-		}
-		SceneActivity getSceneType(int dataIdx) const
-		{
-			return activeData[dataIdx].type;
-		}
+		int numActiveScenes(void) const { return static_cast<int>(activeData.size()); }
+		int getSceneIndex(int dataIdx) const { return activeData[dataIdx].sceneIndex; }
+		SceneActivity getSceneType(int dataIdx) const { return activeData[dataIdx].type; }
 
-		ITMActiveSceneManager(ITMMultiSceneManager *localSceneManager);
-		~ITMActiveSceneManager(void) {}
+		ITMActiveMapManager(ITMMapGraphManager *localMapManager);
+		~ITMActiveMapManager(void) {}
 	};
 }

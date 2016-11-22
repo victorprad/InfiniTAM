@@ -1,6 +1,6 @@
 // Copyright 2016 Isis Innovation Limited and the authors of InfiniTAM
 
-#include "ITMActiveSceneManager.h"
+#include "ITMActiveMapManager.h"
 
 using namespace ITMLib;
 
@@ -17,14 +17,14 @@ static const int N_relocsuccess = 10;
 static const int N_originalblocks = 1000;
 static const float F_originalBlocksThreshold = 0.2f; //0.4f
 
-ITMActiveSceneManager::ITMActiveSceneManager(ITMMultiSceneManager *_localSceneManager)
+ITMActiveMapManager::ITMActiveMapManager(ITMMapGraphManager *_localMapManager)
 {
-	localSceneManager = _localSceneManager;
+	localMapManager = _localMapManager;
 }
 
-int ITMActiveSceneManager::initiateNewScene(bool isPrimaryScene)
+int ITMActiveMapManager::initiateNewScene(bool isPrimaryScene)
 {
-	int newIdx = localSceneManager->createNewScene();
+	int newIdx = localMapManager->createNewScene();
 
 	ActiveDataDescriptor newLink;
 	newLink.sceneIndex = newIdx;
@@ -35,7 +35,7 @@ int ITMActiveSceneManager::initiateNewScene(bool isPrimaryScene)
 	return newIdx;
 }
 
-int ITMActiveSceneManager::initiateNewLink(int sceneID, const ORUtils::SE3Pose & pose, bool isRelocalisation)
+int ITMActiveMapManager::initiateNewLink(int sceneID, const ORUtils::SE3Pose & pose, bool isRelocalisation)
 {
 	static const bool ensureUniqueLinks = true;
 
@@ -46,7 +46,7 @@ int ITMActiveSceneManager::initiateNewLink(int sceneID, const ORUtils::SE3Pose &
 		}
 	}
 
-	if (!localSceneManager->resetTracking(sceneID, pose)) return -1;
+	if (!localMapManager->resetTracking(sceneID, pose)) return -1;
 
 	ActiveDataDescriptor newLink;
 	newLink.sceneIndex = sceneID;
@@ -57,51 +57,42 @@ int ITMActiveSceneManager::initiateNewLink(int sceneID, const ORUtils::SE3Pose &
 	return (int)activeData.size() - 1;
 }
 
-float ITMActiveSceneManager::visibleOriginalBlocks(int dataID) const
+float ITMActiveMapManager::visibleOriginalBlocks(int dataID) const
 {
 	int sceneID = activeData[dataID].sceneIndex;
 
-	int allocated = localSceneManager->getSceneSize(sceneID);
-	int counted = localSceneManager->countVisibleBlocks(sceneID, 0, N_originalblocks, true);
+	int allocated = localMapManager->getSceneSize(sceneID);
+	int counted = localMapManager->countVisibleBlocks(sceneID, 0, N_originalblocks, true);
 	//fprintf(stderr, "data %i: %i/%i (%i allocated)\n", dataID, counted, N_originalblocks, allocated);
 	int tmp = N_originalblocks;
 	if (allocated < tmp) tmp = allocated;
 	return (float)counted / (float)tmp;
 }
 
-bool ITMActiveSceneManager::shouldStartNewArea(void) const
+bool ITMActiveMapManager::shouldStartNewArea(void) const
 {
 	int primarySceneIdx = -1;
 	int primaryDataIdx = -1;
 
 	// don't start two new scenes at a time
-	for (int i = 0; i < (int)activeData.size(); ++i) {
+	for (int i = 0; i < (int)activeData.size(); ++i)
+	{
 		if (activeData[i].type == NEW_SCENE) return false;
-		if (activeData[i].type == PRIMARY_SCENE) {
+		if (activeData[i].type == PRIMARY_SCENE) 
+		{
 			primaryDataIdx = i;
 			primarySceneIdx = activeData[i].sceneIndex;
 		}
 	}
 
-	if (primarySceneIdx < 0)
-	{
-		// TODO: check: if relocalisation fails for some time, start new scene
-		return false;
-	}
-	else {
-		//		int blocksInUse = localSceneManager->getSceneSize(primarySceneIdx);
-		//		if (blocksInUse < N_maxblocknum) return false;
-		float visibleRatio = visibleOriginalBlocks(primaryDataIdx);
-		//fprintf(stderr, "original %f threshold %f\n", visibleRatio, F_originalBlocksThreshold);
-		return visibleRatio < F_originalBlocksThreshold;
-
-		//		return true;
-	}
+	// TODO: check: if relocalisation fails for some time, start new scene
+	if (primarySceneIdx < 0) return false;
+	else return visibleOriginalBlocks(primaryDataIdx) < F_originalBlocksThreshold;
 
 	return false;
 }
 
-bool ITMActiveSceneManager::shouldMovePrimaryScene(int newDataId, int bestDataId, int primaryDataId) const
+bool ITMActiveMapManager::shouldMovePrimaryScene(int newDataId, int bestDataId, int primaryDataId) const
 {
 	int sceneIdx_primary = -1;
 	int sceneIdx_best = -1;
@@ -121,21 +112,24 @@ bool ITMActiveSceneManager::shouldMovePrimaryScene(int newDataId, int bestDataId
 	if (newDataId >= 0) sceneIdx_new = activeData[newDataId].sceneIndex;
 
 	// count blocks in all relevant scenes
-	if (sceneIdx_primary >= 0) {
-		blocksInUse_primary = localSceneManager->getSceneSize(sceneIdx_primary);
+	if (sceneIdx_primary >= 0) 
+	{
+		blocksInUse_primary = localMapManager->getSceneSize(sceneIdx_primary);
 		visibleRatio_primary = visibleOriginalBlocks(primaryDataId);
 	}
 
-	if (sceneIdx_new >= 0) {
+	if (sceneIdx_new >= 0) 
+	{
 		isNewScene_new = (activeData[newDataId].type == NEW_SCENE);
-		blocksInUse_new = localSceneManager->getSceneSize(sceneIdx_new);
+		blocksInUse_new = localMapManager->getSceneSize(sceneIdx_new);
 		if (blocksInUse_new < 0) return false;
 		visibleRatio_new = visibleOriginalBlocks(newDataId);
 	}
 
-	if (sceneIdx_best >= 0) {
+	if (sceneIdx_best >= 0) 
+	{
 		isNewScene_best = (activeData[bestDataId].type == NEW_SCENE);
-		blocksInUse_best = localSceneManager->getSceneSize(sceneIdx_best);
+		blocksInUse_best = localMapManager->getSceneSize(sceneIdx_best);
 		visibleRatio_best = visibleOriginalBlocks(bestDataId);
 	}
 
@@ -168,30 +162,30 @@ bool ITMActiveSceneManager::shouldMovePrimaryScene(int newDataId, int bestDataId
 	return (visibleRatio_new > visibleRatio_best);
 }
 
-int ITMActiveSceneManager::findPrimaryDataIdx(void) const
+int ITMActiveMapManager::findPrimaryDataIdx(void) const
 {
-	for (int i = 0; i < (int)activeData.size(); ++i) {
-		if (activeData[i].type == PRIMARY_SCENE) {
-			return i;
-		}
-	}
+	for (int i = 0; i < (int)activeData.size(); ++i) 
+		if (activeData[i].type == PRIMARY_SCENE) return i;
+
 	return -1;
 }
 
-int ITMActiveSceneManager::findPrimarySceneIdx(void) const
+int ITMActiveMapManager::findPrimarySceneIdx(void) const
 {
 	int id = findPrimaryDataIdx();
 	if (id < 0) return -1;
 	return activeData[id].sceneIndex;
 }
 
-int ITMActiveSceneManager::findBestVisualisationDataIdx(void) const
+int ITMActiveMapManager::findBestVisualisationDataIdx(void) const
 {
 	int bestIdx = -1;
-	for (int i = 0; i < static_cast<int>(activeData.size()); ++i) {
+	for (int i = 0; i < static_cast<int>(activeData.size()); ++i) 
+	{
 		if (activeData[i].type == PRIMARY_SCENE) return i;
 		else if (activeData[i].type == NEW_SCENE) bestIdx = i;
-		else if (activeData[i].type == RELOCALISATION) {
+		else if (activeData[i].type == RELOCALISATION) 
+		{
 			if (bestIdx < 0) { bestIdx = i; continue; }
 			if (activeData[bestIdx].type == NEW_SCENE) continue;
 			if (activeData[bestIdx].constraints.size() < activeData[i].constraints.size()) bestIdx = i;
@@ -200,14 +194,14 @@ int ITMActiveSceneManager::findBestVisualisationDataIdx(void) const
 	return bestIdx;
 }
 
-int ITMActiveSceneManager::findBestVisualisationSceneIdx(void) const
+int ITMActiveMapManager::findBestVisualisationSceneIdx(void) const
 {
 	int id = findBestVisualisationDataIdx();
 	if (id < 0) return -1;
 	return activeData[id].sceneIndex;
 }
 
-void ITMActiveSceneManager::recordTrackingResult(int dataID, ITMTrackingState::TrackingResult trackingResult, bool primaryTrackingSuccess)
+void ITMActiveMapManager::recordTrackingResult(int dataID, ITMTrackingState::TrackingResult trackingResult, bool primaryTrackingSuccess)
 {
 	ActiveDataDescriptor & data = activeData[dataID];
 
@@ -217,16 +211,11 @@ void ITMActiveSceneManager::recordTrackingResult(int dataID, ITMTrackingState::T
 
 	if (trackingResult == ITMTrackingState::TRACKING_GOOD)
 	{
-		if (data.type == RELOCALISATION)
+		if (data.type == RELOCALISATION) data.constraints.push_back(localMapManager->getTrackingPose(dataID)->GetM());
+		else if (((data.type == NEW_SCENE) || (data.type == LOOP_CLOSURE)) && primaryTrackingSuccess)
 		{
-			data.constraints.push_back(localSceneManager->getTrackingPose(dataID)->GetM());
-		}
-		else if (((data.type == NEW_SCENE) ||
-			(data.type == LOOP_CLOSURE)) &&
-			primaryTrackingSuccess)
-		{
-			Matrix4f Tnew_inv = localSceneManager->getTrackingPose(sceneID)->GetInvM();
-			Matrix4f Told = localSceneManager->getTrackingPose(primarySceneID)->GetM();
+			Matrix4f Tnew_inv = localMapManager->getTrackingPose(sceneID)->GetInvM();
+			Matrix4f Told = localMapManager->getTrackingPose(primarySceneID)->GetM();
 			Matrix4f Told_to_new = Tnew_inv * Told;
 
 			data.constraints.push_back(Told_to_new);
@@ -267,16 +256,16 @@ static ORUtils::SE3Pose estimateRelativePose(const std::vector<Matrix4f> & obser
 	std::vector<float> weights(observations.size() + 1, 1.0f);
 	std::vector<ORUtils::SE3Pose> poses;
 
-	for (size_t i = 0; i < observations.size(); ++i) {
-		poses.push_back(ORUtils::SE3Pose(observations[i]));
-	}
+	for (size_t i = 0; i < observations.size(); ++i) poses.push_back(ORUtils::SE3Pose(observations[i]));
 
 	float params[6];
-	for (int iter = 0; iter < maxIter; ++iter) {
+	for (int iter = 0; iter < maxIter; ++iter) 
+	{
 		// estimate with fixed weights
 		float sumweight = previousEstimate_weight;
 		for (int j = 0; j < 6; ++j) params[j] = weights.back() * previousEstimate_weight * previousEstimate.GetParams()[j];
-		for (size_t i = 0; i < poses.size(); ++i) {
+		for (size_t i = 0; i < poses.size(); ++i) 
+		{
 			for (int j = 0; j < 6; ++j) params[j] += weights[i] * poses[i].GetParams()[j];
 			sumweight += weights[i];
 		}
@@ -284,17 +273,20 @@ static ORUtils::SE3Pose estimateRelativePose(const std::vector<Matrix4f> & obser
 
 		// compute new weights
 		float weightchanges = 0.0f;
-		for (size_t i = 0; i < weights.size(); ++i) {
+		for (size_t i = 0; i < weights.size(); ++i) 
+		{
 			const ORUtils::SE3Pose *p;
 			float w = 1.0f;
 			if (i < poses.size()) p = &(poses[i]);
-			else {
+			else
+			{
 				p = &(previousEstimate);
 				w = previousEstimate_weight;
 			}
 
 			float residual = 0.0f;
-			for (int j = 0; j < 6; ++j) {
+			for (int j = 0; j < 6; ++j) 
+			{
 				float r = p->GetParams()[j] - params[j];
 				residual += r*r;
 			}
@@ -303,6 +295,7 @@ static ORUtils::SE3Pose estimateRelativePose(const std::vector<Matrix4f> & obser
 			weightchanges += w * fabs(newweight - weights[i]);
 			weights[i] = newweight;
 		}
+
 		float avgweightchange = weightchanges / (weights.size() - 1 + previousEstimate_weight);
 		if (avgweightchange < weightsConverged) break;
 	}
@@ -311,7 +304,8 @@ static ORUtils::SE3Pose estimateRelativePose(const std::vector<Matrix4f> & obser
 	Matrix4f inlierTrafo;
 	inlierTrafo.setZeros();
 
-	for (size_t i = 0; i < poses.size(); ++i) if (weights[i] > inlierThresholdForFinalResult) {
+	for (size_t i = 0; i < poses.size(); ++i) if (weights[i] > inlierThresholdForFinalResult) 
+	{
 		inlierTrafo += observations[i];
 		++inliers;
 	}
@@ -321,29 +315,19 @@ static ORUtils::SE3Pose estimateRelativePose(const std::vector<Matrix4f> & obser
 	return ORUtils::SE3Pose(params);
 }
 
-int ITMActiveSceneManager::CheckSuccess_relocalisation(int dataID) const
+int ITMActiveMapManager::CheckSuccess_relocalisation(int dataID) const
 {
-	if (activeData[dataID].constraints.size() >= N_relocsuccess)
-	{
-		// sucessfully relocalised
-		return 1;
-	}
-	if ((N_reloctrials - activeData[dataID].trackingAttempts) < (N_relocsuccess - (int)activeData[dataID].constraints.size()))
-	{
-		// relocalisation failed: declare as LOST
-		return -1;
-	}
+	// sucessfully relocalised
+	if (activeData[dataID].constraints.size() >= N_relocsuccess) return 1;
+
+	// relocalisation failed: declare as LOST
+	if ((N_reloctrials - activeData[dataID].trackingAttempts) < (N_relocsuccess - (int)activeData[dataID].constraints.size())) return -1;
+
 	// keep trying
 	return 0;
 }
 
-/*static void printPose(const ORUtils::SE3Pose & p)
-{
-	fprintf(stderr, "%f %f %f %f\n%f %f %f %f\n%f %f %f %f\n", p.GetM().m00, p.GetM().m10, p.GetM().m20, p.GetM().m30, p.GetM().m01, p.GetM().m11, p.GetM().m21, p.GetM().m31, p.GetM().m02, p.GetM().m12, p.GetM().m22, p.GetM().m32);
-}*/
-
-
-int ITMActiveSceneManager::CheckSuccess_newlink(int dataID, int primaryDataID, int *inliers, ORUtils::SE3Pose *inlierPose) const
+int ITMActiveMapManager::CheckSuccess_newlink(int dataID, int primaryDataID, int *inliers, ORUtils::SE3Pose *inlierPose) const
 {
 	const ActiveDataDescriptor & link = activeData[dataID];
 
@@ -352,7 +336,7 @@ int ITMActiveSceneManager::CheckSuccess_newlink(int dataID, int primaryDataID, i
 	//int previousEstimate_weight = 0;
 	int primarySceneIndex = -1;
 	if (primaryDataID >= 0) primarySceneIndex = activeData[primaryDataID].sceneIndex;
-	const ITMPoseConstraint & previousInformation = localSceneManager->getRelation_const(primarySceneIndex, link.sceneIndex);
+	const ITMPoseConstraint & previousInformation = localMapManager->getRelation_const(primarySceneIndex, link.sceneIndex);
 	/* hmm... do we want the "Estimate" (i.e. the pose corrected by pose
 	   graph optimization) or the "Observations" (i.e. the accumulated
 	   poses seen in previous frames?
@@ -363,7 +347,7 @@ int ITMActiveSceneManager::CheckSuccess_newlink(int dataID, int primaryDataID, i
 	   loop closure. We therefore want to be consistent with previous
 	   observations not estimations...
 	*/
-	//ORUtils::SE3Pose previousEstimate = previousInformation.GetEstimate();
+
 	ORUtils::SE3Pose previousEstimate = previousInformation.GetAccumulatedObservations();
 	int previousEstimate_weight = previousInformation.GetNumAccumulatedObservations();
 
@@ -374,36 +358,33 @@ int ITMActiveSceneManager::CheckSuccess_newlink(int dataID, int primaryDataID, i
 
 	estimateRelativePose(link.constraints, previousEstimate, (float)previousEstimate_weight, inliers, inlierPose);
 
-	//fprintf(stderr, "trying to establish link %i -> %i: %i/%i attempts, %i/%i inliers\n", primarySceneIndex, link.sceneIndex, link.trackingAttempts, N_linktrials, *inliers, N_linkoverlap);
-	if (*inliers >= N_linkoverlap) {
-		// accept link
-		return 1;
-	}
-	if ((N_linktrials - link.trackingAttempts) < (N_linkoverlap - *inliers)) {
-		// reject link
-		return -1;
-	}
+	// accept link
+	if (*inliers >= N_linkoverlap) return 1;
+
+	// reject link
+	if ((N_linktrials - link.trackingAttempts) < (N_linkoverlap - *inliers)) return -1;
+
 	// keep trying
 	return 0;
 }
 
-void ITMActiveSceneManager::AcceptNewLink(int fromData, int toData, const ORUtils::SE3Pose & pose, int weight)
+void ITMActiveMapManager::AcceptNewLink(int fromData, int toData, const ORUtils::SE3Pose & pose, int weight)
 {
 	int fromSceneIdx = activeData[fromData].sceneIndex;
 	int toSceneIdx = activeData[toData].sceneIndex;
 
 	{
-		ITMPoseConstraint & c = localSceneManager->getRelation(fromSceneIdx, toSceneIdx);
+		ITMPoseConstraint &c = localMapManager->getRelation(fromSceneIdx, toSceneIdx);
 		c.AddObservation(pose, weight);
 	}
 	{
 		ORUtils::SE3Pose invPose(pose.GetInvM());
-		ITMPoseConstraint & c = localSceneManager->getRelation(toSceneIdx, fromSceneIdx);
+		ITMPoseConstraint &c = localMapManager->getRelation(toSceneIdx, fromSceneIdx);
 		c.AddObservation(invPose, weight);
 	}
 }
 
-bool ITMActiveSceneManager::maintainActiveData(void)
+bool ITMActiveMapManager::maintainActiveData(void)
 {
 	bool scenegraphChanged = false;
 
@@ -420,17 +401,14 @@ bool ITMActiveSceneManager::maintainActiveData(void)
 			{
 				if (moveToDataIdx < 0) moveToDataIdx = i;
 				else link.type = LOST;
-				//fprintf(stderr, "relocalisation success, move to data %i\n", moveToDataIdx);
 			}
-			else if (success == -1)
-			{
-				link.type = LOST;
-			}
+			else if (success == -1) link.type = LOST;
 		}
-		if ((link.type == LOOP_CLOSURE) ||
-			(link.type == NEW_SCENE))
+
+		if ((link.type == LOOP_CLOSURE) || (link.type == NEW_SCENE))
 		{
 			ORUtils::SE3Pose inlierPose; int inliers;
+
 			int success = CheckSuccess_newlink(i, primaryDataIdx, &inliers, &inlierPose);
 			if (success == 1)
 			{
@@ -456,15 +434,20 @@ bool ITMActiveSceneManager::maintainActiveData(void)
 
 		if ((signed)i == moveToDataIdx) link.type = PRIMARY_SCENE;
 
-		if ((link.type == PRIMARY_SCENE) && (moveToDataIdx >= 0) && ((signed)i != moveToDataIdx)) {
+		if ((link.type == PRIMARY_SCENE) && (moveToDataIdx >= 0) && ((signed)i != moveToDataIdx)) 
+		{
 			link.type = LOST;
 			restartLinksToScenes.push_back(link.sceneIndex);
 		}
+		
 		if ((link.type == NEW_SCENE) && (moveToDataIdx >= 0)) link.type = LOST_NEW;
-		if ((link.type == LOOP_CLOSURE) && (moveToDataIdx >= 0)) {
+		
+		if ((link.type == LOOP_CLOSURE) && (moveToDataIdx >= 0)) 
+		{
 			link.type = LOST;
 			restartLinksToScenes.push_back(link.sceneIndex);
 		}
+
 		if ((link.type == RELOCALISATION) && (moveToDataIdx >= 0)) link.type = LOST;
 
 		if (link.type == PRIMARY_SCENE)
@@ -483,7 +466,7 @@ bool ITMActiveSceneManager::maintainActiveData(void)
 			// any given time and it's guaranteed to be the last
 			// in the list. Removing this new scene will therefore
 			// not require rearranging indices!
-			localSceneManager->removeScene(link.sceneIndex);
+			localMapManager->removeScene(link.sceneIndex);
 			link.type = LOST;
 		}
 		if (link.type == LOST) activeData.erase(activeData.begin() + i);
@@ -491,16 +474,18 @@ bool ITMActiveSceneManager::maintainActiveData(void)
 	}
 
 	for (std::vector<int>::const_iterator it = restartLinksToScenes.begin(); it != restartLinksToScenes.end(); ++it) {
-		initiateNewLink(*it, *(localSceneManager->getTrackingPose(*it)), false);
+		initiateNewLink(*it, *(localMapManager->getTrackingPose(*it)), false);
 	}
 
 	// NOTE: this has to be done AFTER removing any previous new scene
-	if (shouldStartNewArea()) {
+	if (shouldStartNewArea())
+	{
 		int newIdx = initiateNewScene();
 
-		if (primaryDataIdx >= 0) {
+		if (primaryDataIdx >= 0)
+		{
 			int primarySceneIdx = activeData[primaryDataIdx].sceneIndex;
-			localSceneManager->setEstimatedGlobalPose(newIdx, ORUtils::SE3Pose(localSceneManager->getTrackingPose(primarySceneIdx)->GetM() * localSceneManager->getEstimatedGlobalPose(primarySceneIdx).GetM()));
+			localMapManager->setEstimatedGlobalPose(newIdx, ORUtils::SE3Pose(localMapManager->getTrackingPose(primarySceneIdx)->GetM() * localMapManager->getEstimatedGlobalPose(primarySceneIdx).GetM()));
 		}
 	}
 
