@@ -20,7 +20,8 @@ static const int k_loopcloseneighbours = 1;
 // maximum distance reported by LCD library to attempt relocalisation
 static const float F_maxdistattemptreloc = 0.1f;
 
-static const bool MultithreadedGlobalAdjustment = true;
+// loop closure global adjustment runs on a separate thread
+static const bool separateThreadGlobalAdjustment = true;
 
 template <typename TVoxel, typename TIndex>
 ITMMultiEngine<TVoxel, TIndex>::ITMMultiEngine(const ITMLibSettings *settings, const ITMRGBDCalib& calib, Vector2i imgSize_rgb, Vector2i imgSize_d)
@@ -61,7 +62,7 @@ ITMMultiEngine<TVoxel, TIndex>::ITMMultiEngine(const ITMLibSettings *settings, c
 	//mLoopClosureDetector = new LCDLib::LoopClosureDetector(imgSize_d, Vector2f(0.3f,4.0f), 0.1f, 2000, 6);
 	mGlobalAdjustmentEngine = new ITMGlobalAdjustmentEngine();
 	mScheduleGlobalAdjustment = false;
-	if (MultithreadedGlobalAdjustment) mGlobalAdjustmentEngine->startSeparateThread();
+	if (separateThreadGlobalAdjustment) mGlobalAdjustmentEngine->startSeparateThread();
 
 	multiVisualisationEngine = ITMMultiVisualisationEngineFactory::MakeVisualisationEngine<TVoxel,TIndex>(deviceType);
 	renderState_multiscene = NULL;
@@ -280,7 +281,7 @@ ITMTrackingState::TrackingResult ITMMultiEngine<TVoxel, TIndex>::ProcessFrame(IT
 	{
 		if (mGlobalAdjustmentEngine->updateMeasurements(*mSceneManager)) 
 		{
-			if (MultithreadedGlobalAdjustment) mGlobalAdjustmentEngine->wakeupSeparateThread();
+			if (separateThreadGlobalAdjustment) mGlobalAdjustmentEngine->wakeupSeparateThread();
 			else mGlobalAdjustmentEngine->runGlobalAdjustment();
 
 			mScheduleGlobalAdjustment = false;
