@@ -1,4 +1,4 @@
-// Copyright 2014-2016 Isis Innovation Limited and the authors of InfiniTAM
+// Copyright 2014-2017 Oxford University Innovation Limited and the authors of InfiniTAM
 
 #pragma once
 
@@ -8,27 +8,26 @@
 
 namespace RelocLib {
 
-class PoseDatabase {
+	class PoseDatabase {
 	public:
-	struct PoseInScene {
-		PoseInScene(void) {}
-		PoseInScene(const ORUtils::SE3Pose & _pose, int _sceneIdx)
-		  : pose(_pose), sceneIdx(_sceneIdx) {}
-		ORUtils::SE3Pose pose;
-		int sceneIdx;
-	};
+		struct PoseInScene {
+			PoseInScene(void) {}
+			PoseInScene(const ORUtils::SE3Pose & _pose, int _sceneIdx)
+				: pose(_pose), sceneIdx(_sceneIdx) {}
+			ORUtils::SE3Pose pose;
+			int sceneIdx;
+		};
 
-	PoseDatabase(void);
-	~PoseDatabase(void);
+		PoseDatabase(void);
+		~PoseDatabase(void);
 
-	void storePose(int id, const ORUtils::SE3Pose & pose, int sceneId);
-	int numPoses(void) const { return (int)mPoses.size(); }
+		void storePose(int id, const ORUtils::SE3Pose & pose, int sceneId);
+		int numPoses(void) const { return (int)mPoses.size(); }
 
-	const PoseInScene & retrievePose(int id) const { return mPoses[id]; }
-	PoseInScene retrieveWAPose(int k, int ids[], float weights[]) const;
+		const PoseInScene & retrievePose(int id) const { return mPoses[id]; }
+		PoseInScene retrieveWAPose(int k, int ids[], float weights[]) const;
 
 	private:
-	std::vector<PoseInScene> mPoses;
-};
-
+		std::vector<PoseInScene> mPoses;
+	};
 }

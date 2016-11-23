@@ -1,4 +1,4 @@
-// Copyright 2014-2015 Isis Innovation Limited and the authors of InfiniTAM
+// Copyright 2014-2017 Oxford University Innovation Limited and the authors of InfiniTAM
 
 #pragma once
 
@@ -49,7 +49,6 @@ namespace ORUtils {
 
 	template<class T, int s> struct VectorX_
 	{
-		int vsize;
 		T v[s];
 	};
 
@@ -664,13 +663,14 @@ namespace ORUtils {
 	{
 	public:
 		typedef T value_type;
-		_CPU_AND_GPU_CODE_ inline int size() const { return this->vsize; }
+		enum { value_size = s };
+		_CPU_AND_GPU_CODE_ inline int size() const { return value_size; }
 
 		////////////////////////////////////////////////////////
 		//  Constructors
 		////////////////////////////////////////////////////////
 
-		_CPU_AND_GPU_CODE_ VectorX() { this->vsize = s; } // Default constructor
+		_CPU_AND_GPU_CODE_ VectorX() { } // Default constructor
 		_CPU_AND_GPU_CODE_ VectorX(const T &t) { for (int i = 0; i < s; i++) this->v[i] = t; } //Scalar constructor
 		_CPU_AND_GPU_CODE_ VectorX(const T *tp) { for (int i = 0; i < s; i++) this->v[i] = tp[i]; } // Construct from array
 

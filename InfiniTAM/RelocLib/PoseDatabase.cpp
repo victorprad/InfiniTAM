@@ -1,4 +1,4 @@
-// Copyright 2014-2016 Isis Innovation Limited and the authors of InfiniTAM
+// Copyright 2014-2017 Oxford University Innovation Limited and the authors of InfiniTAM
 
 #include "PoseDatabase.h"
 
@@ -13,7 +13,7 @@ PoseDatabase::~PoseDatabase(void)
 void PoseDatabase::storePose(int id, const ORUtils::SE3Pose & pose, int sceneId)
 {
 	if (id < 0) return;
-	if ((unsigned)id >= mPoses.size()) mPoses.resize(id+1);
+	if ((unsigned)id >= mPoses.size()) mPoses.resize(id + 1);
 
 	mPoses[id] = PoseInScene(pose, sceneId);
 }
@@ -35,7 +35,7 @@ PoseDatabase::PoseInScene PoseDatabase::retrieveWAPose(int k, int ids[], float d
 		sumWeights += weight;
 	}
 
-	m = m * (1.0f/sumWeights);
+	m = m * (1.0f / sumWeights);
 	return PoseDatabase::PoseInScene(ORUtils::SE3Pose(m), sceneID);
 }
 

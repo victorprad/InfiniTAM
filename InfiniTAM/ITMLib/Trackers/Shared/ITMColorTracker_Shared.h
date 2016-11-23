@@ -1,4 +1,4 @@
-// Copyright 2014-2015 Isis Innovation Limited and the authors of InfiniTAM
+// Copyright 2014-2017 Oxford University Innovation Limited and the authors of InfiniTAM
 
 #pragma once
 
@@ -63,27 +63,45 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointGH_rt_Color(THREADPTR(float) *loca
 	colour_diff_d.y = 2.0f * (colour_obs.y - 255.0f * colour_known.y);
 	colour_diff_d.z = 2.0f * (colour_obs.z - 255.0f * colour_known.z);
 
+	const float inv_z = 1.f / pt_camera.z;
+	const float z_sq = pt_camera.z * pt_camera.z;
+	const float inv_z_sq = 1.f / z_sq;
+
 	for (int para = 0, counter = 0; para < numPara; para++)
 	{
 		switch (para + startPara)
 		{
-		case 0: d_pt_cam_dpi.x = pt_camera.w;  d_pt_cam_dpi.y = 0.0f;         d_pt_cam_dpi.z = 0.0f;         break;
-		case 1: d_pt_cam_dpi.x = 0.0f;         d_pt_cam_dpi.y = pt_camera.w;  d_pt_cam_dpi.z = 0.0f;         break;
-		case 2: d_pt_cam_dpi.x = 0.0f;         d_pt_cam_dpi.y = 0.0f;         d_pt_cam_dpi.z = pt_camera.w;  break;
-		case 3: d_pt_cam_dpi.x = 0.0f;         d_pt_cam_dpi.y = -pt_camera.z;  d_pt_cam_dpi.z = pt_camera.y;  break;
-		case 4: d_pt_cam_dpi.x = pt_camera.z;  d_pt_cam_dpi.y = 0.0f;         d_pt_cam_dpi.z = -pt_camera.x;  break;
-		default:
-		case 5: d_pt_cam_dpi.x = -pt_camera.y;  d_pt_cam_dpi.y = pt_camera.x;  d_pt_cam_dpi.z = 0.0f;         break;
+		case 0: // tx
+			d_proj_dpi.x = projParams.x * inv_z;
+			d_proj_dpi.y = 0.0f; 
+			break;
+		case 1: // ty
+			d_proj_dpi.x = 0.0f; 
+			d_proj_dpi.y = projParams.y * inv_z;
+			break;
+		case 2: // tz
+			d_proj_dpi.x = -projParams.x * pt_camera.x * inv_z_sq;
+			d_proj_dpi.y = -projParams.y * pt_camera.y * inv_z_sq;
+			break;
+		case 3: // rx
+			d_proj_dpi.x = -projParams.x * pt_camera.y * pt_camera.x * inv_z_sq;
+			d_proj_dpi.y = -projParams.y * (z_sq + pt_camera.y * pt_camera.y) * inv_z_sq;
+			break;
+		case 4: // ry
+			d_proj_dpi.x = projParams.x * (z_sq + pt_camera.x * pt_camera.x) * inv_z_sq;
+			d_proj_dpi.y = projParams.y * pt_camera.x * pt_camera.y * inv_z_sq;
+			break; 
+		case 5: // rz
+			d_proj_dpi.x = -projParams.x * pt_camera.y * inv_z;
+			d_proj_dpi.y = projParams.y * pt_camera.x * inv_z;
+			break;
 		};
-
-		d_proj_dpi.x = projParams.x * ((pt_camera.z * d_pt_cam_dpi.x - d_pt_cam_dpi.z * pt_camera.x) / (pt_camera.z * pt_camera.z));
-		d_proj_dpi.y = projParams.y * ((pt_camera.z * d_pt_cam_dpi.y - d_pt_cam_dpi.z * pt_camera.y) / (pt_camera.z * pt_camera.z));
 
 		d[para].x = d_proj_dpi.x * gx_obs.x + d_proj_dpi.y * gy_obs.x;
 		d[para].y = d_proj_dpi.x * gx_obs.y + d_proj_dpi.y * gy_obs.y;
 		d[para].z = d_proj_dpi.x * gx_obs.z + d_proj_dpi.y * gy_obs.z;
 
-		localGradient[para] = d[para].x * colour_diff_d.x + d[para].y * colour_diff_d.y + d[para].z * colour_diff_d.z;
+		localGradient[para] = 2.0f * (d[para].x * colour_diff_d.x + d[para].y * colour_diff_d.y + d[para].z * colour_diff_d.z);
 
 		for (int col = 0; col <= para; col++)
 			localHessian[counter++] = 2.0f * (d[para].x * d[col].x + d[para].y * d[col].y + d[para].z * d[col].z);

@@ -1,4 +1,4 @@
-// Copyright 2014-2015 Isis Innovation Limited and the authors of InfiniTAM
+// Copyright 2014-2017 Oxford University Innovation Limited and the authors of InfiniTAM
 
 #include "ITMDepthTracker_CUDA.h"
 #include "../../Utils/ITMCUDAUtils.h"
@@ -54,9 +54,9 @@ int ITMDepthTracker_CUDA::ComputeGandH(float &f, float *nabla, float *hessian, M
 	Vector4f sceneIntrinsics = sceneHierarchyLevel->intrinsics;
 	Vector2i sceneImageSize = sceneHierarchyLevel->pointsMap->noDims;
 
-	float *depth = viewHierarchyLevel->depth->GetData(MEMORYDEVICE_CUDA);
+	float *depth = viewHierarchyLevel->data->GetData(MEMORYDEVICE_CUDA);
 	Vector4f viewIntrinsics = viewHierarchyLevel->intrinsics;
-	Vector2i viewImageSize = viewHierarchyLevel->depth->noDims;
+	Vector2i viewImageSize = viewHierarchyLevel->data->noDims;
 
 	if (iterationType == TRACKER_ITERATION_NONE) return 0;
 

@@ -1,4 +1,4 @@
-// Copyright 2014-2016 Isis Innovation Limited and the authors of InfiniTAM
+// Copyright 2014-2017 Oxford University Innovation Limited and the authors of InfiniTAM
 
 #include "FernConservatory.h"
 
@@ -32,12 +32,12 @@ void FernConservatory::computeCode(const ORUtils::Image<float> *img, char *codeF
 	for (int f = 0; f < mNumFerns; ++f) {
 		codeFragments[f] = 0;
 		for (int d = 0; d < mNumDecisions; ++d) {
-			const FernTester *tester = &(mEncoders[f*mNumDecisions+d]);
+			const FernTester *tester = &(mEncoders[f*mNumDecisions + d]);
 			int locId = tester->location.x + tester->location.y * img->noDims.x;
 			float val = imgData[locId];
 
 			/*if (val <= 0.0f) codeFragments[f] = -1;
-			else*/ codeFragments[f] |= ((val < tester->threshold)?0:1)<<d;
+			else*/ codeFragments[f] |= ((val < tester->threshold) ? 0 : 1) << d;
 		}
 	}
 }

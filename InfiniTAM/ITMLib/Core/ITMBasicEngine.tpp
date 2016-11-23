@@ -1,4 +1,4 @@
-// Copyright 2014-2015 Isis Innovation Limited and the authors of InfiniTAM
+// Copyright 2014-2017 Oxford University Innovation Limited and the authors of InfiniTAM
 
 #include "ITMBasicEngine.h"
 
@@ -240,6 +240,9 @@ ITMTrackingState::TrackingResult ITMBasicEngine<TVoxel,TIndex>::ProcessFrame(ITM
 		else if (trackerResult == ITMTrackingState::TRACKING_FAILED) 
 		{
 			relocalisationCount = 10;
+
+			// Reset previous rgb frame since the rgb image is likely different than the one acquired when setting the keyframe
+			view->rgb_prev->Clear();
 
 			const RelocLib::PoseDatabase::PoseInScene & keyframe = poseDatabase.retrievePose(NN);
 			trackingState->pose_d->SetFrom(&keyframe.pose);

@@ -1,4 +1,4 @@
-// Copyright 2014-2015 Isis Innovation Limited and the authors of InfiniTAM
+// Copyright 2014-2017 Oxford University Innovation Limited and the authors of InfiniTAM
 
 #include "ITMLowLevelEngine_CUDA.h"
 
@@ -20,6 +20,11 @@ ITMLowLevelEngine_CUDA::~ITMLowLevelEngine_CUDA(void)
 	ORcudaSafeCall(cudaFreeHost(counterTempData_host));
 }
 
+__global__ void convertColourToIntensity_device(float *imageData_out, Vector2i dims, const Vector4u *imageData_in);
+
+__global__ void boxFilter2x2_device(float *imageData_out, const float *imageData_in, Vector2i dims);
+
+__global__ void filterSubsample_device(float *imageData_out, Vector2i newDims, const float *imageData_in, Vector2i oldDims);
 __global__ void filterSubsample_device(Vector4u *imageData_out, Vector2i newDims, const Vector4u *imageData_in, Vector2i oldDims);
 
 __global__ void filterSubsampleWithHoles_device(float *imageData_out, Vector2i newDims, const float *imageData_in, Vector2i oldDims);
@@ -27,6 +32,7 @@ __global__ void filterSubsampleWithHoles_device(Vector4f *imageData_out, Vector2
 
 __global__ void gradientX_device(Vector4s *grad, const Vector4u *image, Vector2i imgSize);
 __global__ void gradientY_device(Vector4s *grad, const Vector4u *image, Vector2i imgSize);
+__global__ void gradientXY_device(Vector2f *grad, const float *image, Vector2i imgSize);
 
 __global__ void countValidDepths_device(const float *imageData_in, int imgSizeTotal, int *counterTempData_device);
 
@@ -56,6 +62,38 @@ void ITMLowLevelEngine_CUDA::CopyImage(ITMFloat4Image *image_out, const ITMFloat
 	ORcudaSafeCall(cudaMemcpy(dest, src, image_in->dataSize * sizeof(Vector4f), cudaMemcpyDeviceToDevice));
 }
 
+void ITMLowLevelEngine_CUDA::ConvertColourToIntensity(ITMFloatImage *image_out, const ITMUChar4Image *image_in) const
+{
+	const Vector2i dims = image_in->noDims;
+	image_out->ChangeDims(dims);
+
+	float *dest = image_out->GetData(MEMORYDEVICE_CUDA);
+	const Vector4u *src = image_in->GetData(MEMORYDEVICE_CUDA);
+
+	dim3 blockSize(16, 16);
+	dim3 gridSize((int)ceil((float)dims.x / (float)blockSize.x), (int)ceil((float)dims.y / (float)blockSize.y));
+
+	convertColourToIntensity_device << <gridSize, blockSize >> >(dest, dims, src);
+	ORcudaKernelCheck;
+}
+
+void ITMLowLevelEngine_CUDA::FilterIntensity(ITMFloatImage *image_out, const ITMFloatImage *image_in) const
+{
+	Vector2i dims = image_in->noDims;
+
+	image_out->ChangeDims(dims);
+	image_out->Clear(0);
+
+	const float *imageData_in = image_in->GetData(MEMORYDEVICE_CUDA);
+	float *imageData_out = image_out->GetData(MEMORYDEVICE_CUDA);
+
+	dim3 blockSize(16, 16);
+	dim3 gridSize((int)ceil((float)dims.x / (float)blockSize.x), (int)ceil((float)dims.y / (float)blockSize.y));
+
+	boxFilter2x2_device << <gridSize, blockSize >> >(imageData_out, imageData_in, dims);
+	ORcudaKernelCheck;
+}
+
 void ITMLowLevelEngine_CUDA::FilterSubsample(ITMUChar4Image *image_out, const ITMUChar4Image *image_in) const
 {
 	Vector2i oldDims = image_in->noDims;
@@ -65,6 +103,24 @@ void ITMLowLevelEngine_CUDA::FilterSubsample(ITMUChar4Image *image_out, const IT
 
 	const Vector4u *imageData_in = image_in->GetData(MEMORYDEVICE_CUDA);
 	Vector4u *imageData_out = image_out->GetData(MEMORYDEVICE_CUDA);
+
+	dim3 blockSize(16, 16);
+	dim3 gridSize((int)ceil((float)newDims.x / (float)blockSize.x), (int)ceil((float)newDims.y / (float)blockSize.y));
+
+	filterSubsample_device << <gridSize, blockSize >> >(imageData_out, newDims, imageData_in, oldDims);
+	ORcudaKernelCheck;
+}
+
+void ITMLowLevelEngine_CUDA::FilterSubsample(ITMFloatImage *image_out, const ITMFloatImage *image_in) const
+{
+	Vector2i oldDims = image_in->noDims;
+	Vector2i newDims; newDims.x = image_in->noDims.x / 2; newDims.y = image_in->noDims.y / 2;
+
+	image_out->ChangeDims(newDims);
+	image_out->Clear(0);
+
+	const float *imageData_in = image_in->GetData(MEMORYDEVICE_CUDA);
+	float *imageData_out = image_out->GetData(MEMORYDEVICE_CUDA);
 
 	dim3 blockSize(16, 16);
 	dim3 gridSize((int)ceil((float)newDims.x / (float)blockSize.x), (int)ceil((float)newDims.y / (float)blockSize.y));
@@ -141,6 +197,22 @@ void ITMLowLevelEngine_CUDA::GradientY(ITMShort4Image *grad_out, const ITMUChar4
 	ORcudaKernelCheck;
 }
 
+void ITMLowLevelEngine_CUDA::GradientXY(ITMFloat2Image *grad_out, const ITMFloatImage *image_in) const
+{
+	Vector2i imgSize = image_in->noDims;
+	grad_out->ChangeDims(imgSize);
+	grad_out->Clear();
+
+	Vector2f *grad = grad_out->GetData(MEMORYDEVICE_CUDA);
+	const float *image = image_in->GetData(MEMORYDEVICE_CUDA);
+
+	dim3 blockSize(16, 16);
+	dim3 gridSize((int)ceil((float)imgSize.x / (float)blockSize.x), (int)ceil((float)imgSize.y / (float)blockSize.y));
+
+	gradientXY_device << <gridSize, blockSize >> >(grad, image, imgSize);
+	ORcudaKernelCheck;
+}
+
 int ITMLowLevelEngine_CUDA::CountValidDepths(const ITMFloatImage *image_in) const
 {
 	const float *imageData_in = image_in->GetData(MEMORYDEVICE_CUDA);
@@ -159,6 +231,24 @@ int ITMLowLevelEngine_CUDA::CountValidDepths(const ITMFloatImage *image_in) cons
 
 // device functions
 
+__global__ void convertColourToIntensity_device(float *imageData_out, Vector2i dims, const Vector4u *imageData_in)
+{
+	int x = threadIdx.x + blockIdx.x * blockDim.x, y = threadIdx.y + blockIdx.y * blockDim.y;
+
+	if (x > dims.x - 1 || y > dims.y - 1) return;
+
+	convertColourToIntensity(imageData_out, x, y, dims, imageData_in);
+}
+
+__global__ void boxFilter2x2_device(float *imageData_out, const float *imageData_in, Vector2i dims)
+{
+	int x = threadIdx.x + blockIdx.x * blockDim.x, y = threadIdx.y + blockIdx.y * blockDim.y;
+
+	if (x >= dims.x - 2 || y >= dims.y - 2 || x <= 1 || y <= 1) return;
+
+	boxFilter2x2(imageData_out, x, y, dims, imageData_in, x, y, dims);
+}
+
 __global__ void filterSubsample_device(Vector4u *imageData_out, Vector2i newDims, const Vector4u *imageData_in, Vector2i oldDims)
 {
 	int x = threadIdx.x + blockIdx.x * blockDim.x, y = threadIdx.y + blockIdx.y * blockDim.y;
@@ -166,6 +256,15 @@ __global__ void filterSubsample_device(Vector4u *imageData_out, Vector2i newDims
 	if (x > newDims.x - 1 || y > newDims.y - 1) return;
 
 	filterSubsample(imageData_out, x, y, newDims, imageData_in, oldDims);
+}
+
+__global__ void filterSubsample_device(float *imageData_out, Vector2i newDims, const float *imageData_in, Vector2i oldDims)
+{
+	int x = threadIdx.x + blockIdx.x * blockDim.x, y = threadIdx.y + blockIdx.y * blockDim.y;
+
+	if (x > newDims.x - 2 || y > newDims.y - 2 || x < 1 || y < 1) return;
+
+	boxFilter2x2(imageData_out, x, y, newDims, imageData_in, x * 2, y * 2, oldDims);
 }
 
 __global__ void filterSubsampleWithHoles_device(float *imageData_out, Vector2i newDims, const float *imageData_in, Vector2i oldDims)
@@ -202,6 +301,15 @@ __global__ void gradientY_device(Vector4s *grad, const Vector4u *image, Vector2i
 	if (x < 1 || x > imgSize.x - 2 || y < 1 || y > imgSize.y - 2) return;
 
 	gradientY(grad, x, y, image, imgSize);
+}
+
+__global__ void gradientXY_device(Vector2f *grad, const float *image, Vector2i imgSize)
+{
+	int x = threadIdx.x + blockIdx.x * blockDim.x, y = threadIdx.y + blockIdx.y * blockDim.y;
+
+	if (x < 1 || x > imgSize.x - 2 || y < 1 || y > imgSize.y - 2) return;
+
+	gradientXY(grad, x, y, image, imgSize);
 }
 
 __global__ void countValidDepths_device(const float *imageData_in, int imgSizeTotal, int *counterTempData_device)
