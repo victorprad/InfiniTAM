@@ -116,21 +116,21 @@ namespace ORUtils
 		Essentially any previously allocated data is
 		released, new memory is allocated.
 		*/
-		void Resize(size_t newDim, bool noResize = false)
+		void Resize(size_t newDataSize, bool noResize = false)
 		{
-			if(newDim == dataSize) return;
+			if(newDataSize == dataSize) return;
 
-			if(!noResize || dataSize < newDim)
+			if(!noResize || dataSize < newDataSize)
 			{
 				bool allocate_CPU = this->isAllocated_CPU;
 				bool allocate_CUDA = this->isAllocated_CUDA;
 				bool metalCompatible = this->isMetalCompatible;
 
 				this->Free();
-				this->Allocate(newDim, allocate_CPU, allocate_CUDA, metalCompatible);
+				this->Allocate(newDataSize, allocate_CPU, allocate_CUDA, metalCompatible);
 			}
 
-			this->dataSize = newDim;
+			this->dataSize = newDataSize;
 		}
 
 		/** Transfer data from CPU to GPU, if possible. */
