@@ -105,7 +105,7 @@ void filterSubsample(const ORUtils::Image<float> *input, ORUtils::Image<float> *
 {
 	ORUtils::Vector2<int> imgSize_in = input->noDims;
 	ORUtils::Vector2<int> imgSize_out(imgSize_in.x/2, imgSize_in.y/2);
-	output->ChangeDims(imgSize_out, true);
+	output->ChangeDims(imgSize_out, false);
 
 	const float *imageData_in = input->GetData(MEMORYDEVICE_CPU);
 	float *imageData_out = output->GetData(MEMORYDEVICE_CPU);

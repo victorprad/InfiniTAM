@@ -60,9 +60,9 @@ namespace ORUtils
 		Essentially any previously allocated data is
 		released, new memory is allocated.
 		*/
-		void ChangeDims(Vector2<int> newDims, bool noResize = false)
+		void ChangeDims(Vector2<int> newDims, bool forceReallocation = true)
 		{
-			MemoryBlock<T>::Resize(newDims.x * newDims.y, noResize);
+			MemoryBlock<T>::Resize(newDims.x * newDims.y, forceReallocation);
 			noDims = newDims;
 		}
 

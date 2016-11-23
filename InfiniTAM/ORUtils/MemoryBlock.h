@@ -116,11 +116,11 @@ namespace ORUtils
 		Essentially any previously allocated data is
 		released, new memory is allocated.
 		*/
-		void Resize(size_t newDataSize, bool noResize = false)
+		void Resize(size_t newDataSize, bool forceReallocation = true)
 		{
 			if(newDataSize == dataSize) return;
 
-			if(!noResize || dataSize < newDataSize)
+			if(newDataSize > dataSize || forceReallocation)
 			{
 				bool allocate_CPU = this->isAllocated_CPU;
 				bool allocate_CUDA = this->isAllocated_CUDA;
