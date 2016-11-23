@@ -407,7 +407,7 @@ _CPU_AND_GPU_CODE_ inline void processPixelGrey_ImageNormals(DEVICEPTR(Vector4u)
 }
 
 template<bool useSmoothing, bool flipNormals>
-_CPU_AND_GPU_CODE_ inline void processPixel_ImageNormals(DEVICEPTR(Vector4u) *outRendering, const CONSTPTR(Vector4f) *pointsRay,
+_CPU_AND_GPU_CODE_ inline void processPixelNormals_ImageNormals(DEVICEPTR(Vector4u) *outRendering, const CONSTPTR(Vector4f) *pointsRay,
 	const THREADPTR(Vector2i) &imgSize, const THREADPTR(int) &x, const THREADPTR(int) &y, float voxelSize, Vector3f lightSource)
 {
 	Vector3f outNormal;
@@ -420,6 +420,23 @@ _CPU_AND_GPU_CODE_ inline void processPixel_ImageNormals(DEVICEPTR(Vector4u) *ou
 	computeNormalAndAngle<useSmoothing, flipNormals>(foundPoint, x, y, pointsRay, lightSource, voxelSize, imgSize, outNormal, angle);
 
 	if (foundPoint) drawPixelNormal(outRendering[locId], outNormal);
+	else outRendering[locId] = Vector4u((uchar)0);
+}
+
+template<bool useSmoothing, bool flipNormals>
+_CPU_AND_GPU_CODE_ inline void processPixelConfidence_ImageNormals(DEVICEPTR(Vector4u) *outRendering, const CONSTPTR(Vector4f) *pointsRay,
+	const THREADPTR(Vector2i) &imgSize, const THREADPTR(int) &x, const THREADPTR(int) &y, float voxelSize, Vector3f lightSource)
+{
+	Vector3f outNormal;
+	float angle;
+
+	int locId = x + y * imgSize.x;
+	Vector4f point = pointsRay[locId];
+
+	bool foundPoint = point.w > 0.0f;
+	computeNormalAndAngle<useSmoothing, flipNormals>(foundPoint, x, y, pointsRay, lightSource, voxelSize, imgSize, outNormal, angle);
+
+	if (foundPoint) drawPixelConfidence(outRendering[locId], angle, point.w - 1.0f);
 	else outRendering[locId] = Vector4u((uchar)0);
 }
 

@@ -27,6 +27,8 @@ ITMLibSettings::ITMLibSettings(void)
 #endif
 #endif
 
+	//deviceType = DEVICE_CPU;
+
 	/// how swapping works: disabled, fully enabled (still with dragons) and delete what's not visible
 	swappingMode = SWAPPINGMODE_DISABLED;
 

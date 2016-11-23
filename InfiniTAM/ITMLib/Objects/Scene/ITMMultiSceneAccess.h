@@ -117,22 +117,30 @@ _CPU_AND_GPU_CODE_ inline float readWithConfidenceFromSDF_float_interpolated(THR
 {
 	typedef typename TMultiIndex::IndexType TIndex;
 
-	float sum_sdf = 0.0f;
-	float sum_confidence = 0.0f;
+	float sum_sdf = 0.0f, sum_confidence = 0.0f;
+	int noLiveScenes = 0;
+	
 	vmIndex = false;
-	for (int sceneId = 0; sceneId < voxelIndex->numScenes; ++sceneId) {
+	for (int sceneId = 0; sceneId < voxelIndex->numScenes; ++sceneId) 
+	{
 		Vector3f point_local = voxelIndex->poses_vs[sceneId] * point;
 
 		int vmIndex_tmp;
 		typename TIndex::IndexCache cache;
+
 		float conf;
 		float sdf = readWithConfidenceFromSDF_float_interpolated(conf, voxelData->voxels[sceneId], voxelIndex->index[sceneId], point_local, vmIndex_tmp, cache);
+		
 		if (!vmIndex_tmp) continue;
 		vmIndex = true;
 
 		sum_sdf += (float)conf * sdf;
 		sum_confidence += conf;
+		noLiveScenes++;
 	}
-	if (sum_confidence == 0.0f) return 1.0f;
-	return (sum_sdf / (float)sum_confidence);
+
+	if (sum_confidence == 0.0f) { confidence = 1.0f;  return 1.0f; }
+
+	confidence = sum_confidence / (float)noLiveScenes + 1.0f;
+	return sum_sdf / (float)sum_confidence;
 }
