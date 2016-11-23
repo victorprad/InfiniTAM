@@ -257,6 +257,13 @@ void UIEngine::glutKeyUpFunction(unsigned char key, int x, int y)
 			basicEngine->SaveSceneToMesh("mesh.stl");
 			printf(" done\n");
 		}
+
+		ITMMultiEngine<ITMVoxel, ITMVoxelIndex> *multiEngine = dynamic_cast<ITMMultiEngine<ITMVoxel, ITMVoxelIndex>*>(uiEngine->mainEngine);
+		if (multiEngine != NULL) {
+			printf("saving mesh to disk ...");
+			multiEngine->SaveSceneToMesh("mesh.stl");
+			printf(" done\n");
+		}
 	}
 	break;
 	case 'r':

@@ -70,20 +70,25 @@ _CPU_AND_GPU_CODE_ inline float readFromSDF_float_interpolated(const TMultiVoxel
 	float sum_sdf = 0.0f;
 	int sum_weights = 0;
 	vmIndex = false;
-	for (int sceneId = 0; sceneId < voxelIndex->numScenes; ++sceneId) {
+
+	for (int sceneId = 0; sceneId < voxelIndex->numScenes; ++sceneId) 
+	{
 		Vector3f point_local = voxelIndex->poses_vs[sceneId] * point;
 
-		int vmIndex_tmp;
-		int maxW;
+		int vmIndex_tmp, maxW;
 		typename TIndex::IndexCache cache;
+		
 		float sdf = readFromSDF_float_interpolated(voxelData->voxels[sceneId], voxelIndex->index[sceneId], point_local, vmIndex_tmp, cache, maxW);
 		if (!vmIndex_tmp) continue;
+		
 		vmIndex = true;
 
 		sum_sdf += (float)maxW * sdf;
 		sum_weights += maxW;
 	}
+
 	if (sum_weights == 0) return 1.0f;
+	
 	return (sum_sdf / (float)sum_weights);
 }
 

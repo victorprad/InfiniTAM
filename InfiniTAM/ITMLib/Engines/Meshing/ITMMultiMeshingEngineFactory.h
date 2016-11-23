@@ -2,9 +2,9 @@
 
 #pragma once
 
-#include "CPU/ITMMeshingEngine_CPU.h"
+#include "CPU/ITMMultiMeshingEngine_CPU.h"
 #ifndef COMPILE_WITHOUT_CUDA
-#include "CUDA/ITMMeshingEngine_CUDA.h"
+#include "CUDA/ITMMultiMeshingEngine_CUDA.h"
 #endif
 
 namespace ITMLib
@@ -13,7 +13,7 @@ namespace ITMLib
 	/**
 	 * \brief This struct provides functions that can be used to construct meshing engines.
 	 */
-	struct ITMMeshingEngineFactory
+	struct ITMMultiMeshingEngineFactory
 	{
 		//#################### PUBLIC STATIC MEMBER FUNCTIONS ####################
 
@@ -23,23 +23,23 @@ namespace ITMLib
 		 * \param deviceType  The device on which the meshing engine should operate.
 		 */
 		template <typename TVoxel, typename TIndex>
-		static ITMMeshingEngine<TVoxel, TIndex> *MakeMeshingEngine(ITMLibSettings::DeviceType deviceType)
+		static ITMMultiMeshingEngine<TVoxel, TIndex> *MakeMeshingEngine(ITMLibSettings::DeviceType deviceType)
 		{
-			ITMMeshingEngine<TVoxel, TIndex> *meshingEngine = NULL;
+			ITMMultiMeshingEngine<TVoxel, TIndex> *meshingEngine = NULL;
 
 			switch (deviceType)
 			{
 			case ITMLibSettings::DEVICE_CPU:
-				meshingEngine = new ITMMeshingEngine_CPU<TVoxel, TIndex>;
+				meshingEngine = new ITMMultiMeshingEngine_CPU<TVoxel, TIndex>();
 				break;
 			case ITMLibSettings::DEVICE_CUDA:
 #ifndef COMPILE_WITHOUT_CUDA
-				meshingEngine = new ITMMeshingEngine_CUDA<TVoxel, TIndex>;
+				meshingEngine = new ITMMultiMeshingEngine_CUDA<TVoxel, TIndex>();
 #endif
 				break;
 			case ITMLibSettings::DEVICE_METAL:
 #ifdef COMPILE_WITH_METAL
-				meshingEngine = new ITMMeshingEngine_CPU<TVoxel, TIndex>;
+				meshingEngine = new ITMMultiMeshingEngine_CPU<TVoxel, TIndex>();
 #endif
 				break;
 			}

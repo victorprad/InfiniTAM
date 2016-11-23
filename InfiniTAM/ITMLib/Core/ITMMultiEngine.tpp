@@ -21,6 +21,8 @@ static const float F_maxdistattemptreloc = 0.1f;
 
 static const bool MultithreadedGlobalAdjustment = true;
 
+int currentFrameNo = 0;
+
 template <typename TVoxel, typename TIndex>
 ITMMultiEngine<TVoxel, TIndex>::ITMMultiEngine(const ITMLibSettings *settings, const ITMRGBDCalib& calib, Vector2i imgSize_rgb, Vector2i imgSize_d)
 {
@@ -32,6 +34,10 @@ ITMMultiEngine<TVoxel, TIndex>::ITMMultiEngine(const ITMLibSettings *settings, c
 	lowLevelEngine = ITMLowLevelEngineFactory::MakeLowLevelEngine(deviceType);
 	viewBuilder = ITMViewBuilderFactory::MakeViewBuilder(calib, deviceType);
 	visualisationEngine = ITMVisualisationEngineFactory::MakeVisualisationEngine<TVoxel, TIndex>(deviceType);
+
+	meshingEngine = NULL;
+	if (settings->createMeshingEngine)
+		meshingEngine = ITMMultiMeshingEngineFactory::MakeMeshingEngine<TVoxel, TIndex>(deviceType);
 
 	renderState_freeview = NULL; //will be created by the visualisation engine
 
@@ -137,6 +143,9 @@ struct TodoListEntry {
 template <typename TVoxel, typename TIndex>
 ITMTrackingState::TrackingResult ITMMultiEngine<TVoxel, TIndex>::ProcessFrame(ITMUChar4Image *rgbImage, ITMShortImage *rawDepthImage, ITMIMUMeasurement *imuMeasurement)
 {
+	printf("currentFrameNo = %d\n", currentFrameNo);
+	currentFrameNo++;
+
 	std::vector<TodoListEntry> todoList;
 	ITMTrackingState::TrackingResult primarySceneTrackingResult;
 
@@ -286,17 +295,18 @@ ITMTrackingState::TrackingResult ITMMultiEngine<TVoxel, TIndex>::ProcessFrame(IT
 	return primarySceneTrackingResult;
 }
 
-//template <typename TVoxel, typename TIndex>
-//void ITMMultiEngine<TVoxel,TIndex>::SaveSceneToMesh(const char *objFileName)
-//{
-//	// TODO: this will all fail without CUDA...
-//	ITMMesh *mesh = new ITMMesh(MEMORYDEVICE_CUDA, SDF_LOCAL_BLOCK_NUM * 32 * 16);
-//	ITMMultiMeshingEngine_CUDA<TVoxel,TIndex> *meshingEngine = new ITMMultiMeshingEngine_CUDA<TVoxel,TIndex>();
-//	meshingEngine->MeshScene(mesh, *mSceneManager);
-//	mesh->WriteSTL(objFileName);
-//	delete meshingEngine;
-//	delete mesh;
-//}
+template <typename TVoxel, typename TIndex>
+void ITMMultiEngine<TVoxel, TIndex>::SaveSceneToMesh(const char *modelFileName)
+{
+	if (meshingEngine == NULL) return;
+
+	ITMMesh *mesh = new ITMMesh(settings->GetMemoryType());
+
+	meshingEngine->MeshScene(mesh, *mSceneManager);
+	mesh->WriteSTL(modelFileName);
+	
+	delete mesh;
+}
 
 template <typename TVoxel, typename TIndex>
 Vector2i ITMMultiEngine<TVoxel, TIndex>::GetImageSize(void) const

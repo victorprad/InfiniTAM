@@ -13,6 +13,7 @@
 #include "../Engines/MultiScene/ITMActiveMapManager.h"
 #include "../Engines/MultiScene/ITMGlobalAdjustmentEngine.h"
 #include "../Engines/Visualisation/Interface/ITMMultiVisualisationEngine.h"
+#include "../Engines/Meshing/ITMMultiMeshingEngineFactory.h"
 
 #include <vector>
 
@@ -29,6 +30,8 @@ namespace ITMLib
 		ITMLowLevelEngine *lowLevelEngine;
 		ITMVisualisationEngine<TVoxel, TIndex> *visualisationEngine;
 		ITMMultiVisualisationEngine<TVoxel, TIndex> *multiVisualisationEngine;
+
+		ITMMultiMeshingEngine<TVoxel, TIndex> *meshingEngine;
 
 		ITMViewBuilder *viewBuilder;
 		ITMTrackingController *trackingController;
@@ -77,6 +80,9 @@ namespace ITMLib
 		{
 			return mActiveDataManager->findPrimarySceneIdx();
 		}
+
+		/// Extracts a mesh from the current scene and saves it to the model file specified by the file name
+		void SaveSceneToMesh(const char *fileName);
 
 		//void writeFullTrajectory(void) const;
 		//void SaveSceneToMesh(const char *objFileName);

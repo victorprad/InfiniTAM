@@ -85,15 +85,18 @@ Engines/LowLevel/Shared/ITMLowLevelEngine_Shared.h
 ##
 SET(ITMLIB_ENGINES_MESHING_HEADERS
 Engines/Meshing/ITMMeshingEngineFactory.h
+Engines/Meshing/ITMMultiMeshingEngineFactory.h
 )
 
 ##
 SET(ITMLIB_ENGINES_MESHING_CPU_SOURCES
 Engines/Meshing/CPU/ITMMeshingEngine_CPU.tpp
+Engines/Meshing/CPU/ITMMultiMeshingEngine_CPU.tpp
 )
 
 SET(ITMLIB_ENGINES_MESHING_CPU_HEADERS
 Engines/Meshing/CPU/ITMMeshingEngine_CPU.h
+Engines/Meshing/CPU/ITMMultiMeshingEngine_CPU.h
 )
 
 ##
@@ -110,11 +113,13 @@ Engines/Meshing/CUDA/ITMMultiMeshingEngine_CUDA.h
 ##
 SET(ITMLIB_ENGINES_MESHING_INTERFACE_HEADERS
 Engines/Meshing/Interface/ITMMeshingEngine.h
+Engines/Meshing/Interface/ITMMultiMeshingEngine.h
 )
 
 ##
 SET(ITMLIB_ENGINES_MESHING_SHARED_HEADERS
 Engines/Meshing/Shared/ITMMeshingEngine_Shared.h
+Engines/Meshing/Shared/ITMMultiMeshingEngine_Shared.h
 )
 
 ##
