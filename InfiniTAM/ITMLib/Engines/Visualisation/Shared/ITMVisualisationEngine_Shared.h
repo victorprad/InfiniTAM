@@ -407,7 +407,7 @@ _CPU_AND_GPU_CODE_ inline void processPixelGrey_ImageNormals(DEVICEPTR(Vector4u)
 }
 
 template<bool useSmoothing, bool flipNormals>
-_CPU_AND_GPU_CODE_ inline void processPixelNormals_ImageNormals(DEVICEPTR(Vector4u) *outRendering, const CONSTPTR(Vector4f) *pointsRay,
+_CPU_AND_GPU_CODE_ inline void processPixel_ImageNormals(DEVICEPTR(Vector4u) *outRendering, const CONSTPTR(Vector4f) *pointsRay,
 	const THREADPTR(Vector2i) &imgSize, const THREADPTR(int) &x, const THREADPTR(int) &y, float voxelSize, Vector3f lightSource)
 {
 	Vector3f outNormal;

@@ -136,10 +136,9 @@ void ITMMultiVisualisationEngine_CUDA<TVoxel, TIndex>::RenderImage(const ORUtils
 		break;
 	case IITMVisualisationEngine::RENDER_COLOUR_FROM_NORMAL:
 		if (intrinsics->FocalLengthSignsDiffer())
-			renderNormals_ImageNormals_device<true> << <gridSize, cudaBlockSize >> > (outRendering, pointsRay, imgSize, renderState->sceneParams.voxelSize, lightSource);
+			renderColour_ImageNormals_device<true> << <gridSize, cudaBlockSize >> >(outRendering, pointsRay, imgSize, renderState->sceneParams.voxelSize, lightSource);
 		else
-			renderNormals_ImageNormals_device<true> << <gridSize, cudaBlockSize >> > (outRendering, pointsRay, imgSize, renderState->sceneParams.voxelSize, lightSource);
-		
+			renderColour_ImageNormals_device<false> << <gridSize, cudaBlockSize >> >(outRendering, pointsRay, imgSize, renderState->sceneParams.voxelSize, lightSource);
 		ORcudaKernelCheck;
 		break;
 	case IITMVisualisationEngine::RENDER_SHADED_GREYSCALE:
