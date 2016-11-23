@@ -38,9 +38,9 @@ namespace ITMLib
 		/// Tracking quality: 1.0: success, 0.0: failure
 		enum TrackingResult
 		{
-			TRACKING_GOOD,
-			TRACKING_POOR,
-			TRACKING_FAILED
+			TRACKING_GOOD = 2,
+			TRACKING_POOR = 1,
+			TRACKING_FAILED = 0
 		} trackerResult;
 
 		bool TrackerFarFromPointCloud(void) const

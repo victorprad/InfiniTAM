@@ -85,12 +85,21 @@ void UIEngine::glutDisplayFunction()
 	glMatrixMode(GL_PROJECTION);
 	glPopMatrix();
 
-	glColor3f(1.0f, 0.0f, 0.0f); glRasterPos2f(0.85f, -0.962f);
+	switch (uiEngine->trackingResult)
+	{
+	case 0: glColor3f(1.0f, 0.0f, 0.0f); break; // failure
+	case 1: glColor3f(1.0f, 1.0f, 0.0f); break; // poor
+	case 2: glColor3f(0.0f, 1.0f, 0.0f); break; // good
+	default: glColor3f(1.0f, 1.0f, 1.0f); break;
+	}
+
+	glRasterPos2f(0.85f, -0.962f);
 
 	char str[200]; sprintf(str, "%04.2lf", uiEngine->processedTime);
 	safe_glutBitmapString(GLUT_BITMAP_HELVETICA_18, (const char*)str);
 
-	glRasterPos2f(-0.95f, -0.95f);
+
+	glColor3f(1.0f, 0.0f, 0.0f); glRasterPos2f(-0.95f, -0.95f);
 	if (uiEngine->freeviewActive)
 	{
 		sprintf(str, "n - next frame \t b - all frames \t e/esc - exit \t r - reset all \t f - follow camera \t c - colours (currently %s) \t t - turn fusion %s", uiEngine->colourModes_freeview[uiEngine->currentColourMode].name, uiEngine->intergrationActive ? "off" : "on");
@@ -601,9 +610,12 @@ void UIEngine::ProcessFrame()
 	sdkResetTimer(&timer_instant);
 	sdkStartTimer(&timer_instant); sdkStartTimer(&timer_average);
 
+	ITMTrackingState::TrackingResult trackerResult;
 	//actual processing on the mailEngine
-	if (imuSource != NULL) mainEngine->ProcessFrame(inputRGBImage, inputRawDepthImage, inputIMUMeasurement);
-	else mainEngine->ProcessFrame(inputRGBImage, inputRawDepthImage);
+	if (imuSource != NULL) trackerResult = mainEngine->ProcessFrame(inputRGBImage, inputRawDepthImage, inputIMUMeasurement);
+	else trackerResult = mainEngine->ProcessFrame(inputRGBImage, inputRawDepthImage);
+
+	trackingResult = (int)trackerResult;
 
 #ifndef COMPILE_WITHOUT_CUDA
 	ORcudaSafeCall(cudaThreadSynchronize());

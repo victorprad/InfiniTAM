@@ -16,12 +16,11 @@ using namespace ITMLib;
 
 // number of nearest neighbours to find in the loop closure detection
 static const int k_loopcloseneighbours = 1;
+
 // maximum distance reported by LCD library to attempt relocalisation
 static const float F_maxdistattemptreloc = 0.1f;
 
 static const bool MultithreadedGlobalAdjustment = true;
-
-int currentFrameNo = 0;
 
 template <typename TVoxel, typename TIndex>
 ITMMultiEngine<TVoxel, TIndex>::ITMMultiEngine(const ITMLibSettings *settings, const ITMRGBDCalib& calib, Vector2i imgSize_rgb, Vector2i imgSize_d)
@@ -143,9 +142,6 @@ struct TodoListEntry {
 template <typename TVoxel, typename TIndex>
 ITMTrackingState::TrackingResult ITMMultiEngine<TVoxel, TIndex>::ProcessFrame(ITMUChar4Image *rgbImage, ITMShortImage *rawDepthImage, ITMIMUMeasurement *imuMeasurement)
 {
-	printf("currentFrameNo = %d\n", currentFrameNo);
-	currentFrameNo++;
-
 	std::vector<TodoListEntry> todoList;
 	ITMTrackingState::TrackingResult primarySceneTrackingResult;
 
