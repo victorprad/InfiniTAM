@@ -16,11 +16,11 @@ ITMRenderState* ITMMultiVisualisationEngine_CPU<TVoxel, TIndex>::CreateRenderSta
 }
 
 template<class TVoxel, class TIndex>
-void ITMMultiVisualisationEngine_CPU<TVoxel, TIndex>::PrepareRenderState(const ITMVoxelMapGraphManager<TVoxel, TIndex> & sceneManager, ITMRenderState *_state)
+void ITMMultiVisualisationEngine_CPU<TVoxel, TIndex>::PrepareRenderState(const ITMVoxelMapGraphManager<TVoxel, TIndex> & mapManager, ITMRenderState *_state)
 {
 	ITMRenderStateMultiScene<TVoxel, TIndex> *state = (ITMRenderStateMultiScene<TVoxel, TIndex>*)_state;
 
-	state->PrepareLocalMaps(sceneManager);
+	state->PrepareLocalMaps(mapManager);
 }
 
 template<class TVoxel, class TIndex>
@@ -32,22 +32,24 @@ void ITMMultiVisualisationEngine_CPU<TVoxel, TIndex>::CreateExpectedDepths(const
 	Vector2i imgSize = renderState->renderingRangeImage->noDims;
 	Vector2f *minmaxData = renderState->renderingRangeImage->GetData(MEMORYDEVICE_CPU);
 
-	for (int locId = 0; locId < imgSize.x*imgSize.y; ++locId) {
+	for (int locId = 0; locId < imgSize.x*imgSize.y; ++locId) 
+	{
 		Vector2f & pixel = minmaxData[locId];
 		pixel.x = FAR_AWAY;
 		pixel.y = VERY_CLOSE;
 	}
 
-	// add the values from each scene
-	for (int sceneId = 0; sceneId < renderState->indexData_host.numScenes; ++sceneId) {
+	// add the values from each local map
+	for (int localMapId = 0; localMapId < renderState->indexData_host.numLocalMaps; ++localMapId) 
+	{
 		float voxelSize = renderState->sceneParams.voxelSize;
-		const ITMHashEntry *hash_entries = renderState->indexData_host.index[sceneId];
+		const ITMHashEntry *hash_entries = renderState->indexData_host.index[localMapId];
 		int noHashEntries = ITMVoxelBlockHash::noTotalEntries;
 
 		std::vector<RenderingBlock> renderingBlocks(MAX_RENDERING_BLOCKS);
 		int numRenderingBlocks = 0;
 
-		Matrix4f localPose = pose->GetM() * renderState->indexData_host.posesInv[sceneId];
+		Matrix4f localPose = pose->GetM() * renderState->indexData_host.posesInv[localMapId];
 		for (int blockNo = 0; blockNo < noHashEntries; ++blockNo) {
 			const ITMHashEntry & blockData(hash_entries[blockNo]);
 
@@ -71,7 +73,8 @@ void ITMMultiVisualisationEngine_CPU<TVoxel, TIndex>::CreateExpectedDepths(const
 		}
 
 		// go through rendering blocks
-		for (int blockNo = 0; blockNo < numRenderingBlocks; ++blockNo) {
+		for (int blockNo = 0; blockNo < numRenderingBlocks; ++blockNo) 
+		{
 			// fill minmaxData
 			const RenderingBlock & b(renderingBlocks[blockNo]);
 

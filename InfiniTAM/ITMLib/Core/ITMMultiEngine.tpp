@@ -48,10 +48,10 @@ ITMMultiEngine<TVoxel, TIndex>::ITMMultiEngine(const ITMLibSettings *settings, c
 	trackingController = new ITMTrackingController(tracker, settings);
 	trackedImageSize = trackingController->GetTrackedImageSize(imgSize_rgb, imgSize_d);
 
-	freeviewSceneIdx = 0;
-	mSceneManager = new ITMVoxelMapGraphManager<TVoxel, TIndex>(settings, visualisationEngine, denseMapper, trackedImageSize);
-	mActiveDataManager = new ITMActiveMapManager(mSceneManager);
-	mActiveDataManager->initiateNewScene(true);
+	freeviewLocalMapIdx = 0;
+	mapManager = new ITMVoxelMapGraphManager<TVoxel, TIndex>(settings, visualisationEngine, denseMapper, trackedImageSize);
+	mActiveDataManager = new ITMActiveMapManager(mapManager);
+	mActiveDataManager->initiateNewLocalMap(true);
 
 	//TODO	tracker->UpdateInitialPose(allData[0]->trackingState);
 
@@ -76,7 +76,7 @@ ITMMultiEngine<TVoxel, TIndex>::~ITMMultiEngine(void)
 
 	delete mGlobalAdjustmentEngine;
 	delete mActiveDataManager;
-	delete mSceneManager;
+	delete mapManager;
 
 	if (renderState_freeview != NULL) delete renderState_freeview;
 
@@ -99,23 +99,23 @@ ITMMultiEngine<TVoxel, TIndex>::~ITMMultiEngine(void)
 }
 
 template <typename TVoxel, typename TIndex>
-void ITMMultiEngine<TVoxel, TIndex>::changeFreeviewSceneIdx(ORUtils::SE3Pose *pose, int newIdx)
+void ITMMultiEngine<TVoxel, TIndex>::changeFreeviewLocalMapIdx(ORUtils::SE3Pose *pose, int newIdx)
 {
-	if (newIdx < -1) newIdx = (int)mSceneManager->numScenes() - 1;
-	if ((unsigned)newIdx >= mSceneManager->numScenes()) newIdx = -1;
+	if (newIdx < -1) newIdx = (int)mapManager->numLocalMaps() - 1;
+	if ((unsigned)newIdx >= mapManager->numLocalMaps()) newIdx = -1;
 
-	ORUtils::SE3Pose trafo = mSceneManager->findTransformation(freeviewSceneIdx, newIdx);
+	ORUtils::SE3Pose trafo = mapManager->findTransformation(freeviewLocalMapIdx, newIdx);
 	pose->SetM(pose->GetM() * trafo.GetInvM());
 	pose->Coerce();
-	freeviewSceneIdx = newIdx;
+	freeviewLocalMapIdx = newIdx;
 }
 
 template <typename TVoxel, typename TIndex>
 ITMTrackingState* ITMMultiEngine<TVoxel, TIndex>::GetTrackingState(void)
 {
-	int idx = mActiveDataManager->findPrimarySceneIdx();
+	int idx = mActiveDataManager->findPrimaryLocalMapIdx();
 	if (idx < 0) idx = 0;
-	return mSceneManager->getScene(idx)->trackingState;
+	return mapManager->getLocalMap(idx)->trackingState;
 }
 
 // -whenever a new local scene is added, add to list of "to be established 3D relations"
@@ -144,7 +144,7 @@ template <typename TVoxel, typename TIndex>
 ITMTrackingState::TrackingResult ITMMultiEngine<TVoxel, TIndex>::ProcessFrame(ITMUChar4Image *rgbImage, ITMShortImage *rawDepthImage, ITMIMUMeasurement *imuMeasurement)
 {
 	std::vector<TodoListEntry> todoList;
-	ITMTrackingState::TrackingResult primarySceneTrackingResult;
+	ITMTrackingState::TrackingResult primaryLocalMapTrackingResult;
 
 	// prepare image and turn it into a depth image
 	if (imuMeasurement == NULL) viewBuilder->UpdateView(&view, rgbImage, rawDepthImage, settings->useBilateralFilter);
@@ -156,12 +156,12 @@ ITMTrackingState::TrackingResult ITMMultiEngine<TVoxel, TIndex>::ProcessFrame(IT
 	// if there is a "primary data index", process it
 	if (primaryDataIdx >= 0) todoList.push_back(TodoListEntry(primaryDataIdx, true, true, true));
 
-	// after primary scene, make sure to process all relocalisations, new scenes and loop closures
-	for (int i = 0; i < mActiveDataManager->numActiveScenes(); ++i)
+	// after primary local map, make sure to process all relocalisations, new scenes and loop closures
+	for (int i = 0; i < mActiveDataManager->numActiveLocalMaps(); ++i)
 	{
-		switch (mActiveDataManager->getSceneType(i))
+		switch (mActiveDataManager->getLocalMapType(i))
 		{
-		case ITMActiveMapManager::NEW_SCENE: todoList.push_back(TodoListEntry(i, true, true, true));
+		case ITMActiveMapManager::NEW_LOCAL_MAP: todoList.push_back(TodoListEntry(i, true, true, true));
 		case ITMActiveMapManager::LOOP_CLOSURE: todoList.push_back(TodoListEntry(i, true, false, true));
 		case ITMActiveMapManager::RELOCALISATION: todoList.push_back(TodoListEntry(i, true, false, true));
 		default: break;
@@ -174,7 +174,7 @@ ITMTrackingState::TrackingResult ITMMultiEngine<TVoxel, TIndex>::ProcessFrame(IT
 	bool primaryTrackingSuccess = false;
 	for (size_t i = 0; i < todoList.size(); ++i)
 	{
-		// - first pass of the todo list is for primary scene and ongoing relocalisation and loopclosure attempts
+		// - first pass of the todo list is for primary local map and ongoing relocalisation and loopclosure attempts
 		// - an element with id -1 marks the end of the first pass, a request to call the loop closure detection engine, and
 		//   the start of the second pass
 		// - second tracking pass will be about newly detected loop closures, relocalisations, etc.
@@ -190,16 +190,16 @@ ITMTrackingState::TrackingResult ITMMultiEngine<TVoxel, TIndex>::ProcessFrame(IT
 			//check if relocaliser has fired
 			int addKeyframeIdx = mLoopClosureDetector->ProcessFrame(view->depth, k_loopcloseneighbours, NN, distances, primaryTrackingSuccess);
 			
-			int primarySceneIdx = -1;
-			if (primaryDataIdx >= 0) primarySceneIdx = mActiveDataManager->getSceneIndex(primaryDataIdx);
+			int primaryLocalMapIdx = -1;
+			if (primaryDataIdx >= 0) primaryLocalMapIdx = mActiveDataManager->getLocalMapIndex(primaryDataIdx);
 
 			// add keyframe, if necessary
-			if (addKeyframeIdx >= 0) mPoseDatabase.storePose(addKeyframeIdx, *(mSceneManager->getScene(primarySceneIdx)->trackingState->pose_d), primarySceneIdx);
+			if (addKeyframeIdx >= 0) mPoseDatabase.storePose(addKeyframeIdx, *(mapManager->getLocalMap(primaryLocalMapIdx)->trackingState->pose_d), primaryLocalMapIdx);
 			else for (int j = 0; j < k_loopcloseneighbours; ++j)
 			{
 				if (distances[j] > F_maxdistattemptreloc) continue;
 				const RelocLib::PoseDatabase::PoseInScene & keyframe = mPoseDatabase.retrievePose(NN[j]);
-				int newDataIdx = mActiveDataManager->initiateNewLink(keyframe.sceneIdx, keyframe.pose, (primarySceneIdx < 0));
+				int newDataIdx = mActiveDataManager->initiateNewLink(keyframe.sceneIdx, keyframe.pose, (primaryLocalMapIdx < 0));
 				if (newDataIdx >= 0) 
 				{
 					TodoListEntry todoItem(newDataIdx, true, false, true);
@@ -211,15 +211,15 @@ ITMTrackingState::TrackingResult ITMMultiEngine<TVoxel, TIndex>::ProcessFrame(IT
 			continue;
 		}
 
-		ITMLocalMap<TVoxel, TIndex> *currentScene = NULL;
-		int currentSceneIdx = mActiveDataManager->getSceneIndex(todoList[i].dataID);
-		currentScene = mSceneManager->getScene(currentSceneIdx);
+		ITMLocalMap<TVoxel, TIndex> *currentLocalMap = NULL;
+		int currentLocalMapIdx = mActiveDataManager->getLocalMapIndex(todoList[i].dataID);
+		currentLocalMap = mapManager->getLocalMap(currentLocalMapIdx);
 
 		// if a new relocalisation/loopclosure is started, this will do the initial raycasting before tracking can start
 		if (todoList[i].preprepare) 
 		{
-			denseMapper->UpdateVisibleList(view, currentScene->trackingState, currentScene->scene, currentScene->renderState);
-			trackingController->Prepare(currentScene->trackingState, currentScene->scene, view, visualisationEngine, currentScene->renderState);
+			denseMapper->UpdateVisibleList(view, currentLocalMap->trackingState, currentLocalMap->scene, currentLocalMap->renderState);
+			trackingController->Prepare(currentLocalMap->trackingState, currentLocalMap->scene, view, visualisationEngine, currentLocalMap->renderState);
 		}
 
 		if (todoList[i].track)
@@ -227,17 +227,17 @@ ITMTrackingState::TrackingResult ITMMultiEngine<TVoxel, TIndex>::ProcessFrame(IT
 			int dataID = todoList[i].dataID;
 
 #ifdef DEBUG_MULTISCENE
-			int blocksInUse = currentScene->scene->index.getNumAllocatedVoxelBlocks() - currentScene->scene->localVBA.lastFreeBlockId - 1;
-			fprintf(stderr, " %i%s (%i)", currentSceneIdx, (todoList[i].dataID == primaryDataIdx) ? "*" : "", blocksInUse);
+			int blocksInUse = currentLocalMap->scene->index.getNumAllocatedVoxelBlocks() - currentLocalMap->scene->localVBA.lastFreeBlockId - 1;
+			fprintf(stderr, " %i%s (%i)", currentLocalMapIdx, (todoList[i].dataID == primaryDataIdx) ? "*" : "", blocksInUse);
 #endif
 
 			// actual tracking
-			ORUtils::SE3Pose oldPose(*(currentScene->trackingState->pose_d));
-			trackingController->Track(currentScene->trackingState, view);
+			ORUtils::SE3Pose oldPose(*(currentLocalMap->trackingState->pose_d));
+			trackingController->Track(currentLocalMap->trackingState, view);
 
 			// tracking is allowed to be poor only in the primary scenes. 
-			ITMTrackingState::TrackingResult trackingResult = currentScene->trackingState->trackerResult;
-			if (mActiveDataManager->getSceneType(dataID) != ITMActiveMapManager::PRIMARY_SCENE)
+			ITMTrackingState::TrackingResult trackingResult = currentLocalMap->trackingState->trackerResult;
+			if (mActiveDataManager->getLocalMapType(dataID) != ITMActiveMapManager::PRIMARY_LOCAL_MAP)
 				if (trackingResult == ITMTrackingState::TRACKING_POOR) trackingResult = ITMTrackingState::TRACKING_FAILED;
 
 			// actions on tracking result for all scenes TODO: incorporate behaviour on tracking failure from settings
@@ -245,17 +245,17 @@ ITMTrackingState::TrackingResult ITMMultiEngine<TVoxel, TIndex>::ProcessFrame(IT
 			if (trackingResult == ITMTrackingState::TRACKING_FAILED)
 			{
 				todoList[i].prepare = false;
-				*(currentScene->trackingState->pose_d) = oldPose;
+				*(currentLocalMap->trackingState->pose_d) = oldPose;
 			}
 
-			// actions on tracking result for primary scene
-			if (mActiveDataManager->getSceneType(dataID) == ITMActiveMapManager::PRIMARY_SCENE)
+			// actions on tracking result for primary local map
+			if (mActiveDataManager->getLocalMapType(dataID) == ITMActiveMapManager::PRIMARY_LOCAL_MAP)
 			{
-				primarySceneTrackingResult = trackingResult;
+				primaryLocalMapTrackingResult = trackingResult;
 
 				if (trackingResult == ITMTrackingState::TRACKING_GOOD) primaryTrackingSuccess = true;
 
-				// we need to relocalise in the primary scene
+				// we need to relocalise in the primary local map
 				else if (trackingResult == ITMTrackingState::TRACKING_FAILED)
 				{
 					primaryDataIdx = -1;
@@ -268,18 +268,18 @@ ITMTrackingState::TrackingResult ITMMultiEngine<TVoxel, TIndex>::ProcessFrame(IT
 		}
 
 		// fusion in any subscene as long as tracking is good for the respective subscene
-		if (todoList[i].fusion) denseMapper->ProcessFrame(view, currentScene->trackingState, currentScene->scene, currentScene->renderState);
-		else if (todoList[i].prepare) denseMapper->UpdateVisibleList(view, currentScene->trackingState, currentScene->scene, currentScene->renderState);
+		if (todoList[i].fusion) denseMapper->ProcessFrame(view, currentLocalMap->trackingState, currentLocalMap->scene, currentLocalMap->renderState);
+		else if (todoList[i].prepare) denseMapper->UpdateVisibleList(view, currentLocalMap->trackingState, currentLocalMap->scene, currentLocalMap->renderState);
 
 		// raycast to renderState_live for tracking and free visualisation
-		if (todoList[i].prepare) trackingController->Prepare(currentScene->trackingState, currentScene->scene, view, visualisationEngine, currentScene->renderState);
+		if (todoList[i].prepare) trackingController->Prepare(currentLocalMap->trackingState, currentLocalMap->scene, view, visualisationEngine, currentLocalMap->renderState);
 	}
 
 	mScheduleGlobalAdjustment |= mActiveDataManager->maintainActiveData();
 
 	if (mScheduleGlobalAdjustment) 
 	{
-		if (mGlobalAdjustmentEngine->updateMeasurements(*mSceneManager)) 
+		if (mGlobalAdjustmentEngine->updateMeasurements(*mapManager)) 
 		{
 			if (separateThreadGlobalAdjustment) mGlobalAdjustmentEngine->wakeupSeparateThread();
 			else mGlobalAdjustmentEngine->runGlobalAdjustment();
@@ -287,9 +287,9 @@ ITMTrackingState::TrackingResult ITMMultiEngine<TVoxel, TIndex>::ProcessFrame(IT
 			mScheduleGlobalAdjustment = false;
 		}
 	}
-	mGlobalAdjustmentEngine->retrieveNewEstimates(*mSceneManager);
+	mGlobalAdjustmentEngine->retrieveNewEstimates(*mapManager);
 
-	return primarySceneTrackingResult;
+	return primaryLocalMapTrackingResult;
 }
 
 template <typename TVoxel, typename TIndex>
@@ -299,7 +299,7 @@ void ITMMultiEngine<TVoxel, TIndex>::SaveSceneToMesh(const char *modelFileName)
 
 	ITMMesh *mesh = new ITMMesh(settings->GetMemoryType());
 
-	meshingEngine->MeshScene(mesh, *mSceneManager);
+	meshingEngine->MeshScene(mesh, *mapManager);
 	mesh->WriteSTL(modelFileName);
 	
 	delete mesh;
@@ -335,17 +335,18 @@ void ITMMultiEngine<TVoxel, TIndex>::GetImage(ITMUChar4Image *out, GetImageType 
 	case ITMMultiEngine::InfiniTAM_IMAGE_COLOUR_FROM_NORMAL:
 	case ITMMultiEngine::InfiniTAM_IMAGE_COLOUR_FROM_CONFIDENCE:
 	{
-		int visualisationSceneIdx = mActiveDataManager->findBestVisualisationSceneIdx();
-		if (visualisationSceneIdx < 0) break; // TODO: clear image? what else to do when tracking is lost?
+		int visualisationLocalMapIdx = mActiveDataManager->findBestVisualisationLocalMapIdx();
+		if (visualisationLocalMapIdx < 0) break; // TODO: clear image? what else to do when tracking is lost?
 
-		ITMLocalMap<TVoxel, TIndex> *activeScene = mSceneManager->getScene(visualisationSceneIdx);
+		ITMLocalMap<TVoxel, TIndex> *activeLocalMap = mapManager->getLocalMap(visualisationLocalMapIdx);
 
 		IITMVisualisationEngine::RenderRaycastSelection raycastType;
-		if (activeScene->trackingState->age_pointCloud <= 0) raycastType = IITMVisualisationEngine::RENDER_FROM_OLD_RAYCAST;
+		if (activeLocalMap->trackingState->age_pointCloud <= 0) raycastType = IITMVisualisationEngine::RENDER_FROM_OLD_RAYCAST;
 		else raycastType = IITMVisualisationEngine::RENDER_FROM_OLD_FORWARDPROJ;
 
 		IITMVisualisationEngine::RenderImageType imageType;
-		switch (getImageType) {
+		switch (getImageType) 
+		{
 		case ITMMultiEngine::InfiniTAM_IMAGE_COLOUR_FROM_CONFIDENCE:
 			imageType = IITMVisualisationEngine::RENDER_COLOUR_FROM_CONFIDENCE;
 			break;
@@ -356,9 +357,9 @@ void ITMMultiEngine<TVoxel, TIndex>::GetImage(ITMUChar4Image *out, GetImageType 
 			imageType = IITMVisualisationEngine::RENDER_SHADED_GREYSCALE_IMAGENORMALS;
 		}
 
-		visualisationEngine->RenderImage(activeScene->scene, activeScene->trackingState->pose_d, &view->calib.intrinsics_d, activeScene->renderState, activeScene->renderState->raycastImage, imageType, raycastType);
+		visualisationEngine->RenderImage(activeLocalMap->scene, activeLocalMap->trackingState->pose_d, &view->calib.intrinsics_d, activeLocalMap->renderState, activeLocalMap->renderState->raycastImage, imageType, raycastType);
 
-		ORUtils::Image<Vector4u> *srcImage = activeScene->renderState->raycastImage;
+		ORUtils::Image<Vector4u> *srcImage = activeLocalMap->renderState->raycastImage;
 		out->ChangeDims(srcImage->noDims);
 		if (settings->deviceType == ITMLibSettings::DEVICE_CUDA)
 			out->SetFrom(srcImage, ORUtils::MemoryBlock<Vector4u>::CUDA_TO_CPU);
@@ -375,8 +376,9 @@ void ITMMultiEngine<TVoxel, TIndex>::GetImage(ITMUChar4Image *out, GetImageType 
 		else if (getImageType == ITMMultiEngine::InfiniTAM_IMAGE_FREECAMERA_COLOUR_FROM_NORMAL) type = IITMVisualisationEngine::RENDER_COLOUR_FROM_NORMAL;
 		else if (getImageType == ITMMultiEngine::InfiniTAM_IMAGE_FREECAMERA_COLOUR_FROM_CONFIDENCE) type = IITMVisualisationEngine::RENDER_COLOUR_FROM_CONFIDENCE;
 
-		if (freeviewSceneIdx >= 0) {
-			ITMLocalMap<TVoxel, TIndex> *activeData = mSceneManager->getScene(freeviewSceneIdx);
+		if (freeviewLocalMapIdx >= 0) 
+		{
+			ITMLocalMap<TVoxel, TIndex> *activeData = mapManager->getLocalMap(freeviewLocalMapIdx);
 			if (renderState_freeview == NULL) renderState_freeview = visualisationEngine->CreateRenderState(activeData->scene, out->noDims);
 
 			visualisationEngine->FindVisibleBlocks(activeData->scene, pose, intrinsics, renderState_freeview);
@@ -387,9 +389,10 @@ void ITMMultiEngine<TVoxel, TIndex>::GetImage(ITMUChar4Image *out, GetImageType 
 				out->SetFrom(renderState_freeview->raycastImage, ORUtils::MemoryBlock<Vector4u>::CUDA_TO_CPU);
 			else out->SetFrom(renderState_freeview->raycastImage, ORUtils::MemoryBlock<Vector4u>::CPU_TO_CPU);
 		}
-		else {
-			if (renderState_multiscene == NULL) renderState_multiscene = multiVisualisationEngine->CreateRenderState(mSceneManager->getScene(0)->scene, out->noDims);
-			multiVisualisationEngine->PrepareRenderState(*mSceneManager, renderState_multiscene);
+		else 
+		{
+			if (renderState_multiscene == NULL) renderState_multiscene = multiVisualisationEngine->CreateRenderState(mapManager->getLocalMap(0)->scene, out->noDims);
+			multiVisualisationEngine->PrepareRenderState(*mapManager, renderState_multiscene);
 			multiVisualisationEngine->CreateExpectedDepths(pose, intrinsics, renderState_multiscene);
 			multiVisualisationEngine->RenderImage(pose, intrinsics, renderState_multiscene, renderState_multiscene->raycastImage, type);
 			if (settings->deviceType == ITMLibSettings::DEVICE_CUDA)

@@ -30,11 +30,11 @@ ITMRenderState* ITMMultiVisualisationEngine_CUDA<TVoxel, TIndex>::CreateRenderSt
 }
 
 template<class TVoxel, class TIndex>
-void ITMMultiVisualisationEngine_CUDA<TVoxel, TIndex>::PrepareRenderState(const ITMVoxelMapGraphManager<TVoxel, TIndex> & sceneManager, ITMRenderState *_state)
+void ITMMultiVisualisationEngine_CUDA<TVoxel, TIndex>::PrepareRenderState(const ITMVoxelMapGraphManager<TVoxel, TIndex> & mapManager, ITMRenderState *_state)
 {
 	ITMRenderStateMultiScene<TVoxel, TIndex> *state = (ITMRenderStateMultiScene<TVoxel, TIndex>*)_state;
 
-	state->PrepareLocalMaps(sceneManager);
+	state->PrepareLocalMaps(mapManager);
 }
 
 template<class TVoxel, class TIndex>
@@ -50,10 +50,10 @@ void ITMMultiVisualisationEngine_CUDA<TVoxel, TIndex>::CreateExpectedDepths(cons
 	init.x = FAR_AWAY; init.y = VERY_CLOSE;
 	memsetKernel<Vector2f>(minmaxData, init, renderState->renderingRangeImage->dataSize);
 
-	// add the values from each scene
-	for (int sceneId = 0; sceneId < renderState->indexData_host.numScenes; ++sceneId) {
+	// add the values from each local map
+	for (int localMapId = 0; localMapId < renderState->indexData_host.numLocalMaps; ++localMapId) {
 		// TODO: at the moment, there is no "visible list". Empirically,
-		// if all the local scenes are reasonably small (i.e. not too
+		// if all the local maps are reasonably small (i.e. not too
 		// big a hash table), this is fast enough. It *might* still
 		// be better in terms of parallelism to compute a visible list
 		// first, then project them into the image, but a lot of the
@@ -62,8 +62,8 @@ void ITMMultiVisualisationEngine_CUDA<TVoxel, TIndex>::CreateExpectedDepths(cons
 		//go through list of visible 8x8x8 blocks
 
 		float voxelSize = renderState->sceneParams.voxelSize;
-		const ITMHashEntry *hash_entries = renderState->indexData_host.index[sceneId];
-		Matrix4f localPose = pose->GetM() * renderState->indexData_host.posesInv[sceneId];
+		const ITMHashEntry *hash_entries = renderState->indexData_host.index[localMapId];
+		Matrix4f localPose = pose->GetM() * renderState->indexData_host.posesInv[localMapId];
 		int noHashEntries = ITMVoxelBlockHash::noTotalEntries;
 		dim3 blockSize(256);
 		dim3 gridSize((int)ceil((float)noHashEntries / (float)blockSize.x));

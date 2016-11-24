@@ -11,13 +11,13 @@ namespace ITMLib
 	class ITMActiveMapManager
 	{
 	public:
-		typedef enum { PRIMARY_SCENE, NEW_SCENE, LOOP_CLOSURE, RELOCALISATION, LOST, LOST_NEW } SceneActivity;
+		typedef enum { PRIMARY_LOCAL_MAP, NEW_LOCAL_MAP, LOOP_CLOSURE, RELOCALISATION, LOST, LOST_NEW } LocalMapActivity;
 
 	private:
 		struct ActiveDataDescriptor 
 		{
-			int sceneIndex;
-			SceneActivity type;
+			int localMapIndex;
+			LocalMapActivity type;
 			std::vector<Matrix4f> constraints;
 			ORUtils::SE3Pose estimatedPose;
 			int trackingAttempts;
@@ -32,26 +32,26 @@ namespace ITMLib
 
 		float visibleOriginalBlocks(int dataID) const;
 		bool shouldStartNewArea(void) const;
-		bool shouldMovePrimaryScene(int newDataIdx, int bestDataIdx, int primaryDataIdx) const;
+		bool shouldMovePrimaryLocalMap(int newDataIdx, int bestDataIdx, int primaryDataIdx) const;
 
 	public:
-		int initiateNewScene(bool isPrimaryScene = false);
+		int initiateNewLocalMap(bool isPrimaryLocalMap = false);
 		int initiateNewLink(int sceneID, const ORUtils::SE3Pose & pose, bool isRelocalisation);
 
 		void recordTrackingResult(int dataID, ITMTrackingState::TrackingResult trackingResult, bool primaryTrackingSuccess);
 		
-		// return whether or not the scene graph has changed
+		// return whether or not the local map graph has changed
 		bool maintainActiveData(void);
 
 		int findPrimaryDataIdx(void) const;
-		int findPrimarySceneIdx(void) const;
+		int findPrimaryLocalMapIdx(void) const;
 
 		int findBestVisualisationDataIdx(void) const;
-		int findBestVisualisationSceneIdx(void) const;
+		int findBestVisualisationLocalMapIdx(void) const;
 
-		int numActiveScenes(void) const { return static_cast<int>(activeData.size()); }
-		int getSceneIndex(int dataIdx) const { return activeData[dataIdx].sceneIndex; }
-		SceneActivity getSceneType(int dataIdx) const { return activeData[dataIdx].type; }
+		int numActiveLocalMaps(void) const { return static_cast<int>(activeData.size()); }
+		int getLocalMapIndex(int dataIdx) const { return activeData[dataIdx].localMapIndex; }
+		LocalMapActivity getLocalMapType(int dataIdx) const { return activeData[dataIdx].type; }
 
 		ITMActiveMapManager(ITMMapGraphManager *localMapManager);
 		~ITMActiveMapManager(void) {}

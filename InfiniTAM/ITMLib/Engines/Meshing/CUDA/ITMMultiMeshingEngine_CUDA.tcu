@@ -20,7 +20,7 @@ __global__ void findAllocateBlocks(Vector4s *visibleBlockGlobalPos, const TMulti
 template<class TVoxel>
 ITMMultiMeshingEngine_CUDA<TVoxel, ITMVoxelBlockHash>::ITMMultiMeshingEngine_CUDA(void)
 {
-	ORcudaSafeCall(cudaMalloc((void**)&visibleBlockGlobalPos_device, SDF_LOCAL_BLOCK_NUM * sizeof(Vector4s) * MAX_NUM_SCENES));
+	ORcudaSafeCall(cudaMalloc((void**)&visibleBlockGlobalPos_device, SDF_LOCAL_BLOCK_NUM * sizeof(Vector4s) * MAX_NUM_LOCALMAPS));
 	ORcudaSafeCall(cudaMalloc((void**)&noTriangles_device, sizeof(unsigned int)));
 
 	ORcudaSafeCall(cudaMalloc((void**)&indexData_device, sizeof(MultiIndexData)));
@@ -40,23 +40,23 @@ ITMMultiMeshingEngine_CUDA<TVoxel, ITMVoxelBlockHash>::~ITMMultiMeshingEngine_CU
 template<class TVoxel>
 void ITMMultiMeshingEngine_CUDA<TVoxel, ITMVoxelBlockHash>::MeshScene(ITMMesh *mesh, const ITMVoxelMapGraphManager<TVoxel, ITMVoxelBlockHash> & sceneManager)
 {
-	const ITMSceneParams & sceneParams = *(sceneManager.getScene(0)->scene->sceneParams);
-	int numScenes = (int)sceneManager.numScenes();
+	const ITMSceneParams & sceneParams = *(sceneManager.getLocalMap(0)->scene->sceneParams);
+	int numLocalMaps = (int)sceneManager.numLocalMaps();
 	
 	{ // prepare MultiIndex etc.
-		if (numScenes > MAX_NUM_SCENES) numScenes = MAX_NUM_SCENES;
-		indexData_host.numScenes = numScenes;
-		for (int sceneId = 0; sceneId < numScenes; ++sceneId) {
-			indexData_host.poses_vs[sceneId] = sceneManager.getEstimatedGlobalPose(sceneId).GetM();
-			indexData_host.poses_vs[sceneId].m30 /= sceneParams.voxelSize;
-			indexData_host.poses_vs[sceneId].m31 /= sceneParams.voxelSize;
-			indexData_host.poses_vs[sceneId].m32 /= sceneParams.voxelSize;
-			indexData_host.posesInv[sceneId] = sceneManager.getEstimatedGlobalPose(sceneId).GetInvM();
-			indexData_host.posesInv[sceneId].m30 /= sceneParams.voxelSize;
-			indexData_host.posesInv[sceneId].m31 /= sceneParams.voxelSize;
-			indexData_host.posesInv[sceneId].m32 /= sceneParams.voxelSize;
-			indexData_host.index[sceneId] = sceneManager.getScene(sceneId)->scene->index.getIndexData();
-			voxelData_host.voxels[sceneId] = sceneManager.getScene(sceneId)->scene->localVBA.GetVoxelBlocks();
+		if (numLocalMaps > MAX_NUM_LOCALMAPS) numLocalMaps = MAX_NUM_LOCALMAPS;
+		indexData_host.numLocalMaps = numLocalMaps;
+		for (int localMapId = 0; localMapId < numLocalMaps; ++localMapId) {
+			indexData_host.poses_vs[localMapId] = sceneManager.getEstimatedGlobalPose(localMapId).GetM();
+			indexData_host.poses_vs[localMapId].m30 /= sceneParams.voxelSize;
+			indexData_host.poses_vs[localMapId].m31 /= sceneParams.voxelSize;
+			indexData_host.poses_vs[localMapId].m32 /= sceneParams.voxelSize;
+			indexData_host.posesInv[localMapId] = sceneManager.getEstimatedGlobalPose(localMapId).GetInvM();
+			indexData_host.posesInv[localMapId].m30 /= sceneParams.voxelSize;
+			indexData_host.posesInv[localMapId].m31 /= sceneParams.voxelSize;
+			indexData_host.posesInv[localMapId].m32 /= sceneParams.voxelSize;
+			indexData_host.index[localMapId] = sceneManager.getLocalMap(localMapId)->scene->index.getIndexData();
+			voxelData_host.voxels[localMapId] = sceneManager.getLocalMap(localMapId)->scene->localVBA.GetVoxelBlocks();
 		}
 
 		ORcudaSafeCall(cudaMemcpy(indexData_device, &(indexData_host), sizeof(MultiIndexData), cudaMemcpyHostToDevice));
@@ -76,7 +76,7 @@ void ITMMultiMeshingEngine_CUDA<TVoxel, ITMVoxelBlockHash>::MeshScene(ITMMesh *m
 
 	{ // identify used voxel blocks
 		dim3 cudaBlockSize(256);
-		dim3 gridSize((int)ceil((float)noTotalEntries / (float)cudaBlockSize.x), numScenes);
+		dim3 gridSize((int)ceil((float)noTotalEntries / (float)cudaBlockSize.x), numLocalMaps);
 
 		findAllocateBlocks<typename ID::IndexData> << <gridSize, cudaBlockSize >> >(visibleBlockGlobalPos_device, indexData_device, noTotalEntries);
 		ORcudaKernelCheck;
@@ -84,7 +84,7 @@ void ITMMultiMeshingEngine_CUDA<TVoxel, ITMVoxelBlockHash>::MeshScene(ITMMesh *m
 
 	{ // mesh used voxel blocks
 		dim3 cudaBlockSize(SDF_BLOCK_SIZE, SDF_BLOCK_SIZE, SDF_BLOCK_SIZE);
-		dim3 gridSize(SDF_LOCAL_BLOCK_NUM / 16, 16, numScenes);
+		dim3 gridSize(SDF_LOCAL_BLOCK_NUM / 16, 16, numLocalMaps);
 
 		meshScene_device<VD, typename ID::IndexData> << <gridSize, cudaBlockSize >> >(triangles, noTriangles_device, factor, noTotalEntries, noMaxTriangles,
 			visibleBlockGlobalPos_device, voxelData_device, indexData_device);

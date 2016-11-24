@@ -42,7 +42,7 @@ namespace ITMLib
 		RelocLib::Relocaliser *mLoopClosureDetector;
 		RelocLib::PoseDatabase mPoseDatabase;
 
-		ITMVoxelMapGraphManager<TVoxel, TIndex> *mSceneManager;
+		ITMVoxelMapGraphManager<TVoxel, TIndex> *mapManager;
 		ITMActiveMapManager *mActiveDataManager;
 		ITMGlobalAdjustmentEngine *mGlobalAdjustmentEngine;
 		bool mScheduleGlobalAdjustment;
@@ -50,7 +50,7 @@ namespace ITMLib
 		Vector2i trackedImageSize;
 		ITMRenderState *renderState_freeview;
 		ITMRenderState *renderState_multiscene;
-		int freeviewSceneIdx;
+		int freeviewLocalMapIdx;
 
 		/// Pointer for storing the current input frame
 		ITMView *view;
@@ -67,18 +67,18 @@ namespace ITMLib
 
 		void GetImage(ITMUChar4Image *out, GetImageType getImageType, ORUtils::SE3Pose *pose = NULL, ITMIntrinsics *intrinsics = NULL);
 
-		void changeFreeviewSceneIdx(ORUtils::SE3Pose *pose, int newIdx);
-		void setFreeviewSceneIdx(int newIdx)
+		void changeFreeviewLocalMapIdx(ORUtils::SE3Pose *pose, int newIdx);
+		void setFreeviewLocalMapIdx(int newIdx)
 		{
-			freeviewSceneIdx = newIdx;
+			freeviewLocalMapIdx = newIdx;
 		}
-		int getFreeviewSceneIdx(void) const
+		int getFreeviewLocalMapIdx(void) const
 		{
-			return freeviewSceneIdx;
+			return freeviewLocalMapIdx;
 		}
-		int findPrimarySceneIdx(void) const
+		int findPrimaryLocalMapIdx(void) const
 		{
-			return mActiveDataManager->findPrimarySceneIdx();
+			return mActiveDataManager->findPrimaryLocalMapIdx();
 		}
 
 		/// Extracts a mesh from the current scene and saves it to the model file specified by the file name

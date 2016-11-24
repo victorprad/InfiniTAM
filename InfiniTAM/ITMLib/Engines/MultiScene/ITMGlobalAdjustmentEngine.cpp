@@ -146,23 +146,28 @@ void ITMGlobalAdjustmentEngine::wakeupSeparateThread(void)
 
 void ITMGlobalAdjustmentEngine::MultiSceneToPoseGraph(const ITMMapGraphManager & src, MiniSlamGraph::PoseGraph & dest)
 {
-	for (int sceneId = 0; sceneId < (int)src.numScenes(); ++sceneId)
+	for (int localMapId = 0; localMapId < (int)src.numLocalMaps(); ++localMapId)
 	{
 		MiniSlamGraph::GraphNodeSE3 *pose = new MiniSlamGraph::GraphNodeSE3();
-		pose->setId(sceneId);
-		pose->setPose(src.getEstimatedGlobalPose(sceneId));
-		if (sceneId == 0) pose->setFixed(true);
+
+		pose->setId(localMapId);
+		pose->setPose(src.getEstimatedGlobalPose(localMapId));
+		if (localMapId == 0) pose->setFixed(true);
+		
 		dest.addNode(pose);
 	}
 
-	for (int sceneId = 0; sceneId < (int)src.numScenes(); ++sceneId) 
+	for (int localMapId = 0; localMapId < (int)src.numLocalMaps(); ++localMapId) 
 	{
-		const ConstraintList & constraints = src.getConstraints(sceneId);
-		for (ConstraintList::const_iterator it = constraints.begin(); it != constraints.end(); ++it) {
+		const ConstraintList & constraints = src.getConstraints(localMapId);
+		for (ConstraintList::const_iterator it = constraints.begin(); it != constraints.end(); ++it) 
+		{
 			MiniSlamGraph::GraphEdgeSE3 *odometry = new MiniSlamGraph::GraphEdgeSE3();
-			odometry->setFromNodeId(sceneId);
+			
+			odometry->setFromNodeId(localMapId);
 			odometry->setToNodeId(it->first);
 			odometry->setMeasurementSE3(it->second.GetAccumulatedObservations());
+			
 			//TODO odometry->setInformation
 			dest.addEdge(odometry);
 		}
@@ -171,13 +176,13 @@ void ITMGlobalAdjustmentEngine::MultiSceneToPoseGraph(const ITMMapGraphManager &
 
 void ITMGlobalAdjustmentEngine::PoseGraphToMultiScene(const MiniSlamGraph::PoseGraph & src, ITMMapGraphManager & dest)
 {
-	for (int sceneId = 0; sceneId < (int)dest.numScenes(); ++sceneId) 
+	for (int localMapId = 0; localMapId < (int)dest.numLocalMaps(); ++localMapId) 
 	{
-		MiniSlamGraph::SlamGraph::NodeIndex::const_iterator it = src.getNodeIndex().find(sceneId);
+		MiniSlamGraph::SlamGraph::NodeIndex::const_iterator it = src.getNodeIndex().find(localMapId);
 		if (it == src.getNodeIndex().end()) continue;
 		const MiniSlamGraph::GraphNodeSE3 *pose = (const MiniSlamGraph::GraphNodeSE3*)it->second;
 		ORUtils::SE3Pose outpose = pose->getPose();
-		dest.setEstimatedGlobalPose(sceneId, outpose);
+		dest.setEstimatedGlobalPose(localMapId, outpose);
 	}
 }
 

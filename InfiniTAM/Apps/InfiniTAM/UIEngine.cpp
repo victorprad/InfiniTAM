@@ -232,9 +232,9 @@ void UIEngine::glutKeyUpFunction(unsigned char key, int x, int y)
 
 			ITMMultiEngine<ITMVoxel, ITMVoxelIndex> *multiEngine = dynamic_cast<ITMMultiEngine<ITMVoxel, ITMVoxelIndex>*>(uiEngine->mainEngine);
 			if (multiEngine != NULL) {
-				int idx = multiEngine->findPrimarySceneIdx();
+				int idx = multiEngine->findPrimaryLocalMapIdx();
 				if (idx < 0) idx = 0;
-				multiEngine->setFreeviewSceneIdx(idx);
+				multiEngine->setFreeviewLocalMapIdx(idx);
 			}
 
 			uiEngine->freeviewActive = true;
@@ -287,10 +287,10 @@ void UIEngine::glutKeyUpFunction(unsigned char key, int x, int y)
 	{
 		ITMMultiEngine<ITMVoxel, ITMVoxelIndex> *multiEngine = dynamic_cast<ITMMultiEngine<ITMVoxel, ITMVoxelIndex>*>(uiEngine->mainEngine);
 		if (multiEngine != NULL) {
-			int idx = multiEngine->getFreeviewSceneIdx();
+			int idx = multiEngine->getFreeviewLocalMapIdx();
 			if (key == '[') idx--;
 			else idx++;
-			multiEngine->changeFreeviewSceneIdx(&(uiEngine->freeviewPose), idx);
+			multiEngine->changeFreeviewLocalMapIdx(&(uiEngine->freeviewPose), idx);
 			uiEngine->needsRefresh = true;
 		}
 	}

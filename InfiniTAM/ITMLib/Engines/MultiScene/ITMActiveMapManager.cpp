@@ -12,7 +12,7 @@ static const int N_linkoverlap = 10;
 static const int N_reloctrials = 20;
 // at least these many tracking attempts have to succeed for relocalisation
 static const int N_relocsuccess = 10;
-// When checking "overlap with original scene", find how many of the first N
+// When checking "overlap with original local map", find how many of the first N
 // blocks are still visible
 static const int N_originalblocks = 1000;
 static const float F_originalBlocksThreshold = 0.2f; //0.4f
@@ -22,48 +22,48 @@ ITMActiveMapManager::ITMActiveMapManager(ITMMapGraphManager *_localMapManager)
 	localMapManager = _localMapManager;
 }
 
-int ITMActiveMapManager::initiateNewScene(bool isPrimaryScene)
+int ITMActiveMapManager::initiateNewLocalMap(bool isPrimaryLocalMap)
 {
-	int newIdx = localMapManager->createNewScene();
+	int newIdx = localMapManager->createNewLocalMap();
 
 	ActiveDataDescriptor newLink;
-	newLink.sceneIndex = newIdx;
-	newLink.type = isPrimaryScene ? PRIMARY_SCENE : NEW_SCENE;
+	newLink.localMapIndex = newIdx;
+	newLink.type = isPrimaryLocalMap ? PRIMARY_LOCAL_MAP : NEW_LOCAL_MAP;
 	newLink.trackingAttempts = 0;
 	activeData.push_back(newLink);
 
 	return newIdx;
 }
 
-int ITMActiveMapManager::initiateNewLink(int sceneID, const ORUtils::SE3Pose & pose, bool isRelocalisation)
+int ITMActiveMapManager::initiateNewLink(int localMapId, const ORUtils::SE3Pose & pose, bool isRelocalisation)
 {
 	static const bool ensureUniqueLinks = true;
 
-	// make sure only one relocalisation per scene is attempted at a time
+	// make sure only one relocalisation per local map is attempted at a time
 	if (ensureUniqueLinks) {
 		for (size_t i = 0; i < activeData.size(); ++i) {
-			if (activeData[i].sceneIndex == sceneID) return -1;
+			if (activeData[i].localMapIndex == localMapId) return -1;
 		}
 	}
 
-	if (!localMapManager->resetTracking(sceneID, pose)) return -1;
+	if (!localMapManager->resetTracking(localMapId, pose)) return -1;
 
 	ActiveDataDescriptor newLink;
-	newLink.sceneIndex = sceneID;
+	newLink.localMapIndex = localMapId;
 	newLink.type = isRelocalisation ? RELOCALISATION : LOOP_CLOSURE;
 	newLink.trackingAttempts = 0;
 	activeData.push_back(newLink);
-	//fprintf(stderr, "attempting relocalisation... %i (type %i)\n", sceneID, (int)isRelocalisation);
+	
 	return (int)activeData.size() - 1;
 }
 
 float ITMActiveMapManager::visibleOriginalBlocks(int dataID) const
 {
-	int sceneID = activeData[dataID].sceneIndex;
+	int localMapId = activeData[dataID].localMapIndex;
 
-	int allocated = localMapManager->getSceneSize(sceneID);
-	int counted = localMapManager->countVisibleBlocks(sceneID, 0, N_originalblocks, true);
-	//fprintf(stderr, "data %i: %i/%i (%i allocated)\n", dataID, counted, N_originalblocks, allocated);
+	int allocated = localMapManager->getLocalMapSize(localMapId);
+	int counted = localMapManager->countVisibleBlocks(localMapId, 0, N_originalblocks, true);
+	
 	int tmp = N_originalblocks;
 	if (allocated < tmp) tmp = allocated;
 	return (float)counted / (float)tmp;
@@ -71,91 +71,91 @@ float ITMActiveMapManager::visibleOriginalBlocks(int dataID) const
 
 bool ITMActiveMapManager::shouldStartNewArea(void) const
 {
-	int primarySceneIdx = -1;
+	int primaryLocalMapIdx = -1;
 	int primaryDataIdx = -1;
 
-	// don't start two new scenes at a time
+	// don't start two new local maps at a time
 	for (int i = 0; i < (int)activeData.size(); ++i)
 	{
-		if (activeData[i].type == NEW_SCENE) return false;
-		if (activeData[i].type == PRIMARY_SCENE) 
+		if (activeData[i].type == NEW_LOCAL_MAP) return false;
+		if (activeData[i].type == PRIMARY_LOCAL_MAP) 
 		{
 			primaryDataIdx = i;
-			primarySceneIdx = activeData[i].sceneIndex;
+			primaryLocalMapIdx = activeData[i].localMapIndex;
 		}
 	}
 
-	// TODO: check: if relocalisation fails for some time, start new scene
-	if (primarySceneIdx < 0) return false;
+	// TODO: check: if relocalisation fails for some time, start new local map
+	if (primaryLocalMapIdx < 0) return false;
 	else return visibleOriginalBlocks(primaryDataIdx) < F_originalBlocksThreshold;
 
 	return false;
 }
 
-bool ITMActiveMapManager::shouldMovePrimaryScene(int newDataId, int bestDataId, int primaryDataId) const
+bool ITMActiveMapManager::shouldMovePrimaryLocalMap(int newDataId, int bestDataId, int primaryDataId) const
 {
-	int sceneIdx_primary = -1;
-	int sceneIdx_best = -1;
-	int sceneIdx_new = -1;
+	int localMapIdx_primary = -1;
+	int localMapIdx_best = -1;
+	int localMapIdx_new = -1;
 
 	int blocksInUse_primary = -1;
 	float visibleRatio_primary = 1.0f;
 	int blocksInUse_best = -1;
 	float visibleRatio_best = 1.0f;
-	bool isNewScene_best = false;
+	bool isNewLocalMap_best = false;
 	int blocksInUse_new = -1;
 	float visibleRatio_new = 1.0f;
-	bool isNewScene_new = false;
+	bool isNewLocalMap_new = false;
 
-	if (primaryDataId >= 0) sceneIdx_primary = activeData[primaryDataId].sceneIndex;
-	if (bestDataId >= 0) sceneIdx_best = activeData[bestDataId].sceneIndex;
-	if (newDataId >= 0) sceneIdx_new = activeData[newDataId].sceneIndex;
+	if (primaryDataId >= 0) localMapIdx_primary = activeData[primaryDataId].localMapIndex;
+	if (bestDataId >= 0) localMapIdx_best = activeData[bestDataId].localMapIndex;
+	if (newDataId >= 0) localMapIdx_new = activeData[newDataId].localMapIndex;
 
-	// count blocks in all relevant scenes
-	if (sceneIdx_primary >= 0) 
+	// count blocks in all relevant localMaps
+	if (localMapIdx_primary >= 0) 
 	{
-		blocksInUse_primary = localMapManager->getSceneSize(sceneIdx_primary);
+		blocksInUse_primary = localMapManager->getLocalMapSize(localMapIdx_primary);
 		visibleRatio_primary = visibleOriginalBlocks(primaryDataId);
 	}
 
-	if (sceneIdx_new >= 0) 
+	if (localMapIdx_new >= 0) 
 	{
-		isNewScene_new = (activeData[newDataId].type == NEW_SCENE);
-		blocksInUse_new = localMapManager->getSceneSize(sceneIdx_new);
+		isNewLocalMap_new = (activeData[newDataId].type == NEW_LOCAL_MAP);
+		blocksInUse_new = localMapManager->getLocalMapSize(localMapIdx_new);
 		if (blocksInUse_new < 0) return false;
 		visibleRatio_new = visibleOriginalBlocks(newDataId);
 	}
 
-	if (sceneIdx_best >= 0) 
+	if (localMapIdx_best >= 0) 
 	{
-		isNewScene_best = (activeData[bestDataId].type == NEW_SCENE);
-		blocksInUse_best = localMapManager->getSceneSize(sceneIdx_best);
+		isNewLocalMap_best = (activeData[bestDataId].type == NEW_LOCAL_MAP);
+		blocksInUse_best = localMapManager->getLocalMapSize(localMapIdx_best);
 		visibleRatio_best = visibleOriginalBlocks(bestDataId);
 	}
 
 	if (blocksInUse_primary < 0) {
-		// TODO: if relocalisation fails, a new scene gets started,
+		// TODO: if relocalisation fails, a new local map gets started,
 		//       and is eventually accepted, this case will get relevant
 		return true;
 	}
 
 	// step 1: is "new" better than "primary" ?
 
-	// don't continue a local scene that is already full
+	// don't continue a local map that is already full
 /*	if (blocksInUse_new >= N_maxblocknum) return false;
 
 	if (blocksInUse_new >= blocksInUse_primary) return false;*/
 	if (visibleRatio_new <= visibleRatio_primary) return false;
 
-	// step 2: is there any contender for a new scene to move to?
+	// step 2: is there any contender for a new local map to move to?
 	if (blocksInUse_best < 0) return true;
 
-	// if this is a new scene, but we previously found that we can loop
-	// close, don't accept the new scene!
-	if (isNewScene_new && !isNewScene_best) return false;
+	// if this is a new local map, but we previously found that we can loop
+	// close, don't accept the new local map!
+	if (isNewLocalMap_new && !isNewLocalMap_best) return false;
 	// if this is a loop closure and we have not found any alternative
 	// loop closure before, accept the new one!
-	if (!isNewScene_new && isNewScene_best) return true;
+	if (!isNewLocalMap_new && isNewLocalMap_best) return true;
 
 	// if the two are equal, take the smaller one
 	//return (blocksInUse_new < blocksInUse_best);
@@ -165,16 +165,16 @@ bool ITMActiveMapManager::shouldMovePrimaryScene(int newDataId, int bestDataId, 
 int ITMActiveMapManager::findPrimaryDataIdx(void) const
 {
 	for (int i = 0; i < (int)activeData.size(); ++i) 
-		if (activeData[i].type == PRIMARY_SCENE) return i;
+		if (activeData[i].type == PRIMARY_LOCAL_MAP) return i;
 
 	return -1;
 }
 
-int ITMActiveMapManager::findPrimarySceneIdx(void) const
+int ITMActiveMapManager::findPrimaryLocalMapIdx(void) const
 {
 	int id = findPrimaryDataIdx();
 	if (id < 0) return -1;
-	return activeData[id].sceneIndex;
+	return activeData[id].localMapIndex;
 }
 
 int ITMActiveMapManager::findBestVisualisationDataIdx(void) const
@@ -182,40 +182,40 @@ int ITMActiveMapManager::findBestVisualisationDataIdx(void) const
 	int bestIdx = -1;
 	for (int i = 0; i < static_cast<int>(activeData.size()); ++i) 
 	{
-		if (activeData[i].type == PRIMARY_SCENE) return i;
-		else if (activeData[i].type == NEW_SCENE) bestIdx = i;
+		if (activeData[i].type == PRIMARY_LOCAL_MAP) return i;
+		else if (activeData[i].type == NEW_LOCAL_MAP) bestIdx = i;
 		else if (activeData[i].type == RELOCALISATION) 
 		{
 			if (bestIdx < 0) { bestIdx = i; continue; }
-			if (activeData[bestIdx].type == NEW_SCENE) continue;
+			if (activeData[bestIdx].type == NEW_LOCAL_MAP) continue;
 			if (activeData[bestIdx].constraints.size() < activeData[i].constraints.size()) bestIdx = i;
 		}
 	}
 	return bestIdx;
 }
 
-int ITMActiveMapManager::findBestVisualisationSceneIdx(void) const
+int ITMActiveMapManager::findBestVisualisationLocalMapIdx(void) const
 {
 	int id = findBestVisualisationDataIdx();
 	if (id < 0) return -1;
-	return activeData[id].sceneIndex;
+	return activeData[id].localMapIndex;
 }
 
 void ITMActiveMapManager::recordTrackingResult(int dataID, ITMTrackingState::TrackingResult trackingResult, bool primaryTrackingSuccess)
 {
 	ActiveDataDescriptor & data = activeData[dataID];
 
-	int primarySceneID = findPrimarySceneIdx();
-	int sceneID = data.sceneIndex;
+	int primaryLocalMapID = findPrimaryLocalMapIdx();
+	int localMapId = data.localMapIndex;
 	data.trackingAttempts++;
 
 	if (trackingResult == ITMTrackingState::TRACKING_GOOD)
 	{
 		if (data.type == RELOCALISATION) data.constraints.push_back(localMapManager->getTrackingPose(dataID)->GetM());
-		else if (((data.type == NEW_SCENE) || (data.type == LOOP_CLOSURE)) && primaryTrackingSuccess)
+		else if (((data.type == NEW_LOCAL_MAP) || (data.type == LOOP_CLOSURE)) && primaryTrackingSuccess)
 		{
-			Matrix4f Tnew_inv = localMapManager->getTrackingPose(sceneID)->GetInvM();
-			Matrix4f Told = localMapManager->getTrackingPose(primarySceneID)->GetM();
+			Matrix4f Tnew_inv = localMapManager->getTrackingPose(localMapId)->GetInvM();
+			Matrix4f Told = localMapManager->getTrackingPose(primaryLocalMapID)->GetM();
 			Matrix4f Told_to_new = Tnew_inv * Told;
 
 			data.constraints.push_back(Told_to_new);
@@ -223,11 +223,11 @@ void ITMActiveMapManager::recordTrackingResult(int dataID, ITMTrackingState::Tra
 	}
 	else if (trackingResult == ITMTrackingState::TRACKING_FAILED)
 	{
-		if (data.type == PRIMARY_SCENE)
+		if (data.type == PRIMARY_LOCAL_MAP)
 		{
 			for (size_t j = 0; j < activeData.size(); ++j)
 			{
-				if (activeData[j].type == NEW_SCENE) activeData[j].type = LOST_NEW;
+				if (activeData[j].type == NEW_LOCAL_MAP) activeData[j].type = LOST_NEW;
 				else activeData[j].type = LOST;
 			}
 		}
@@ -331,12 +331,12 @@ int ITMActiveMapManager::CheckSuccess_newlink(int dataID, int primaryDataID, int
 {
 	const ActiveDataDescriptor & link = activeData[dataID];
 
-	// take previous data from scene relations into account!
+	// take previous data from local map relations into account!
 	//ORUtils::SE3Pose previousEstimate;
 	//int previousEstimate_weight = 0;
-	int primarySceneIndex = -1;
-	if (primaryDataID >= 0) primarySceneIndex = activeData[primaryDataID].sceneIndex;
-	const ITMPoseConstraint & previousInformation = localMapManager->getRelation_const(primarySceneIndex, link.sceneIndex);
+	int primaryLocalMapIndex = -1;
+	if (primaryDataID >= 0) primaryLocalMapIndex = activeData[primaryDataID].localMapIndex;
+	const ITMPoseConstraint & previousInformation = localMapManager->getRelation_const(primaryLocalMapIndex, link.localMapIndex);
 	/* hmm... do we want the "Estimate" (i.e. the pose corrected by pose
 	   graph optimization) or the "Observations" (i.e. the accumulated
 	   poses seen in previous frames?
@@ -370,23 +370,23 @@ int ITMActiveMapManager::CheckSuccess_newlink(int dataID, int primaryDataID, int
 
 void ITMActiveMapManager::AcceptNewLink(int fromData, int toData, const ORUtils::SE3Pose & pose, int weight)
 {
-	int fromSceneIdx = activeData[fromData].sceneIndex;
-	int toSceneIdx = activeData[toData].sceneIndex;
+	int fromLocalMapIdx = activeData[fromData].localMapIndex;
+	int toLocalMapIdx = activeData[toData].localMapIndex;
 
 	{
-		ITMPoseConstraint &c = localMapManager->getRelation(fromSceneIdx, toSceneIdx);
+		ITMPoseConstraint &c = localMapManager->getRelation(fromLocalMapIdx, toLocalMapIdx);
 		c.AddObservation(pose, weight);
 	}
 	{
 		ORUtils::SE3Pose invPose(pose.GetInvM());
-		ITMPoseConstraint &c = localMapManager->getRelation(toSceneIdx, fromSceneIdx);
+		ITMPoseConstraint &c = localMapManager->getRelation(toLocalMapIdx, fromLocalMapIdx);
 		c.AddObservation(invPose, weight);
 	}
 }
 
 bool ITMActiveMapManager::maintainActiveData(void)
 {
-	bool scenegraphChanged = false;
+	bool localMapGraphChanged = false;
 
 	int primaryDataIdx = findPrimaryDataIdx();
 	int moveToDataIdx = -1;
@@ -405,7 +405,7 @@ bool ITMActiveMapManager::maintainActiveData(void)
 			else if (success == -1) link.type = LOST;
 		}
 
-		if ((link.type == LOOP_CLOSURE) || (link.type == NEW_SCENE))
+		if ((link.type == LOOP_CLOSURE) || (link.type == NEW_LOCAL_MAP))
 		{
 			ORUtils::SE3Pose inlierPose; int inliers;
 
@@ -415,44 +415,44 @@ bool ITMActiveMapManager::maintainActiveData(void)
 				AcceptNewLink(primaryDataIdx, i, inlierPose, inliers);
 				link.constraints.clear();
 				link.trackingAttempts = 0;
-				if (shouldMovePrimaryScene(i, moveToDataIdx, primaryDataIdx)) moveToDataIdx = i;
-				scenegraphChanged = true;
+				if (shouldMovePrimaryLocalMap(i, moveToDataIdx, primaryDataIdx)) moveToDataIdx = i;
+				localMapGraphChanged = true;
 			}
 			else if (success == -1)
 			{
-				if (link.type == NEW_SCENE) link.type = LOST_NEW;
+				if (link.type == NEW_LOCAL_MAP) link.type = LOST_NEW;
 				else link.type = LOST;
 			}
 		}
 	}
 
-	std::vector<int> restartLinksToScenes;
+	std::vector<int> restartLinksToLocalMaps;
 	primaryDataIdx = -1;
 	for (int i = 0; i < (int)activeData.size(); ++i)
 	{
 		ActiveDataDescriptor & link = activeData[i];
 
-		if ((signed)i == moveToDataIdx) link.type = PRIMARY_SCENE;
+		if ((signed)i == moveToDataIdx) link.type = PRIMARY_LOCAL_MAP;
 
-		if ((link.type == PRIMARY_SCENE) && (moveToDataIdx >= 0) && ((signed)i != moveToDataIdx)) 
+		if ((link.type == PRIMARY_LOCAL_MAP) && (moveToDataIdx >= 0) && ((signed)i != moveToDataIdx)) 
 		{
 			link.type = LOST;
-			restartLinksToScenes.push_back(link.sceneIndex);
+			restartLinksToLocalMaps.push_back(link.localMapIndex);
 		}
 		
-		if ((link.type == NEW_SCENE) && (moveToDataIdx >= 0)) link.type = LOST_NEW;
+		if ((link.type == NEW_LOCAL_MAP) && (moveToDataIdx >= 0)) link.type = LOST_NEW;
 		
 		if ((link.type == LOOP_CLOSURE) && (moveToDataIdx >= 0)) 
 		{
 			link.type = LOST;
-			restartLinksToScenes.push_back(link.sceneIndex);
+			restartLinksToLocalMaps.push_back(link.localMapIndex);
 		}
 
 		if ((link.type == RELOCALISATION) && (moveToDataIdx >= 0)) link.type = LOST;
 
-		if (link.type == PRIMARY_SCENE)
+		if (link.type == PRIMARY_LOCAL_MAP)
 		{
-			if (primaryDataIdx >= 0) fprintf(stderr, "OOOPS, two or more primary scenes...\n");
+			if (primaryDataIdx >= 0) fprintf(stderr, "OOOPS, two or more primary localMaps...\n");
 			primaryDataIdx = i;
 		}
 	}
@@ -462,32 +462,32 @@ bool ITMActiveMapManager::maintainActiveData(void)
 		ActiveDataDescriptor & link = activeData[i];
 		if (link.type == LOST_NEW)
 		{
-			// NOTE: there will only be at most one new scene at
+			// NOTE: there will only be at most one new local map at
 			// any given time and it's guaranteed to be the last
-			// in the list. Removing this new scene will therefore
+			// in the list. Removing this new local map will therefore
 			// not require rearranging indices!
-			localMapManager->removeScene(link.sceneIndex);
+			localMapManager->removeLocalMap(link.localMapIndex);
 			link.type = LOST;
 		}
 		if (link.type == LOST) activeData.erase(activeData.begin() + i);
 		else i++;
 	}
 
-	for (std::vector<int>::const_iterator it = restartLinksToScenes.begin(); it != restartLinksToScenes.end(); ++it) {
+	for (std::vector<int>::const_iterator it = restartLinksToLocalMaps.begin(); it != restartLinksToLocalMaps.end(); ++it) {
 		initiateNewLink(*it, *(localMapManager->getTrackingPose(*it)), false);
 	}
 
-	// NOTE: this has to be done AFTER removing any previous new scene
+	// NOTE: this has to be done AFTER removing any previous new local map
 	if (shouldStartNewArea())
 	{
-		int newIdx = initiateNewScene();
+		int newIdx = initiateNewLocalMap();
 
 		if (primaryDataIdx >= 0)
 		{
-			int primarySceneIdx = activeData[primaryDataIdx].sceneIndex;
-			localMapManager->setEstimatedGlobalPose(newIdx, ORUtils::SE3Pose(localMapManager->getTrackingPose(primarySceneIdx)->GetM() * localMapManager->getEstimatedGlobalPose(primarySceneIdx).GetM()));
+			int primaryLocalMapIdx = activeData[primaryDataIdx].localMapIndex;
+			localMapManager->setEstimatedGlobalPose(newIdx, ORUtils::SE3Pose(localMapManager->getTrackingPose(primaryLocalMapIdx)->GetM() * localMapManager->getEstimatedGlobalPose(primaryLocalMapIdx).GetM()));
 		}
 	}
 
-	return scenegraphChanged;
+	return localMapGraphChanged;
 }
