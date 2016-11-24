@@ -110,7 +110,7 @@ int LevenbergMarquardtMethod::minimize(const SlamGraphErrorFunction & f, SlamGra
 			else if (q > TR_QUALITY_GAMMA2) {
 				// kind of successful step
 				success = true;
-				lambda = lambda;
+				//lambda = lambda; //lambda doesn't change
 			}
 			else {
 				// step failed

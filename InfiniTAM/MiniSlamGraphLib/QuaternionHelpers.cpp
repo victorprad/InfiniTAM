@@ -123,7 +123,7 @@ void QuaternionHelpers::dQuaternion_dRotationMatrix(const double *matrix, double
 	const double & r32 = matrix[7];
 	const double & r33 = matrix[8];
 
-	double denom;
+	double denom = 0.0;
 	if (variant == 0) {
 		denom = r11 + r22 + r33 + 1.0f;
 	}
