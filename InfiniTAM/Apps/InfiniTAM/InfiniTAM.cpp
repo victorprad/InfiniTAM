@@ -159,8 +159,19 @@ try
 
 	ITMLibSettings *internalSettings = new ITMLibSettings();
 
-	//ITMMainEngine *mainEngine = new ITMBasicEngine<ITMVoxel,ITMVoxelIndex>(internalSettings, imageSource->getCalib(), imageSource->getRGBImageSize(), imageSource->getDepthImageSize());
-	ITMMainEngine *mainEngine = new ITMMultiEngine<ITMVoxel, ITMVoxelIndex>(internalSettings, imageSource->getCalib(), imageSource->getRGBImageSize(), imageSource->getDepthImageSize());
+	ITMMainEngine *mainEngine = NULL;
+	switch (internalSettings->libMode)
+	{
+	case ITMLibSettings::LIBMODE_BASIC:
+		mainEngine = new ITMBasicEngine<ITMVoxel, ITMVoxelIndex>(internalSettings, imageSource->getCalib(), imageSource->getRGBImageSize(), imageSource->getDepthImageSize());
+		break;
+	case ITMLibSettings::LIBMODE_LOOPCLOSURE:
+		mainEngine = new ITMMultiEngine<ITMVoxel, ITMVoxelIndex>(internalSettings, imageSource->getCalib(), imageSource->getRGBImageSize(), imageSource->getDepthImageSize());
+		break;
+	default: 
+		throw std::runtime_error("Unsupported library mode!");
+		break;
+	}
 
 	UIEngine::Instance()->Initialise(argc, argv, imageSource, imuSource, mainEngine, "./Files/Out", internalSettings->deviceType);
 	UIEngine::Instance()->Run();

@@ -41,6 +41,9 @@ ITMLibSettings::ITMLibSettings(void)
 	/// what to do on tracker failure: ignore, relocalise or stop integration - not supported in loop closure version
 	behaviourOnFailure = FAILUREMODE_IGNORE;
     
+	/// switch between various library modes - basic, with loop closure, etc.
+	libMode = LIBMODE_BASIC;
+
 	//// Default ICP tracking
 	//trackerConfig = "type=icp,levels=rrrbb,minstep=1e-3,"
 	//				"outlierC=0.01,outlierF=0.002,"
