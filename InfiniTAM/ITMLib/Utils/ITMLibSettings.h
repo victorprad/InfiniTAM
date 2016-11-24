@@ -32,6 +32,12 @@ namespace ITMLib
 			SWAPPINGMODE_DELETE
 		} SwappingMode;
 
+		typedef enum
+		{
+			LIBMODE_BASIC,
+			LIBMODE_LOOPCLOSURE
+		}LibMode;
+
 		/// Select the type of device to use
 		DeviceType deviceType;
 
@@ -46,6 +52,7 @@ namespace ITMLib
         
 		FailureMode behaviourOnFailure;
 		SwappingMode swappingMode;
+		LibMode libMode;
 
 		const char *trackerConfig;
 

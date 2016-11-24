@@ -20,7 +20,7 @@ SET(ITMLIB_CORE_SOURCES
 Core/ITMBasicEngine.tpp
 Core/ITMDenseMapper.tpp
 Core/ITMDenseSurfelMapper.tpp
-Core/ITMTrackingController.cpp
+Core/ITMMultiEngine.tpp
 )
 
 SET(ITMLIB_CORE_HEADERS
@@ -29,6 +29,19 @@ Core/ITMDenseMapper.h
 Core/ITMDenseSurfelMapper.h
 Core/ITMMainEngine.h
 Core/ITMTrackingController.h
+Core/ITMMultiEngine.h
+)
+
+SET(ITMLIB_ENGINES_MULTISCENE_SOURCES
+Engines/MultiScene/ITMActiveMapManager.cpp
+Engines/MultiScene/ITMGlobalAdjustmentEngine.cpp
+Engines/MultiScene/ITMMapGraphManager.tpp
+)
+
+SET(ITMLIB_ENGINES_MULTISCENE_HEADERS
+Engines/MultiScene/ITMActiveMapManager.h
+Engines/MultiScene/ITMGlobalAdjustmentEngine.h
+Engines/MultiScene/ITMMapGraphManager.h
 )
 
 ##
@@ -71,34 +84,41 @@ Engines/LowLevel/Shared/ITMLowLevelEngine_Shared.h
 ##
 SET(ITMLIB_ENGINES_MESHING_HEADERS
 Engines/Meshing/ITMMeshingEngineFactory.h
+Engines/Meshing/ITMMultiMeshingEngineFactory.h
 )
 
 ##
 SET(ITMLIB_ENGINES_MESHING_CPU_SOURCES
 Engines/Meshing/CPU/ITMMeshingEngine_CPU.tpp
+Engines/Meshing/CPU/ITMMultiMeshingEngine_CPU.tpp
 )
 
 SET(ITMLIB_ENGINES_MESHING_CPU_HEADERS
 Engines/Meshing/CPU/ITMMeshingEngine_CPU.h
+Engines/Meshing/CPU/ITMMultiMeshingEngine_CPU.h
 )
 
 ##
 SET(ITMLIB_ENGINES_MESHING_CUDA_SOURCES
 Engines/Meshing/CUDA/ITMMeshingEngine_CUDA.tcu
+Engines/Meshing/CUDA/ITMMultiMeshingEngine_CUDA.tcu
 )
 
 SET(ITMLIB_ENGINES_MESHING_CUDA_HEADERS
 Engines/Meshing/CUDA/ITMMeshingEngine_CUDA.h
+Engines/Meshing/CUDA/ITMMultiMeshingEngine_CUDA.h
 )
 
 ##
 SET(ITMLIB_ENGINES_MESHING_INTERFACE_HEADERS
 Engines/Meshing/Interface/ITMMeshingEngine.h
+Engines/Meshing/Interface/ITMMultiMeshingEngine.h
 )
 
 ##
 SET(ITMLIB_ENGINES_MESHING_SHARED_HEADERS
 Engines/Meshing/Shared/ITMMeshingEngine_Shared.h
+Engines/Meshing/Shared/ITMMultiMeshingEngine_Shared.h
 )
 
 ##
@@ -227,29 +247,34 @@ Engines/Visualisation/ITMSurfelVisualisationEngineFactory.tpp
 SET(ITMLIB_ENGINES_VISUALISATION_HEADERS
 Engines/Visualisation/ITMSurfelVisualisationEngineFactory.h
 Engines/Visualisation/ITMVisualisationEngineFactory.h
+Engines/Visualisation/ITMMultiVisualisationEngineFactory.h
 )
 
 ##
 SET(ITMLIB_ENGINES_VISUALISATION_CPU_SOURCES
 Engines/Visualisation/CPU/ITMSurfelVisualisationEngine_CPU.tpp
 Engines/Visualisation/CPU/ITMVisualisationEngine_CPU.tpp
+Engines/Visualisation/CPU/ITMMultiVisualisationEngine_CPU.tpp
 )
 
 SET(ITMLIB_ENGINES_VISUALISATION_CPU_HEADERS
 Engines/Visualisation/CPU/ITMSurfelVisualisationEngine_CPU.h
 Engines/Visualisation/CPU/ITMVisualisationEngine_CPU.h
+Engines/Visualisation/CPU/ITMMultiVisualisationEngine_CPU.h
 )
 
 ##
 SET(ITMLIB_ENGINES_VISUALISATION_CUDA_SOURCES
 Engines/Visualisation/CUDA/ITMSurfelVisualisationEngine_CUDA.tcu
 Engines/Visualisation/CUDA/ITMVisualisationEngine_CUDA.tcu
+Engines/Visualisation/CUDA/ITMMultiVisualisationEngine_CUDA.tcu
 Engines/Visualisation/CUDA/ITMVisualisationHelpers_CUDA.cu
 )
 
 SET(ITMLIB_ENGINES_VISUALISATION_CUDA_HEADERS
 Engines/Visualisation/CUDA/ITMSurfelVisualisationEngine_CUDA.h
 Engines/Visualisation/CUDA/ITMVisualisationEngine_CUDA.h
+Engines/Visualisation/CUDA/ITMMultiVisualisationEngine_CUDA.h
 Engines/Visualisation/CUDA/ITMVisualisationHelpers_CUDA.h
 )
 
@@ -262,6 +287,7 @@ Engines/Visualisation/Interface/ITMVisualisationEngine.cpp
 SET(ITMLIB_ENGINES_VISUALISATION_INTERFACE_HEADERS
 Engines/Visualisation/Interface/ITMSurfelVisualisationEngine.h
 Engines/Visualisation/Interface/ITMVisualisationEngine.h
+Engines/Visualisation/Interface/ITMMultiVisualisationEngine.h
 )
 
 ##
@@ -305,13 +331,16 @@ SET(ITMLIB_OBJECTS_RENDERSTATES_HEADERS
 Objects/RenderStates/ITMRenderState.h
 Objects/RenderStates/ITMRenderState_VH.h
 Objects/RenderStates/ITMRenderStateFactory.h
+Objects/RenderStates/ITMRenderStateMultiScene.h
 Objects/RenderStates/ITMSurfelRenderState.h
 )
 
 ##
 SET(ITMLIB_OBJECTS_SCENE_HEADERS
 Objects/Scene/ITMGlobalCache.h
+Objects/Scene/ITMLocalMap.h
 Objects/Scene/ITMLocalVBA.h
+Objects/Scene/ITMMultiSceneAccess.h
 Objects/Scene/ITMPlainVoxelArray.h
 Objects/Scene/ITMRepresentationAccess.h
 Objects/Scene/ITMScene.h
@@ -427,6 +456,8 @@ ${ITMLIB_ENGINES_LOWLEVEL_SHARED_HEADERS}
 ${ITMLIB_ENGINES_MESHING_HEADERS}
 ${ITMLIB_ENGINES_MESHING_INTERFACE_HEADERS}
 ${ITMLIB_ENGINES_MESHING_SHARED_HEADERS}
+${ITMLIB_ENGINES_MULTISCENE_SOURCES}
+${ITMLIB_ENGINES_MULTISCENE_HEADERS}
 ${ITMLIB_ENGINES_RECONSTRUCTION_SOURCES}
 ${ITMLIB_ENGINES_RECONSTRUCTION_HEADERS}
 ${ITMLIB_ENGINES_RECONSTRUCTION_INTERFACE_SOURCES}
@@ -513,6 +544,7 @@ SOURCE_GROUP(Engines\\Meshing\\CPU FILES ${ITMLIB_ENGINES_MESHING_CPU_SOURCES} $
 SOURCE_GROUP(Engines\\Meshing\\CUDA FILES ${ITMLIB_ENGINES_MESHING_CUDA_SOURCES} ${ITMLIB_ENGINES_MESHING_CUDA_HEADERS})
 SOURCE_GROUP(Engines\\Meshing\\Interface FILES ${ITMLIB_ENGINES_MESHING_INTERFACE_HEADERS})
 SOURCE_GROUP(Engines\\Meshing\\Shared FILES ${ITMLIB_ENGINES_MESHING_SHARED_HEADERS})
+SOURCE_GROUP(Engines\\MultiScene FILES ${ITMLIB_ENGINES_MULTISCENE_HEADERS} ${ITMLIB_ENGINES_MULTISCENE_SOURCES})
 SOURCE_GROUP(Engines\\Reconstruction FILES ${ITMLIB_ENGINES_RECONSTRUCTION_SOURCES} ${ITMLIB_ENGINES_RECONSTRUCTION_HEADERS})
 SOURCE_GROUP(Engines\\Reconstruction\\CPU FILES ${ITMLIB_ENGINES_RECONSTRUCTION_CPU_SOURCES} ${ITMLIB_ENGINES_RECONSTRUCTION_CPU_HEADERS})
 SOURCE_GROUP(Engines\\Reconstruction\\CUDA FILES ${ITMLIB_ENGINES_RECONSTRUCTION_CUDA_SOURCES} ${ITMLIB_ENGINES_RECONSTRUCTION_CUDA_HEADERS})
@@ -574,3 +606,4 @@ endif()
 
 target_link_libraries(ITMLib ORUtils)
 target_link_libraries(ITMLib RelocLib)
+target_link_libraries(ITMLib MiniSlamGraphLib)

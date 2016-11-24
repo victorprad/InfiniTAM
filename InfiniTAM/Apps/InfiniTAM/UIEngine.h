@@ -84,6 +84,7 @@ namespace InfiniTAM
 
 			float processedTime;
 			int processedFrameNo;
+			int trackingResult;
 			char *outFolder;
 			bool needsRefresh;
 			ITMUChar4Image *saveImage;

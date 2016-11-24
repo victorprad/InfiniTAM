@@ -20,7 +20,10 @@ namespace ITMLib
 		ITMTracker *tracker;
 
 	public:
-		void Track(ITMTrackingState *trackingState, const ITMView *view);
+		void Track(ITMTrackingState *trackingState, const ITMView *view)
+		{
+			if (trackingState->age_pointCloud != -1) tracker->TrackCamera(trackingState, view);
+		}
 
 		template <typename TSurfel>
 		void Prepare(ITMTrackingState *trackingState, const ITMSurfelScene<TSurfel> *scene, const ITMView *view,
