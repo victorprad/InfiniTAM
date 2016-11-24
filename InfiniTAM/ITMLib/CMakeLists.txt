@@ -20,7 +20,6 @@ SET(ITMLIB_CORE_SOURCES
 Core/ITMBasicEngine.tpp
 Core/ITMDenseMapper.tpp
 Core/ITMDenseSurfelMapper.tpp
-Core/ITMTrackingController.cpp
 Core/ITMMultiEngine.tpp
 )
 

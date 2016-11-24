@@ -90,7 +90,7 @@ void UIEngine::glutDisplayFunction()
 	case 0: glColor3f(1.0f, 0.0f, 0.0f); break; // failure
 	case 1: glColor3f(1.0f, 1.0f, 0.0f); break; // poor
 	case 2: glColor3f(0.0f, 1.0f, 0.0f); break; // good
-	default: glColor3f(1.0f, 1.0f, 1.0f); break;
+	default: glColor3f(1.0f, 1.0f, 1.0f); break; // relocalising
 	}
 
 	glRasterPos2f(0.85f, -0.962f);
