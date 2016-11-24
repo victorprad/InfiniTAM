@@ -18,7 +18,7 @@ using namespace ITMLib;
 static const int k_loopcloseneighbours = 1;
 
 // maximum distance reported by LCD library to attempt relocalisation
-static const float F_maxdistattemptreloc = 0.1f;
+static const float F_maxdistattemptreloc = 0.05f;
 
 // loop closure global adjustment runs on a separate thread
 static const bool separateThreadGlobalAdjustment = true;
@@ -57,9 +57,7 @@ ITMMultiEngine<TVoxel, TIndex>::ITMMultiEngine(const ITMLibSettings *settings, c
 
 	view = NULL; // will be allocated by the view builder
 
-	//mLoopClosureDetector = new LCDLib::LoopClosureDetector(imgSize_d, Vector2f(0.3f,5.0f), 0.15f, 4000, 8);
-	mLoopClosureDetector = new RelocLib::Relocaliser(imgSize_d, Vector2f(0.3f, 5.0f), 0.1f, 1000, 4);
-	//mLoopClosureDetector = new LCDLib::LoopClosureDetector(imgSize_d, Vector2f(0.3f,4.0f), 0.1f, 2000, 6);
+	mLoopClosureDetector = new RelocLib::Relocaliser(imgSize_d, Vector2f(settings->sceneParams.viewFrustum_min, settings->sceneParams.viewFrustum_max), 0.1f, 1000, 4);
 	mGlobalAdjustmentEngine = new ITMGlobalAdjustmentEngine();
 	mScheduleGlobalAdjustment = false;
 	if (separateThreadGlobalAdjustment) mGlobalAdjustmentEngine->startSeparateThread();
@@ -242,6 +240,7 @@ ITMTrackingState::TrackingResult ITMMultiEngine<TVoxel, TIndex>::ProcessFrame(IT
 
 			// actions on tracking result for all scenes TODO: incorporate behaviour on tracking failure from settings
 			if (trackingResult != ITMTrackingState::TRACKING_GOOD) todoList[i].fusion = false;
+
 			if (trackingResult == ITMTrackingState::TRACKING_FAILED)
 			{
 				todoList[i].prepare = false;
