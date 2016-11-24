@@ -29,7 +29,7 @@ ITMLibSettings::ITMLibSettings(void)
 
 	//deviceType = DEVICE_CPU;
 
-	/// how swapping works: disabled, fully enabled (still with dragons) and delete what's not visible
+	/// how swapping works: disabled, fully enabled (still with dragons) and delete what's not visible - not supported in loop closure version
 	swappingMode = SWAPPINGMODE_DISABLED;
 
 	/// enables or disables approximate raycast
@@ -38,7 +38,7 @@ ITMLibSettings::ITMLibSettings(void)
 	/// enable or disable bilateral depth filtering
 	useBilateralFilter = false;
 
-	/// what to do on tracker failure: ignore, relocalise or stop integration
+	/// what to do on tracker failure: ignore, relocalise or stop integration - not supported in loop closure version
 	behaviourOnFailure = FAILUREMODE_IGNORE;
     
 	//// Default ICP tracking

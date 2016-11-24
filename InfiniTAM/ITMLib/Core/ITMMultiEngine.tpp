@@ -129,9 +129,9 @@ ITMTrackingState* ITMMultiEngine<TVoxel, TIndex>::GetTrackingState(void)
 
 struct TodoListEntry {
 	TodoListEntry(int _activeDataID, bool _track, bool _fusion, bool _prepare)
-		: dataID(_activeDataID), track(_track), fusion(_fusion), prepare(_prepare), preprepare(false) {}
+		: dataId(_activeDataID), track(_track), fusion(_fusion), prepare(_prepare), preprepare(false) {}
 	TodoListEntry(void) {}
-	int dataID;
+	int dataId;
 	bool track;
 	bool fusion;
 	bool prepare;
@@ -177,7 +177,7 @@ ITMTrackingState::TrackingResult ITMMultiEngine<TVoxel, TIndex>::ProcessFrame(IT
 		//   the start of the second pass
 		// - second tracking pass will be about newly detected loop closures, relocalisations, etc.
 
-		if (todoList[i].dataID == -1) 
+		if (todoList[i].dataId == -1) 
 		{
 #ifdef DEBUG_MULTISCENE
 			fprintf(stderr, " Reloc(%i)", primaryTrackingSuccess);
@@ -210,7 +210,7 @@ ITMTrackingState::TrackingResult ITMMultiEngine<TVoxel, TIndex>::ProcessFrame(IT
 		}
 
 		ITMLocalMap<TVoxel, TIndex> *currentLocalMap = NULL;
-		int currentLocalMapIdx = mActiveDataManager->getLocalMapIndex(todoList[i].dataID);
+		int currentLocalMapIdx = mActiveDataManager->getLocalMapIndex(todoList[i].dataId);
 		currentLocalMap = mapManager->getLocalMap(currentLocalMapIdx);
 
 		// if a new relocalisation/loopclosure is started, this will do the initial raycasting before tracking can start
@@ -222,11 +222,11 @@ ITMTrackingState::TrackingResult ITMMultiEngine<TVoxel, TIndex>::ProcessFrame(IT
 
 		if (todoList[i].track)
 		{
-			int dataID = todoList[i].dataID;
+			int dataId = todoList[i].dataId;
 
 #ifdef DEBUG_MULTISCENE
 			int blocksInUse = currentLocalMap->scene->index.getNumAllocatedVoxelBlocks() - currentLocalMap->scene->localVBA.lastFreeBlockId - 1;
-			fprintf(stderr, " %i%s (%i)", currentLocalMapIdx, (todoList[i].dataID == primaryDataIdx) ? "*" : "", blocksInUse);
+			fprintf(stderr, " %i%s (%i)", currentLocalMapIdx, (todoList[i].dataId == primaryDataIdx) ? "*" : "", blocksInUse);
 #endif
 
 			// actual tracking
@@ -235,7 +235,7 @@ ITMTrackingState::TrackingResult ITMMultiEngine<TVoxel, TIndex>::ProcessFrame(IT
 
 			// tracking is allowed to be poor only in the primary scenes. 
 			ITMTrackingState::TrackingResult trackingResult = currentLocalMap->trackingState->trackerResult;
-			if (mActiveDataManager->getLocalMapType(dataID) != ITMActiveMapManager::PRIMARY_LOCAL_MAP)
+			if (mActiveDataManager->getLocalMapType(dataId) != ITMActiveMapManager::PRIMARY_LOCAL_MAP)
 				if (trackingResult == ITMTrackingState::TRACKING_POOR) trackingResult = ITMTrackingState::TRACKING_FAILED;
 
 			// actions on tracking result for all scenes TODO: incorporate behaviour on tracking failure from settings
@@ -248,7 +248,7 @@ ITMTrackingState::TrackingResult ITMMultiEngine<TVoxel, TIndex>::ProcessFrame(IT
 			}
 
 			// actions on tracking result for primary local map
-			if (mActiveDataManager->getLocalMapType(dataID) == ITMActiveMapManager::PRIMARY_LOCAL_MAP)
+			if (mActiveDataManager->getLocalMapType(dataId) == ITMActiveMapManager::PRIMARY_LOCAL_MAP)
 			{
 				primaryLocalMapTrackingResult = trackingResult;
 
@@ -263,7 +263,7 @@ ITMTrackingState::TrackingResult ITMMultiEngine<TVoxel, TIndex>::ProcessFrame(IT
 				}
 			}
 
-			mActiveDataManager->recordTrackingResult(dataID, trackingResult, primaryTrackingSuccess);
+			mActiveDataManager->recordTrackingResult(dataId, trackingResult, primaryTrackingSuccess);
 		}
 
 		// fusion in any subscene as long as tracking is good for the respective subscene
