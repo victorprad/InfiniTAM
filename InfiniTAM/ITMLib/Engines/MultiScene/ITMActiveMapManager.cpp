@@ -1,4 +1,4 @@
-// Copyright 2016 Isis Innovation Limited and the authors of InfiniTAM
+// Copyright 2014-2017 Oxford University Innovation Limited and the authors of InfiniTAM
 
 #include "ITMActiveMapManager.h"
 
