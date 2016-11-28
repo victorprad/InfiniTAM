@@ -63,8 +63,14 @@ if(APPLE)
 endif(APPLE)
 
 IF(${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -stdlib=libc++ -Wno-deprecated-declarations -Wno-unused-function")
-  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -std=c++11 -stdlib=libc++")
+  IF(${CMAKE_SYSTEM} MATCHES "Darwin-13.")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libstdc++ -Wno-deprecated-declarations -Wno-unused-function")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -stdlib=libstdc++")
+    add_definitions(-DNO_CPP11)
+  ELSE()
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -stdlib=libc++ -Wno-deprecated-declarations -Wno-unused-function")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -std=c++11 -stdlib=libc++")
+  ENDIF()
 ENDIF()
 
 # If on Linux and CUDA is enabled, work around an Ubuntu 16.04 compilation error:
