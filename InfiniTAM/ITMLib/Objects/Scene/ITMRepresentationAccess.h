@@ -263,7 +263,7 @@ template<class TVoxel, class TIndex, class TCache>
 _CPU_AND_GPU_CODE_ inline Vector4f readFromSDF_color4u_interpolated(const CONSTPTR(TVoxel) *voxelData,
 	const CONSTPTR(TIndex) *voxelIndex, const THREADPTR(Vector3f) & point, THREADPTR(TCache) & cache)
 {
-	TVoxel resn; Vector3f ret = 0.0f; Vector4f ret4; bool vmIndex;
+	TVoxel resn; Vector3f ret = 0.0f; Vector4f ret4; int vmIndex;
 	Vector3f coeff; Vector3i pos; TO_INT_FLOOR3(pos, coeff, point);
 
 	resn = readVoxel(voxelData, voxelIndex, pos + Vector3i(0, 0, 0), vmIndex, cache);
