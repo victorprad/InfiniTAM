@@ -9,12 +9,17 @@ IF(${CMAKE_SYSTEM} MATCHES "Darwin")
 
   # Make sure that the template depth is sufficient.
   SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ftemplate-depth=512")
-ENDIF()
 
-# If on Mac OS X 10.9 (Mavericks), make sure everything compiles and links using the correct C++ Standard Library.
-IF(${CMAKE_SYSTEM} MATCHES "Darwin-13.")
-  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libstdc++")
-  SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -stdlib=libstdc++")
+  IF(${CMAKE_SYSTEM} MATCHES "Darwin-13.")
+    # If on Mac OS X 10.9 (Mavericks), use the libstdc++ implementation of the C++ Standard Library and prevent C++11 code from being compiled.
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libstdc++")
+    SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -stdlib=libstdc++")
+    ADD_DEFINITIONS(-DNO_CPP11)
+  ELSE()
+    # Otherwise, use the libc++ implementation of the C++ Standard Library, and enable C++11 support.
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++ -std=c++11")
+    SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -stdlib=libc++ -std=c++11")
+  ENDIF()
 ENDIF()
 
 # If on Linux, make sure that C++11 support is enabled.
