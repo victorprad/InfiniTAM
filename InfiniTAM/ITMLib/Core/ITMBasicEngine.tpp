@@ -32,19 +32,15 @@ ITMBasicEngine<TVoxel,TIndex>::ITMBasicEngine(const ITMLibSettings *settings, co
 	viewBuilder = ITMViewBuilderFactory::MakeViewBuilder(calib, deviceType);
 	visualisationEngine = ITMVisualisationEngineFactory::MakeVisualisationEngine<TVoxel,TIndex>(deviceType);
 
-	mesh = NULL;
 	meshingEngine = NULL;
 	if (settings->createMeshingEngine)
-	{
-		mesh = new ITMMesh(memoryType);
 		meshingEngine = ITMMeshingEngineFactory::MakeMeshingEngine<TVoxel,TIndex>(deviceType);
-	}
 
 	denseMapper = new ITMDenseMapper<TVoxel,TIndex>(settings);
 	denseMapper->ResetScene(scene);
 
 	imuCalibrator = new ITMIMUCalibrator_iPad();
-	tracker = ITMTrackerFactory<TVoxel,TIndex>::Instance().Make(imgSize_rgb, imgSize_d, settings, lowLevelEngine, imuCalibrator, scene);
+	tracker = ITMTrackerFactory::Instance().Make(imgSize_rgb, imgSize_d, settings, lowLevelEngine, imuCalibrator, scene->sceneParams);
 	trackingController = new ITMTrackingController(tracker, settings);
 
 	Vector2i trackedImageSize = trackingController->GetTrackedImageSize(imgSize_rgb, imgSize_d);
@@ -94,28 +90,19 @@ ITMBasicEngine<TVoxel,TIndex>::~ITMBasicEngine()
 	delete kfRaycast;
 
 	if (meshingEngine != NULL) delete meshingEngine;
-
-	if (mesh != NULL) delete mesh;
-}
-
-template <typename TVoxel, typename TIndex>
-ITMMesh* ITMBasicEngine<TVoxel,TIndex>::UpdateMesh(void)
-{
-    if (meshingEngine != NULL)
-    {
-        if (mesh != NULL) meshingEngine->MeshScene(mesh, scene);
-        return mesh;
-    }
-    
-    return NULL;
 }
 
 template <typename TVoxel, typename TIndex>
 void ITMBasicEngine<TVoxel,TIndex>::SaveSceneToMesh(const char *objFileName)
 {
-	if (mesh == NULL) return;
+	if (meshingEngine == NULL) return;
+
+	ITMMesh *mesh = new ITMMesh(settings->GetMemoryType());
+
 	meshingEngine->MeshScene(mesh, scene);
 	mesh->WriteSTL(objFileName);
+
+	delete mesh;
 }
 
 template <typename TVoxel, typename TIndex>

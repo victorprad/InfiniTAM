@@ -32,6 +32,14 @@
 
 #ifndef __METALC__
 
+inline bool portable_finite(float a)
+{
+	volatile float temp = a;
+	if (temp != a) return false;
+	if ((temp - a) != 0.0) return false;
+	return true;
+}
+
 inline void matmul(const float *A, const float *b, float *x, int numRows, int numCols)
 {
 	for (int r = 0; r < numRows; ++r)
