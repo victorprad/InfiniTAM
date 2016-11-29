@@ -29,7 +29,6 @@ namespace ITMLib
 		ITMVisualisationEngine<TVoxel,TIndex> *visualisationEngine;
 
 		ITMMeshingEngine<TVoxel,TIndex> *meshingEngine;
-		ITMMesh *mesh;
 
 		ITMViewBuilder *viewBuilder;
 		ITMDenseMapper<TVoxel,TIndex> *denseMapper;
@@ -61,14 +60,8 @@ namespace ITMLib
 
 		ITMTrackingState::TrackingResult ProcessFrame(ITMUChar4Image *rgbImage, ITMShortImage *rawDepthImage, ITMIMUMeasurement *imuMeasurement = NULL);
 
-		/// Gives access to the data structure used internally to store any created meshes
-		ITMMesh* GetMesh(void) { return mesh; }
-
-		/// Update the internally stored mesh data structure and return a pointer to it
-		ITMMesh* UpdateMesh(void);
-
-		/// Extracts a mesh from the current scene and saves it to the obj file specified by the file name
-		void SaveSceneToMesh(const char *objFileName);
+		/// Extracts a mesh from the current scene and saves it to the model file specified by the file name
+		void SaveSceneToMesh(const char *fileName);
 
 		/// Get a result image as output
 		Vector2i GetImageSize(void) const;

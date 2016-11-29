@@ -29,7 +29,7 @@ ITMLibSettings::ITMLibSettings(void)
 
 	//deviceType = DEVICE_CPU;
 
-	/// how swapping works: disabled, fully enabled (still with dragons) and delete what's not visible
+	/// how swapping works: disabled, fully enabled (still with dragons) and delete what's not visible - not supported in loop closure version
 	swappingMode = SWAPPINGMODE_DISABLED;
 
 	/// enables or disables approximate raycast
@@ -38,13 +38,16 @@ ITMLibSettings::ITMLibSettings(void)
 	/// enable or disable bilateral depth filtering
 	useBilateralFilter = false;
 
-	/// what to do on tracker failure: ignore, relocalise or stop integration
+	/// what to do on tracker failure: ignore, relocalise or stop integration - not supported in loop closure version
 	behaviourOnFailure = FAILUREMODE_IGNORE;
     
-	// Default ICP tracking
+	/// switch between various library modes - basic, with loop closure, etc.
+	libMode = LIBMODE_BASIC;
+
+	//// Default ICP tracking
 	//trackerConfig = "type=icp,levels=rrrbb,minstep=1e-3,"
 	//				"outlierC=0.01,outlierF=0.002,"
-	//				"numiterC=10,numiterF=2,failureDec=3.0";
+	//				"numiterC=10,numiterF=2,failureDec=5.0"; // 5 for normal, 20 for loop closure
 
 	// Depth-only extended tracker:
 	trackerConfig = "type=extended,levels=rrbb,useDepth=1,minstep=1e-4,"
@@ -52,7 +55,7 @@ ITMLibSettings::ITMLibSettings(void)
 					  "numiterC=20,numiterF=50,tukeyCutOff=8,"
 					  "framesToSkip=20,framesToWeight=50,failureDec=20.0";
 
-	// For hybrid intensity+depth tracking:
+	//// For hybrid intensity+depth tracking:
 	//trackerConfig = "type=extended,levels=bbb,useDepth=1,useColour=1,"
 	//				  "colourWeight=0.3,minstep=1e-4,"
 	//				  "outlierColourC=0.175,outlierColourF=0.005,"

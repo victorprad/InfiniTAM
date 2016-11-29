@@ -2,9 +2,13 @@
 
 #include "ITMLibDefines.h"
 #include "Core/ITMBasicEngine.tpp"
+#include "Core/ITMMultiEngine.tpp"
 #include "Core/ITMDenseMapper.tpp"
 #include "Core/ITMDenseSurfelMapper.tpp"
 #include "Engines/Meshing/CPU/ITMMeshingEngine_CPU.tpp"
+#include "Engines/Meshing/CPU/ITMMultiMeshingEngine_CPU.tpp"
+#include "Engines/MultiScene/ITMMapGraphManager.tpp"
+#include "Engines/Visualisation/CPU/ITMMultiVisualisationEngine_CPU.tpp"
 #include "Engines/Reconstruction/ITMSurfelSceneReconstructionEngineFactory.tpp"
 #include "Engines/Reconstruction/CPU/ITMSceneReconstructionEngine_CPU.tpp"
 #include "Engines/Reconstruction/CPU/ITMSurfelSceneReconstructionEngine_CPU.tpp"
@@ -20,13 +24,14 @@
 namespace ITMLib
 {
 	template class ITMBasicEngine<ITMVoxel, ITMVoxelIndex>;
+	template class ITMMultiEngine<ITMVoxel, ITMVoxelIndex>;
 	template class ITMDenseMapper<ITMVoxel, ITMVoxelIndex>;
-	template class ITMMeshingEngine_CPU<ITMVoxel, ITMVoxelIndex>;
-	template class ITMSceneReconstructionEngine_CPU<ITMVoxel, ITMVoxelIndex>;
-	template class ITMSwappingEngine_CPU<ITMVoxel, ITMVoxelIndex>;
-	template class ITMTrackerFactory<ITMVoxel, ITMVoxelIndex>;
-	template class ITMVisualisationEngine<ITMVoxel, ITMVoxelIndex>;
+	template class ITMVoxelMapGraphManager<ITMVoxel, ITMVoxelIndex>;
 	template class ITMVisualisationEngine_CPU<ITMVoxel, ITMVoxelIndex>;
+	template class ITMMeshingEngine_CPU<ITMVoxel, ITMVoxelIndex>;
+	template class ITMMultiMeshingEngine_CPU<ITMVoxel, ITMVoxelIndex>;
+	template class ITMSwappingEngine_CPU<ITMVoxel, ITMVoxelIndex>;
+	template class ITMSceneReconstructionEngine_CPU<ITMVoxel, ITMVoxelIndex>;
 
 	template class ITMDenseSurfelMapper<ITMSurfel_grey>;
 	template class ITMDenseSurfelMapper<ITMSurfel_rgb>;

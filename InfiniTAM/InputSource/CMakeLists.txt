@@ -1,80 +1,69 @@
-include_directories(${OPENGL_INCLUDE_DIR})
-include_directories(${GLUT_INCLUDE_DIR})
+##################################
+# CMakeLists.txt for InputSource #
+##################################
 
-IF(WITH_CUDA)
-  include_directories(${CUDA_INCLUDE_DIRS})
-ELSE()
-  add_definitions(-DCOMPILE_WITHOUT_CUDA)
-ENDIF()
+###########################
+# Specify the target name #
+###########################
 
-IF(OPENNI_FOUND)
-  include_directories(${OpenNI_INCLUDE_DIR})
-ELSE(OPENNI_FOUND)
-  add_definitions(-DCOMPILE_WITHOUT_OpenNI)
-ENDIF(OPENNI_FOUND)
+SET(targetname InputSource)
 
-IF(MSKINECTAPI_FOUND)
-  include_directories(${MSKINECTAPI_INCLUDE_DIR})
-ELSE(MSKINECTAPI_FOUND)
-  add_definitions(-DCOMPILE_WITHOUT_Kinect2)
-ENDIF(MSKINECTAPI_FOUND)
-
-IF(DEFINED libuvc_INCLUDE_DIRS)
-  include_directories(${libuvc_INCLUDE_DIRS})
-  add_definitions(-DCOMPILE_WITH_LibUVC)
-ENDIF()
-
-IF(WITH_REALSENSE)
-  include_directories(${RealSense_INCLUDE_DIR})
-  add_definitions(-DCOMPILE_WITH_RealSense)
-  SET_PROPERTY(SOURCE RealSenseEngine.cpp PROPERTY COMPILE_FLAGS -std=c++11)
-ENDIF()
-
-IF(WITH_FFMPEG)
-  include_directories(${FFMPEG_INCLUDE_DIR})
-  add_definitions(-DCOMPILE_WITH_FFMPEG)
-ENDIF()
+#####################################
+# Offer support for input mirroring #
+#####################################
 
 INCLUDE(${PROJECT_SOURCE_DIR}/cmake/OfferInputMirroring.cmake)
 
-add_library(InputSource
+################################
+# Specify the libraries to use #
+################################
+
+INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseCUDA.cmake)
+INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseFFmpeg.cmake)
+INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseGLUT.cmake)
+INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseKinect2.cmake)
+INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseOpenGL.cmake)
+INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseOpenMP.cmake)
+INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseOpenNI.cmake)
+INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseRealSense.cmake)
+INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseUVC.cmake)
+
+#############################
+# Specify the project files #
+#############################
+
+SET(sources
 CompositeImageSourceEngine.cpp
-CompositeImageSourceEngine.h
-ImageSourceEngine.cpp
-ImageSourceEngine.h
-IMUSourceEngine.cpp
-IMUSourceEngine.h
-Kinect2Engine.cpp
-Kinect2Engine.h
-OpenNIEngine.cpp
-OpenNIEngine.h
-LibUVCEngine.cpp
-LibUVCEngine.h
-RealSenseEngine.cpp
-RealSenseEngine.h
 FFMPEGReader.cpp
-FFMPEGReader.h
 FFMPEGWriter.cpp
-FFMPEGWriter.h
+ImageSourceEngine.cpp
+IMUSourceEngine.cpp
+Kinect2Engine.cpp
+LibUVCEngine.cpp
+OpenNIEngine.cpp
+RealSenseEngine.cpp
 )
 
-target_link_libraries(InputSource ${GLUT_LIBRARIES})
-target_link_libraries(InputSource ${OPENGL_LIBRARIES})
-target_link_libraries(InputSource ITMLib)
-target_link_libraries(InputSource ORUtils)
-IF(WITH_CUDA)
-  target_link_libraries(InputSource ${CUDA_LIBRARY})
-ENDIF()
-IF(OPENNI_FOUND)
-  target_link_libraries(InputSource ${OpenNI_LIBRARY})
-ENDIF(OPENNI_FOUND)
-IF(DEFINED libuvc_LIBRARIES)
-  target_link_libraries(InputSource ${libuvc_LIBRARIES})
-ENDIF()
-IF(WITH_REALSENSE)
-  TARGET_LINK_LIBRARIES(InputSource ${RealSense_LIBRARY})
-ENDIF()
-IF(WITH_FFMPEG)
-  target_link_libraries(InputSource ${FFMPEG_LIBRARIES})
-ENDIF()
+SET(headers
+CompositeImageSourceEngine.h
+FFMPEGReader.h
+FFMPEGWriter.h
+ImageSourceEngine.h
+IMUSourceEngine.h
+Kinect2Engine.h
+LibUVCEngine.h
+OpenNIEngine.h
+RealSenseEngine.h
+)
 
+#############################
+# Specify the source groups #
+#############################
+
+SOURCE_GROUP("" FILES ${sources} ${headers})
+
+##########################################
+# Specify the target and where to put it #
+##########################################
+
+INCLUDE(${PROJECT_SOURCE_DIR}/cmake/SetCUDALibTarget.cmake)

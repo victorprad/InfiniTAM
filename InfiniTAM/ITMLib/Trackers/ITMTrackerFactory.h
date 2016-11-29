@@ -31,12 +31,11 @@ namespace ITMLib
 	/**
 	 * \brief An instance of this class can be used to construct trackers.
 	 */
-	template <typename TVoxel, typename TIndex>
 	class ITMTrackerFactory
 	{
 	private:
 		//#################### TYPEDEFS ####################
-		typedef ITMTracker* MakerFunc(const Vector2i&,const Vector2i&,ITMLibSettings::DeviceType,const ORUtils::KeyValueConfig &,const ITMLowLevelEngine*,ITMIMUCalibrator*,ITMScene<TVoxel,TIndex>*);
+		typedef ITMTracker* MakerFunc(const Vector2i&,const Vector2i&,ITMLibSettings::DeviceType,const ORUtils::KeyValueConfig &,const ITMLowLevelEngine*,ITMIMUCalibrator*,const ITMSceneParams*);
 
 		/// Tracker types
 		typedef enum {
@@ -96,7 +95,7 @@ namespace ITMLib
 	 * \brief Makes a tracker of the type specified in the settings.
 	 */
 	ITMTracker *Make(const Vector2i & imgSize_rgb, const Vector2i & imgSize_d, const ITMLibSettings *settings, const ITMLowLevelEngine *lowLevelEngine,
-		ITMIMUCalibrator *imuCalibrator, ITMScene<TVoxel,TIndex> *scene) const
+		ITMIMUCalibrator *imuCalibrator, const ITMSceneParams *sceneParams) const
 	{
 		ORUtils::KeyValueConfig cfg(settings->trackerConfig);
 		int verbose = 0;
@@ -117,9 +116,9 @@ namespace ITMLib
 		}
 		if (maker == NULL) DIEWITHEXCEPTION("Unknown tracker type");
 
-		ITMTracker *ret = (*(maker->make))(imgSize_rgb, imgSize_d, settings->deviceType, cfg, lowLevelEngine, imuCalibrator, scene);
-		if (ret->requiresColourRendering() && (!TVoxel::hasColorInformation)) {
-			throw std::runtime_error("Error: Colour tracker requires a voxel type with colour information!");
+		ITMTracker *ret = (*(maker->make))(imgSize_rgb, imgSize_d, settings->deviceType, cfg, lowLevelEngine, imuCalibrator, sceneParams);
+		if (ret->requiresColourRendering()) {
+			printf("Assuming a voxel type with colour information!");
 		}
 
 		return ret;
@@ -161,7 +160,7 @@ namespace ITMLib
 	 * \brief Makes a colour tracker.
 	 */
 	static ITMTracker *MakeColourTracker(const Vector2i& imgSize_rgb, const Vector2i& imgSize_d, ITMLibSettings::DeviceType deviceType, const ORUtils::KeyValueConfig & cfg,
-		const ITMLowLevelEngine *lowLevelEngine, ITMIMUCalibrator *imuCalibrator, ITMScene<TVoxel,TIndex> *scene)
+		const ITMLowLevelEngine *lowLevelEngine, ITMIMUCalibrator *imuCalibrator, const ITMSceneParams *sceneParams)
 	{
 		int verbose = 0;
 		if (cfg.getProperty("help") != NULL) if (verbose < 10) verbose = 10;
@@ -196,7 +195,7 @@ namespace ITMLib
 	 * \brief Makes an ICP tracker.
 	 */
 	static ITMTracker *MakeICPTracker(const Vector2i& imgSize_rgb, const Vector2i& imgSize_d, ITMLibSettings::DeviceType deviceType, const ORUtils::KeyValueConfig & cfg,
-		const ITMLowLevelEngine *lowLevelEngine, ITMIMUCalibrator *imuCalibrator, ITMScene<TVoxel,TIndex> *scene)
+		const ITMLowLevelEngine *lowLevelEngine, ITMIMUCalibrator *imuCalibrator, const ITMSceneParams *sceneParams)
 	{
 		const char *levelSetup = "rrrbb";
 		float smallStepSizeCriterion = 1e-3f;
@@ -246,7 +245,7 @@ namespace ITMLib
 	* \brief Makes an Extended tracker.
 	*/
 	static ITMTracker *MakeExtendedTracker(const Vector2i& imgSize_rgb, const Vector2i& imgSize_d, ITMLibSettings::DeviceType deviceType, const ORUtils::KeyValueConfig & cfg,
-		const ITMLowLevelEngine *lowLevelEngine, ITMIMUCalibrator *imuCalibrator, ITMScene<TVoxel, TIndex> *scene)
+		const ITMLowLevelEngine *lowLevelEngine, ITMIMUCalibrator *imuCalibrator, const ITMSceneParams *sceneParams)
 	{
 		const char *levelSetup = "rrbb";
 		bool useDepth = true;
@@ -299,8 +298,8 @@ namespace ITMLib
 											 static_cast<int>(levels.size()),
 											 smallStepSizeCriterion,
 											 failureDetectorThd,
-											 scene->sceneParams->viewFrustum_min,
-											 scene->sceneParams->viewFrustum_max,
+											 sceneParams->viewFrustum_min,
+											 sceneParams->viewFrustum_max,
 											 minColourGradient,
 											 tukeyCutOff,
 											 framesToSkip,
@@ -318,8 +317,8 @@ namespace ITMLib
 											  static_cast<int>(levels.size()),
 											  smallStepSizeCriterion,
 											  failureDetectorThd,
-											  scene->sceneParams->viewFrustum_min,
-											  scene->sceneParams->viewFrustum_max,
+											  sceneParams->viewFrustum_min,
+											  sceneParams->viewFrustum_max,
 											  minColourGradient,
 											  tukeyCutOff,
 											  framesToSkip,
@@ -344,7 +343,7 @@ namespace ITMLib
 	 * \brief Makes an IMU tracker.
 	 */
 	static ITMTracker* MakeIMUTracker(const Vector2i& imgSize_rgb, const Vector2i& imgSize_d, ITMLibSettings::DeviceType deviceType, const ORUtils::KeyValueConfig & cfg,
-		const ITMLowLevelEngine *lowLevelEngine, ITMIMUCalibrator *imuCalibrator, ITMScene<TVoxel,TIndex> *scene)
+		const ITMLowLevelEngine *lowLevelEngine, ITMIMUCalibrator *imuCalibrator, const ITMSceneParams *sceneParams)
 	{
 		const char *levelSetup = "tb";
 		float smallStepSizeCriterion = 1e-3f;
@@ -399,10 +398,10 @@ namespace ITMLib
 	* \brief Makes an Extended IMU tracker.
 	*/
 	static ITMTracker* MakeExtendedIMUTracker(const Vector2i& imgSize_rgb, const Vector2i& imgSize_d, ITMLibSettings::DeviceType deviceType, const ORUtils::KeyValueConfig & cfg,
-		const ITMLowLevelEngine *lowLevelEngine, ITMIMUCalibrator *imuCalibrator, ITMScene<TVoxel, TIndex> *scene)
+		const ITMLowLevelEngine *lowLevelEngine, ITMIMUCalibrator *imuCalibrator, const ITMSceneParams *sceneParams)
 	{
 		ITMTracker *dTracker = MakeExtendedTracker(imgSize_rgb, imgSize_d, deviceType, cfg,
-				lowLevelEngine, imuCalibrator, scene);
+				lowLevelEngine, imuCalibrator, sceneParams);
 		if (dTracker == NULL) DIEWITHEXCEPTION("Failed to make extended tracker"); // Should never happen though
 
 		ITMCompositeTracker *compositeTracker = new ITMCompositeTracker(2);
