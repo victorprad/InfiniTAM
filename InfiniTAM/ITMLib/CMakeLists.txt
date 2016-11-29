@@ -453,6 +453,7 @@ Utils/ITMCUDAUtils.h
 Utils/ITMImageTypes.h
 Utils/ITMLibSettings.h
 Utils/ITMMath.h
+Utils/ITMMemoryBlockTypes.h
 Utils/ITMPixelUtils.h
 Utils/ITMProjectionUtils.h
 Utils/ITMSceneParams.h
