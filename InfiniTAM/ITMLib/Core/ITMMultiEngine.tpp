@@ -305,6 +305,18 @@ void ITMMultiEngine<TVoxel, TIndex>::SaveSceneToMesh(const char *modelFileName)
 }
 
 template <typename TVoxel, typename TIndex>
+void ITMMultiEngine<TVoxel, TIndex>::SaveDataToFile()
+{
+
+}
+
+template <typename TVoxel, typename TIndex>
+void ITMMultiEngine<TVoxel, TIndex>::LoadDataFromFile()
+{
+
+}
+
+template <typename TVoxel, typename TIndex>
 Vector2i ITMMultiEngine<TVoxel, TIndex>::GetImageSize(void) const
 {
 	return trackedImageSize;

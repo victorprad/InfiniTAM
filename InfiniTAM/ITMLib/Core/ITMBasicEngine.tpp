@@ -106,6 +106,18 @@ void ITMBasicEngine<TVoxel,TIndex>::SaveSceneToMesh(const char *objFileName)
 }
 
 template <typename TVoxel, typename TIndex>
+void ITMBasicEngine<TVoxel, TIndex>::SaveDataToFile()
+{
+
+}
+
+template <typename TVoxel, typename TIndex>
+void ITMBasicEngine<TVoxel, TIndex>::LoadDataFromFile()
+{
+
+}
+
+template <typename TVoxel, typename TIndex>
 void ITMBasicEngine<TVoxel,TIndex>::resetAll()
 {
 	denseMapper->ResetScene(scene);
