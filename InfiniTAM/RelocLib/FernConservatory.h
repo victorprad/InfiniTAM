@@ -24,6 +24,9 @@ namespace RelocLib {
 		// the code fragments as an array
 		void computeCode(const ORUtils::Image<float> *img, char *codeFragments) const;
 
+		void SaveToFile(const std::string &fernsFileName);
+		void LoadFromFile(const std::string &fernsFileName);
+
 		int getNumFerns(void) const
 		{
 			return mNumFerns;
@@ -32,6 +35,11 @@ namespace RelocLib {
 		int getNumCodes(void) const
 		{
 			return (1 << mNumDecisions);
+		}
+
+		int getNumDecisions(void) const
+		{
+			return mNumDecisions;
 		}
 
 	private:

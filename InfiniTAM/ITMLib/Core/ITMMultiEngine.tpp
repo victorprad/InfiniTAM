@@ -305,13 +305,13 @@ void ITMMultiEngine<TVoxel, TIndex>::SaveSceneToMesh(const char *modelFileName)
 }
 
 template <typename TVoxel, typename TIndex>
-void ITMMultiEngine<TVoxel, TIndex>::SaveDataToFile()
+void ITMMultiEngine<TVoxel, TIndex>::SaveToFile()
 {
 
 }
 
 template <typename TVoxel, typename TIndex>
-void ITMMultiEngine<TVoxel, TIndex>::LoadDataFromFile()
+void ITMMultiEngine<TVoxel, TIndex>::LoadFromFile()
 {
 
 }

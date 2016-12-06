@@ -3,6 +3,7 @@
 #pragma once
 
 #include "../../../ORUtils/MemoryBlock.h"
+#include "../../../ORUtils/MemoryBlockPersister.h"
 
 namespace ITMLib
 {
@@ -31,6 +32,25 @@ namespace ITMLib
 		int lastFreeBlockId;
 
 		int allocatedSize;
+
+		void SaveToFile(const std::string &outputDirectory) const
+		{
+			std::string VBFileName = outputDirectory + "voxel.dat";
+			std::string ALFileName = outputDirectory + "alloc.dat";
+			std::string AllocSizeFileName = outputDirectory + "vba.txt";
+
+			ORUtils::MemoryBlockPersister::SaveMemoryBlock(VBFileName, *voxelBlocks, memoryType);
+			ORUtils::MemoryBlockPersister::SaveMemoryBlock(ALFileName, *allocationList, memoryType);
+
+			std::ofstream ofs(AllocSizeFileName.c_str());
+			if (!ofs) throw std::runtime_error("Could not open " + AllocSizeFileName + " for reading");;
+
+			ofs << lastFreeBlockId << ' ' << allocatedSize;
+		}
+
+		void LoadFromFile(const std::string &outputDirectory)
+		{
+		}
 
 		ITMLocalVBA(MemoryDeviceType memoryType, int noBlocks, int blockSize)
 		{

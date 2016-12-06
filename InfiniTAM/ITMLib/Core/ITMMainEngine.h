@@ -80,8 +80,8 @@ namespace ITMLib
 		virtual void SaveSceneToMesh(const char *fileName) { };
 
 		/// save and load the full scene and relocaliser (if any) to/from file
-		virtual void SaveDataToFile() { };
-		virtual void LoadDataFromFile() { };
+		virtual void SaveToFile() { };
+		virtual void LoadFromFile() { };
 
 		virtual ~ITMMainEngine() {}
 	};

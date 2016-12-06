@@ -106,13 +106,26 @@ void ITMBasicEngine<TVoxel,TIndex>::SaveSceneToMesh(const char *objFileName)
 }
 
 template <typename TVoxel, typename TIndex>
-void ITMBasicEngine<TVoxel, TIndex>::SaveDataToFile()
+void ITMBasicEngine<TVoxel, TIndex>::SaveToFile()
 {
+	// throws error if any of the saves fail
 
+	std::string relocaliserOutputDirectory = "Relocaliser/", sceneOutputDirectory = "Scene/";
+	
+	MakeDir(relocaliserOutputDirectory.c_str());
+	MakeDir(sceneOutputDirectory.c_str());
+
+	if (relocaliser)
+	{
+		relocaliser->SaveToFile(relocaliserOutputDirectory);
+		poseDatabase.SaveToFile(relocaliserOutputDirectory);
+	}
+
+	scene->SaveToFile(sceneOutputDirectory);
 }
 
 template <typename TVoxel, typename TIndex>
-void ITMBasicEngine<TVoxel, TIndex>::LoadDataFromFile()
+void ITMBasicEngine<TVoxel, TIndex>::LoadFromFile()
 {
 
 }

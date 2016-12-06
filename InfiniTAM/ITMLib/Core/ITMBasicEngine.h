@@ -64,8 +64,8 @@ namespace ITMLib
 		void SaveSceneToMesh(const char *fileName);
 
 		/// save and load the full scene and relocaliser (if any) to/from file
-		void SaveDataToFile();
-		void LoadDataFromFile();
+		void SaveToFile();
+		void LoadFromFile();
 
 		/// Get a result image as output
 		Vector2i GetImageSize(void) const;

@@ -2,6 +2,9 @@
 
 #include "Relocaliser.h"
 
+#include <iostream>
+#include <fstream>
+
 #define TREAT_HOLES
 
 using namespace RelocLib;
@@ -191,4 +194,20 @@ int Relocaliser::ProcessFrame(const ORUtils::Image<float> *img_d, int k, int nea
 	delete[] code;
 	if (releaseDistances) delete[] distances;
 	return ret;
+}
+
+void Relocaliser::SaveToFile(const std::string& outputDirectory)
+{
+	std::string configFilePath = outputDirectory + "config.txt";
+	std::ofstream ofs(configFilePath.c_str());
+
+	if (!ofs) throw std::runtime_error("Could not open " + configFilePath + " for reading");
+	ofs << "type=rgb,levels=4,numFerns=" << mEncoding->getNumFerns() << ",numDecisionsPerFern=" << mEncoding->getNumDecisions() / 3 << ",harvestingThreshold=" << mKeyframeHarvestingThreshold;
+
+	mEncoding->SaveToFile(outputDirectory + "ferns.txt");
+	mDatabase->SaveToFile(outputDirectory + "frames.txt");
+}
+
+void Relocaliser::LoadFromFile(const std::string& inputDirectory)
+{
 }

@@ -85,8 +85,8 @@ namespace ITMLib
 		void SaveSceneToMesh(const char *fileName);
 
 		/// save and load the full scene and relocaliser (if any) to/from file
-		void SaveDataToFile();
-		void LoadDataFromFile();
+		void SaveToFile();
+		void LoadFromFile();
 
 		//void writeFullTrajectory(void) const;
 		//void SaveSceneToMesh(const char *objFileName);

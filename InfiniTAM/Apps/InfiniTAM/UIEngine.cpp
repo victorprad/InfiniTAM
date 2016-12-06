@@ -275,15 +275,31 @@ void UIEngine::glutKeyUpFunction(unsigned char key, int x, int y)
 	case 'k':
 	{
 		printf("saving scene to disk ... ");
-		uiEngine->mainEngine->SaveDataToFile();
-		printf("done\n");
+		
+		try
+		{
+			uiEngine->mainEngine->SaveToFile();
+			printf("done\n");
+		}
+		catch (const std::runtime_error &e)
+		{
+			printf("failed: %s\n", e.what());
+		}
 	}
 	break;
 	case 'l':
 	{
 		printf("loading scene from disk ... ");
-		uiEngine->mainEngine->LoadDataFromFile();
-		printf("done\n");
+
+		try
+		{
+			uiEngine->mainEngine->LoadFromFile();
+			printf("done\n");
+		}
+		catch (const std::runtime_error &e)
+		{
+			printf("failed: %s\n", e.what());
+		}
 	}
 	break;
 	case '[':

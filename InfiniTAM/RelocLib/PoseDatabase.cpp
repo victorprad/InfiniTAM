@@ -2,6 +2,9 @@
 
 #include "PoseDatabase.h"
 
+#include <fstream>
+#include <iterator>
+
 using namespace RelocLib;
 
 PoseDatabase::PoseDatabase(void)
@@ -39,3 +42,26 @@ PoseDatabase::PoseInScene PoseDatabase::retrieveWAPose(int k, int ids[], float d
 	return PoseDatabase::PoseInScene(ORUtils::SE3Pose(m), sceneID);
 }
 
+void PoseDatabase::SaveToFile(const std::string &filename)
+{
+	std::ofstream ofs((filename + "poses.txt").c_str());
+	if (!ofs) throw std::runtime_error("Could not open " + filename + " for reading");;
+	
+	size_t numPoses = mPoses.size();
+	ofs << numPoses << '\n';
+
+	for (size_t i = 0; i < numPoses; i++) 
+	{
+		ofs << mPoses[i].sceneIdx << ' ';
+
+		const float *params = mPoses[i].pose.GetParams();
+		std::copy(params, params + 6, std::ostream_iterator<float>(ofs, " "));
+		
+		ofs << '\n';
+	}
+}
+
+void PoseDatabase::LoadFromFile(const std::string &filename)
+{
+
+}
