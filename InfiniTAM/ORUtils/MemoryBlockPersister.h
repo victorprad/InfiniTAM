@@ -44,6 +44,12 @@ namespace ORUtils
 			}
 		}
 
+		template <typename T>
+		static void LoadMemoryBlock_simple(const std::string& filename, ORUtils::MemoryBlock<T>& block, MemoryDeviceType memoryDeviceType)
+		{
+			int blockSize = ReadBlockSize(filename);
+		}
+
 		/**
 		 * \brief Loads data from a file on disk into a memory block newly-allocated on the CPU with the appropriate size.
 		 *
@@ -185,7 +191,7 @@ namespace ORUtils
 		static void WriteBlock(std::ostream& os, const ORUtils::MemoryBlock<T>& block)
 		{
 			// Try and write the block's size.
-			if (!os.write(reinterpret_cast<const char *>(&block.dataSize), sizeof(block.dataSize)))
+			if (!os.write(reinterpret_cast<const char *>(&block.dataSize), sizeof(int)))
 			{
 				throw std::runtime_error("Could not write memory block size");
 			}

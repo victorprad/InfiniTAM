@@ -56,4 +56,15 @@ void FernConservatory::SaveToFile(const std::string &fernsFileName)
 
 void FernConservatory::LoadFromFile(const std::string &fernsFileName)
 {
+	std::ifstream ifs(fernsFileName.c_str());
+	if (!ifs) throw std::runtime_error("unable to load " + fernsFileName);
+
+	for (int i = 0; i < mNumFerns; i++) 
+	{
+		for (int j = 0; j < mNumDecisions; j++) 
+		{
+			FernTester &fernTester = mEncoders[i * mNumDecisions + j];
+			ifs >> fernTester.location.x >> fernTester.location.y >> fernTester.threshold;
+		}
+	}
 }

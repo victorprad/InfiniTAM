@@ -196,7 +196,7 @@ int Relocaliser::ProcessFrame(const ORUtils::Image<float> *img_d, int k, int nea
 	return ret;
 }
 
-void Relocaliser::SaveToFile(const std::string& outputDirectory)
+void Relocaliser::SaveToDirectory(const std::string& outputDirectory)
 {
 	std::string configFilePath = outputDirectory + "config.txt";
 	std::ofstream ofs(configFilePath.c_str());
@@ -208,6 +208,16 @@ void Relocaliser::SaveToFile(const std::string& outputDirectory)
 	mDatabase->SaveToFile(outputDirectory + "frames.txt");
 }
 
-void Relocaliser::LoadFromFile(const std::string& inputDirectory)
+void Relocaliser::LoadFromDirectory(const std::string& inputDirectory)
 {
+	std::string fernFilePath = inputDirectory + "ferns.txt";
+	std::string frameCodeFilePath = inputDirectory + "frames.txt";
+
+	if (!std::ifstream(fernFilePath.c_str()))
+		throw std::runtime_error("unable to open " + fernFilePath);
+	if (!std::ifstream(frameCodeFilePath.c_str()))
+		throw std::runtime_error("unable to open " + frameCodeFilePath);
+
+	mEncoding->LoadFromFile(fernFilePath);
+	mDatabase->LoadFromFile(frameCodeFilePath);
 }

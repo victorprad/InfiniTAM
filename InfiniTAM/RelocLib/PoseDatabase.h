@@ -27,8 +27,8 @@ namespace RelocLib {
 		const PoseInScene & retrievePose(int id) const { return mPoses[id]; }
 		PoseInScene retrieveWAPose(int k, int ids[], float weights[]) const;
 
-		void SaveToFile(const std::string &filename);
-		void LoadFromFile(const std::string &filename);
+		void SaveToDirectory(const std::string &directoryName);
+		void LoadFromDirectory(const std::string &directoryName);
 
 	private:
 		std::vector<PoseInScene> mPoses;

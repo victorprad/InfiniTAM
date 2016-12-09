@@ -70,11 +70,11 @@ namespace ITMLib
 
 		const IndexData* getIndexData(void) const { return indexData->GetData(memoryType); }
 
-		void SaveToFile(const std::string &outputDirectory) const
+		void SaveToDirectory(const std::string &outputDirectory) const
 		{
 		}
 
-		void LoadFromFile(const std::string &outputDirectory)
+		void LoadFromDirectory(const std::string &outputDirectory)
 		{
 		}
 

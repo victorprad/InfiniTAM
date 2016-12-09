@@ -42,7 +42,7 @@ namespace ITMLib
 		ITMIMUCalibrator *imuCalibrator;
 
 		RelocLib::Relocaliser *relocaliser;
-		RelocLib::PoseDatabase poseDatabase;
+		RelocLib::PoseDatabase *poseDatabase;
 		ITMUChar4Image *kfRaycast;
 
 		/// Pointer for storing the current input frame

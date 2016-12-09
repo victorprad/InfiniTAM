@@ -4,6 +4,9 @@
 
 #include "FernConservatory.h"
 #include "RelocDatabase.h"
+#include "PoseDatabase.h"
+
+#include "../ORUtils/SE3Pose.h"
 
 namespace RelocLib {
 
@@ -31,8 +34,9 @@ namespace RelocLib {
 		*/
 		int ProcessFrame(const ORUtils::Image<float> *img_d, int k, int nearestNeighbours[], float *distances = NULL, bool harvestKeyframes = true) const;
 
-		void SaveToFile(const std::string& outputDirectory);
-		void LoadFromFile(const std::string& inputDirectory);
+		void SaveToDirectory(const std::string& outputDirectory);
+		void LoadFromDirectory(const std::string& inputDirectory);
+		
 	private:
 		float mKeyframeHarvestingThreshold;
 		FernConservatory *mEncoding;

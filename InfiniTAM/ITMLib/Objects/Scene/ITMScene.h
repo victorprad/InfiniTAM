@@ -28,16 +28,16 @@ namespace ITMLib
 		/** Global content of the 8x8x8 voxel blocks -- stored on host only */
 		ITMGlobalCache<TVoxel> *globalCache;
 
-		void SaveToFile(const std::string &outputDirectory) const
+		void SaveToDirectory(const std::string &outputDirectory) const
 		{
-			localVBA.SaveToFile(outputDirectory);
-			index.SaveToFile(outputDirectory);
+			localVBA.SaveToDirectory(outputDirectory);
+			index.SaveToDirectory(outputDirectory);
 		}
 
-		void LoadFileFile(const std::string &outputDirectory)
+		void LoadFromDirectory(const std::string &outputDirectory)
 		{
-			index.LoadFromFile(outputDirectory);
-			localVBA.LoadFromFile(outputDirectory);
+			localVBA.LoadFromDirectory(outputDirectory);
+			index.LoadFromDirectory(outputDirectory);			
 		}
 
 		ITMScene(const ITMSceneParams *_sceneParams, bool _useSwapping, MemoryDeviceType _memoryType)

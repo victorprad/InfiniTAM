@@ -54,6 +54,7 @@ ITMBasicEngine<TVoxel,TIndex>::ITMBasicEngine(const ITMLibSettings *settings, co
 	view = NULL; // will be allocated by the view builder
 	
 	relocaliser = new RelocLib::Relocaliser(imgSize_d, Vector2f(settings->sceneParams.viewFrustum_min, settings->sceneParams.viewFrustum_max), 0.2f, 500, 4);
+	poseDatabase = new RelocLib::PoseDatabase();
 	kfRaycast = new ITMUChar4Image(imgSize_d, memoryType);
 
 	trackingActive = true;
@@ -87,6 +88,7 @@ ITMBasicEngine<TVoxel,TIndex>::~ITMBasicEngine()
 	delete visualisationEngine;
 
 	delete relocaliser;
+	delete poseDatabase;
 	delete kfRaycast;
 
 	if (meshingEngine != NULL) delete meshingEngine;
@@ -110,24 +112,63 @@ void ITMBasicEngine<TVoxel, TIndex>::SaveToFile()
 {
 	// throws error if any of the saves fail
 
-	std::string relocaliserOutputDirectory = "Relocaliser/", sceneOutputDirectory = "Scene/";
+	std::string saveOutputDirectory = "State/";
+	std::string relocaliserOutputDirectory = saveOutputDirectory + "Relocaliser/", sceneOutputDirectory = saveOutputDirectory + "Scene/";
 	
+	MakeDir(saveOutputDirectory.c_str());
 	MakeDir(relocaliserOutputDirectory.c_str());
 	MakeDir(sceneOutputDirectory.c_str());
 
 	if (relocaliser)
 	{
-		relocaliser->SaveToFile(relocaliserOutputDirectory);
-		poseDatabase.SaveToFile(relocaliserOutputDirectory);
+		relocaliser->SaveToDirectory(relocaliserOutputDirectory);
+		poseDatabase->SaveToDirectory(relocaliserOutputDirectory);
 	}
 
-	scene->SaveToFile(sceneOutputDirectory);
+	scene->SaveToDirectory(sceneOutputDirectory);
 }
 
 template <typename TVoxel, typename TIndex>
 void ITMBasicEngine<TVoxel, TIndex>::LoadFromFile()
 {
+	std::string saveInputDirectory = "State/";
+	std::string relocaliserInputDirectory = saveInputDirectory + "Relocaliser/", sceneInputDirectory = saveInputDirectory + "Scene/";
 
+	////TODO: add factory for relocaliser and rebuild using config from relocaliserOutputDirectory + "config.txt"
+	////TODO: add proper management of case when scene load fails (keep old scene or also reset relocaliser)
+
+	try // load relocaliser
+	{
+		RelocLib::Relocaliser *relocaliser_temp = new RelocLib::Relocaliser(view->depth->noDims, Vector2f(settings->sceneParams.viewFrustum_min, settings->sceneParams.viewFrustum_max), 0.2f, 500, 4);
+		RelocLib::PoseDatabase *poseDatabase_temp = new RelocLib::PoseDatabase();
+
+		relocaliser_temp->LoadFromDirectory(relocaliserInputDirectory);
+		poseDatabase_temp->LoadFromDirectory(relocaliserInputDirectory);
+
+		delete relocaliser; delete poseDatabase;
+		relocaliser = relocaliser_temp;
+		poseDatabase = poseDatabase_temp;
+	}
+	catch (std::runtime_error &e)
+	{
+		throw std::runtime_error("Could not load relocaliser: " + std::string(e.what()));
+	}
+
+	try // load scene
+	{
+		scene->LoadFromDirectory(sceneInputDirectory);
+	}
+	catch (std::runtime_error &e)
+	{
+		denseMapper->ResetScene(scene);
+		throw std::runtime_error("Could not load scene:" + std::string(e.what()));
+	}
+
+	// rebuild visible list from scratch
+	//visualisationEngine->FindVisibleBlocks(scene, trackingState->pose_d, &view->calib.intrinsics_d, renderState_live);
+
+	//trackingController->Prepare(trackingState, scene, view, visualisationEngine, renderState_live);
+	//trackingController->Track(trackingState, view);
 }
 
 template <typename TVoxel, typename TIndex>
@@ -248,15 +289,17 @@ ITMTrackingState::TrackingResult ITMBasicEngine<TVoxel,TIndex>::ProcessFrame(ITM
 		addKeyframeIdx = relocaliser->ProcessFrame(view->depth, 1, &NN, &distances, trackerResult == ITMTrackingState::TRACKING_GOOD && relocalisationCount == 0);
 
 		// add keyframe, if necessary
-		if (addKeyframeIdx >= 0) poseDatabase.storePose(addKeyframeIdx, *(trackingState->pose_d), 0);
+		if (addKeyframeIdx >= 0) poseDatabase->storePose(addKeyframeIdx, *(trackingState->pose_d), 0);
 		else if (trackerResult == ITMTrackingState::TRACKING_FAILED) 
 		{
+			printf("relocalising ...\n");
+
 			relocalisationCount = 10;
 
 			// Reset previous rgb frame since the rgb image is likely different than the one acquired when setting the keyframe
 			view->rgb_prev->Clear();
 
-			const RelocLib::PoseDatabase::PoseInScene & keyframe = poseDatabase.retrievePose(NN);
+			const RelocLib::PoseDatabase::PoseInScene & keyframe = poseDatabase->retrievePose(NN);
 			trackingState->pose_d->SetFrom(&keyframe.pose);
 
 			denseMapper->UpdateVisibleList(view, trackingState, scene, renderState_live, true);
