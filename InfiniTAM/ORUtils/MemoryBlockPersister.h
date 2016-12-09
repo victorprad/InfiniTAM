@@ -27,7 +27,7 @@ namespace ORUtils
 		template <typename T>
 		static void LoadMemoryBlock(const std::string& filename, ORUtils::MemoryBlock<T>& block, MemoryDeviceType memoryDeviceType)
 		{
-			int blockSize = ReadBlockSize(filename);
+			size_t blockSize = ReadBlockSize(filename);
 			if (memoryDeviceType == MEMORYDEVICE_CUDA)
 			{
 				// If we're loading into a block on the GPU, first try and read the data into a temporary block on the CPU.
@@ -47,7 +47,7 @@ namespace ORUtils
 		template <typename T>
 		static void LoadMemoryBlock_simple(const std::string& filename, ORUtils::MemoryBlock<T>& block, MemoryDeviceType memoryDeviceType)
 		{
-			int blockSize = ReadBlockSize(filename);
+			size_t blockSize = ReadBlockSize(filename);
 		}
 
 		/**
@@ -60,7 +60,7 @@ namespace ORUtils
 		template <typename T>
 		static ORUtils::MemoryBlock<T> *LoadMemoryBlock(const std::string& filename, ORUtils::MemoryBlock<T> *dummy = NULL)
 		{
-			int blockSize = ReadBlockSize(filename);
+			size_t blockSize = ReadBlockSize(filename);
 			ORUtils::MemoryBlock<T> *block = new ORUtils::MemoryBlock<T>(blockSize, MEMORYDEVICE_CPU);
 			ReadBlockData(filename, *block, blockSize);
 			return block;
@@ -75,7 +75,7 @@ namespace ORUtils
 		 * \return                    The size of the memory block in the file.
 		 * \throws std::runtime_error If the read is unsuccessful.
 		 */
-		static int ReadBlockSize(const std::string& filename)
+		static size_t ReadBlockSize(const std::string& filename)
 		{
 			std::ifstream fs(filename.c_str(), std::ios::binary);
 			if (!fs) throw std::runtime_error("Could not open " + filename + " for reading");
@@ -124,7 +124,7 @@ namespace ORUtils
 		 * \throws std::runtime_error If the read is unsuccessful.
 		 */
 		template <typename T>
-		static void ReadBlockData(std::istream& is, ORUtils::MemoryBlock<T>& block, int blockSize)
+		static void ReadBlockData(std::istream& is, ORUtils::MemoryBlock<T>& block, size_t blockSize)
 		{
 			// Try and read the block's size.
 			if (block.dataSize != blockSize)
@@ -150,13 +150,13 @@ namespace ORUtils
 		 * \throws std::runtime_error If the read is unsuccessful.
 		 */
 		template <typename T>
-		static void ReadBlockData(const std::string& filename, ORUtils::MemoryBlock<T>& block, int blockSize)
+		static void ReadBlockData(const std::string& filename, ORUtils::MemoryBlock<T>& block, size_t blockSize)
 		{
 			std::ifstream fs(filename.c_str(), std::ios::binary);
 			if (!fs) throw std::runtime_error("Could not open " + filename + " for reading");
 
 			// Try and skip the block's size.
-			if (!fs.seekg(sizeof(int))) throw std::runtime_error("Could not skip memory block size");
+			if (!fs.seekg(sizeof(size_t))) throw std::runtime_error("Could not skip memory block size");
 
 			// Try and read the block's data.
 			ReadBlockData(fs, block, blockSize);
@@ -171,10 +171,10 @@ namespace ORUtils
 		 * \return                    The size of the memory block.
 		 * \throws std::runtime_error If the read is unsuccesssful.
 		 */
-		static int ReadBlockSize(std::istream& is)
+		static size_t ReadBlockSize(std::istream& is)
 		{
-			int blockSize;
-			if (is.read(reinterpret_cast<char*>(&blockSize), sizeof(int))) return blockSize;
+			size_t blockSize;
+			if (is.read(reinterpret_cast<char*>(&blockSize), sizeof(size_t))) return blockSize;
 			else throw std::runtime_error("Could not read memory block size");
 		}
 
@@ -191,7 +191,7 @@ namespace ORUtils
 		static void WriteBlock(std::ostream& os, const ORUtils::MemoryBlock<T>& block)
 		{
 			// Try and write the block's size.
-			if (!os.write(reinterpret_cast<const char *>(&block.dataSize), sizeof(int)))
+			if (!os.write(reinterpret_cast<const char *>(&block.dataSize), sizeof(size_t)))
 			{
 				throw std::runtime_error("Could not write memory block size");
 			}
