@@ -58,6 +58,8 @@ ITMMultiEngine<TVoxel, TIndex>::ITMMultiEngine(const ITMLibSettings *settings, c
 	view = NULL; // will be allocated by the view builder
 
 	mLoopClosureDetector = new RelocLib::Relocaliser(imgSize_d, Vector2f(settings->sceneParams.viewFrustum_min, settings->sceneParams.viewFrustum_max), 0.1f, 1000, 4);
+	mPoseDatabase = new RelocLib::PoseDatabase();
+
 	mGlobalAdjustmentEngine = new ITMGlobalAdjustmentEngine();
 	mScheduleGlobalAdjustment = false;
 	if (separateThreadGlobalAdjustment) mGlobalAdjustmentEngine->startSeparateThread();
@@ -69,7 +71,6 @@ ITMMultiEngine<TVoxel, TIndex>::ITMMultiEngine(const ITMLibSettings *settings, c
 template <typename TVoxel, typename TIndex>
 ITMMultiEngine<TVoxel, TIndex>::~ITMMultiEngine(void)
 {
-	//delete multiVisualisationEngine;
 	if (renderState_multiscene != NULL) delete renderState_multiscene;
 
 	delete mGlobalAdjustmentEngine;
@@ -92,6 +93,7 @@ ITMMultiEngine<TVoxel, TIndex>::~ITMMultiEngine(void)
 	delete visualisationEngine;
 
 	delete mLoopClosureDetector;
+	delete mPoseDatabase;
 
 	delete multiVisualisationEngine;
 }
@@ -99,6 +101,8 @@ ITMMultiEngine<TVoxel, TIndex>::~ITMMultiEngine(void)
 template <typename TVoxel, typename TIndex>
 void ITMMultiEngine<TVoxel, TIndex>::changeFreeviewLocalMapIdx(ORUtils::SE3Pose *pose, int newIdx)
 {
+	//if ((newIdx < 0) || ((unsigned)newIdx >= mapManager->numLocalMaps())) return;
+
 	if (newIdx < -1) newIdx = (int)mapManager->numLocalMaps() - 1;
 	if ((unsigned)newIdx >= mapManager->numLocalMaps()) newIdx = -1;
 
@@ -192,11 +196,11 @@ ITMTrackingState::TrackingResult ITMMultiEngine<TVoxel, TIndex>::ProcessFrame(IT
 			if (primaryDataIdx >= 0) primaryLocalMapIdx = mActiveDataManager->getLocalMapIndex(primaryDataIdx);
 
 			// add keyframe, if necessary
-			if (addKeyframeIdx >= 0) mPoseDatabase.storePose(addKeyframeIdx, *(mapManager->getLocalMap(primaryLocalMapIdx)->trackingState->pose_d), primaryLocalMapIdx);
+			if (addKeyframeIdx >= 0) mPoseDatabase->storePose(addKeyframeIdx, *(mapManager->getLocalMap(primaryLocalMapIdx)->trackingState->pose_d), primaryLocalMapIdx);
 			else for (int j = 0; j < k_loopcloseneighbours; ++j)
 			{
 				if (distances[j] > F_maxdistattemptreloc) continue;
-				const RelocLib::PoseDatabase::PoseInScene & keyframe = mPoseDatabase.retrievePose(NN[j]);
+				const RelocLib::PoseDatabase::PoseInScene & keyframe = mPoseDatabase->retrievePose(NN[j]);
 				int newDataIdx = mActiveDataManager->initiateNewLink(keyframe.sceneIdx, keyframe.pose, (primaryLocalMapIdx < 0));
 				if (newDataIdx >= 0) 
 				{

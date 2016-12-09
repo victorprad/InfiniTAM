@@ -40,7 +40,7 @@ namespace ITMLib
 		ITMDenseMapper<TVoxel, TIndex> *denseMapper;
 
 		RelocLib::Relocaliser *mLoopClosureDetector;
-		RelocLib::PoseDatabase mPoseDatabase;
+		RelocLib::PoseDatabase *mPoseDatabase;
 
 		ITMVoxelMapGraphManager<TVoxel, TIndex> *mapManager;
 		ITMActiveMapManager *mActiveDataManager;
