@@ -53,8 +53,17 @@ ITMBasicEngine<TVoxel,TIndex>::ITMBasicEngine(const ITMLibSettings *settings, co
 
 	view = NULL; // will be allocated by the view builder
 	
-	relocaliser = new RelocLib::Relocaliser(imgSize_d, Vector2f(settings->sceneParams.viewFrustum_min, settings->sceneParams.viewFrustum_max), 0.2f, 500, 4);
-	poseDatabase = new RelocLib::PoseDatabase();
+	if (settings->behaviourOnFailure == settings->FAILUREMODE_RELOCALISE)
+	{
+		relocaliser = new RelocLib::Relocaliser(imgSize_d, Vector2f(settings->sceneParams.viewFrustum_min, settings->sceneParams.viewFrustum_max), 0.2f, 500, 4);
+		poseDatabase = new RelocLib::PoseDatabase();
+	}
+	else
+	{
+		relocaliser = NULL;
+		poseDatabase = NULL;
+	}
+
 	kfRaycast = new ITMUChar4Image(imgSize_d, memoryType);
 
 	trackingActive = true;
@@ -69,7 +78,7 @@ template <typename TVoxel, typename TIndex>
 ITMBasicEngine<TVoxel,TIndex>::~ITMBasicEngine()
 {
 	delete renderState_live;
-	if (renderState_freeview!=NULL) delete renderState_freeview;
+	if (renderState_freeview != NULL) delete renderState_freeview;
 
 	delete scene;
 
@@ -87,8 +96,8 @@ ITMBasicEngine<TVoxel,TIndex>::~ITMBasicEngine()
 
 	delete visualisationEngine;
 
-	delete relocaliser;
-	delete poseDatabase;
+	if (relocaliser != NULL) delete relocaliser;
+	if (poseDatabase != NULL) delete poseDatabase;
 	delete kfRaycast;
 
 	if (meshingEngine != NULL) delete meshingEngine;
