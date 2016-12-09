@@ -137,6 +137,8 @@ void ITMBasicEngine<TVoxel, TIndex>::LoadFromFile()
 	////TODO: add factory for relocaliser and rebuild using config from relocaliserOutputDirectory + "config.txt"
 	////TODO: add proper management of case when scene load fails (keep old scene or also reset relocaliser)
 
+	this->resetAll();
+
 	try // load relocaliser
 	{
 		RelocLib::Relocaliser *relocaliser_temp = new RelocLib::Relocaliser(view->depth->noDims, Vector2f(settings->sceneParams.viewFrustum_min, settings->sceneParams.viewFrustum_max), 0.2f, 500, 4);
@@ -163,12 +165,6 @@ void ITMBasicEngine<TVoxel, TIndex>::LoadFromFile()
 		denseMapper->ResetScene(scene);
 		throw std::runtime_error("Could not load scene:" + std::string(e.what()));
 	}
-
-	// rebuild visible list from scratch
-	//visualisationEngine->FindVisibleBlocks(scene, trackingState->pose_d, &view->calib.intrinsics_d, renderState_live);
-
-	//trackingController->Prepare(trackingState, scene, view, visualisationEngine, renderState_live);
-	//trackingController->Track(trackingState, view);
 }
 
 template <typename TVoxel, typename TIndex>
@@ -292,8 +288,6 @@ ITMTrackingState::TrackingResult ITMBasicEngine<TVoxel,TIndex>::ProcessFrame(ITM
 		if (addKeyframeIdx >= 0) poseDatabase->storePose(addKeyframeIdx, *(trackingState->pose_d), 0);
 		else if (trackerResult == ITMTrackingState::TRACKING_FAILED) 
 		{
-			printf("relocalising ...\n");
-
 			relocalisationCount = 10;
 
 			// Reset previous rgb frame since the rgb image is likely different than the one acquired when setting the keyframe

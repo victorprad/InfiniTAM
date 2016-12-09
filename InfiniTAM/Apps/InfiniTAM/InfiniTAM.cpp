@@ -33,6 +33,13 @@ static void CreateDefaultImageSource(ImageSourceEngine* & imageSource, IMUSource
 	const char *filename2 = arg3;
 	const char *filename_imu = arg4;
 
+	if (strcmp(calibFile, "viewer") == 0)
+	{
+		imageSource = new BlankImageGenerator("", Vector2i(640, 480));
+		printf("starting in viewer mode: make sure to press n first to initiliase the views ... \n");
+		return;
+	}
+
 	printf("using calibration file: %s\n", calibFile);
 
 	if ((imageSource == NULL) && (filename2 != NULL))
@@ -84,6 +91,7 @@ static void CreateDefaultImageSource(ImageSourceEngine* & imageSource, IMUSource
 			imageSource = NULL;
 		}
 	}
+
 	if (imageSource == NULL)
 	{
 		printf("trying UVC device\n");
@@ -94,6 +102,7 @@ static void CreateDefaultImageSource(ImageSourceEngine* & imageSource, IMUSource
 			imageSource = NULL;
 		}
 	}
+
 	if (imageSource == NULL)
 	{
 		printf("trying RealSense device\n");
@@ -104,6 +113,7 @@ static void CreateDefaultImageSource(ImageSourceEngine* & imageSource, IMUSource
 			imageSource = NULL;
 		}
 	}
+
 	if (imageSource == NULL)
 	{
 		printf("trying MS Kinect 2 device\n");

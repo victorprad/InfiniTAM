@@ -266,5 +266,21 @@ void RawFileReader::getImages(ITMUChar4Image *rgb, ITMShortImage *rawDepth)
 	++currentFrameNo;
 }
 
+BlankImageGenerator::BlankImageGenerator(const char *calibFilename, Vector2i setImageSize) : BaseImageSourceEngine(calibFilename)
+{
+	this->imgSize = setImageSize;
+}
+
+bool BlankImageGenerator::hasMoreImages(void) const
+{
+	return true;
+}
+
+void BlankImageGenerator::getImages(ITMUChar4Image *rgb, ITMShortImage *rawDepth)
+{
+	rgb->Clear();
+	rawDepth->Clear();
+}
+
 template class InputSource::ImageFileReader<ImageMaskPathGenerator>;
 template class InputSource::ImageFileReader<ImageListPathGenerator>;
