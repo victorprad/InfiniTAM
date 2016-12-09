@@ -2,6 +2,9 @@
 
 #include "Relocaliser.h"
 
+#include <iostream>
+#include <fstream>
+
 #define TREAT_HOLES
 
 using namespace RelocLib;
@@ -191,4 +194,30 @@ int Relocaliser::ProcessFrame(const ORUtils::Image<float> *img_d, int k, int nea
 	delete[] code;
 	if (releaseDistances) delete[] distances;
 	return ret;
+}
+
+void Relocaliser::SaveToDirectory(const std::string& outputDirectory)
+{
+	std::string configFilePath = outputDirectory + "config.txt";
+	std::ofstream ofs(configFilePath.c_str());
+
+	if (!ofs) throw std::runtime_error("Could not open " + configFilePath + " for reading");
+	ofs << "type=rgb,levels=4,numFerns=" << mEncoding->getNumFerns() << ",numDecisionsPerFern=" << mEncoding->getNumDecisions() / 3 << ",harvestingThreshold=" << mKeyframeHarvestingThreshold;
+
+	mEncoding->SaveToFile(outputDirectory + "ferns.txt");
+	mDatabase->SaveToFile(outputDirectory + "frames.txt");
+}
+
+void Relocaliser::LoadFromDirectory(const std::string& inputDirectory)
+{
+	std::string fernFilePath = inputDirectory + "ferns.txt";
+	std::string frameCodeFilePath = inputDirectory + "frames.txt";
+
+	if (!std::ifstream(fernFilePath.c_str()))
+		throw std::runtime_error("unable to open " + fernFilePath);
+	if (!std::ifstream(frameCodeFilePath.c_str()))
+		throw std::runtime_error("unable to open " + frameCodeFilePath);
+
+	mEncoding->LoadFromFile(fernFilePath);
+	mDatabase->LoadFromFile(frameCodeFilePath);
 }

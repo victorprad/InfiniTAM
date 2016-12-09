@@ -42,7 +42,7 @@ namespace ITMLib
 		ITMIMUCalibrator *imuCalibrator;
 
 		RelocLib::Relocaliser *relocaliser;
-		RelocLib::PoseDatabase poseDatabase;
+		RelocLib::PoseDatabase *poseDatabase;
 		ITMUChar4Image *kfRaycast;
 
 		/// Pointer for storing the current input frame
@@ -62,6 +62,10 @@ namespace ITMLib
 
 		/// Extracts a mesh from the current scene and saves it to the model file specified by the file name
 		void SaveSceneToMesh(const char *fileName);
+
+		/// save and load the full scene and relocaliser (if any) to/from file
+		void SaveToFile();
+		void LoadFromFile();
 
 		/// Get a result image as output
 		Vector2i GetImageSize(void) const;

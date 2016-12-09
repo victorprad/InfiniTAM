@@ -2,6 +2,9 @@
 
 #include "PoseDatabase.h"
 
+#include <fstream>
+#include <iterator>
+
 using namespace RelocLib;
 
 PoseDatabase::PoseDatabase(void)
@@ -39,3 +42,41 @@ PoseDatabase::PoseInScene PoseDatabase::retrieveWAPose(int k, int ids[], float d
 	return PoseDatabase::PoseInScene(ORUtils::SE3Pose(m), sceneID);
 }
 
+void PoseDatabase::SaveToDirectory(const std::string &directoryName)
+{
+	std::string fileName = directoryName + "poses.txt";
+	std::ofstream ofs((directoryName + "poses.txt").c_str());
+	if (!ofs) throw std::runtime_error("Could not open " + fileName + " for reading");
+	
+	size_t numPoses = mPoses.size();
+	ofs << numPoses << '\n';
+
+	for (size_t i = 0; i < numPoses; i++) 
+	{
+		ofs << mPoses[i].sceneIdx << ' ';
+
+		const float *params = mPoses[i].pose.GetParams();
+		std::copy(params, params + 6, std::ostream_iterator<float>(ofs, " "));
+		
+		ofs << '\n';
+	}
+}
+
+void PoseDatabase::LoadFromDirectory(const std::string &filename)
+{
+	int tot, sceneID;
+	float tx, ty, tz, rx, ry, rz;
+
+	std::string poseDatabaseFilePath = filename + "poses.txt";
+	
+	std::ifstream ifs(poseDatabaseFilePath.c_str());
+	if (!ifs) throw std::runtime_error("unable to open " + poseDatabaseFilePath);
+
+	ifs >> tot;
+	for (int i = 0; i < tot; i++) 
+	{
+		ifs >> sceneID >> tx >> ty >> tz >> rx >> ry >> rz;
+		ORUtils::SE3Pose pose(tx, ty, tz, rx, ry, rz);
+		storePose(i, pose, sceneID);
+	}
+}

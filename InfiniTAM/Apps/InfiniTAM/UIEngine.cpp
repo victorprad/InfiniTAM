@@ -99,14 +99,14 @@ void UIEngine::glutDisplayFunction()
 	safe_glutBitmapString(GLUT_BITMAP_HELVETICA_18, (const char*)str);
 
 
-	glColor3f(1.0f, 0.0f, 0.0f); glRasterPos2f(-0.95f, -0.95f);
+	glColor3f(1.0f, 0.0f, 0.0f); glRasterPos2f(-0.98f, -0.95f);
 	if (uiEngine->freeviewActive)
 	{
-		sprintf(str, "n - next frame \t b - all frames \t e/esc - exit \t r - reset all \t f - follow camera \t c - colours (currently %s) \t t - turn fusion %s", uiEngine->colourModes_freeview[uiEngine->currentColourMode].name, uiEngine->intergrationActive ? "off" : "on");
+		sprintf(str, "n: one frame \t b: continous \t e/esc: exit \t r: reset \t k: save \t l: load \t f: follow camera \t c: colours (currently %s) \t t: turn fusion %s", uiEngine->colourModes_freeview[uiEngine->currentColourMode].name, uiEngine->intergrationActive ? "off" : "on");
 	}
 	else
 	{
-		sprintf(str, "n - next frame \t b - all frames \t e/esc - exit \t r - reset all \t f - free viewpoint \t c - colours (currently %s) \t t - turn fusion %s", uiEngine->colourModes_main[uiEngine->currentColourMode].name, uiEngine->intergrationActive ? "off" : "on");
+		sprintf(str, "n: one frame \t b: continous \t e/esc: exit \t r: reset \t k: save \t l: load \t f: free viewpoint \t c: colours (currently %s) \t t: turn fusion %s", uiEngine->colourModes_main[uiEngine->currentColourMode].name, uiEngine->intergrationActive ? "off" : "on");
 	}
 	safe_glutBitmapString(GLUT_BITMAP_HELVETICA_12, (const char*)str);
 
@@ -231,7 +231,8 @@ void UIEngine::glutKeyUpFunction(unsigned char key, int x, int y)
 			}
 
 			ITMMultiEngine<ITMVoxel, ITMVoxelIndex> *multiEngine = dynamic_cast<ITMMultiEngine<ITMVoxel, ITMVoxelIndex>*>(uiEngine->mainEngine);
-			if (multiEngine != NULL) {
+			if (multiEngine != NULL)
+			{
 				int idx = multiEngine->findPrimaryLocalMapIdx();
 				if (idx < 0) idx = 0;
 				multiEngine->setFreeviewLocalMapIdx(idx);
@@ -252,7 +253,8 @@ void UIEngine::glutKeyUpFunction(unsigned char key, int x, int y)
 	{
 		uiEngine->intergrationActive = !uiEngine->intergrationActive;
 		ITMBasicEngine<ITMVoxel, ITMVoxelIndex> *basicEngine = dynamic_cast<ITMBasicEngine<ITMVoxel, ITMVoxelIndex>*>(uiEngine->mainEngine);
-		if (basicEngine != NULL) {
+		if (basicEngine != NULL) 
+		{
 			if (uiEngine->intergrationActive) basicEngine->turnOnIntegration();
 			else basicEngine->turnOffIntegration();
 		}
@@ -260,33 +262,52 @@ void UIEngine::glutKeyUpFunction(unsigned char key, int x, int y)
 	break;
 	case 'w':
 	{
-		ITMBasicEngine<ITMVoxel, ITMVoxelIndex> *basicEngine = dynamic_cast<ITMBasicEngine<ITMVoxel, ITMVoxelIndex>*>(uiEngine->mainEngine);
-		if (basicEngine != NULL) {
-			printf("saving mesh to disk ...");
-			basicEngine->SaveSceneToMesh("mesh.stl");
-			printf(" done\n");
-		}
-
-		ITMMultiEngine<ITMVoxel, ITMVoxelIndex> *multiEngine = dynamic_cast<ITMMultiEngine<ITMVoxel, ITMVoxelIndex>*>(uiEngine->mainEngine);
-		if (multiEngine != NULL) {
-			printf("saving mesh to disk ...");
-			multiEngine->SaveSceneToMesh("mesh.stl");
-			printf(" done\n");
-		}
+		printf("saving scene to model ... ");
+		uiEngine->mainEngine->SaveSceneToMesh("mesh.stl");
+		printf("done\n");
 	}
 	break;
 	case 'r':
 	{
 		ITMBasicEngine<ITMVoxel, ITMVoxelIndex> *basicEngine = dynamic_cast<ITMBasicEngine<ITMVoxel, ITMVoxelIndex>*>(uiEngine->mainEngine);
-		if (basicEngine != NULL) {
-			basicEngine->resetAll();
+		if (basicEngine != NULL) basicEngine->resetAll();
+	}
+	case 'k':
+	{
+		printf("saving scene to disk ... ");
+		
+		try
+		{
+			uiEngine->mainEngine->SaveToFile();
+			printf("done\n");
+		}
+		catch (const std::runtime_error &e)
+		{
+			printf("failed: %s\n", e.what());
 		}
 	}
+	break;
+	case 'l':
+	{
+		printf("loading scene from disk ... ");
+
+		try
+		{
+			uiEngine->mainEngine->LoadFromFile();
+			printf("done\n");
+		}
+		catch (const std::runtime_error &e)
+		{
+			printf("failed: %s\n", e.what());
+		}
+	}
+	break;
 	case '[':
 	case ']':
 	{
 		ITMMultiEngine<ITMVoxel, ITMVoxelIndex> *multiEngine = dynamic_cast<ITMMultiEngine<ITMVoxel, ITMVoxelIndex>*>(uiEngine->mainEngine);
-		if (multiEngine != NULL) {
+		if (multiEngine != NULL) 
+		{
 			int idx = multiEngine->getFreeviewLocalMapIdx();
 			if (key == '[') idx--;
 			else idx++;
@@ -299,12 +320,8 @@ void UIEngine::glutKeyUpFunction(unsigned char key, int x, int y)
 		break;
 	}
 
-	if (uiEngine->freeviewActive) {
-		uiEngine->outImageType[0] = uiEngine->colourModes_freeview[uiEngine->currentColourMode].type;
-	}
-	else {
-		uiEngine->outImageType[0] = uiEngine->colourModes_main[uiEngine->currentColourMode].type;
-	}
+	if (uiEngine->freeviewActive) uiEngine->outImageType[0] = uiEngine->colourModes_freeview[uiEngine->currentColourMode].type;
+	else uiEngine->outImageType[0] = uiEngine->colourModes_main[uiEngine->currentColourMode].type;
 }
 
 void UIEngine::glutMouseButtonFunction(int button, int state, int x, int y)

@@ -13,6 +13,8 @@ void SaveImageToFile(const ORUtils::Image<float>* image, const char* fileName);
 bool ReadImageFromFile(ORUtils::Image<ORUtils::Vector4<unsigned char> >* image, const char* fileName);
 bool ReadImageFromFile(ORUtils::Image<short> *image, const char *fileName);
 
+void MakeDir(const char *fileName);
+
 template <typename T> void ReadFromBIN(T *data, int dataSize, const char *fileName)
 {
 	FILE *f = fopen(fileName, "rb");

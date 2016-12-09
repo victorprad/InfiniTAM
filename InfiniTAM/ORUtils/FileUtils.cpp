@@ -5,6 +5,13 @@
 #include <stdio.h>
 #include <fstream>
 
+#if defined _MSC_VER
+#include <direct.h>
+#elif 
+#include <sys/types.h>
+#include <sys/stat.h>
+#endif
+
 #ifdef USE_LIBPNG
 #include <png.h>
 #endif
@@ -422,3 +429,11 @@ bool ReadImageFromFile(ORUtils::Image<short> *image, const char *fileName)
 	return true;
 }
 
+void MakeDir(const char *dirName)
+{
+#if defined _MSC_VER
+		_mkdir(dirName);
+#else
+		mkdir(dirName, 0777);
+#endif
+}
