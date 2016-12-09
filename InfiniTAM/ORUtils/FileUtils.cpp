@@ -7,7 +7,7 @@
 
 #if defined _MSC_VER
 #include <direct.h>
-#elif 
+#else 
 #include <sys/types.h>
 #include <sys/stat.h>
 #endif

@@ -43,13 +43,7 @@ namespace ORUtils
 				ReadBlockData(filename, block, blockSize);
 			}
 		}
-
-		template <typename T>
-		static void LoadMemoryBlock_simple(const std::string& filename, ORUtils::MemoryBlock<T>& block, MemoryDeviceType memoryDeviceType)
-		{
-			size_t blockSize = ReadBlockSize(filename);
-		}
-
+        
 		/**
 		 * \brief Loads data from a file on disk into a memory block newly-allocated on the CPU with the appropriate size.
 		 *
