@@ -3,6 +3,7 @@
 #include "RelocDatabase.h"
 
 #include <fstream>
+#include <stdexcept>
 
 using namespace RelocLib;
 
