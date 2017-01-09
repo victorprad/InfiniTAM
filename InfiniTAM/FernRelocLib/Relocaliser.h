@@ -41,8 +41,8 @@ namespace FernRelocLib
 		void LoadFromDirectory(const std::string& inputDirectory);
 
 	private:
-		float mKeyframeHarvestingThreshold;
-		FernConservatory *mEncoding;
+		float keyframeHarvestingThreshold;
+		FernConservatory *encoding;
 		RelocDatabase *relocDatabase;
 		PoseDatabase *poseDatabase;
 		ORUtils::Image<float> *processedImage1, *processedImage2;

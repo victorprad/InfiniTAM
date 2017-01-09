@@ -4,6 +4,8 @@
 
 #include "../ORUtils/Vector.h"
 
+#define TREAT_HOLES
+
 namespace FernRelocLib
 {
 	inline void createGaussianFilter(int masksize, float sigma, float *coeff)
