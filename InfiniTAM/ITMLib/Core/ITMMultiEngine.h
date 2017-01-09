@@ -40,7 +40,6 @@ namespace ITMLib
 		ITMDenseMapper<TVoxel, TIndex> *denseMapper;
 
 		FernRelocLib::Relocaliser *relocaliser;
-		FernRelocLib::PoseDatabase *poseDatabase;
 
 		ITMVoxelMapGraphManager<TVoxel, TIndex> *mapManager;
 		ITMActiveMapManager *mActiveDataManager;

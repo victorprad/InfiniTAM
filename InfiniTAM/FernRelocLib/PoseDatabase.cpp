@@ -40,10 +40,9 @@ PoseDatabase::PoseInScene PoseDatabase::retrieveWAPose(int k, int ids[], float d
 	return PoseDatabase::PoseInScene(ORUtils::SE3Pose(m), sceneID);
 }
 
-void PoseDatabase::SaveToDirectory(const std::string &directoryName)
+void PoseDatabase::SaveToFile(const std::string &fileName)
 {
-	std::string fileName = directoryName + "poses.txt";
-	std::ofstream ofs((directoryName + "poses.txt").c_str());
+	std::ofstream ofs(fileName.c_str());
 	if (!ofs) throw std::runtime_error("Could not open " + fileName + " for reading");
 	
 	size_t numPoses = mPoses.size();
@@ -60,12 +59,10 @@ void PoseDatabase::SaveToDirectory(const std::string &directoryName)
 	}
 }
 
-void PoseDatabase::LoadFromDirectory(const std::string &filename)
+void PoseDatabase::LoadFromFile(const std::string &poseDatabaseFilePath)
 {
 	int tot, sceneID;
 	float tx, ty, tz, rx, ry, rz;
-
-	std::string poseDatabaseFilePath = filename + "poses.txt";
 	
 	std::ifstream ifs(poseDatabaseFilePath.c_str());
 	if (!ifs) throw std::runtime_error("unable to open " + poseDatabaseFilePath);

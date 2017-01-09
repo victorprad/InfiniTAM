@@ -58,7 +58,6 @@ ITMMultiEngine<TVoxel, TIndex>::ITMMultiEngine(const ITMLibSettings *settings, c
 	view = NULL; // will be allocated by the view builder
 
 	relocaliser = new FernRelocLib::Relocaliser(imgSize_d, Vector2f(settings->sceneParams.viewFrustum_min, settings->sceneParams.viewFrustum_max), 0.1f, 1000, 4);
-	poseDatabase = new FernRelocLib::PoseDatabase();
 
 	mGlobalAdjustmentEngine = new ITMGlobalAdjustmentEngine();
 	mScheduleGlobalAdjustment = false;
@@ -93,7 +92,6 @@ ITMMultiEngine<TVoxel, TIndex>::~ITMMultiEngine(void)
 	delete visualisationEngine;
 
 	delete relocaliser;
-	delete poseDatabase;
 
 	delete multiVisualisationEngine;
 }
@@ -181,7 +179,7 @@ ITMTrackingState::TrackingResult ITMMultiEngine<TVoxel, TIndex>::ProcessFrame(IT
 		//   the start of the second pass
 		// - second tracking pass will be about newly detected loop closures, relocalisations, etc.
 
-		if (todoList[i].dataId == -1) 
+		if (todoList[i].dataId == -1)
 		{
 #ifdef DEBUG_MULTISCENE
 			fprintf(stderr, " Reloc(%i)", primaryTrackingSuccess);
@@ -189,24 +187,28 @@ ITMTrackingState::TrackingResult ITMMultiEngine<TVoxel, TIndex>::ProcessFrame(IT
 			int NN[k_loopcloseneighbours]; float distances[k_loopcloseneighbours];
 			view->depth->UpdateHostFromDevice();
 
-			//check if relocaliser has fired
-			int addKeyframeIdx = relocaliser->ProcessFrame(view->depth, k_loopcloseneighbours, NN, distances, primaryTrackingSuccess);
-			
+			//primary map index
 			int primaryLocalMapIdx = -1;
 			if (primaryDataIdx >= 0) primaryLocalMapIdx = mActiveDataManager->getLocalMapIndex(primaryDataIdx);
 
-			// add keyframe, if necessary
-			if (addKeyframeIdx >= 0) poseDatabase->storePose(addKeyframeIdx, *(mapManager->getLocalMap(primaryLocalMapIdx)->trackingState->pose_d), primaryLocalMapIdx);
-			else for (int j = 0; j < k_loopcloseneighbours; ++j)
+			//check if relocaliser has fired
+			int addKeyframeIdx = relocaliser->ProcessFrame(view->depth, mapManager->getLocalMap(primaryLocalMapIdx)->trackingState->pose_d, primaryLocalMapIdx,
+				k_loopcloseneighbours, NN, distances, primaryTrackingSuccess);
+
+			//frame not added and tracking failed -> we need to relocalise
+			if (addKeyframeIdx < 0)
 			{
-				if (distances[j] > F_maxdistattemptreloc) continue;
-				const FernRelocLib::PoseDatabase::PoseInScene & keyframe = poseDatabase->retrievePose(NN[j]);
-				int newDataIdx = mActiveDataManager->initiateNewLink(keyframe.sceneIdx, keyframe.pose, (primaryLocalMapIdx < 0));
-				if (newDataIdx >= 0) 
+				for (int j = 0; j < k_loopcloseneighbours; ++j)
 				{
-					TodoListEntry todoItem(newDataIdx, true, false, true);
-					todoItem.preprepare = true;
-					todoList.push_back(todoItem);
+					if (distances[j] > F_maxdistattemptreloc) continue;
+					const FernRelocLib::PoseDatabase::PoseInScene & keyframe = relocaliser->RetrievePose(NN[j]);
+					int newDataIdx = mActiveDataManager->initiateNewLink(keyframe.sceneIdx, keyframe.pose, (primaryLocalMapIdx < 0));
+					if (newDataIdx >= 0)
+					{
+						TodoListEntry todoItem(newDataIdx, true, false, true);
+						todoItem.preprepare = true;
+						todoList.push_back(todoItem);
+					}
 				}
 			}
 

@@ -13,7 +13,8 @@ Relocaliser::Relocaliser(ORUtils::Vector2<int> imgSize, ORUtils::Vector2<float> 
 {
 	static const int levels = 5;
 	mEncoding = new FernConservatory(numFerns, imgSize / (1 << levels), range, numDecisionsPerFern);
-	mDatabase = new RelocDatabase(numFerns, mEncoding->getNumCodes());
+	relocDatabase = new RelocDatabase(numFerns, mEncoding->getNumCodes());
+	poseDatabase = new PoseDatabase();
 	mKeyframeHarvestingThreshold = harvestingThreshold;
 
 	processedImage1 = new ORUtils::Image<float>(imgSize, MEMORYDEVICE_CPU);
@@ -23,7 +24,8 @@ Relocaliser::Relocaliser(ORUtils::Vector2<int> imgSize, ORUtils::Vector2<float> 
 Relocaliser::~Relocaliser(void)
 {
 	delete mEncoding;
-	delete mDatabase;
+	delete relocDatabase;
+	delete poseDatabase;
 	delete processedImage1;
 	delete processedImage2;
 }
@@ -152,7 +154,7 @@ void filterSubsample(const ORUtils::Image<float> *input, ORUtils::Image<float> *
 	}
 }
 
-int Relocaliser::ProcessFrame(const ORUtils::Image<float> *img_d, int k, int nearestNeighbours[], float *distances, bool harvestKeyframes) const
+int Relocaliser::ProcessFrame(const ORUtils::Image<float> *img_d, const ORUtils::SE3Pose *pose, int sceneId, int k, int nearestNeighbours[], float *distances, bool harvestKeyframes) const
 {
 	// downsample and preprocess image => processedImage1
 	//ORUtils::Image<float> processedImage1(ORUtils::Vector2<int>(1,1), MEMORYDEVICE_CPU), processedImage2(ORUtils::Vector2<int>(1,1), MEMORYDEVICE_CPU);
@@ -167,8 +169,6 @@ int Relocaliser::ProcessFrame(const ORUtils::Image<float> *img_d, int k, int nea
 	int codeLength = mEncoding->getNumFerns();
 	char *code = new char[codeLength];
 	mEncoding->computeCode(processedImage1, code);
-	//for (int i = 0; i < codeLength; ++i) fprintf(stderr, "%i ", code[i]);
-	//fprintf(stderr, "\n");
 
 	// prepare outputs
 	int ret = -1;
@@ -176,24 +176,26 @@ int Relocaliser::ProcessFrame(const ORUtils::Image<float> *img_d, int k, int nea
 	if (distances == NULL) distances = new float[k];
 
 	// find similar frames
-	int similarFound = mDatabase->findMostSimilar(code, nearestNeighbours, distances, k);
+	int similarFound = relocDatabase->findMostSimilar(code, nearestNeighbours, distances, k);
 
 	// add keyframe to database
-	if (harvestKeyframes) {
-		if (similarFound == 0) ret = mDatabase->addEntry(code);
-		else if (distances[0] > mKeyframeHarvestingThreshold) ret = mDatabase->addEntry(code);
-	}
+	if (harvestKeyframes) 
+	{
+		if (similarFound == 0) ret = relocDatabase->addEntry(code);
+		else if (distances[0] > mKeyframeHarvestingThreshold) ret = relocDatabase->addEntry(code);
 
-	/*
-		for (int i = 0; i < similarFound; ++i) {
-			fprintf(stderr, "found similar entry #%i: %i (%f)\n", i+1, nearestNeighbours[i], distances[i]);
-		}
-	*/
+		if (ret >= 0) poseDatabase->storePose(ret, *pose, sceneId);
+	}
 
 	// cleanup and return
 	delete[] code;
 	if (releaseDistances) delete[] distances;
 	return ret;
+}
+
+const FernRelocLib::PoseDatabase::PoseInScene & Relocaliser::RetrievePose(int id)
+{
+	return poseDatabase->retrievePose(id);
 }
 
 void Relocaliser::SaveToDirectory(const std::string& outputDirectory)
@@ -205,19 +207,24 @@ void Relocaliser::SaveToDirectory(const std::string& outputDirectory)
 	ofs << "type=rgb,levels=4,numFerns=" << mEncoding->getNumFerns() << ",numDecisionsPerFern=" << mEncoding->getNumDecisions() / 3 << ",harvestingThreshold=" << mKeyframeHarvestingThreshold;
 
 	mEncoding->SaveToFile(outputDirectory + "ferns.txt");
-	mDatabase->SaveToFile(outputDirectory + "frames.txt");
+	relocDatabase->SaveToFile(outputDirectory + "frames.txt");
+	poseDatabase->SaveToFile(outputDirectory + "poses.txt");
 }
 
 void Relocaliser::LoadFromDirectory(const std::string& inputDirectory)
 {
 	std::string fernFilePath = inputDirectory + "ferns.txt";
 	std::string frameCodeFilePath = inputDirectory + "frames.txt";
+	std::string posesFilePath = inputDirectory + "poses.txt";
 
 	if (!std::ifstream(fernFilePath.c_str()))
 		throw std::runtime_error("unable to open " + fernFilePath);
 	if (!std::ifstream(frameCodeFilePath.c_str()))
 		throw std::runtime_error("unable to open " + frameCodeFilePath);
+	if (!std::ifstream(posesFilePath.c_str()))
+		throw std::runtime_error("unable to open " + posesFilePath);
 
 	mEncoding->LoadFromFile(fernFilePath);
-	mDatabase->LoadFromFile(frameCodeFilePath);
+	relocDatabase->LoadFromFile(frameCodeFilePath);
+	poseDatabase->LoadFromFile(posesFilePath);
 }

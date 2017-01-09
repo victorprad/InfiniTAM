@@ -33,7 +33,9 @@ namespace FernRelocLib
 			@return New keyframe id, if the image is selected as a new
 			keyframe, otherwise a negative value
 		*/
-		int ProcessFrame(const ORUtils::Image<float> *img_d, int k, int nearestNeighbours[], float *distances = NULL, bool harvestKeyframes = true) const;
+		int ProcessFrame(const ORUtils::Image<float> *img_d, const ORUtils::SE3Pose *pose, int sceneId, int k, int nearestNeighbours[], float *distances = NULL, bool harvestKeyframes = true) const;
+
+		const FernRelocLib::PoseDatabase::PoseInScene & RetrievePose(int id);
 
 		void SaveToDirectory(const std::string& outputDirectory);
 		void LoadFromDirectory(const std::string& inputDirectory);
@@ -41,7 +43,8 @@ namespace FernRelocLib
 	private:
 		float mKeyframeHarvestingThreshold;
 		FernConservatory *mEncoding;
-		RelocDatabase *mDatabase;
+		RelocDatabase *relocDatabase;
+		PoseDatabase *poseDatabase;
 		ORUtils::Image<float> *processedImage1, *processedImage2;
 	};
 }
