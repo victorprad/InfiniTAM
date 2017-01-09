@@ -31,6 +31,7 @@ FernConservatory.h
 PoseDatabase.h
 RelocDatabase.h
 Relocaliser.h
+PixelUtils.h
 )
 
 #############################
