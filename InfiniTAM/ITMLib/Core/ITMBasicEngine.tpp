@@ -54,7 +54,7 @@ ITMBasicEngine<TVoxel,TIndex>::ITMBasicEngine(const ITMLibSettings *settings, co
 	view = NULL; // will be allocated by the view builder
 	
 	if (settings->behaviourOnFailure == settings->FAILUREMODE_RELOCALISE)
-		relocaliser = new FernRelocLib::Relocaliser(imgSize_d, Vector2f(settings->sceneParams.viewFrustum_min, settings->sceneParams.viewFrustum_max), 0.2f, 500, 4);
+		relocaliser = new FernRelocLib::Relocaliser<float>(imgSize_d, Vector2f(settings->sceneParams.viewFrustum_min, settings->sceneParams.viewFrustum_max), 0.2f, 500, 4);
 	else relocaliser = NULL;
 
 	kfRaycast = new ITMUChar4Image(imgSize_d, memoryType);
@@ -138,7 +138,7 @@ void ITMBasicEngine<TVoxel, TIndex>::LoadFromFile()
 
 	try // load relocaliser
 	{
-		FernRelocLib::Relocaliser *relocaliser_temp = new FernRelocLib::Relocaliser(view->depth->noDims, Vector2f(settings->sceneParams.viewFrustum_min, settings->sceneParams.viewFrustum_max), 0.2f, 500, 4);
+		FernRelocLib::Relocaliser<float> *relocaliser_temp = new FernRelocLib::Relocaliser<float>(view->depth->noDims, Vector2f(settings->sceneParams.viewFrustum_min, settings->sceneParams.viewFrustum_max), 0.2f, 500, 4);
 
 		relocaliser_temp->LoadFromDirectory(relocaliserInputDirectory);
 

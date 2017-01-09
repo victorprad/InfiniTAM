@@ -41,7 +41,7 @@ namespace ITMLib
 		ITMTracker *tracker;
 		ITMIMUCalibrator *imuCalibrator;
 
-		FernRelocLib::Relocaliser *relocaliser;
+		FernRelocLib::Relocaliser<float> *relocaliser;
 		ITMUChar4Image *kfRaycast;
 
 		/// Pointer for storing the current input frame

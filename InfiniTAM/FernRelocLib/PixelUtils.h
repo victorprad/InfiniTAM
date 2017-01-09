@@ -43,7 +43,7 @@ namespace FernRelocLib
 		}
 	}
 
-	inline void filterSeparable_x(const ORUtils::Image<ORUtils::Vector4<unsigned char>> *input, ORUtils::Image<ORUtils::Vector4<unsigned char>> *output, int masksize, const float *coeff) 
+	inline void filterSeparable_x(const ORUtils::Image<ORUtils::Vector4<unsigned char>> *input, ORUtils::Image<ORUtils::Vector4<unsigned char>> *output, int masksize, const float *coeff)
 	{
 		int s2 = masksize / 2;
 		ORUtils::Vector2<int> imgSize = input->noDims;

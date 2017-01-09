@@ -24,7 +24,8 @@ RelocDatabase::~RelocDatabase(void)
 int RelocDatabase::findMostSimilar(const char *codeFragments, int nearestNeighbours[], float distances[], int k)
 {
 	int foundNN = 0;
-	if (mTotalEntries > 0) {
+	if (mTotalEntries > 0) 
+	{
 		int *similarities = new int[mTotalEntries];
 		for (int i = 0; i < mTotalEntries; ++i) similarities[i] = 0;
 
@@ -35,7 +36,6 @@ int RelocDatabase::findMostSimilar(const char *codeFragments, int nearestNeighbo
 
 			for (unsigned int i = 0; i < sameCode->size(); ++i) similarities[(*sameCode)[i]]++;
 		}
-		//for (int i = 0; i < mTotalEntries; ++i) fprintf(stderr, "%i\n", similarities[i]);
 
 		for (int i = 0; i < mTotalEntries; ++i) 
 		{

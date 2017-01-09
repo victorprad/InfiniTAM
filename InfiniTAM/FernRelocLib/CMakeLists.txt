@@ -23,7 +23,6 @@ SET(sources
 FernConservatory.cpp
 PoseDatabase.cpp
 RelocDatabase.cpp
-Relocaliser.cpp
 )
 
 SET(headers

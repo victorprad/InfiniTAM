@@ -5,47 +5,115 @@
 #include "FernConservatory.h"
 #include "RelocDatabase.h"
 #include "PoseDatabase.h"
+#include "PixelUtils.h"
 
 #include "../ORUtils/SE3Pose.h"
 
 namespace FernRelocLib
 {
+	template <typename ElementType>
 	class Relocaliser
 	{
-	public:
-		Relocaliser(ORUtils::Vector2<int> imgSize, ORUtils::Vector2<float> range, float harvestingThreshold, int numFerns, int numDecisionsPerFern);
-		~Relocaliser(void);
-
-		/** Process an image for loop closure detection. This will find nearby
-			keyframes in the database and possibly add the image as a new
-			keyframe.
-			@param img_d Depth image to be processed. This should be given at
-			full resolution and without blur, as any such operations will
-			be performed internally.
-			@param k The function will return at most @p k nearest neighbours
-			@param nearestNeighbours Storage space where the nearest neighbours
-			will be returned. Has to be at least of size @p k.
-			@param distances Distances to nearest neighbours. Usually
-			normalised to the range [0...1]. Can be set to NULL, if the
-			distances are not required.
-			@param harvestKeyframes If set to true, this frame will be
-			considered for starting a new keyframe
-			@return New keyframe id, if the image is selected as a new
-			keyframe, otherwise a negative value
-		*/
-		bool ProcessFrame(const ORUtils::Image<float> *img_d, const ORUtils::SE3Pose *pose, int sceneId, int k, int nearestNeighbours[], float *distances = NULL, bool harvestKeyframes = true) const;
-
-		const FernRelocLib::PoseDatabase::PoseInScene & RetrievePose(int id);
-
-		void SaveToDirectory(const std::string& outputDirectory);
-		void LoadFromDirectory(const std::string& inputDirectory);
-
 	private:
 		float keyframeHarvestingThreshold;
 		FernConservatory *encoding;
 		RelocDatabase *relocDatabase;
 		PoseDatabase *poseDatabase;
-		ORUtils::Image<float> *processedImage1, *processedImage2;
+		ORUtils::Image<ElementType> *processedImage1, *processedImage2;
+
+	public:
+		Relocaliser(ORUtils::Vector2<int> imgSize, ORUtils::Vector2<float> range, float harvestingThreshold, int numFerns, int numDecisionsPerFern)
+		{
+			static const int levels = 5;
+			encoding = new FernConservatory(numFerns, imgSize / (1 << levels), range, numDecisionsPerFern);
+			relocDatabase = new RelocDatabase(numFerns, encoding->getNumCodes());
+			poseDatabase = new PoseDatabase();
+			keyframeHarvestingThreshold = harvestingThreshold;
+
+			processedImage1 = new ORUtils::Image<ElementType>(imgSize, MEMORYDEVICE_CPU);
+			processedImage2 = new ORUtils::Image<ElementType>(imgSize, MEMORYDEVICE_CPU);
+		}
+
+		~Relocaliser(void)
+		{
+			delete encoding;
+			delete relocDatabase;
+			delete poseDatabase;
+			delete processedImage1;
+			delete processedImage2;
+		}
+
+		bool ProcessFrame(const ORUtils::Image<ElementType> *img, const ORUtils::SE3Pose *pose, int sceneId, int k, int nearestNeighbours[], float *distances, bool harvestKeyframes) const
+		{
+			// downsample and preprocess image => processedImage1
+			filterSubsample(img, processedImage1); // 320x240
+			filterSubsample(processedImage1, processedImage2); // 160x120
+			filterSubsample(processedImage2, processedImage1); // 80x60
+			filterSubsample(processedImage1, processedImage2); // 40x30
+
+			filterGaussian(processedImage2, processedImage1, 2.5f);
+
+			// compute code
+			int codeLength = encoding->getNumFerns();
+			char *code = new char[codeLength];
+			encoding->computeCode(processedImage1, code);
+
+			// prepare outputs
+			int ret = -1;
+			bool releaseDistances = (distances == NULL);
+			if (distances == NULL) distances = new float[k];
+
+			// find similar frames
+			int similarFound = relocDatabase->findMostSimilar(code, nearestNeighbours, distances, k);
+
+			// add keyframe to database
+			if (harvestKeyframes)
+			{
+				if (similarFound == 0) ret = relocDatabase->addEntry(code);
+				else if (distances[0] > keyframeHarvestingThreshold) ret = relocDatabase->addEntry(code);
+
+				if (ret >= 0) poseDatabase->storePose(ret, *pose, sceneId);
+			}
+
+			// cleanup and return
+			delete[] code;
+			if (releaseDistances) delete[] distances;
+			return ret >= 0;
+		}
+
+		const FernRelocLib::PoseDatabase::PoseInScene & RetrievePose(int id)
+		{
+			return poseDatabase->retrievePose(id);
+		}
+
+		void SaveToDirectory(const std::string& outputDirectory)
+		{
+			std::string configFilePath = outputDirectory + "config.txt";
+			std::ofstream ofs(configFilePath.c_str());
+
+			//TODO MAKE WORK WITH TEMPLATE - type should change?
+			if (!ofs) throw std::runtime_error("Could not open " + configFilePath + " for reading");
+			ofs << "type=rgb,levels=4,numFerns=" << encoding->getNumFerns() << ",numDecisionsPerFern=" << encoding->getNumDecisions() / 3 << ",harvestingThreshold=" << keyframeHarvestingThreshold;
+
+			encoding->SaveToFile(outputDirectory + "ferns.txt");
+			relocDatabase->SaveToFile(outputDirectory + "frames.txt");
+			poseDatabase->SaveToFile(outputDirectory + "poses.txt");
+		}
+
+		void LoadFromDirectory(const std::string& inputDirectory)
+		{
+			std::string fernFilePath = inputDirectory + "ferns.txt";
+			std::string frameCodeFilePath = inputDirectory + "frames.txt";
+			std::string posesFilePath = inputDirectory + "poses.txt";
+
+			if (!std::ifstream(fernFilePath.c_str())) throw std::runtime_error("unable to open " + fernFilePath);
+			if (!std::ifstream(frameCodeFilePath.c_str())) throw std::runtime_error("unable to open " + frameCodeFilePath);
+			if (!std::ifstream(posesFilePath.c_str())) throw std::runtime_error("unable to open " + posesFilePath);
+
+			encoding->LoadFromFile(fernFilePath);
+			relocDatabase->LoadFromFile(frameCodeFilePath);
+			poseDatabase->LoadFromFile(posesFilePath);
+		}
 	};
 }
 

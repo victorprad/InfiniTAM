@@ -39,7 +39,7 @@ namespace ITMLib
 		ITMIMUCalibrator *imuCalibrator;
 		ITMDenseMapper<TVoxel, TIndex> *denseMapper;
 
-		FernRelocLib::Relocaliser *relocaliser;
+		FernRelocLib::Relocaliser<float> *relocaliser;
 
 		ITMVoxelMapGraphManager<TVoxel, TIndex> *mapManager;
 		ITMActiveMapManager *mActiveDataManager;

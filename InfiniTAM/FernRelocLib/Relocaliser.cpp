@@ -29,11 +29,10 @@ Relocaliser::~Relocaliser(void)
 	delete processedImage2;
 }
 
-bool Relocaliser::ProcessFrame(const ORUtils::Image<float> *img_d, const ORUtils::SE3Pose *pose, int sceneId, int k, int nearestNeighbours[], float *distances, bool harvestKeyframes) const
+int Relocaliser::ProcessFrame(const ORUtils::Image<float> *img, const ORUtils::SE3Pose *pose, int sceneId, int k, int nearestNeighbours[], float *distances, bool harvestKeyframes) const
 {
 	// downsample and preprocess image => processedImage1
-	//ORUtils::Image<float> processedImage1(ORUtils::Vector2<int>(1,1), MEMORYDEVICE_CPU), processedImage2(ORUtils::Vector2<int>(1,1), MEMORYDEVICE_CPU);
-	filterSubsample(img_d, processedImage1); // 320x240
+	filterSubsample(img, processedImage1); // 320x240
 	filterSubsample(processedImage1, processedImage2); // 160x120
 	filterSubsample(processedImage2, processedImage1); // 80x60
 	filterSubsample(processedImage1, processedImage2); // 40x30
@@ -54,7 +53,7 @@ bool Relocaliser::ProcessFrame(const ORUtils::Image<float> *img_d, const ORUtils
 	int similarFound = relocDatabase->findMostSimilar(code, nearestNeighbours, distances, k);
 
 	// add keyframe to database
-	if (harvestKeyframes) 
+	if (harvestKeyframes)
 	{
 		if (similarFound == 0) ret = relocDatabase->addEntry(code);
 		else if (distances[0] > keyframeHarvestingThreshold) ret = relocDatabase->addEntry(code);
@@ -65,7 +64,7 @@ bool Relocaliser::ProcessFrame(const ORUtils::Image<float> *img_d, const ORUtils
 	// cleanup and return
 	delete[] code;
 	if (releaseDistances) delete[] distances;
-	return ret >= 0;
+	return ret;
 }
 
 const FernRelocLib::PoseDatabase::PoseInScene & Relocaliser::RetrievePose(int id)
