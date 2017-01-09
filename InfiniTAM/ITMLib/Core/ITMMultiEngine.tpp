@@ -192,11 +192,11 @@ ITMTrackingState::TrackingResult ITMMultiEngine<TVoxel, TIndex>::ProcessFrame(IT
 			if (primaryDataIdx >= 0) primaryLocalMapIdx = mActiveDataManager->getLocalMapIndex(primaryDataIdx);
 
 			//check if relocaliser has fired
-			int addKeyframeIdx = relocaliser->ProcessFrame(view->depth, mapManager->getLocalMap(primaryLocalMapIdx)->trackingState->pose_d, primaryLocalMapIdx,
-				k_loopcloseneighbours, NN, distances, primaryTrackingSuccess);
+			ORUtils::SE3Pose *pose = primaryLocalMapIdx >= 0 ? mapManager->getLocalMap(primaryLocalMapIdx)->trackingState->pose_d : NULL;
+			bool hasAddedKeyframe = relocaliser->ProcessFrame(view->depth, pose, primaryLocalMapIdx, k_loopcloseneighbours, NN, distances, primaryTrackingSuccess);
 
 			//frame not added and tracking failed -> we need to relocalise
-			if (addKeyframeIdx < 0)
+			if (!hasAddedKeyframe)
 			{
 				for (int j = 0; j < k_loopcloseneighbours; ++j)
 				{

@@ -278,10 +278,10 @@ ITMTrackingState::TrackingResult ITMBasicEngine<TVoxel,TIndex>::ProcessFrame(ITM
 		view->depth->UpdateHostFromDevice();
 
 		//find and add keyframe, if necessary
-		addKeyframeIdx = relocaliser->ProcessFrame(view->depth, trackingState->pose_d, 0, 1, &NN, &distances, trackerResult == ITMTrackingState::TRACKING_GOOD && relocalisationCount == 0);
+		bool hasAddedKeyframe = relocaliser->ProcessFrame(view->depth, trackingState->pose_d, 0, 1, &NN, &distances, trackerResult == ITMTrackingState::TRACKING_GOOD && relocalisationCount == 0);
 
 		//frame not added and tracking failed -> we need to relocalise
-		if (addKeyframeIdx < 0 && trackerResult == ITMTrackingState::TRACKING_FAILED)
+		if (!hasAddedKeyframe && trackerResult == ITMTrackingState::TRACKING_FAILED)
 		{
 			relocalisationCount = 10;
 

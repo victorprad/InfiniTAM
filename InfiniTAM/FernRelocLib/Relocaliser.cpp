@@ -29,7 +29,7 @@ Relocaliser::~Relocaliser(void)
 	delete processedImage2;
 }
 
-int Relocaliser::ProcessFrame(const ORUtils::Image<float> *img_d, const ORUtils::SE3Pose *pose, int sceneId, int k, int nearestNeighbours[], float *distances, bool harvestKeyframes) const
+bool Relocaliser::ProcessFrame(const ORUtils::Image<float> *img_d, const ORUtils::SE3Pose *pose, int sceneId, int k, int nearestNeighbours[], float *distances, bool harvestKeyframes) const
 {
 	// downsample and preprocess image => processedImage1
 	//ORUtils::Image<float> processedImage1(ORUtils::Vector2<int>(1,1), MEMORYDEVICE_CPU), processedImage2(ORUtils::Vector2<int>(1,1), MEMORYDEVICE_CPU);
@@ -65,7 +65,7 @@ int Relocaliser::ProcessFrame(const ORUtils::Image<float> *img_d, const ORUtils:
 	// cleanup and return
 	delete[] code;
 	if (releaseDistances) delete[] distances;
-	return ret;
+	return ret >= 0;
 }
 
 const FernRelocLib::PoseDatabase::PoseInScene & Relocaliser::RetrievePose(int id)

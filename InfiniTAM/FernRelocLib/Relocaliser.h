@@ -33,7 +33,7 @@ namespace FernRelocLib
 			@return New keyframe id, if the image is selected as a new
 			keyframe, otherwise a negative value
 		*/
-		int ProcessFrame(const ORUtils::Image<float> *img_d, const ORUtils::SE3Pose *pose, int sceneId, int k, int nearestNeighbours[], float *distances = NULL, bool harvestKeyframes = true) const;
+		bool ProcessFrame(const ORUtils::Image<float> *img_d, const ORUtils::SE3Pose *pose, int sceneId, int k, int nearestNeighbours[], float *distances = NULL, bool harvestKeyframes = true) const;
 
 		const FernRelocLib::PoseDatabase::PoseInScene & RetrievePose(int id);
 
