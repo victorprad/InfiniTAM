@@ -5,9 +5,9 @@
 #include <vector>
 #include <string>
 
-namespace RelocLib 
+namespace FernRelocLib
 {
-	class RelocDatabase 
+	class RelocDatabase
 	{
 	public:
 		RelocDatabase(int codeLength, int codeFragmentDim);

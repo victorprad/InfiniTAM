@@ -5,13 +5,10 @@
 #include <fstream>
 #include <iterator>
 
-using namespace RelocLib;
+using namespace FernRelocLib;
 
-PoseDatabase::PoseDatabase(void)
-{}
-
-PoseDatabase::~PoseDatabase(void)
-{}
+PoseDatabase::PoseDatabase(void) {}
+PoseDatabase::~PoseDatabase(void) {}
 
 void PoseDatabase::storePose(int id, const ORUtils::SE3Pose & pose, int sceneId)
 {
@@ -28,7 +25,8 @@ PoseDatabase::PoseInScene PoseDatabase::retrieveWAPose(int k, int ids[], float d
 
 	int sceneID = -1;
 	float sumWeights = 0.0f;
-	for (int i = 0; i < k; ++i) {
+	for (int i = 0; i < k; ++i) 
+	{
 		const PoseInScene & pose = retrievePose(ids[i]);
 		if (sceneID == -1) sceneID = pose.sceneIdx;
 		else if (sceneID != pose.sceneIdx) continue;

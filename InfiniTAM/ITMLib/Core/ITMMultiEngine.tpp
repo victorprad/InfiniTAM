@@ -57,8 +57,8 @@ ITMMultiEngine<TVoxel, TIndex>::ITMMultiEngine(const ITMLibSettings *settings, c
 
 	view = NULL; // will be allocated by the view builder
 
-	mLoopClosureDetector = new RelocLib::Relocaliser(imgSize_d, Vector2f(settings->sceneParams.viewFrustum_min, settings->sceneParams.viewFrustum_max), 0.1f, 1000, 4);
-	mPoseDatabase = new RelocLib::PoseDatabase();
+	relocaliser = new FernRelocLib::Relocaliser(imgSize_d, Vector2f(settings->sceneParams.viewFrustum_min, settings->sceneParams.viewFrustum_max), 0.1f, 1000, 4);
+	poseDatabase = new FernRelocLib::PoseDatabase();
 
 	mGlobalAdjustmentEngine = new ITMGlobalAdjustmentEngine();
 	mScheduleGlobalAdjustment = false;
@@ -92,8 +92,8 @@ ITMMultiEngine<TVoxel, TIndex>::~ITMMultiEngine(void)
 
 	delete visualisationEngine;
 
-	delete mLoopClosureDetector;
-	delete mPoseDatabase;
+	delete relocaliser;
+	delete poseDatabase;
 
 	delete multiVisualisationEngine;
 }
@@ -190,17 +190,17 @@ ITMTrackingState::TrackingResult ITMMultiEngine<TVoxel, TIndex>::ProcessFrame(IT
 			view->depth->UpdateHostFromDevice();
 
 			//check if relocaliser has fired
-			int addKeyframeIdx = mLoopClosureDetector->ProcessFrame(view->depth, k_loopcloseneighbours, NN, distances, primaryTrackingSuccess);
+			int addKeyframeIdx = relocaliser->ProcessFrame(view->depth, k_loopcloseneighbours, NN, distances, primaryTrackingSuccess);
 			
 			int primaryLocalMapIdx = -1;
 			if (primaryDataIdx >= 0) primaryLocalMapIdx = mActiveDataManager->getLocalMapIndex(primaryDataIdx);
 
 			// add keyframe, if necessary
-			if (addKeyframeIdx >= 0) mPoseDatabase->storePose(addKeyframeIdx, *(mapManager->getLocalMap(primaryLocalMapIdx)->trackingState->pose_d), primaryLocalMapIdx);
+			if (addKeyframeIdx >= 0) poseDatabase->storePose(addKeyframeIdx, *(mapManager->getLocalMap(primaryLocalMapIdx)->trackingState->pose_d), primaryLocalMapIdx);
 			else for (int j = 0; j < k_loopcloseneighbours; ++j)
 			{
 				if (distances[j] > F_maxdistattemptreloc) continue;
-				const RelocLib::PoseDatabase::PoseInScene & keyframe = mPoseDatabase->retrievePose(NN[j]);
+				const FernRelocLib::PoseDatabase::PoseInScene & keyframe = poseDatabase->retrievePose(NN[j]);
 				int newDataIdx = mActiveDataManager->initiateNewLink(keyframe.sceneIdx, keyframe.pose, (primaryLocalMapIdx < 0));
 				if (newDataIdx >= 0) 
 				{

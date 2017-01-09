@@ -8,9 +8,10 @@
 
 #include "../ORUtils/SE3Pose.h"
 
-namespace RelocLib {
-
-	class Relocaliser {
+namespace FernRelocLib
+{
+	class Relocaliser
+	{
 	public:
 		Relocaliser(ORUtils::Vector2<int> imgSize, ORUtils::Vector2<float> range, float harvestingThreshold, int numFerns, int numDecisionsPerFern);
 		~Relocaliser(void);
@@ -36,7 +37,7 @@ namespace RelocLib {
 
 		void SaveToDirectory(const std::string& outputDirectory);
 		void LoadFromDirectory(const std::string& inputDirectory);
-		
+
 	private:
 		float mKeyframeHarvestingThreshold;
 		FernConservatory *mEncoding;

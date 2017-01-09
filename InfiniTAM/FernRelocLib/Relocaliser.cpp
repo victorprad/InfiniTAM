@@ -7,7 +7,7 @@
 
 #define TREAT_HOLES
 
-using namespace RelocLib;
+using namespace FernRelocLib;
 
 Relocaliser::Relocaliser(ORUtils::Vector2<int> imgSize, ORUtils::Vector2<float> range, float harvestingThreshold, int numFerns, int numDecisionsPerFern)
 {

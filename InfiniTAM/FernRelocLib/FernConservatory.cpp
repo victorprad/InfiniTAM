@@ -4,7 +4,7 @@
 
 #include <fstream>
 
-using namespace RelocLib;
+using namespace FernRelocLib;
 
 static float random_uniform01(void)
 {
@@ -50,7 +50,7 @@ void FernConservatory::SaveToFile(const std::string &fernsFileName)
 
 	if (!ofs) throw std::runtime_error("Could not open " + fernsFileName + " for reading");;
 
-	for (int f = 0; f < mNumFerns * mNumDecisions; ++f) 
+	for (int f = 0; f < mNumFerns * mNumDecisions; ++f)
 		ofs << mEncoders[f].location.x << ' ' << mEncoders[f].location.y << ' ' << mEncoders[f].threshold << '\n';
 }
 
@@ -59,9 +59,9 @@ void FernConservatory::LoadFromFile(const std::string &fernsFileName)
 	std::ifstream ifs(fernsFileName.c_str());
 	if (!ifs) throw std::runtime_error("unable to load " + fernsFileName);
 
-	for (int i = 0; i < mNumFerns; i++) 
+	for (int i = 0; i < mNumFerns; i++)
 	{
-		for (int j = 0; j < mNumDecisions; j++) 
+		for (int j = 0; j < mNumDecisions; j++)
 		{
 			FernTester &fernTester = mEncoders[i * mNumDecisions + j];
 			ifs >> fernTester.location.x >> fernTester.location.y >> fernTester.threshold;

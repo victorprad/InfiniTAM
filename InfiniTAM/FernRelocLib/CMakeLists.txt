@@ -1,12 +1,12 @@
 ###############################
-# CMakeLists.txt for RelocLib #
+# CMakeLists.txt for FernRelocLib #
 ###############################
 
 ###########################
 # Specify the target name #
 ###########################
 
-SET(targetname RelocLib)
+SET(targetname FernRelocLib)
 
 ################################
 # Specify the libraries to use #

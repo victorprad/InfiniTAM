@@ -55,8 +55,8 @@ ITMBasicEngine<TVoxel,TIndex>::ITMBasicEngine(const ITMLibSettings *settings, co
 	
 	if (settings->behaviourOnFailure == settings->FAILUREMODE_RELOCALISE)
 	{
-		relocaliser = new RelocLib::Relocaliser(imgSize_d, Vector2f(settings->sceneParams.viewFrustum_min, settings->sceneParams.viewFrustum_max), 0.2f, 500, 4);
-		poseDatabase = new RelocLib::PoseDatabase();
+		relocaliser = new FernRelocLib::Relocaliser(imgSize_d, Vector2f(settings->sceneParams.viewFrustum_min, settings->sceneParams.viewFrustum_max), 0.2f, 500, 4);
+		poseDatabase = new FernRelocLib::PoseDatabase();
 	}
 	else
 	{
@@ -150,8 +150,8 @@ void ITMBasicEngine<TVoxel, TIndex>::LoadFromFile()
 
 	try // load relocaliser
 	{
-		RelocLib::Relocaliser *relocaliser_temp = new RelocLib::Relocaliser(view->depth->noDims, Vector2f(settings->sceneParams.viewFrustum_min, settings->sceneParams.viewFrustum_max), 0.2f, 500, 4);
-		RelocLib::PoseDatabase *poseDatabase_temp = new RelocLib::PoseDatabase();
+		FernRelocLib::Relocaliser *relocaliser_temp = new FernRelocLib::Relocaliser(view->depth->noDims, Vector2f(settings->sceneParams.viewFrustum_min, settings->sceneParams.viewFrustum_max), 0.2f, 500, 4);
+		FernRelocLib::PoseDatabase *poseDatabase_temp = new FernRelocLib::PoseDatabase();
 
 		relocaliser_temp->LoadFromDirectory(relocaliserInputDirectory);
 		poseDatabase_temp->LoadFromDirectory(relocaliserInputDirectory);
@@ -302,7 +302,7 @@ ITMTrackingState::TrackingResult ITMBasicEngine<TVoxel,TIndex>::ProcessFrame(ITM
 			// Reset previous rgb frame since the rgb image is likely different than the one acquired when setting the keyframe
 			view->rgb_prev->Clear();
 
-			const RelocLib::PoseDatabase::PoseInScene & keyframe = poseDatabase->retrievePose(NN);
+			const FernRelocLib::PoseDatabase::PoseInScene & keyframe = poseDatabase->retrievePose(NN);
 			trackingState->pose_d->SetFrom(&keyframe.pose);
 
 			denseMapper->UpdateVisibleList(view, trackingState, scene, renderState_live, true);
