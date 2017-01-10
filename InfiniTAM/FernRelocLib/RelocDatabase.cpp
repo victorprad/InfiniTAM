@@ -24,12 +24,12 @@ RelocDatabase::~RelocDatabase(void)
 int RelocDatabase::findMostSimilar(const char *codeFragments, int nearestNeighbours[], float distances[], int k)
 {
 	int foundNN = 0;
-	if (mTotalEntries > 0) 
+	if (mTotalEntries > 0)
 	{
 		int *similarities = new int[mTotalEntries];
 		for (int i = 0; i < mTotalEntries; ++i) similarities[i] = 0;
 
-		for (int f = 0; f < mCodeLength; f++) 
+		for (int f = 0; f < mCodeLength; f++)
 		{
 			if (codeFragments[f] < 0) continue;
 			const std::vector<int> *sameCode = &(mIds[f * mCodeFragmentDim + codeFragments[f]]);
@@ -37,12 +37,12 @@ int RelocDatabase::findMostSimilar(const char *codeFragments, int nearestNeighbo
 			for (unsigned int i = 0; i < sameCode->size(); ++i) similarities[(*sameCode)[i]]++;
 		}
 
-		for (int i = 0; i < mTotalEntries; ++i) 
+		for (int i = 0; i < mTotalEntries; ++i)
 		{
 			float distance = ((float)mCodeLength - (float)similarities[i]) / (float)mCodeLength;
-			
+
 			int j;
-			for (j = foundNN; j > 0; --j) 
+			for (j = foundNN; j > 0; --j)
 			{
 				if (distances[j - 1] < distance) break;
 				if (j == k) continue;
@@ -50,7 +50,7 @@ int RelocDatabase::findMostSimilar(const char *codeFragments, int nearestNeighbo
 				nearestNeighbours[j] = nearestNeighbours[j - 1];
 			}
 
-			if (j != k) 
+			if (j != k)
 			{
 				distances[j] = distance;
 				nearestNeighbours[j] = i;
@@ -91,7 +91,7 @@ void RelocDatabase::SaveToFile(const std::string &framesFileName) const
 	if (!ofs) throw std::runtime_error("Could not open " + framesFileName + " for reading");
 
 	ofs << mCodeLength << " " << mCodeFragmentDim << " " << mTotalEntries << "\n";
-    int dimTotal = mCodeLength * mCodeFragmentDim;
+	int dimTotal = mCodeLength * mCodeFragmentDim;
 	for (int i = 0; i < dimTotal; i++)
 	{
 		ofs << mIds[i].size() << " ";

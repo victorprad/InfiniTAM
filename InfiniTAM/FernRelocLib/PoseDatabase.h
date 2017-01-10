@@ -6,12 +6,12 @@
 
 #include "../ORUtils/SE3Pose.h"
 
-namespace FernRelocLib 
+namespace FernRelocLib
 {
-	class PoseDatabase 
+	class PoseDatabase
 	{
 	public:
-		struct PoseInScene 
+		struct PoseInScene
 		{
 			PoseInScene(void) {}
 			PoseInScene(const ORUtils::SE3Pose & _pose, int _sceneIdx) : pose(_pose), sceneIdx(_sceneIdx) {}
