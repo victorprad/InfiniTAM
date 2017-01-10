@@ -24,13 +24,13 @@ namespace FernRelocLib
 		// takes a (small) image, applies the binary tests in the ferns, creates
 		// the code fragments as an array
 		void computeCode(const ORUtils::Image<float> *img, char *codeFragments) const;
-		void computeCode(const ORUtils::Image<ORUtils::Vector4<unsigned char>> *img, char *codeFragments) const;
+		void computeCode(const ORUtils::Image< ORUtils::Vector4<unsigned char> > *img, char *codeFragments) const;
 
 		void SaveToFile(const std::string &fernsFileName);
 		void LoadFromFile(const std::string &fernsFileName);
 
 		int getNumFerns(void) const { return mNumFerns; }
-		int getNumCodes(void) const { return (1 << mNumDecisions); }
+		int getNumCodes(void) const { return 1 << mNumDecisions; }
 		int getNumDecisions(void) const { return mNumDecisions; }
 
 	private:

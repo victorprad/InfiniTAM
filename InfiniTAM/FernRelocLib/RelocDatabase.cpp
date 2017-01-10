@@ -91,7 +91,8 @@ void RelocDatabase::SaveToFile(const std::string &framesFileName) const
 	if (!ofs) throw std::runtime_error("Could not open " + framesFileName + " for reading");
 
 	ofs << mCodeLength << " " << mCodeFragmentDim << " " << mTotalEntries << "\n";
-	for (int i = 0; i < mCodeLength* mCodeFragmentDim; i++)
+    int dimTotal = mCodeLength * mCodeFragmentDim;
+	for (int i = 0; i < dimTotal; i++)
 	{
 		ofs << mIds[i].size() << " ";
 		for (size_t j = 0; j < mIds[i].size(); j++) ofs << mIds[i][j] << " ";
@@ -105,8 +106,8 @@ void RelocDatabase::LoadFromFile(const std::string &filename)
 	if (!ifs) throw std::runtime_error("unable to load " + filename);
 
 	ifs >> mCodeLength >> mCodeFragmentDim >> mTotalEntries;
-	int len = 0, id = 0;
-	for (int i = 0; i < mCodeFragmentDim*mCodeLength; i++)
+	int len = 0, id = 0, dimTotal = mCodeFragmentDim * mCodeLength;
+	for (int i = 0; i < dimTotal; i++)
 	{
 		ifs >> len;
 		std::vector<int> *sameCode = &(mIds[i]);

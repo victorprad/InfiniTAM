@@ -12,7 +12,6 @@
 #include "../Objects/Misc/ITMIMUCalibrator.h"
 
 #include "../../FernRelocLib/Relocaliser.h"
-#include "../../FernRelocLib/PoseDatabase.h"
 
 namespace ITMLib
 {

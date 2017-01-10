@@ -59,13 +59,13 @@ void PoseDatabase::SaveToFile(const std::string &fileName)
 	}
 }
 
-void PoseDatabase::LoadFromFile(const std::string &poseDatabaseFilePath)
+void PoseDatabase::LoadFromFile(const std::string &fileName)
 {
 	int tot, sceneID;
 	float tx, ty, tz, rx, ry, rz;
 	
-	std::ifstream ifs(poseDatabaseFilePath.c_str());
-	if (!ifs) throw std::runtime_error("unable to open " + poseDatabaseFilePath);
+	std::ifstream ifs(fileName.c_str());
+	if (!ifs) throw std::runtime_error("unable to open " + fileName);
 
 	ifs >> tot;
 	for (int i = 0; i < tot; i++) 

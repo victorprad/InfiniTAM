@@ -28,7 +28,7 @@ namespace FernRelocLib
 		const PoseInScene & retrievePose(int id) const { return mPoses[id]; }
 		PoseInScene retrieveWAPose(int k, int ids[], float weights[]) const;
 
-		void SaveToFile(const std::string &directoryName);
+		void SaveToFile(const std::string &fileName);
 		void LoadFromFile(const std::string &fileName);
 
 	private:

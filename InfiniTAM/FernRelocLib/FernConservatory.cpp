@@ -46,21 +46,23 @@ void FernConservatory::computeCode(const ORUtils::Image<float> *img, char *codeF
 	}
 }
 
-void FernConservatory::computeCode(const ORUtils::Image<ORUtils::Vector4<unsigned char>> *img, char *codeFragments) const 
+void FernConservatory::computeCode(const ORUtils::Image< ORUtils::Vector4<unsigned char> > *img, char *codeFragments) const 
 {
 	const ORUtils::Vector4<unsigned char> *imgData = img->GetData(MEMORYDEVICE_CPU);
 	int numDecisions = mNumDecisions / 3;
-	for (int f = 0; f < mNumFerns; ++f) 
+    for (int f = 0; f < mNumFerns; ++f)
 	{
 		codeFragments[f] = 0;
 		for (int d = 0; d < numDecisions; ++d) 
 		{
-			const FernTester *tester = &mEncoders[f*numDecisions + d];
+			const FernTester *tester = &mEncoders[f * numDecisions + d];
+            unsigned char tester_threshold = static_cast<unsigned char>(tester->threshold);
+            
 			int locId = tester->location.x + tester->location.y * img->noDims.x;
 			for (int c = 0; c < 3; ++c) 
 			{
 				unsigned char val = imgData[locId][c];
-				if (val > static_cast<unsigned char>(tester->threshold)) codeFragments[f] |= 1 << ((3 * d) + c);
+				if (val > tester_threshold) codeFragments[f] |= 1 << ((3 * d) + c);
 			}
 		}
 	}

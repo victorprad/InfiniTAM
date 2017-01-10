@@ -8,7 +8,6 @@
 #include "../Engines/ViewBuilding/Interface/ITMViewBuilder.h"
 #include "../Objects/Misc/ITMIMUCalibrator.h"
 #include "../../FernRelocLib/Relocaliser.h"
-#include "../../FernRelocLib/PoseDatabase.h"
 
 #include "../Engines/MultiScene/ITMActiveMapManager.h"
 #include "../Engines/MultiScene/ITMGlobalAdjustmentEngine.h"
