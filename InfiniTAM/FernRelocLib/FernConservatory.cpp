@@ -4,7 +4,7 @@
 
 #include <fstream>
 
-using namespace RelocLib;
+using namespace FernRelocLib;
 
 static float random_uniform01(void)
 {
@@ -31,9 +31,11 @@ FernConservatory::~FernConservatory(void)
 void FernConservatory::computeCode(const ORUtils::Image<float> *img, char *codeFragments) const
 {
 	const float *imgData = img->GetData(MEMORYDEVICE_CPU);
-	for (int f = 0; f < mNumFerns; ++f) {
+	for (int f = 0; f < mNumFerns; ++f)
+	{
 		codeFragments[f] = 0;
-		for (int d = 0; d < mNumDecisions; ++d) {
+		for (int d = 0; d < mNumDecisions; ++d)
+		{
 			const FernTester *tester = &(mEncoders[f*mNumDecisions + d]);
 			int locId = tester->location.x + tester->location.y * img->noDims.x;
 			float val = imgData[locId];
@@ -44,13 +46,35 @@ void FernConservatory::computeCode(const ORUtils::Image<float> *img, char *codeF
 	}
 }
 
+void FernConservatory::computeCode(const ORUtils::Image< ORUtils::Vector4<unsigned char> > *img, char *codeFragments) const
+{
+	const ORUtils::Vector4<unsigned char> *imgData = img->GetData(MEMORYDEVICE_CPU);
+	int numDecisions = mNumDecisions / 3;
+	for (int f = 0; f < mNumFerns; ++f)
+	{
+		codeFragments[f] = 0;
+		for (int d = 0; d < numDecisions; ++d)
+		{
+			const FernTester *tester = &mEncoders[f * numDecisions + d];
+			unsigned char tester_threshold = static_cast<unsigned char>(tester->threshold);
+
+			int locId = tester->location.x + tester->location.y * img->noDims.x;
+			for (int c = 0; c < 3; ++c)
+			{
+				unsigned char val = imgData[locId][c];
+				if (val > tester_threshold) codeFragments[f] |= 1 << ((3 * d) + c);
+			}
+		}
+	}
+}
+
 void FernConservatory::SaveToFile(const std::string &fernsFileName)
 {
 	std::ofstream ofs(fernsFileName.c_str());
 
 	if (!ofs) throw std::runtime_error("Could not open " + fernsFileName + " for reading");;
 
-	for (int f = 0; f < mNumFerns * mNumDecisions; ++f) 
+	for (int f = 0; f < mNumFerns * mNumDecisions; ++f)
 		ofs << mEncoders[f].location.x << ' ' << mEncoders[f].location.y << ' ' << mEncoders[f].threshold << '\n';
 }
 
@@ -59,9 +83,9 @@ void FernConservatory::LoadFromFile(const std::string &fernsFileName)
 	std::ifstream ifs(fernsFileName.c_str());
 	if (!ifs) throw std::runtime_error("unable to load " + fernsFileName);
 
-	for (int i = 0; i < mNumFerns; i++) 
+	for (int i = 0; i < mNumFerns; i++)
 	{
-		for (int j = 0; j < mNumDecisions; j++) 
+		for (int j = 0; j < mNumDecisions; j++)
 		{
 			FernTester &fernTester = mEncoders[i * mNumDecisions + j];
 			ifs >> fernTester.location.x >> fernTester.location.y >> fernTester.threshold;

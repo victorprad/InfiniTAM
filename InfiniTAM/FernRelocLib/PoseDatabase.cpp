@@ -5,13 +5,10 @@
 #include <fstream>
 #include <iterator>
 
-using namespace RelocLib;
+using namespace FernRelocLib;
 
-PoseDatabase::PoseDatabase(void)
-{}
-
-PoseDatabase::~PoseDatabase(void)
-{}
+PoseDatabase::PoseDatabase(void) {}
+PoseDatabase::~PoseDatabase(void) {}
 
 void PoseDatabase::storePose(int id, const ORUtils::SE3Pose & pose, int sceneId)
 {
@@ -28,7 +25,8 @@ PoseDatabase::PoseInScene PoseDatabase::retrieveWAPose(int k, int ids[], float d
 
 	int sceneID = -1;
 	float sumWeights = 0.0f;
-	for (int i = 0; i < k; ++i) {
+	for (int i = 0; i < k; ++i)
+	{
 		const PoseInScene & pose = retrievePose(ids[i]);
 		if (sceneID == -1) sceneID = pose.sceneIdx;
 		else if (sceneID != pose.sceneIdx) continue;
@@ -42,38 +40,35 @@ PoseDatabase::PoseInScene PoseDatabase::retrieveWAPose(int k, int ids[], float d
 	return PoseDatabase::PoseInScene(ORUtils::SE3Pose(m), sceneID);
 }
 
-void PoseDatabase::SaveToDirectory(const std::string &directoryName)
+void PoseDatabase::SaveToFile(const std::string &fileName)
 {
-	std::string fileName = directoryName + "poses.txt";
-	std::ofstream ofs((directoryName + "poses.txt").c_str());
+	std::ofstream ofs(fileName.c_str());
 	if (!ofs) throw std::runtime_error("Could not open " + fileName + " for reading");
-	
+
 	size_t numPoses = mPoses.size();
 	ofs << numPoses << '\n';
 
-	for (size_t i = 0; i < numPoses; i++) 
+	for (size_t i = 0; i < numPoses; i++)
 	{
 		ofs << mPoses[i].sceneIdx << ' ';
 
 		const float *params = mPoses[i].pose.GetParams();
 		std::copy(params, params + 6, std::ostream_iterator<float>(ofs, " "));
-		
+
 		ofs << '\n';
 	}
 }
 
-void PoseDatabase::LoadFromDirectory(const std::string &filename)
+void PoseDatabase::LoadFromFile(const std::string &fileName)
 {
 	int tot, sceneID;
 	float tx, ty, tz, rx, ry, rz;
 
-	std::string poseDatabaseFilePath = filename + "poses.txt";
-	
-	std::ifstream ifs(poseDatabaseFilePath.c_str());
-	if (!ifs) throw std::runtime_error("unable to open " + poseDatabaseFilePath);
+	std::ifstream ifs(fileName.c_str());
+	if (!ifs) throw std::runtime_error("unable to open " + fileName);
 
 	ifs >> tot;
-	for (int i = 0; i < tot; i++) 
+	for (int i = 0; i < tot; i++)
 	{
 		ifs >> sceneID >> tx >> ty >> tz >> rx >> ry >> rz;
 		ORUtils::SE3Pose pose(tx, ty, tz, rx, ry, rz);

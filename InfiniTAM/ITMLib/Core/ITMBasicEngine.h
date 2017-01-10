@@ -11,8 +11,7 @@
 #include "../Engines/Visualisation/Interface/ITMVisualisationEngine.h"
 #include "../Objects/Misc/ITMIMUCalibrator.h"
 
-#include "../../RelocLib/Relocaliser.h"
-#include "../../RelocLib/PoseDatabase.h"
+#include "../../FernRelocLib/Relocaliser.h"
 
 namespace ITMLib
 {
@@ -41,8 +40,7 @@ namespace ITMLib
 		ITMTracker *tracker;
 		ITMIMUCalibrator *imuCalibrator;
 
-		RelocLib::Relocaliser *relocaliser;
-		RelocLib::PoseDatabase *poseDatabase;
+		FernRelocLib::Relocaliser<float> *relocaliser;
 		ITMUChar4Image *kfRaycast;
 
 		/// Pointer for storing the current input frame
