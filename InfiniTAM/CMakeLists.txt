@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.1)
 project(InfiniTAM)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
@@ -22,6 +22,10 @@ find_package(OpenNI QUIET)
 CANONIFY_BOOL(OPENNI_FOUND)
 message(STATUS "OpenNI found: " ${OPENNI_FOUND})
 
+find_package(LibRoyale QUIET)
+CANONIFY_BOOL(LibRoyale_FOUND)
+message(STATUS "LibRoyale found: " ${LibRoyale_FOUND})
+
 find_package(libuvc QUIET)
 CANONIFY_BOOL(libuvc_FOUND)
 message(STATUS "libuvc found: ${libuvc_FOUND}")
@@ -37,6 +41,8 @@ message(STATUS "libpng found: ${PNG_FOUND}")
 OPTION(WITH_CUDA "Build with CUDA support?" ${CUDA_FOUND})
 INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseOpenMP.cmake)
 OPTION(WITH_REALSENSE "Build with Intel RealSense support?" ${REALSENSE_FOUND})
+
+set (CMAKE_CXX_STANDARD 11)
 
 IF(MSVC_IDE)
   add_definitions(-D_CRT_SECURE_NO_WARNINGS)

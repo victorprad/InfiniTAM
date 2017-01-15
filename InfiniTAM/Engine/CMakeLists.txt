@@ -13,6 +13,12 @@ ELSE(OPENNI_FOUND)
   add_definitions(-DCOMPILE_WITHOUT_OpenNI)
 ENDIF(OPENNI_FOUND)
 
+IF(LibRoyale_FOUND)
+    include_directories(${LibRoyale_INCLUDE_DIR})
+ELSE(LibRoyale_FOUND)
+    add_definitions(-DCOMPILE_WITHOUT_LibRoyale)
+ENDIF(LibRoyale_FOUND)
+
 IF(MSKINECTAPI_FOUND)
   include_directories(${MSKINECTAPI_INCLUDE_DIR})
 ELSE(MSKINECTAPI_FOUND)
@@ -39,6 +45,8 @@ Kinect2Engine.cpp
 Kinect2Engine.h
 OpenNIEngine.cpp
 OpenNIEngine.h
+PicoFlexxEngine.cpp
+PicoFlexxEngine.h
 LibUVCEngine.cpp
 LibUVCEngine.h
 UIEngine.cpp
@@ -58,6 +66,9 @@ ENDIF()
 IF(OPENNI_FOUND)
   target_link_libraries(Engine ${OpenNI_LIBRARY})
 ENDIF(OPENNI_FOUND)
+IF(LibRoyale_FOUND)
+  target_link_libraries(Engine ${LibRoyale_LIBRARY})
+ENDIF(LibRoyale_FOUND)
 IF(DEFINED libuvc_LIBRARIES)
   target_link_libraries(Engine ${libuvc_LIBRARIES})
 ENDIF()

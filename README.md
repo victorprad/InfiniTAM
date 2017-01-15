@@ -64,7 +64,7 @@ Several 3rd party libraries are needed for compiling InfiniTAM. The given versio
 ```
   $ mkdir build
   $ cd build
-  $ cmake /path/to/InfiniTAM -DOPEN_NI_ROOT=/path/to/OpenNI2/
+  $ cmake /path/to/InfiniTAM -DOPEN_NI_ROOT=/path/to/OpenNI2/ -DLIB_ROYALE_ROOT=/path/to/libroyale
   $ make
 ```
   To create a doxygen documentation, just run doxygen:
