@@ -40,9 +40,9 @@ message(STATUS "libpng found: ${PNG_FOUND}")
 
 OPTION(WITH_CUDA "Build with CUDA support?" ${CUDA_FOUND})
 INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseOpenMP.cmake)
-OPTION(WITH_REALSENSE "Build with Intel RealSense support?" ${REALSENSE_FOUND})
 
-set (CMAKE_CXX_STANDARD 11)
+OPTION(WITH_REALSENSE "Build with Intel RealSense support?" ${REALSENSE_FOUND})
+OPTION(WITH_LIBROYALE "Build with LibRoyale support?" ${LibRoyale_FOUND})
 
 IF(MSVC_IDE)
   add_definitions(-D_CRT_SECURE_NO_WARNINGS)

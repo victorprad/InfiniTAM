@@ -4,8 +4,12 @@
 
 #include "ImageSourceEngine.h"
 
+#ifdef COMPILE_WITH_LibRoyale
+
 #if (!defined USING_CMAKE) && (defined _MSC_VER)
-#pragma comment(lib, "LibRoyale")
+#pragma comment(lib, "royale")
+#endif
+
 #endif
 
 namespace InfiniTAM

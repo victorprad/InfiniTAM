@@ -9,7 +9,17 @@
 #include <algorithm>
 #include <mutex>
 
-#ifndef COMPILE_WITHOUT_LibRoyale
+#ifdef COMPILE_WITH_LibRoyale
+
+#ifndef WIN32
+#include <unistd.h>
+#define ROYALE_SLEEP_MS(x) usleep(x * 1000)
+#else
+#include <windows.h>
+#undef max
+#define ROYALE_SLEEP_MS(x) Sleep(x)
+#endif
+
 #include <royale.hpp>
 
 using namespace InfiniTAM::Engine;
@@ -114,10 +124,10 @@ PicoFlexxEngine::PicoFlexxEngine(const char *calibFilename, const char *deviceUR
     }
     this->calib.intrinsics_d.SetFrom(lensParams.focalLength.first, lensParams.focalLength.second,
                                      lensParams.principalPoint.first, lensParams.principalPoint.second,
-                                     requested_imageSize_d.x, requested_imageSize_d.y);
+									 (float)requested_imageSize_d.x, (float)requested_imageSize_d.y);
     this->calib.intrinsics_rgb.SetFrom(lensParams.focalLength.first, lensParams.focalLength.second,
                                        lensParams.principalPoint.first, lensParams.principalPoint.second,
-                                       requested_imageSize_d.x, requested_imageSize_d.y);
+									   (float)requested_imageSize_d.x, (float)requested_imageSize_d.y);
 
     Vector<String> useCases;
     auto status = data->cameraDevice->getUseCases (useCases);
@@ -156,6 +166,9 @@ PicoFlexxEngine::PicoFlexxEngine(const char *calibFilename, const char *deviceUR
         cerr << "Error starting the capturing" << endl;
         return;
     }
+
+	// waiting for the capture to start and 'data' to be populated
+	ROYALE_SLEEP_MS(1000);
 }
 
 PicoFlexxEngine::~PicoFlexxEngine()
@@ -212,9 +225,9 @@ void PicoFlexxEngine::getImages(ITMUChar4Image *rgbImage, ITMShortImage *rawDept
 	return /*true*/;
 }
 
-bool PicoFlexxEngine::hasMoreImages(void) { return (data!=NULL); }
-Vector2i PicoFlexxEngine::getDepthImageSize(void) { return (data!=NULL)?imageSize_d:Vector2i(0,0); }
-Vector2i PicoFlexxEngine::getRGBImageSize(void) { return (data!=NULL)?imageSize_rgb:Vector2i(0,0); }
+bool PicoFlexxEngine::hasMoreImages(void) { return data != NULL; }
+Vector2i PicoFlexxEngine::getDepthImageSize(void) { return (data != NULL) ? imageSize_d : Vector2i(0,0); }
+Vector2i PicoFlexxEngine::getRGBImageSize(void) { return (data != NULL) ? imageSize_rgb : Vector2i(0,0); }
 
 #else
 
