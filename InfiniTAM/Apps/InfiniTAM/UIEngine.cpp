@@ -272,6 +272,7 @@ void UIEngine::glutKeyUpFunction(unsigned char key, int x, int y)
 		ITMBasicEngine<ITMVoxel, ITMVoxelIndex> *basicEngine = dynamic_cast<ITMBasicEngine<ITMVoxel, ITMVoxelIndex>*>(uiEngine->mainEngine);
 		if (basicEngine != NULL) basicEngine->resetAll();
 	}
+	break;
 	case 'k':
 	{
 		printf("saving scene to disk ... ");

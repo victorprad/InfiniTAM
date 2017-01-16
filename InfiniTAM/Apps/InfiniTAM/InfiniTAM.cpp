@@ -8,6 +8,7 @@
 #include "../../InputSource/OpenNIEngine.h"
 #include "../../InputSource/Kinect2Engine.h"
 #include "../../InputSource/LibUVCEngine.h"
+#include "../../InputSource/PicoFlexxEngine.h"
 #include "../../InputSource/RealSenseEngine.h"
 #include "../../InputSource/LibUVCEngine.h"
 #include "../../InputSource/RealSenseEngine.h"
@@ -118,6 +119,17 @@ static void CreateDefaultImageSource(ImageSourceEngine* & imageSource, IMUSource
 	{
 		printf("trying MS Kinect 2 device\n");
 		imageSource = new Kinect2Engine(calibFile);
+		if (imageSource->getDepthImageSize().x == 0)
+		{
+			delete imageSource;
+			imageSource = NULL;
+		}
+	}
+
+	if (imageSource == NULL)
+	{
+		printf("trying PMD PicoFlexx device\n");
+		imageSource = new PicoFlexxEngine(calibFile);
 		if (imageSource->getDepthImageSize().x == 0)
 		{
 			delete imageSource;
