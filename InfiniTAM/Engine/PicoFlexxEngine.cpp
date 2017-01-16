@@ -144,7 +144,7 @@ PicoFlexxEngine::PicoFlexxEngine(const char *calibFilename, const char *deviceUR
 
     // set an operation mode
     // TODO allow setting this from the command line
-    if (data->cameraDevice->setUseCase("MODE_5_45FPS_500") != CameraStatus::SUCCESS)
+    if (data->cameraDevice->setUseCase("MODE_9_10FPS_1000") != CameraStatus::SUCCESS)
     {
         cerr << "Error setting use case" << endl;
         return;
@@ -177,7 +177,6 @@ void PicoFlexxEngine::getImages(ITMUChar4Image *rgbImage, ITMShortImage *rawDept
     lock_guard<mutex> lock(data->mtx);
 
     // copy the color info
-#undef PROVIDE_RGB
 #ifdef PROVIDE_RGB
 	Vector4u *rgb = rgbImage->GetData(MEMORYDEVICE_CPU);
 	if (data->rgbImage.size()) {
