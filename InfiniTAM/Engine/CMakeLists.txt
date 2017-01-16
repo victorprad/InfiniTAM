@@ -30,6 +30,11 @@ IF(WITH_REALSENSE)
   SET_PROPERTY(SOURCE RealSenseEngine.cpp PROPERTY COMPILE_FLAGS -std=c++11)
 ENDIF()
 
+IF(WITH_LIBROYALE)
+	include_directories(${LibRoyale_INCLUDE_DIR})
+	add_definitions(-DCOMPILE_WITH_LibRoyale)
+ENDIF()
+
 add_library(Engine
 ImageSourceEngine.cpp
 ImageSourceEngine.h
@@ -39,6 +44,8 @@ Kinect2Engine.cpp
 Kinect2Engine.h
 OpenNIEngine.cpp
 OpenNIEngine.h
+PicoFlexxEngine.cpp
+PicoFlexxEngine.h
 LibUVCEngine.cpp
 LibUVCEngine.h
 UIEngine.cpp
@@ -64,4 +71,6 @@ ENDIF()
 IF(WITH_REALSENSE)
   TARGET_LINK_LIBRARIES(Engine ${RealSense_LIBRARY})
 ENDIF()
-
+IF(WITH_LIBROYALE)
+  target_link_libraries(Engine ${LibRoyale_LIBRARY})
+ENDIF(WITH_LIBROYALE)

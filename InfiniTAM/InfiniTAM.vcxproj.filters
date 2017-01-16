@@ -151,6 +151,9 @@
     <ClCompile Include="Engine\RealSenseEngine.cpp">
       <Filter>Engine\Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Engine\PicoFlexxEngine.cpp">
+      <Filter>Engine\Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\OpenNIEngine.h">
@@ -433,6 +436,9 @@
       <Filter>Engine\Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Engine\RealSenseEngine.h">
+      <Filter>Engine\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\PicoFlexxEngine.h">
       <Filter>Engine\Header Files</Filter>
     </ClInclude>
   </ItemGroup>

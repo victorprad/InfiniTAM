@@ -9,6 +9,7 @@
 #include "Engine/Kinect2Engine.h"
 #include "Engine/LibUVCEngine.h"
 #include "Engine/RealSenseEngine.h"
+#include "Engine/PicoFlexxEngine.h"
 
 using namespace InfiniTAM::Engine;
 
@@ -76,6 +77,16 @@ static void CreateDefaultImageSource(ImageSourceEngine* & imageSource, IMUSource
 	{
 		printf("trying MS Kinect 2 device\n");
 		imageSource = new Kinect2Engine(calibFile);
+		if (imageSource->getDepthImageSize().x == 0)
+		{
+			delete imageSource;
+			imageSource = NULL;
+		}
+	}
+	if (imageSource == NULL)
+	{
+		printf("trying PMD PicoFlexx device\n");
+		imageSource = new PicoFlexxEngine(calibFile);
 		if (imageSource->getDepthImageSize().x == 0)
 		{
 			delete imageSource;
