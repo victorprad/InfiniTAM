@@ -13,6 +13,7 @@ SE3Pose::SE3Pose(const float pose[6]) { this->SetFrom(pose); }
 SE3Pose::SE3Pose(const Matrix4<float> & src) { this->SetM(src); }
 SE3Pose::SE3Pose(const Vector6<float> & tangent) { this->SetFrom(tangent); }
 SE3Pose::SE3Pose(const SE3Pose & src) { this->SetFrom(&src); }
+SE3Pose::SE3Pose(const Matrix3<float> &R, const Vector3<float> &t){this->SetRT(R,t);}
 
 #ifndef M_SQRT1_2
 #define M_SQRT1_2 0.707106781186547524401
@@ -323,3 +324,14 @@ void SE3Pose::Coerce(void)
 	SetModelViewFromParams();
 }
 
+Vector3<float>  SE3Pose::operator *(const Vector3<float> &in) {
+    return GetR()*in + GetT();
+}
+
+SE3Pose  SE3Pose::operator *(const SE3Pose &in) {
+    return SE3Pose(GetR() * in.GetR(),GetT() + in.GetT());
+}
+
+SE3Pose SE3Pose::Inverse() {
+    return SE3Pose(GetR().t(), -1*GetT());
+}
