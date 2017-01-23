@@ -55,6 +55,12 @@ namespace ITMLib
 			return false;
 		}
 
+		bool requiresPointCloudRendering() const
+		{
+			for (int i = 0; i < noTrackers; i++) if (trackers[i]->requiresPointCloudRendering()) return true;
+			return false;
+		}
+
 		// Suppress the default copy constructor and assignment operator
 		ITMCompositeTracker(const ITMCompositeTracker&);
 		ITMCompositeTracker& operator=(const ITMCompositeTracker&);
