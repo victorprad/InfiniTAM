@@ -47,7 +47,7 @@ namespace FernRelocLib
 		}
 	}
 
-	inline void filterSeparable_x(const ORUtils::Image< ORUtils::Vector4<unsigned char> > *input, ORUtils::Image<ORUtils::Vector4<unsigned char>> *output, int masksize, const float *coeff)
+	inline void filterSeparable_x(const ORUtils::Image< ORUtils::Vector4<unsigned char> > *input, ORUtils::Image<ORUtils::Vector4<unsigned char> > *output, int masksize, const float *coeff)
 	{
 		int s2 = masksize / 2;
 		ORUtils::Vector2<int> imgSize = input->noDims;
@@ -118,7 +118,7 @@ namespace FernRelocLib
 		}
 	}
 
-	inline void filterSeparable_y(const ORUtils::Image< ORUtils::Vector4<unsigned char> > *input, ORUtils::Image<ORUtils::Vector4<unsigned char>> *output, int masksize, const float *coeff)
+	inline void filterSeparable_y(const ORUtils::Image< ORUtils::Vector4<unsigned char> > *input, ORUtils::Image<ORUtils::Vector4<unsigned char> > *output, int masksize, const float *coeff)
 	{
 		int s2 = masksize / 2;
 		ORUtils::Vector2<int> imgSize = input->noDims;
@@ -198,7 +198,7 @@ namespace FernRelocLib
 		}
 	}
 
-	inline void filterSubsample(const ORUtils::Image< ORUtils::Vector4<unsigned char> > *input, ORUtils::Image<ORUtils::Vector4<unsigned char>> *output) {
+	inline void filterSubsample(const ORUtils::Image< ORUtils::Vector4<unsigned char> > *input, ORUtils::Image<ORUtils::Vector4<unsigned char> > *output) {
 		ORUtils::Vector2<int> imgSize_in = input->noDims;
 		ORUtils::Vector2<int> imgSize_out(imgSize_in.x / 2, imgSize_in.y / 2);
 		output->ChangeDims(imgSize_out, true);

@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include <fstream>
+
 #include "FernConservatory.h"
 #include "RelocDatabase.h"
 #include "PoseDatabase.h"
