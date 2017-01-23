@@ -50,7 +50,7 @@ void PicoFlexxEngine::PrivateData::onNewData(const DepthData *data)
 	rgbImage.reserve(data->points.size());
 
 	// copy grayscale image data into an RGB data set
-	for (int pointId = 0; pointId < data->points.count(); pointId++)
+	for (size_t pointId = 0; pointId < data->points.count(); pointId++)
 	{
 		// PicoFlexx seems to return 0 when bright, and up to FF0 when totally dark
 		// convert this into a value into an 8 bit value
@@ -67,7 +67,7 @@ void PicoFlexxEngine::PrivateData::onNewData(const DepthData *data)
 	depthImage.reserve(data->points.size());
 
 	// copy depth image data, converting meters in float to millimeters in short
-	for (int pointId = 0; pointId < data->points.count(); pointId++)
+	for (size_t pointId = 0; pointId < data->points.count(); pointId++)
 	{
 		// do not copy if confidence is low. confidence is 0 when bad, 255 when good
 		// it seems there are no intermediate values, still let's cut at 128
@@ -136,10 +136,8 @@ PicoFlexxEngine::PicoFlexxEngine(const char *calibFilename, const char *deviceUR
 
 	// list the available use cases
 	cout << "Available Pico Flexx use cases:" << endl;
-	for (size_t caseId = 0; caseId < useCases.size(); caseId++)
-	{
+	for (size_t caseId = 0; caseId < useCases.count(); caseId++)
 		cout << useCases[caseId] << endl;
-	}
 
 	// register a data listener
 	if (data->cameraDevice->registerDataListener(data) != CameraStatus::SUCCESS)
@@ -186,20 +184,15 @@ void PicoFlexxEngine::getImages(ITMUChar4Image *rgbImage, ITMShortImage *rawDept
 	// copy the color info
 #ifdef PROVIDE_RGB
 	Vector4u *rgb = rgbImage->GetData(MEMORYDEVICE_CPU);
-	if (data->rgbImage.size()) {
-		memcpy(rgb, data->rgbImage.data(), rgbImage->dataSize * sizeof(Vector4u));
-	}
-	else
-		memset(rgb, 0, rgbImage->dataSize * sizeof(Vector4u));
+	if (data->rgbImage.size()) memcpy(rgb, data->rgbImage.data(), rgbImage->dataSize * sizeof(Vector4u));
+	else memset(rgb, 0, rgbImage->dataSize * sizeof(Vector4u));
 #else
 	imageSize_rgb = Vector2i(0, 0);
 #endif
 
 	// copy the depth info
 	short *depth = rawDepthImage->GetData(MEMORYDEVICE_CPU);
-	if (data->depthImage.size()) {
-		memcpy(depth, data->depthImage.data(), rawDepthImage->dataSize * sizeof(short));
-	}
+	if (data->depthImage.size()) memcpy(depth, data->depthImage.data(), rawDepthImage->dataSize * sizeof(short));
 	else memset(depth, 0, rawDepthImage->dataSize * sizeof(short));
 }
 
