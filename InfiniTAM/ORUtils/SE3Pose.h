@@ -83,9 +83,19 @@ namespace ORUtils
 		SE3Pose(const Matrix4<float> & src);
 		SE3Pose(float tx, float ty, float tz, float rx, float ry, float rz);
 		SE3Pose(const Vector6<float> & tangent);
+        SE3Pose(const Matrix3<float> &R, const Vector3<float> &t);
 		explicit SE3Pose(const float pose[6]);
 
 		SE3Pose(void);
+
+        Vector3<float> operator *(const Vector3<float> &in);
+        SE3Pose operator *(const SE3Pose &in);
+        SE3Pose Inverse();
+
+        friend std::ostream& operator<<(std::ostream& os, const SE3Pose& dt) {
+            os << dt.M;
+            return os;
+        }
 
 		/** This builds a Pose based on its exp representation
 		*/
