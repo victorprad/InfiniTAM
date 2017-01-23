@@ -15,7 +15,7 @@ namespace InputSource
 		bool colorAvailable, depthAvailable;
 
 	public:
-		PicoFlexxEngine(const char *calibFilename, const char *deviceURI = NULL, const bool useInternalCalibration = false,
+		explicit PicoFlexxEngine(const char *calibFilename, const char *deviceURI = NULL, const bool useInternalCalibration = false,
 			Vector2i imageSize_rgb = Vector2i(224, 171), Vector2i imageSize_d = Vector2i(224, 171));
 		~PicoFlexxEngine();
 

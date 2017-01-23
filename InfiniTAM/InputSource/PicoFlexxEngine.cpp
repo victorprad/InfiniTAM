@@ -2,20 +2,19 @@
 
 #include "PicoFlexxEngine.h"
 
+#ifdef COMPILE_WITH_LibRoyale
+
 #include <cstdio>
 #include <stdexcept>
 #include <algorithm>
 #include <mutex>
 
-#ifdef COMPILE_WITH_LibRoyale
-
-#ifndef WIN32
+#ifdef WIN32
+#include <windows.h>
+#define ROYALE_SLEEP_MS(x) Sleep(x)
+#else
 #include <unistd.h>
 #define ROYALE_SLEEP_MS(x) usleep(x * 1000)
-#else
-#include <windows.h>
-#undef max
-#define ROYALE_SLEEP_MS(x) Sleep(x)
 #endif
 
 #include <royale.hpp>
@@ -33,7 +32,7 @@ public:
 	vector<short> depthImage;
 	mutex mtx;
 
-	PrivateData(PicoFlexxEngine *pfe) : engine(pfe), depthImage(0) {};
+	explicit PrivateData(PicoFlexxEngine *pfe) : engine(pfe), depthImage(0) {}
 	~PrivateData() {}
 
 	void onNewData(const DepthData *data);
@@ -51,15 +50,15 @@ void PicoFlexxEngine::PrivateData::onNewData(const DepthData *data)
 	rgbImage.reserve(data->points.size());
 
 	// copy grayscale image data into an RGB data set
-	std::for_each(data->points.begin(), data->points.end(), [this](const DepthPoint &dd) {
+	for (int pointId = 0; pointId < data->points.count(); pointId++)
+	{
 		// PicoFlexx seems to return 0 when bright, and up to FF0 when totally dark
 		// convert this into a value into an 8 bit value
-		unsigned char charValue = dd.grayValue >> 4;
+		unsigned char charValue = data->points[pointId].grayValue >> 4;
 		Vector4u pixel;
 		pixel.x = pixel.y = pixel.z = pixel.w = charValue;
 		this->rgbImage.push_back(pixel);
-	});
-
+	};
 
 	// handle the depth image
 	engine->imageSize_d = Vector2i(data->width, data->height);
@@ -68,18 +67,14 @@ void PicoFlexxEngine::PrivateData::onNewData(const DepthData *data)
 	depthImage.reserve(data->points.size());
 
 	// copy depth image data, converting meters in float to millimeters in short
-	std::for_each(data->points.begin(), data->points.end(), [this](const DepthPoint &dd) {
+	for (int pointId = 0; pointId < data->points.count(); pointId++)
+	{
 		// do not copy if confidence is low. confidence is 0 when bad, 255 when good
 		// it seems there are no intermediate values, still let's cut at 128
-		if (dd.depthConfidence > 128) {
-			this->depthImage.push_back((short)(dd.z * 1000.0));
-		}
-		else {
-			this->depthImage.push_back(0);
-		}
-	});
+		const DepthPoint &dd = data->points[pointId];
+		this->depthImage.push_back(dd.depthConfidence > 128 ? (short)(dd.z * 1000.0) : 0);
+	};
 }
-
 
 PicoFlexxEngine::PicoFlexxEngine(const char *calibFilename, const char *deviceURI, const bool useInternalCalibration,
 	Vector2i requested_imageSize_rgb, Vector2i requested_imageSize_d)
@@ -94,7 +89,7 @@ PicoFlexxEngine::PicoFlexxEngine(const char *calibFilename, const char *deviceUR
 	{
 		CameraManager manager;
 
-		auto camlist = manager.getConnectedCameraList();
+		royale::Vector<royale::String> camlist = manager.getConnectedCameraList();
 		cout << "Detected " << camlist.size() << " camera(s)." << endl;
 		if (!camlist.empty())
 		{
@@ -129,8 +124,8 @@ PicoFlexxEngine::PicoFlexxEngine(const char *calibFilename, const char *deviceUR
 	this->calib.intrinsics_rgb.SetFrom(lensParams.focalLength.first, lensParams.focalLength.second,
 		lensParams.principalPoint.first, lensParams.principalPoint.second);
 
-	Vector<String> useCases;
-	auto status = data->cameraDevice->getUseCases(useCases);
+	royale::Vector<royale::String> useCases;
+	royale::CameraStatus status = data->cameraDevice->getUseCases(useCases);
 
 	if (status != CameraStatus::SUCCESS || useCases.empty())
 	{
@@ -141,9 +136,10 @@ PicoFlexxEngine::PicoFlexxEngine(const char *calibFilename, const char *deviceUR
 
 	// list the available use cases
 	cout << "Available Pico Flexx use cases:" << endl;
-	for_each(useCases.begin(), useCases.end(), [](const String &s) {
-		cout << s << endl;
-	});
+	for (size_t caseId = 0; caseId < useCases.size(); caseId++)
+	{
+		cout << useCases[caseId] << endl;
+	}
 
 	// register a data listener
 	if (data->cameraDevice->registerDataListener(data) != CameraStatus::SUCCESS)
@@ -173,13 +169,11 @@ PicoFlexxEngine::PicoFlexxEngine(const char *calibFilename, const char *deviceUR
 
 PicoFlexxEngine::~PicoFlexxEngine()
 {
-	if (data) {
+	if (data) 
+	{
 		// stop capture mode
-		if (data->cameraDevice) {
-			if (data->cameraDevice->stopCapture() != CameraStatus::SUCCESS) {
-				cerr << "Error stopping the capturing" << endl;
-			}
-		}
+		if (data->cameraDevice) 
+			if (data->cameraDevice->stopCapture() != CameraStatus::SUCCESS) cerr << "Error stopping the capturing" << endl;
 
 		delete data;
 	}
@@ -207,55 +201,25 @@ void PicoFlexxEngine::getImages(ITMUChar4Image *rgbImage, ITMShortImage *rawDept
 		memcpy(depth, data->depthImage.data(), rawDepthImage->dataSize * sizeof(short));
 	}
 	else memset(depth, 0, rawDepthImage->dataSize * sizeof(short));
-
-#if 0
-	cout << "depthImage size: " << data->depthImage.size() << endl;
-	for (int i = 0; i < imageSize_d[0]; ++i) {
-		cout << hex << data->depthImage.at(i) << " ";
-	}
-	cout << endl;
-
-	cout << "first line raw data:" << endl;
-	for (int i = 0; i < imageSize_d[0]; ++i) {
-		cout << hex << depth[i] << " ";
-	}
-	cout << endl;
-#endif
-
-	return /*true*/;
 }
 
 bool PicoFlexxEngine::hasMoreImages(void) const { return data != NULL; }
-Vector2i PicoFlexxEngine::getDepthImageSize(void) const { return (data != NULL) ? imageSize_d : Vector2i(0, 0); }
-Vector2i PicoFlexxEngine::getRGBImageSize(void) const { return (data != NULL) ? imageSize_rgb : Vector2i(0, 0); }
+Vector2i PicoFlexxEngine::getDepthImageSize(void) const { return data != NULL ? imageSize_d : Vector2i(0, 0); }
+Vector2i PicoFlexxEngine::getRGBImageSize(void) const { return data != NULL ? imageSize_rgb : Vector2i(0, 0); }
 
 #else
 
-using namespace InfiniTAM::Engine;
+using namespace InputSource;
 
 PicoFlexxEngine::PicoFlexxEngine(const char *calibFilename, const char *deviceURI, const bool useInternalCalibration, Vector2i requested_imageSize_rgb, Vector2i requested_imageSize_d)
-	: ImageSourceEngine(calibFilename)
+	: BaseImageSourceEngine(calibFilename)
 {
 	printf("compiled without LibRoyale support\n");
 }
-PicoFlexxEngine::~PicoFlexxEngine()
-{}
-void PicoFlexxEngine::getImages(ITMUChar4Image *rgbImage, ITMShortImage *rawDepthImage)
-{
-	return;
-}
-bool PicoFlexxEngine::hasMoreImages(void) const
-{
-	return false;
-}
-Vector2i PicoFlexxEngine::getDepthImageSize(void) const
-{
-	return Vector2i(0, 0);
-}
-Vector2i PicoFlexxEngine::getRGBImageSize(void) const
-{
-	return Vector2i(0, 0);
-}
+PicoFlexxEngine::~PicoFlexxEngine() {}
+void PicoFlexxEngine::getImages(ITMUChar4Image *rgbImage, ITMShortImage *rawDepthImage) { }
+bool PicoFlexxEngine::hasMoreImages(void) const { return false; }
+Vector2i PicoFlexxEngine::getDepthImageSize(void) const { return Vector2i(0, 0); }
+Vector2i PicoFlexxEngine::getRGBImageSize(void) const { return Vector2i(0, 0); }
 
 #endif
-

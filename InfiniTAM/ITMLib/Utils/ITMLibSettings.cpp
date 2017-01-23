@@ -39,7 +39,7 @@ ITMLibSettings::ITMLibSettings(void)
 	useBilateralFilter = false;
 
 	/// what to do on tracker failure: ignore, relocalise or stop integration - not supported in loop closure version
-	behaviourOnFailure = FAILUREMODE_IGNORE;
+	behaviourOnFailure = FAILUREMODE_RELOCALISE;
     
 	/// switch between various library modes - basic, with loop closure, etc.
 	libMode = LIBMODE_BASIC;
