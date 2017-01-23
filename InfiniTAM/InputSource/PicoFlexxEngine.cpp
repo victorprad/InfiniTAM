@@ -23,7 +23,7 @@ using namespace InputSource;
 using namespace royale;
 using namespace std;
 
-class PicoFlexxEngine::PrivateData : public IDepthDataListener 
+class PicoFlexxEngine::PrivateData : public IDepthDataListener
 {
 public:
 	PicoFlexxEngine *engine;
@@ -39,7 +39,7 @@ public:
 };
 
 
-void PicoFlexxEngine::PrivateData::onNewData(const DepthData *data) 
+void PicoFlexxEngine::PrivateData::onNewData(const DepthData *data)
 {
 	lock_guard<mutex> lock(mtx);
 
@@ -58,7 +58,7 @@ void PicoFlexxEngine::PrivateData::onNewData(const DepthData *data)
 		Vector4u pixel;
 		pixel.x = pixel.y = pixel.z = pixel.w = charValue;
 		this->rgbImage.push_back(pixel);
-	};
+	}
 
 	// handle the depth image
 	engine->imageSize_d = Vector2i(data->width, data->height);
@@ -73,7 +73,7 @@ void PicoFlexxEngine::PrivateData::onNewData(const DepthData *data)
 		// it seems there are no intermediate values, still let's cut at 128
 		const DepthPoint &dd = data->points[pointId];
 		this->depthImage.push_back(dd.depthConfidence > 128 ? (short)(dd.z * 1000.0) : 0);
-	};
+	}
 }
 
 PicoFlexxEngine::PicoFlexxEngine(const char *calibFilename, const char *deviceURI, const bool useInternalCalibration,
@@ -118,7 +118,7 @@ PicoFlexxEngine::PicoFlexxEngine(const char *calibFilename, const char *deviceUR
 		cerr << "Cannot determine lens parameters" << endl;
 		return;
 	}
-	
+
 	this->calib.intrinsics_d.SetFrom(lensParams.focalLength.first, lensParams.focalLength.second,
 		lensParams.principalPoint.first, lensParams.principalPoint.second);
 	this->calib.intrinsics_rgb.SetFrom(lensParams.focalLength.first, lensParams.focalLength.second,
@@ -167,10 +167,10 @@ PicoFlexxEngine::PicoFlexxEngine(const char *calibFilename, const char *deviceUR
 
 PicoFlexxEngine::~PicoFlexxEngine()
 {
-	if (data) 
+	if (data)
 	{
 		// stop capture mode
-		if (data->cameraDevice) 
+		if (data->cameraDevice)
 			if (data->cameraDevice->stopCapture() != CameraStatus::SUCCESS) cerr << "Error stopping the capturing" << endl;
 
 		delete data;
