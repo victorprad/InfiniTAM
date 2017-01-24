@@ -329,15 +329,3 @@ void SE3Pose::Coerce(void)
 	SetParamsFromModelView();
 	SetModelViewFromParams();
 }
-
-Vector3<float>  SE3Pose::operator *(const Vector3<float> &in) {
-	return GetR()*in + GetT();
-}
-
-SE3Pose  SE3Pose::operator *(const SE3Pose &in) {
-	return SE3Pose(GetR() * in.GetR(), GetT() + in.GetT());
-}
-
-SE3Pose SE3Pose::Inverse() {
-	return SE3Pose(GetR().t(), -GetT());
-}

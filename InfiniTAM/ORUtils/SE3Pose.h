@@ -87,10 +87,6 @@ namespace ORUtils
 
 		SE3Pose(void);
 
-		Vector3<float> operator *(const Vector3<float> &in);
-		SE3Pose operator *(const SE3Pose &in);
-		SE3Pose Inverse();
-
 		friend std::ostream& operator<<(std::ostream& os, const SE3Pose& dt) {
 			os << dt.M;
 			return os;
