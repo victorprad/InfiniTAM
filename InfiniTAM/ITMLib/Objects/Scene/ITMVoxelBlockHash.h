@@ -1,25 +1,34 @@
-// Copyright 2014-2015 Isis Innovation Limited and the authors of InfiniTAM
+// Copyright 2014-2017 Oxford University Innovation Limited and the authors of InfiniTAM
 
 #pragma once
 
 #ifndef __METALC__
 #include <stdlib.h>
-#include "../../../ORUtils/MemoryBlock.h"
+#include <fstream>
+#include <iostream>
 #endif
 
 #include "../../Utils/ITMMath.h"
-#include "../../../ORUtils/PlatformIndependence.h"
+#include "../../../ORUtils/MemoryBlock.h"
+#include "../../../ORUtils/MemoryBlockPersister.h"
 
 #define SDF_BLOCK_SIZE 8				// SDF block size
 #define SDF_BLOCK_SIZE3 512				// SDF_BLOCK_SIZE3 = SDF_BLOCK_SIZE * SDF_BLOCK_SIZE * SDF_BLOCK_SIZE
-#define SDF_LOCAL_BLOCK_NUM 0x40000		// Number of locally stored blocks, currently 2^17
 
-#define SDF_GLOBAL_BLOCK_NUM 0x120000	// Number of globally stored blocks: SDF_BUCKET_NUM + SDF_EXCESS_LIST_SIZE
-#define SDF_TRANSFER_BLOCK_NUM 0x1000	// Maximum number of blocks transfered in one swap operation
+#define SDF_LOCAL_BLOCK_NUM 0x40000		// Number of locally stored blocks, currently 2^17
 
 #define SDF_BUCKET_NUM 0x100000			// Number of Hash Bucket, should be 2^n and bigger than SDF_LOCAL_BLOCK_NUM, SDF_HASH_MASK = SDF_BUCKET_NUM - 1
 #define SDF_HASH_MASK 0xfffff			// Used for get hashing value of the bucket index,  SDF_HASH_MASK = SDF_BUCKET_NUM - 1
 #define SDF_EXCESS_LIST_SIZE 0x20000	// 0x20000 Size of excess list, used to handle collisions. Also max offset (unsigned short) value.
+
+//// for loop closure
+//#define SDF_LOCAL_BLOCK_NUM 0x10000		// Number of locally stored blocks, currently 2^12
+//
+//#define SDF_BUCKET_NUM 0x40000			// Number of Hash Bucket, should be 2^n and bigger than SDF_LOCAL_BLOCK_NUM, SDF_HASH_MASK = SDF_BUCKET_NUM - 1
+//#define SDF_HASH_MASK 0x3ffff			// Used for get hashing value of the bucket index,  SDF_HASH_MASK = SDF_BUCKET_NUM - 1
+//#define SDF_EXCESS_LIST_SIZE 0x8000		// 0x8000 Size of excess list, used to handle collisions. Also max offset (unsigned short) value.
+
+#define SDF_TRANSFER_BLOCK_NUM 0x1000	// Maximum number of blocks transfered in one swap operation
 
 /** \brief
 	A single entry in the hash table.
@@ -116,6 +125,34 @@ namespace ITMLib
 		/** Maximum number of total entries. */
 		int getNumAllocatedVoxelBlocks(void) { return SDF_LOCAL_BLOCK_NUM; }
 		int getVoxelBlockSize(void) { return SDF_BLOCK_SIZE3; }
+
+		void SaveToDirectory(const std::string &outputDirectory) const
+		{
+			std::string hashEntriesFileName = outputDirectory + "hash.dat";
+			std::string excessAllocationListFileName = outputDirectory + "excess.dat";
+			std::string lastFreeExcessListIdFileName = outputDirectory + "last.txt";
+
+			std::ofstream ofs(lastFreeExcessListIdFileName.c_str());
+			if (!ofs) throw std::runtime_error("Could not open " + lastFreeExcessListIdFileName + " for writing");
+
+			ofs << lastFreeExcessListId;
+			ORUtils::MemoryBlockPersister::SaveMemoryBlock(hashEntriesFileName, *hashEntries, memoryType);
+			ORUtils::MemoryBlockPersister::SaveMemoryBlock(excessAllocationListFileName, *excessAllocationList, memoryType);
+		}
+
+		void LoadFromDirectory(const std::string &inputDirectory)
+		{
+			std::string hashEntriesFileName = inputDirectory + "hash.dat";
+			std::string excessAllocationListFileName = inputDirectory + "excess.dat";
+			std::string lastFreeExcessListIdFileName = inputDirectory + "last.txt";
+
+			std::ifstream ifs(lastFreeExcessListIdFileName.c_str());
+			if (!ifs) throw std::runtime_error("Count not open " + lastFreeExcessListIdFileName + " for reading");
+
+			ifs >> this->lastFreeExcessListId;
+			ORUtils::MemoryBlockPersister::LoadMemoryBlock(hashEntriesFileName.c_str(), *hashEntries, memoryType);
+			ORUtils::MemoryBlockPersister::LoadMemoryBlock(excessAllocationListFileName.c_str(), *excessAllocationList, memoryType);
+		}
 
 		// Suppress the default copy constructor and assignment operator
 		ITMVoxelBlockHash(const ITMVoxelBlockHash&);

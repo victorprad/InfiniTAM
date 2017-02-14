@@ -1,4 +1,4 @@
-// Copyright 2014-2015 Isis Innovation Limited and the authors of InfiniTAM
+// Copyright 2014-2017 Oxford University Innovation Limited and the authors of InfiniTAM
 
 #include "ITMDepthTracker.h"
 #include "../../../ORUtils/Cholesky.h"
@@ -54,7 +54,7 @@ ITMDepthTracker::~ITMDepthTracker(void)
 
 void ITMDepthTracker::SetupLevels(int numIterCoarse, int numIterFine, float distThreshCoarse, float distThreshFine)
 {
-	int noHierarchyLevels = viewHierarchy->noLevels;
+	int noHierarchyLevels = viewHierarchy->GetNoLevels();
 
 	if ((numIterCoarse != -1) && (numIterFine != -1)) {
 		float step = (float)(numIterCoarse - numIterFine) / (float)(noHierarchyLevels - 1);
@@ -79,26 +79,28 @@ void ITMDepthTracker::SetEvaluationData(ITMTrackingState *trackingState, const I
 	this->trackingState = trackingState;
 	this->view = view;
 
-	sceneHierarchy->levels[0]->intrinsics = view->calib.intrinsics_d.projectionParamsSimple.all;
-	viewHierarchy->levels[0]->intrinsics = view->calib.intrinsics_d.projectionParamsSimple.all;
+	sceneHierarchy->GetLevel(0)->intrinsics = view->calib.intrinsics_d.projectionParamsSimple.all;
+	viewHierarchy->GetLevel(0)->intrinsics = view->calib.intrinsics_d.projectionParamsSimple.all;
 
 	// the image hierarchy allows pointers to external data at level 0
-	viewHierarchy->levels[0]->depth = view->depth;
-	sceneHierarchy->levels[0]->pointsMap = trackingState->pointCloud->locations;
-	sceneHierarchy->levels[0]->normalsMap = trackingState->pointCloud->colours;
+	viewHierarchy->GetLevel(0)->data = view->depth;
+	sceneHierarchy->GetLevel(0)->pointsMap = trackingState->pointCloud->locations;
+	sceneHierarchy->GetLevel(0)->normalsMap = trackingState->pointCloud->colours;
 
 	scenePose = trackingState->pose_pointCloud->GetM();
 }
 
 void ITMDepthTracker::PrepareForEvaluation()
 {
-	for (int i = 1; i < viewHierarchy->noLevels; i++)
+	for (int i = 1; i < viewHierarchy->GetNoLevels(); i++)
 	{
-		ITMTemplatedHierarchyLevel<ITMFloatImage> *currentLevelView = viewHierarchy->levels[i], *previousLevelView = viewHierarchy->levels[i - 1];
-		lowLevelEngine->FilterSubsampleWithHoles(currentLevelView->depth, previousLevelView->depth);
+		ITMTemplatedHierarchyLevel<ITMFloatImage> *currentLevelView = viewHierarchy->GetLevel(i);
+		ITMTemplatedHierarchyLevel<ITMFloatImage> *previousLevelView = viewHierarchy->GetLevel(i - 1);
+		lowLevelEngine->FilterSubsampleWithHoles(currentLevelView->data, previousLevelView->data);
 		currentLevelView->intrinsics = previousLevelView->intrinsics * 0.5f;
 
-		ITMSceneHierarchyLevel *currentLevelScene = sceneHierarchy->levels[i], *previousLevelScene = sceneHierarchy->levels[i - 1];
+		ITMSceneHierarchyLevel *currentLevelScene = sceneHierarchy->GetLevel(i);
+		ITMSceneHierarchyLevel *previousLevelScene = sceneHierarchy->GetLevel(i - 1);
 		//lowLevelEngine->FilterSubsampleWithHoles(currentLevelScene->pointsMap, previousLevelScene->pointsMap);
 		//lowLevelEngine->FilterSubsampleWithHoles(currentLevelScene->normalsMap, previousLevelScene->normalsMap);
 		currentLevelScene->intrinsics = previousLevelScene->intrinsics * 0.5f;
@@ -108,9 +110,9 @@ void ITMDepthTracker::PrepareForEvaluation()
 void ITMDepthTracker::SetEvaluationParams(int levelId)
 {
 	this->levelId = levelId;
-	this->iterationType = viewHierarchy->levels[levelId]->iterationType;
-	this->sceneHierarchyLevel = sceneHierarchy->levels[0];
-	this->viewHierarchyLevel = viewHierarchy->levels[levelId];
+	this->iterationType = viewHierarchy->GetLevel(levelId)->iterationType;
+	this->sceneHierarchyLevel = sceneHierarchy->GetLevel(0);
+	this->viewHierarchyLevel = viewHierarchy->GetLevel(levelId);
 }
 
 void ITMDepthTracker::ComputeDelta(float *step, float *nabla, float *hessian, bool shortIteration) const
@@ -175,7 +177,7 @@ void ITMDepthTracker::ApplyDelta(const Matrix4f & para_old, const float *delta, 
 
 void ITMDepthTracker::UpdatePoseQuality(int noValidPoints_old, float *hessian_good, float f_old)
 {
-	int noTotalPoints = viewHierarchy->levels[0]->depth->noDims.x * viewHierarchy->levels[0]->depth->noDims.y;
+	size_t noTotalPoints = viewHierarchy->GetLevel(0)->data->dataSize;
 
 	int noValidPointsMax = lowLevelEngine->CountValidDepths(view->depth);
 
@@ -243,7 +245,7 @@ void ITMDepthTracker::TrackCamera(ITMTrackingState *trackingState, const ITMView
 	for (int i = 0; i < 6 * 6; ++i) hessian_good[i] = 0.0f;
 	for (int i = 0; i < 6; ++i) nabla_good[i] = 0.0f;
 
-	for (int levelId = viewHierarchy->noLevels - 1; levelId >= 0; levelId--)
+	for (int levelId = viewHierarchy->GetNoLevels() - 1; levelId >= 0; levelId--)
 	{
 		this->SetEvaluationParams(levelId);
 		if (iterationType == TRACKER_ITERATION_NONE) continue;

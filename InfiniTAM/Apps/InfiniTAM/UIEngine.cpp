@@ -1,4 +1,4 @@
-// Copyright 2014-2015 Isis Innovation Limited and the authors of InfiniTAM
+// Copyright 2014-2017 Oxford University Innovation Limited and the authors of InfiniTAM
 
 #include "UIEngine.h"
 
@@ -64,7 +64,7 @@ void UIEngine::glutDisplayFunction()
 		glPushMatrix();
 		{
 			glEnable(GL_TEXTURE_2D);
-			for (int w = 0; w < NUM_WIN; w++)	{// Draw each sub window
+			for (int w = 0; w < NUM_WIN; w++) {// Draw each sub window
 				if (uiEngine->outImageType[w] == ITMMainEngine::InfiniTAM_IMAGE_UNKNOWN) continue;
 				glBindTexture(GL_TEXTURE_2D, uiEngine->textureId[w]);
 				glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, showImgs[w]->noDims.x, showImgs[w]->noDims.y, 0, GL_RGBA, GL_UNSIGNED_BYTE, showImgs[w]->GetData(MEMORYDEVICE_CPU));
@@ -85,19 +85,28 @@ void UIEngine::glutDisplayFunction()
 	glMatrixMode(GL_PROJECTION);
 	glPopMatrix();
 
-	glColor3f(1.0f, 0.0f, 0.0f); glRasterPos2f(0.85f, -0.962f);
+	switch (uiEngine->trackingResult)
+	{
+	case 0: glColor3f(1.0f, 0.0f, 0.0f); break; // failure
+	case 1: glColor3f(1.0f, 1.0f, 0.0f); break; // poor
+	case 2: glColor3f(0.0f, 1.0f, 0.0f); break; // good
+	default: glColor3f(1.0f, 1.0f, 1.0f); break; // relocalising
+	}
+
+	glRasterPos2f(0.85f, -0.962f);
 
 	char str[200]; sprintf(str, "%04.2lf", uiEngine->processedTime);
 	safe_glutBitmapString(GLUT_BITMAP_HELVETICA_18, (const char*)str);
 
-	glRasterPos2f(-0.95f, -0.95f);
+
+	glColor3f(1.0f, 0.0f, 0.0f); glRasterPos2f(-0.98f, -0.95f);
 	if (uiEngine->freeviewActive)
 	{
-		sprintf(str, "n - next frame \t b - all frames \t e/esc - exit \t r - reset all \t f - follow camera \t c - colours (currently %s) \t t - turn fusion %s", uiEngine->colourModes_freeview[uiEngine->currentColourMode].name, uiEngine->intergrationActive ? "off" : "on");
+		sprintf(str, "n: one frame \t b: continous \t e/esc: exit \t r: reset \t k: save \t l: load \t f: follow camera \t c: colours (currently %s) \t t: turn fusion %s", uiEngine->colourModes_freeview[uiEngine->currentColourMode].name, uiEngine->intergrationActive ? "off" : "on");
 	}
 	else
 	{
-		sprintf(str, "n - next frame \t b - all frames \t e/esc - exit \t r - reset all \t f - free viewpoint \t c - colours (currently %s) \t t - turn fusion %s", uiEngine->colourModes_main[uiEngine->currentColourMode].name, uiEngine->intergrationActive ? "off" : "on");
+		sprintf(str, "n: one frame \t b: continous \t e/esc: exit \t r: reset \t k: save \t l: load \t f: free viewpoint \t c: colours (currently %s) \t t: turn fusion %s", uiEngine->colourModes_main[uiEngine->currentColourMode].name, uiEngine->intergrationActive ? "off" : "on");
 	}
 	safe_glutBitmapString(GLUT_BITMAP_HELVETICA_12, (const char*)str);
 
@@ -181,7 +190,7 @@ void UIEngine::glutKeyUpFunction(unsigned char key, int x, int y)
 		}
 		break;
 	case 'v':
-		if ((uiEngine->rgbVideoWriter!=NULL)||(uiEngine->depthVideoWriter!=NULL))
+		if ((uiEngine->rgbVideoWriter != NULL) || (uiEngine->depthVideoWriter != NULL))
 		{
 			printf("stop recoding video\n");
 			delete uiEngine->rgbVideoWriter;
@@ -220,72 +229,100 @@ void UIEngine::glutKeyUpFunction(unsigned char key, int x, int y)
 				uiEngine->freeviewIntrinsics = uiEngine->mainEngine->GetView()->calib.intrinsics_d;
 				uiEngine->outImage[0]->ChangeDims(uiEngine->mainEngine->GetView()->depth->noDims);
 			}
-			ITMMultiEngine<ITMVoxel,ITMVoxelIndex> *multiEngine = dynamic_cast<ITMMultiEngine<ITMVoxel,ITMVoxelIndex>*>(uiEngine->mainEngine);
-			if (multiEngine != NULL) {
-				int idx = multiEngine->findPrimarySceneIdx();
+
+			ITMMultiEngine<ITMVoxel, ITMVoxelIndex> *multiEngine = dynamic_cast<ITMMultiEngine<ITMVoxel, ITMVoxelIndex>*>(uiEngine->mainEngine);
+			if (multiEngine != NULL)
+			{
+				int idx = multiEngine->findPrimaryLocalMapIdx();
 				if (idx < 0) idx = 0;
-				multiEngine->setFreeviewSceneIdx(idx);
+				multiEngine->setFreeviewLocalMapIdx(idx);
 			}
+
 			uiEngine->freeviewActive = true;
 		}
 		uiEngine->needsRefresh = true;
 		break;
 	case 'c':
 		uiEngine->currentColourMode++;
-		if (((uiEngine->freeviewActive)&&((unsigned)uiEngine->currentColourMode >= uiEngine->colourModes_freeview.size()))||
-		    ((!uiEngine->freeviewActive)&&((unsigned)uiEngine->currentColourMode >= uiEngine->colourModes_main.size())))
+		if (((uiEngine->freeviewActive) && ((unsigned)uiEngine->currentColourMode >= uiEngine->colourModes_freeview.size())) ||
+			((!uiEngine->freeviewActive) && ((unsigned)uiEngine->currentColourMode >= uiEngine->colourModes_main.size())))
 			uiEngine->currentColourMode = 0;
 		uiEngine->needsRefresh = true;
 		break;
 	case 't':
-		{
+	{
 		uiEngine->intergrationActive = !uiEngine->intergrationActive;
-		ITMBasicEngine<ITMVoxel,ITMVoxelIndex> *basicEngine = dynamic_cast<ITMBasicEngine<ITMVoxel,ITMVoxelIndex>*>(uiEngine->mainEngine); 
-		if (basicEngine != NULL) {
+		ITMBasicEngine<ITMVoxel, ITMVoxelIndex> *basicEngine = dynamic_cast<ITMBasicEngine<ITMVoxel, ITMVoxelIndex>*>(uiEngine->mainEngine);
+		if (basicEngine != NULL) 
+		{
 			if (uiEngine->intergrationActive) basicEngine->turnOnIntegration();
 			else basicEngine->turnOffIntegration();
 		}
-		}
-		break;
+	}
+	break;
 	case 'w':
-		{
-		ITMBasicEngine<ITMVoxel,ITMVoxelIndex> *basicEngine = dynamic_cast<ITMBasicEngine<ITMVoxel,ITMVoxelIndex>*>(uiEngine->mainEngine); 
-		if (basicEngine != NULL) {
-			printf("saving mesh to disk ...");
-			basicEngine->SaveSceneToMesh("mesh.stl");
-			printf(" done\n");
-		}
-		}
-		break;
+	{
+		printf("saving scene to model ... ");
+		uiEngine->mainEngine->SaveSceneToMesh("mesh.stl");
+		printf("done\n");
+	}
+	break;
 	case 'r':
 	{
 		ITMBasicEngine<ITMVoxel, ITMVoxelIndex> *basicEngine = dynamic_cast<ITMBasicEngine<ITMVoxel, ITMVoxelIndex>*>(uiEngine->mainEngine);
-		if (basicEngine != NULL) {
-			basicEngine->resetAll();
+		if (basicEngine != NULL) basicEngine->resetAll();
+	}
+	break;
+	case 'k':
+	{
+		printf("saving scene to disk ... ");
+		
+		try
+		{
+			uiEngine->mainEngine->SaveToFile();
+			printf("done\n");
+		}
+		catch (const std::runtime_error &e)
+		{
+			printf("failed: %s\n", e.what());
 		}
 	}
-		break;
+	break;
+	case 'l':
+	{
+		printf("loading scene from disk ... ");
+
+		try
+		{
+			uiEngine->mainEngine->LoadFromFile();
+			printf("done\n");
+		}
+		catch (const std::runtime_error &e)
+		{
+			printf("failed: %s\n", e.what());
+		}
+	}
+	break;
 	case '[':
 	case ']':
+	{
+		ITMMultiEngine<ITMVoxel, ITMVoxelIndex> *multiEngine = dynamic_cast<ITMMultiEngine<ITMVoxel, ITMVoxelIndex>*>(uiEngine->mainEngine);
+		if (multiEngine != NULL) 
 		{
-		ITMMultiEngine<ITMVoxel,ITMVoxelIndex> *multiEngine = dynamic_cast<ITMMultiEngine<ITMVoxel,ITMVoxelIndex>*>(uiEngine->mainEngine);
-		if (multiEngine != NULL) {
-			int idx = multiEngine->getFreeviewSceneIdx();
+			int idx = multiEngine->getFreeviewLocalMapIdx();
 			if (key == '[') idx--;
 			else idx++;
-			multiEngine->changeFreeviewSceneIdx(&(uiEngine->freeviewPose), idx);
+			multiEngine->changeFreeviewLocalMapIdx(&(uiEngine->freeviewPose), idx);
 			uiEngine->needsRefresh = true;
 		}
-		}
+	}
+	break;
 	default:
 		break;
 	}
 
-	if (uiEngine->freeviewActive) {
-		uiEngine->outImageType[0] = uiEngine->colourModes_freeview[uiEngine->currentColourMode].type;
-	} else {
-		uiEngine->outImageType[0] = uiEngine->colourModes_main[uiEngine->currentColourMode].type;
-	}
+	if (uiEngine->freeviewActive) uiEngine->outImageType[0] = uiEngine->colourModes_freeview[uiEngine->currentColourMode].type;
+	else uiEngine->outImageType[0] = uiEngine->colourModes_main[uiEngine->currentColourMode].type;
 }
 
 void UIEngine::glutMouseButtonFunction(int button, int state, int x, int y)
@@ -343,7 +380,7 @@ void UIEngine::glutMouseMoveFunction(int x, int y)
 {
 	UIEngine *uiEngine = UIEngine::Instance();
 
-	if(uiEngine->mouseWarped)
+	if (uiEngine->mouseWarped)
 	{
 		uiEngine->mouseWarped = false;
 		return;
@@ -363,29 +400,29 @@ void UIEngine::glutMouseMoveFunction(int x, int y)
 
 	bool warpNeeded = false;
 
-	if(x < activeWinTopLeft.x)
+	if (x < activeWinTopLeft.x)
 	{
 		x += activeWinSize.x;
 		warpNeeded = true;
 	}
-	else if(x >= activeWinBottomRight.x)
+	else if (x >= activeWinBottomRight.x)
 	{
 		x -= activeWinSize.x;
 		warpNeeded = true;
 	}
 
-	if(y < activeWinTopLeft.y)
+	if (y < activeWinTopLeft.y)
 	{
 		y += activeWinSize.y;
 		warpNeeded = true;
 	}
-	else if(y >= activeWinBottomRight.y)
+	else if (y >= activeWinBottomRight.y)
 	{
 		y -= activeWinSize.y;
 		warpNeeded = true;
 	}
 
-	if(warpNeeded)
+	if (warpNeeded)
 	{
 		glutWarpPointer(x, y);
 		uiEngine->mouseWarped = true;
@@ -522,7 +559,7 @@ void UIEngine::Initialise(int & argc, char** argv, ImageSourceEngine *imageSourc
 	outImageType[0] = ITMMainEngine::InfiniTAM_IMAGE_SCENERAYCAST;
 	outImageType[1] = ITMMainEngine::InfiniTAM_IMAGE_ORIGINAL_DEPTH;
 	outImageType[2] = ITMMainEngine::InfiniTAM_IMAGE_ORIGINAL_RGB;
-	if (inputRGBImage->noDims == Vector2i(0,0)) outImageType[2] = ITMMainEngine::InfiniTAM_IMAGE_UNKNOWN;
+	if (inputRGBImage->noDims == Vector2i(0, 0)) outImageType[2] = ITMMainEngine::InfiniTAM_IMAGE_UNKNOWN;
 	//outImageType[3] = ITMMainEngine::InfiniTAM_IMAGE_SCENERAYCAST;
 	//outImageType[4] = ITMMainEngine::InfiniTAM_IMAGE_SCENERAYCAST;
 
@@ -574,16 +611,16 @@ void UIEngine::ProcessFrame()
 		sprintf(str, "%s/%04d.pgm", outFolder, currentFrameNo);
 		SaveImageToFile(inputRawDepthImage, str);
 
-		if (inputRGBImage->noDims != Vector2i(0,0)) {
+		if (inputRGBImage->noDims != Vector2i(0, 0)) {
 			sprintf(str, "%s/%04d.ppm", outFolder, currentFrameNo);
 			SaveImageToFile(inputRGBImage, str);
 		}
 	}
-	if ((rgbVideoWriter != NULL)&&(inputRGBImage->noDims.x != 0)) {
+	if ((rgbVideoWriter != NULL) && (inputRGBImage->noDims.x != 0)) {
 		if (!rgbVideoWriter->isOpen()) rgbVideoWriter->open("out_rgb.avi", inputRGBImage->noDims.x, inputRGBImage->noDims.y, false, 30);
 		rgbVideoWriter->writeFrame(inputRGBImage);
 	}
-	if ((depthVideoWriter != NULL)&&(inputRawDepthImage->noDims.x != 0)) {
+	if ((depthVideoWriter != NULL) && (inputRawDepthImage->noDims.x != 0)) {
 		if (!depthVideoWriter->isOpen()) depthVideoWriter->open("out_d.avi", inputRawDepthImage->noDims.x, inputRawDepthImage->noDims.y, true, 30);
 		depthVideoWriter->writeFrame(inputRawDepthImage);
 	}
@@ -591,9 +628,12 @@ void UIEngine::ProcessFrame()
 	sdkResetTimer(&timer_instant);
 	sdkStartTimer(&timer_instant); sdkStartTimer(&timer_average);
 
+	ITMTrackingState::TrackingResult trackerResult;
 	//actual processing on the mailEngine
-	if (imuSource != NULL) mainEngine->ProcessFrame(inputRGBImage, inputRawDepthImage, inputIMUMeasurement);
-	else mainEngine->ProcessFrame(inputRGBImage, inputRawDepthImage);
+	if (imuSource != NULL) trackerResult = mainEngine->ProcessFrame(inputRGBImage, inputRawDepthImage, inputIMUMeasurement);
+	else trackerResult = mainEngine->ProcessFrame(inputRGBImage, inputRawDepthImage);
+
+	trackingResult = (int)trackerResult;
 
 #ifndef COMPILE_WITHOUT_CUDA
 	ORcudaSafeCall(cudaThreadSynchronize());

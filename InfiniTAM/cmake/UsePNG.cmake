@@ -1,0 +1,13 @@
+################
+# UsePNG.cmake #
+################
+
+OPTION(WITH_PNG "Build with libpng support?" OFF)
+
+IF(WITH_PNG)
+  FIND_PACKAGE(PNG REQUIRED)
+
+  INCLUDE_DIRECTORIES(${PNG_INCLUDE_DIRS})
+  ADD_DEFINITIONS(${PNG_DEFINITIONS})
+  ADD_DEFINITIONS(-DUSE_LIBPNG)
+ENDIF()

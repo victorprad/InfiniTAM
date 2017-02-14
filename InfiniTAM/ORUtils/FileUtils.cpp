@@ -1,9 +1,16 @@
-// Copyright 2014-2015 Isis Innovation Limited and the authors of InfiniTAM
+// Copyright 2014-2017 Oxford University Innovation Limited and the authors of InfiniTAM
 
 #include "FileUtils.h"
 
 #include <stdio.h>
 #include <fstream>
+
+#if defined _MSC_VER
+#include <direct.h>
+#else 
+#include <sys/types.h>
+#include <sys/stat.h>
+#endif
 
 #ifdef USE_LIBPNG
 #include <png.h>
@@ -422,3 +429,11 @@ bool ReadImageFromFile(ORUtils::Image<short> *image, const char *fileName)
 	return true;
 }
 
+void MakeDir(const char *dirName)
+{
+#if defined _MSC_VER
+		_mkdir(dirName);
+#else
+		mkdir(dirName, 0777);
+#endif
+}

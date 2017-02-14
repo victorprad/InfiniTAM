@@ -1,4 +1,4 @@
-// Copyright 2014-2015 Isis Innovation Limited and the authors of InfiniTAM
+// Copyright 2014-2017 Oxford University Innovation Limited and the authors of InfiniTAM
 
 #include "ImageSourceEngine.h"
 
@@ -264,6 +264,22 @@ void RawFileReader::getImages(ITMUChar4Image *rgb, ITMShortImage *rawDepth)
 	if (!bUsedCache) this->loadIntoCache();
 
 	++currentFrameNo;
+}
+
+BlankImageGenerator::BlankImageGenerator(const char *calibFilename, Vector2i setImageSize) : BaseImageSourceEngine(calibFilename)
+{
+	this->imgSize = setImageSize;
+}
+
+bool BlankImageGenerator::hasMoreImages(void) const
+{
+	return true;
+}
+
+void BlankImageGenerator::getImages(ITMUChar4Image *rgb, ITMShortImage *rawDepth)
+{
+	rgb->Clear();
+	rawDepth->Clear();
 }
 
 template class InputSource::ImageFileReader<ImageMaskPathGenerator>;

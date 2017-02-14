@@ -1,4 +1,4 @@
-// Copyright 2014-2015 Isis Innovation Limited and the authors of InfiniTAM
+// Copyright 2014-2017 Oxford University Innovation Limited and the authors of InfiniTAM
 
 #include <cstdlib>
 #include <iostream>
@@ -8,6 +8,7 @@
 #include "../../InputSource/OpenNIEngine.h"
 #include "../../InputSource/Kinect2Engine.h"
 #include "../../InputSource/LibUVCEngine.h"
+#include "../../InputSource/PicoFlexxEngine.h"
 #include "../../InputSource/RealSenseEngine.h"
 #include "../../InputSource/LibUVCEngine.h"
 #include "../../InputSource/RealSenseEngine.h"
@@ -32,6 +33,13 @@ static void CreateDefaultImageSource(ImageSourceEngine* & imageSource, IMUSource
 	const char *filename1 = arg2;
 	const char *filename2 = arg3;
 	const char *filename_imu = arg4;
+
+	if (strcmp(calibFile, "viewer") == 0)
+	{
+		imageSource = new BlankImageGenerator("", Vector2i(640, 480));
+		printf("starting in viewer mode: make sure to press n first to initiliase the views ... \n");
+		return;
+	}
 
 	printf("using calibration file: %s\n", calibFile);
 
@@ -71,9 +79,12 @@ static void CreateDefaultImageSource(ImageSourceEngine* & imageSource, IMUSource
 
 	if (imageSource == NULL)
 	{
-		printf("trying OpenNI device: %s\n", (filename1 == NULL) ? "<OpenNI default device>" : filename1);
 		// If no calibration file specified, use the factory default calibration
 		bool useInternalCalibration = !calibFile || strlen(calibFile) == 0;
+
+		printf("trying OpenNI device: %s - calibration: %s\n",
+				filename1 ? filename1 : "<OpenNI default device>",
+				useInternalCalibration ? "internal" : "from file");
 		imageSource = new OpenNIEngine(calibFile, filename1, useInternalCalibration);
 		if (imageSource->getDepthImageSize().x == 0)
 		{
@@ -81,6 +92,7 @@ static void CreateDefaultImageSource(ImageSourceEngine* & imageSource, IMUSource
 			imageSource = NULL;
 		}
 	}
+
 	if (imageSource == NULL)
 	{
 		printf("trying UVC device\n");
@@ -91,6 +103,7 @@ static void CreateDefaultImageSource(ImageSourceEngine* & imageSource, IMUSource
 			imageSource = NULL;
 		}
 	}
+
 	if (imageSource == NULL)
 	{
 		printf("trying RealSense device\n");
@@ -101,10 +114,22 @@ static void CreateDefaultImageSource(ImageSourceEngine* & imageSource, IMUSource
 			imageSource = NULL;
 		}
 	}
+
 	if (imageSource == NULL)
 	{
 		printf("trying MS Kinect 2 device\n");
 		imageSource = new Kinect2Engine(calibFile);
+		if (imageSource->getDepthImageSize().x == 0)
+		{
+			delete imageSource;
+			imageSource = NULL;
+		}
+	}
+
+	if (imageSource == NULL)
+	{
+		printf("trying PMD PicoFlexx device\n");
+		imageSource = new PicoFlexxEngine(calibFile);
 		if (imageSource->getDepthImageSize().x == 0)
 		{
 			delete imageSource;
@@ -156,8 +181,19 @@ try
 
 	ITMLibSettings *internalSettings = new ITMLibSettings();
 
-	//ITMMainEngine *mainEngine = new ITMMultiEngine<ITMVoxel,ITMVoxelIndex>(internalSettings, &imageSource->calib, imageSource->getRGBImageSize(), imageSource->getDepthImageSize());
-	ITMMainEngine *mainEngine = new ITMBasicEngine<ITMVoxel,ITMVoxelIndex>(internalSettings, imageSource->getCalib(), imageSource->getRGBImageSize(), imageSource->getDepthImageSize());
+	ITMMainEngine *mainEngine = NULL;
+	switch (internalSettings->libMode)
+	{
+	case ITMLibSettings::LIBMODE_BASIC:
+		mainEngine = new ITMBasicEngine<ITMVoxel, ITMVoxelIndex>(internalSettings, imageSource->getCalib(), imageSource->getRGBImageSize(), imageSource->getDepthImageSize());
+		break;
+	case ITMLibSettings::LIBMODE_LOOPCLOSURE:
+		mainEngine = new ITMMultiEngine<ITMVoxel, ITMVoxelIndex>(internalSettings, imageSource->getCalib(), imageSource->getRGBImageSize(), imageSource->getDepthImageSize());
+		break;
+	default: 
+		throw std::runtime_error("Unsupported library mode!");
+		break;
+	}
 
 	UIEngine::Instance()->Initialise(argc, argv, imageSource, imuSource, mainEngine, "./Files/Out", internalSettings->deviceType);
 	UIEngine::Instance()->Run();

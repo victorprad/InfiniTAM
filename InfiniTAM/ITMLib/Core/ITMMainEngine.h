@@ -1,4 +1,4 @@
-// Copyright 2014-2015 Isis Innovation Limited and the authors of InfiniTAM
+// Copyright 2014-2017 Oxford University Innovation Limited and the authors of InfiniTAM
 
 #pragma once
 
@@ -75,6 +75,13 @@ namespace ITMLib
 		virtual Vector2i GetImageSize(void) const = 0;
 
 		virtual void GetImage(ITMUChar4Image *out, GetImageType getImageType, ORUtils::SE3Pose *pose = NULL, ITMIntrinsics *intrinsics = NULL) = 0;
+
+		/// Extracts a mesh from the current scene and saves it to the model file specified by the file name
+		virtual void SaveSceneToMesh(const char *fileName) { };
+
+		/// save and load the full scene and relocaliser (if any) to/from file
+		virtual void SaveToFile() { };
+		virtual void LoadFromFile() { };
 
 		virtual ~ITMMainEngine() {}
 	};

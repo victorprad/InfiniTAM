@@ -1,4 +1,4 @@
-// Copyright 2014-2015 Isis Innovation Limited and the authors of InfiniTAM
+// Copyright 2014-2017 Oxford University Innovation Limited and the authors of InfiniTAM
 
 #pragma once
 
@@ -32,6 +32,12 @@ namespace ITMLib
 			SWAPPINGMODE_DELETE
 		} SwappingMode;
 
+		typedef enum
+		{
+			LIBMODE_BASIC,
+			LIBMODE_LOOPCLOSURE
+		}LibMode;
+
 		/// Select the type of device to use
 		DeviceType deviceType;
 
@@ -46,6 +52,7 @@ namespace ITMLib
         
 		FailureMode behaviourOnFailure;
 		SwappingMode swappingMode;
+		LibMode libMode;
 
 		const char *trackerConfig;
 

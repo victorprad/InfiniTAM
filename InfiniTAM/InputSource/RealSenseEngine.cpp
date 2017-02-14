@@ -1,4 +1,4 @@
-// Copyright 2014-2015 Isis Innovation Limited and the authors of InfiniTAM
+// Copyright 2014-2017 Oxford University Innovation Limited and the authors of InfiniTAM
 
 #include "RealSenseEngine.h"
 
@@ -25,10 +25,7 @@ class RealSenseEngine::PrivateData
 RealSenseEngine::RealSenseEngine(const char *calibFilename, Vector2i requested_imageSize_rgb, Vector2i requested_imageSize_d)
 	: BaseImageSourceEngine(calibFilename)
 {
-	// images from openni always come in millimeters...
-	this->calib.disparityCalib.type = ITMDisparityCalib::TRAFO_AFFINE;
-	this->calib.disparityCalib.params = Vector2f(1.0f/1000.0f, 0.0f);
-
+	this->calib.disparityCalib.SetStandard();
 	this->calib.trafo_rgb_to_depth = ITMExtrinsics();
 	this->calib.intrinsics_d = this->calib.intrinsics_rgb;
 
@@ -53,12 +50,11 @@ RealSenseEngine::RealSenseEngine(const char *calibFilename, Vector2i requested_i
 	rs::intrinsics intrinsics_rgb = data->dev->get_stream_intrinsics(rs::stream::color);
 
 	this->calib.intrinsics_d.SetFrom(intrinsics_depth.fx, intrinsics_depth.fy,
-	                                 intrinsics_depth.ppx, intrinsics_depth.ppy,
-	                                 requested_imageSize_d.x, requested_imageSize_d.y);
-	this->calib.intrinsics_d.SetFrom(intrinsics_rgb.fx, intrinsics_rgb.fy,
-	                                 intrinsics_rgb.ppx, intrinsics_rgb.ppy,
-	                                 requested_imageSize_rgb.x, requested_imageSize_rgb.y);
-	this->calib.disparityCalib.params = Vector2f(data->dev->get_depth_scale(), 0.0f);
+	                                 intrinsics_depth.ppx, intrinsics_depth.ppy);
+	this->calib.intrinsics_rgb.SetFrom(intrinsics_rgb.fx, intrinsics_rgb.fy,
+	                                 intrinsics_rgb.ppx, intrinsics_rgb.ppy);
+	this->calib.disparityCalib.SetFrom(data->dev->get_depth_scale(), 0.0f,
+		ITMLib::ITMDisparityCalib::TRAFO_AFFINE);
 
 	data->dev->start();
 }

@@ -1,4 +1,4 @@
-// Copyright 2014-2015 Isis Innovation Limited and the authors of InfiniTAM
+// Copyright 2014-2017 Oxford University Innovation Limited and the authors of InfiniTAM
 
 #include <math.h>
 #include "SE3Pose.h"
@@ -7,12 +7,15 @@ using namespace ORUtils;
 
 SE3Pose::SE3Pose(void) { this->SetFrom(0, 0, 0, 0, 0, 0); }
 
-SE3Pose::SE3Pose(float tx, float ty, float tz, float rx, float ry, float rz) 
-{ this->SetFrom(tx, ty, tz, rx, ry, rz); }
+SE3Pose::SE3Pose(float tx, float ty, float tz, float rx, float ry, float rz)
+{
+	this->SetFrom(tx, ty, tz, rx, ry, rz);
+}
 SE3Pose::SE3Pose(const float pose[6]) { this->SetFrom(pose); }
 SE3Pose::SE3Pose(const Matrix4<float> & src) { this->SetM(src); }
 SE3Pose::SE3Pose(const Vector6<float> & tangent) { this->SetFrom(tangent); }
 SE3Pose::SE3Pose(const SE3Pose & src) { this->SetFrom(&src); }
+SE3Pose::SE3Pose(const Matrix3<float> &R, const Vector3<float> &t) { this->SetRT(R, t); }
 
 #ifndef M_SQRT1_2
 #define M_SQRT1_2 0.707106781186547524401
@@ -81,8 +84,8 @@ void SE3Pose::SetFrom(const SE3Pose *pose)
 
 void SE3Pose::SetModelViewFromParams()
 {
-	float one_6th = 1.0f/6.0f;
-	float one_20th = 1.0f/20.0f;
+	float one_6th = 1.0f / 6.0f;
+	float one_20th = 1.0f / 20.0f;
 
 	Vector3<float> w; w.x = params.each.rx; w.y = params.each.ry; w.z = params.each.rz;
 	Vector3<float> t; t.x = params.each.tx; t.y = params.each.ty; t.z = params.each.tz;
@@ -140,13 +143,13 @@ void SE3Pose::SetModelViewFromParams()
 	R.m[1 + 3 * 2] = b - a;
 	R.m[2 + 3 * 1] = b + a;
 
-	M.m[0 + 4*0] = R.m[0 + 3*0]; M.m[1 + 4*0] = R.m[1 + 3*0]; M.m[2 + 4*0] = R.m[2 + 3*0];
-	M.m[0 + 4*1] = R.m[0 + 3*1]; M.m[1 + 4*1] = R.m[1 + 3*1]; M.m[2 + 4*1] = R.m[2 + 3*1];
-	M.m[0 + 4*2] = R.m[0 + 3*2]; M.m[1 + 4*2] = R.m[1 + 3*2]; M.m[2 + 4*2] = R.m[2 + 3*2];
+	M.m[0 + 4 * 0] = R.m[0 + 3 * 0]; M.m[1 + 4 * 0] = R.m[1 + 3 * 0]; M.m[2 + 4 * 0] = R.m[2 + 3 * 0];
+	M.m[0 + 4 * 1] = R.m[0 + 3 * 1]; M.m[1 + 4 * 1] = R.m[1 + 3 * 1]; M.m[2 + 4 * 1] = R.m[2 + 3 * 1];
+	M.m[0 + 4 * 2] = R.m[0 + 3 * 2]; M.m[1 + 4 * 2] = R.m[1 + 3 * 2]; M.m[2 + 4 * 2] = R.m[2 + 3 * 2];
 
-	M.m[0 + 4*3] = T.v[0]; M.m[1 + 4*3] = T.v[1]; M.m[2 + 4*3] = T.v[2];
+	M.m[0 + 4 * 3] = T.v[0]; M.m[1 + 4 * 3] = T.v[1]; M.m[2 + 4 * 3] = T.v[2];
 
-	M.m[3 + 4*0] = 0.0f; M.m[3 + 4*1] = 0.0f; M.m[3 + 4*2] = 0.0f; M.m[3 + 4*3] = 1.0f;
+	M.m[3 + 4 * 0] = 0.0f; M.m[3 + 4 * 1] = 0.0f; M.m[3 + 4 * 2] = 0.0f; M.m[3 + 4 * 3] = 1.0f;
 }
 
 void SE3Pose::SetParamsFromModelView()
@@ -155,7 +158,7 @@ void SE3Pose::SetParamsFromModelView()
 	Matrix3<float> R = GetR();
 	Vector3<float> T = GetT();
 
-	float cos_angle = (R.m00  + R.m11 + R.m22 - 1.0f) * 0.5f;
+	float cos_angle = (R.m00 + R.m11 + R.m22 - 1.0f) * 0.5f;
 	resultRot.x = (R.m[2 + 3 * 1] - R.m[1 + 3 * 2]) * 0.5f;
 	resultRot.y = (R.m[0 + 3 * 2] - R.m[2 + 3 * 0]) * 0.5f;
 	resultRot.z = (R.m[1 + 3 * 0] - R.m[0 + 3 * 1]) * 0.5f;
@@ -164,7 +167,7 @@ void SE3Pose::SetParamsFromModelView()
 
 	if (cos_angle > M_SQRT1_2)
 	{
-		if (sin_angle_abs) 
+		if (sin_angle_abs)
 		{
 			float p = asinf(sin_angle_abs) / sin_angle_abs;
 			resultRot.x *= p; resultRot.y *= p; resultRot.z *= p;
@@ -186,12 +189,16 @@ void SE3Pose::SetParamsFromModelView()
 
 			Vector3<float> r2;
 
-			if(fabsf(d0) > fabsf(d1) && fabsf(d0) > fabsf(d2))
-			{ r2.x = d0; r2.y = (R.m[1 + 3 * 0] + R.m[0 + 3 * 1]) * 0.5f; r2.z = (R.m[0 + 3 * 2] + R.m[2 + 3 * 0]) * 0.5f; } 
-			else 
+			if (fabsf(d0) > fabsf(d1) && fabsf(d0) > fabsf(d2))
 			{
-				if(fabsf(d1) > fabsf(d2)) 
-				{ r2.x = (R.m[1 + 3 * 0] + R.m[0 + 3 * 1]) * 0.5f; r2.y = d1; r2.z = (R.m[2 + 3 * 1] + R.m[1 + 3 * 2]) * 0.5f; }
+				r2.x = d0; r2.y = (R.m[1 + 3 * 0] + R.m[0 + 3 * 1]) * 0.5f; r2.z = (R.m[0 + 3 * 2] + R.m[2 + 3 * 0]) * 0.5f;
+			}
+			else
+			{
+				if (fabsf(d1) > fabsf(d2))
+				{
+					r2.x = (R.m[1 + 3 * 0] + R.m[0 + 3 * 1]) * 0.5f; r2.y = d1; r2.z = (R.m[2 + 3 * 1] + R.m[1 + 3 * 2]) * 0.5f;
+				}
 				else { r2.x = (R.m[0 + 3 * 2] + R.m[2 + 3 * 0]) * 0.5f; r2.y = (R.m[2 + 3 * 1] + R.m[1 + 3 * 2]) * 0.5f; r2.z = d2; }
 			}
 
@@ -216,7 +223,7 @@ void SE3Pose::SetParamsFromModelView()
 	{
 		float denom = dot(resultRot, resultRot);
 		float param = dot(T, resultRot) * (1 - 2 * shtot) / denom;
-		
+
 		rottrans.x -= resultRot.x * param; rottrans.y -= resultRot.y * param; rottrans.z -= resultRot.z * param;
 	}
 	else
@@ -228,7 +235,7 @@ void SE3Pose::SetParamsFromModelView()
 	rottrans.x /= 2 * shtot; rottrans.y /= 2 * shtot; rottrans.z /= 2 * shtot;
 
 	this->params.each.rx = resultRot.x; this->params.each.ry = resultRot.y; this->params.each.rz = resultRot.z;
-	this->params.each.tx = rottrans.x; this->params.each.ty = rottrans.y; this->params.each.tz = rottrans.z; 
+	this->params.each.tx = rottrans.x; this->params.each.ty = rottrans.y; this->params.each.tz = rottrans.z;
 }
 
 SE3Pose SE3Pose::exp(const Vector6<float>& tangent)
@@ -245,9 +252,9 @@ void SE3Pose::MultiplyWith(const SE3Pose *pose)
 Matrix3<float> SE3Pose::GetR(void) const
 {
 	Matrix3<float> R;
-	R.m[0 + 3*0] = M.m[0 + 4*0]; R.m[1 + 3*0] = M.m[1 + 4*0]; R.m[2 + 3*0] = M.m[2 + 4*0];
-	R.m[0 + 3*1] = M.m[0 + 4*1]; R.m[1 + 3*1] = M.m[1 + 4*1]; R.m[2 + 3*1] = M.m[2 + 4*1];
-	R.m[0 + 3*2] = M.m[0 + 4*2]; R.m[1 + 3*2] = M.m[1 + 4*2]; R.m[2 + 3*2] = M.m[2 + 4*2];
+	R.m[0 + 3 * 0] = M.m[0 + 4 * 0]; R.m[1 + 3 * 0] = M.m[1 + 4 * 0]; R.m[2 + 3 * 0] = M.m[2 + 4 * 0];
+	R.m[0 + 3 * 1] = M.m[0 + 4 * 1]; R.m[1 + 3 * 1] = M.m[1 + 4 * 1]; R.m[2 + 3 * 1] = M.m[2 + 4 * 1];
+	R.m[0 + 3 * 2] = M.m[0 + 4 * 2]; R.m[1 + 3 * 2] = M.m[1 + 4 * 2]; R.m[2 + 3 * 2] = M.m[2 + 4 * 2];
 
 	return R;
 }
@@ -255,7 +262,7 @@ Matrix3<float> SE3Pose::GetR(void) const
 Vector3<float> SE3Pose::GetT(void) const
 {
 	Vector3<float> T;
-	T.v[0] = M.m[0 + 4*3]; T.v[1] = M.m[1 + 4*3]; T.v[2] = M.m[2 + 4*3];
+	T.v[0] = M.m[0 + 4 * 3]; T.v[1] = M.m[1 + 4 * 3]; T.v[2] = M.m[2 + 4 * 3];
 
 	return T;
 }
@@ -279,27 +286,27 @@ void SE3Pose::SetM(const Matrix4<float> & src)
 
 void SE3Pose::SetR(const Matrix3<float> & R)
 {
-	M.m[0 + 4*0] = R.m[0 + 3*0]; M.m[1 + 4*0] = R.m[1 + 3*0]; M.m[2 + 4*0] = R.m[2 + 3*0];
-	M.m[0 + 4*1] = R.m[0 + 3*1]; M.m[1 + 4*1] = R.m[1 + 3*1]; M.m[2 + 4*1] = R.m[2 + 3*1];
-	M.m[0 + 4*2] = R.m[0 + 3*2]; M.m[1 + 4*2] = R.m[1 + 3*2]; M.m[2 + 4*2] = R.m[2 + 3*2];
+	M.m[0 + 4 * 0] = R.m[0 + 3 * 0]; M.m[1 + 4 * 0] = R.m[1 + 3 * 0]; M.m[2 + 4 * 0] = R.m[2 + 3 * 0];
+	M.m[0 + 4 * 1] = R.m[0 + 3 * 1]; M.m[1 + 4 * 1] = R.m[1 + 3 * 1]; M.m[2 + 4 * 1] = R.m[2 + 3 * 1];
+	M.m[0 + 4 * 2] = R.m[0 + 3 * 2]; M.m[1 + 4 * 2] = R.m[1 + 3 * 2]; M.m[2 + 4 * 2] = R.m[2 + 3 * 2];
 
 	SetParamsFromModelView();
 }
 
 void SE3Pose::SetT(const Vector3<float> & t)
 {
-	M.m[0 + 4*3] = t.v[0]; M.m[1 + 4*3] = t.v[1]; M.m[2 + 4*3] = t.v[2];
+	M.m[0 + 4 * 3] = t.v[0]; M.m[1 + 4 * 3] = t.v[1]; M.m[2 + 4 * 3] = t.v[2];
 
 	SetParamsFromModelView();
 }
 
 void SE3Pose::SetRT(const Matrix3<float> & R, const Vector3<float> & t)
 {
-	M.m[0 + 4*0] = R.m[0 + 3*0]; M.m[1 + 4*0] = R.m[1 + 3*0]; M.m[2 + 4*0] = R.m[2 + 3*0];
-	M.m[0 + 4*1] = R.m[0 + 3*1]; M.m[1 + 4*1] = R.m[1 + 3*1]; M.m[2 + 4*1] = R.m[2 + 3*1];
-	M.m[0 + 4*2] = R.m[0 + 3*2]; M.m[1 + 4*2] = R.m[1 + 3*2]; M.m[2 + 4*2] = R.m[2 + 3*2];
+	M.m[0 + 4 * 0] = R.m[0 + 3 * 0]; M.m[1 + 4 * 0] = R.m[1 + 3 * 0]; M.m[2 + 4 * 0] = R.m[2 + 3 * 0];
+	M.m[0 + 4 * 1] = R.m[0 + 3 * 1]; M.m[1 + 4 * 1] = R.m[1 + 3 * 1]; M.m[2 + 4 * 1] = R.m[2 + 3 * 1];
+	M.m[0 + 4 * 2] = R.m[0 + 3 * 2]; M.m[1 + 4 * 2] = R.m[1 + 3 * 2]; M.m[2 + 4 * 2] = R.m[2 + 3 * 2];
 
-	M.m[0 + 4*3] = t.v[0]; M.m[1 + 4*3] = t.v[1]; M.m[2 + 4*3] = t.v[2];
+	M.m[0 + 4 * 3] = t.v[0]; M.m[1 + 4 * 3] = t.v[1]; M.m[2 + 4 * 3] = t.v[2];
 
 	SetParamsFromModelView();
 }
@@ -322,4 +329,3 @@ void SE3Pose::Coerce(void)
 	SetParamsFromModelView();
 	SetModelViewFromParams();
 }
-

@@ -1,4 +1,4 @@
-// Copyright 2014-2015 Isis Innovation Limited and the authors of InfiniTAM
+// Copyright 2014-2017 Oxford University Innovation Limited and the authors of InfiniTAM
 
 #pragma once
 
@@ -27,6 +27,18 @@ namespace ITMLib
 
 		/** Global content of the 8x8x8 voxel blocks -- stored on host only */
 		ITMGlobalCache<TVoxel> *globalCache;
+
+		void SaveToDirectory(const std::string &outputDirectory) const
+		{
+			localVBA.SaveToDirectory(outputDirectory);
+			index.SaveToDirectory(outputDirectory);
+		}
+
+		void LoadFromDirectory(const std::string &outputDirectory)
+		{
+			localVBA.LoadFromDirectory(outputDirectory);
+			index.LoadFromDirectory(outputDirectory);			
+		}
 
 		ITMScene(const ITMSceneParams *_sceneParams, bool _useSwapping, MemoryDeviceType _memoryType)
 			: sceneParams(_sceneParams), index(_memoryType), localVBA(_memoryType, index.getNumAllocatedVoxelBlocks(), index.getVoxelBlockSize())

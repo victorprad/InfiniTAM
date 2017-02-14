@@ -22,7 +22,9 @@ int main() {
         return 1;
     }
     /* machines with no GPUs can still report one emulation device */
-    for (device = 0; device < deviceCount; ++device) {
+    //for (device = 0; device < deviceCount; ++device)
+    device = 0;
+    {
         cudaGetDeviceProperties(&properties, device);
         if (properties.major != 9999) {/* 9999 means emulation only */
             ++gpuDeviceCount;

@@ -1,4 +1,4 @@
-// Copyright 2014-2015 Isis Innovation Limited and the authors of InfiniTAM
+// Copyright 2014-2017 Oxford University Innovation Limited and the authors of InfiniTAM
 
 #pragma once
 
@@ -17,7 +17,7 @@ namespace ITMLib
 		MemoryDeviceType memoryType;
 
 		uint noTotalTriangles;
-		static const uint noMaxTriangles_default = SDF_LOCAL_BLOCK_NUM * 32;
+		static const uint noMaxTriangles_default = SDF_LOCAL_BLOCK_NUM * 32 * 16;
 		uint noMaxTriangles;
 
 		ORUtils::MemoryBlock<Triangle> *triangles;

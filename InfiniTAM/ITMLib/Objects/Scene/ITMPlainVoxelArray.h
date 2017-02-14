@@ -1,4 +1,4 @@
-// Copyright 2014-2015 Isis Innovation Limited and the authors of InfiniTAM
+// Copyright 2014-2017 Oxford University Innovation Limited and the authors of InfiniTAM
 
 #pragma once
 
@@ -69,6 +69,14 @@ namespace ITMLib
 		const Vector3i getVolumeSize(void) { return indexData->GetData(MEMORYDEVICE_CPU)->size; }
 
 		const IndexData* getIndexData(void) const { return indexData->GetData(memoryType); }
+
+		void SaveToDirectory(const std::string &outputDirectory) const
+		{
+		}
+
+		void LoadFromDirectory(const std::string &outputDirectory)
+		{
+		}
 
 #ifdef COMPILE_WITH_METAL
 		const void *getIndexData_MB() const { return indexData->GetMetalBuffer(); }

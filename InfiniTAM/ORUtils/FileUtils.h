@@ -1,4 +1,4 @@
-// Copyright 2014-2015 Isis Innovation Limited and the authors of InfiniTAM
+// Copyright 2014-2017 Oxford University Innovation Limited and the authors of InfiniTAM
 
 #pragma once
 
@@ -12,6 +12,8 @@ void SaveImageToFile(const ORUtils::Image<short>* image, const char* fileName);
 void SaveImageToFile(const ORUtils::Image<float>* image, const char* fileName);
 bool ReadImageFromFile(ORUtils::Image<ORUtils::Vector4<unsigned char> >* image, const char* fileName);
 bool ReadImageFromFile(ORUtils::Image<short> *image, const char *fileName);
+
+void MakeDir(const char *fileName);
 
 template <typename T> void ReadFromBIN(T *data, int dataSize, const char *fileName)
 {

@@ -1,4 +1,4 @@
-// Copyright 2014-2015 Isis Innovation Limited and the authors of InfiniTAM
+// Copyright 2014-2017 Oxford University Innovation Limited and the authors of InfiniTAM
 
 #pragma once
 
@@ -7,7 +7,6 @@
 
 #include "MathUtils.h"
 #include "PlatformIndependence.h"
-#include "MathUtils.h"
 
 namespace ORUtils {
 	//////////////////////////////////////////////////////////////////////////

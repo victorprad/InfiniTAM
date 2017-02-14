@@ -1,4 +1,4 @@
-// Copyright 2014-2015 Isis Innovation Limited and the authors of InfiniTAM
+// Copyright 2014-2017 Oxford University Innovation Limited and the authors of InfiniTAM
 
 #include "ITMColorTracker_CPU.h"
 #include "../Shared/ITMColorTracker_Shared.h"
@@ -20,13 +20,13 @@ int ITMColorTracker_CPU::F_oneLevel(float *f, ORUtils::SE3Pose *pose)
 
 	Matrix4f M = pose->GetM();
 
-	Vector2i imgSize = viewHierarchy->levels[levelId]->rgb->noDims;
+	Vector2i imgSize = viewHierarchy->GetLevel(levelId)->rgb->noDims;
 
 	float scaleForOcclusions, final_f;
 
 	Vector4f *locations = trackingState->pointCloud->locations->GetData(MEMORYDEVICE_CPU);
 	Vector4f *colours = trackingState->pointCloud->colours->GetData(MEMORYDEVICE_CPU);
-	Vector4u *rgb = viewHierarchy->levels[levelId]->rgb->GetData(MEMORYDEVICE_CPU);
+	Vector4u *rgb = viewHierarchy->GetLevel(levelId)->rgb->GetData(MEMORYDEVICE_CPU);
 
 	final_f = 0; countedPoints_valid = 0;
 	for (int locId = 0; locId < noTotalPoints; locId++)
@@ -53,7 +53,7 @@ void ITMColorTracker_CPU::G_oneLevel(float *gradient, float *hessian, ORUtils::S
 
 	Matrix4f M = pose->GetM();
 
-	Vector2i imgSize = viewHierarchy->levels[levelId]->rgb->noDims;
+	Vector2i imgSize = viewHierarchy->GetLevel(levelId)->rgb->noDims;
 
 	float scaleForOcclusions;
 
@@ -66,13 +66,16 @@ void ITMColorTracker_CPU::G_oneLevel(float *gradient, float *hessian, ORUtils::S
 
 	Vector4f *locations = trackingState->pointCloud->locations->GetData(MEMORYDEVICE_CPU);
 	Vector4f *colours = trackingState->pointCloud->colours->GetData(MEMORYDEVICE_CPU);
-	Vector4u *rgb = viewHierarchy->levels[levelId]->rgb->GetData(MEMORYDEVICE_CPU);
-	Vector4s *gx = viewHierarchy->levels[levelId]->gradientX_rgb->GetData(MEMORYDEVICE_CPU);
-	Vector4s *gy = viewHierarchy->levels[levelId]->gradientY_rgb->GetData(MEMORYDEVICE_CPU);
+	Vector4u *rgb = viewHierarchy->GetLevel(levelId)->rgb->GetData(MEMORYDEVICE_CPU);
+	Vector4s *gx = viewHierarchy->GetLevel(levelId)->gradientX_rgb->GetData(MEMORYDEVICE_CPU);
+	Vector4s *gy = viewHierarchy->GetLevel(levelId)->gradientY_rgb->GetData(MEMORYDEVICE_CPU);
 
 	for (int locId = 0; locId < noTotalPoints; locId++)
 	{
 		float localGradient[6], localHessian[21];
+
+		computePerPointGH_rt_Color(localGradient, localHessian, locations, colours, rgb, imgSize, locId,
+			projParams, M, gx, gy, 6, 0);
 
 		bool isValidPoint = computePerPointGH_rt_Color(localGradient, localHessian, locations, colours, rgb, imgSize, locId,
 			projParams, M, gx, gy, numPara, startPara);

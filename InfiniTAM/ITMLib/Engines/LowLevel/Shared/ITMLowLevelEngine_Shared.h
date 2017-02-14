@@ -1,8 +1,17 @@
-// Copyright 2014-2015 Isis Innovation Limited and the authors of InfiniTAM
+// Copyright 2014-2017 Oxford University Innovation Limited and the authors of InfiniTAM
 
 #pragma once
 
 #include "../../../Utils/ITMMath.h"
+
+_CPU_AND_GPU_CODE_ inline void convertColourToIntensity(DEVICEPTR(float) *imageData_out, int x, int y, Vector2i dims,
+		const CONSTPTR(Vector4u) *imageData_in)
+{
+	const int linear_pos = y * dims.x + x;
+	const Vector4u colour = imageData_in[linear_pos];
+
+	imageData_out[linear_pos] = (0.299f * colour.x + 0.587f * colour.y + 0.114f * colour.z) / 255.f;
+}
 
 _CPU_AND_GPU_CODE_ inline void filterSubsample(DEVICEPTR(Vector4u) *imageData_out, int x, int y, Vector2i newDims, 
 	const CONSTPTR(Vector4u) *imageData_in, Vector2i oldDims)
@@ -21,6 +30,19 @@ _CPU_AND_GPU_CODE_ inline void filterSubsample(DEVICEPTR(Vector4u) *imageData_ou
 	pixel_out.w = (pixels_in[0].w + pixels_in[1].w + pixels_in[2].w + pixels_in[3].w) / 4;
 
 	imageData_out[x + y * newDims.x] = pixel_out;
+}
+
+_CPU_AND_GPU_CODE_ inline void boxFilter2x2(DEVICEPTR(float) *imageData_out, int x_out, int y_out, Vector2i newDims,
+	const CONSTPTR(float) *imageData_in, int x_in, int y_in, Vector2i oldDims)
+{
+	float pixel_out = 0.f;
+
+	pixel_out += imageData_in[(x_in + 0) + (y_in + 0) * oldDims.x];
+	pixel_out += imageData_in[(x_in + 1) + (y_in + 0) * oldDims.x];
+	pixel_out += imageData_in[(x_in + 0) + (y_in + 1) * oldDims.x];
+	pixel_out += imageData_in[(x_in + 1) + (y_in + 1) * oldDims.x];
+
+	imageData_out[x_out + y_out * newDims.x] = pixel_out / 4.f;
 }
 
 _CPU_AND_GPU_CODE_ inline void filterSubsampleWithHoles(DEVICEPTR(float) *imageData_out, int x, int y, Vector2i newDims, 
@@ -120,4 +142,24 @@ _CPU_AND_GPU_CODE_ inline void gradientY(DEVICEPTR(Vector4s) *grad, int x, int y
 	d_out.w = (d1.w + 2 * d2.w + d3.w) / 8;
 
 	grad[x + y * imgSize.x] = d_out;
+}
+
+_CPU_AND_GPU_CODE_ inline void gradientXY(DEVICEPTR(Vector2f) *grad, int x, int y, const CONSTPTR(float) *image, Vector2i imgSize)
+{
+	Vector2f d1, d2, d3, d_out;
+
+	// Compute gradient in the X direction
+	d1.x = image[(y - 1) * imgSize.x + (x + 1)] - image[(y - 1) * imgSize.x + (x - 1)];
+	d2.x = image[(y    ) * imgSize.x + (x + 1)] - image[(y    ) * imgSize.x + (x - 1)];
+	d3.x = image[(y + 1) * imgSize.x + (x + 1)] - image[(y + 1) * imgSize.x + (x - 1)];
+
+	// Compute gradient in the Y direction
+	d1.y = image[(y + 1) * imgSize.x + (x - 1)] - image[(y - 1) * imgSize.x + (x - 1)];
+	d2.y = image[(y + 1) * imgSize.x + (x    )] - image[(y - 1) * imgSize.x + (x    )];
+	d3.y = image[(y + 1) * imgSize.x + (x + 1)] - image[(y - 1) * imgSize.x + (x + 1)];
+
+	d_out.x = (d1.x + 2.f * d2.x + d3.x) / 8.f;
+	d_out.y = (d1.y + 2.f * d2.y + d3.y) / 8.f;
+
+	grad[y * imgSize.x + x] = d_out;
 }

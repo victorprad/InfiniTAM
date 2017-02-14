@@ -1,11 +1,15 @@
 #InfiniTAM
 
-This is the software bundle "InfiniTAM",  the current version is maintained by:
+This is the main branch of the software bundle "InfiniTAM", the current version is actively maintained by:
 
   Victor Adrian Prisacariu <victor@robots.ox.ac.uk>  
   Olaf Kaehler <olaf@robots.ox.ac.uk>  
   Stuart Golodetz <smg@robots.ox.ac.uk>  
   Michael Sapienza <michael.sapienza@eng.ox.ac.uk>  
+  Tommaso Cavallari <tommaso.cavallari@unibo.it>
+  
+Previous maintainers and contributors are:
+
   Carl Yuheng Ren <carl@robots.ox.ac.uk>  
   Ming Ming Cheng <cmm.thu@gmail.com>  
   Xin Sun <xin.sun@st-hughs.ox.ac.uk>  
@@ -156,6 +160,6 @@ year = 2014
 
 ###History:
 
+- 2016-NOV-18: updated to reflect changes to team and project structure
 - 2015-JUL-10: updated dependencies, added reference to ISMAR paper
 - 2014-OCT-06: initial public release
-

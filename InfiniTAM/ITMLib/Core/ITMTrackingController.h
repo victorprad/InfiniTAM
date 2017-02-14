@@ -1,4 +1,4 @@
-// Copyright 2014-2015 Isis Innovation Limited and the authors of InfiniTAM
+// Copyright 2014-2017 Oxford University Innovation Limited and the authors of InfiniTAM
 
 #pragma once
 
@@ -20,7 +20,10 @@ namespace ITMLib
 		ITMTracker *tracker;
 
 	public:
-		void Track(ITMTrackingState *trackingState, const ITMView *view);
+		void Track(ITMTrackingState *trackingState, const ITMView *view)
+		{
+			if (trackingState->age_pointCloud != -1) tracker->TrackCamera(trackingState, view);
+		}
 
 		template <typename TSurfel>
 		void Prepare(ITMTrackingState *trackingState, const ITMSurfelScene<TSurfel> *scene, const ITMView *view,

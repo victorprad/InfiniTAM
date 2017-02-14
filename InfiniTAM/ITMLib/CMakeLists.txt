@@ -1,4 +1,21 @@
 #############################
+# CMakeLists.txt for ITMLib #
+#############################
+
+###########################
+# Specify the target name #
+###########################
+
+SET(targetname ITMLib)
+
+################################
+# Specify the libraries to use #
+################################
+
+INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseCUDA.cmake)
+INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseOpenMP.cmake)
+
+#############################
 # Specify the project files #
 #############################
 
@@ -21,7 +38,6 @@ Core/ITMBasicEngine.tpp
 Core/ITMDenseMapper.tpp
 Core/ITMDenseSurfelMapper.tpp
 Core/ITMMultiEngine.tpp
-Core/ITMTrackingController.cpp
 )
 
 SET(ITMLIB_CORE_HEADERS
@@ -31,19 +47,6 @@ Core/ITMDenseSurfelMapper.h
 Core/ITMMainEngine.h
 Core/ITMMultiEngine.h
 Core/ITMTrackingController.h
-)
-
-##
-SET(ITMLIB_CORE_MULTISCENE_SOURCES
-Core/MultiScene/ITMActiveSceneManager.cpp
-Core/MultiScene/ITMLocalScene.cpp
-Core/MultiScene/ITMMultiSceneManager.tpp
-)
-
-SET(ITMLIB_CORE_MULTISCENE_HEADERS
-Core/MultiScene/ITMActiveSceneManager.h
-Core/MultiScene/ITMLocalScene.h
-Core/MultiScene/ITMMultiSceneManager.h
 )
 
 ##
@@ -86,34 +89,54 @@ Engines/LowLevel/Shared/ITMLowLevelEngine_Shared.h
 ##
 SET(ITMLIB_ENGINES_MESHING_HEADERS
 Engines/Meshing/ITMMeshingEngineFactory.h
+Engines/Meshing/ITMMultiMeshingEngineFactory.h
 )
 
 ##
 SET(ITMLIB_ENGINES_MESHING_CPU_SOURCES
 Engines/Meshing/CPU/ITMMeshingEngine_CPU.tpp
+Engines/Meshing/CPU/ITMMultiMeshingEngine_CPU.tpp
 )
 
 SET(ITMLIB_ENGINES_MESHING_CPU_HEADERS
 Engines/Meshing/CPU/ITMMeshingEngine_CPU.h
+Engines/Meshing/CPU/ITMMultiMeshingEngine_CPU.h
 )
 
 ##
 SET(ITMLIB_ENGINES_MESHING_CUDA_SOURCES
 Engines/Meshing/CUDA/ITMMeshingEngine_CUDA.tcu
+Engines/Meshing/CUDA/ITMMultiMeshingEngine_CUDA.tcu
 )
 
 SET(ITMLIB_ENGINES_MESHING_CUDA_HEADERS
 Engines/Meshing/CUDA/ITMMeshingEngine_CUDA.h
+Engines/Meshing/CUDA/ITMMultiMeshingEngine_CUDA.h
 )
 
 ##
 SET(ITMLIB_ENGINES_MESHING_INTERFACE_HEADERS
 Engines/Meshing/Interface/ITMMeshingEngine.h
+Engines/Meshing/Interface/ITMMultiMeshingEngine.h
 )
 
 ##
 SET(ITMLIB_ENGINES_MESHING_SHARED_HEADERS
 Engines/Meshing/Shared/ITMMeshingEngine_Shared.h
+Engines/Meshing/Shared/ITMMultiMeshingEngine_Shared.h
+)
+
+##
+SET(ITMLIB_ENGINES_MULTISCENE_SOURCES
+Engines/MultiScene/ITMActiveMapManager.cpp
+Engines/MultiScene/ITMGlobalAdjustmentEngine.cpp
+Engines/MultiScene/ITMMapGraphManager.tpp
+)
+
+SET(ITMLIB_ENGINES_MULTISCENE_HEADERS
+Engines/MultiScene/ITMActiveMapManager.h
+Engines/MultiScene/ITMGlobalAdjustmentEngine.h
+Engines/MultiScene/ITMMapGraphManager.h
 )
 
 ##
@@ -240,30 +263,37 @@ Engines/Visualisation/ITMSurfelVisualisationEngineFactory.tpp
 )
 
 SET(ITMLIB_ENGINES_VISUALISATION_HEADERS
+Engines/Visualisation/ITMMultiVisualisationEngineFactory.h
 Engines/Visualisation/ITMSurfelVisualisationEngineFactory.h
 Engines/Visualisation/ITMVisualisationEngineFactory.h
 )
 
 ##
 SET(ITMLIB_ENGINES_VISUALISATION_CPU_SOURCES
+Engines/Visualisation/CPU/ITMMultiVisualisationEngine_CPU.tpp
 Engines/Visualisation/CPU/ITMSurfelVisualisationEngine_CPU.tpp
 Engines/Visualisation/CPU/ITMVisualisationEngine_CPU.tpp
 )
 
 SET(ITMLIB_ENGINES_VISUALISATION_CPU_HEADERS
+Engines/Visualisation/CPU/ITMMultiVisualisationEngine_CPU.h
 Engines/Visualisation/CPU/ITMSurfelVisualisationEngine_CPU.h
 Engines/Visualisation/CPU/ITMVisualisationEngine_CPU.h
 )
 
 ##
 SET(ITMLIB_ENGINES_VISUALISATION_CUDA_SOURCES
+Engines/Visualisation/CUDA/ITMMultiVisualisationEngine_CUDA.tcu
 Engines/Visualisation/CUDA/ITMSurfelVisualisationEngine_CUDA.tcu
 Engines/Visualisation/CUDA/ITMVisualisationEngine_CUDA.tcu
+Engines/Visualisation/CUDA/ITMVisualisationHelpers_CUDA.cu
 )
 
 SET(ITMLIB_ENGINES_VISUALISATION_CUDA_HEADERS
+Engines/Visualisation/CUDA/ITMMultiVisualisationEngine_CUDA.h
 Engines/Visualisation/CUDA/ITMSurfelVisualisationEngine_CUDA.h
 Engines/Visualisation/CUDA/ITMVisualisationEngine_CUDA.h
+Engines/Visualisation/CUDA/ITMVisualisationHelpers_CUDA.h
 )
 
 ##
@@ -273,6 +303,7 @@ Engines/Visualisation/Interface/ITMVisualisationEngine.cpp
 )
 
 SET(ITMLIB_ENGINES_VISUALISATION_INTERFACE_HEADERS
+Engines/Visualisation/Interface/ITMMultiVisualisationEngine.h
 Engines/Visualisation/Interface/ITMSurfelVisualisationEngine.h
 Engines/Visualisation/Interface/ITMVisualisationEngine.h
 )
@@ -316,6 +347,7 @@ Objects/RenderStates/ITMSurfelRenderState.cpp
 
 SET(ITMLIB_OBJECTS_RENDERSTATES_HEADERS
 Objects/RenderStates/ITMRenderState.h
+Objects/RenderStates/ITMRenderStateMultiScene.h
 Objects/RenderStates/ITMRenderState_VH.h
 Objects/RenderStates/ITMRenderStateFactory.h
 Objects/RenderStates/ITMSurfelRenderState.h
@@ -324,7 +356,9 @@ Objects/RenderStates/ITMSurfelRenderState.h
 ##
 SET(ITMLIB_OBJECTS_SCENE_HEADERS
 Objects/Scene/ITMGlobalCache.h
+Objects/Scene/ITMLocalMap.h
 Objects/Scene/ITMLocalVBA.h
+Objects/Scene/ITMMultiSceneAccess.h
 Objects/Scene/ITMPlainVoxelArray.h
 Objects/Scene/ITMRepresentationAccess.h
 Objects/Scene/ITMScene.h
@@ -336,10 +370,12 @@ Objects/Scene/ITMVoxelTypes.h
 
 ##
 SET(ITMLIB_OBJECTS_TRACKING_HEADERS
+Objects/Tracking/ITMDepthHierarchyLevel.h
 Objects/Tracking/ITMImageHierarchy.h
+Objects/Tracking/ITMIntensityHierarchyLevel.h
+Objects/Tracking/ITMRGBHierarchyLevel.h
 Objects/Tracking/ITMSceneHierarchyLevel.h
 Objects/Tracking/ITMTemplatedHierarchyLevel.h
-Objects/Tracking/ITMExtendedHierarchyLevel.h
 Objects/Tracking/ITMTrackingState.h
 Objects/Tracking/ITMViewHierarchyLevel.h
 Objects/Tracking/TrackerIterationType.h
@@ -361,14 +397,12 @@ SET(ITMLIB_TRACKERS_CPU_SOURCES
 Trackers/CPU/ITMColorTracker_CPU.cpp
 Trackers/CPU/ITMDepthTracker_CPU.cpp
 Trackers/CPU/ITMExtendedTracker_CPU.cpp
-Trackers/CPU/ITMRenTracker_CPU.tpp
 )
 
 SET(ITMLIB_TRACKERS_CPU_HEADERS
 Trackers/CPU/ITMColorTracker_CPU.h
 Trackers/CPU/ITMDepthTracker_CPU.h
 Trackers/CPU/ITMExtendedTracker_CPU.h
-Trackers/CPU/ITMRenTracker_CPU.h
 )
 
 ##
@@ -376,7 +410,6 @@ SET(ITMLIB_TRACKERS_CUDA_SOURCES
 Trackers/CUDA/ITMColorTracker_CUDA.cu
 Trackers/CUDA/ITMDepthTracker_CUDA.cu
 Trackers/CUDA/ITMExtendedTracker_CUDA.cu
-Trackers/CUDA/ITMRenTracker_CUDA.tcu
 
 )
 
@@ -384,7 +417,6 @@ SET(ITMLIB_TRACKERS_CUDA_HEADERS
 Trackers/CUDA/ITMColorTracker_CUDA.h
 Trackers/CUDA/ITMDepthTracker_CUDA.h
 Trackers/CUDA/ITMExtendedTracker_CUDA.h
-Trackers/CUDA/ITMRenTracker_CUDA.h
 )
 
 ##
@@ -394,7 +426,6 @@ Trackers/Interface/ITMDepthTracker.cpp
 Trackers/Interface/ITMExtendedTracker.cpp
 Trackers/Interface/ITMFileBasedTracker.cpp
 Trackers/Interface/ITMIMUTracker.cpp
-Trackers/Interface/ITMRenTracker.tpp
 )
 
 SET(ITMLIB_TRACKERS_INTERFACE_HEADERS
@@ -404,7 +435,6 @@ Trackers/Interface/ITMDepthTracker.h
 Trackers/Interface/ITMExtendedTracker.h
 Trackers/Interface/ITMFileBasedTracker.h
 Trackers/Interface/ITMIMUTracker.h
-Trackers/Interface/ITMRenTracker.h
 Trackers/Interface/ITMTracker.h
 )
 
@@ -413,7 +443,6 @@ SET(ITMLIB_TRACKERS_SHARED_HEADERS
 Trackers/Shared/ITMColorTracker_Shared.h
 Trackers/Shared/ITMDepthTracker_Shared.h
 Trackers/Shared/ITMExtendedTracker_Shared.h
-Trackers/Shared/ITMRenTracker_Shared.h
 )
 
 ##
@@ -426,96 +455,95 @@ Utils/ITMCUDAUtils.h
 Utils/ITMImageTypes.h
 Utils/ITMLibSettings.h
 Utils/ITMMath.h
+Utils/ITMMemoryBlockTypes.h
 Utils/ITMPixelUtils.h
+Utils/ITMProjectionUtils.h
 Utils/ITMSceneParams.h
 Utils/ITMSurfelSceneParams.h
 )
 
 #################################################################
-# Collect the project files into common, CPU-only and CUDA-only #
+# Collect the project files into sources, headers and templates #
 #################################################################
 
-set(ITMLIB_COMMON_OBJECTS
-${ITMLIB_TOPLEVEL_HEADERS}
+SET(sources
+${ITMLIB_TOPLEVEL_CPU_SOURCES}
+${ITMLIB_TOPLEVEL_CUDA_SOURCES}
 ${ITMLIB_CORE_SOURCES}
-${ITMLIB_CORE_HEADERS}
-${ITMLIB_CORE_MULTISCENE_SOURCES}
-${ITMLIB_CORE_MULTISCENE_HEADERS}
 ${ITMLIB_ENGINES_LOWLEVEL_SOURCES}
+${ITMLIB_ENGINES_LOWLEVEL_CPU_SOURCES}
+${ITMLIB_ENGINES_LOWLEVEL_CUDA_SOURCES}
+${ITMLIB_ENGINES_MESHING_CPU_SOURCES}
+${ITMLIB_ENGINES_MESHING_CUDA_SOURCES}
+${ITMLIB_ENGINES_MULTISCENE_SOURCES}
+${ITMLIB_ENGINES_RECONSTRUCTION_SOURCES}
+${ITMLIB_ENGINES_RECONSTRUCTION_CPU_SOURCES}
+${ITMLIB_ENGINES_RECONSTRUCTION_CUDA_SOURCES}
+${ITMLIB_ENGINES_RECONSTRUCTION_INTERFACE_SOURCES}
+${ITMLIB_ENGINES_SWAPPING_CPU_SOURCES}
+${ITMLIB_ENGINES_SWAPPING_CUDA_SOURCES}
+${ITMLIB_ENGINES_VIEWBUILDING_SOURCES}
+${ITMLIB_ENGINES_VIEWBUILDING_CPU_SOURCES}
+${ITMLIB_ENGINES_VIEWBUILDING_CUDA_SOURCES}
+${ITMLIB_ENGINES_VISUALISATION_SOURCES}
+${ITMLIB_ENGINES_VISUALISATION_CPU_SOURCES}
+${ITMLIB_ENGINES_VISUALISATION_CUDA_SOURCES}
+${ITMLIB_ENGINES_VISUALISATION_INTERFACE_SOURCES}
+${ITMLIB_OBJECTS_CAMERA_SOURCES}
+${ITMLIB_OBJECTS_RENDERSTATES_SOURCES}
+${ITMLIB_TRACKERS_CPU_SOURCES}
+${ITMLIB_TRACKERS_CUDA_SOURCES}
+${ITMLIB_TRACKERS_INTERFACE_SOURCES}
+${ITMLIB_UTILS_SOURCES}
+)
+
+SET(headers
+${ITMLIB_TOPLEVEL_HEADERS}
+${ITMLIB_CORE_HEADERS}
 ${ITMLIB_ENGINES_LOWLEVEL_HEADERS}
+${ITMLIB_ENGINES_LOWLEVEL_CPU_HEADERS}
+${ITMLIB_ENGINES_LOWLEVEL_CUDA_HEADERS}
 ${ITMLIB_ENGINES_LOWLEVEL_INTERFACE_HEADERS}
 ${ITMLIB_ENGINES_LOWLEVEL_SHARED_HEADERS}
 ${ITMLIB_ENGINES_MESHING_HEADERS}
+${ITMLIB_ENGINES_MESHING_CPU_HEADERS}
+${ITMLIB_ENGINES_MESHING_CUDA_HEADERS}
 ${ITMLIB_ENGINES_MESHING_INTERFACE_HEADERS}
 ${ITMLIB_ENGINES_MESHING_SHARED_HEADERS}
-${ITMLIB_ENGINES_RECONSTRUCTION_SOURCES}
+${ITMLIB_ENGINES_MULTISCENE_HEADERS}
 ${ITMLIB_ENGINES_RECONSTRUCTION_HEADERS}
-${ITMLIB_ENGINES_RECONSTRUCTION_INTERFACE_SOURCES}
+${ITMLIB_ENGINES_RECONSTRUCTION_CPU_HEADERS}
+${ITMLIB_ENGINES_RECONSTRUCTION_CUDA_HEADERS}
 ${ITMLIB_ENGINES_RECONSTRUCTION_INTERFACE_HEADERS}
 ${ITMLIB_ENGINES_RECONSTRUCTION_SHARED_HEADERS}
 ${ITMLIB_ENGINES_SWAPPING_HEADERS}
+${ITMLIB_ENGINES_SWAPPING_CPU_HEADERS}
+${ITMLIB_ENGINES_SWAPPING_CUDA_HEADERS}
 ${ITMLIB_ENGINES_SWAPPING_INTERFACE_HEADERS}
 ${ITMLIB_ENGINES_SWAPPING_SHARED_HEADERS}
-${ITMLIB_ENGINES_VIEWBUILDING_SOURCES}
 ${ITMLIB_ENGINES_VIEWBUILDING_HEADERS}
+${ITMLIB_ENGINES_VIEWBUILDING_CPU_HEADERS}
+${ITMLIB_ENGINES_VIEWBUILDING_CUDA_HEADERS}
 ${ITMLIB_ENGINES_VIEWBUILDING_INTERFACE_HEADERS}
 ${ITMLIB_ENGINES_VIEWBUILDING_SHARED_HEADERS}
-${ITMLIB_ENGINES_VISUALISATION_SOURCES}
 ${ITMLIB_ENGINES_VISUALISATION_HEADERS}
-${ITMLIB_ENGINES_VISUALISATION_INTERFACE_SOURCES}
+${ITMLIB_ENGINES_VISUALISATION_CPU_HEADERS}
+${ITMLIB_ENGINES_VISUALISATION_CUDA_HEADERS}
 ${ITMLIB_ENGINES_VISUALISATION_INTERFACE_HEADERS}
 ${ITMLIB_ENGINES_VISUALISATION_SHARED_HEADERS}
-${ITMLIB_OBJECTS_CAMERA_SOURCES}
 ${ITMLIB_OBJECTS_CAMERA_HEADERS}
 ${ITMLIB_OBJECTS_MESHING_HEADERS}
 ${ITMLIB_OBJECTS_MISC_HEADERS}
-${ITMLIB_OBJECTS_RENDERSTATES_SOURCES}
 ${ITMLIB_OBJECTS_RENDERSTATES_HEADERS}
 ${ITMLIB_OBJECTS_SCENE_HEADERS}
 ${ITMLIB_OBJECTS_TRACKING_HEADERS}
 ${ITMLIB_OBJECTS_VIEWS_HEADERS}
 ${ITMLIB_TRACKERS_HEADERS}
-${ITMLIB_TRACKERS_INTERFACE_SOURCES}
+${ITMLIB_TRACKERS_CPU_HEADERS}
+${ITMLIB_TRACKERS_CUDA_HEADERS}
 ${ITMLIB_TRACKERS_INTERFACE_HEADERS}
 ${ITMLIB_TRACKERS_SHARED_HEADERS}
-${ITMLIB_UTILS_SOURCES}
 ${ITMLIB_UTILS_HEADERS}
-)
-
-set(ITMLIB_CPU_OBJECTS
-${ITMLIB_TOPLEVEL_CPU_SOURCES}
-${ITMLIB_ENGINES_LOWLEVEL_CPU_SOURCES}
-${ITMLIB_ENGINES_LOWLEVEL_CPU_HEADERS}
-${ITMLIB_ENGINES_MESHING_CPU_SOURCES}
-${ITMLIB_ENGINES_MESHING_CPU_HEADERS}
-${ITMLIB_ENGINES_RECONSTRUCTION_CPU_SOURCES}
-${ITMLIB_ENGINES_RECONSTRUCTION_CPU_HEADERS}
-${ITMLIB_ENGINES_SWAPPING_CPU_SOURCES}
-${ITMLIB_ENGINES_SWAPPING_CPU_HEADERS}
-${ITMLIB_ENGINES_VIEWBUILDING_CPU_SOURCES}
-${ITMLIB_ENGINES_VIEWBUILDING_CPU_HEADERS}
-${ITMLIB_ENGINES_VISUALISATION_CPU_SOURCES}
-${ITMLIB_ENGINES_VISUALISATION_CPU_HEADERS}
-${ITMLIB_TRACKERS_CPU_SOURCES}
-${ITMLIB_TRACKERS_CPU_HEADERS}
-)
-
-set(ITMLIB_CUDA_OBJECTS
-${ITMLIB_TOPLEVEL_CUDA_SOURCES}
-${ITMLIB_ENGINES_LOWLEVEL_CUDA_SOURCES}
-${ITMLIB_ENGINES_LOWLEVEL_CUDA_HEADERS}
-${ITMLIB_ENGINES_MESHING_CUDA_SOURCES}
-${ITMLIB_ENGINES_MESHING_CUDA_HEADERS}
-${ITMLIB_ENGINES_RECONSTRUCTION_CUDA_SOURCES}
-${ITMLIB_ENGINES_RECONSTRUCTION_CUDA_HEADERS}
-${ITMLIB_ENGINES_SWAPPING_CUDA_SOURCES}
-${ITMLIB_ENGINES_SWAPPING_CUDA_HEADERS}
-${ITMLIB_ENGINES_VIEWBUILDING_CUDA_SOURCES}
-${ITMLIB_ENGINES_VIEWBUILDING_CUDA_HEADERS}
-${ITMLIB_ENGINES_VISUALISATION_CUDA_SOURCES}
-${ITMLIB_ENGINES_VISUALISATION_CUDA_HEADERS}
-${ITMLIB_TRACKERS_CUDA_SOURCES}
-${ITMLIB_TRACKERS_CUDA_HEADERS}
 )
 
 #############################
@@ -524,7 +552,6 @@ ${ITMLIB_TRACKERS_CUDA_HEADERS}
 
 SOURCE_GROUP("" FILES ${ITMLIB_TOPLEVEL_CPU_SOURCES} ${ITMLIB_TOPLEVEL_CUDA_SOURCES} ${ITMLIB_TOPLEVEL_HEADERS})
 SOURCE_GROUP(Core FILES ${ITMLIB_CORE_SOURCES} ${ITMLIB_CORE_HEADERS})
-SOURCE_GROUP(Core\\MultiScene FILES ${ITMLIB_CORE_MULTISCENE_SOURCES} ${ITMLIB_CORE_MULTISCENE_HEADERS})
 SOURCE_GROUP(Engines\\LowLevel FILES ${ITMLIB_ENGINES_LOWLEVEL_SOURCES} ${ITMLIB_ENGINES_LOWLEVEL_HEADERS})
 SOURCE_GROUP(Engines\\LowLevel\\CPU FILES ${ITMLIB_ENGINES_LOWLEVEL_CPU_SOURCES} ${ITMLIB_ENGINES_LOWLEVEL_CPU_HEADERS})
 SOURCE_GROUP(Engines\\LowLevel\\CUDA FILES ${ITMLIB_ENGINES_LOWLEVEL_CUDA_SOURCES} ${ITMLIB_ENGINES_LOWLEVEL_CUDA_HEADERS})
@@ -535,6 +562,7 @@ SOURCE_GROUP(Engines\\Meshing\\CPU FILES ${ITMLIB_ENGINES_MESHING_CPU_SOURCES} $
 SOURCE_GROUP(Engines\\Meshing\\CUDA FILES ${ITMLIB_ENGINES_MESHING_CUDA_SOURCES} ${ITMLIB_ENGINES_MESHING_CUDA_HEADERS})
 SOURCE_GROUP(Engines\\Meshing\\Interface FILES ${ITMLIB_ENGINES_MESHING_INTERFACE_HEADERS})
 SOURCE_GROUP(Engines\\Meshing\\Shared FILES ${ITMLIB_ENGINES_MESHING_SHARED_HEADERS})
+SOURCE_GROUP(Engines\\MultiScene FILES ${ITMLIB_ENGINES_MULTISCENE_SOURCES} ${ITMLIB_ENGINES_MULTISCENE_HEADERS})
 SOURCE_GROUP(Engines\\Reconstruction FILES ${ITMLIB_ENGINES_RECONSTRUCTION_SOURCES} ${ITMLIB_ENGINES_RECONSTRUCTION_HEADERS})
 SOURCE_GROUP(Engines\\Reconstruction\\CPU FILES ${ITMLIB_ENGINES_RECONSTRUCTION_CPU_SOURCES} ${ITMLIB_ENGINES_RECONSTRUCTION_CPU_HEADERS})
 SOURCE_GROUP(Engines\\Reconstruction\\CUDA FILES ${ITMLIB_ENGINES_RECONSTRUCTION_CUDA_SOURCES} ${ITMLIB_ENGINES_RECONSTRUCTION_CUDA_HEADERS})
@@ -569,30 +597,8 @@ SOURCE_GROUP(Trackers\\Interface FILES ${ITMLIB_TRACKERS_INTERFACE_SOURCES} ${IT
 SOURCE_GROUP(Trackers\\Shared FILES ${ITMLIB_TRACKERS_SHARED_HEADERS})
 SOURCE_GROUP(Utils FILES ${ITMLIB_UTILS_SOURCES} ${ITMLIB_UTILS_HEADERS})
 
-##############################################################
-# Specify the include directories, target and link libraries #
-##############################################################
+##########################################
+# Specify the target and where to put it #
+##########################################
 
-if(WITH_CUDA)
-  if(NOT DEFINED CUDA_COMPUTE_CAPABILITY)
-    include(${PROJECT_SOURCE_DIR}/cmake/CUDACheckCompute.cmake)
-  endif()
-  set(CUDA_ARCH ${CUDA_COMPUTE_CAPABILITY} CACHE STRING "CUDA architectures to compile for")
-  string(REPLACE " " ";" CUDA_ARCH_LIST ${CUDA_ARCH})
-  foreach(a ${CUDA_ARCH_LIST})
-    set(CUDA_ARCH_OPTIONS "${CUDA_ARCH_OPTIONS} -gencode arch=compute_${a},code=compute_${a}")
-  endforeach()
-  include_directories(${CUDA_INCLUDE_DIRS})
-  cuda_add_library(ITMLib
-	${ITMLIB_CPU_OBJECTS}
-	${ITMLIB_CUDA_OBJECTS}
-	${ITMLIB_COMMON_OBJECTS}
-	OPTIONS "${CUDA_ARCH_OPTIONS} --use_fast_math")
-  target_link_libraries(ITMLib ${CUDA_LIBRARY})
-else()
-  add_definitions(-DCOMPILE_WITHOUT_CUDA)
-  add_library(ITMLib ${ITMLIB_CPU_OBJECTS} ${ITMLIB_COMMON_OBJECTS})
-endif()
-
-target_link_libraries(ITMLib ORUtils)
-target_link_libraries(ITMLib RelocLib)
+INCLUDE(${PROJECT_SOURCE_DIR}/cmake/SetCUDALibTarget.cmake)

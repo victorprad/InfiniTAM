@@ -4,6 +4,7 @@
 *.sdf
 *.suo
 *.swp
+.DS_Store
 x64/
 /InfiniTAM/build/
 /InfiniTAM/buildx/

@@ -1,4 +1,4 @@
-// Copyright 2014 Isis Innovation Limited and the authors of InfiniTAM
+// Copyright 2014-2017 Oxford University Innovation Limited and the authors of InfiniTAM
 
 #pragma once
 
@@ -7,24 +7,17 @@
 #include "../Engines/LowLevel/Interface/ITMLowLevelEngine.h"
 #include "../Engines/ViewBuilding/Interface/ITMViewBuilder.h"
 #include "../Objects/Misc/ITMIMUCalibrator.h"
-#include "../../RelocLib/Relocaliser.h"
-#include "../../RelocLib/PoseDatabase.h"
+#include "../../FernRelocLib/Relocaliser.h"
 
-#include "MultiScene/ITMLocalScene.h"
-#include "MultiScene/ITMActiveSceneManager.h"
+#include "../Engines/MultiScene/ITMActiveMapManager.h"
+#include "../Engines/MultiScene/ITMGlobalAdjustmentEngine.h"
+#include "../Engines/Visualisation/Interface/ITMMultiVisualisationEngine.h"
+#include "../Engines/Meshing/ITMMultiMeshingEngineFactory.h"
 
 #include <vector>
 
 namespace ITMLib
 {
-/*	struct ActiveDataDescriptor {
-		int sceneIndex;
-		enum { PRIMARY_SCENE, NEW_SCENE, LOOP_CLOSURE, RELOCALISATION, LOST, LOST_NEW } type;
-		std::vector<Matrix4f> constraints;
-		ORUtils::SE3Pose estimatedPose;
-		int trackingAttempts;
-	};*/
-
 	/** \brief
 	*/
 	template <typename TVoxel, typename TIndex>
@@ -34,25 +27,28 @@ namespace ITMLib
 		const ITMLibSettings *settings;
 
 		ITMLowLevelEngine *lowLevelEngine;
-		ITMVisualisationEngine<TVoxel,TIndex> *visualisationEngine;
+		ITMVisualisationEngine<TVoxel, TIndex> *visualisationEngine;
+		ITMMultiVisualisationEngine<TVoxel, TIndex> *multiVisualisationEngine;
 
-		ITMViewBuilder *viewBuilder;		
+		ITMMultiMeshingEngine<TVoxel, TIndex> *meshingEngine;
+
+		ITMViewBuilder *viewBuilder;
 		ITMTrackingController *trackingController;
 		ITMTracker *tracker;
 		ITMIMUCalibrator *imuCalibrator;
-		ITMDenseMapper<TVoxel,TIndex> *denseMapper;
+		ITMDenseMapper<TVoxel, TIndex> *denseMapper;
 
-		RelocLib::Relocaliser *mRelocaliser;
-		RelocLib::PoseDatabase poseDatabase;
+		FernRelocLib::Relocaliser<float> *relocaliser;
 
-/*		std::vector<ITMLocalScene<ITMVoxel,ITMVoxelIndex>*> allData;
-		std::vector<ActiveDataDescriptor> activeData;*/
-		ITMMultiSceneManager_instance<TVoxel,TIndex> *sceneManager;
-		ITMActiveSceneManager *activeDataManager;
+		ITMVoxelMapGraphManager<TVoxel, TIndex> *mapManager;
+		ITMActiveMapManager *mActiveDataManager;
+		ITMGlobalAdjustmentEngine *mGlobalAdjustmentEngine;
+		bool mScheduleGlobalAdjustment;
 
 		Vector2i trackedImageSize;
 		ITMRenderState *renderState_freeview;
-		int freeviewSceneIdx;
+		ITMRenderState *renderState_multiscene;
+		int freeviewLocalMapIdx;
 
 		/// Pointer for storing the current input frame
 		ITMView *view;
@@ -69,30 +65,35 @@ namespace ITMLib
 
 		void GetImage(ITMUChar4Image *out, GetImageType getImageType, ORUtils::SE3Pose *pose = NULL, ITMIntrinsics *intrinsics = NULL);
 
-/*		bool shouldStartNewArea(void) const;
-		bool shouldMovePrimaryScene(int newDataIdx, int bestDataIdx, int primaryDataIdx) const;
-		void AddNewLocalScene(int primarySceneIdx);
-		bool AddNewRelocalisationScene(int sceneID, int primarySceneIdx, const ORUtils::SE3Pose & pose);
-		int CheckSuccess_relocalisation(int dataID) const;
-		int CheckSuccess_newlink(int dataID, int *inliers, ORUtils::SE3Pose *inlierPose) const;
-		void AcceptNewLink(int dataId, int primaryDataId, ORUtils::SE3Pose pose, int weight);
-		void DiscardLocalScene(int sceneID);
-		static ORUtils::SE3Pose EstimateRelativePose(const std::vector<Matrix4f> & observations, int *out_numInliers, ORUtils::SE3Pose *out_inlierPose);
-*/
-		void changeFreeviewSceneIdx(ORUtils::SE3Pose *pose, int newIdx);
-		void setFreeviewSceneIdx(int newIdx)
-		{ freeviewSceneIdx = newIdx; }
-		int getFreeviewSceneIdx(void) const
-		{ return freeviewSceneIdx; }
-		int findPrimarySceneIdx(void) const
-		{ return activeDataManager->findPrimarySceneIdx(); }
+		void changeFreeviewLocalMapIdx(ORUtils::SE3Pose *pose, int newIdx);
+		void setFreeviewLocalMapIdx(int newIdx)
+		{
+			freeviewLocalMapIdx = newIdx;
+		}
+		int getFreeviewLocalMapIdx(void) const
+		{
+			return freeviewLocalMapIdx;
+		}
+		int findPrimaryLocalMapIdx(void) const
+		{
+			return mActiveDataManager->findPrimaryLocalMapIdx();
+		}
+
+		/// Extracts a mesh from the current scene and saves it to the model file specified by the file name
+		void SaveSceneToMesh(const char *fileName);
+
+		/// save and load the full scene and relocaliser (if any) to/from file
+		void SaveToFile();
+		void LoadFromFile();
+
+		//void writeFullTrajectory(void) const;
+		//void SaveSceneToMesh(const char *objFileName);
 
 		/** \brief Constructor
-		    Ommitting a separate image size for the depth images
-		    will assume same resolution as for the RGB images.
+			Ommitting a separate image size for the depth images
+			will assume same resolution as for the RGB images.
 		*/
-		ITMMultiEngine(const ITMLibSettings *settings, const ITMRGBDCalib& calib, Vector2i imgSize_rgb, Vector2i imgSize_d = Vector2i(-1,-1));
+		ITMMultiEngine(const ITMLibSettings *settings, const ITMRGBDCalib &calib, Vector2i imgSize_rgb, Vector2i imgSize_d = Vector2i(-1, -1));
 		~ITMMultiEngine(void);
 	};
 }
-

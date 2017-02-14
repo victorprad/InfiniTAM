@@ -1,4 +1,4 @@
-// Copyright 2014-2015 Isis Innovation Limited and the authors of InfiniTAM
+// Copyright 2014-2017 Oxford University Innovation Limited and the authors of InfiniTAM
 
 #pragma once
 
@@ -26,6 +26,10 @@ namespace ITMLib
 		/// The pose used to generate the point cloud.
 		ORUtils::SE3Pose *pose_pointCloud;
 
+		/// Frames processed from start of tracking
+		/// Used as weight in the extended tracker 
+		int framesProcessed;
+
 		int age_pointCloud;
 
 		/// Current pose of the depth camera.
@@ -34,9 +38,9 @@ namespace ITMLib
 		/// Tracking quality: 1.0: success, 0.0: failure
 		enum TrackingResult
 		{
-			TRACKING_GOOD,
-			TRACKING_POOR,
-			TRACKING_FAILED
+			TRACKING_GOOD = 2,
+			TRACKING_POOR = 1,
+			TRACKING_FAILED = 0
 		} trackerResult;
 
 		bool TrackerFarFromPointCloud(void) const

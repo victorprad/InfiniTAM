@@ -1,19 +1,9 @@
-// Copyright 2014-2015 Isis Innovation Limited and the authors of InfiniTAM
+// Copyright 2014-2017 Oxford University Innovation Limited and the authors of InfiniTAM
 
 #include "ITMMeshingEngine_CPU.h"
 #include "../Shared/ITMMeshingEngine_Shared.h"
 
 using namespace ITMLib;
-
-template<class TVoxel>
-ITMMeshingEngine_CPU<TVoxel,ITMVoxelBlockHash>::ITMMeshingEngine_CPU(void) 
-{
-}
-
-template<class TVoxel>
-ITMMeshingEngine_CPU<TVoxel,ITMVoxelBlockHash>::~ITMMeshingEngine_CPU(void) 
-{
-}
 
 template<class TVoxel>
 void ITMMeshingEngine_CPU<TVoxel, ITMVoxelBlockHash>::MeshScene(ITMMesh *mesh, const ITMScene<TVoxel, ITMVoxelBlockHash> *scene)
@@ -56,15 +46,3 @@ void ITMMeshingEngine_CPU<TVoxel, ITMVoxelBlockHash>::MeshScene(ITMMesh *mesh, c
 
 	mesh->noTotalTriangles = noTriangles;
 }
-
-template<class TVoxel>
-ITMMeshingEngine_CPU<TVoxel,ITMPlainVoxelArray>::ITMMeshingEngine_CPU(void) 
-{}
-
-template<class TVoxel>
-ITMMeshingEngine_CPU<TVoxel,ITMPlainVoxelArray>::~ITMMeshingEngine_CPU(void) 
-{}
-
-template<class TVoxel>
-void ITMMeshingEngine_CPU<TVoxel, ITMPlainVoxelArray>::MeshScene(ITMMesh *mesh, const ITMScene<TVoxel, ITMPlainVoxelArray> *scene)
-{}
