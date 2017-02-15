@@ -78,7 +78,7 @@ namespace ITMLib
 			makers.push_back(Maker("rgb", "Colour based tracker", TRACKER_COLOR, &MakeColourTracker));
 			makers.push_back(Maker("icp", "Depth based ICP tracker", TRACKER_ICP, &MakeICPTracker));
 			makers.push_back(Maker("extended", "Depth + colour based tracker", TRACKER_EXTENDED, &MakeExtendedTracker));
-			makers.push_back(Maker("filebased", "File based tracker", TRACKER_FILE, &MakeFileBasedTracker));
+			makers.push_back(Maker("file", "File based tracker", TRACKER_FILE, &MakeFileBasedTracker));
 			makers.push_back(Maker("imuicp", "Combined IMU and depth based ICP tracker", TRACKER_IMU, &MakeIMUTracker));
 			makers.push_back(Maker("extendedimu", "Combined IMU and depth + colour ICP tracker", TRACKER_EXTENDEDIMU, &MakeExtendedIMUTracker));
 		}
@@ -421,7 +421,7 @@ namespace ITMLib
 		const ITMLowLevelEngine *lowLevelEngine, ITMIMUCalibrator *imuCalibrator, const ITMSceneParams *sceneParams)
 	{
 		int verbose = 0;
-		if (cfg.getProperty("help") != NULL) if (verbose < 10) verbose = 10;
+		if (cfg.getProperty("help") && verbose < 10) verbose = 10;
 
 		const char *fileMask = "";
 		cfg.parseStrProperty("mask", "mask for the saved pose text files", fileMask, verbose);
