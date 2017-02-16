@@ -93,8 +93,9 @@ namespace ITMLib
 	public:
 		void TrackCamera(ITMTrackingState *trackingState, const ITMView *view);
 
-		bool requiresColourRendering(void) const { return false; }
-		bool requiresDepthReliability(void) const { return true; }
+		bool requiresColourRendering() const { return false; }
+		bool requiresDepthReliability() const { return true; }
+		bool requiresPointCloudRendering() const { return true; }
 
 		void SetupLevels(int numIterCoarse, int numIterFine, float spaceThreshCoarse, float spaceThreshFine, float colourThreshCoarse, float colourThreshFine);
 

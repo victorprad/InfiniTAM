@@ -53,7 +53,10 @@ ITMBasicEngine<TVoxel,TIndex>::ITMBasicEngine(const ITMLibSettings *settings, co
 
 	view = NULL; // will be allocated by the view builder
 	
-	relocaliser = new RelocLib::Relocaliser(imgSize_d, Vector2f(settings->sceneParams.viewFrustum_min, settings->sceneParams.viewFrustum_max), 0.2f, 500, 4);
+	if (settings->behaviourOnFailure == settings->FAILUREMODE_RELOCALISE)
+		relocaliser = new FernRelocLib::Relocaliser<float>(imgSize_d, Vector2f(settings->sceneParams.viewFrustum_min, settings->sceneParams.viewFrustum_max), 0.2f, 500, 4);
+	else relocaliser = NULL;
+
 	kfRaycast = new ITMUChar4Image(imgSize_d, memoryType);
 
 	trackingActive = true;
@@ -68,7 +71,7 @@ template <typename TVoxel, typename TIndex>
 ITMBasicEngine<TVoxel,TIndex>::~ITMBasicEngine()
 {
 	delete renderState_live;
-	if (renderState_freeview!=NULL) delete renderState_freeview;
+	if (renderState_freeview != NULL) delete renderState_freeview;
 
 	delete scene;
 
@@ -86,7 +89,7 @@ ITMBasicEngine<TVoxel,TIndex>::~ITMBasicEngine()
 
 	delete visualisationEngine;
 
-	delete relocaliser;
+	if (relocaliser != NULL) delete relocaliser;
 	delete kfRaycast;
 
 	if (meshingEngine != NULL) delete meshingEngine;
@@ -103,6 +106,59 @@ void ITMBasicEngine<TVoxel,TIndex>::SaveSceneToMesh(const char *objFileName)
 	mesh->WriteSTL(objFileName);
 
 	delete mesh;
+}
+
+template <typename TVoxel, typename TIndex>
+void ITMBasicEngine<TVoxel, TIndex>::SaveToFile()
+{
+	// throws error if any of the saves fail
+
+	std::string saveOutputDirectory = "State/";
+	std::string relocaliserOutputDirectory = saveOutputDirectory + "Relocaliser/", sceneOutputDirectory = saveOutputDirectory + "Scene/";
+	
+	MakeDir(saveOutputDirectory.c_str());
+	MakeDir(relocaliserOutputDirectory.c_str());
+	MakeDir(sceneOutputDirectory.c_str());
+
+	if (relocaliser) relocaliser->SaveToDirectory(relocaliserOutputDirectory);
+
+	scene->SaveToDirectory(sceneOutputDirectory);
+}
+
+template <typename TVoxel, typename TIndex>
+void ITMBasicEngine<TVoxel, TIndex>::LoadFromFile()
+{
+	std::string saveInputDirectory = "State/";
+	std::string relocaliserInputDirectory = saveInputDirectory + "Relocaliser/", sceneInputDirectory = saveInputDirectory + "Scene/";
+
+	////TODO: add factory for relocaliser and rebuild using config from relocaliserOutputDirectory + "config.txt"
+	////TODO: add proper management of case when scene load fails (keep old scene or also reset relocaliser)
+
+	this->resetAll();
+
+	try // load relocaliser
+	{
+		FernRelocLib::Relocaliser<float> *relocaliser_temp = new FernRelocLib::Relocaliser<float>(view->depth->noDims, Vector2f(settings->sceneParams.viewFrustum_min, settings->sceneParams.viewFrustum_max), 0.2f, 500, 4);
+
+		relocaliser_temp->LoadFromDirectory(relocaliserInputDirectory);
+
+		delete relocaliser; 
+		relocaliser = relocaliser_temp;
+	}
+	catch (std::runtime_error &e)
+	{
+		throw std::runtime_error("Could not load relocaliser: " + std::string(e.what()));
+	}
+
+	try // load scene
+	{
+		scene->LoadFromDirectory(sceneInputDirectory);
+	}
+	catch (std::runtime_error &e)
+	{
+		denseMapper->ResetScene(scene);
+		throw std::runtime_error("Could not load scene:" + std::string(e.what()));
+	}
 }
 
 template <typename TVoxel, typename TIndex>
@@ -220,18 +276,19 @@ ITMTrackingState::TrackingResult ITMBasicEngine<TVoxel,TIndex>::ProcessFrame(ITM
 
 		int NN; float distances;
 		view->depth->UpdateHostFromDevice();
-		addKeyframeIdx = relocaliser->ProcessFrame(view->depth, 1, &NN, &distances, trackerResult == ITMTrackingState::TRACKING_GOOD && relocalisationCount == 0);
 
-		// add keyframe, if necessary
-		if (addKeyframeIdx >= 0) poseDatabase.storePose(addKeyframeIdx, *(trackingState->pose_d), 0);
-		else if (trackerResult == ITMTrackingState::TRACKING_FAILED) 
+		//find and add keyframe, if necessary
+		bool hasAddedKeyframe = relocaliser->ProcessFrame(view->depth, trackingState->pose_d, 0, 1, &NN, &distances, trackerResult == ITMTrackingState::TRACKING_GOOD && relocalisationCount == 0);
+
+		//frame not added and tracking failed -> we need to relocalise
+		if (!hasAddedKeyframe && trackerResult == ITMTrackingState::TRACKING_FAILED)
 		{
 			relocalisationCount = 10;
 
 			// Reset previous rgb frame since the rgb image is likely different than the one acquired when setting the keyframe
 			view->rgb_prev->Clear();
 
-			const RelocLib::PoseDatabase::PoseInScene & keyframe = poseDatabase.retrievePose(NN);
+			const FernRelocLib::PoseDatabase::PoseInScene & keyframe = relocaliser->RetrievePose(NN);
 			trackingState->pose_d->SetFrom(&keyframe.pose);
 
 			denseMapper->UpdateVisibleList(view, trackingState, scene, renderState_live, true);

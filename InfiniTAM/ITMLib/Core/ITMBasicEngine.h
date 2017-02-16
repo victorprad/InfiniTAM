@@ -11,8 +11,7 @@
 #include "../Engines/Visualisation/Interface/ITMVisualisationEngine.h"
 #include "../Objects/Misc/ITMIMUCalibrator.h"
 
-#include "../../RelocLib/Relocaliser.h"
-#include "../../RelocLib/PoseDatabase.h"
+#include "../../FernRelocLib/Relocaliser.h"
 
 namespace ITMLib
 {
@@ -26,28 +25,27 @@ namespace ITMLib
 		int framesProcessed, relocalisationCount;
 
 		ITMLowLevelEngine *lowLevelEngine;
-		ITMVisualisationEngine<TVoxel,TIndex> *visualisationEngine;
+		ITMVisualisationEngine<TVoxel, TIndex> *visualisationEngine;
 
-		ITMMeshingEngine<TVoxel,TIndex> *meshingEngine;
+		ITMMeshingEngine<TVoxel, TIndex> *meshingEngine;
 
 		ITMViewBuilder *viewBuilder;
-		ITMDenseMapper<TVoxel,TIndex> *denseMapper;
+		ITMDenseMapper<TVoxel, TIndex> *denseMapper;
 		ITMTrackingController *trackingController;
 
-		ITMScene<TVoxel,TIndex> *scene;
+		ITMScene<TVoxel, TIndex> *scene;
 		ITMRenderState *renderState_live;
 		ITMRenderState *renderState_freeview;
 
 		ITMTracker *tracker;
 		ITMIMUCalibrator *imuCalibrator;
 
-		RelocLib::Relocaliser *relocaliser;
-		RelocLib::PoseDatabase poseDatabase;
+		FernRelocLib::Relocaliser<float> *relocaliser;
 		ITMUChar4Image *kfRaycast;
 
 		/// Pointer for storing the current input frame
 		ITMView *view;
-		
+
 		/// Pointer to the current camera pose and additional tracking information
 		ITMTrackingState *trackingState;
 
@@ -56,12 +54,16 @@ namespace ITMLib
 		ITMTrackingState* GetTrackingState(void) { return trackingState; }
 
 		/// Gives access to the internal world representation
-		ITMScene<TVoxel,TIndex>* GetScene(void) { return scene; }
+		ITMScene<TVoxel, TIndex>* GetScene(void) { return scene; }
 
 		ITMTrackingState::TrackingResult ProcessFrame(ITMUChar4Image *rgbImage, ITMShortImage *rawDepthImage, ITMIMUMeasurement *imuMeasurement = NULL);
 
 		/// Extracts a mesh from the current scene and saves it to the model file specified by the file name
 		void SaveSceneToMesh(const char *fileName);
+
+		/// save and load the full scene and relocaliser (if any) to/from file
+		void SaveToFile();
+		void LoadFromFile();
 
 		/// Get a result image as output
 		Vector2i GetImageSize(void) const;
@@ -80,14 +82,14 @@ namespace ITMLib
 		void turnOnMainProcessing();
 		void turnOffMainProcessing();
 
-        /// resets the scene and the tracker
-        void resetAll();
-        
+		/// resets the scene and the tracker
+		void resetAll();
+
 		/** \brief Constructor
-		    Ommitting a separate image size for the depth images
-		    will assume same resolution as for the RGB images.
+			Omitting a separate image size for the depth images
+			will assume same resolution as for the RGB images.
 		*/
-		ITMBasicEngine(const ITMLibSettings *settings, const ITMRGBDCalib& calib, Vector2i imgSize_rgb, Vector2i imgSize_d = Vector2i(-1,-1));
+		ITMBasicEngine(const ITMLibSettings *settings, const ITMRGBDCalib& calib, Vector2i imgSize_rgb, Vector2i imgSize_d = Vector2i(-1, -1));
 		~ITMBasicEngine();
 	};
 }

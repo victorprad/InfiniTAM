@@ -22,6 +22,7 @@ INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseCUDA.cmake)
 INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseFFmpeg.cmake)
 INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseGLUT.cmake)
 INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseKinect2.cmake)
+INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseLibRoyale.cmake)
 INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseOpenGL.cmake)
 INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseOpenMP.cmake)
 INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseOpenNI.cmake)
@@ -41,6 +42,7 @@ IMUSourceEngine.cpp
 Kinect2Engine.cpp
 LibUVCEngine.cpp
 OpenNIEngine.cpp
+PicoFlexxEngine.cpp
 RealSenseEngine.cpp
 )
 
@@ -53,6 +55,7 @@ IMUSourceEngine.h
 Kinect2Engine.h
 LibUVCEngine.h
 OpenNIEngine.h
+PicoFlexxEngine.h
 RealSenseEngine.h
 )
 

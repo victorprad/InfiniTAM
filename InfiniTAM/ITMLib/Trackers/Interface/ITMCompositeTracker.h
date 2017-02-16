@@ -44,14 +44,20 @@ namespace ITMLib
 			for (int i = 0; i < noTrackers; i++) trackers[i]->UpdateInitialPose(trackingState);
 		}
 
-		bool requiresColourRendering(void) const
+		bool requiresColourRendering() const
 		{
 			for (int i = 0; i < noTrackers; i++) if (trackers[i]->requiresColourRendering()) return true;
 			return false;
 		}
-		bool requiresDepthReliability(void) const
+		bool requiresDepthReliability() const
 		{
 			for (int i = 0; i < noTrackers; i++) if (trackers[i]->requiresDepthReliability()) return true;
+			return false;
+		}
+
+		bool requiresPointCloudRendering() const
+		{
+			for (int i = 0; i < noTrackers; i++) if (trackers[i]->requiresPointCloudRendering()) return true;
 			return false;
 		}
 

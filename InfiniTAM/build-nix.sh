@@ -1,9 +1,9 @@
 #! /bin/bash -e
 
 # Check that a valid build type has been specified.
-if [ $# -ne 2 ] || ([ "$1" != "Unix Makefiles" ] && [ "$1" != "Xcode" ]) || ([ $2 != "Debug" ] && [ $2 != "Release" ])
+if [ $# -ne 2 ] || ([ "$1" != "Ninja" ] && [ "$1" != "Unix Makefiles" ] && [ "$1" != "Xcode" ]) || ([ $2 != "Debug" ] && [ $2 != "Release" ])
 then
-  echo "Usage: build-nix.sh {Unix Makefiles|Xcode} {Debug|Release}"
+  echo "Usage: build-nix.sh {Ninja|Unix Makefiles|Xcode} {Debug|Release}"
   exit
 fi
 
@@ -22,9 +22,16 @@ then
   mkdir build
   cd build
 
-  # Note: We need to configure twice to handle conditional building.
   echo "[InfiniTAM] ...Configuring using CMake..."
-  cmake -G"$1" -DCMAKE_BUILD_TYPE=$2 ..
+
+  if [ "$1" == "Ninja" ] && [ $PLATFORM == "mac" ]
+  then
+    cmake -G"$1" -DCMAKE_BUILD_TYPE=$2 -DCMAKE_MAKE_PROGRAM="/usr/local/Cellar/ninja/1.7.2/bin/ninja" ..
+  else
+    cmake -G"$1" -DCMAKE_BUILD_TYPE=$2 ..
+  fi
+
+  # Note: We need to configure twice to handle conditional building.
   cmake ..
 
   cd ..
@@ -33,6 +40,12 @@ fi
 cd build
 
 echo "[InfiniTAM] ...Running build..."
-make -j2
+
+if [ "$1" == "Ninja" ]
+then
+  ninja
+else
+  make -j2
+fi
 
 echo "[InfiniTAM] ...Finished building InfiniTAM."

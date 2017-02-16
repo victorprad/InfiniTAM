@@ -2,11 +2,11 @@
 # UseCUDA.cmake #
 #################
 
-OPTION(WITH_CUDA "Build with CUDA support?" ON)
+FIND_PACKAGE(CUDA QUIET)
+
+OPTION(WITH_CUDA "Build with CUDA support?" ${CUDA_FOUND})
 
 IF(WITH_CUDA)
-  FIND_PACKAGE(CUDA)
-
   # Auto-detect the CUDA compute capability.
   SET(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
   IF(NOT DEFINED CUDA_COMPUTE_CAPABILITY)

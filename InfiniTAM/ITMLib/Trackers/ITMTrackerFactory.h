@@ -10,6 +10,7 @@
 #include "CPU/ITMExtendedTracker_CPU.h"
 #include "Interface/ITMCompositeTracker.h"
 #include "Interface/ITMIMUTracker.h"
+#include "Interface/ITMFileBasedTracker.h"
 #include "Interface/ITMTracker.h"
 #include "../Engines/LowLevel/Interface/ITMLowLevelEngine.h"
 #include "../Utils/ITMLibSettings.h"
@@ -45,6 +46,8 @@ namespace ITMLib
 			TRACKER_ICP,
 			//! Identifies a tracker based on depth and color image with various extensions
 			TRACKER_EXTENDED,
+			//! Identifies a tracker reading poses from text files
+			TRACKER_FILE,
 			//! Identifies a tracker based on depth image and IMU measurement
 			TRACKER_IMU,
 			//! Identifies a tracker based on depth and colour images and IMU measurement
@@ -75,6 +78,7 @@ namespace ITMLib
 			makers.push_back(Maker("rgb", "Colour based tracker", TRACKER_COLOR, &MakeColourTracker));
 			makers.push_back(Maker("icp", "Depth based ICP tracker", TRACKER_ICP, &MakeICPTracker));
 			makers.push_back(Maker("extended", "Depth + colour based tracker", TRACKER_EXTENDED, &MakeExtendedTracker));
+			makers.push_back(Maker("file", "File based tracker", TRACKER_FILE, &MakeFileBasedTracker));
 			makers.push_back(Maker("imuicp", "Combined IMU and depth based ICP tracker", TRACKER_IMU, &MakeIMUTracker));
 			makers.push_back(Maker("extendedimu", "Combined IMU and depth + colour ICP tracker", TRACKER_EXTENDEDIMU, &MakeExtendedIMUTracker));
 		}
@@ -408,6 +412,21 @@ namespace ITMLib
 		compositeTracker->SetTracker(new ITMIMUTracker(imuCalibrator), 0);
 		compositeTracker->SetTracker(dTracker, 1);
 		return compositeTracker;
+	}
+
+	/**
+	 * \brief Makes a file based tracker.
+	 */
+	static ITMTracker *MakeFileBasedTracker(const Vector2i& imgSize_rgb, const Vector2i& imgSize_d, ITMLibSettings::DeviceType deviceType, const ORUtils::KeyValueConfig & cfg,
+		const ITMLowLevelEngine *lowLevelEngine, ITMIMUCalibrator *imuCalibrator, const ITMSceneParams *sceneParams)
+	{
+		int verbose = 0;
+		if (cfg.getProperty("help") && verbose < 10) verbose = 10;
+
+		const char *fileMask = "";
+		cfg.parseStrProperty("mask", "mask for the saved pose text files", fileMask, verbose);
+
+		return new ITMFileBasedTracker(fileMask);
 	}
 };
 }

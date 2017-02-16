@@ -57,7 +57,8 @@ ITMMultiEngine<TVoxel, TIndex>::ITMMultiEngine(const ITMLibSettings *settings, c
 
 	view = NULL; // will be allocated by the view builder
 
-	mLoopClosureDetector = new RelocLib::Relocaliser(imgSize_d, Vector2f(settings->sceneParams.viewFrustum_min, settings->sceneParams.viewFrustum_max), 0.1f, 1000, 4);
+	relocaliser = new FernRelocLib::Relocaliser<float>(imgSize_d, Vector2f(settings->sceneParams.viewFrustum_min, settings->sceneParams.viewFrustum_max), 0.1f, 1000, 4);
+
 	mGlobalAdjustmentEngine = new ITMGlobalAdjustmentEngine();
 	mScheduleGlobalAdjustment = false;
 	if (separateThreadGlobalAdjustment) mGlobalAdjustmentEngine->startSeparateThread();
@@ -69,7 +70,6 @@ ITMMultiEngine<TVoxel, TIndex>::ITMMultiEngine(const ITMLibSettings *settings, c
 template <typename TVoxel, typename TIndex>
 ITMMultiEngine<TVoxel, TIndex>::~ITMMultiEngine(void)
 {
-	//delete multiVisualisationEngine;
 	if (renderState_multiscene != NULL) delete renderState_multiscene;
 
 	delete mGlobalAdjustmentEngine;
@@ -91,7 +91,7 @@ ITMMultiEngine<TVoxel, TIndex>::~ITMMultiEngine(void)
 
 	delete visualisationEngine;
 
-	delete mLoopClosureDetector;
+	delete relocaliser;
 
 	delete multiVisualisationEngine;
 }
@@ -99,6 +99,8 @@ ITMMultiEngine<TVoxel, TIndex>::~ITMMultiEngine(void)
 template <typename TVoxel, typename TIndex>
 void ITMMultiEngine<TVoxel, TIndex>::changeFreeviewLocalMapIdx(ORUtils::SE3Pose *pose, int newIdx)
 {
+	//if ((newIdx < 0) || ((unsigned)newIdx >= mapManager->numLocalMaps())) return;
+
 	if (newIdx < -1) newIdx = (int)mapManager->numLocalMaps() - 1;
 	if ((unsigned)newIdx >= mapManager->numLocalMaps()) newIdx = -1;
 
@@ -177,7 +179,7 @@ ITMTrackingState::TrackingResult ITMMultiEngine<TVoxel, TIndex>::ProcessFrame(IT
 		//   the start of the second pass
 		// - second tracking pass will be about newly detected loop closures, relocalisations, etc.
 
-		if (todoList[i].dataId == -1) 
+		if (todoList[i].dataId == -1)
 		{
 #ifdef DEBUG_MULTISCENE
 			fprintf(stderr, " Reloc(%i)", primaryTrackingSuccess);
@@ -185,24 +187,28 @@ ITMTrackingState::TrackingResult ITMMultiEngine<TVoxel, TIndex>::ProcessFrame(IT
 			int NN[k_loopcloseneighbours]; float distances[k_loopcloseneighbours];
 			view->depth->UpdateHostFromDevice();
 
-			//check if relocaliser has fired
-			int addKeyframeIdx = mLoopClosureDetector->ProcessFrame(view->depth, k_loopcloseneighbours, NN, distances, primaryTrackingSuccess);
-			
+			//primary map index
 			int primaryLocalMapIdx = -1;
 			if (primaryDataIdx >= 0) primaryLocalMapIdx = mActiveDataManager->getLocalMapIndex(primaryDataIdx);
 
-			// add keyframe, if necessary
-			if (addKeyframeIdx >= 0) mPoseDatabase.storePose(addKeyframeIdx, *(mapManager->getLocalMap(primaryLocalMapIdx)->trackingState->pose_d), primaryLocalMapIdx);
-			else for (int j = 0; j < k_loopcloseneighbours; ++j)
+			//check if relocaliser has fired
+			ORUtils::SE3Pose *pose = primaryLocalMapIdx >= 0 ? mapManager->getLocalMap(primaryLocalMapIdx)->trackingState->pose_d : NULL;
+			bool hasAddedKeyframe = relocaliser->ProcessFrame(view->depth, pose, primaryLocalMapIdx, k_loopcloseneighbours, NN, distances, primaryTrackingSuccess);
+
+			//frame not added and tracking failed -> we need to relocalise
+			if (!hasAddedKeyframe)
 			{
-				if (distances[j] > F_maxdistattemptreloc) continue;
-				const RelocLib::PoseDatabase::PoseInScene & keyframe = mPoseDatabase.retrievePose(NN[j]);
-				int newDataIdx = mActiveDataManager->initiateNewLink(keyframe.sceneIdx, keyframe.pose, (primaryLocalMapIdx < 0));
-				if (newDataIdx >= 0) 
+				for (int j = 0; j < k_loopcloseneighbours; ++j)
 				{
-					TodoListEntry todoItem(newDataIdx, true, false, true);
-					todoItem.preprepare = true;
-					todoList.push_back(todoItem);
+					if (distances[j] > F_maxdistattemptreloc) continue;
+					const FernRelocLib::PoseDatabase::PoseInScene & keyframe = relocaliser->RetrievePose(NN[j]);
+					int newDataIdx = mActiveDataManager->initiateNewLink(keyframe.sceneIdx, keyframe.pose, (primaryLocalMapIdx < 0));
+					if (newDataIdx >= 0)
+					{
+						TodoListEntry todoItem(newDataIdx, true, false, true);
+						todoItem.preprepare = true;
+						todoList.push_back(todoItem);
+					}
 				}
 			}
 
@@ -302,6 +308,18 @@ void ITMMultiEngine<TVoxel, TIndex>::SaveSceneToMesh(const char *modelFileName)
 	mesh->WriteSTL(modelFileName);
 	
 	delete mesh;
+}
+
+template <typename TVoxel, typename TIndex>
+void ITMMultiEngine<TVoxel, TIndex>::SaveToFile()
+{
+
+}
+
+template <typename TVoxel, typename TIndex>
+void ITMMultiEngine<TVoxel, TIndex>::LoadFromFile()
+{
+
 }
 
 template <typename TVoxel, typename TIndex>

@@ -25,8 +25,9 @@ namespace ITMLib
 		*/
 		virtual void UpdateInitialPose(ITMTrackingState *trackingState) {}
 
-		virtual bool requiresColourRendering(void) const = 0;
-		virtual bool requiresDepthReliability(void) const = 0;
+		virtual bool requiresColourRendering() const = 0;
+		virtual bool requiresDepthReliability() const = 0;
+		virtual bool requiresPointCloudRendering() const = 0;
 
 		virtual ~ITMTracker(void) {}
 	};

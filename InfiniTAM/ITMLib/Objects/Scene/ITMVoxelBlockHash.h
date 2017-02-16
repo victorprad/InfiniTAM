@@ -4,10 +4,13 @@
 
 #ifndef __METALC__
 #include <stdlib.h>
+#include <fstream>
+#include <iostream>
 #endif
 
 #include "../../Utils/ITMMath.h"
 #include "../../../ORUtils/MemoryBlock.h"
+#include "../../../ORUtils/MemoryBlockPersister.h"
 
 #define SDF_BLOCK_SIZE 8				// SDF block size
 #define SDF_BLOCK_SIZE3 512				// SDF_BLOCK_SIZE3 = SDF_BLOCK_SIZE * SDF_BLOCK_SIZE * SDF_BLOCK_SIZE
@@ -122,6 +125,34 @@ namespace ITMLib
 		/** Maximum number of total entries. */
 		int getNumAllocatedVoxelBlocks(void) { return SDF_LOCAL_BLOCK_NUM; }
 		int getVoxelBlockSize(void) { return SDF_BLOCK_SIZE3; }
+
+		void SaveToDirectory(const std::string &outputDirectory) const
+		{
+			std::string hashEntriesFileName = outputDirectory + "hash.dat";
+			std::string excessAllocationListFileName = outputDirectory + "excess.dat";
+			std::string lastFreeExcessListIdFileName = outputDirectory + "last.txt";
+
+			std::ofstream ofs(lastFreeExcessListIdFileName.c_str());
+			if (!ofs) throw std::runtime_error("Could not open " + lastFreeExcessListIdFileName + " for writing");
+
+			ofs << lastFreeExcessListId;
+			ORUtils::MemoryBlockPersister::SaveMemoryBlock(hashEntriesFileName, *hashEntries, memoryType);
+			ORUtils::MemoryBlockPersister::SaveMemoryBlock(excessAllocationListFileName, *excessAllocationList, memoryType);
+		}
+
+		void LoadFromDirectory(const std::string &inputDirectory)
+		{
+			std::string hashEntriesFileName = inputDirectory + "hash.dat";
+			std::string excessAllocationListFileName = inputDirectory + "excess.dat";
+			std::string lastFreeExcessListIdFileName = inputDirectory + "last.txt";
+
+			std::ifstream ifs(lastFreeExcessListIdFileName.c_str());
+			if (!ifs) throw std::runtime_error("Count not open " + lastFreeExcessListIdFileName + " for reading");
+
+			ifs >> this->lastFreeExcessListId;
+			ORUtils::MemoryBlockPersister::LoadMemoryBlock(hashEntriesFileName.c_str(), *hashEntries, memoryType);
+			ORUtils::MemoryBlockPersister::LoadMemoryBlock(excessAllocationListFileName.c_str(), *excessAllocationList, memoryType);
+		}
 
 		// Suppress the default copy constructor and assignment operator
 		ITMVoxelBlockHash(const ITMVoxelBlockHash&);
