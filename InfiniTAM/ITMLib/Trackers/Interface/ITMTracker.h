@@ -27,7 +27,7 @@ namespace ITMLib
 
 		virtual bool requiresColourRendering() const = 0;
 		virtual bool requiresDepthReliability() const = 0;
-		virtual bool requiresPointCloudRendering() const { return true; }
+		virtual bool requiresPointCloudRendering() const = 0;
 
 		virtual ~ITMTracker(void) {}
 	};

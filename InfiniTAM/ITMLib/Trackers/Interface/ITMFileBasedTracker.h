@@ -23,6 +23,5 @@ namespace ITMLib
 		bool requiresPointCloudRendering() const { return false; }
 
 		explicit ITMFileBasedTracker(const std::string &poseMask);
-		virtual ~ITMFileBasedTracker();
 	};
 }

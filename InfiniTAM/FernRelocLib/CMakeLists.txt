@@ -1,12 +1,12 @@
-###############################
-# CMakeLists.txt for RelocLib #
-###############################
+###################################
+# CMakeLists.txt for FernRelocLib #
+###################################
 
 ###########################
 # Specify the target name #
 ###########################
 
-SET(targetname RelocLib)
+SET(targetname FernRelocLib)
 
 ################################
 # Specify the libraries to use #
@@ -23,11 +23,11 @@ SET(sources
 FernConservatory.cpp
 PoseDatabase.cpp
 RelocDatabase.cpp
-Relocaliser.cpp
 )
 
 SET(headers
 FernConservatory.h
+PixelUtils.h
 PoseDatabase.h
 RelocDatabase.h
 Relocaliser.h

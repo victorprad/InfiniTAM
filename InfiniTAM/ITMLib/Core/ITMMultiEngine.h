@@ -7,8 +7,7 @@
 #include "../Engines/LowLevel/Interface/ITMLowLevelEngine.h"
 #include "../Engines/ViewBuilding/Interface/ITMViewBuilder.h"
 #include "../Objects/Misc/ITMIMUCalibrator.h"
-#include "../../RelocLib/Relocaliser.h"
-#include "../../RelocLib/PoseDatabase.h"
+#include "../../FernRelocLib/Relocaliser.h"
 
 #include "../Engines/MultiScene/ITMActiveMapManager.h"
 #include "../Engines/MultiScene/ITMGlobalAdjustmentEngine.h"
@@ -39,8 +38,7 @@ namespace ITMLib
 		ITMIMUCalibrator *imuCalibrator;
 		ITMDenseMapper<TVoxel, TIndex> *denseMapper;
 
-		RelocLib::Relocaliser *mLoopClosureDetector;
-		RelocLib::PoseDatabase mPoseDatabase;
+		FernRelocLib::Relocaliser<float> *relocaliser;
 
 		ITMVoxelMapGraphManager<TVoxel, TIndex> *mapManager;
 		ITMActiveMapManager *mActiveDataManager;
@@ -83,6 +81,10 @@ namespace ITMLib
 
 		/// Extracts a mesh from the current scene and saves it to the model file specified by the file name
 		void SaveSceneToMesh(const char *fileName);
+
+		/// save and load the full scene and relocaliser (if any) to/from file
+		void SaveToFile();
+		void LoadFromFile();
 
 		//void writeFullTrajectory(void) const;
 		//void SaveSceneToMesh(const char *objFileName);

@@ -3,6 +3,7 @@
 #pragma once
 
 #include "../../../ORUtils/MemoryBlock.h"
+#include "../../../ORUtils/MemoryBlockPersister.h"
 
 namespace ITMLib
 {
@@ -31,6 +32,36 @@ namespace ITMLib
 		int lastFreeBlockId;
 
 		int allocatedSize;
+
+		void SaveToDirectory(const std::string &outputDirectory) const
+		{
+			std::string VBFileName = outputDirectory + "voxel.dat";
+			std::string ALFileName = outputDirectory + "alloc.dat";
+			std::string AllocSizeFileName = outputDirectory + "vba.txt";
+
+			ORUtils::MemoryBlockPersister::SaveMemoryBlock(VBFileName, *voxelBlocks, memoryType);
+			ORUtils::MemoryBlockPersister::SaveMemoryBlock(ALFileName, *allocationList, memoryType);
+
+			std::ofstream ofs(AllocSizeFileName.c_str());
+			if (!ofs) throw std::runtime_error("Could not open " + AllocSizeFileName + " for writing");
+
+			ofs << lastFreeBlockId << ' ' << allocatedSize;
+		}
+
+		void LoadFromDirectory(const std::string &inputDirectory)
+		{
+			std::string VBFileName = inputDirectory + "voxel.dat";
+			std::string ALFileName = inputDirectory + "alloc.dat";
+			std::string AllocSizeFileName = inputDirectory + "vba.txt";
+
+			ORUtils::MemoryBlockPersister::LoadMemoryBlock(VBFileName, *voxelBlocks, memoryType);
+			ORUtils::MemoryBlockPersister::LoadMemoryBlock(ALFileName, *allocationList, memoryType);
+
+			std::ifstream ifs(AllocSizeFileName.c_str());
+			if (!ifs) throw std::runtime_error("Could not open " + AllocSizeFileName + " for reading");
+
+			ifs >> lastFreeBlockId >> allocatedSize;
+		}
 
 		ITMLocalVBA(MemoryDeviceType memoryType, int noBlocks, int blockSize)
 		{

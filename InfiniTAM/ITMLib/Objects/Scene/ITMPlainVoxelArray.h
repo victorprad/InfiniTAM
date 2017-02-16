@@ -70,6 +70,14 @@ namespace ITMLib
 
 		const IndexData* getIndexData(void) const { return indexData->GetData(memoryType); }
 
+		void SaveToDirectory(const std::string &outputDirectory) const
+		{
+		}
+
+		void LoadFromDirectory(const std::string &outputDirectory)
+		{
+		}
+
 #ifdef COMPILE_WITH_METAL
 		const void *getIndexData_MB() const { return indexData->GetMetalBuffer(); }
 #endif

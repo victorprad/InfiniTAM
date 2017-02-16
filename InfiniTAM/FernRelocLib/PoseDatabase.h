@@ -6,14 +6,15 @@
 
 #include "../ORUtils/SE3Pose.h"
 
-namespace RelocLib {
-
-	class PoseDatabase {
+namespace FernRelocLib
+{
+	class PoseDatabase
+	{
 	public:
-		struct PoseInScene {
+		struct PoseInScene
+		{
 			PoseInScene(void) {}
-			PoseInScene(const ORUtils::SE3Pose & _pose, int _sceneIdx)
-				: pose(_pose), sceneIdx(_sceneIdx) {}
+			PoseInScene(const ORUtils::SE3Pose & _pose, int _sceneIdx) : pose(_pose), sceneIdx(_sceneIdx) {}
 			ORUtils::SE3Pose pose;
 			int sceneIdx;
 		};
@@ -26,6 +27,9 @@ namespace RelocLib {
 
 		const PoseInScene & retrievePose(int id) const { return mPoses[id]; }
 		PoseInScene retrieveWAPose(int k, int ids[], float weights[]) const;
+
+		void SaveToFile(const std::string &fileName);
+		void LoadFromFile(const std::string &fileName);
 
 	private:
 		std::vector<PoseInScene> mPoses;

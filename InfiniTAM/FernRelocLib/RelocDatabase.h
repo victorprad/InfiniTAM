@@ -3,10 +3,11 @@
 #pragma once
 
 #include <vector>
+#include <string>
 
-namespace RelocLib 
+namespace FernRelocLib
 {
-	class RelocDatabase 
+	class RelocDatabase
 	{
 	public:
 		RelocDatabase(int codeLength, int codeFragmentDim);
@@ -19,6 +20,9 @@ namespace RelocLib
 
 		/** @return ID of newly added entry */
 		int addEntry(const char *codeFragments);
+
+		void SaveToFile(const std::string &framesFileName) const;
+		void LoadFromFile(const std::string &filename);
 
 	private:
 		int mTotalEntries;
