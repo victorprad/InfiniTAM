@@ -207,7 +207,7 @@ namespace ORUtils {
 		_CPU_AND_GPU_CODE_ Vector3(const T *tp) { this->x = tp[0]; this->y = tp[1]; this->z = tp[2]; } // Construct from array
 		_CPU_AND_GPU_CODE_ Vector3(const T v0, const T v1, const T v2) { this->x = v0; this->y = v1; this->z = v2; } // Construct from explicit values
 		_CPU_AND_GPU_CODE_ explicit Vector3(const Vector4_<T> &u)	{ this->x = u.x; this->y = u.y; this->z = u.z; }
-		_CPU_AND_GPU_CODE_ explicit Vector3(const Vector2_<T> &u, T v0) { this->x = u.x; this->y = u.y; this->z = v0; }
+		_CPU_AND_GPU_CODE_ explicit Vector3(const Vector2_<T> &u, T v0 = T(0)) { this->x = u.x; this->y = u.y; this->z = v0; }
 
 		_CPU_AND_GPU_CODE_ inline Vector3<int> toIntRound() const {
 			return Vector3<int>((int)ROUND(this->x), (int)ROUND(this->y), (int)ROUND(this->z));
@@ -394,8 +394,8 @@ namespace ORUtils {
 		_CPU_AND_GPU_CODE_ Vector4(const T &t) { this->x = t; this->y = t; this->z = t; this->w = t; } //Scalar constructor
 		_CPU_AND_GPU_CODE_ Vector4(const T *tp) { this->x = tp[0]; this->y = tp[1]; this->z = tp[2]; this->w = tp[3]; } // Construct from array
 		_CPU_AND_GPU_CODE_ Vector4(const T v0, const T v1, const T v2, const T v3) { this->x = v0; this->y = v1; this->z = v2; this->w = v3; } // Construct from explicit values
-		_CPU_AND_GPU_CODE_ explicit Vector4(const Vector3_<T> &u, T v0) { this->x = u.x; this->y = u.y; this->z = u.z; this->w = v0; }
-		_CPU_AND_GPU_CODE_ explicit Vector4(const Vector2_<T> &u, T v0, T v1) { this->x = u.x; this->y = u.y; this->z = v0; this->w = v1; }
+		_CPU_AND_GPU_CODE_ explicit Vector4(const Vector3_<T> &u, T v0 = T(0)) { this->x = u.x; this->y = u.y; this->z = u.z; this->w = v0; }
+		_CPU_AND_GPU_CODE_ explicit Vector4(const Vector2_<T> &u, T v0 = T(0), T v1 = T(0)) { this->x = u.x; this->y = u.y; this->z = v0; this->w = v1; }
 
 		_CPU_AND_GPU_CODE_ inline Vector4<int> toIntRound() const {
 			return Vector4<int>((int)ROUND(this->x), (int)ROUND(this->y), (int)ROUND(this->z), (int)ROUND(this->w));
