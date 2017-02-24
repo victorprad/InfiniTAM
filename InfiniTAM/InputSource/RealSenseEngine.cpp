@@ -47,7 +47,7 @@ RealSenseEngine::RealSenseEngine(const char *calibFilename, Vector2i requested_i
 	data->dev->enable_stream(rs::stream::color, imageSize_rgb.x, imageSize_rgb.y, rs::format::rgb8, 60);
 
 	rs::intrinsics intrinsics_depth = data->dev->get_stream_intrinsics(rs::stream::depth);
-	rs::intrinsics intrinsics_rgb = data->dev->get_stream_intrinsics(rs::stream::color);
+	rs::intrinsics intrinsics_rgb = data->dev->get_stream_intrinsics(rs::stream::color_aligned_to_depth);
 
 	this->calib.intrinsics_d.projectionParamsSimple.fx = intrinsics_depth.fx;
 	this->calib.intrinsics_d.projectionParamsSimple.fy = intrinsics_depth.fy;
@@ -59,7 +59,7 @@ RealSenseEngine::RealSenseEngine(const char *calibFilename, Vector2i requested_i
 	this->calib.intrinsics_rgb.projectionParamsSimple.px = intrinsics_rgb.ppx;
 	this->calib.intrinsics_rgb.projectionParamsSimple.py = intrinsics_rgb.ppy;
 
-	rs::extrinsics rs_extrinsics = data->dev->get_extrinsics(rs::stream::color, rs::stream::depth);
+	rs::extrinsics rs_extrinsics = data->dev->get_extrinsics(rs::stream::color_aligned_to_depth, rs::stream::depth);
 
 	Matrix4f extrinsics;
 	extrinsics.m00 = rs_extrinsics.rotation[0]; extrinsics.m10 = rs_extrinsics.rotation[1]; extrinsics.m20 = rs_extrinsics.rotation[2];
@@ -97,7 +97,7 @@ void RealSenseEngine::getImages(ITMUChar4Image *rgbImage, ITMShortImage *rawDept
 	// get frames
 	data->dev->wait_for_frames();
 	const uint16_t * depth_frame = reinterpret_cast<const uint16_t *>(data->dev->get_frame_data(rs::stream::depth));
-	const uint8_t * color_frame = reinterpret_cast<const uint8_t*>(data->dev->get_frame_data(rs::stream::color));
+	const uint8_t * color_frame = reinterpret_cast<const uint8_t*>(data->dev->get_frame_data(rs::stream::color_aligned_to_depth));
 
 	// setup infinitam frames
 	short *rawDepth = rawDepthImage->GetData(MEMORYDEVICE_CPU);
