@@ -49,12 +49,33 @@ RealSenseEngine::RealSenseEngine(const char *calibFilename, Vector2i requested_i
 	rs::intrinsics intrinsics_depth = data->dev->get_stream_intrinsics(rs::stream::depth);
 	rs::intrinsics intrinsics_rgb = data->dev->get_stream_intrinsics(rs::stream::color);
 
-	this->calib.intrinsics_d.SetFrom(intrinsics_depth.fx, intrinsics_depth.fy,
-	                                 intrinsics_depth.ppx, intrinsics_depth.ppy);
-	this->calib.intrinsics_rgb.SetFrom(intrinsics_rgb.fx, intrinsics_rgb.fy,
-	                                 intrinsics_rgb.ppx, intrinsics_rgb.ppy);
+	this->calib.intrinsics_d.projectionParamsSimple.fx = intrinsics_depth.fx;
+	this->calib.intrinsics_d.projectionParamsSimple.fy = intrinsics_depth.fy;
+	this->calib.intrinsics_d.projectionParamsSimple.px = intrinsics_depth.ppx;
+	this->calib.intrinsics_d.projectionParamsSimple.py = intrinsics_depth.ppy;
+
+	this->calib.intrinsics_rgb.projectionParamsSimple.fx = intrinsics_rgb.fx;
+	this->calib.intrinsics_rgb.projectionParamsSimple.fy = intrinsics_rgb.fy;
+	this->calib.intrinsics_rgb.projectionParamsSimple.px = intrinsics_rgb.ppx;
+	this->calib.intrinsics_rgb.projectionParamsSimple.py = intrinsics_rgb.ppy;
+
+	rs::extrinsics rs_extrinsics = data->dev->get_extrinsics(rs::stream::color, rs::stream::depth);
+
+	Matrix4f extrinsics;
+	extrinsics.m00 = rs_extrinsics.rotation[0]; extrinsics.m10 = rs_extrinsics.rotation[1]; extrinsics.m20 = rs_extrinsics.rotation[2];
+	extrinsics.m01 = rs_extrinsics.rotation[3]; extrinsics.m11 = rs_extrinsics.rotation[4]; extrinsics.m21 = rs_extrinsics.rotation[5];
+	extrinsics.m02 = rs_extrinsics.rotation[6]; extrinsics.m12 = rs_extrinsics.rotation[7]; extrinsics.m22 = rs_extrinsics.rotation[8];
+	extrinsics.m30 = rs_extrinsics.translation[0];
+	extrinsics.m31 = rs_extrinsics.translation[1];
+	extrinsics.m32 = rs_extrinsics.translation[2];
+
+	extrinsics.m33 = 1.0f;
+	extrinsics.m03 = 0.0f; extrinsics.m13 = 0.0f; extrinsics.m23 = 0.0f;
+
+	this->calib.trafo_rgb_to_depth.SetFrom(extrinsics);
+
 	this->calib.disparityCalib.SetFrom(data->dev->get_depth_scale(), 0.0f,
-		ITMLib::ITMDisparityCalib::TRAFO_AFFINE);
+		ITMDisparityCalib::TRAFO_AFFINE);
 
 	data->dev->start();
 }
