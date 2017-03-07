@@ -9,8 +9,6 @@
 
 #ifdef COMPILE_WITH_RealSense
 
-#include "librealsense/rs.hpp"
-
 using namespace InputSource;
 using namespace ITMLib;
 
@@ -22,8 +20,10 @@ class RealSenseEngine::PrivateData
 	rs::context ctx;
 };
 
-RealSenseEngine::RealSenseEngine(const char *calibFilename, Vector2i requested_imageSize_rgb, Vector2i requested_imageSize_d)
-	: BaseImageSourceEngine(calibFilename)
+RealSenseEngine::RealSenseEngine(const char *calibFilename, bool alignColourWithDepth,
+                                 Vector2i requested_imageSize_rgb, Vector2i requested_imageSize_d)
+: BaseImageSourceEngine(calibFilename),
+  colourStream(alignColourWithDepth ? rs::stream::color_aligned_to_depth : rs::stream::color)
 {
 	this->calib.disparityCalib.SetStandard();
 	this->calib.trafo_rgb_to_depth = ITMExtrinsics();
@@ -47,7 +47,7 @@ RealSenseEngine::RealSenseEngine(const char *calibFilename, Vector2i requested_i
 	data->dev->enable_stream(rs::stream::color, imageSize_rgb.x, imageSize_rgb.y, rs::format::rgb8, 60);
 
 	rs::intrinsics intrinsics_depth = data->dev->get_stream_intrinsics(rs::stream::depth);
-	rs::intrinsics intrinsics_rgb = data->dev->get_stream_intrinsics(rs::stream::color_aligned_to_depth);
+	rs::intrinsics intrinsics_rgb = data->dev->get_stream_intrinsics(colourStream);
 
 	this->calib.intrinsics_d.projectionParamsSimple.fx = intrinsics_depth.fx;
 	this->calib.intrinsics_d.projectionParamsSimple.fy = intrinsics_depth.fy;
@@ -59,7 +59,7 @@ RealSenseEngine::RealSenseEngine(const char *calibFilename, Vector2i requested_i
 	this->calib.intrinsics_rgb.projectionParamsSimple.px = intrinsics_rgb.ppx;
 	this->calib.intrinsics_rgb.projectionParamsSimple.py = intrinsics_rgb.ppy;
 
-	rs::extrinsics rs_extrinsics = data->dev->get_extrinsics(rs::stream::color_aligned_to_depth, rs::stream::depth);
+	rs::extrinsics rs_extrinsics = data->dev->get_extrinsics(colourStream, rs::stream::depth);
 
 	Matrix4f extrinsics;
 	extrinsics.m00 = rs_extrinsics.rotation[0]; extrinsics.m10 = rs_extrinsics.rotation[1]; extrinsics.m20 = rs_extrinsics.rotation[2];
@@ -97,7 +97,7 @@ void RealSenseEngine::getImages(ITMUChar4Image *rgbImage, ITMShortImage *rawDept
 	// get frames
 	data->dev->wait_for_frames();
 	const uint16_t * depth_frame = reinterpret_cast<const uint16_t *>(data->dev->get_frame_data(rs::stream::depth));
-	const uint8_t * color_frame = reinterpret_cast<const uint8_t*>(data->dev->get_frame_data(rs::stream::color_aligned_to_depth));
+	const uint8_t * color_frame = reinterpret_cast<const uint8_t*>(data->dev->get_frame_data(colourStream));
 
 	// setup infinitam frames
 	short *rawDepth = rawDepthImage->GetData(MEMORYDEVICE_CPU);
@@ -127,8 +127,9 @@ Vector2i RealSenseEngine::getRGBImageSize(void) const { return (data!=NULL)?imag
 
 using namespace InputSource;
 
-RealSenseEngine::RealSenseEngine(const char *calibFilename, Vector2i requested_imageSize_rgb, Vector2i requested_imageSize_d)
-	: BaseImageSourceEngine(calibFilename)
+RealSenseEngine::RealSenseEngine(const char *calibFilename, bool alignColourWithDepth,
+                                 Vector2i requested_imageSize_rgb, Vector2i requested_imageSize_d)
+: BaseImageSourceEngine(calibFilename)
 {
 	printf("compiled without RealSense Windows support\n");
 }
