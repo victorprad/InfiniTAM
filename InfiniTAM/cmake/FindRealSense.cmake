@@ -10,7 +10,7 @@ set(REALSENSE_ROOT "/usr/local" CACHE FILEPATH "Root directory of librealsense")
 
 #  FIND_PATH(RealSense_ROOT librealsense.vc12 HINTS "D:/Develop/intel/librealsense")
 FIND_PATH(RealSense_INCLUDE_DIR librealsense HINTS "${REALSENSE_ROOT}/include")
-FIND_LIBRARY(RealSense_LIBRARY realsense HINTS "${REALSEMSE_ROOT}/bin/x64" "${REALSENSE_ROOT}/lib")
+FIND_LIBRARY(RealSense_LIBRARY realsense HINTS "${REALSENSE_ROOT}/bin/x64" "${REALSENSE_ROOT}/lib")
 
 # handle the QUIETLY and REQUIRED arguments and set REALSENSE_FOUND to TRUE if
 # all listed variables are TRUE
