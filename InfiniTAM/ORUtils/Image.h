@@ -13,9 +13,29 @@ namespace ORUtils
 	Represents images, templated on the pixel type
 	*/
 	template <typename T>
-	class Image : public MemoryBlock < T >
+	class Image : private MemoryBlock<T>
 	{
 	public:
+		/** Expose public MemoryBlock<T> member variables. */
+		using MemoryBlock<T>::dataSize;
+
+		/** Expose public MemoryBlock<T> datatypes. */
+		using typename MemoryBlock<T>::MemoryCopyDirection;
+		using MemoryBlock<T>::CPU_TO_CPU;
+		using MemoryBlock<T>::CPU_TO_CUDA;
+		using MemoryBlock<T>::CUDA_TO_CPU;
+		using MemoryBlock<T>::CUDA_TO_CUDA;
+
+		/** Expose public MemoryBlock<T> member functions. */
+		using MemoryBlock<T>::Clear;
+		using MemoryBlock<T>::GetData;
+		using MemoryBlock<T>::GetElement;
+#ifdef COMPILE_WITH_METAL
+		using MemoryBlock<T>::GetMetalBuffer();
+#endif
+		using MemoryBlock<T>::UpdateDeviceFromHost;
+		using MemoryBlock<T>::UpdateHostFromDevice;
+
 		/** Size of the image in pixels. */
 		Vector2<int> noDims;
 
@@ -40,26 +60,20 @@ namespace ORUtils
 			this->noDims = noDims;
 		}
 
-		/** Resize an image, loosing all old image data.
+		/** Resize an image, losing all old image data.
 		Essentially any previously allocated data is
 		released, new memory is allocated.
 		*/
-		void ChangeDims(Vector2<int> newDims, bool noResize = false)
+		void ChangeDims(Vector2<int> newDims, bool forceReallocation = true)
 		{
-			if (noResize && noDims.x > newDims.x && noDims.y > newDims.y)
-				this->noDims = newDims;
-			else
-				if (newDims != noDims)
-				{
-					this->noDims = newDims;
+			MemoryBlock<T>::Resize(newDims.x * newDims.y, forceReallocation);
+			noDims = newDims;
+		}
 
-					bool allocate_CPU = this->isAllocated_CPU;
-					bool allocate_CUDA = this->isAllocated_CUDA;
-					bool metalCompatible = this->isMetalCompatible;
-
-					this->Free();
-					this->Allocate(newDims.x * newDims.y, allocate_CPU, allocate_CUDA, metalCompatible);
-				}
+		void SetFrom(const Image<T> *source, MemoryCopyDirection memoryCopyDirection)
+		{
+			ChangeDims(source->noDims);
+			MemoryBlock<T>::SetFrom(source, memoryCopyDirection);
 		}
 
 		void Swap(Image<T>& rhs)
