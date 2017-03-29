@@ -128,21 +128,21 @@ namespace ORUtils
 		Essentially any previously allocated data is
 		released, new memory is allocated.
 		*/
-		void ChangeDims(size_t newDim, bool noResize = false)
+		void Resize(size_t newDataSize, bool forceReallocation = true)
 		{
-			if(newDim == dataSize) return;
+			if(newDataSize == dataSize) return;
 
-			if(!noResize || dataSize < newDim)
+			if(newDataSize > dataSize || forceReallocation)
 			{
 				bool allocate_CPU = this->isAllocated_CPU;
 				bool allocate_CUDA = this->isAllocated_CUDA;
 				bool metalCompatible = this->isMetalCompatible;
 
 				this->Free();
-				this->Allocate(newDim, allocate_CPU, allocate_CUDA, metalCompatible);
+				this->Allocate(newDataSize, allocate_CPU, allocate_CUDA, metalCompatible);
 			}
 
-			this->dataSize = newDim;
+			this->dataSize = newDataSize;
 		}
 
 		/** Transfer data from CPU to GPU, if possible. */
@@ -163,6 +163,7 @@ namespace ORUtils
 		/** Copy data */
 		void SetFrom(const MemoryBlock<T> *source, MemoryCopyDirection memoryCopyDirection)
 		{
+			Resize(source->dataSize);
 			switch (memoryCopyDirection)
 			{
 			case CPU_TO_CPU:
