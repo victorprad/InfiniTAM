@@ -124,6 +124,27 @@ namespace ORUtils
 #endif
 		}
 
+		/** Resize a memory block, losing all old data.
+		Essentially any previously allocated data is
+		released, new memory is allocated.
+		*/
+		void Resize(size_t newDataSize, bool forceReallocation = true)
+		{
+			if(newDataSize == dataSize) return;
+
+			if(newDataSize > dataSize || forceReallocation)
+			{
+				bool allocate_CPU = this->isAllocated_CPU;
+				bool allocate_CUDA = this->isAllocated_CUDA;
+				bool metalCompatible = this->isMetalCompatible;
+
+				this->Free();
+				this->Allocate(newDataSize, allocate_CPU, allocate_CUDA, metalCompatible);
+			}
+
+			this->dataSize = newDataSize;
+		}
+
 		/** Transfer data from CPU to GPU, if possible. */
 		void UpdateDeviceFromHost() const {
 #ifndef COMPILE_WITHOUT_CUDA
@@ -142,6 +163,7 @@ namespace ORUtils
 		/** Copy data */
 		void SetFrom(const MemoryBlock<T> *source, MemoryCopyDirection memoryCopyDirection)
 		{
+			Resize(source->dataSize);
 			switch (memoryCopyDirection)
 			{
 			case CPU_TO_CPU:
