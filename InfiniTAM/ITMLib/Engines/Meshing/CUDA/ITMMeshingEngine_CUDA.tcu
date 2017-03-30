@@ -45,7 +45,7 @@ void ITMMeshingEngine_CUDA<TVoxel, ITMVoxelBlockHash>::MeshScene(ITMMesh *mesh, 
 		dim3 cudaBlockSize(256); 
 		dim3 gridSize((int)ceil((float)noTotalEntries / (float)cudaBlockSize.x));
 
-		findAllocateBlocks << <gridSize, cudaBlockSize >> >(visibleBlockGlobalPos_device, hashTable, noTotalEntries);
+		findAllocateBlocks<< <gridSize, cudaBlockSize >> >(visibleBlockGlobalPos_device, hashTable, noTotalEntries);
 		ORcudaKernelCheck;
 	}
 
@@ -72,17 +72,6 @@ ITMMeshingEngine_CUDA<TVoxel,ITMPlainVoxelArray>::~ITMMeshingEngine_CUDA(void)
 template<class TVoxel>
 void ITMMeshingEngine_CUDA<TVoxel, ITMPlainVoxelArray>::MeshScene(ITMMesh *mesh, const ITMScene<TVoxel, ITMPlainVoxelArray> *scene)
 {}
-
-__global__ void findAllocateBlocks(Vector4s *visibleBlockGlobalPos, const ITMHashEntry *hashTable, int noTotalEntries)
-{
-	int entryId = threadIdx.x + blockIdx.x * blockDim.x;
-	if (entryId > noTotalEntries - 1) return;
-
-	const ITMHashEntry &currentHashEntry = hashTable[entryId];
-
-	if (currentHashEntry.ptr >= 0) 
-		visibleBlockGlobalPos[currentHashEntry.ptr] = Vector4s(currentHashEntry.pos.x, currentHashEntry.pos.y, currentHashEntry.pos.z, 1);
-}
 
 template<class TVoxel>
 __global__ void meshScene_device(ITMMesh::Triangle *triangles, unsigned int *noTriangles_device, float factor, int noTotalEntries, 
