@@ -8,9 +8,17 @@ namespace ITMLib
 {
 	class ITMCompositeTracker : public ITMTracker
 	{
+	public:
+		enum Policy
+		{
+			POLICY_REFINE,
+			POLICY_STOP_ON_FIRST_SUCCESS
+		};
+
 	private:
 		ITMTracker **trackers;
 		int noTrackers;
+		Policy trackingPolicy;
 
 	public:
 		void SetTracker(ITMTracker *tracker, int trackerId)
@@ -19,8 +27,9 @@ namespace ITMLib
 			trackers[trackerId] = tracker;
 		}
 
-		explicit ITMCompositeTracker(int noTrackers)
+		explicit ITMCompositeTracker(int noTrackers, Policy trackingPolicy = POLICY_REFINE)
 			: noTrackers(noTrackers)
+			, trackingPolicy(trackingPolicy)
 		{
 			trackers = new ITMTracker*[noTrackers];
 			for (int i = 0; i < noTrackers; i++) trackers[i] = NULL;
@@ -36,7 +45,15 @@ namespace ITMLib
 
 		void TrackCamera(ITMTrackingState *trackingState, const ITMView *view)
 		{
-			for (int i = 0; i < noTrackers; i++) trackers[i]->TrackCamera(trackingState, view);
+			for (int i = 0; i < noTrackers; i++)
+			{
+				trackers[i]->TrackCamera(trackingState, view);
+
+				// If the policy is POLICY_STOP_ON_FIRST_SUCCESS and the tracking succeeded, then early out.
+				if (trackingPolicy == POLICY_STOP_ON_FIRST_SUCCESS
+					&& trackingState->trackerResult == ITMTrackingState::TRACKING_GOOD)
+					break;
+			}
 		}
 
 		void UpdateInitialPose(ITMTrackingState *trackingState)
