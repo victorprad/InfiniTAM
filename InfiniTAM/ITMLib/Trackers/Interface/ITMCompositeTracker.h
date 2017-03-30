@@ -9,27 +9,27 @@ namespace ITMLib
 	class ITMCompositeTracker : public ITMTracker
 	{
 	private:
-		ITMTracker **trackers; int noTrackers;
-	public:
+		ITMTracker **trackers;
+		int noTrackers;
 
+	public:
 		void SetTracker(ITMTracker *tracker, int trackerId)
 		{
-			if (trackers[trackerId] != NULL) delete trackers[trackerId];
+			delete trackers[trackerId];
 			trackers[trackerId] = tracker;
 		}
 
-		ITMCompositeTracker(int noTrackers)
+		explicit ITMCompositeTracker(int noTrackers)
+			: noTrackers(noTrackers)
 		{
 			trackers = new ITMTracker*[noTrackers];
 			for (int i = 0; i < noTrackers; i++) trackers[i] = NULL;
-
-			this->noTrackers = noTrackers;
 		}
 
-		~ITMCompositeTracker(void)
+		~ITMCompositeTracker()
 		{
 			for (int i = 0; i < noTrackers; i++)
-				if (trackers[i] != NULL) delete trackers[i];
+				delete trackers[i];
 
 			delete [] trackers;
 		}
@@ -49,6 +49,7 @@ namespace ITMLib
 			for (int i = 0; i < noTrackers; i++) if (trackers[i]->requiresColourRendering()) return true;
 			return false;
 		}
+
 		bool requiresDepthReliability() const
 		{
 			for (int i = 0; i < noTrackers; i++) if (trackers[i]->requiresDepthReliability()) return true;
