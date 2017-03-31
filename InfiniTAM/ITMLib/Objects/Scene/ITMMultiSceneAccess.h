@@ -98,7 +98,7 @@ _CPU_AND_GPU_CODE_ inline Vector4f readFromSDF_color4u_interpolated(const TMulti
 {
 	typedef typename TMultiIndex::IndexType TIndex;
 
-	Vector4f accu = 0.0f;
+	Vector4f accu(0.0f);
 	for (int localMapId = 0; localMapId < voxelIndex->numLocalMaps; ++localMapId) 
 	{
 		Vector3f point_local = voxelIndex->poses_vs[localMapId] * point;
