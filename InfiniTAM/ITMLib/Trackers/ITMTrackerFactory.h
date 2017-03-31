@@ -98,7 +98,7 @@ namespace ITMLib
 	/**
 	 * \brief Makes a tracker of the type specified in the trackerConfig string.
 	 */
-	ITMTracker *Make(const char *trackerConfig, const Vector2i & imgSize_rgb, const Vector2i & imgSize_d, const ITMLibSettings *settings, const ITMLowLevelEngine *lowLevelEngine,
+	ITMTracker *Make(ITMLibSettings::DeviceType deviceType, const char *trackerConfig, const Vector2i & imgSize_rgb, const Vector2i & imgSize_d, const ITMLowLevelEngine *lowLevelEngine,
 		ITMIMUCalibrator *imuCalibrator, const ITMSceneParams *sceneParams) const
 	{
 		ORUtils::KeyValueConfig cfg(trackerConfig);
@@ -120,7 +120,7 @@ namespace ITMLib
 		}
 		if (maker == NULL) DIEWITHEXCEPTION("Unknown tracker type");
 
-		ITMTracker *ret = (*(maker->make))(imgSize_rgb, imgSize_d, settings->deviceType, cfg, lowLevelEngine, imuCalibrator, sceneParams);
+		ITMTracker *ret = (*(maker->make))(imgSize_rgb, imgSize_d, deviceType, cfg, lowLevelEngine, imuCalibrator, sceneParams);
 		if (ret->requiresColourRendering()) {
 			printf("Assuming a voxel type with colour information!");
 		}
@@ -134,7 +134,7 @@ namespace ITMLib
 	ITMTracker *Make(const Vector2i & imgSize_rgb, const Vector2i & imgSize_d, const ITMLibSettings *settings, const ITMLowLevelEngine *lowLevelEngine,
 		ITMIMUCalibrator *imuCalibrator, const ITMSceneParams *sceneParams) const
 	{
-		return Make(settings->trackerConfig, imgSize_rgb, imgSize_d, settings, lowLevelEngine, imuCalibrator, sceneParams);
+		return Make(settings->deviceType, settings->trackerConfig, imgSize_rgb, imgSize_d, lowLevelEngine, imuCalibrator, sceneParams);
 	}
 
 	//#################### PUBLIC STATIC MEMBER FUNCTIONS ####################
