@@ -2,6 +2,10 @@
 
 #pragma once
 
+#ifdef COMPILE_WITH_RealSense
+#include "librealsense/rs.hpp"
+#endif
+
 #include "ImageSourceEngine.h"
 
 #if (!defined USING_CMAKE) && (defined _MSC_VER)
@@ -21,8 +25,14 @@ private:
 	PrivateData *data; bool dataAvailable;
 
 	Vector2i imageSize_rgb, imageSize_d;
+
+#ifdef COMPILE_WITH_RealSense
+	rs::stream colourStream;
+#endif
+
 public:
-	RealSenseEngine(const char *calibFilename, Vector2i imageSize_rgb = Vector2i(640, 480), Vector2i imageSize_d = Vector2i(640, 480));
+	RealSenseEngine(const char *calibFilename, bool alignColourWithDepth = true,
+	                Vector2i imageSize_rgb = Vector2i(640, 480), Vector2i imageSize_d = Vector2i(640, 480));
 	~RealSenseEngine();
 
 	bool hasMoreImages(void) const;
