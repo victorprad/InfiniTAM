@@ -11,7 +11,7 @@ fi
 if [ ! -d librealsense ]
 then
   /bin/rm -fR tmp
-  git clone https://github.com/IntelRealSense/librealsense tmp > /dev/null
+  git clone git@github.com:sgolodetz/librealsense.git tmp > /dev/null
   mv tmp librealsense
 fi
 
