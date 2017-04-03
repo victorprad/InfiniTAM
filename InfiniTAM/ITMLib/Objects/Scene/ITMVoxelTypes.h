@@ -30,7 +30,7 @@ struct ITMVoxel_f_rgb
 	{
 		sdf = SDF_initialValue();
 		w_depth = 0;
-		clr = (uchar)0;
+		clr = Vector3u((uchar)0);
 		w_color = 0;
 	}
 };
@@ -63,7 +63,7 @@ struct ITMVoxel_s_rgb
 	{
 		sdf = SDF_initialValue();
 		w_depth = 0;
-		clr = (uchar)0;
+		clr = Vector3u((uchar)0);
 		w_color = 0;
 	}
 };

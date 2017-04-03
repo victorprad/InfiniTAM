@@ -72,7 +72,7 @@ _CPU_AND_GPU_CODE_ inline void filterSubsampleWithHoles(DEVICEPTR(Vector4f) *ima
 	const CONSTPTR(Vector4f) *imageData_in, Vector2i oldDims)
 {
 	int src_pos_x = x * 2, src_pos_y = y * 2;
-	Vector4f pixel_out = 0.0f, pixel_in; float no_good_pixels = 0.0f;
+	Vector4f pixel_out(0.0f), pixel_in; float no_good_pixels = 0.0f;
 
 	pixel_in = imageData_in[(src_pos_x + 0) + (src_pos_y + 0) * oldDims.x];
 	if (pixel_in.w >= 0) { pixel_out += pixel_in; no_good_pixels++; }
