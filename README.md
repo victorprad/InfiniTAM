@@ -1,4 +1,4 @@
-#InfiniTAM
+# InfiniTAM
 
 This is the software bundle "InfiniTAM",  the current version is maintained by:
 
@@ -15,9 +15,9 @@ For more information about InfiniTAM please visit the project website <http://ww
 
 Other related projects can be found in the Oxford Active Vision Library <http://www.oxvisionlib.org>.
 
-#1. Building the System
+# 1. Building the System
 
-###1.1 Requirements
+### 1.1 Requirements
 
 Several 3rd party libraries are needed for compiling InfiniTAM. The given version numbers are checked and working, but different versions might be fine as well. Some of the libraries are optional, and skipping them will reduce functionality.
 
@@ -58,7 +58,7 @@ Several 3rd party libraries are needed for compiling InfiniTAM. The given versio
     OPTIONAL, builds a nice reference manual
     available at http://www.doxygen.org/
 
-###1.2 Build Process
+### 1.2 Build Process
 
   To compile the system, use the standard cmake approach:
 ```
@@ -74,7 +74,7 @@ Several 3rd party libraries are needed for compiling InfiniTAM. The given versio
   This will create a new directory doxygen-html/ containing all the
 documentation.
 
-###1.3 Odds and Ends
+### 1.3 Odds and Ends
 
 Padding the data structure ITMVoxel in ITMLibDefines.h with one extra byte may or may not improve the overall performance on certain GPUs. On a NVidia GTX 680 it appears to do, on a GTX 780 it does not. Have a try yourself if you need the speed.
 
@@ -93,7 +93,7 @@ If a version of GLUT other than freeglut is used, the InfiniTAM sample applicati
 Some sensors may need a small change to work correctly with OpenNI, the changes are described [here](http://com.occipital.openni.s3.amazonaws.com/Structure%20Sensor%20OpenNI2%20Quick%20Start%20Guide.pdf).
 
 
-#2. Sample Programs
+# 2. Sample Programs
 
 The build process should result in an executable InfiniTAM, which is the main sample program. For a version without visualisation, try InfiniTAM_cli. If compiled with OpenNI support, both should run out-of-the-box without problems for live reconstruction. If you have calibration information for your specific device, you can pass it as the first argument to the program, e.g.:
 ```
@@ -106,7 +106,7 @@ If no OpenNI support has been compiled in, the program can be used for offline p
 The arguments are essentially masks for sprintf and the %04i will be replaced by a running number, accordingly.
 
 
-#3. Additional Documentation
+# 3. Additional Documentation
 
 Apart from the doxygen documentation there should also be a technical report
 shipped along with this package. It is also available from the official project
@@ -148,7 +148,7 @@ year = 2014
 
 ------
 
-###History:
+### History:
 
 - 2015-JUL-10: updated dependencies, added reference to ISMAR paper
 - 2014-OCT-06: initial public release
