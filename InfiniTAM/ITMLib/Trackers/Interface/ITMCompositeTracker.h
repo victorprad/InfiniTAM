@@ -64,6 +64,8 @@ namespace ITMLib
 
 		void TrackCamera(ITMTrackingState *trackingState, const ITMView *view)
 		{
+			trackingState->trackerResult = ITMTrackingState::TRACKING_FAILED;
+
 			for (size_t i = 0, size = trackers.size(); i < size; ++i)
 			{
 				if (!trackers[i]->CanKeepTracking()) continue;
