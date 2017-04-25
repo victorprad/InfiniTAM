@@ -62,7 +62,7 @@ namespace ITMLib
 				trackers[i]->TrackCamera(trackingState, view);
 
 				if (trackingPolicy == POLICY_SEQUENTIAL ||
-						(trackingPolicy == POLICY_STOP_ON_FIRST_SUCCESS && trackingState->trackerResult == ITMTrackingState::TRACKING_GOOD))
+				    (trackingPolicy == POLICY_STOP_ON_FIRST_SUCCESS && trackingState->trackerResult == ITMTrackingState::TRACKING_GOOD))
 				{
 					break;
 				}
