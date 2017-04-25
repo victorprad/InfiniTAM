@@ -12,21 +12,22 @@ ITMFileBasedTracker::ITMFileBasedTracker(const std::string &poseMask_) :
 		frameCount(0)
 {}
 
+bool ITMFileBasedTracker::CanKeepTracking() const
+{
+	std::ifstream poseFile(GetCurrentFilename());
+	return poseFile.is_open();
+}
+
 void ITMFileBasedTracker::TrackCamera(ITMTrackingState *trackingState, const ITMView *view)
 {
-	// Fill the mask
-	static const int BUF_SIZE = 2048; // Same as InputSource
-	char framePoseFilename[BUF_SIZE];
-	sprintf(framePoseFilename, poseMask.c_str(), frameCount);
+	trackingState->trackerResult = ITMTrackingState::TRACKING_FAILED;
+
+	// Try to open the file
+	std::ifstream poseFile(GetCurrentFilename());
 
 	// Always increment frameCount, this allows skipping missing files that could correspond
 	// to frames where tracking failed during capture.
 	++frameCount;
-
-	trackingState->trackerResult = ITMTrackingState::TRACKING_FAILED;
-
-	// Try to open the file
-	std::ifstream poseFile(framePoseFilename);
 
 	// File not found, signal tracking failure.
 	if (!poseFile)
@@ -48,6 +49,15 @@ void ITMFileBasedTracker::TrackCamera(ITMTrackingState *trackingState, const ITM
 		trackingState->trackerResult = ITMTrackingState::TRACKING_GOOD;
 		trackingState->pose_d->SetInvM(invPose);
 	}
+}
+
+std::string ITMFileBasedTracker::GetCurrentFilename() const
+{
+	// Fill the mask
+	static const int BUF_SIZE = 2048; // Same as InputSource
+	char framePoseFilename[BUF_SIZE];
+	sprintf(framePoseFilename, poseMask.c_str(), frameCount);
+	return framePoseFilename;
 }
 
 }

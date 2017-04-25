@@ -16,6 +16,7 @@ namespace ITMLib
 		size_t frameCount;
 
 	public:
+		bool CanKeepTracking() const;
 		void TrackCamera(ITMTrackingState *trackingState, const ITMView *view);
 
 		bool requiresColourRendering() const { return false; }
@@ -23,5 +24,8 @@ namespace ITMLib
 		bool requiresPointCloudRendering() const { return false; }
 
 		explicit ITMFileBasedTracker(const std::string &poseMask);
+
+	private:
+		std::string GetCurrentFilename() const;
 	};
 }
