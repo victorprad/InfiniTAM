@@ -14,6 +14,12 @@ namespace ITMLib
 	class ITMTracker
 	{
 	public:
+		/** Gets whether the tracker can keep tracking or not.
+		    Can be used to signal e.g. the end of a sequence
+		    of file-based poses, or the failure of an IMU.
+		*/
+		virtual bool CanKeepTracking() const { return true; }
+
 		/** Localize a View in the given scene. The result is
 		    currently stored as an attribute in trackingState.
 		*/
