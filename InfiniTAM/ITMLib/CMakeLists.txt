@@ -105,7 +105,6 @@ Engines/Meshing/CPU/ITMMultiMeshingEngine_CPU.h
 
 ##
 SET(ITMLIB_ENGINES_MESHING_CUDA_SOURCES
-Engines/Meshing/CUDA/ITMMeshingEngine_CUDA.cu
 Engines/Meshing/CUDA/ITMMeshingEngine_CUDA.tcu
 Engines/Meshing/CUDA/ITMMultiMeshingEngine_CUDA.tcu
 )

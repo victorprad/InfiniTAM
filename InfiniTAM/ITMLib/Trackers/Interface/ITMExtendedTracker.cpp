@@ -541,7 +541,7 @@ void ITMExtendedTracker::TrackCamera(ITMTrackingState *trackingState, const ITMV
 			}
 
 			// check if error increased. If so, revert
-			if ((noValidPoints_new <= 0) || (f_new > f_old))
+			if ((noValidPoints_new <= 0) || (f_new >= f_old))
 			{
 				trackingState->pose_d->SetFrom(&lastKnownGoodPose);
 				approxInvPose = trackingState->pose_d->GetInvM();

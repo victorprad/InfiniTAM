@@ -401,9 +401,9 @@ namespace ITMLib
 		dTracker->SetupLevels(numIterationsCoarse, numIterationsFine,
 			outlierDistanceCoarse, outlierDistanceFine);
 
-		ITMCompositeTracker *compositeTracker = new ITMCompositeTracker(2);
-		compositeTracker->SetTracker(new ITMIMUTracker(imuCalibrator), 0);
-		compositeTracker->SetTracker(dTracker, 1);
+		ITMCompositeTracker *compositeTracker = new ITMCompositeTracker;
+		compositeTracker->AddTracker(new ITMIMUTracker(imuCalibrator));
+		compositeTracker->AddTracker(dTracker);
 		return compositeTracker;
 	}
 
@@ -417,9 +417,9 @@ namespace ITMLib
 				lowLevelEngine, imuCalibrator, sceneParams);
 		if (dTracker == NULL) DIEWITHEXCEPTION("Failed to make extended tracker"); // Should never happen though
 
-		ITMCompositeTracker *compositeTracker = new ITMCompositeTracker(2);
-		compositeTracker->SetTracker(new ITMIMUTracker(imuCalibrator), 0);
-		compositeTracker->SetTracker(dTracker, 1);
+		ITMCompositeTracker *compositeTracker = new ITMCompositeTracker;
+		compositeTracker->AddTracker(new ITMIMUTracker(imuCalibrator));
+		compositeTracker->AddTracker(dTracker);
 		return compositeTracker;
 	}
 
