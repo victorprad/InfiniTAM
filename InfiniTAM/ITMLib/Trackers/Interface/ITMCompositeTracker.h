@@ -12,6 +12,7 @@ namespace ITMLib
 		enum Policy
 		{
 			POLICY_REFINE,
+			POLICY_SEQUENTIAL,
 			POLICY_STOP_ON_FIRST_SUCCESS
 		};
 
@@ -43,16 +44,28 @@ namespace ITMLib
 			delete [] trackers;
 		}
 
+		bool CanKeepTracking() const
+		{
+			for (int i = 0; i < noTrackers; i++)
+			{
+				if (trackers[i]->CanKeepTracking()) return true;
+			}
+			return false;
+		}
+
 		void TrackCamera(ITMTrackingState *trackingState, const ITMView *view)
 		{
 			for (int i = 0; i < noTrackers; i++)
 			{
+				if (!trackers[i]->CanKeepTracking()) continue;
+
 				trackers[i]->TrackCamera(trackingState, view);
 
-				// If the policy is POLICY_STOP_ON_FIRST_SUCCESS and the tracking succeeded, then early out.
-				if (trackingPolicy == POLICY_STOP_ON_FIRST_SUCCESS
-					&& trackingState->trackerResult == ITMTrackingState::TRACKING_GOOD)
+				if (trackingPolicy == POLICY_SEQUENTIAL ||
+						(trackingPolicy == POLICY_STOP_ON_FIRST_SUCCESS && trackingState->trackerResult == ITMTrackingState::TRACKING_GOOD))
+				{
 					break;
+				}
 			}
 		}
 
@@ -84,4 +97,3 @@ namespace ITMLib
 		ITMCompositeTracker& operator=(const ITMCompositeTracker&);
 	};
 }
-
