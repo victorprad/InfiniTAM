@@ -55,11 +55,24 @@ namespace ITMLib
 
 		bool CanKeepTracking() const
 		{
-			for (size_t i = 0, size = trackers.size(); i < size; ++i)
+			if (trackingPolicy == POLICY_REFINE)
 			{
-				if (trackers[i]->CanKeepTracking()) return true;
+				// All of the trackers must still be able to track when using refine.
+				for (size_t i = 0, size = trackers.size(); i < size; ++i)
+				{
+					if (!trackers[i]->CanKeepTracking()) return false;
+				}
+				return true;
 			}
-			return false;
+			else
+			{
+				// Only one of the trackers must still be able to track when using other policies.
+				for (size_t i = 0, size = trackers.size(); i < size; ++i)
+				{
+					if (trackers[i]->CanKeepTracking()) return true;
+				}
+				return false;
+			}
 		}
 
 		void TrackCamera(ITMTrackingState *trackingState, const ITMView *view)
