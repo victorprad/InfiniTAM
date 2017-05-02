@@ -26,7 +26,7 @@ namespace ITMLib
 		const Matrix4f pose_M, const Vector4f intrinsics, const Vector2i imgSize, float voxelSize, RenderingBlock *renderingBlocks,
 		uint *noTotalBlocks);
 
-	__global__ void fillBlocks_device(const uint *noTotalBlocks, const RenderingBlock *renderingBlocks,
+	__global__ void fillBlocks_device(uint noTotalBlocks, const RenderingBlock *renderingBlocks,
 		Vector2i imgSize, Vector2f *minmaxData);
 
 	__global__ void findMissingPoints_device(int *fwdProjMissingPoints, uint *noMissingPoints, const Vector2f *minmaximg,
