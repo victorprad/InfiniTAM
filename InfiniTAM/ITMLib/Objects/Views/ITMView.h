@@ -37,16 +37,6 @@ namespace ITMLib
 		// confidence based on distance from center
 		ITMFloatImage *depthConfidence;
 
-		ITMView(const ITMRGBDCalib& calibration)
-		: calib(calibration)
-		, rgb(NULL)
-		, rgb_prev(NULL)
-		, depth(NULL)
-		, depthNormal(NULL)
-		, depthUncertainty(NULL)
-		, depthConfidence(NULL)
-		{}
-
 		ITMView(const ITMRGBDCalib& calibration, Vector2i imgSize_rgb, Vector2i imgSize_d, bool useGPU)
 		: calib(calibration)
 		{
