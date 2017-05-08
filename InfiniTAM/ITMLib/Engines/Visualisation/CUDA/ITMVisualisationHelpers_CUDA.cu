@@ -104,13 +104,13 @@ __global__ void ITMLib::checkProjectAndSplitBlocks_device(const ITMHashEntry *ha
 	CreateRenderingBlocks(renderingBlocks, out_offset, upperLeft, lowerRight, zRange);
 }
 
-__global__ void ITMLib::fillBlocks_device(const uint *noTotalBlocks, const RenderingBlock *renderingBlocks,
+__global__ void ITMLib::fillBlocks_device(uint noTotalBlocks, const RenderingBlock *renderingBlocks,
 	Vector2i imgSize, Vector2f *minmaxData)
 {
 	int x = threadIdx.x;
 	int y = threadIdx.y;
 	int block = blockIdx.x * 4 + blockIdx.y;
-	if (block >= *noTotalBlocks) return;
+	if (block >= noTotalBlocks) return;
 
 	const RenderingBlock & b(renderingBlocks[block]);
 	int xpos = b.upperLeft.x + x;

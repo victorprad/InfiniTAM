@@ -73,13 +73,13 @@ void ITMMultiVisualisationEngine_CUDA<TVoxel, TIndex>::CreateExpectedDepths(cons
 
 		uint noTotalBlocks;
 		ORcudaSafeCall(cudaMemcpy(&noTotalBlocks, noTotalBlocks_device, sizeof(uint), cudaMemcpyDeviceToHost));
+		if (noTotalBlocks == 0) continue;
 		if (noTotalBlocks > (unsigned)MAX_RENDERING_BLOCKS) noTotalBlocks = MAX_RENDERING_BLOCKS;
-		if (noTotalBlocks <= 0) continue;
 
 		// go through rendering blocks, fill minmaxData
 		blockSize = dim3(16, 16);
 		gridSize = dim3((unsigned int)ceil((float)noTotalBlocks / 4.0f), 4);
-		fillBlocks_device << <gridSize, blockSize >> > (noTotalBlocks_device, renderingBlockList_device, imgSize, minmaxData);
+		fillBlocks_device << <gridSize, blockSize >> > (noTotalBlocks, renderingBlockList_device, imgSize, minmaxData);
 		ORcudaKernelCheck;
 	}
 }
