@@ -11,6 +11,7 @@
 #include "Interface/ITMCompositeTracker.h"
 #include "Interface/ITMIMUTracker.h"
 #include "Interface/ITMFileBasedTracker.h"
+#include "Interface/ITMForceFailTracker.h"
 #include "Interface/ITMTracker.h"
 #include "../Engines/LowLevel/Interface/ITMLowLevelEngine.h"
 #include "../Utils/ITMLibSettings.h"
@@ -52,6 +53,8 @@ namespace ITMLib
 			TRACKER_IMU,
 			//! Identifies a tracker based on depth and colour images and IMU measurement
 			TRACKER_EXTENDEDIMU,
+			//! Identifies a tracker that forces tracking to fail
+			TRACKER_FORCEFAIL,
 		} TrackerType;
 
 		struct Maker {
@@ -81,6 +84,7 @@ namespace ITMLib
 			makers.push_back(Maker("file", "File based tracker", TRACKER_FILE, &MakeFileBasedTracker));
 			makers.push_back(Maker("imuicp", "Combined IMU and depth based ICP tracker", TRACKER_IMU, &MakeIMUTracker));
 			makers.push_back(Maker("extendedimu", "Combined IMU and depth + colour ICP tracker", TRACKER_EXTENDEDIMU, &MakeExtendedIMUTracker));
+			makers.push_back(Maker("forcefail", "Force fail tracker", TRACKER_FORCEFAIL, &MakeForceFailTracker));
 		}
 
 	public:
@@ -198,7 +202,7 @@ namespace ITMLib
 			ret = new ITMColorTracker_CPU(imgSize_rgb, &(levels[0]), static_cast<int>(levels.size()), lowLevelEngine);
 #endif
 			break;
-        	}
+		}
 
 		if (ret==NULL) DIEWITHEXCEPTION("Failed to make colour tracker");
 		return ret;
@@ -322,21 +326,21 @@ namespace ITMLib
 		case ITMLibSettings::DEVICE_CUDA:
 #ifndef COMPILE_WITHOUT_CUDA
 			ret = new ITMExtendedTracker_CUDA(imgSize_d,
-											  imgSize_rgb,
-											  useDepth,
-											  useColour,
-											  colourWeight,
-											  &(levels[0]),
-											  static_cast<int>(levels.size()),
-											  smallStepSizeCriterion,
-											  failureDetectorThd,
-											  sceneParams->viewFrustum_min,
-											  sceneParams->viewFrustum_max,
-											  minColourGradient,
-											  tukeyCutOff,
-											  framesToSkip,
-											  framesToWeight,
-											  lowLevelEngine);
+												imgSize_rgb,
+												useDepth,
+												useColour,
+												colourWeight,
+												&(levels[0]),
+												static_cast<int>(levels.size()),
+												smallStepSizeCriterion,
+												failureDetectorThd,
+												sceneParams->viewFrustum_min,
+												sceneParams->viewFrustum_max,
+												minColourGradient,
+												tukeyCutOff,
+												framesToSkip,
+												framesToWeight,
+												lowLevelEngine);
 #endif
 			break;
 		case ITMLibSettings::DEVICE_METAL:
@@ -436,6 +440,15 @@ namespace ITMLib
 		cfg.parseStrProperty("mask", "mask for the saved pose text files", fileMask, verbose);
 
 		return new ITMFileBasedTracker(fileMask);
+	}
+
+	/**
+	 * \brief Makes a force fail tracker.
+	 */
+	static ITMTracker *MakeForceFailTracker(const Vector2i& imgSize_rgb, const Vector2i& imgSize_d, ITMLibSettings::DeviceType deviceType, const ORUtils::KeyValueConfig & cfg,
+		const ITMLowLevelEngine *lowLevelEngine, ITMIMUCalibrator *imuCalibrator, const ITMSceneParams *sceneParams)
+	{
+		return new ITMForceFailTracker;
 	}
 };
 }
