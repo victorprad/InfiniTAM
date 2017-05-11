@@ -14,7 +14,7 @@ ITMFileBasedTracker::ITMFileBasedTracker(const std::string &poseMask_) :
 
 bool ITMFileBasedTracker::CanKeepTracking() const
 {
-	std::ifstream poseFile(GetCurrentFilename());
+	std::ifstream poseFile(GetCurrentFilename().c_str());
 	return poseFile.is_open();
 }
 
@@ -23,7 +23,7 @@ void ITMFileBasedTracker::TrackCamera(ITMTrackingState *trackingState, const ITM
 	trackingState->trackerResult = ITMTrackingState::TRACKING_FAILED;
 
 	// Try to open the file
-	std::ifstream poseFile(GetCurrentFilename());
+	std::ifstream poseFile(GetCurrentFilename().c_str());
 
 	// Always increment frameCount, this allows skipping missing files that could correspond
 	// to frames where tracking failed during capture.
