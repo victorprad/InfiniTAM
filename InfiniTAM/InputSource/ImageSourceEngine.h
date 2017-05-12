@@ -77,7 +77,7 @@ namespace InputSource {
 	public:
 		ImageMaskPathGenerator(const char *rgbImageMask, const char *depthImageMask);
 		std::string getRgbImagePath(size_t currentFrameNo) const;
-		std::string getDepthImagePath(size_t currentFrameNo) const;;
+		std::string getDepthImagePath(size_t currentFrameNo) const;
 	};
 
 	class ImageListPathGenerator
