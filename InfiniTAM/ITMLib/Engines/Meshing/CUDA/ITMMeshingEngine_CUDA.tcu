@@ -12,7 +12,7 @@ template<class TVoxel>
 __global__ void meshScene_device(ITMMesh::Triangle *triangles, unsigned int *noTriangles_device, float factor, int noTotalEntries,
 	int noMaxTriangles, const Vector4s *visibleBlockGlobalPos, const TVoxel *localVBA, const ITMHashEntry *hashTable);
 
-template<int dummy = -1>
+template<int dummy>
 __global__ void findAllocateBlocks(Vector4s *visibleBlockGlobalPos, const ITMHashEntry *hashTable, int noTotalEntries)
 {
 	int entryId = threadIdx.x + blockIdx.x * blockDim.x;
@@ -55,7 +55,7 @@ void ITMMeshingEngine_CUDA<TVoxel, ITMVoxelBlockHash>::MeshScene(ITMMesh *mesh, 
 		dim3 cudaBlockSize(256); 
 		dim3 gridSize((int)ceil((float)noTotalEntries / (float)cudaBlockSize.x));
 
-		findAllocateBlocks<< <gridSize, cudaBlockSize >> >(visibleBlockGlobalPos_device, hashTable, noTotalEntries);
+		findAllocateBlocks<-1><<<gridSize, cudaBlockSize>>>(visibleBlockGlobalPos_device, hashTable, noTotalEntries);
 		ORcudaKernelCheck;
 	}
 
