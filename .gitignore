@@ -15,3 +15,6 @@ x64/
 /InfiniTAM/Files/Out/*.ppm
 /InfiniTAM/Files/Teddy/Frames
 /InfiniTAM/*.tags
+
+# QtCreator CMake
+CMakeLists.txt.user*
