@@ -61,7 +61,7 @@ namespace ITMLib
 		ITMSurfelSceneParams surfelSceneParams;
 
 		ITMLibSettings(void);
-    virtual ~ITMLibSettings(void) {}
+		virtual ~ITMLibSettings(void) {}
 
 		// Suppress the default copy constructor and assignment operator
 		ITMLibSettings(const ITMLibSettings&);
