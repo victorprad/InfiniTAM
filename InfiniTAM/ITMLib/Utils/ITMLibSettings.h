@@ -35,6 +35,7 @@ namespace ITMLib
 		typedef enum
 		{
 			LIBMODE_BASIC,
+			LIBMODE_BASIC_SURFELS,
 			LIBMODE_LOOPCLOSURE
 		}LibMode;
 

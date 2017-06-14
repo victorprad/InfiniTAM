@@ -42,7 +42,8 @@ ITMLibSettings::ITMLibSettings(void)
 	behaviourOnFailure = FAILUREMODE_IGNORE;
     
 	/// switch between various library modes - basic, with loop closure, etc.
-	libMode = LIBMODE_BASIC;
+	//libMode = LIBMODE_BASIC;
+	libMode = LIBMODE_BASIC_SURFELS;
 
 	//// Default ICP tracking
 	//trackerConfig = "type=icp,levels=rrrbb,minstep=1e-3,"

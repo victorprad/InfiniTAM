@@ -1,6 +1,6 @@
 // Copyright 2014-2017 Oxford University Innovation Limited and the authors of InfiniTAM
 
-#include "ITMBasicEngine.h"
+#include "ITMBasicSurfelEngine.h"
 
 #include "../Engines/LowLevel/ITMLowLevelEngineFactory.h"
 #include "../Engines/Meshing/ITMMeshingEngineFactory.h"
@@ -17,7 +17,7 @@
 using namespace ITMLib;
 
 template <typename TVoxel, typename TIndex>
-ITMBasicEngine<TVoxel,TIndex>::ITMBasicEngine(const ITMLibSettings *settings, const ITMRGBDCalib& calib, Vector2i imgSize_rgb, Vector2i imgSize_d)
+ITMBasicSurfelEngine<TVoxel,TIndex>::ITMBasicSurfelEngine(const ITMLibSettings *settings, const ITMRGBDCalib& calib, Vector2i imgSize_rgb, Vector2i imgSize_d)
 {
 	this->settings = settings;
 
@@ -68,7 +68,7 @@ ITMBasicEngine<TVoxel,TIndex>::ITMBasicEngine(const ITMLibSettings *settings, co
 }
 
 template <typename TVoxel, typename TIndex>
-ITMBasicEngine<TVoxel,TIndex>::~ITMBasicEngine()
+ITMBasicSurfelEngine<TVoxel,TIndex>::~ITMBasicSurfelEngine()
 {
 	delete renderState_live;
 	if (renderState_freeview != NULL) delete renderState_freeview;
@@ -96,7 +96,7 @@ ITMBasicEngine<TVoxel,TIndex>::~ITMBasicEngine()
 }
 
 template <typename TVoxel, typename TIndex>
-void ITMBasicEngine<TVoxel,TIndex>::SaveSceneToMesh(const char *objFileName)
+void ITMBasicSurfelEngine<TVoxel,TIndex>::SaveSceneToMesh(const char *objFileName)
 {
 	if (meshingEngine == NULL) return;
 
@@ -109,7 +109,7 @@ void ITMBasicEngine<TVoxel,TIndex>::SaveSceneToMesh(const char *objFileName)
 }
 
 template <typename TVoxel, typename TIndex>
-void ITMBasicEngine<TVoxel, TIndex>::SaveToFile()
+void ITMBasicSurfelEngine<TVoxel, TIndex>::SaveToFile()
 {
 	// throws error if any of the saves fail
 
@@ -126,7 +126,7 @@ void ITMBasicEngine<TVoxel, TIndex>::SaveToFile()
 }
 
 template <typename TVoxel, typename TIndex>
-void ITMBasicEngine<TVoxel, TIndex>::LoadFromFile()
+void ITMBasicSurfelEngine<TVoxel, TIndex>::LoadFromFile()
 {
 	std::string saveInputDirectory = "State/";
 	std::string relocaliserInputDirectory = saveInputDirectory + "Relocaliser/", sceneInputDirectory = saveInputDirectory + "Scene/";
@@ -162,7 +162,7 @@ void ITMBasicEngine<TVoxel, TIndex>::LoadFromFile()
 }
 
 template <typename TVoxel, typename TIndex>
-void ITMBasicEngine<TVoxel,TIndex>::resetAll()
+void ITMBasicSurfelEngine<TVoxel,TIndex>::resetAll()
 {
 	denseMapper->ResetScene(scene);
 	trackingState->Reset();
@@ -242,7 +242,7 @@ static void QuaternionFromRotationMatrix(const double *matrix, double *q) {
 #endif
 
 template <typename TVoxel, typename TIndex>
-ITMTrackingState::TrackingResult ITMBasicEngine<TVoxel,TIndex>::ProcessFrame(ITMUChar4Image *rgbImage, ITMShortImage *rawDepthImage, ITMIMUMeasurement *imuMeasurement)
+ITMTrackingState::TrackingResult ITMBasicSurfelEngine<TVoxel,TIndex>::ProcessFrame(ITMUChar4Image *rgbImage, ITMShortImage *rawDepthImage, ITMIMUMeasurement *imuMeasurement)
 {
 	// prepare image and turn it into a depth image
 	if (imuMeasurement == NULL) viewBuilder->UpdateView(&view, rgbImage, rawDepthImage, settings->useBilateralFilter);
@@ -342,13 +342,13 @@ ITMTrackingState::TrackingResult ITMBasicEngine<TVoxel,TIndex>::ProcessFrame(ITM
 }
 
 template <typename TVoxel, typename TIndex>
-Vector2i ITMBasicEngine<TVoxel,TIndex>::GetImageSize(void) const
+Vector2i ITMBasicSurfelEngine<TVoxel,TIndex>::GetImageSize(void) const
 {
 	return renderState_live->raycastImage->noDims;
 }
 
 template <typename TVoxel, typename TIndex>
-void ITMBasicEngine<TVoxel,TIndex>::GetImage(ITMUChar4Image *out, GetImageType getImageType, ORUtils::SE3Pose *pose, ITMIntrinsics *intrinsics)
+void ITMBasicSurfelEngine<TVoxel,TIndex>::GetImage(ITMUChar4Image *out, GetImageType getImageType, ORUtils::SE3Pose *pose, ITMIntrinsics *intrinsics)
 {
 	if (view == NULL) return;
 
@@ -437,19 +437,19 @@ void ITMBasicEngine<TVoxel,TIndex>::GetImage(ITMUChar4Image *out, GetImageType g
 }
 
 template <typename TVoxel, typename TIndex>
-void ITMBasicEngine<TVoxel,TIndex>::turnOnTracking() { trackingActive = true; }
+void ITMBasicSurfelEngine<TVoxel,TIndex>::turnOnTracking() { trackingActive = true; }
 
 template <typename TVoxel, typename TIndex>
-void ITMBasicEngine<TVoxel,TIndex>::turnOffTracking() { trackingActive = false; }
+void ITMBasicSurfelEngine<TVoxel,TIndex>::turnOffTracking() { trackingActive = false; }
 
 template <typename TVoxel, typename TIndex>
-void ITMBasicEngine<TVoxel,TIndex>::turnOnIntegration() { fusionActive = true; }
+void ITMBasicSurfelEngine<TVoxel,TIndex>::turnOnIntegration() { fusionActive = true; }
 
 template <typename TVoxel, typename TIndex>
-void ITMBasicEngine<TVoxel,TIndex>::turnOffIntegration() { fusionActive = false; }
+void ITMBasicSurfelEngine<TVoxel,TIndex>::turnOffIntegration() { fusionActive = false; }
 
 template <typename TVoxel, typename TIndex>
-void ITMBasicEngine<TVoxel,TIndex>::turnOnMainProcessing() { mainProcessingActive = true; }
+void ITMBasicSurfelEngine<TVoxel,TIndex>::turnOnMainProcessing() { mainProcessingActive = true; }
 
 template <typename TVoxel, typename TIndex>
-void ITMBasicEngine<TVoxel,TIndex>::turnOffMainProcessing() { mainProcessingActive = false; }
+void ITMBasicSurfelEngine<TVoxel,TIndex>::turnOffMainProcessing() { mainProcessingActive = false; }

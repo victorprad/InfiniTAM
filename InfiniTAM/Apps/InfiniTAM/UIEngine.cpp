@@ -19,6 +19,7 @@
 
 #include "../../ITMLib/ITMLibDefines.h"
 #include "../../ITMLib/Core/ITMBasicEngine.h"
+#include "../../ITMLib/Core/ITMBasicSurfelEngine.h"
 #include "../../ITMLib/Core/ITMMultiEngine.h"
 
 #include "../../ORUtils/FileUtils.h"
@@ -252,11 +253,19 @@ void UIEngine::glutKeyUpFunction(unsigned char key, int x, int y)
 	case 't':
 	{
 		uiEngine->intergrationActive = !uiEngine->intergrationActive;
+
 		ITMBasicEngine<ITMVoxel, ITMVoxelIndex> *basicEngine = dynamic_cast<ITMBasicEngine<ITMVoxel, ITMVoxelIndex>*>(uiEngine->mainEngine);
 		if (basicEngine != NULL) 
 		{
 			if (uiEngine->intergrationActive) basicEngine->turnOnIntegration();
 			else basicEngine->turnOffIntegration();
+		}
+
+		ITMBasicSurfelEngine<ITMVoxel, ITMVoxelIndex> *basicSurfelEngine = dynamic_cast<ITMBasicSurfelEngine<ITMVoxel, ITMVoxelIndex>*>(uiEngine->mainEngine);
+		if (basicSurfelEngine != NULL)
+		{
+			if (uiEngine->intergrationActive) basicSurfelEngine->turnOnIntegration();
+			else basicSurfelEngine->turnOffIntegration();
 		}
 	}
 	break;
@@ -271,6 +280,9 @@ void UIEngine::glutKeyUpFunction(unsigned char key, int x, int y)
 	{
 		ITMBasicEngine<ITMVoxel, ITMVoxelIndex> *basicEngine = dynamic_cast<ITMBasicEngine<ITMVoxel, ITMVoxelIndex>*>(uiEngine->mainEngine);
 		if (basicEngine != NULL) basicEngine->resetAll();
+
+		ITMBasicSurfelEngine<ITMVoxel, ITMVoxelIndex> *basicSurfelEngine = dynamic_cast<ITMBasicSurfelEngine<ITMVoxel, ITMVoxelIndex>*>(uiEngine->mainEngine);
+		if (basicSurfelEngine != NULL) basicSurfelEngine->resetAll();
 	}
 	break;
 	case 'k':
