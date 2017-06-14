@@ -345,7 +345,7 @@ _CPU_AND_GPU_CODE_ inline bool computePerPointProjectedColour_exRGB(
 	// Invalid point
 	if (depth_camera <= 0.f) return false;
 
-	const Vector3f pt_camera = reproject(x, y, depth_camera, intrinsics_depth);
+	const Vector3f pt_camera = unproject(x, y, depth_camera, intrinsics_depth);
 
 	// Transform the point in the RGB sensor frame
 	const Vector3f pt_image = scenePose * pt_camera;
