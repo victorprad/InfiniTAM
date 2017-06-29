@@ -5,6 +5,7 @@
 #include "../Engines/LowLevel/ITMLowLevelEngineFactory.h"
 #include "../Engines/Meshing/ITMMeshingEngineFactory.h"
 #include "../Engines/ViewBuilding/ITMViewBuilderFactory.h"
+#include "../Engines/Visualisation/ITMSurfelVisualisationEngineFactory.h"
 #include "../Engines/Visualisation/ITMVisualisationEngineFactory.h"
 #include "../Objects/RenderStates/ITMRenderStateFactory.h"
 #include "../Trackers/ITMTrackerFactory.h"
