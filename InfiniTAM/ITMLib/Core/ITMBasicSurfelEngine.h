@@ -3,11 +3,13 @@
 #pragma once
 
 #include "ITMDenseMapper.h"
+#include "ITMDenseSurfelMapper.h"
 #include "ITMMainEngine.h"
 #include "ITMTrackingController.h"
 #include "../Engines/LowLevel/Interface/ITMLowLevelEngine.h"
 #include "../Engines/Meshing/Interface/ITMMeshingEngine.h"
 #include "../Engines/ViewBuilding/Interface/ITMViewBuilder.h"
+#include "../Engines/Visualisation/Interface/ITMSurfelVisualisationEngine.h"
 #include "../Engines/Visualisation/Interface/ITMVisualisationEngine.h"
 #include "../Objects/Misc/ITMIMUCalibrator.h"
 
@@ -15,27 +17,32 @@
 
 namespace ITMLib
 {
-	template <typename TVoxel, typename TIndex>
+	template <typename TVoxel, typename TIndex, typename TSurfel = ITMSurfel_grey>
 	class ITMBasicSurfelEngine : public ITMMainEngine
 	{
 	private:
 		const ITMLibSettings *settings;
 
-		bool trackingActive, fusionActive, mainProcessingActive, trackingInitialised;
+		bool trackingActive, fusionActive, mainProcessingActive, trackingInitialised, mapSurfels;
 		int framesProcessed, relocalisationCount;
 
 		ITMLowLevelEngine *lowLevelEngine;
+		ITMSurfelVisualisationEngine<TSurfel> *surfelVisualisationEngine;
 		ITMVisualisationEngine<TVoxel, TIndex> *visualisationEngine;
 
 		ITMMeshingEngine<TVoxel, TIndex> *meshingEngine;
 
 		ITMViewBuilder *viewBuilder;
 		ITMDenseMapper<TVoxel, TIndex> *denseMapper;
+		ITMDenseSurfelMapper<TSurfel> *denseSurfelMapper;
 		ITMTrackingController *trackingController;
 
 		ITMScene<TVoxel, TIndex> *scene;
+		ITMSurfelScene<TSurfel> *surfelScene;
 		ITMRenderState *renderState_live;
 		ITMRenderState *renderState_freeview;
+		ITMSurfelRenderState *surfelRenderState_live;
+		ITMSurfelRenderState *surfelRenderState_freeview;
 
 		ITMTracker *tracker;
 		ITMIMUCalibrator *imuCalibrator;
@@ -48,6 +55,8 @@ namespace ITMLib
 
 		/// Pointer to the current camera pose and additional tracking information
 		ITMTrackingState *trackingState;
+
+		static typename ITMSurfelVisualisationEngine<TSurfel>::RenderImageType ToSurfelImageType(GetImageType getImageType);
 
 	public:
 		ITMView* GetView(void) { return view; }
@@ -89,7 +98,7 @@ namespace ITMLib
 			Omitting a separate image size for the depth images
 			will assume same resolution as for the RGB images.
 		*/
-		ITMBasicSurfelEngine(const ITMLibSettings *settings, const ITMRGBDCalib& calib, Vector2i imgSize_rgb, Vector2i imgSize_d = Vector2i(-1, -1));
+		ITMBasicSurfelEngine(const ITMLibSettings *settings, const ITMRGBDCalib& calib, Vector2i imgSize_rgb, Vector2i imgSize_d = Vector2i(-1, -1), bool mapSurfels = true);
 		~ITMBasicSurfelEngine();
 	};
 }

@@ -16,20 +16,23 @@
 
 using namespace ITMLib;
 
-template <typename TVoxel, typename TIndex>
-ITMBasicSurfelEngine<TVoxel,TIndex>::ITMBasicSurfelEngine(const ITMLibSettings *settings, const ITMRGBDCalib& calib, Vector2i imgSize_rgb, Vector2i imgSize_d)
+template <typename TVoxel, typename TIndex, typename TSurfel>
+ITMBasicSurfelEngine<TVoxel,TIndex,TSurfel>::ITMBasicSurfelEngine(const ITMLibSettings *settings, const ITMRGBDCalib& calib, Vector2i imgSize_rgb, Vector2i imgSize_d, bool mapSurfels)
 {
 	this->settings = settings;
+	this->mapSurfels = mapSurfels;
 
 	if ((imgSize_d.x == -1) || (imgSize_d.y == -1)) imgSize_d = imgSize_rgb;
 
 	MemoryDeviceType memoryType = settings->GetMemoryType();
 	this->scene = new ITMScene<TVoxel,TIndex>(&settings->sceneParams, settings->swappingMode == ITMLibSettings::SWAPPINGMODE_ENABLED, memoryType);
+	this->surfelScene = mapSurfels ? new ITMSurfelScene<TSurfel>(&settings->surfelSceneParams, memoryType) : NULL;
 
 	const ITMLibSettings::DeviceType deviceType = settings->deviceType;
 
 	lowLevelEngine = ITMLowLevelEngineFactory::MakeLowLevelEngine(deviceType);
 	viewBuilder = ITMViewBuilderFactory::MakeViewBuilder(calib, deviceType);
+	surfelVisualisationEngine = mapSurfels ? ITMSurfelVisualisationEngineFactory<TSurfel>::make_surfel_visualisation_engine(deviceType) : NULL;
 	visualisationEngine = ITMVisualisationEngineFactory::MakeVisualisationEngine<TVoxel,TIndex>(deviceType);
 
 	meshingEngine = NULL;
@@ -38,6 +41,8 @@ ITMBasicSurfelEngine<TVoxel,TIndex>::ITMBasicSurfelEngine(const ITMLibSettings *
 
 	denseMapper = new ITMDenseMapper<TVoxel,TIndex>(settings);
 	denseMapper->ResetScene(scene);
+	denseSurfelMapper = mapSurfels ? new ITMDenseSurfelMapper<TSurfel>(imgSize_d, deviceType) : NULL;
+	if (mapSurfels) this->surfelScene->Reset();
 
 	imuCalibrator = new ITMIMUCalibrator_iPad();
 	tracker = ITMTrackerFactory::Instance().Make(imgSize_rgb, imgSize_d, settings, lowLevelEngine, imuCalibrator, scene->sceneParams);
@@ -47,6 +52,8 @@ ITMBasicSurfelEngine<TVoxel,TIndex>::ITMBasicSurfelEngine(const ITMLibSettings *
 
 	renderState_live = ITMRenderStateFactory<TIndex>::CreateRenderState(trackedImageSize, scene->sceneParams, memoryType);
 	renderState_freeview = NULL; //will be created if needed
+	surfelRenderState_live = mapSurfels ? new ITMSurfelRenderState(trackedImageSize, settings->surfelSceneParams.supersamplingFactor) : NULL;
+	surfelRenderState_freeview = NULL; //will be created if needed
 
 	trackingState = new ITMTrackingState(trackedImageSize, memoryType);
 	tracker->UpdateInitialPose(trackingState);
@@ -67,15 +74,19 @@ ITMBasicSurfelEngine<TVoxel,TIndex>::ITMBasicSurfelEngine(const ITMLibSettings *
 	framesProcessed = 0;
 }
 
-template <typename TVoxel, typename TIndex>
-ITMBasicSurfelEngine<TVoxel,TIndex>::~ITMBasicSurfelEngine()
+template <typename TVoxel, typename TIndex, typename TSurfel>
+ITMBasicSurfelEngine<TVoxel,TIndex,TSurfel>::~ITMBasicSurfelEngine()
 {
 	delete renderState_live;
-	if (renderState_freeview != NULL) delete renderState_freeview;
+	delete renderState_freeview;
+	delete surfelRenderState_live;
+	delete surfelRenderState_freeview;
 
 	delete scene;
+	delete surfelScene;
 
 	delete denseMapper;
+	delete denseSurfelMapper;
 	delete trackingController;
 
 	delete tracker;
@@ -88,6 +99,7 @@ ITMBasicSurfelEngine<TVoxel,TIndex>::~ITMBasicSurfelEngine()
 	if (view != NULL) delete view;
 
 	delete visualisationEngine;
+	delete surfelVisualisationEngine;
 
 	if (relocaliser != NULL) delete relocaliser;
 	delete kfRaycast;
@@ -95,8 +107,8 @@ ITMBasicSurfelEngine<TVoxel,TIndex>::~ITMBasicSurfelEngine()
 	if (meshingEngine != NULL) delete meshingEngine;
 }
 
-template <typename TVoxel, typename TIndex>
-void ITMBasicSurfelEngine<TVoxel,TIndex>::SaveSceneToMesh(const char *objFileName)
+template <typename TVoxel, typename TIndex, typename TSurfel>
+void ITMBasicSurfelEngine<TVoxel,TIndex,TSurfel>::SaveSceneToMesh(const char *objFileName)
 {
 	if (meshingEngine == NULL) return;
 
@@ -108,8 +120,8 @@ void ITMBasicSurfelEngine<TVoxel,TIndex>::SaveSceneToMesh(const char *objFileNam
 	delete mesh;
 }
 
-template <typename TVoxel, typename TIndex>
-void ITMBasicSurfelEngine<TVoxel, TIndex>::SaveToFile()
+template <typename TVoxel, typename TIndex, typename TSurfel>
+void ITMBasicSurfelEngine<TVoxel, TIndex, TSurfel>::SaveToFile()
 {
 	// throws error if any of the saves fail
 
@@ -125,8 +137,8 @@ void ITMBasicSurfelEngine<TVoxel, TIndex>::SaveToFile()
 	scene->SaveToDirectory(sceneOutputDirectory);
 }
 
-template <typename TVoxel, typename TIndex>
-void ITMBasicSurfelEngine<TVoxel, TIndex>::LoadFromFile()
+template <typename TVoxel, typename TIndex, typename TSurfel>
+void ITMBasicSurfelEngine<TVoxel, TIndex, TSurfel>::LoadFromFile()
 {
 	std::string saveInputDirectory = "State/";
 	std::string relocaliserInputDirectory = saveInputDirectory + "Relocaliser/", sceneInputDirectory = saveInputDirectory + "Scene/";
@@ -157,14 +169,16 @@ void ITMBasicSurfelEngine<TVoxel, TIndex>::LoadFromFile()
 	catch (std::runtime_error &e)
 	{
 		denseMapper->ResetScene(scene);
+		if (mapSurfels) surfelScene->Reset();
 		throw std::runtime_error("Could not load scene:" + std::string(e.what()));
 	}
 }
 
-template <typename TVoxel, typename TIndex>
-void ITMBasicSurfelEngine<TVoxel,TIndex>::resetAll()
+template <typename TVoxel, typename TIndex, typename TSurfel>
+void ITMBasicSurfelEngine<TVoxel,TIndex, typename TSurfel>::resetAll()
 {
 	denseMapper->ResetScene(scene);
+	if (mapSurfels) surfelScene->Reset();
 	trackingState->Reset();
 }
 
@@ -241,8 +255,8 @@ static void QuaternionFromRotationMatrix(const double *matrix, double *q) {
 }
 #endif
 
-template <typename TVoxel, typename TIndex>
-ITMTrackingState::TrackingResult ITMBasicSurfelEngine<TVoxel,TIndex>::ProcessFrame(ITMUChar4Image *rgbImage, ITMShortImage *rawDepthImage, ITMIMUMeasurement *imuMeasurement)
+template <typename TVoxel, typename TIndex, typename TSurfel>
+ITMTrackingState::TrackingResult ITMBasicSurfelEngine<TVoxel,TIndex,TSurfel>::ProcessFrame(ITMUChar4Image *rgbImage, ITMShortImage *rawDepthImage, ITMIMUMeasurement *imuMeasurement)
 {
 	// prepare image and turn it into a depth image
 	if (imuMeasurement == NULL) viewBuilder->UpdateView(&view, rgbImage, rawDepthImage, settings->useBilateralFilter);
@@ -293,6 +307,7 @@ ITMTrackingState::TrackingResult ITMBasicSurfelEngine<TVoxel,TIndex>::ProcessFra
 
 			denseMapper->UpdateVisibleList(view, trackingState, scene, renderState_live, true);
 			trackingController->Prepare(trackingState, scene, view, visualisationEngine, renderState_live); 
+			if (mapSurfels) surfelVisualisationEngine->FindSurfaceSuper(surfelScene, trackingState->pose_d, &view->calib.intrinsics_d, USR_RENDER, surfelRenderState_live);
 			trackingController->Track(trackingState, view);
 
 			trackerResult = trackingState->trackerResult;
@@ -303,6 +318,7 @@ ITMTrackingState::TrackingResult ITMBasicSurfelEngine<TVoxel,TIndex>::ProcessFra
 	if ((trackerResult == ITMTrackingState::TRACKING_GOOD || !trackingInitialised) && (fusionActive) && (relocalisationCount == 0)) {
 		// fusion
 		denseMapper->ProcessFrame(view, trackingState, scene, renderState_live);
+		if (mapSurfels) denseSurfelMapper->ProcessFrame(view, trackingState, surfelScene, surfelRenderState_live);
 		didFusion = true;
 		if (framesProcessed > 50) trackingInitialised = true;
 
@@ -315,6 +331,7 @@ ITMTrackingState::TrackingResult ITMBasicSurfelEngine<TVoxel,TIndex>::ProcessFra
 
 		// raycast to renderState_live for tracking and free visualisation
 		trackingController->Prepare(trackingState, scene, view, visualisationEngine, renderState_live);
+		if (mapSurfels) surfelVisualisationEngine->FindSurfaceSuper(surfelScene, trackingState->pose_d, &view->calib.intrinsics_d, USR_RENDER, surfelRenderState_live);
 
 		if (addKeyframeIdx >= 0)
 		{
@@ -341,115 +358,157 @@ ITMTrackingState::TrackingResult ITMBasicSurfelEngine<TVoxel,TIndex>::ProcessFra
     return trackerResult;
 }
 
-template <typename TVoxel, typename TIndex>
-Vector2i ITMBasicSurfelEngine<TVoxel,TIndex>::GetImageSize(void) const
+template <typename TVoxel, typename TIndex, typename TSurfel>
+Vector2i ITMBasicSurfelEngine<TVoxel,TIndex,TSurfel>::GetImageSize(void) const
 {
 	return renderState_live->raycastImage->noDims;
 }
 
-template <typename TVoxel, typename TIndex>
-void ITMBasicSurfelEngine<TVoxel,TIndex>::GetImage(ITMUChar4Image *out, GetImageType getImageType, ORUtils::SE3Pose *pose, ITMIntrinsics *intrinsics)
+template <typename TVoxel, typename TIndex, typename TSurfel>
+typename ITMSurfelVisualisationEngine<TSurfel>::RenderImageType
+ITMBasicSurfelEngine<TVoxel,TIndex,TSurfel>::ToSurfelImageType(GetImageType getImageType)
 {
+	switch (getImageType)
+	{
+		case InfiniTAM_IMAGE_COLOUR_FROM_VOLUME:
+		case InfiniTAM_IMAGE_FREECAMERA_COLOUR_FROM_VOLUME:
+			return ITMSurfelVisualisationEngine<TSurfel>::RENDER_COLOUR;
+		case InfiniTAM_IMAGE_COLOUR_FROM_NORMAL:
+		case InfiniTAM_IMAGE_FREECAMERA_COLOUR_FROM_NORMAL:
+			return ITMSurfelVisualisationEngine<TSurfel>::RENDER_NORMAL;
+		case InfiniTAM_IMAGE_COLOUR_FROM_CONFIDENCE:
+		case InfiniTAM_IMAGE_FREECAMERA_COLOUR_FROM_CONFIDENCE:
+			return ITMSurfelVisualisationEngine<TSurfel>::RENDER_CONFIDENCE;
+		default:
+			return ITMSurfelVisualisationEngine<TSurfel>::RENDER_LAMBERTIAN;
+	}
+}
+
+template <typename TVoxel, typename TIndex, typename TSurfel>
+void ITMBasicSurfelEngine<TVoxel,TIndex,TSurfel>::GetImage(ITMUChar4Image *out, GetImageType getImageType, ORUtils::SE3Pose *pose, ITMIntrinsics *intrinsics)
+{
+  const bool renderSurfels = true;
+
 	if (view == NULL) return;
 
 	out->Clear();
 
 	switch (getImageType)
 	{
-	case ITMMainEngine::InfiniTAM_IMAGE_ORIGINAL_RGB:
+	case ITMBasicSurfelEngine::InfiniTAM_IMAGE_ORIGINAL_RGB:
 		out->ChangeDims(view->rgb->noDims);
 		if (settings->deviceType == ITMLibSettings::DEVICE_CUDA) 
 			out->SetFrom(view->rgb, ORUtils::MemoryBlock<Vector4u>::CUDA_TO_CPU);
 		else out->SetFrom(view->rgb, ORUtils::MemoryBlock<Vector4u>::CPU_TO_CPU);
 		break;
-	case ITMMainEngine::InfiniTAM_IMAGE_ORIGINAL_DEPTH:
+	case ITMBasicSurfelEngine::InfiniTAM_IMAGE_ORIGINAL_DEPTH:
 		out->ChangeDims(view->depth->noDims);
 		if (settings->deviceType == ITMLibSettings::DEVICE_CUDA) view->depth->UpdateHostFromDevice();
 		ITMVisualisationEngine<TVoxel, TIndex>::DepthToUchar4(out, view->depth);
 
 		break;
-	case ITMMainEngine::InfiniTAM_IMAGE_SCENERAYCAST:
-	case ITMMainEngine::InfiniTAM_IMAGE_COLOUR_FROM_VOLUME:
-	case ITMMainEngine::InfiniTAM_IMAGE_COLOUR_FROM_NORMAL:
-	case ITMMainEngine::InfiniTAM_IMAGE_COLOUR_FROM_CONFIDENCE:
+	case ITMBasicSurfelEngine::InfiniTAM_IMAGE_SCENERAYCAST:
+	case ITMBasicSurfelEngine::InfiniTAM_IMAGE_COLOUR_FROM_VOLUME:
+	case ITMBasicSurfelEngine::InfiniTAM_IMAGE_COLOUR_FROM_NORMAL:
+	case ITMBasicSurfelEngine::InfiniTAM_IMAGE_COLOUR_FROM_CONFIDENCE:
 		{
-		// use current raycast or forward projection?
-		IITMVisualisationEngine::RenderRaycastSelection raycastType;
-		if (trackingState->age_pointCloud <= 0) raycastType = IITMVisualisationEngine::RENDER_FROM_OLD_RAYCAST;
-		else raycastType = IITMVisualisationEngine::RENDER_FROM_OLD_FORWARDPROJ;
+			if (mapSurfels && renderSurfels)
+			{
+				const bool useRadii = true;
+				surfelVisualisationEngine->FindSurface(surfelScene, trackingState->pose_d, &view->calib.intrinsics_d, useRadii, USR_DONOTRENDER, surfelRenderState_live);
+				surfelVisualisationEngine->RenderImage(surfelScene, trackingState->pose_d, surfelRenderState_live, out, ToSurfelImageType(getImageType));
+				out->UpdateHostFromDevice();
+			}
+			else
+			{
+				// use current raycast or forward projection?
+				IITMVisualisationEngine::RenderRaycastSelection raycastType;
+				if (trackingState->age_pointCloud <= 0) raycastType = IITMVisualisationEngine::RENDER_FROM_OLD_RAYCAST;
+				else raycastType = IITMVisualisationEngine::RENDER_FROM_OLD_FORWARDPROJ;
 
-		// what sort of image is it?
-		IITMVisualisationEngine::RenderImageType imageType;
-		switch (getImageType) {
-		case ITMMainEngine::InfiniTAM_IMAGE_COLOUR_FROM_CONFIDENCE:
-			imageType = IITMVisualisationEngine::RENDER_COLOUR_FROM_CONFIDENCE;
+				// what sort of image is it?
+				IITMVisualisationEngine::RenderImageType imageType;
+				switch (getImageType) {
+				case ITMBasicSurfelEngine::InfiniTAM_IMAGE_COLOUR_FROM_CONFIDENCE:
+					imageType = IITMVisualisationEngine::RENDER_COLOUR_FROM_CONFIDENCE;
+					break;
+				case ITMBasicSurfelEngine::InfiniTAM_IMAGE_COLOUR_FROM_NORMAL:
+					imageType = IITMVisualisationEngine::RENDER_COLOUR_FROM_NORMAL;
+					break;
+				case ITMBasicSurfelEngine::InfiniTAM_IMAGE_COLOUR_FROM_VOLUME:
+					imageType = IITMVisualisationEngine::RENDER_COLOUR_FROM_VOLUME;
+					break;
+				default:
+					imageType = IITMVisualisationEngine::RENDER_SHADED_GREYSCALE_IMAGENORMALS;
+				}
+
+				visualisationEngine->RenderImage(scene, trackingState->pose_d, &view->calib.intrinsics_d, renderState_live, renderState_live->raycastImage, imageType, raycastType);
+
+				ORUtils::Image<Vector4u> *srcImage = NULL;
+				if (relocalisationCount != 0) srcImage = kfRaycast;
+				else srcImage = renderState_live->raycastImage;
+
+				out->ChangeDims(srcImage->noDims);
+				if (settings->deviceType == ITMLibSettings::DEVICE_CUDA)
+					out->SetFrom(srcImage, ORUtils::MemoryBlock<Vector4u>::CUDA_TO_CPU);
+				else out->SetFrom(srcImage, ORUtils::MemoryBlock<Vector4u>::CPU_TO_CPU);
+			}
 			break;
-		case ITMMainEngine::InfiniTAM_IMAGE_COLOUR_FROM_NORMAL:
-			imageType = IITMVisualisationEngine::RENDER_COLOUR_FROM_NORMAL;
-			break;
-		case ITMMainEngine::InfiniTAM_IMAGE_COLOUR_FROM_VOLUME:
-			imageType = IITMVisualisationEngine::RENDER_COLOUR_FROM_VOLUME;
-			break;
-		default:
-			imageType = IITMVisualisationEngine::RENDER_SHADED_GREYSCALE_IMAGENORMALS;
 		}
-
-		visualisationEngine->RenderImage(scene, trackingState->pose_d, &view->calib.intrinsics_d, renderState_live, renderState_live->raycastImage, imageType, raycastType);
-
-		ORUtils::Image<Vector4u> *srcImage = NULL;
-		if (relocalisationCount != 0) srcImage = kfRaycast;
-		else srcImage = renderState_live->raycastImage;
-
-		out->ChangeDims(srcImage->noDims);
-		if (settings->deviceType == ITMLibSettings::DEVICE_CUDA)
-			out->SetFrom(srcImage, ORUtils::MemoryBlock<Vector4u>::CUDA_TO_CPU);
-		else out->SetFrom(srcImage, ORUtils::MemoryBlock<Vector4u>::CPU_TO_CPU);
-
-		break;
-		}
-	case ITMMainEngine::InfiniTAM_IMAGE_FREECAMERA_SHADED:
-	case ITMMainEngine::InfiniTAM_IMAGE_FREECAMERA_COLOUR_FROM_VOLUME:
-	case ITMMainEngine::InfiniTAM_IMAGE_FREECAMERA_COLOUR_FROM_NORMAL:
-	case ITMMainEngine::InfiniTAM_IMAGE_FREECAMERA_COLOUR_FROM_CONFIDENCE:
+	case ITMBasicSurfelEngine::InfiniTAM_IMAGE_FREECAMERA_SHADED:
+	case ITMBasicSurfelEngine::InfiniTAM_IMAGE_FREECAMERA_COLOUR_FROM_VOLUME:
+	case ITMBasicSurfelEngine::InfiniTAM_IMAGE_FREECAMERA_COLOUR_FROM_NORMAL:
+	case ITMBasicSurfelEngine::InfiniTAM_IMAGE_FREECAMERA_COLOUR_FROM_CONFIDENCE:
 	{
-		IITMVisualisationEngine::RenderImageType type = IITMVisualisationEngine::RENDER_SHADED_GREYSCALE;
-		if (getImageType == ITMMainEngine::InfiniTAM_IMAGE_FREECAMERA_COLOUR_FROM_VOLUME) type = IITMVisualisationEngine::RENDER_COLOUR_FROM_VOLUME;
-		else if (getImageType == ITMMainEngine::InfiniTAM_IMAGE_FREECAMERA_COLOUR_FROM_NORMAL) type = IITMVisualisationEngine::RENDER_COLOUR_FROM_NORMAL;
-		else if (getImageType == ITMMainEngine::InfiniTAM_IMAGE_FREECAMERA_COLOUR_FROM_CONFIDENCE) type = IITMVisualisationEngine::RENDER_COLOUR_FROM_CONFIDENCE;
-
-		if (renderState_freeview == NULL)
+		if (mapSurfels && renderSurfels)
 		{
-			renderState_freeview = ITMRenderStateFactory<TIndex>::CreateRenderState(out->noDims, scene->sceneParams, settings->GetMemoryType());
+			if (!surfelRenderState_freeview) surfelRenderState_freeview = new ITMSurfelRenderState(view->depth->noDims, surfelScene->GetParams().supersamplingFactor);
+			const bool useRadii = true;
+			surfelVisualisationEngine->FindSurface(surfelScene, pose, intrinsics, useRadii, USR_DONOTRENDER, surfelRenderState_freeview);
+			surfelVisualisationEngine->RenderImage(surfelScene, pose, surfelRenderState_freeview, out, ToSurfelImageType(getImageType));
+			out->UpdateHostFromDevice();
 		}
+		else
+		{
+			IITMVisualisationEngine::RenderImageType type = IITMVisualisationEngine::RENDER_SHADED_GREYSCALE;
+			if (getImageType == ITMBasicSurfelEngine::InfiniTAM_IMAGE_FREECAMERA_COLOUR_FROM_VOLUME) type = IITMVisualisationEngine::RENDER_COLOUR_FROM_VOLUME;
+			else if (getImageType == ITMBasicSurfelEngine::InfiniTAM_IMAGE_FREECAMERA_COLOUR_FROM_NORMAL) type = IITMVisualisationEngine::RENDER_COLOUR_FROM_NORMAL;
+			else if (getImageType == ITMBasicSurfelEngine::InfiniTAM_IMAGE_FREECAMERA_COLOUR_FROM_CONFIDENCE) type = IITMVisualisationEngine::RENDER_COLOUR_FROM_CONFIDENCE;
 
-		visualisationEngine->FindVisibleBlocks(scene, pose, intrinsics, renderState_freeview);
-		visualisationEngine->CreateExpectedDepths(scene, pose, intrinsics, renderState_freeview);
-		visualisationEngine->RenderImage(scene, pose, intrinsics, renderState_freeview, renderState_freeview->raycastImage, type);
+			if (renderState_freeview == NULL)
+			{
+				renderState_freeview = ITMRenderStateFactory<TIndex>::CreateRenderState(out->noDims, scene->sceneParams, settings->GetMemoryType());
+			}
 
-		if (settings->deviceType == ITMLibSettings::DEVICE_CUDA)
-			out->SetFrom(renderState_freeview->raycastImage, ORUtils::MemoryBlock<Vector4u>::CUDA_TO_CPU);
-		else out->SetFrom(renderState_freeview->raycastImage, ORUtils::MemoryBlock<Vector4u>::CPU_TO_CPU);
+			visualisationEngine->FindVisibleBlocks(scene, pose, intrinsics, renderState_freeview);
+			visualisationEngine->CreateExpectedDepths(scene, pose, intrinsics, renderState_freeview);
+			visualisationEngine->RenderImage(scene, pose, intrinsics, renderState_freeview, renderState_freeview->raycastImage, type);
+
+			if (settings->deviceType == ITMLibSettings::DEVICE_CUDA)
+				out->SetFrom(renderState_freeview->raycastImage, ORUtils::MemoryBlock<Vector4u>::CUDA_TO_CPU);
+			else out->SetFrom(renderState_freeview->raycastImage, ORUtils::MemoryBlock<Vector4u>::CPU_TO_CPU);
+		}
 		break;
 	}
 	case ITMMainEngine::InfiniTAM_IMAGE_UNKNOWN:
 		break;
-	};
+	}
 }
 
-template <typename TVoxel, typename TIndex>
-void ITMBasicSurfelEngine<TVoxel,TIndex>::turnOnTracking() { trackingActive = true; }
+template <typename TVoxel, typename TIndex, typename TSurfel>
+void ITMBasicSurfelEngine<TVoxel,TIndex,TSurfel>::turnOnTracking() { trackingActive = true; }
 
-template <typename TVoxel, typename TIndex>
-void ITMBasicSurfelEngine<TVoxel,TIndex>::turnOffTracking() { trackingActive = false; }
+template <typename TVoxel, typename TIndex, typename TSurfel>
+void ITMBasicSurfelEngine<TVoxel,TIndex,TSurfel>::turnOffTracking() { trackingActive = false; }
 
-template <typename TVoxel, typename TIndex>
-void ITMBasicSurfelEngine<TVoxel,TIndex>::turnOnIntegration() { fusionActive = true; }
+template <typename TVoxel, typename TIndex, typename TSurfel>
+void ITMBasicSurfelEngine<TVoxel,TIndex,TSurfel>::turnOnIntegration() { fusionActive = true; }
 
-template <typename TVoxel, typename TIndex>
-void ITMBasicSurfelEngine<TVoxel,TIndex>::turnOffIntegration() { fusionActive = false; }
+template <typename TVoxel, typename TIndex, typename TSurfel>
+void ITMBasicSurfelEngine<TVoxel,TIndex,TSurfel>::turnOffIntegration() { fusionActive = false; }
 
-template <typename TVoxel, typename TIndex>
-void ITMBasicSurfelEngine<TVoxel,TIndex>::turnOnMainProcessing() { mainProcessingActive = true; }
+template <typename TVoxel, typename TIndex, typename TSurfel>
+void ITMBasicSurfelEngine<TVoxel,TIndex,TSurfel>::turnOnMainProcessing() { mainProcessingActive = true; }
 
-template <typename TVoxel, typename TIndex>
-void ITMBasicSurfelEngine<TVoxel,TIndex>::turnOffMainProcessing() { mainProcessingActive = false; }
+template <typename TVoxel, typename TIndex, typename TSurfel>
+void ITMBasicSurfelEngine<TVoxel,TIndex,TSurfel>::turnOffMainProcessing() { mainProcessingActive = false; }
