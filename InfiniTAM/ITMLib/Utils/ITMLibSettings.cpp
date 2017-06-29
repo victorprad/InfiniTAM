@@ -51,10 +51,10 @@ ITMLibSettings::ITMLibSettings(void)
 	//				"numiterC=10,numiterF=2,failureDec=5.0"; // 5 for normal, 20 for loop closure
 
 	// Depth-only extended tracker:
-	trackerConfig = "type=extended,levels=rrbb,useDepth=1,minstep=1e-4,"
-					  "outlierSpaceC=0.1,outlierSpaceF=0.004,"
-					  "numiterC=20,numiterF=50,tukeyCutOff=8,"
-					  "framesToSkip=20,framesToWeight=50,failureDec=20.0";
+	//trackerConfig = "type=extended,levels=rrbb,useDepth=1,minstep=1e-4,"
+	//				  "outlierSpaceC=0.1,outlierSpaceF=0.004,"
+	//				  "numiterC=20,numiterF=50,tukeyCutOff=8,"
+	//				  "framesToSkip=20,framesToWeight=50,failureDec=20.0";
 
 	//// For hybrid intensity+depth tracking:
 	//trackerConfig = "type=extended,levels=bbb,useDepth=1,useColour=1,"
@@ -69,6 +69,9 @@ ITMLibSettings::ITMLibSettings(void)
 
 	//trackerConfig = "type=imuicp,levels=tb,minstep=1e-3,outlierC=0.01,outlierF=0.005,numiterC=4,numiterF=2";
 	//trackerConfig = "type=extendedimu,levels=ttb,minstep=5e-4,outlierSpaceC=0.1,outlierSpaceF=0.004,numiterC=20,numiterF=5,tukeyCutOff=8,framesToSkip=20,framesToWeight=50,failureDec=20.0";
+
+  // Surfel tracking
+  trackerConfig = "extended,levels=rrbb,minstep=1e-4,outlierSpaceC=0.1,outlierSpaceF=0.004,numiterC=20,numiterF=20,tukeyCutOff=8,framesToSkip=0,framesToWeight=1,failureDec=20.0";
 }
 
 MemoryDeviceType ITMLibSettings::GetMemoryType() const

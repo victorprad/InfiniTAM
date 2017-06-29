@@ -306,7 +306,7 @@ ITMTrackingState::TrackingResult ITMBasicSurfelEngine<TVoxel,TIndex,TSurfel>::Pr
 			trackingState->pose_d->SetFrom(&keyframe.pose);
 
 			denseMapper->UpdateVisibleList(view, trackingState, scene, renderState_live, true);
-			trackingController->Prepare(trackingState, scene, view, visualisationEngine, renderState_live); 
+      trackingController->Prepare(trackingState, surfelScene, view, surfelVisualisationEngine, surfelRenderState_live);
 			if (mapSurfels) surfelVisualisationEngine->FindSurfaceSuper(surfelScene, trackingState->pose_d, &view->calib.intrinsics_d, USR_RENDER, surfelRenderState_live);
 			trackingController->Track(trackingState, view);
 
@@ -330,7 +330,7 @@ ITMTrackingState::TrackingResult ITMBasicSurfelEngine<TVoxel,TIndex,TSurfel>::Pr
 		if (!didFusion) denseMapper->UpdateVisibleList(view, trackingState, scene, renderState_live);
 
 		// raycast to renderState_live for tracking and free visualisation
-		trackingController->Prepare(trackingState, scene, view, visualisationEngine, renderState_live);
+    trackingController->Prepare(trackingState, surfelScene, view, surfelVisualisationEngine, surfelRenderState_live);
 		if (mapSurfels) surfelVisualisationEngine->FindSurfaceSuper(surfelScene, trackingState->pose_d, &view->calib.intrinsics_d, USR_RENDER, surfelRenderState_live);
 
 		if (addKeyframeIdx >= 0)
