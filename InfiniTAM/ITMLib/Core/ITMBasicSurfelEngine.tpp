@@ -3,11 +3,8 @@
 #include "ITMBasicSurfelEngine.h"
 
 #include "../Engines/LowLevel/ITMLowLevelEngineFactory.h"
-#include "../Engines/Meshing/ITMMeshingEngineFactory.h"
 #include "../Engines/ViewBuilding/ITMViewBuilderFactory.h"
 #include "../Engines/Visualisation/ITMSurfelVisualisationEngineFactory.h"
-#include "../Engines/Visualisation/ITMVisualisationEngineFactory.h"
-#include "../Objects/RenderStates/ITMRenderStateFactory.h"
 #include "../Trackers/ITMTrackerFactory.h"
 
 #include "../../ORUtils/NVTimer.h"
@@ -99,7 +96,7 @@ void ITMBasicSurfelEngine<TSurfel>::SaveSceneToMesh(const char *objFileName)
 template <typename TSurfel>
 void ITMBasicSurfelEngine<TSurfel>::SaveToFile()
 {
-  // Not yet implemented for surfel scenes
+	// Not yet implemented for surfel scenes
 }
 
 template <typename TSurfel>
@@ -238,7 +235,7 @@ ITMTrackingState::TrackingResult ITMBasicSurfelEngine<TSurfel>::ProcessFrame(ITM
 			const FernRelocLib::PoseDatabase::PoseInScene & keyframe = relocaliser->RetrievePose(NN);
 			trackingState->pose_d->SetFrom(&keyframe.pose);
 
-      trackingController->Prepare(trackingState, surfelScene, view, surfelVisualisationEngine, surfelRenderState_live);
+			trackingController->Prepare(trackingState, surfelScene, view, surfelVisualisationEngine, surfelRenderState_live);
 			surfelVisualisationEngine->FindSurfaceSuper(surfelScene, trackingState->pose_d, &view->calib.intrinsics_d, USR_RENDER, surfelRenderState_live);
 			trackingController->Track(trackingState, view);
 
@@ -259,7 +256,7 @@ ITMTrackingState::TrackingResult ITMBasicSurfelEngine<TSurfel>::ProcessFrame(ITM
 	if (trackerResult == ITMTrackingState::TRACKING_GOOD || trackerResult == ITMTrackingState::TRACKING_POOR)
 	{
 		// raycast to renderState_live for tracking and free visualisation
-    trackingController->Prepare(trackingState, surfelScene, view, surfelVisualisationEngine, surfelRenderState_live);
+		trackingController->Prepare(trackingState, surfelScene, view, surfelVisualisationEngine, surfelRenderState_live);
 		surfelVisualisationEngine->FindSurfaceSuper(surfelScene, trackingState->pose_d, &view->calib.intrinsics_d, USR_RENDER, surfelRenderState_live);
 
 #if 0
@@ -285,8 +282,8 @@ ITMTrackingState::TrackingResult ITMBasicSurfelEngine<TSurfel>::ProcessFrame(ITM
 	QuaternionFromRotationMatrix(R, q);
 	fprintf(stderr, "%f %f %f %f %f %f %f\n", t[0], t[1], t[2], q[1], q[2], q[3], q[0]);
 #endif
-    
-    return trackerResult;
+
+		return trackerResult;
 }
 
 template <typename TSurfel>
@@ -318,8 +315,6 @@ ITMBasicSurfelEngine<TSurfel>::ToSurfelImageType(GetImageType getImageType)
 template <typename TSurfel>
 void ITMBasicSurfelEngine<TSurfel>::GetImage(ITMUChar4Image *out, GetImageType getImageType, ORUtils::SE3Pose *pose, ITMIntrinsics *intrinsics)
 {
-  const bool renderSurfels = true;
-
 	if (view == NULL) return;
 
 	out->Clear();
@@ -336,7 +331,6 @@ void ITMBasicSurfelEngine<TSurfel>::GetImage(ITMUChar4Image *out, GetImageType g
 		out->ChangeDims(view->depth->noDims);
 		if (settings->deviceType == ITMLibSettings::DEVICE_CUDA) view->depth->UpdateHostFromDevice();
 		IITMVisualisationEngine::DepthToUchar4(out, view->depth);
-
 		break;
 	case ITMBasicSurfelEngine::InfiniTAM_IMAGE_SCENERAYCAST:
 	case ITMBasicSurfelEngine::InfiniTAM_IMAGE_COLOUR_FROM_VOLUME:

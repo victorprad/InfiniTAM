@@ -2,15 +2,12 @@
 
 #pragma once
 
-#include "ITMDenseMapper.h"
 #include "ITMDenseSurfelMapper.h"
 #include "ITMMainEngine.h"
 #include "ITMTrackingController.h"
 #include "../Engines/LowLevel/Interface/ITMLowLevelEngine.h"
-#include "../Engines/Meshing/Interface/ITMMeshingEngine.h"
 #include "../Engines/ViewBuilding/Interface/ITMViewBuilder.h"
 #include "../Engines/Visualisation/Interface/ITMSurfelVisualisationEngine.h"
-#include "../Engines/Visualisation/Interface/ITMVisualisationEngine.h"
 #include "../Objects/Misc/ITMIMUCalibrator.h"
 
 #include "../../FernRelocLib/Relocaliser.h"

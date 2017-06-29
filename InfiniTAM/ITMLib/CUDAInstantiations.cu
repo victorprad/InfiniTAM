@@ -19,6 +19,8 @@ namespace ITMLib
 	template class ITMVisualisationEngine_CUDA<ITMVoxel, ITMVoxelIndex>;
 	template class ITMMultiVisualisationEngine_CUDA<ITMVoxel, ITMVoxelIndex>;
 
-	template class ITMSurfelSceneReconstructionEngine_CUDA<ITMSurfelT>;
-	template class ITMSurfelVisualisationEngine_CUDA<ITMSurfelT>;
+	template class ITMSurfelSceneReconstructionEngine_CUDA<ITMSurfel_grey>;
+	template class ITMSurfelSceneReconstructionEngine_CUDA<ITMSurfel_rgb>;
+	template class ITMSurfelVisualisationEngine_CUDA<ITMSurfel_grey>;
+	template class ITMSurfelVisualisationEngine_CUDA<ITMSurfel_rgb>;
 }

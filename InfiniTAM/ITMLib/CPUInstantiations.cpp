@@ -25,8 +25,9 @@
 namespace ITMLib
 {
 	template class ITMBasicEngine<ITMVoxel, ITMVoxelIndex>;
-	template class ITMBasicSurfelEngine<ITMSurfelT>;
-  template class ITMMultiEngine<ITMVoxel, ITMVoxelIndex>;
+	template class ITMBasicSurfelEngine<ITMSurfel_grey>;
+	template class ITMBasicSurfelEngine<ITMSurfel_rgb>;
+	template class ITMMultiEngine<ITMVoxel, ITMVoxelIndex>;
 	template class ITMDenseMapper<ITMVoxel, ITMVoxelIndex>;
 	template class ITMVoxelMapGraphManager<ITMVoxel, ITMVoxelIndex>;
 	template class ITMVisualisationEngine_CPU<ITMVoxel, ITMVoxelIndex>;
@@ -35,11 +36,18 @@ namespace ITMLib
 	template class ITMSwappingEngine_CPU<ITMVoxel, ITMVoxelIndex>;
 	template class ITMSceneReconstructionEngine_CPU<ITMVoxel, ITMVoxelIndex>;
 
-	template class ITMDenseSurfelMapper<ITMSurfelT>;
-	template class ITMSurfelSceneReconstructionEngine<ITMSurfelT>;
-	template class ITMSurfelSceneReconstructionEngine_CPU<ITMSurfelT>;
-	template struct ITMSurfelSceneReconstructionEngineFactory<ITMSurfelT>;
-	template class ITMSurfelVisualisationEngine<ITMSurfelT>;
-	template class ITMSurfelVisualisationEngine_CPU<ITMSurfelT>;
-	template struct ITMSurfelVisualisationEngineFactory<ITMSurfelT>;
+	template class ITMDenseSurfelMapper<ITMSurfel_grey>;
+	template class ITMDenseSurfelMapper<ITMSurfel_rgb>;
+	template class ITMSurfelSceneReconstructionEngine<ITMSurfel_grey>;
+	template class ITMSurfelSceneReconstructionEngine<ITMSurfel_rgb>;
+	template class ITMSurfelSceneReconstructionEngine_CPU<ITMSurfel_grey>;
+	template class ITMSurfelSceneReconstructionEngine_CPU<ITMSurfel_rgb>;
+	template struct ITMSurfelSceneReconstructionEngineFactory<ITMSurfel_grey>;
+	template struct ITMSurfelSceneReconstructionEngineFactory<ITMSurfel_rgb>;
+	template class ITMSurfelVisualisationEngine<ITMSurfel_grey>;
+	template class ITMSurfelVisualisationEngine<ITMSurfel_rgb>;
+	template class ITMSurfelVisualisationEngine_CPU<ITMSurfel_grey>;
+	template class ITMSurfelVisualisationEngine_CPU<ITMSurfel_rgb>;
+	template struct ITMSurfelVisualisationEngineFactory<ITMSurfel_grey>;
+	template struct ITMSurfelVisualisationEngineFactory<ITMSurfel_rgb>;
 }
