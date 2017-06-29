@@ -106,7 +106,7 @@ void ITMBasicSurfelEngine<TSurfel>::LoadFromFile()
 }
 
 template <typename TSurfel>
-void ITMBasicSurfelEngine<typename TSurfel>::resetAll()
+void ITMBasicSurfelEngine<TSurfel>::resetAll()
 {
 	surfelScene->Reset();
 	trackingState->Reset();
