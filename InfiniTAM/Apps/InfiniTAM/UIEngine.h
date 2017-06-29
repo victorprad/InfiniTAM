@@ -55,7 +55,7 @@ namespace InfiniTAM
 			ITMLib::ITMIMUMeasurement *inputIMUMeasurement;
 
 			bool freeviewActive;
-			bool intergrationActive;
+			bool integrationActive;
 			ORUtils::SE3Pose freeviewPose;
 			ITMLib::ITMIntrinsics freeviewIntrinsics;
 
