@@ -261,7 +261,7 @@ void UIEngine::glutKeyUpFunction(unsigned char key, int x, int y)
 			else basicEngine->turnOffIntegration();
 		}
 
-		ITMBasicSurfelEngine<ITMVoxel, ITMVoxelIndex> *basicSurfelEngine = dynamic_cast<ITMBasicSurfelEngine<ITMVoxel, ITMVoxelIndex>*>(uiEngine->mainEngine);
+		ITMBasicSurfelEngine<ITMSurfelT> *basicSurfelEngine = dynamic_cast<ITMBasicSurfelEngine<ITMSurfelT>*>(uiEngine->mainEngine);
 		if (basicSurfelEngine != NULL)
 		{
 			if (uiEngine->intergrationActive) basicSurfelEngine->turnOnIntegration();
@@ -281,7 +281,7 @@ void UIEngine::glutKeyUpFunction(unsigned char key, int x, int y)
 		ITMBasicEngine<ITMVoxel, ITMVoxelIndex> *basicEngine = dynamic_cast<ITMBasicEngine<ITMVoxel, ITMVoxelIndex>*>(uiEngine->mainEngine);
 		if (basicEngine != NULL) basicEngine->resetAll();
 
-		ITMBasicSurfelEngine<ITMVoxel, ITMVoxelIndex> *basicSurfelEngine = dynamic_cast<ITMBasicSurfelEngine<ITMVoxel, ITMVoxelIndex>*>(uiEngine->mainEngine);
+		ITMBasicSurfelEngine<ITMSurfelT> *basicSurfelEngine = dynamic_cast<ITMBasicSurfelEngine<ITMSurfelT>*>(uiEngine->mainEngine);
 		if (basicSurfelEngine != NULL) basicSurfelEngine->resetAll();
 	}
 	break;

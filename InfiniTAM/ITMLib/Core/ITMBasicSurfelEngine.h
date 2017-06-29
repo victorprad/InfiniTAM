@@ -17,30 +17,23 @@
 
 namespace ITMLib
 {
-	template <typename TVoxel, typename TIndex, typename TSurfel = ITMSurfel_grey>
+	template <typename TSurfel>
 	class ITMBasicSurfelEngine : public ITMMainEngine
 	{
 	private:
 		const ITMLibSettings *settings;
 
-		bool trackingActive, fusionActive, mainProcessingActive, trackingInitialised, mapSurfels;
+		bool trackingActive, fusionActive, mainProcessingActive, trackingInitialised;
 		int framesProcessed, relocalisationCount;
 
 		ITMLowLevelEngine *lowLevelEngine;
 		ITMSurfelVisualisationEngine<TSurfel> *surfelVisualisationEngine;
-		ITMVisualisationEngine<TVoxel, TIndex> *visualisationEngine;
-
-		ITMMeshingEngine<TVoxel, TIndex> *meshingEngine;
 
 		ITMViewBuilder *viewBuilder;
-		ITMDenseMapper<TVoxel, TIndex> *denseMapper;
 		ITMDenseSurfelMapper<TSurfel> *denseSurfelMapper;
 		ITMTrackingController *trackingController;
 
-		ITMScene<TVoxel, TIndex> *scene;
 		ITMSurfelScene<TSurfel> *surfelScene;
-		ITMRenderState *renderState_live;
-		ITMRenderState *renderState_freeview;
 		ITMSurfelRenderState *surfelRenderState_live;
 		ITMSurfelRenderState *surfelRenderState_freeview;
 
@@ -61,9 +54,6 @@ namespace ITMLib
 	public:
 		ITMView* GetView(void) { return view; }
 		ITMTrackingState* GetTrackingState(void) { return trackingState; }
-
-		/// Gives access to the internal world representation
-		ITMScene<TVoxel, TIndex>* GetScene(void) { return scene; }
 
 		ITMTrackingState::TrackingResult ProcessFrame(ITMUChar4Image *rgbImage, ITMShortImage *rawDepthImage, ITMIMUMeasurement *imuMeasurement = NULL);
 
@@ -98,7 +88,7 @@ namespace ITMLib
 			Omitting a separate image size for the depth images
 			will assume same resolution as for the RGB images.
 		*/
-		ITMBasicSurfelEngine(const ITMLibSettings *settings, const ITMRGBDCalib& calib, Vector2i imgSize_rgb, Vector2i imgSize_d = Vector2i(-1, -1), bool mapSurfels = true);
+		ITMBasicSurfelEngine(const ITMLibSettings *settings, const ITMRGBDCalib& calib, Vector2i imgSize_rgb, Vector2i imgSize_d = Vector2i(-1, -1));
 		~ITMBasicSurfelEngine();
 	};
 }

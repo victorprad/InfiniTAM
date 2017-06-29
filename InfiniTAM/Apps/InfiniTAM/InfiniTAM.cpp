@@ -15,7 +15,7 @@
 #include "../../InputSource/FFMPEGReader.h"
 #include "../../ITMLib/ITMLibDefines.h"
 #include "../../ITMLib/Core/ITMBasicEngine.h"
-#include "../../ITMLib/Core/ITMBasicSurfelEngine.tpp"
+#include "../../ITMLib/Core/ITMBasicSurfelEngine.h"
 #include "../../ITMLib/Core/ITMMultiEngine.h"
 
 using namespace InfiniTAM::Engine;
@@ -189,7 +189,7 @@ try
 		mainEngine = new ITMBasicEngine<ITMVoxel, ITMVoxelIndex>(internalSettings, imageSource->getCalib(), imageSource->getRGBImageSize(), imageSource->getDepthImageSize());
 		break;
 	case ITMLibSettings::LIBMODE_BASIC_SURFELS:
-		mainEngine = new ITMBasicSurfelEngine<ITMVoxel, ITMVoxelIndex, ITMSurfel_rgb>(internalSettings, imageSource->getCalib(), imageSource->getRGBImageSize(), imageSource->getDepthImageSize());
+		mainEngine = new ITMBasicSurfelEngine<ITMSurfelT>(internalSettings, imageSource->getCalib(), imageSource->getRGBImageSize(), imageSource->getDepthImageSize());
 		break;
 	case ITMLibSettings::LIBMODE_LOOPCLOSURE:
 		mainEngine = new ITMMultiEngine<ITMVoxel, ITMVoxelIndex>(internalSettings, imageSource->getCalib(), imageSource->getRGBImageSize(), imageSource->getDepthImageSize());
