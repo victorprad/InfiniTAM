@@ -16,7 +16,7 @@ ITMLibSettings::ITMLibSettings(void)
 	// create all the things required for marching cubes and mesh extraction
 	// - uses additional memory (lots!)
 	createMeshingEngine = true;
-    
+
 #ifndef COMPILE_WITHOUT_CUDA
 	deviceType = DEVICE_CUDA;
 #else
@@ -40,9 +40,10 @@ ITMLibSettings::ITMLibSettings(void)
 
 	/// what to do on tracker failure: ignore, relocalise or stop integration - not supported in loop closure version
 	behaviourOnFailure = FAILUREMODE_IGNORE;
-    
+
 	/// switch between various library modes - basic, with loop closure, etc.
 	libMode = LIBMODE_BASIC;
+	//libMode = LIBMODE_BASIC_SURFELS;
 
 	//// Default ICP tracking
 	//trackerConfig = "type=icp,levels=rrrbb,minstep=1e-3,"
@@ -68,9 +69,15 @@ ITMLibSettings::ITMLibSettings(void)
 
 	//trackerConfig = "type=imuicp,levels=tb,minstep=1e-3,outlierC=0.01,outlierF=0.005,numiterC=4,numiterF=2";
 	//trackerConfig = "type=extendedimu,levels=ttb,minstep=5e-4,outlierSpaceC=0.1,outlierSpaceF=0.004,numiterC=20,numiterF=5,tukeyCutOff=8,framesToSkip=20,framesToWeight=50,failureDec=20.0";
+
+	// Surfel tracking
+	if(libMode == LIBMODE_BASIC_SURFELS)
+	{
+		trackerConfig = "extended,levels=rrbb,minstep=1e-4,outlierSpaceC=0.1,outlierSpaceF=0.004,numiterC=20,numiterF=20,tukeyCutOff=8,framesToSkip=0,framesToWeight=1,failureDec=20.0";
+	}
 }
 
 MemoryDeviceType ITMLibSettings::GetMemoryType() const
 {
-  return deviceType == ITMLibSettings::DEVICE_CUDA ? MEMORYDEVICE_CUDA : MEMORYDEVICE_CPU;
+	return deviceType == ITMLibSettings::DEVICE_CUDA ? MEMORYDEVICE_CUDA : MEMORYDEVICE_CPU;
 }

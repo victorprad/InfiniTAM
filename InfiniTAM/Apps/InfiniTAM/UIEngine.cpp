@@ -19,6 +19,7 @@
 
 #include "../../ITMLib/ITMLibDefines.h"
 #include "../../ITMLib/Core/ITMBasicEngine.h"
+#include "../../ITMLib/Core/ITMBasicSurfelEngine.h"
 #include "../../ITMLib/Core/ITMMultiEngine.h"
 
 #include "../../ORUtils/FileUtils.h"
@@ -102,11 +103,11 @@ void UIEngine::glutDisplayFunction()
 	glColor3f(1.0f, 0.0f, 0.0f); glRasterPos2f(-0.98f, -0.95f);
 	if (uiEngine->freeviewActive)
 	{
-		sprintf(str, "n: one frame \t b: continous \t e/esc: exit \t r: reset \t k: save \t l: load \t f: follow camera \t c: colours (currently %s) \t t: turn fusion %s", uiEngine->colourModes_freeview[uiEngine->currentColourMode].name, uiEngine->intergrationActive ? "off" : "on");
+		sprintf(str, "n: one frame \t b: continous \t e/esc: exit \t r: reset \t k: save \t l: load \t f: follow camera \t c: colours (currently %s) \t t: turn fusion %s", uiEngine->colourModes_freeview[uiEngine->currentColourMode].name, uiEngine->integrationActive ? "off" : "on");
 	}
 	else
 	{
-		sprintf(str, "n: one frame \t b: continous \t e/esc: exit \t r: reset \t k: save \t l: load \t f: free viewpoint \t c: colours (currently %s) \t t: turn fusion %s", uiEngine->colourModes_main[uiEngine->currentColourMode].name, uiEngine->intergrationActive ? "off" : "on");
+		sprintf(str, "n: one frame \t b: continous \t e/esc: exit \t r: reset \t k: save \t l: load \t f: free viewpoint \t c: colours (currently %s) \t t: turn fusion %s", uiEngine->colourModes_main[uiEngine->currentColourMode].name, uiEngine->integrationActive ? "off" : "on");
 	}
 	safe_glutBitmapString(GLUT_BITMAP_HELVETICA_12, (const char*)str);
 
@@ -251,12 +252,20 @@ void UIEngine::glutKeyUpFunction(unsigned char key, int x, int y)
 		break;
 	case 't':
 	{
-		uiEngine->intergrationActive = !uiEngine->intergrationActive;
+		uiEngine->integrationActive = !uiEngine->integrationActive;
+
 		ITMBasicEngine<ITMVoxel, ITMVoxelIndex> *basicEngine = dynamic_cast<ITMBasicEngine<ITMVoxel, ITMVoxelIndex>*>(uiEngine->mainEngine);
 		if (basicEngine != NULL) 
 		{
-			if (uiEngine->intergrationActive) basicEngine->turnOnIntegration();
+			if (uiEngine->integrationActive) basicEngine->turnOnIntegration();
 			else basicEngine->turnOffIntegration();
+		}
+
+		ITMBasicSurfelEngine<ITMSurfelT> *basicSurfelEngine = dynamic_cast<ITMBasicSurfelEngine<ITMSurfelT>*>(uiEngine->mainEngine);
+		if (basicSurfelEngine != NULL)
+		{
+			if (uiEngine->integrationActive) basicSurfelEngine->turnOnIntegration();
+			else basicSurfelEngine->turnOffIntegration();
 		}
 	}
 	break;
@@ -271,6 +280,9 @@ void UIEngine::glutKeyUpFunction(unsigned char key, int x, int y)
 	{
 		ITMBasicEngine<ITMVoxel, ITMVoxelIndex> *basicEngine = dynamic_cast<ITMBasicEngine<ITMVoxel, ITMVoxelIndex>*>(uiEngine->mainEngine);
 		if (basicEngine != NULL) basicEngine->resetAll();
+
+		ITMBasicSurfelEngine<ITMSurfelT> *basicSurfelEngine = dynamic_cast<ITMBasicSurfelEngine<ITMSurfelT>*>(uiEngine->mainEngine);
+		if (basicSurfelEngine != NULL) basicSurfelEngine->resetAll();
 	}
 	break;
 	case 'k':
@@ -481,14 +493,14 @@ void UIEngine::Initialise(int & argc, char** argv, ImageSourceEngine *imageSourc
 	const char *outFolder, ITMLibSettings::DeviceType deviceType)
 {
 	this->freeviewActive = false;
-	this->intergrationActive = true;
+	this->integrationActive = true;
 	this->currentColourMode = 0;
 	this->colourModes_main.push_back(UIColourMode("shaded greyscale", ITMMainEngine::InfiniTAM_IMAGE_SCENERAYCAST));
-	if (ITMVoxel::hasColorInformation) this->colourModes_main.push_back(UIColourMode("integrated colours", ITMMainEngine::InfiniTAM_IMAGE_COLOUR_FROM_VOLUME));
+	this->colourModes_main.push_back(UIColourMode("integrated colours", ITMMainEngine::InfiniTAM_IMAGE_COLOUR_FROM_VOLUME));
 	this->colourModes_main.push_back(UIColourMode("surface normals", ITMMainEngine::InfiniTAM_IMAGE_COLOUR_FROM_NORMAL));
 	this->colourModes_main.push_back(UIColourMode("confidence", ITMMainEngine::InfiniTAM_IMAGE_COLOUR_FROM_CONFIDENCE));
 	this->colourModes_freeview.push_back(UIColourMode("shaded greyscale", ITMMainEngine::InfiniTAM_IMAGE_FREECAMERA_SHADED));
-	if (ITMVoxel::hasColorInformation) this->colourModes_freeview.push_back(UIColourMode("integrated colours", ITMMainEngine::InfiniTAM_IMAGE_FREECAMERA_COLOUR_FROM_VOLUME));
+	this->colourModes_freeview.push_back(UIColourMode("integrated colours", ITMMainEngine::InfiniTAM_IMAGE_FREECAMERA_COLOUR_FROM_VOLUME));
 	this->colourModes_freeview.push_back(UIColourMode("surface normals", ITMMainEngine::InfiniTAM_IMAGE_FREECAMERA_COLOUR_FROM_NORMAL));
 	this->colourModes_freeview.push_back(UIColourMode("confidence", ITMMainEngine::InfiniTAM_IMAGE_FREECAMERA_COLOUR_FROM_CONFIDENCE));
 

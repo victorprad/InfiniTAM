@@ -304,6 +304,8 @@ void ITMSurfelVisualisationEngine_CUDA<TSurfel>::MakeIndexImage(const ITMSurfelS
 
   const ITMSurfelSceneParams& sceneParams = scene->GetParams();
   const int surfelCount = static_cast<int>(scene->GetSurfelCount());
+  if(surfelCount == 0) return;
+
   numBlocks = (surfelCount + threadsPerBlock - 1) / threadsPerBlock;
 
   ck_update_depth_buffer_for_surfel<<<numBlocks,threadsPerBlock>>>(
