@@ -1,4 +1,4 @@
-# InfiniTAM
+# InfiniTAM v3
 
 This is the main branch of the software bundle "InfiniTAM", the current version is actively maintained by:
 
