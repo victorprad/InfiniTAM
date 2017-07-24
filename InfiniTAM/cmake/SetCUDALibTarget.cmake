@@ -9,3 +9,5 @@ IF(WITH_CUDA)
 ELSE()
   ADD_LIBRARY(${targetname} STATIC ${sources} ${headers} ${templates})
 ENDIF()
+
+INCLUDE(${CMAKE_SOURCE_DIR}/cmake/SetInstallTarget.cmake)

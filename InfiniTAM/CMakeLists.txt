@@ -44,3 +44,9 @@ ADD_SUBDIRECTORY(InputSource)
 ADD_SUBDIRECTORY(ITMLib)
 ADD_SUBDIRECTORY(MiniSlamGraphLib)
 ADD_SUBDIRECTORY(ORUtils)
+
+################################
+# Uninstall any installed file #
+################################
+
+include(${CMAKE_SOURCE_DIR}/cmake/SetUninstallTarget.cmake)
