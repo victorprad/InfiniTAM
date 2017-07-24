@@ -7,7 +7,7 @@ This is the main branch of the software bundle "InfiniTAM", the current version 
   Stuart Golodetz <smg@robots.ox.ac.uk>  
   Michael Sapienza <michael.sapienza@eng.ox.ac.uk>  
   Tommaso Cavallari <tommaso.cavallari@unibo.it>
-  
+
 Previous maintainers and contributors are:
 
   Carl Yuheng Ren <carl@robots.ox.ac.uk>  
@@ -17,7 +17,7 @@ Previous maintainers and contributors are:
   Ian D Reid <ian.reid@adelaide.edu.au>  
   David W Murray <dwm@robots.ox.ac.uk>
 
-For more information about InfiniTAM please visit the project website <http://www.infinitam.org>. 
+For more information about InfiniTAM please visit the project website <http://www.infinitam.org>.
 
 Other related projects can be found in the Oxford Active Vision Library <http://www.oxvisionlib.org>.
 
@@ -77,6 +77,11 @@ Several 3rd party libraries are needed for compiling InfiniTAM. The given versio
   $ cmake /path/to/InfiniTAM -DOPEN_NI_ROOT=/path/to/OpenNI2/
   $ make
 ```
+  To install the libraries to a custom location on your system, compile with:
+```
+  $ cmake /path/to/InfiniTAM -DOPEN_NI_ROOT=/path/to/OpenNI2/ -DCMAKE_PREFIX_PATH=/path/to/install/libs
+  $ make install
+```
   To create a doxygen documentation, just run doxygen:
 ```
   $ doxygen Doxyfile
@@ -90,7 +95,7 @@ Padding the data structure ITMVoxel in ITMLibDefines.h with one extra byte may o
 
 On Mac OS X 10.9 there are currently some issues with libc++ vs. libstdc++ in conjunction with CUDA. They eventually manifest in error messages like:
 ```
-Undefined symbols for architecture x86_64: 
+Undefined symbols for architecture x86_64:
 "std::ios_base::Init::Init()", referenced from:
       __GLOBAL__I_a in libITMLib.a(ITMLib_generated_ITMColorTracker_CUDA.cu.o)
       __GLOBAL__I_a in libITMLib.a(ITMLib_generated_ITMDepthTracker_CUDA.cu.o)
@@ -146,7 +151,7 @@ author = {{K{\"a}hler}, O. and
 		  {Torr}, P.~H.~S and
 		  {Murray}, D.~W.},
 title = "{Very High Frame Rate Volumetric Integration of Depth Images on Mobile Device}",
-journal = "{IEEE Transactions on Visualization and Computer Graphics 
+journal = "{IEEE Transactions on Visualization and Computer Graphics
 	   (Proceedings International Symposium on Mixed and Augmented Reality 2015}",
 volume = {22},
 number = {11},
