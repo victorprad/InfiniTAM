@@ -82,6 +82,10 @@ Several 3rd party libraries are needed for compiling InfiniTAM. The given versio
   $ cmake /path/to/InfiniTAM -DOPEN_NI_ROOT=/path/to/OpenNI2/ -DCMAKE_PREFIX_PATH=/path/to/install/libs
   $ make install
 ```
+  You can uninstall the libraries with:
+```
+  $ make uninstall
+```
   To create a doxygen documentation, just run doxygen:
 ```
   $ doxygen Doxyfile
@@ -151,7 +155,7 @@ author = {{K{\"a}hler}, O. and
 		  {Torr}, P.~H.~S and
 		  {Murray}, D.~W.},
 title = "{Very High Frame Rate Volumetric Integration of Depth Images on Mobile Device}",
-journal = "{IEEE Transactions on Visualization and Computer Graphics 
+journal = "{IEEE Transactions on Visualization and Computer Graphics
 	   (Proceedings International Symposium on Mixed and Augmented Reality 2015}",
 volume = {22},
 number = {11},
