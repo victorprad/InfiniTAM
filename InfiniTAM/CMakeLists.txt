@@ -49,4 +49,4 @@ ADD_SUBDIRECTORY(ORUtils)
 # Uninstall any installed file #
 ################################
 
-include(${CMAKE_SOURCE_DIR}/cmake/SetUninstallTarget.cmake)
+INCLUDE(${CMAKE_SOURCE_DIR}/cmake/SetUninstallTarget.cmake)

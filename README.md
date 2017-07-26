@@ -151,7 +151,7 @@ author = {{K{\"a}hler}, O. and
 		  {Torr}, P.~H.~S and
 		  {Murray}, D.~W.},
 title = "{Very High Frame Rate Volumetric Integration of Depth Images on Mobile Device}",
-journal = "{IEEE Transactions on Visualization and Computer Graphics
+journal = "{IEEE Transactions on Visualization and Computer Graphics 
 	   (Proceedings International Symposium on Mixed and Augmented Reality 2015}",
 volume = {22},
 number = {11},
