@@ -156,19 +156,11 @@ year = 2015
 and
 
 ```
-@article{2014arXiv1410.0925P,
-author = {{Prisacariu}, V.~A. and
-		  {K{\"a}hler}, O. and
-		  {Cheng}, M.~M. and
-		  {Ren}, C.~Y. and
-		  {Valentin}, J. and
-		  {Reid}, I.~D. and
-		  {Murray}, D.~W.},
-title = "{A Framework for the Volumetric Integration of Depth Images}",
-journal = {ArXiv e-prints},
-archivePrefix = "arXiv",
-eprint = {1410.0925},
-year = 2014
+@article{InfiniTAM_arXiv_2017,
+author = {V A Prisacariu and O K{\"a}hler and S Golodetz and M Sapienza and T Cavallari and P H S Torr and D W Murray},
+title = {{InfiniTAM v3: A Framework for Large-Scale 3D Reconstruction with Loop Closure}},
+journal = {arXiv pre-print arXiv:1708.00783v1},
+year = {2017}
 }
 ```
 
