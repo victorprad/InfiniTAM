@@ -13,6 +13,11 @@ IF(WITH_CUDA)
     INCLUDE("${CMAKE_MODULE_PATH}/CUDACheckCompute.cmake")
   ENDIF()
 
+  # Set the compute capability flags.
+  FOREACH(compute_capability ${CUDA_COMPUTE_CAPABILITY})
+    LIST(APPEND CUDA_NVCC_FLAGS --generate-code arch=compute_${compute_capability},code=sm_${compute_capability})
+  ENDFOREACH()
+
   # Enable fast math.
   SET(CUDA_NVCC_FLAGS --use_fast_math ; ${CUDA_NVCC_FLAGS})
 
