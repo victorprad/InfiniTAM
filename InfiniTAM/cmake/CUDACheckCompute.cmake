@@ -9,7 +9,7 @@ if(CUDA_FOUND)
     message(STATUS "${CMAKE_MODULE_PATH}/cuda_compute_capability.c")
     try_run(RUN_RESULT_VAR COMPILE_RESULT_VAR
         ${CMAKE_BINARY_DIR}
-        ${CMAKE_MODULE_PATH}/cuda_compute_capability.c
+        ${CMAKE_MODULE_PATH}/cuda_compute_capability.cpp
         CMAKE_FLAGS
         -DINCLUDE_DIRECTORIES:STRING=${CUDA_TOOLKIT_INCLUDE}
         -DLINK_LIBRARIES:STRING=${CUDA_CUDART_LIBRARY}
