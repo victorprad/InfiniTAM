@@ -348,8 +348,6 @@ void ITMSceneReconstructionEngine_CPU<TVoxel, ITMPlainVoxelArray>::IntegrateInto
 
 	M_d = trackingState->pose_d->GetM();
     
-    // if (HasNaN(M_d)) return ;
-    
 	if (TVoxel::hasColorInformation) M_rgb = view->calib.trafo_rgb_to_depth.calib_inv * M_d;
 
 	projParams_d = view->calib.intrinsics_d.projectionParamsSimple.all;
