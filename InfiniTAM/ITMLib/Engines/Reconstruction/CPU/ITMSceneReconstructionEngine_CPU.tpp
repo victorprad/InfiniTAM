@@ -58,6 +58,7 @@ void ITMSceneReconstructionEngine_CPU<TVoxel, ITMVoxelBlockHash>::IntegrateIntoS
 	ITMRenderState_VH *renderState_vh = (ITMRenderState_VH*)renderState;
 
 	M_d = trackingState->pose_d->GetM();
+        if (HasNaN(M_d)) return ; // TODO: means the pose is invalid, need to fix that pose 
 	if (TVoxel::hasColorInformation) M_rgb = view->calib.trafo_rgb_to_depth.calib_inv * M_d;
 
 	projParams_d = view->calib.intrinsics_d.projectionParamsSimple.all;
@@ -128,7 +129,7 @@ void ITMSceneReconstructionEngine_CPU<TVoxel, ITMVoxelBlockHash>::AllocateSceneF
 	if (resetVisibleList) renderState_vh->noVisibleEntries = 0;
 
 	M_d = trackingState->pose_d->GetM(); M_d.inv(invM_d);
-
+    
 	projParams_d = view->calib.intrinsics_d.projectionParamsSimple.all;
 	invProjParams_d = projParams_d;
 	invProjParams_d.x = 1.0f / invProjParams_d.x;
@@ -346,6 +347,9 @@ void ITMSceneReconstructionEngine_CPU<TVoxel, ITMPlainVoxelArray>::IntegrateInto
 	Vector4f projParams_d, projParams_rgb;
 
 	M_d = trackingState->pose_d->GetM();
+    
+    // if (HasNaN(M_d)) return ;
+    
 	if (TVoxel::hasColorInformation) M_rgb = view->calib.trafo_rgb_to_depth.calib_inv * M_d;
 
 	projParams_d = view->calib.intrinsics_d.projectionParamsSimple.all;
