@@ -49,11 +49,11 @@ namespace ORUtils {
 		T m[s*s];
 	};
 
-    template<class T>
-    _CPU_AND_GPU_CODE_ inline bool HasNaN(const T &m)
-    {
-        return !(m == m);
-    }
+	template<class T>
+	_CPU_AND_GPU_CODE_ inline bool HasNaN(const T &m)
+	{
+		return !(m == m);
+	}
 
 	//////////////////////////////////////////////////////////////////////////
 	// Matrix class with math operators

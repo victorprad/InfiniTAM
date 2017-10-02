@@ -37,7 +37,7 @@ void ITMColorTracker::TrackCamera(ITMTrackingState *trackingState, const ITMView
 		minimizeLM(*this, currentPara);
 	}
 
-    const auto paraM = currentPara.GetM();
+    const Matrix4f paraM = currentPara.GetM();
     if (HasNaN(paraM)) return ; 
 	// these following will coerce the result back into the chosen
 	// parameterization for rotations
