@@ -157,16 +157,16 @@ namespace ORUtils {
 		_CPU_AND_GPU_CODE_ inline Matrix4 &operator -= (const Matrix4 &mat) { for (int i = 0; i < 16; ++i) this->m[i] -= mat.m[i]; return *this; }
 
 		_CPU_AND_GPU_CODE_ inline friend bool operator == (const Matrix4 &lhs, const Matrix4 &rhs) {
-			bool r = lhs[0] == rhs[0];
+			bool r = lhs.m[0] == rhs.m[0];
 			for (int i = 1; i < 16; i++)
-				r &= lhs[i] == rhs[i];
+				r &= lhs.m[i] == rhs.m[i];
 			return r;
 		}
 
 		_CPU_AND_GPU_CODE_ inline friend bool operator != (const Matrix4 &lhs, const Matrix4 &rhs) {
-			bool r = lhs[0] != rhs[0];
+			bool r = lhs.m[0] != rhs.m[0];
 			for (int i = 1; i < 16; i++)
-				r |= lhs[i] != rhs[i];
+				r |= lhs.m[i] != rhs.m[i];
 			return r;
 		}
 
@@ -327,16 +327,16 @@ namespace ORUtils {
 		_CPU_AND_GPU_CODE_ inline Matrix3& operator -= (const Matrix3 &mat) { for (int i = 0; i < 9; ++i) this->m[i] -= mat.m[i]; return *this; }
 
 		_CPU_AND_GPU_CODE_ inline friend bool operator == (const Matrix3 &lhs, const Matrix3 &rhs) {
-			bool r = lhs[0] == rhs[0];
+			bool r = lhs.m[0] == rhs.m[0];
 			for (int i = 1; i < 9; i++)
-				r &= lhs[i] == rhs[i];
+				r &= lhs.m[i] == rhs.m[i];
 			return r;
 		}
 
 		_CPU_AND_GPU_CODE_ inline friend bool operator != (const Matrix3 &lhs, const Matrix3 &rhs) {
-			bool r = lhs[0] != rhs[0];
+			bool r = lhs.m[0] != rhs.m[0];
 			for (int i = 1; i < 9; i++)
-				r |= lhs[i] != rhs[i];
+				r |= lhs.m[i] != rhs.m[i];
 			return r;
 		}
 
@@ -429,16 +429,16 @@ namespace ORUtils {
 		_CPU_AND_GPU_CODE_ inline MatrixSQX<T, s> &operator -= (const MatrixSQX<T, s> &mat) { for (int i = 0; i < s*s; ++i) this->m[i] -= mat.m[i]; return *this; }
 
 		_CPU_AND_GPU_CODE_ inline friend bool operator == (const MatrixSQX<T, s> &lhs, const MatrixSQX<T, s> &rhs) {
-			bool r = lhs[0] == rhs[0];
+			bool r = lhs.m[0] == rhs.m[0];
 			for (int i = 1; i < s*s; i++)
-				r &= lhs[i] == rhs[i];
+				r &= lhs.m[i] == rhs.m[i];
 			return r;
 		}
 
 		_CPU_AND_GPU_CODE_ inline friend bool operator != (const MatrixSQX<T, s> &lhs, const MatrixSQX<T, s> &rhs) {
-			bool r = lhs[0] != rhs[0];
+			bool r = lhs.m[0] != rhs.m[0];
 			for (int i = 1; i < s*s; i++)
-				r |= lhs[i] != rhs[i];
+				r |= lhs.m[i] != rhs.m[i];
 			return r;
 		}
 
