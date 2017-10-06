@@ -43,6 +43,8 @@ namespace ORUtils
 		void SetModelViewFromParams();
 	public:
 
+		void SetBoth(const Matrix4<float> & M, const float params[6]);
+
 		void SetFrom(float tx, float ty, float tz, float rx, float ry, float rz);
 		void SetFrom(const Vector3<float> &translation, const Vector3<float> &rotation);
 		void SetFrom(const Vector6<float> &tangent);

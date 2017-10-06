@@ -29,6 +29,12 @@ SE3Pose::SE3Pose(const Matrix3<float> &R, const Vector3<float> &t) { this->SetRT
 #define M_PI_2 1.5707963267948966192E0
 #endif
 
+void SE3Pose::SetBoth(const Matrix4<float> & M, const float params[6])
+{
+	this->M = M;
+	memcpy(this->params.all, params, 6 * sizeof(float));
+}
+
 void SE3Pose::SetFrom(float tx, float ty, float tz, float rx, float ry, float rz)
 {
 	this->params.each.tx = tx;
