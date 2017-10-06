@@ -70,6 +70,9 @@ public:
   virtual Vector2i getRGBImageSize(void) const;
 
   /** Override */
+  virtual bool hasImagesNow(void) const;
+
+  /** Override */
   virtual bool hasMoreImages(void) const;
 
   //#################### PRIVATE MEMBER FUNCTIONS ####################

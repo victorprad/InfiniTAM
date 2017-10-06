@@ -48,6 +48,18 @@ namespace InputSource {
 		virtual Vector2i getRGBImageSize(void) const = 0;
 
 		/**
+		 * \brief Determines whether or not the image source engine has RGB-D images currently available.
+		 *
+		 * \return  true, if the image source engine has RGB-D images currently available, or false otherwise.
+		 */
+		virtual bool hasImagesNow(void) const
+		{
+			// By default, this just returns the same as hasMoreImages(), but it can be overridden by image
+			// source engines that need to support the case of being temporarily unable to yield images.
+			return hasMoreImages();
+		}
+
+		/**
 		 * \brief Determines whether or not the image source engine is able to yield more RGB-D images.
 		 *
 		 * \return  true, if the image source engine is able to yield more RGB-D images, or false otherwise.

@@ -61,6 +61,12 @@ Vector2i CompositeImageSourceEngine::getRGBImageSize(void) const
   else throw std::runtime_error("Cannot get the RGB image size from an empty composite image source engine");
 }
 
+bool CompositeImageSourceEngine::hasImagesNow(void) const
+{
+  const ImageSourceEngine *curSubengine = advanceToNextImages();
+  return curSubengine != NULL && curSubengine->hasImagesNow();
+}
+
 bool CompositeImageSourceEngine::hasMoreImages(void) const
 {
   return advanceToNextImages() != NULL;
