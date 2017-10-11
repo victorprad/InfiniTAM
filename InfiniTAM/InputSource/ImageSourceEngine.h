@@ -18,7 +18,7 @@ namespace InputSource {
 		 * \brief Gets the calibration parameters associated with the next RGB-D image (if any).
 		 *
 		 * \pre     hasMoreImages()
-		 * \return  The calibration parameters associated the next RGB-D image (if any).
+		 * \return  The calibration parameters associated with the next RGB-D image (if any), or the default calibration parameters otherwise.
 		 */
 		virtual ITMLib::ITMRGBDCalib getCalib() const = 0;
 
@@ -26,7 +26,7 @@ namespace InputSource {
 		 * \brief Gets the size of the next depth image (if any).
 		 *
 		 * \pre     hasMoreImages()
-		 * \return  The size of the next depth image (if any).
+		 * \return  The size of the next depth image (if any), or Vector2i(0,0) otherwise.
 		 */
 		virtual Vector2i getDepthImageSize(void) const = 0;
 
@@ -43,7 +43,7 @@ namespace InputSource {
 		 * \brief Gets the size of the next RGB image (if any).
 		 *
 		 * \pre     hasMoreImages()
-		 * \return  The size of the next RGB image (if any).
+		 * \return  The size of the next RGB image (if any), or Vector2i(0,0) otherwise.
 		 */
 		virtual Vector2i getRGBImageSize(void) const = 0;
 
