@@ -4,13 +4,28 @@
 
 cmake_minimum_required(VERSION 2.8)
 
-PROJECT(InfiniTAM)
+PROJECT(infinitam)
 
 #################################
 # Specify the CMake module path #
 #################################
 
 SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
+
+########################
+# Optional ROS Support #
+########################
+
+OPTION(WITH_ROS "Build with ROS support." OFF)
+
+IF(WITH_ROS)
+  FIND_PACKAGE(catkin REQUIRED)
+  catkin_package(
+    INCLUDE_DIRS .
+    LIBRARIES FernRelocLib InputSource ITMLib MiniSlamGraphLib ORUtils
+#    DEPENDS system_lib
+  )
+ENDIF()
 
 #################################
 # Add additional compiler flags #

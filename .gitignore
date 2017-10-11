@@ -6,15 +6,15 @@
 *.swp
 .DS_Store
 x64/
-/InfiniTAM/build/
-/InfiniTAM/buildx/
-/InfiniTAM/freeglut/
-/InfiniTAM/install/
-/InfiniTAM/librealsense/
-/InfiniTAM/Files/Out/out.ppm
-/InfiniTAM/Files/Out/*.ppm
-/InfiniTAM/Files/Teddy/Frames
-/InfiniTAM/*.tags
+/build/
+/buildx/
+/freeglut/
+/install/
+/librealsense/
+/Files/Out/out.ppm
+/Files/Out/*.ppm
+/Files/Teddy/Frames
+/*.tags
 
 # QtCreator CMake
 CMakeLists.txt.user*
