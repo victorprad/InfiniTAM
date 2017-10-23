@@ -4,6 +4,9 @@
 #include <string.h>
 #include <ostream>
 
+#include "PlatformIndependence.h"
+#include "Vector.h"
+
 /************************************************************************/
 /* WARNING: the following 3x3 and 4x4 matrix are using column major, to	*/
 /* be consistent with OpenGL default rather than most C/C++ default.	*/
