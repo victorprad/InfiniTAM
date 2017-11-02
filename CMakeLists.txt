@@ -12,6 +12,32 @@ PROJECT(InfiniTAM)
 
 SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
 
+####################################
+# Find catkin macros and libraries #
+####################################
+
+find_package(catkin REQUIRED COMPONENTS
+  roscpp
+  std_msgs
+  message_filters
+)
+
+find_package(Boost REQUIRED
+  system
+)
+
+include_directories(
+  ${Boost_INCLUDE_DIRS}
+  ${catkin_INCLUDE_DIRS}
+)
+
+catkin_package(
+#  INCLUDE_DIRS include
+#  LIBRARIES using_markers
+#  CATKIN_DEPENDS roscpp visualization_msgs
+#  DEPENDS system_lib
+)
+
 #################################
 # Add additional compiler flags #
 #################################
@@ -38,9 +64,9 @@ ENDIF()
 # Add subdirectories #
 ######################
 
-ADD_SUBDIRECTORY(Apps)
-ADD_SUBDIRECTORY(FernRelocLib)
-ADD_SUBDIRECTORY(InputSource)
-ADD_SUBDIRECTORY(ITMLib)
-ADD_SUBDIRECTORY(MiniSlamGraphLib)
-ADD_SUBDIRECTORY(ORUtils)
+ADD_SUBDIRECTORY(InfiniTAM/Apps)
+ADD_SUBDIRECTORY(InfiniTAM/FernRelocLib)
+ADD_SUBDIRECTORY(InfiniTAM/InputSource)
+ADD_SUBDIRECTORY(InfiniTAM/ITMLib)
+ADD_SUBDIRECTORY(InfiniTAM/MiniSlamGraphLib)
+ADD_SUBDIRECTORY(InfiniTAM/ORUtils)
