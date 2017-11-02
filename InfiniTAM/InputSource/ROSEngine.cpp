@@ -35,9 +35,10 @@ void ROSEngine::processMessage(const ImageConstPtr& rgb_image, const ImageConstP
 void ROSEngine::topicListenerThread()
 {
 	// subscribe to rgb and depth topics
-	message_filters::Subscriber<sensor_msgs::Image> rgb_sub_(nh_, "/dtam/rgb", 1); // TODO remove dtam and generalize to: /namespace/rgb, /namespace/depth
-	message_filters::Subscriber<sensor_msgs::Image> depth_sub_(nh_, "/dtam/depth", 1); // uint16 depth image in mm. Native OpenNI format, preferred by InfiniTAM.
-	TimeSynchronizer<sensor_msgs::Image, sensor_msgs::Image> sync(rgb_sub_, depth_sub_, 10);
+	message_filters::Subscriber<sensor_msgs::Image> rgb_sub_(nh_, "/camera/rgb/image_raw", 1); // TODO remove dtam and generalize to: /namespace/rgb, /namespace/depth
+	message_filters::Subscriber<sensor_msgs::Image> depth_sub_(nh_, "/camera/depth/image_raw", 1); // uint16 depth image in mm. Native OpenNI format, preferred by InfiniTAM.
+	typedef sync_policies::ApproximateTime<sensor_msgs::Image, sensor_msgs::Image> ITAMSyncPolicy;
+	Synchronizer<ITAMSyncPolicy> sync(ITAMSyncPolicy(10), rgb_sub_, depth_sub_);
 	sync.registerCallback(boost::bind(&ROSEngine::processMessage, this, _1, _2));
 
 	ros::spin();
@@ -46,17 +47,15 @@ void ROSEngine::topicListenerThread()
 ROSEngine::ROSEngine(const char *calibFilename,
 					 Vector2i requested_imageSize_rgb,
 					 Vector2i requested_imageSize_d) :
-	BaseImageSourceEngine(calibFilename),
-	nh_(),
-	rgb_image_(requested_imageSize_rgb, MEMORYDEVICE_CPU),
-	depth_image_(requested_imageSize_d, MEMORYDEVICE_CPU)
+			BaseImageSourceEngine(calibFilename),
+			nh_(),
+			rgb_image_(requested_imageSize_rgb, MEMORYDEVICE_CPU),
+			depth_image_(requested_imageSize_d, MEMORYDEVICE_CPU),
+			topic_listener_thread(&ROSEngine::topicListenerThread, this)
 {
-	// Start ROS
-	ros::start();
 
 	// Start up topic listener thread
-	std::thread topic_listener_thread(&ROSEngine::topicListenerThread, this);
-	topic_listener_thread.join();
+	// topic_listener_thread.join();
 
 	// TODO document that depth images must be in millimeters
 	this->calib.disparityCalib.SetStandard(); // assumes depth is in millimeters
@@ -86,6 +85,4 @@ Vector2i ROSEngine::getRGBImageSize(void) const
 }
 
 ROSEngine::~ROSEngine()
-{
-	ros::shutdown();
-}
+{}

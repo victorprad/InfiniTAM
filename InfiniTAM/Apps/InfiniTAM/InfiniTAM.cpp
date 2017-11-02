@@ -83,7 +83,7 @@ static void CreateDefaultImageSource(ImageSourceEngine* & imageSource, IMUSource
 
 	if (imageSource == NULL)
 	{
-		printf("trying ROS input: /depth/image_raw, /rgb/image_raw \n");
+		printf("trying ROS input: /camera/depth/image_raw, /camera/rgb/image_raw \n");
 		imageSource = new ROSEngine(calibFile);
 		if (imageSource->getDepthImageSize().x == 0)
 		{
@@ -156,7 +156,9 @@ static void CreateDefaultImageSource(ImageSourceEngine* & imageSource, IMUSource
 int main(int argc, char** argv)
 try
 {
+	// Start ROS
 	ros::init(argc, argv, "infinitam_ros");
+	ros::start();
 	
 	const char *arg1 = "";
 	const char *arg2 = NULL;
@@ -224,6 +226,7 @@ try
 	delete imageSource;
 	if (imuSource != NULL) delete imuSource;
 
+	ros::shutdown();
 	return 0;
 }
 catch(std::exception& e)

@@ -14,7 +14,8 @@
 
 #include <ros/ros.h>
 #include <message_filters/subscriber.h>
-#include <message_filters/time_synchronizer.h>
+#include <message_filters/synchronizer.h>
+#include <message_filters/sync_policies/approximate_time.h>
 #include <sensor_msgs/Image.h>
 #include <image_transport/image_transport.h>
 #include <cv_bridge/cv_bridge.h>
@@ -33,6 +34,7 @@ private:
 	ros::Subscriber rgb_sub_, depth_sub_;
 	ITMUChar4Image rgb_image_;
 	ITMShortImage depth_image_;
+	std::thread topic_listener_thread;
 	std::mutex images_mutex_;
 
 public:
