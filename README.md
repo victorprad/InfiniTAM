@@ -38,7 +38,7 @@ If you are new to the ROS catkin build system or want to build InfiniTAM and run
 $ source /opt/ros/indigo/setup.bash
 ```
 
-\# replace indigo with your ROS version
+replace indigo with your ROS version
 
 ```
 $ mkdir -p ./infinitam_ws/src
@@ -51,14 +51,14 @@ $ source devel/setup.bash
 ```
 $ cd ~/infinitam_ws/src/
 $ git clone git@github.com:ravich2-7183/InfiniTAM.git
-$ git checkout infinitam_ros \# switch to this branch
+$ git checkout infinitam_ros
 ```
 
 3. Build infinitam_ros
 ```
 $ cd ~/infinitam_ws/
-```
 $ catkin_make
+```
 
 4. Run infinitam_ros
 ```
