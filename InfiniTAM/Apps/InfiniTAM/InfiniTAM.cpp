@@ -83,7 +83,7 @@ static void CreateDefaultImageSource(ImageSourceEngine* & imageSource, IMUSource
 
 	if (imageSource == NULL)
 	{
-		printf("trying ROS input: /camera/depth/image_raw, /camera/rgb/image_raw \n");
+		printf("trying ROS input: /camera/depth/image_raw, /camera/rgb/image_color \n");
 		imageSource = new ROSEngine(calibFile);
 		if (imageSource->getDepthImageSize().x == 0)
 		{
