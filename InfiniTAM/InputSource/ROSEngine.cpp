@@ -2,6 +2,7 @@
 
 #include "ROSEngine.h"
 
+using namespace std;
 using namespace ORUtils;
 using namespace InputSource;
 using namespace sensor_msgs;
@@ -27,16 +28,18 @@ void ROSEngine::processMessage(const ImageConstPtr& rgb_image, const ImageConstP
 
 	// copy depth_image into depth_image_
 	short *depth = depth_image_.GetData(MEMORYDEVICE_CPU);
+	const short *depth_msg_data  = reinterpret_cast<const short*>(depth_image->data.data());
 	for(int i = 0; i < depth_image_.noDims.x * depth_image_.noDims.y; i++) {
-		depth[i] = static_cast<short>((depth_image->data)[i*sizeof(short)]);
+		depth[i] = depth_msg_data[i];
 	}
 }
 
 void ROSEngine::topicListenerThread()
 {
 	// subscribe to rgb and depth topics
-    message_filters::Subscriber<sensor_msgs::Image> rgb_sub_(nh_, "/camera/rgb/image_color", 1); // TODO remove dtam and generalize to: /namespace/rgb, /namespace/depth
-	message_filters::Subscriber<sensor_msgs::Image> depth_sub_(nh_, "/camera/depth/image_raw", 1); // uint16 depth image in mm. Native OpenNI format, preferred by InfiniTAM.
+	// depth image must be uint16 in mm, which is the native OpenNI format, preferred by InfiniTAM.
+    message_filters::Subscriber<sensor_msgs::Image> rgb_sub_(nh_, "/camera/rgb/image_color", 1);
+	message_filters::Subscriber<sensor_msgs::Image> depth_sub_(nh_, "/camera/depth/image_raw", 1); 
 	typedef sync_policies::ApproximateTime<sensor_msgs::Image, sensor_msgs::Image> ITAMSyncPolicy;
 	Synchronizer<ITAMSyncPolicy> sync(ITAMSyncPolicy(10), rgb_sub_, depth_sub_);
 	sync.registerCallback(boost::bind(&ROSEngine::processMessage, this, _1, _2));

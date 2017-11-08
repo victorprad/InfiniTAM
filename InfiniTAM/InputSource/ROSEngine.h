@@ -5,7 +5,6 @@
 #include "../ORUtils/FileUtils.h"
 #include "ImageSourceEngine.h"
 
-#include <cstdio>
 #include <iostream>
 #include <stdexcept>
 #include <string>
