@@ -25,24 +25,20 @@ The following 3rd party libraries are needed for compiling InfiniTAM. The given 
 
   - ROS (tested on indigo, but should work on other versions too).
 
-  - boost
+  - Boost
 
 ## Build Process (for infinitam_ros branch)
 
 infinitam\_ros is catkinized, so you can clone it into your catkin workspace's src/ directory and run `catkin_make' from the workspace directory. 
 
-If you are new to the ROS catkin build system or want to build InfiniTAM and run it separately you can do the following: 
+If you are new to the ROS catkin build system or want to build and run InfiniTAM in a separate directory, you can do the following: 
 
-1. Create a new catkin workspace
+1. Create a new catkin workspace (replace indigo with your ROS version)
 ```
 $ source /opt/ros/indigo/setup.bash
-```
 
-replace indigo with your ROS version
-
-```
-$ mkdir -p ./infinitam_ws/src
-$ cd ./infinitam_ws/
+$ mkdir -p ~/infinitam_ws/src
+$ cd ~/infinitam_ws/
 $ catkin_make
 $ source devel/setup.bash
 ```
@@ -62,17 +58,18 @@ $ catkin_make
 
 4. Run infinitam_ros
 ```
+$ cd ~/infinitam_ws/
+$ source devel/setup.bash
 $ rosrun InfiniTAM InfiniTAM
 ```
 
 # Expected input topics
 The InfiniTAM node subscribes to the following topics:
 
-1. /depth/image_raw
+1. /camera/depth/image_raw
 
-of type sensor_msgs/Image with encoding = "short")
+of type sensor_msgs/Image with encoding "mono16" or "16UC1" (depth is in millimeters). 
 
-2. /rgb/image_raw
+2. /camera/rgb/image_color
 
-of type sensor_msgs/Image with encoding = "RGBA8")
-
+of type sensor_msgs/Image with encoding  "bgr8" (a common ROS Image message encoding for color images). 

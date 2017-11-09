@@ -42,7 +42,12 @@ public:
 			  Vector2i imageSize_d = Vector2i(640, 480));
 	~ROSEngine();
 
-	void processMessage(const sensor_msgs::ImageConstPtr& rgb_image, const sensor_msgs::ImageConstPtr& depth_image);
+	/**
+	   @param rgb_image_msg must have an encoding "bgr8"
+	   @param depth_image_msg must have an encoding "mono16" or "16UC1" which is the depth in mm. 
+	*/
+	void processMessage(const sensor_msgs::ImageConstPtr& rgb_image_msg, const sensor_msgs::ImageConstPtr& depth_image_msg);
+
 	void topicListenerThread();
 	
 	bool hasMoreImages(void) const;
