@@ -22,8 +22,7 @@ namespace ITMLib
 	public:
 		void Track(ITMTrackingState *trackingState, const ITMView *view)
 		{
-			if (!tracker->requiresPointCloudRendering() || trackingState->age_pointCloud != -1)
-				tracker->TrackCamera(trackingState, view);
+			tracker->TrackCamera(trackingState, view);
 		}
 
 		template <typename TSurfel>

@@ -43,6 +43,11 @@ namespace ITMLib
 			TRACKING_FAILED = 0
 		} trackerResult;
 
+		bool HasValidPointCloud(void) const
+		{
+			return age_pointCloud != -1;
+		}
+
 		bool TrackerFarFromPointCloud(void) const
 		{
 			// if no point cloud exists, yet
