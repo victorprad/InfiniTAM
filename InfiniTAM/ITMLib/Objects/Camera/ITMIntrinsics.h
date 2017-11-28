@@ -20,6 +20,24 @@ namespace ITMLib
 			float fx, fy, px, py;
 		} projectionParamsSimple;
 
+		/**
+		 * \brief Makes a rescaled set of intrinsic parameters to work with a different image size.
+		 *
+		 * \param originalImageSize The original image size.
+		 * \param newImageSize      The new image size.
+		 */
+		ITMIntrinsics MakeRescaled(const Vector2i& originalImageSize, const Vector2i& newImageSize) const
+		{
+			float fxNew = projectionParamsSimple.fx * newImageSize.x / originalImageSize.x;
+			float fyNew = projectionParamsSimple.fy * newImageSize.y / originalImageSize.y;
+			float pxNew = projectionParamsSimple.px * newImageSize.x / originalImageSize.x;
+			float pyNew = projectionParamsSimple.py * newImageSize.y / originalImageSize.y;
+
+			ITMIntrinsics intrinsics;
+			intrinsics.SetFrom(fxNew, fyNew, pxNew, pyNew);
+			return intrinsics;
+		}
+
 		/** Setup all the internal members of this class from
 		    the given parameters. Everything is in pixel
 		    coordinates.
