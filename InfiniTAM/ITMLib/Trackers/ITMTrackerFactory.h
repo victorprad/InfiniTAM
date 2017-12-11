@@ -437,9 +437,11 @@ namespace ITMLib
 		if (cfg.getProperty("help") && verbose < 10) verbose = 10;
 
 		const char *fileMask = "";
+		int initialFrameNo = 0;
 		cfg.parseStrProperty("mask", "mask for the saved pose text files", fileMask, verbose);
+		cfg.parseIntProperty("initialFrameNo", "initial frame index to use for tracking", initialFrameNo, verbose);
 
-		return new ITMFileBasedTracker(fileMask);
+		return new ITMFileBasedTracker(fileMask, initialFrameNo);
 	}
 
 	/**
