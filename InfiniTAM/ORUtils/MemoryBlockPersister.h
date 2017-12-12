@@ -29,6 +29,10 @@ namespace ORUtils
 		static void LoadImage(const std::string& filename, ORUtils::Image<T>& image, MemoryDeviceType memoryDeviceType)
 		{
 			Vector2<int> imageSize = ReadImageSize(filename);
+
+			// Resize the image if needed.
+			image.ChangeDims(imageSize);
+
 			if (memoryDeviceType == MEMORYDEVICE_CUDA)
 			{
 				// If we're loading into an image on the GPU, first try and read the data into a temporary image on the CPU.
@@ -72,6 +76,10 @@ namespace ORUtils
 		static void LoadMemoryBlock(const std::string& filename, ORUtils::MemoryBlock<T>& block, MemoryDeviceType memoryDeviceType)
 		{
 			size_t blockSize = ReadBlockSize(filename);
+
+			// Resize the block if needed.
+			block.Resize(blockSize);
+
 			if (memoryDeviceType == MEMORYDEVICE_CUDA)
 			{
 				// If we're loading into a block on the GPU, first try and read the data into a temporary block on the CPU.
