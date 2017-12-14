@@ -21,12 +21,14 @@ namespace ORUtils
 		/**
 		 * \brief Loads data from a file on disk into an image.
 		 *
+		 * \note  This function cannot be called LoadImage, since that clashes with a macro in WinUser.h.
+		 *
 		 * \param filename          The name of the file.
 		 * \param image             The image into which to load the data.
 		 * \param memoryDeviceType  The type of memory device on which to load the data.
 		 */
 		template <typename T>
-		static void LoadImage(const std::string& filename, ORUtils::Image<T>& image, MemoryDeviceType memoryDeviceType)
+		static void LoadImageFrom(const std::string& filename, ORUtils::Image<T>& image, MemoryDeviceType memoryDeviceType)
 		{
 			Vector2<int> imageSize = ReadImageSize(filename);
 
@@ -52,12 +54,14 @@ namespace ORUtils
 		/**
 		 * \brief Loads data from a file on disk into an image newly-allocated on the CPU with the appropriate size.
 		 *
+		 * \note  This function cannot be called LoadImage, since that clashes with a macro in WinUser.h.
+		 *
 		 * \param filename  The name of the file.
 		 * \param dummy     An optional dummy parameter that can be used for type inference.
 		 * \return          The loaded image.
 		 */
 		template <typename T>
-		static ORUtils::Image<T> *LoadImage(const std::string& filename, ORUtils::Image<T> *dummy = NULL)
+		static ORUtils::Image<T> *LoadImageFrom(const std::string& filename, ORUtils::Image<T> *dummy = NULL)
 		{
 			Vector2<int> imageSize = ReadImageSize(filename);
 			ORUtils::Image<T> *image = new ORUtils::Image<T>(imageSize, MEMORYDEVICE_CPU);
