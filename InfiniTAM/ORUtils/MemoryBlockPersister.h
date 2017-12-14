@@ -284,7 +284,7 @@ namespace ORUtils
 		 * \throws std::runtime_error If the read is unsuccessful.
 		 */
 		template <typename T>
-		static void ReadImageData(std::istream& is, ORUtils::Image<T>& image, Vector2<int> imageSize)
+		static void ReadImageData(std::istream& is, ORUtils::Image<T>& image, const Vector2<int>& imageSize)
 		{
 			// Check that the requested image size matches the size of the allocated image.
 			if (image.noDims != imageSize)
@@ -292,7 +292,7 @@ namespace ORUtils
 				throw std::runtime_error("Could not read data into an image of the wrong size");
 			}
 
-			// Try and read the image's data (we use dataSize because it's equal to noDims.x * noDims.y).
+			// Try and read the image's data (dataSize is equal to noDims.x * noDims.y).
 			if (!is.read(reinterpret_cast<char*>(image.GetData(MEMORYDEVICE_CPU)), image.dataSize * sizeof(T)))
 			{
 				throw std::runtime_error("Could not read image data");
@@ -310,7 +310,7 @@ namespace ORUtils
 		 * \throws std::runtime_error If the read is unsuccessful.
 		 */
 		template <typename T>
-		static void ReadImageData(const std::string& filename, ORUtils::Image<T>& image, Vector2<int> imageSize)
+		static void ReadImageData(const std::string& filename, ORUtils::Image<T>& image, const Vector2<int>& imageSize)
 		{
 			std::ifstream fs(filename.c_str(), std::ios::binary);
 			if (!fs) throw std::runtime_error("Could not open " + filename + " for reading");
