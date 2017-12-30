@@ -11,7 +11,7 @@
 #include "../../InputSource/PicoFlexxEngine.h"
 #include "../../InputSource/RealSenseEngine.h"
 #include "../../InputSource/LibUVCEngine.h"
-#include "../../InputSource/RealSenseEngine.h"
+#include "../../InputSource/RealSense2Engine.h"
 #include "../../InputSource/FFMPEGReader.h"
 #include "../../ITMLib/ITMLibDefines.h"
 #include "../../ITMLib/Core/ITMBasicEngine.h"
@@ -116,7 +116,18 @@ static void CreateDefaultImageSource(ImageSourceEngine* & imageSource, IMUSource
 		}
 	}
 
-	if (imageSource == NULL)
+    if (imageSource == NULL)
+    {
+        printf("trying RealSense device with SDK 2.X (librealsense2)\n");
+        imageSource = new RealSense2Engine(calibFile);
+        if (imageSource->getDepthImageSize().x == 0)
+        {
+            delete imageSource;
+            imageSource = NULL;
+        }
+    }
+
+    if (imageSource == NULL)
 	{
 		printf("trying MS Kinect 2 device\n");
 		imageSource = new Kinect2Engine(calibFile);
