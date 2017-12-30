@@ -139,8 +139,7 @@ void RealSense2Engine::getImages(ITMUChar4Image *rgbImage, ITMShortImage *rawDep
 
     constexpr size_t rgb_pixel_size = sizeof(Vector4u);
     static_assert(4 == rgb_pixel_size, "sizeof(rgb pixel) must equal 4");
-    //const Vector4u * color_frame = reinterpret_cast<const Vector4u*>(color.get_data());
-    auto color_frame = reinterpret_cast<const char*>(color.get_data());
+    const Vector4u * color_frame = reinterpret_cast<const Vector4u*>(color.get_data());
     
     constexpr size_t depth_pixel_size = sizeof(uint16_t);
     static_assert(2 == depth_pixel_size, "sizeof(depth pixel) must equal 2");
