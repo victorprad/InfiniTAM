@@ -391,6 +391,7 @@ void ITMExtendedTracker::UpdatePoseQuality(int noValidPoints_old, float *hessian
 	float percentageInliers_v2 = (float)noValidPoints_old / (float)noValidPointsMax;
 
 	trackingState->trackerResult = ITMTrackingState::TRACKING_FAILED;
+	trackingState->trackerScore = finalResidual_v2;
 
 	if (noValidPointsMax != 0 && noTotalPoints != 0 && det_norm_v1 > 0 && det_norm_v2 > 0) {
 		Vector4f inputVector(log(det_norm_v1), log(det_norm_v2), finalResidual_v2, percentageInliers_v2);
