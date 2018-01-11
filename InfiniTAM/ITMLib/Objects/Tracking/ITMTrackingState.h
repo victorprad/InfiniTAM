@@ -43,6 +43,9 @@ namespace ITMLib
 			TRACKING_FAILED = 0
 		} trackerResult;
 
+		/// Score associated to the tracking result.
+		float trackerScore;
+
 		bool HasValidPointCloud(void) const
 		{
 			return age_pointCloud != -1;
@@ -89,6 +92,7 @@ namespace ITMLib
 			this->pose_d->SetFrom(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
 			this->pose_pointCloud->SetFrom(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
 			this->trackerResult = TRACKING_GOOD;
+			this->trackerScore = 0.0f;
 		}
 
 		// Suppress the default copy constructor and assignment operator
