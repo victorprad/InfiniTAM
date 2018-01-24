@@ -29,9 +29,6 @@ namespace ITMLib
 		void Prepare(ITMTrackingState *trackingState, const ITMSurfelScene<TSurfel> *scene, const ITMView *view,
 			const ITMSurfelVisualisationEngine<TSurfel> *visualisationEngine, ITMSurfelRenderState *renderState)
 		{
-			if (!tracker->requiresPointCloudRendering())
-				return;
-
 			//render for tracking
 			bool requiresColourRendering = tracker->requiresColourRendering();
 			bool requiresFullRendering = trackingState->TrackerFarFromPointCloud() || !settings->useApproximateRaycast;
@@ -65,9 +62,6 @@ namespace ITMLib
 		void Prepare(ITMTrackingState *trackingState, const ITMScene<TVoxel,TIndex> *scene, const ITMView *view,
 			const ITMVisualisationEngine<TVoxel,TIndex> *visualisationEngine, ITMRenderState *renderState)
 		{
-			if (!tracker->requiresPointCloudRendering())
-				return;
-
 			//render for tracking
 			bool requiresColourRendering = tracker->requiresColourRendering();
 			bool requiresFullRendering = trackingState->TrackerFarFromPointCloud() || !settings->useApproximateRaycast;
