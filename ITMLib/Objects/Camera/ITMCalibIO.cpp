@@ -10,15 +10,15 @@ using namespace ITMLib;
 
 bool ITMLib::readIntrinsics(std::istream & src, ITMIntrinsics & dest)
 {
-	float sizeX, sizeY;
+	int width, height;
 	float focalLength[2], centerPoint[2];
 
-	src >> sizeX >> sizeY;
+	src >> width >> height;
 	src >> focalLength[0] >> focalLength[1];
 	src >> centerPoint[0] >> centerPoint[1];
 	if (src.fail()) return false;
 
-	dest.SetFrom(focalLength[0], focalLength[1], centerPoint[0], centerPoint[1]);
+	dest.SetFrom(width, height, focalLength[0], focalLength[1], centerPoint[0], centerPoint[1]);
 	return true;
 }
 
@@ -113,10 +113,7 @@ bool ITMLib::readRGBDCalib(const char *rgbIntrinsicsFile, const char *depthIntri
 
 void ITMLib::writeIntrinsics(std::ostream & dest, const ITMIntrinsics & src)
 {
-	// Note: The size parameters are no longer used, but we don't want to change the calibration file format.
-	const float dummySizeX = 640, dummySizeY = 480;
-
-	dest << dummySizeX << ' ' << dummySizeY << '\n';
+	dest << src.imgSize.width << ' ' << src.imgSize.height << '\n';
 	dest << src.projectionParamsSimple.fx << ' ' << src.projectionParamsSimple.fy << '\n';
 	dest << src.projectionParamsSimple.px << ' ' << src.projectionParamsSimple.py << '\n';
 }

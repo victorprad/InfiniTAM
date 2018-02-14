@@ -232,6 +232,8 @@ OpenNIEngine::OpenNIEngine(const char *calibFilename, const char *deviceURI, con
 			float h_fov = data->depthStream.getHorizontalFieldOfView();
 			float v_fov = data->depthStream.getVerticalFieldOfView();
 			this->calib.intrinsics_d.SetFrom(
+				imageSize_d.x,
+				imageSize_d.y,
 				(float)imageSize_d.x / (2.0f * tan(h_fov/2.0f)),
 				(float)imageSize_d.y / (2.0f * tan(v_fov/2.0f)),
 				(float)imageSize_d.x / 2.0f,
@@ -241,6 +243,8 @@ OpenNIEngine::OpenNIEngine(const char *calibFilename, const char *deviceURI, con
 			float h_fov = data->colorStream.getHorizontalFieldOfView();
 			float v_fov = data->colorStream.getVerticalFieldOfView();
 			this->calib.intrinsics_rgb.SetFrom(
+				imageSize_rgb.x,
+				imageSize_rgb.y,
 				(float)imageSize_rgb.x / (2.0f * tan(h_fov/2.0f)),
 				(float)imageSize_rgb.y / (2.0f * tan(v_fov/2.0f)),
 				(float)imageSize_rgb.x / 2.0f,

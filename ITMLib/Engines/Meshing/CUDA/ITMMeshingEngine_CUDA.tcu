@@ -2,6 +2,8 @@
 
 #include "ITMMeshingEngine_CUDA.h"
 
+#include <algorithm>
+
 #include "../Shared/ITMMeshingEngine_Shared.h"
 #include "../../../Utils/ITMCUDAUtils.h"
 #include "../../../../ORUtils/CUDADefines.h"
@@ -68,7 +70,13 @@ void ITMMeshingEngine_CUDA<TVoxel, ITMVoxelBlockHash>::MeshScene(ITMMesh *mesh, 
 		ORcudaKernelCheck;
 
 		ORcudaSafeCall(cudaMemcpy(&mesh->noTotalTriangles, noTriangles_device, sizeof(unsigned int), cudaMemcpyDeviceToHost));
-	}
+
+    // meshScene_device made sure up to noMaxTriangles triangles were copied in the output array but,
+    // since the check was performed with atomicAdds, the actual number stored in noTriangles_device
+    // might be greater than noMaxTriangles.
+    // We coerce it to be lesser or equal to that number, not doing it causes a segfault when using the mesh later.
+    mesh->noTotalTriangles = std::min<uint>(mesh->noTotalTriangles, static_cast<uint>(noMaxTriangles));
+  }
 }
 
 template<class TVoxel>

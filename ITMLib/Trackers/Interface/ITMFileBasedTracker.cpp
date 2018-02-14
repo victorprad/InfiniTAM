@@ -7,9 +7,9 @@
 
 namespace ITMLib {
 
-ITMFileBasedTracker::ITMFileBasedTracker(const std::string &poseMask_) :
+ITMFileBasedTracker::ITMFileBasedTracker(const std::string &poseMask_, size_t initialFrameNo_) :
 		poseMask(poseMask_),
-		frameCount(0)
+		frameCount(initialFrameNo_)
 {}
 
 bool ITMFileBasedTracker::CanKeepTracking() const

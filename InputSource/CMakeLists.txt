@@ -37,6 +37,7 @@ SET(sources
 CompositeImageSourceEngine.cpp
 FFMPEGReader.cpp
 FFMPEGWriter.cpp
+IdleImageSourceEngine.cpp
 ImageSourceEngine.cpp
 IMUSourceEngine.cpp
 Kinect2Engine.cpp
@@ -50,6 +51,7 @@ SET(headers
 CompositeImageSourceEngine.h
 FFMPEGReader.h
 FFMPEGWriter.h
+IdleImageSourceEngine.h
 ImageSourceEngine.h
 IMUSourceEngine.h
 Kinect2Engine.h

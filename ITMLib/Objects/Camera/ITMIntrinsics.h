@@ -6,13 +6,15 @@
 
 namespace ITMLib
 {
-	/** \brief
-	    Represents the parameters for projection with a projective
-	    camera
-	*/
+	/**
+	 * \brief Represents the intrinsic parameters for a projective camera.
+	 */
 	class ITMIntrinsics
 	{
 	public:
+		/** The image size. */
+		Vector2i imgSize;
+
 		/** The actual intrinsic calibration parameters. */
 		struct ProjectionParamsSimple
 		{
@@ -20,16 +22,39 @@ namespace ITMLib
 			float fx, fy, px, py;
 		} projectionParamsSimple;
 
+		/**
+		 * \brief Makes a rescaled set of intrinsic parameters to work with a different image size.
+		 *
+		 * \param originalImageSize The original image size.
+		 * \param newImageSize      The new image size.
+		 */
+		ITMIntrinsics MakeRescaled(const Vector2i& originalImageSize, const Vector2i& newImageSize) const
+		{
+			float fxNew = projectionParamsSimple.fx * newImageSize.x / originalImageSize.x;
+			float fyNew = projectionParamsSimple.fy * newImageSize.y / originalImageSize.y;
+			float pxNew = projectionParamsSimple.px * newImageSize.x / originalImageSize.x;
+			float pyNew = projectionParamsSimple.py * newImageSize.y / originalImageSize.y;
+
+			ITMIntrinsics intrinsics;
+			intrinsics.SetFrom(newImageSize.width, newImageSize.height, fxNew, fyNew, pxNew, pyNew);
+			return intrinsics;
+		}
+
 		/** Setup all the internal members of this class from
 		    the given parameters. Everything is in pixel
 		    coordinates.
-			@param fx Focal length in x direction
-			@param fy Focal length in y direction
-			@param cx Principal point in x direction
-			@param cy Principal point in y direction
+			@param width  The image width
+			@param height The image height
+			@param fx     Focal length in x direction
+			@param fy     Focal length in y direction
+			@param cx     Principal point in x direction
+			@param cy     Principal point in y direction
 		*/
-		void SetFrom(float fx, float fy, float cx, float cy)
+		void SetFrom(int width, int height, float fx, float fy, float cx, float cy)
 		{
+			imgSize.x = width;
+			imgSize.y = height;
+
 			projectionParamsSimple.fx = fx; 
 			projectionParamsSimple.fy = fy;
 			projectionParamsSimple.px = cx; 
@@ -62,7 +87,7 @@ namespace ITMLib
 		{
 			// standard calibration parameters for Kinect RGB camera. Not at all
 			// accurate, though...
-			SetFrom(580, 580, 320, 240);
+			SetFrom(640, 480, 580, 580, 320, 240);
 		}
 	};
 }

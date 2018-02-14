@@ -23,7 +23,7 @@ namespace ITMLib
 		bool requiresDepthReliability() const { return false; }
 		bool requiresPointCloudRendering() const { return false; }
 
-		explicit ITMFileBasedTracker(const std::string &poseMask);
+		explicit ITMFileBasedTracker(const std::string &poseMask, size_t initialFrameNo = 0);
 
 	private:
 		std::string GetCurrentFilename() const;
