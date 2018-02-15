@@ -18,7 +18,7 @@ then
   cd tmp
 
   echo "[InfiniTAM] Downloading freeglut..."
-  curl http://files.transmissionzero.co.uk/software/development/GLUT/older/freeglut-MSVC-2.8.1-1.mp.zip > freeglut-MSVC-2.8.1-1.mp.zip
+  curl -L http://files.transmissionzero.co.uk/software/development/GLUT/older/freeglut-MSVC-2.8.1-1.mp.zip > freeglut-MSVC-2.8.1-1.mp.zip
 
   echo "[InfiniTAM] Extracting freeglut..."
   unzip freeglut-MSVC-2.8.1-1.mp.zip
