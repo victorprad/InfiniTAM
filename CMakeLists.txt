@@ -12,20 +12,11 @@ PROJECT(infinitam)
 
 SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
 
-########################
-# Optional ROS Support #
-########################
+#####################
+# Offer ROS Support #
+#####################
 
-OPTION(WITH_ROS "Build with ROS support." OFF)
-
-IF(WITH_ROS)
-  FIND_PACKAGE(catkin REQUIRED)
-  catkin_package(
-    INCLUDE_DIRS .
-    LIBRARIES FernRelocLib InputSource ITMLib MiniSlamGraphLib ORUtils
-#    DEPENDS system_lib
-  )
-ENDIF()
+INCLUDE(${PROJECT_SOURCE_DIR}/cmake/OfferROSSupport.cmake)
 
 #################################
 # Add additional compiler flags #
