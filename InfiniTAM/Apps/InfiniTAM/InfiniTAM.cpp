@@ -3,8 +3,11 @@
 #include <cstdlib>
 #include <iostream>
 
+#include <ros/ros.h>
+
 #include "UIEngine.h"
 
+#include "../../InputSource/ROSEngine.h"
 #include "../../InputSource/OpenNIEngine.h"
 #include "../../InputSource/Kinect2Engine.h"
 #include "../../InputSource/LibUVCEngine.h"
@@ -80,6 +83,17 @@ static void CreateDefaultImageSource(ImageSourceEngine* & imageSource, IMUSource
 
 	if (imageSource == NULL)
 	{
+		printf("trying ROS input: /camera/depth/image_raw, /camera/rgb/image_color \n");
+		imageSource = new ROSEngine(calibFile);
+		if (imageSource->getDepthImageSize().x == 0)
+		{
+			delete imageSource;
+			imageSource = NULL;
+		}
+	}
+
+	if (imageSource == NULL)
+	{
 		// If no calibration file specified, use the factory default calibration
 		bool useInternalCalibration = !calibFile || strlen(calibFile) == 0;
 
@@ -142,6 +156,10 @@ static void CreateDefaultImageSource(ImageSourceEngine* & imageSource, IMUSource
 int main(int argc, char** argv)
 try
 {
+	// Start ROS
+	ros::init(argc, argv, "infinitam_ros");
+	ros::start();
+	
 	const char *arg1 = "";
 	const char *arg2 = NULL;
 	const char *arg3 = NULL;
@@ -207,6 +225,8 @@ try
 	delete internalSettings;
 	delete imageSource;
 	if (imuSource != NULL) delete imuSource;
+
+	ros::shutdown();
 	return 0;
 }
 catch(std::exception& e)

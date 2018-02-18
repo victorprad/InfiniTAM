@@ -45,6 +45,7 @@ LibUVCEngine.cpp
 OpenNIEngine.cpp
 PicoFlexxEngine.cpp
 RealSenseEngine.cpp
+ROSEngine.cpp
 )
 
 SET(headers
@@ -59,6 +60,7 @@ LibUVCEngine.h
 OpenNIEngine.h
 PicoFlexxEngine.h
 RealSenseEngine.h
+ROSEngine.h
 )
 
 #############################
