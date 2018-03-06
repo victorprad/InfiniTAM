@@ -82,7 +82,7 @@ void ITMLowLevelEngine_CUDA::FilterIntensity(ITMFloatImage *image_out, const ITM
 	Vector2i dims = image_in->noDims;
 
 	image_out->ChangeDims(dims);
-	image_out->Clear(0);
+	image_out->Clear();
 
 	const float *imageData_in = image_in->GetData(MEMORYDEVICE_CUDA);
 	float *imageData_out = image_out->GetData(MEMORYDEVICE_CUDA);
@@ -117,7 +117,7 @@ void ITMLowLevelEngine_CUDA::FilterSubsample(ITMFloatImage *image_out, const ITM
 	Vector2i newDims; newDims.x = image_in->noDims.x / 2; newDims.y = image_in->noDims.y / 2;
 
 	image_out->ChangeDims(newDims);
-	image_out->Clear(0);
+	image_out->Clear();
 
 	const float *imageData_in = image_in->GetData(MEMORYDEVICE_CUDA);
 	float *imageData_out = image_out->GetData(MEMORYDEVICE_CUDA);

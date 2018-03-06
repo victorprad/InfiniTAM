@@ -28,6 +28,7 @@ namespace ORUtils
 
 		/** Expose public MemoryBlock<T> member functions. */
 		using MemoryBlock<T>::Clear;
+		using MemoryBlock<T>::Fill;
 		using MemoryBlock<T>::GetData;
 		using MemoryBlock<T>::GetElement;
 #ifdef COMPILE_WITH_METAL

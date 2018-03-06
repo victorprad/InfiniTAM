@@ -50,7 +50,7 @@ void ITMLowLevelEngine_CPU::FilterIntensity(ITMFloatImage *image_out, const ITMF
 	Vector2i dims = image_in->noDims;
 
 	image_out->ChangeDims(dims);
-	image_out->Clear(0);
+	image_out->Clear();
 
 	const float *imageData_in = image_in->GetData(MEMORYDEVICE_CPU);
 	float *imageData_out = image_out->GetData(MEMORYDEVICE_CPU);

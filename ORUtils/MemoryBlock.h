@@ -15,6 +15,7 @@
 #include "MetalContext.h"
 #endif
 
+#include <stdexcept>
 #include <stdlib.h>
 #include <string.h>
 
@@ -115,12 +116,27 @@ namespace ORUtils
 			Clear();
 		}
 
-		/** Set all image data to the given @p defaultValue. */
-		void Clear(unsigned char defaultValue = 0)
+		/** Set all memory block entries to zero. */
+		void Clear()
 		{
-			if (isAllocated_CPU) memset(data_cpu, defaultValue, dataSize * sizeof(T));
+			if (isAllocated_CPU) memset(data_cpu, 0, dataSize * sizeof(T));
 #ifndef COMPILE_WITHOUT_CUDA
-			if (isAllocated_CUDA) ORcudaSafeCall(cudaMemset(data_cuda, defaultValue, dataSize * sizeof(T)));
+			if (isAllocated_CUDA) ORcudaSafeCall(cudaMemset(data_cuda, 0, dataSize * sizeof(T)));
+#endif
+		}
+
+		/**
+		 * \brief Sets all memory block entries to the given @p defaultValue.
+		 *
+		 * \pre This currently only works for memory blocks that are allocated on the CPU.
+		 */
+		void Fill(T value)
+		{
+			if (!isAllocated_CPU) throw std::runtime_error("Error: MemoryBlock::Fill only works for memory blocks that are allocated on the CPU");
+
+			std::fill(data_cpu, data_cpu + dataSize, value);
+#ifndef COMPILE_WITHOUT_CUDA
+			if (isAllocated_CUDA) this->UpdateDeviceFromHost();
 #endif
 		}
 
