@@ -4,7 +4,9 @@
 
 #include "ImageSourceEngine.h"
 
+#ifdef COMPILE_WITH_RealSense2
 namespace rs2 { class pipeline; class context; class device; }
+#endif
 
 namespace InputSource {
 	
@@ -12,10 +14,13 @@ namespace InputSource {
 	{
 	private:
 		bool dataAvailable;
+
+#ifdef COMPILE_WITH_RealSense2
 		std::unique_ptr<rs2::context> ctx;
 		std::unique_ptr<rs2::device> device;
 		std::unique_ptr<rs2::pipeline> pipe;
-		
+#endif
+
 		Vector2i imageSize_rgb, imageSize_d;
 		
 	public:
