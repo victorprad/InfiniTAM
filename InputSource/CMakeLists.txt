@@ -27,6 +27,7 @@ INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseOpenGL.cmake)
 INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseOpenMP.cmake)
 INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseOpenNI.cmake)
 INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseRealSense.cmake)
+INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseRealSense2.cmake)
 INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseUVC.cmake)
 
 #############################
@@ -45,6 +46,7 @@ LibUVCEngine.cpp
 OpenNIEngine.cpp
 PicoFlexxEngine.cpp
 RealSenseEngine.cpp
+RealSense2Engine.cpp
 )
 
 SET(headers
@@ -59,6 +61,7 @@ LibUVCEngine.h
 OpenNIEngine.h
 PicoFlexxEngine.h
 RealSenseEngine.h
+RealSense2Engine.h
 )
 
 #############################

@@ -17,6 +17,7 @@ INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseOpenMP.cmake)
 INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseOpenNI.cmake)
 INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UsePNG.cmake)
 INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseRealSense.cmake)
+INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseRealSense2.cmake)
 INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseUVC.cmake)
 
 #############################
@@ -52,4 +53,5 @@ TARGET_LINK_LIBRARIES(${targetname} InputSource ITMLib MiniSlamGraphLib ORUtils 
 INCLUDE(${PROJECT_SOURCE_DIR}/cmake/LinkOpenNI.cmake)
 INCLUDE(${PROJECT_SOURCE_DIR}/cmake/LinkPNG.cmake)
 INCLUDE(${PROJECT_SOURCE_DIR}/cmake/LinkRealSense.cmake)
+INCLUDE(${PROJECT_SOURCE_DIR}/cmake/LinkRealSense2.cmake)
 INCLUDE(${PROJECT_SOURCE_DIR}/cmake/LinkUVC.cmake)
