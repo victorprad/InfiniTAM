@@ -12,7 +12,11 @@ namespace ITMLib
 	class ITMMesh
 	{
 	public:
-    struct Triangle { Vector3f p0, p1, p2, c0, c1, c2; };
+    struct Triangle
+    {
+      Vector3f p0, p1, p2;
+      Vector4u c0, c1, c2;
+    };
 
 		MemoryDeviceType memoryType;
 
@@ -49,9 +53,9 @@ namespace ITMLib
 			{
         for (uint i = 0; i < noTotalTriangles; i++)
 				{
-          fprintf(f, "v %f %f %f %f %f %f\n", triangleArray[i].p0.x, triangleArray[i].p0.y, triangleArray[i].p0.z, triangleArray[i].c0.x, triangleArray[i].c0.y, triangleArray[i].c0.z);
-          fprintf(f, "v %f %f %f %f %f %f\n", triangleArray[i].p1.x, triangleArray[i].p1.y, triangleArray[i].p1.z, triangleArray[i].c1.x, triangleArray[i].c1.y, triangleArray[i].c1.z);
-          fprintf(f, "v %f %f %f %f %f %f\n", triangleArray[i].p2.x, triangleArray[i].p2.y, triangleArray[i].p2.z, triangleArray[i].c2.x, triangleArray[i].c2.y, triangleArray[i].c2.z);
+          fprintf(f, "v %f %f %f %f %f %f\n", triangleArray[i].p0.x, triangleArray[i].p0.y, triangleArray[i].p0.z, triangleArray[i].c0.x / 255.0f, triangleArray[i].c0.y / 255.0f, triangleArray[i].c0.z / 255.0f);
+          fprintf(f, "v %f %f %f %f %f %f\n", triangleArray[i].p1.x, triangleArray[i].p1.y, triangleArray[i].p1.z, triangleArray[i].c1.x / 255.0f, triangleArray[i].c1.y / 255.0f, triangleArray[i].c1.z / 255.0f);
+          fprintf(f, "v %f %f %f %f %f %f\n", triangleArray[i].p2.x, triangleArray[i].p2.y, triangleArray[i].p2.z, triangleArray[i].c2.x / 255.0f, triangleArray[i].c2.y / 255.0f, triangleArray[i].c2.z / 255.0f);
 				}
 
 				for (uint i = 0; i<noTotalTriangles; i++) fprintf(f, "f %d %d %d\n", i * 3 + 2 + 1, i * 3 + 1 + 1, i * 3 + 0 + 1);

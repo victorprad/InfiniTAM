@@ -123,9 +123,9 @@ __global__ void meshScene_device(ITMMesh::Triangle *triangles, unsigned int *noT
       triangles[triangleId].p2 = p2 * factor;
 
       // Find colours for the vertices.
-      triangles[triangleId].c0 = VoxelColorReader<TVoxel::hasColorInformation, TVoxel, ITMVoxelBlockHash>::interpolate(localVBA, hashTable, p0).toVector3();
-      triangles[triangleId].c1 = VoxelColorReader<TVoxel::hasColorInformation, TVoxel, ITMVoxelBlockHash>::interpolate(localVBA, hashTable, p1).toVector3();
-      triangles[triangleId].c2 = VoxelColorReader<TVoxel::hasColorInformation, TVoxel, ITMVoxelBlockHash>::interpolate(localVBA, hashTable, p2).toVector3();
+      triangles[triangleId].c0 = (VoxelColorReader<TVoxel::hasColorInformation, TVoxel, ITMVoxelBlockHash>::interpolate(localVBA, hashTable, p0) * 255.0f).toUChar();
+      triangles[triangleId].c1 = (VoxelColorReader<TVoxel::hasColorInformation, TVoxel, ITMVoxelBlockHash>::interpolate(localVBA, hashTable, p1) * 255.0f).toUChar();
+      triangles[triangleId].c2 = (VoxelColorReader<TVoxel::hasColorInformation, TVoxel, ITMVoxelBlockHash>::interpolate(localVBA, hashTable, p2) * 255.0f).toUChar();
 		}
 	}
 }
