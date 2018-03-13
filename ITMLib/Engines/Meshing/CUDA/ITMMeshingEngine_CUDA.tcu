@@ -5,10 +5,9 @@
 #include <algorithm>
 
 #include "../Shared/ITMMeshingEngine_Shared.h"
+#include "../../../Objects/Scene/ITMRepresentationAccess.h"
 #include "../../../Utils/ITMCUDAUtils.h"
 #include "../../../../ORUtils/CUDADefines.h"
-
-#include "../../../Objects/Scene/ITMRepresentationAccess.h"
 
 using namespace ITMLib;
 
