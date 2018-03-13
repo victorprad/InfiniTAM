@@ -134,9 +134,9 @@ __global__ void meshScene_device(ITMMesh::Triangle *triangles, unsigned int *noT
 			triangles[triangleId].p1 = vertList[triangleTable[cubeIndex][i + 1]] * factor;
 			triangles[triangleId].p2 = vertList[triangleTable[cubeIndex][i + 2]] * factor;
 
-      // MultiMeshingEngine does not support colour yet. We use a neutral gray as a placeholder.
-      const Vector4u colour(127, 127, 127, 255);
-      triangles[triangleId].c0 = triangles[triangleId].c1 = triangles[triangleId].c2 = colour;
+			// MultiMeshingEngine does not support colour yet. We use a neutral gray as a placeholder.
+			const Vector4u colour(127, 127, 127, 255);
+			triangles[triangleId].c0 = triangles[triangleId].c1 = triangles[triangleId].c2 = colour;
 		}
 	}
 }
