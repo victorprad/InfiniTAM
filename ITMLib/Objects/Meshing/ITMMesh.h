@@ -116,10 +116,8 @@ namespace ITMLib
 				// Write the triangles.
 				for (int i = 0; i < static_cast<int>(noTotalTriangles); ++i)
 				{
-					const int three = 3;
-					const int indices[] = { i * 3 + 2, i * 3 + 1, i * 3 + 0 };
-					fwrite(&three, sizeof(int), 1, f);
-					fwrite(indices, sizeof(int), 3, f);
+					const int indices[] = { 3, i * 3 + 2, i * 3 + 1, i * 3 + 0 };
+					fwrite(indices, sizeof(int), 4, f);
 				}
 
 				fclose(f);
