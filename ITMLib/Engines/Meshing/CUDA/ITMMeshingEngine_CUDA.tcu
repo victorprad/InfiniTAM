@@ -107,5 +107,5 @@ __global__ void meshScene_device(ITMMesh::Triangle *triangles, unsigned int *noT
 
 	if (cubeIndex < 0) return;
 
-  outputTriangles(triangles, noTriangles_device, factor, noMaxTriangles, localVBA, hashTable, vertList, cubeIndex);
+	outputTriangles(triangles, noTriangles_device, factor, noMaxTriangles, localVBA, hashTable, vertList, cubeIndex);
 }
