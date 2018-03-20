@@ -37,12 +37,14 @@ namespace ITMLib
 
 		void WriteOBJ(const char *fileName)
 		{
-			ORUtils::MemoryBlock<Triangle> *cpu_triangles; bool shoulDelete = false;
+      ORUtils::MemoryBlock<Triangle> *cpu_triangles;
+      bool shouldDelete = false;
+
 			if (memoryType == MEMORYDEVICE_CUDA)
 			{
 				cpu_triangles = new ORUtils::MemoryBlock<Triangle>(noMaxTriangles, MEMORYDEVICE_CPU);
 				cpu_triangles->SetFrom(triangles, ORUtils::MemoryBlock<Triangle>::CUDA_TO_CPU);
-				shoulDelete = true;
+        shouldDelete = true;
 			}
 			else cpu_triangles = triangles;
 
@@ -62,17 +64,80 @@ namespace ITMLib
 				fclose(f);
 			}
 
-			if (shoulDelete) delete cpu_triangles;
+      if (shouldDelete) delete cpu_triangles;
 		}
+
+    void WritePLY(const char *fileName)
+    {
+      ORUtils::MemoryBlock<Triangle> *cpu_triangles;
+      bool shouldDelete = false;
+
+      if (memoryType == MEMORYDEVICE_CUDA)
+      {
+        cpu_triangles = new ORUtils::MemoryBlock<Triangle>(noMaxTriangles, MEMORYDEVICE_CPU);
+        cpu_triangles->SetFrom(triangles, ORUtils::MemoryBlock<Triangle>::CUDA_TO_CPU);
+        shouldDelete = true;
+      }
+      else cpu_triangles = triangles;
+
+      Triangle *triangleArray = cpu_triangles->GetData(MEMORYDEVICE_CPU);
+
+      // Open the file in binary mode to prevent the insertion of \r\n on new lines.
+      // The PLY format wants raw "\n" as separators.
+      FILE *f = fopen(fileName, "wb");
+      if (f != NULL)
+      {
+        fprintf(f, "ply\n");
+        fprintf(f, "format binary_little_endian 1.0\n");
+        fprintf(f, "comment created with InfiniTAM\n");
+        fprintf(f, "element vertex %d\n", noTotalTriangles * 3);
+        fprintf(f, "property float x\n");
+        fprintf(f, "property float y\n");
+        fprintf(f, "property float z\n");
+        fprintf(f, "property uchar red\n");
+        fprintf(f, "property uchar green\n");
+        fprintf(f, "property uchar blue\n");
+        fprintf(f, "element face %d\n", noTotalTriangles);
+        fprintf(f, "property list int int vertex_index\n");
+        fprintf(f, "end_header\n");
+
+        // Write the vertices.
+        for (uint i = 0; i < noTotalTriangles; ++i)
+        {
+          const Triangle& triangle = triangleArray[i];
+          fwrite(triangle.p0.v, sizeof(float), 3, f);
+          fwrite(triangle.c0.v, sizeof(uchar), 3, f);
+          fwrite(triangle.p1.v, sizeof(float), 3, f);
+          fwrite(triangle.c1.v, sizeof(uchar), 3, f);
+          fwrite(triangle.p2.v, sizeof(float), 3, f);
+          fwrite(triangle.c2.v, sizeof(uchar), 3, f);
+        }
+
+        // Write the triangles.
+        for (int i = 0; i < static_cast<int>(noTotalTriangles); ++i)
+        {
+          const int three = 3;
+          const int indices[] = { i * 3 + 2, i * 3 + 1, i * 3 + 0 };
+          fwrite(&three, sizeof(int), 1, f);
+          fwrite(indices, sizeof(int), 3, f);
+        }
+
+        fclose(f);
+      }
+
+      if (shouldDelete) delete cpu_triangles;
+    }
 
 		void WriteSTL(const char *fileName)
 		{
-			ORUtils::MemoryBlock<Triangle> *cpu_triangles; bool shoulDelete = false;
+      ORUtils::MemoryBlock<Triangle> *cpu_triangles;
+      bool shouldDelete = false;
+
 			if (memoryType == MEMORYDEVICE_CUDA)
 			{
 				cpu_triangles = new ORUtils::MemoryBlock<Triangle>(noMaxTriangles, MEMORYDEVICE_CPU);
 				cpu_triangles->SetFrom(triangles, ORUtils::MemoryBlock<Triangle>::CUDA_TO_CPU);
-				shoulDelete = true;
+        shouldDelete = true;
 			}
 			else cpu_triangles = triangles;
 
@@ -113,7 +178,7 @@ namespace ITMLib
 				fclose(f);
 			}
 
-			if (shoulDelete) delete cpu_triangles;
+      if (shouldDelete) delete cpu_triangles;
 		}
 
 		~ITMMesh()
