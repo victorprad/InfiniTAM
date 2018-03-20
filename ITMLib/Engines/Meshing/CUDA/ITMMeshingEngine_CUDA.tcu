@@ -107,24 +107,5 @@ __global__ void meshScene_device(ITMMesh::Triangle *triangles, unsigned int *noT
 
 	if (cubeIndex < 0) return;
 
-	for (int i = 0; triangleTable[cubeIndex][i] != -1; i += 3)
-	{
-		int triangleId = atomicAdd(noTriangles_device, 1);
-
-		if (triangleId < noMaxTriangles - 1)
-		{
-			const Vector3f p0 = vertList[triangleTable[cubeIndex][i]];
-			const Vector3f p1 = vertList[triangleTable[cubeIndex][i + 1]];
-			const Vector3f p2 = vertList[triangleTable[cubeIndex][i + 2]];
-
-			triangles[triangleId].p0 = p0 * factor;
-			triangles[triangleId].p1 = p1 * factor;
-			triangles[triangleId].p2 = p2 * factor;
-
-			// Find colours for the vertices.
-			triangles[triangleId].c0 = (VoxelColorReader<TVoxel::hasColorInformation, TVoxel, ITMVoxelBlockHash>::interpolate(localVBA, hashTable, p0) * 255.0f).toUChar();
-			triangles[triangleId].c1 = (VoxelColorReader<TVoxel::hasColorInformation, TVoxel, ITMVoxelBlockHash>::interpolate(localVBA, hashTable, p1) * 255.0f).toUChar();
-			triangles[triangleId].c2 = (VoxelColorReader<TVoxel::hasColorInformation, TVoxel, ITMVoxelBlockHash>::interpolate(localVBA, hashTable, p2) * 255.0f).toUChar();
-		}
-	}
+  outputTriangles(triangles, noTriangles_device, factor, noMaxTriangles, localVBA, hashTable, vertList, cubeIndex);
 }

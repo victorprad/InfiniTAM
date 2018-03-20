@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "../../../Objects/Meshing/ITMMesh.h"
 #include "../../../Objects/Scene/ITMRepresentationAccess.h"
 #include "../../../Utils/ITMPixelUtils.h"
 
@@ -228,4 +229,43 @@ _CPU_AND_GPU_CODE_ inline int buildVertList(THREADPTR(Vector3f) *vertList, Vecto
 	if (edgeTable[cubeIndex] & 2048) vertList[11] = sdfInterp(points[3], points[7], sdfVals[3], sdfVals[7]);
 
 	return cubeIndex;
+}
+
+template<class TVoxel>
+_CPU_AND_GPU_CODE_ inline void outputTriangles(ITMLib::ITMMesh::Triangle *triangles, unsigned int *noTriangles, float factor, int noMaxTriangles,
+                                               const TVoxel *localVBA, const ITMHashEntry *hashTable, const Vector3f *vertList, const int cubeIndex)
+{
+  for (int i = 0; triangleTable[cubeIndex][i] != -1; i += 3)
+  {
+    int triangleId = 0;
+
+#if defined(__CUDACC__) && defined(__CUDA_ARCH__)
+    triangleId = atomicAdd(noTriangles, 1);
+#else
+    triangleId = (*noTriangles)++;
+#endif
+
+    if (triangleId < noMaxTriangles)
+    {
+      const Vector3f p0 = vertList[triangleTable[cubeIndex][i]];
+      const Vector3f p1 = vertList[triangleTable[cubeIndex][i + 1]];
+      const Vector3f p2 = vertList[triangleTable[cubeIndex][i + 2]];
+
+      triangles[triangleId].p0 = p0 * factor;
+      triangles[triangleId].p1 = p1 * factor;
+      triangles[triangleId].p2 = p2 * factor;
+
+      // Find colours for the vertices (we force a generic gray colour otherwise, cannot use VoxelColorReader because it returns a black color).
+      if(TVoxel::hasColorInformation)
+      {
+        triangles[triangleId].c0 = (VoxelColorReader<TVoxel::hasColorInformation, TVoxel, ITMLib::ITMVoxelBlockHash>::interpolate(localVBA, hashTable, p0) * 255.0f).toUChar();
+        triangles[triangleId].c1 = (VoxelColorReader<TVoxel::hasColorInformation, TVoxel, ITMLib::ITMVoxelBlockHash>::interpolate(localVBA, hashTable, p1) * 255.0f).toUChar();
+        triangles[triangleId].c2 = (VoxelColorReader<TVoxel::hasColorInformation, TVoxel, ITMLib::ITMVoxelBlockHash>::interpolate(localVBA, hashTable, p2) * 255.0f).toUChar();
+      }
+      else
+      {
+        triangles[triangleId].c0 = triangles[triangleId].c1 = triangles[triangleId].c2 = Vector4u(127, 127, 127, 255);
+      }
+    }
+  }
 }

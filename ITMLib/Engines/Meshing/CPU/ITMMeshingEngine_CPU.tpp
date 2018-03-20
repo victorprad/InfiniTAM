@@ -12,7 +12,8 @@ void ITMMeshingEngine_CPU<TVoxel, ITMVoxelBlockHash>::MeshScene(ITMMesh *mesh, c
 	const TVoxel *localVBA = scene->localVBA.GetVoxelBlocks();
 	const ITMHashEntry *hashTable = scene->index.GetEntries();
 
-	int noTriangles = 0, noMaxTriangles = mesh->noMaxTriangles, noTotalEntries = scene->index.noTotalEntries;
+  int noTotalEntries = scene->index.noTotalEntries;
+  uint noTriangles = 0;
 	float factor = scene->sceneParams->voxelSize;
 
 	mesh->triangles->Clear();
@@ -33,16 +34,13 @@ void ITMMeshingEngine_CPU<TVoxel, ITMVoxelBlockHash>::MeshScene(ITMMesh *mesh, c
 			
 			if (cubeIndex < 0) continue;
 
-			for (int i = 0; triangleTable[cubeIndex][i] != -1; i += 3)
-			{
-				triangles[noTriangles].p0 = vertList[triangleTable[cubeIndex][i]] * factor;
-				triangles[noTriangles].p1 = vertList[triangleTable[cubeIndex][i + 1]] * factor;
-				triangles[noTriangles].p2 = vertList[triangleTable[cubeIndex][i + 2]] * factor;
+      outputTriangles(triangles, &noTriangles, factor, mesh->noMaxTriangles, localVBA, hashTable, vertList, cubeIndex);
 
-				if (noTriangles < noMaxTriangles - 1) noTriangles++;
-			}
+      // If we cannot add more triangles to the output list, exit all loops at once.
+      if(noTriangles >= mesh->noMaxTriangles) goto done;
 		}
 	}
 
-	mesh->noTotalTriangles = noTriangles;
+done:
+  mesh->noTotalTriangles = std::min<uint>(noTriangles, mesh->noMaxTriangles);
 }
