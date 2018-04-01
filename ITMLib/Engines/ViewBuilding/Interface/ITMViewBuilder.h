@@ -13,19 +13,19 @@ namespace ITMLib
 	{
 	protected:
 		const ITMRGBDCalib calib;
-		ITMShortImage *shortImage;
-		ITMFloatImage *floatImage;
+		ORShortImage *shortImage;
+		ORFloatImage *floatImage;
 
 	public:
-		virtual void ConvertDisparityToDepth(ITMFloatImage *depth_out, const ITMShortImage *disp_in, const ITMIntrinsics *depthIntrinsics,
+		virtual void ConvertDisparityToDepth(ORFloatImage *depth_out, const ORShortImage *disp_in, const ITMIntrinsics *depthIntrinsics,
 			Vector2f disparityCalibParams) = 0;
-		virtual void ConvertDepthAffineToFloat(ITMFloatImage *depth_out, const ITMShortImage *depth_in, Vector2f depthCalibParams) = 0;
+		virtual void ConvertDepthAffineToFloat(ORFloatImage *depth_out, const ORShortImage *depth_in, Vector2f depthCalibParams) = 0;
 
-		virtual void DepthFiltering(ITMFloatImage *image_out, const ITMFloatImage *image_in) = 0;
-		virtual void ComputeNormalAndWeights(ITMFloat4Image *normal_out, ITMFloatImage *sigmaZ_out, const ITMFloatImage *depth_in, Vector4f intrinsic) = 0;
+		virtual void DepthFiltering(ORFloatImage *image_out, const ORFloatImage *image_in) = 0;
+		virtual void ComputeNormalAndWeights(ORFloat4Image *normal_out, ORFloatImage *sigmaZ_out, const ORFloatImage *depth_in, Vector4f intrinsic) = 0;
 
-		virtual void UpdateView(ITMView **view, ITMUChar4Image *rgbImage, ITMShortImage *rawDepthImage, bool useBilateralFilter, bool modelSensorNoise = false, bool storePreviousImage = true) = 0;
-		virtual void UpdateView(ITMView **view, ITMUChar4Image *rgbImage, ITMShortImage *depthImage, bool useBilateralFilter, ITMIMUMeasurement *imuMeasurement, bool modelSensorNoise = false, bool storePreviousImage = true) = 0;
+		virtual void UpdateView(ITMView **view, ORUChar4Image *rgbImage, ORShortImage *rawDepthImage, bool useBilateralFilter, bool modelSensorNoise = false, bool storePreviousImage = true) = 0;
+		virtual void UpdateView(ITMView **view, ORUChar4Image *rgbImage, ORShortImage *depthImage, bool useBilateralFilter, ITMIMUMeasurement *imuMeasurement, bool modelSensorNoise = false, bool storePreviousImage = true) = 0;
 
 		ITMViewBuilder(const ITMRGBDCalib& calib_)
 		: calib(calib_)

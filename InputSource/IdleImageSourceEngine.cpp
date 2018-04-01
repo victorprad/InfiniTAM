@@ -19,7 +19,7 @@ Vector2i IdleImageSourceEngine::getDepthImageSize() const
   return calib.intrinsics_d.imgSize;
 }
 
-void IdleImageSourceEngine::getImages(ITMUChar4Image *rgb, ITMShortImage *rawDepth)
+void IdleImageSourceEngine::getImages(ORUChar4Image *rgb, ORShortImage *rawDepth)
 {
   // This should never be called.
   throw std::runtime_error("Error: Attempting to get images from an idle image source engine");

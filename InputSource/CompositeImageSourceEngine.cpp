@@ -48,7 +48,7 @@ Vector2i CompositeImageSourceEngine::getDepthImageSize(void) const
   else throw std::runtime_error("Cannot get the depth image size from an empty composite image source engine");
 }
 
-void CompositeImageSourceEngine::getImages(ITMUChar4Image *rgb, ITMShortImage *rawDepth)
+void CompositeImageSourceEngine::getImages(ORUChar4Image *rgb, ORShortImage *rawDepth)
 {
   if(advanceToNextImages()) m_subengines[m_curSubengineIndex]->getImages(rgb, rawDepth);
 }

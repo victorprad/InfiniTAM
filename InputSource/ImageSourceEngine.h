@@ -37,7 +37,7 @@ namespace InputSource {
 		 * \param rgb       An image into which to store the next RGB image.
 		 * \param rawDepth  An image into which to store the next depth image.
 		 */
-		virtual void getImages(ITMUChar4Image *rgb, ITMShortImage *rawDepth) = 0;
+		virtual void getImages(ORUChar4Image *rgb, ORShortImage *rawDepth) = 0;
 
 		/**
 		 * \brief Gets the size of the next RGB image (if any).
@@ -111,8 +111,8 @@ namespace InputSource {
 	class ImageFileReader : public BaseImageSourceEngine
 	{
 	private:
-		ITMUChar4Image *cached_rgb;
-		ITMShortImage *cached_depth;
+		ORUChar4Image *cached_rgb;
+		ORShortImage *cached_depth;
 
 		void loadIntoCache() const;
 		mutable size_t cachedFrameNo;
@@ -126,7 +126,7 @@ namespace InputSource {
 		~ImageFileReader();
 
 		bool hasMoreImages(void) const;
-		void getImages(ITMUChar4Image *rgb, ITMShortImage *rawDepth);
+		void getImages(ORUChar4Image *rgb, ORShortImage *rawDepth);
 		Vector2i getDepthImageSize(void) const;
 		Vector2i getRGBImageSize(void) const;
 	};
@@ -142,7 +142,7 @@ namespace InputSource {
 		~CalibSource() { }
 
 		bool hasMoreImages(void) const { return true; }
-		void getImages(ITMUChar4Image *rgb, ITMShortImage *rawDepth) { }
+		void getImages(ORUChar4Image *rgb, ORShortImage *rawDepth) { }
 		Vector2i getDepthImageSize(void) const { return imgSize; }
 		Vector2i getRGBImageSize(void) const { return imgSize; }
 	};
@@ -154,8 +154,8 @@ namespace InputSource {
 		char rgbImageMask[BUF_SIZE];
 		char depthImageMask[BUF_SIZE];
 
-		mutable ITMUChar4Image *cached_rgb;
-		mutable ITMShortImage *cached_depth;
+		mutable ORUChar4Image *cached_rgb;
+		mutable ORShortImage *cached_depth;
 
 		void loadIntoCache() const;
 		mutable int cachedFrameNo;
@@ -169,7 +169,7 @@ namespace InputSource {
 		~RawFileReader() { }
 
 		bool hasMoreImages(void) const;
-		void getImages(ITMUChar4Image *rgb, ITMShortImage *rawDepth);
+		void getImages(ORUChar4Image *rgb, ORShortImage *rawDepth);
 
 		Vector2i getDepthImageSize(void) const { return imgSize; }
 		Vector2i getRGBImageSize(void) const { return imgSize; }
@@ -185,7 +185,7 @@ namespace InputSource {
 		~BlankImageGenerator() { }
 
 		bool hasMoreImages(void) const;
-		void getImages(ITMUChar4Image *rgb, ITMShortImage *rawDepth);
+		void getImages(ORUChar4Image *rgb, ORShortImage *rawDepth);
 
 		Vector2i getDepthImageSize(void) const { return imgSize; }
 		Vector2i getRGBImageSize(void) const { return imgSize; }

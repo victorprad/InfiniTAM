@@ -161,10 +161,10 @@ int ITMExtendedTracker_CPU::ComputeGandH_RGB(float &f, float *nabla, float *hess
 	return 0;
 }
 
-void ITMExtendedTracker_CPU::ProjectCurrentIntensityFrame(ITMFloat4Image *points_out,
-														  ITMFloatImage *intensity_out,
-														  const ITMFloatImage *intensity_in,
-														  const ITMFloatImage *depth_in,
+void ITMExtendedTracker_CPU::ProjectCurrentIntensityFrame(ORFloat4Image *points_out,
+														  ORFloatImage *intensity_out,
+														  const ORFloatImage *intensity_in,
+														  const ORFloatImage *depth_in,
 														  const Vector4f &intrinsics_depth,
 														  const Vector4f &intrinsics_rgb,
 														  const Matrix4f &scenePose)

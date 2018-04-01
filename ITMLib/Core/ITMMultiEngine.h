@@ -58,12 +58,12 @@ namespace ITMLib
 		ITMTrackingState* GetTrackingState(void);
 
 		/// Process a frame with rgb and depth images and (optionally) a corresponding imu measurement
-		ITMTrackingState::TrackingResult ProcessFrame(ITMUChar4Image *rgbImage, ITMShortImage *rawDepthImage, ITMIMUMeasurement *imuMeasurement = NULL);
+		ITMTrackingState::TrackingResult ProcessFrame(ORUChar4Image *rgbImage, ORShortImage *rawDepthImage, ITMIMUMeasurement *imuMeasurement = NULL);
 
 		/// Get a result image as output
 		Vector2i GetImageSize(void) const;
 
-		void GetImage(ITMUChar4Image *out, GetImageType getImageType, ORUtils::SE3Pose *pose = NULL, ITMIntrinsics *intrinsics = NULL);
+		void GetImage(ORUChar4Image *out, GetImageType getImageType, ORUtils::SE3Pose *pose = NULL, ITMIntrinsics *intrinsics = NULL);
 
 		void changeFreeviewLocalMapIdx(ORUtils::SE3Pose *pose, int newIdx);
 		void setFreeviewLocalMapIdx(int newIdx)

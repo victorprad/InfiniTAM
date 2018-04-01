@@ -28,7 +28,7 @@ public:
   virtual Vector2i getDepthImageSize() const;
 
   /** Override */
-  virtual void getImages(ITMUChar4Image *rgb, ITMShortImage *rawDepth);
+  virtual void getImages(ORUChar4Image *rgb, ORShortImage *rawDepth);
 
   /** Override */
   virtual Vector2i getRGBImageSize() const;

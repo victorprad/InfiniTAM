@@ -25,7 +25,7 @@ namespace InputSource
 		~Kinect2Engine();
 
 		bool hasMoreImages(void) const;
-		void getImages(ITMUChar4Image *rgbImage, ITMShortImage *rawDepthImage);
+		void getImages(ORUChar4Image *rgbImage, ORShortImage *rawDepthImage);
 		Vector2i getDepthImageSize(void) const;
 		Vector2i getRGBImageSize(void) const;
 	};

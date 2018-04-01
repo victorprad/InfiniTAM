@@ -26,7 +26,7 @@ namespace InfiniTAM
 			StopWatchInterface *timer_average;
 
 		private:
-			ITMUChar4Image *inputRGBImage; ITMShortImage *inputRawDepthImage;
+			ORUChar4Image *inputRGBImage; ORShortImage *inputRawDepthImage;
 			ITMLib::ITMIMUMeasurement *inputIMUMeasurement;
 
 			int currentFrameNo;

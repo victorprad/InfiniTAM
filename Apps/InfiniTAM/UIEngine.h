@@ -48,10 +48,10 @@ namespace InfiniTAM
 			Vector4f winReg[NUM_WIN]; // (x1, y1, x2, y2)
 			Vector2i winSize;
 			uint textureId[NUM_WIN];
-			ITMUChar4Image *outImage[NUM_WIN];
+			ORUChar4Image *outImage[NUM_WIN];
 			ITMLib::ITMMainEngine::GetImageType outImageType[NUM_WIN];
 
-			ITMUChar4Image *inputRGBImage; ITMShortImage *inputRawDepthImage;
+			ORUChar4Image *inputRGBImage; ORShortImage *inputRawDepthImage;
 			ITMLib::ITMIMUMeasurement *inputIMUMeasurement;
 
 			bool freeviewActive;
@@ -87,7 +87,7 @@ namespace InfiniTAM
 			int trackingResult;
 			char *outFolder;
 			bool needsRefresh;
-			ITMUChar4Image *saveImage;
+			ORUChar4Image *saveImage;
 
 			void Initialise(int & argc, char** argv, InputSource::ImageSourceEngine *imageSource, InputSource::IMUSourceEngine *imuSource,
 				ITMLib::ITMMainEngine *mainEngine, const char *outFolder, DeviceType deviceType);
@@ -96,7 +96,7 @@ namespace InfiniTAM
 			void Run();
 			void ProcessFrame();
 			
-			void GetScreenshot(ITMUChar4Image *dest) const;
+			void GetScreenshot(ORUChar4Image *dest) const;
 			void SaveScreenshot(const char *filename) const;
 		};
 	}

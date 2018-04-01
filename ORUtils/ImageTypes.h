@@ -5,20 +5,20 @@
 #include "Image.h"
 #include "Math.h"
 
-typedef ORUtils::Image<bool> ITMBoolImage;
-typedef ORUtils::Image<float> ITMFloatImage;
-typedef ORUtils::Image<Vector2f> ITMFloat2Image;
-typedef ORUtils::Image<Vector3f> ITMFloat3Image;
-typedef ORUtils::Image<Vector4f> ITMFloat4Image;
-typedef ORUtils::Image<int> ITMIntImage;
-typedef ORUtils::Image<Vector2i> ITMInt2Image;
-typedef ORUtils::Image<Vector3i> ITMInt3Image;
-typedef ORUtils::Image<Vector4i> ITMInt4Image;
-typedef ORUtils::Image<short> ITMShortImage;
-typedef ORUtils::Image<Vector2s> ITMShort2Image;
-typedef ORUtils::Image<Vector3s> ITMShort3Image;
-typedef ORUtils::Image<Vector4s> ITMShort4Image;
-typedef ORUtils::Image<uchar> ITMUCharImage;
-typedef ORUtils::Image<Vector4u> ITMUChar4Image;
-typedef ORUtils::Image<uint> ITMUIntImage;
-typedef ORUtils::Image<ushort> ITMUShortImage;
+typedef ORUtils::Image<bool> ORBoolImage;
+typedef ORUtils::Image<float> ORFloatImage;
+typedef ORUtils::Image<Vector2f> ORFloat2Image;
+typedef ORUtils::Image<Vector3f> ORFloat3Image;
+typedef ORUtils::Image<Vector4f> ORFloat4Image;
+typedef ORUtils::Image<int> ORIntImage;
+typedef ORUtils::Image<Vector2i> ORInt2Image;
+typedef ORUtils::Image<Vector3i> ORInt3Image;
+typedef ORUtils::Image<Vector4i> ORInt4Image;
+typedef ORUtils::Image<short> ORShortImage;
+typedef ORUtils::Image<Vector2s> ORShort2Image;
+typedef ORUtils::Image<Vector3s> ORShort3Image;
+typedef ORUtils::Image<Vector4s> ORShort4Image;
+typedef ORUtils::Image<uchar> ORUCharImage;
+typedef ORUtils::Image<Vector4u> ORUChar4Image;
+typedef ORUtils::Image<uint> ORUIntImage;
+typedef ORUtils::Image<ushort> ORUShortImage;

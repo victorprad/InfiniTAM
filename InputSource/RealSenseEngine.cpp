@@ -90,7 +90,7 @@ RealSenseEngine::~RealSenseEngine()
 }
 
 
-void RealSenseEngine::getImages(ITMUChar4Image *rgbImage, ITMShortImage *rawDepthImage)
+void RealSenseEngine::getImages(ORUChar4Image *rgbImage, ORShortImage *rawDepthImage)
 {
 	dataAvailable = false;
 
@@ -135,7 +135,7 @@ RealSenseEngine::RealSenseEngine(const char *calibFilename, bool alignColourWith
 }
 RealSenseEngine::~RealSenseEngine()
 {}
-void RealSenseEngine::getImages(ITMUChar4Image *rgbImage, ITMShortImage *rawDepthImage)
+void RealSenseEngine::getImages(ORUChar4Image *rgbImage, ORShortImage *rawDepthImage)
 { return; }
 bool RealSenseEngine::hasMoreImages(void) const
 { return false; }

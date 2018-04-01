@@ -30,20 +30,20 @@ __global__ void ComputeNormalAndWeight_device(const float* depth_in, Vector4f* n
 //
 //---------------------------------------------------------------------------
 
-void ITMViewBuilder_CUDA::UpdateView(ITMView **view_ptr, ITMUChar4Image *rgbImage, ITMShortImage *rawDepthImage, bool useBilateralFilter, bool modelSensorNoise, bool storePreviousImage)
+void ITMViewBuilder_CUDA::UpdateView(ITMView **view_ptr, ORUChar4Image *rgbImage, ORShortImage *rawDepthImage, bool useBilateralFilter, bool modelSensorNoise, bool storePreviousImage)
 {
 	if (*view_ptr == NULL)
 	{
 		*view_ptr = new ITMView(calib, rgbImage->noDims, rawDepthImage->noDims, true);
 		if (this->shortImage != NULL) delete this->shortImage;
-		this->shortImage = new ITMShortImage(rawDepthImage->noDims, true, true);
+		this->shortImage = new ORShortImage(rawDepthImage->noDims, true, true);
 		if (this->floatImage != NULL) delete this->floatImage;
-		this->floatImage = new ITMFloatImage(rawDepthImage->noDims, true, true);
+		this->floatImage = new ORFloatImage(rawDepthImage->noDims, true, true);
 
 		if (modelSensorNoise)
 		{
-			(*view_ptr)->depthNormal = new ITMFloat4Image(rawDepthImage->noDims, true, true);
-			(*view_ptr)->depthUncertainty = new ITMFloatImage(rawDepthImage->noDims, true, true);
+			(*view_ptr)->depthNormal = new ORFloat4Image(rawDepthImage->noDims, true, true);
+			(*view_ptr)->depthUncertainty = new ORFloatImage(rawDepthImage->noDims, true, true);
 		}
 	}
 
@@ -51,7 +51,7 @@ void ITMViewBuilder_CUDA::UpdateView(ITMView **view_ptr, ITMUChar4Image *rgbImag
 
 	if (storePreviousImage)
 	{
-		if (!view->rgb_prev) view->rgb_prev = new ITMUChar4Image(rgbImage->noDims, true, true);
+		if (!view->rgb_prev) view->rgb_prev = new ORUChar4Image(rgbImage->noDims, true, true);
 		else view->rgb_prev->SetFrom(view->rgb, MemoryBlock<Vector4u>::CUDA_TO_CUDA);
 	}	
 
@@ -87,20 +87,20 @@ void ITMViewBuilder_CUDA::UpdateView(ITMView **view_ptr, ITMUChar4Image *rgbImag
 	}
 }
 
-void ITMViewBuilder_CUDA::UpdateView(ITMView **view_ptr, ITMUChar4Image *rgbImage, ITMShortImage *depthImage, bool useBilateralFilter, ITMIMUMeasurement *imuMeasurement, bool modelSensorNoise, bool storePreviousImage)
+void ITMViewBuilder_CUDA::UpdateView(ITMView **view_ptr, ORUChar4Image *rgbImage, ORShortImage *depthImage, bool useBilateralFilter, ITMIMUMeasurement *imuMeasurement, bool modelSensorNoise, bool storePreviousImage)
 {
 	if (*view_ptr == NULL) 
 	{
 		*view_ptr = new ITMViewIMU(calib, rgbImage->noDims, depthImage->noDims, true);
 		if (this->shortImage != NULL) delete this->shortImage;
-		this->shortImage = new ITMShortImage(depthImage->noDims, true, true);
+		this->shortImage = new ORShortImage(depthImage->noDims, true, true);
 		if (this->floatImage != NULL) delete this->floatImage;
-		this->floatImage = new ITMFloatImage(depthImage->noDims, true, true);
+		this->floatImage = new ORFloatImage(depthImage->noDims, true, true);
 
 		if (modelSensorNoise)
 		{
-			(*view_ptr)->depthNormal = new ITMFloat4Image(depthImage->noDims, true, true);
-			(*view_ptr)->depthUncertainty = new ITMFloatImage(depthImage->noDims, true, true);
+			(*view_ptr)->depthNormal = new ORFloat4Image(depthImage->noDims, true, true);
+			(*view_ptr)->depthUncertainty = new ORFloatImage(depthImage->noDims, true, true);
 		}
 	}
 
@@ -110,7 +110,7 @@ void ITMViewBuilder_CUDA::UpdateView(ITMView **view_ptr, ITMUChar4Image *rgbImag
 	this->UpdateView(view_ptr, rgbImage, depthImage, useBilateralFilter, modelSensorNoise, storePreviousImage);
 }
 
-void ITMViewBuilder_CUDA::ConvertDisparityToDepth(ITMFloatImage *depth_out, const ITMShortImage *depth_in, const ITMIntrinsics *depthIntrinsics,
+void ITMViewBuilder_CUDA::ConvertDisparityToDepth(ORFloatImage *depth_out, const ORShortImage *depth_in, const ITMIntrinsics *depthIntrinsics,
 	Vector2f disparityCalibParams)
 {
 	Vector2i imgSize = depth_in->noDims;
@@ -127,7 +127,7 @@ void ITMViewBuilder_CUDA::ConvertDisparityToDepth(ITMFloatImage *depth_out, cons
 	ORcudaKernelCheck;
 }
 
-void ITMViewBuilder_CUDA::ConvertDepthAffineToFloat(ITMFloatImage *depth_out, const ITMShortImage *depth_in, Vector2f depthCalibParams)
+void ITMViewBuilder_CUDA::ConvertDepthAffineToFloat(ORFloatImage *depth_out, const ORShortImage *depth_in, Vector2f depthCalibParams)
 {
 	Vector2i imgSize = depth_in->noDims;
 
@@ -141,7 +141,7 @@ void ITMViewBuilder_CUDA::ConvertDepthAffineToFloat(ITMFloatImage *depth_out, co
 	ORcudaKernelCheck;
 }
 
-void ITMViewBuilder_CUDA::DepthFiltering(ITMFloatImage *image_out, const ITMFloatImage *image_in)
+void ITMViewBuilder_CUDA::DepthFiltering(ORFloatImage *image_out, const ORFloatImage *image_in)
 {
 	Vector2i imgDims = image_in->noDims;
 
@@ -155,7 +155,7 @@ void ITMViewBuilder_CUDA::DepthFiltering(ITMFloatImage *image_out, const ITMFloa
 	ORcudaKernelCheck;
 }
 
-void ITMViewBuilder_CUDA::ComputeNormalAndWeights(ITMFloat4Image *normal_out, ITMFloatImage *sigmaZ_out, const ITMFloatImage *depth_in, Vector4f intrinsic)
+void ITMViewBuilder_CUDA::ComputeNormalAndWeights(ORFloat4Image *normal_out, ORFloatImage *sigmaZ_out, const ORFloatImage *depth_in, Vector4f intrinsic)
 {
 	Vector2i imgDims = depth_in->noDims;
 

@@ -21,7 +21,7 @@ namespace ITMLib {
 
 		virtual void CreateExpectedDepths(const ORUtils::SE3Pose *pose, const ITMIntrinsics *intrinsics, ITMRenderState *renderState) const = 0;
 		virtual void RenderImage(const ORUtils::SE3Pose *pose, const ITMIntrinsics *intrinsics, ITMRenderState *renderState,
-			ITMUChar4Image *outputImage, IITMVisualisationEngine::RenderImageType type) const = 0;
+			ORUChar4Image *outputImage, IITMVisualisationEngine::RenderImageType type) const = 0;
 	};
 }
 

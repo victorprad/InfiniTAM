@@ -12,24 +12,24 @@ namespace ITMLib
 		int *counterTempData_device, *counterTempData_host;
 
 	public:
-		void CopyImage(ITMUChar4Image *image_out, const ITMUChar4Image *image_in) const;
-		void CopyImage(ITMFloatImage *image_out, const ITMFloatImage *image_in) const;
-		void CopyImage(ITMFloat4Image *image_out, const ITMFloat4Image *image_in) const;
+		void CopyImage(ORUChar4Image *image_out, const ORUChar4Image *image_in) const;
+		void CopyImage(ORFloatImage *image_out, const ORFloatImage *image_in) const;
+		void CopyImage(ORFloat4Image *image_out, const ORFloat4Image *image_in) const;
 
-		void ConvertColourToIntensity(ITMFloatImage *image_out, const ITMUChar4Image *image_in) const;
+		void ConvertColourToIntensity(ORFloatImage *image_out, const ORUChar4Image *image_in) const;
 
-		void FilterIntensity(ITMFloatImage *image_out, const ITMFloatImage *image_in) const;
+		void FilterIntensity(ORFloatImage *image_out, const ORFloatImage *image_in) const;
 
-		void FilterSubsample(ITMUChar4Image *image_out, const ITMUChar4Image *image_in) const;
-		void FilterSubsample(ITMFloatImage *image_out, const ITMFloatImage *image_in) const;
-		void FilterSubsampleWithHoles(ITMFloatImage *image_out, const ITMFloatImage *image_in) const;
-		void FilterSubsampleWithHoles(ITMFloat4Image *image_out, const ITMFloat4Image *image_in) const;
+		void FilterSubsample(ORUChar4Image *image_out, const ORUChar4Image *image_in) const;
+		void FilterSubsample(ORFloatImage *image_out, const ORFloatImage *image_in) const;
+		void FilterSubsampleWithHoles(ORFloatImage *image_out, const ORFloatImage *image_in) const;
+		void FilterSubsampleWithHoles(ORFloat4Image *image_out, const ORFloat4Image *image_in) const;
 
-		void GradientX(ITMShort4Image *grad_out, const ITMUChar4Image *image_in) const;
-		void GradientY(ITMShort4Image *grad_out, const ITMUChar4Image *image_in) const;
-		void GradientXY(ITMFloat2Image *grad_out, const ITMFloatImage *image_in) const;
+		void GradientX(ORShort4Image *grad_out, const ORUChar4Image *image_in) const;
+		void GradientY(ORShort4Image *grad_out, const ORUChar4Image *image_in) const;
+		void GradientXY(ORFloat2Image *grad_out, const ORFloatImage *image_in) const;
 
-		int CountValidDepths(const ITMFloatImage *image_in) const;
+		int CountValidDepths(const ORFloatImage *image_in) const;
 
 		ITMLowLevelEngine_CUDA(void);
 		~ITMLowLevelEngine_CUDA(void);

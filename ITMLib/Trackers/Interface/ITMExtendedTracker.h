@@ -30,8 +30,8 @@ namespace ITMLib
 		ITMImageHierarchy<ITMSceneHierarchyLevel> *sceneHierarchy;
 		ITMImageHierarchy<ITMDepthHierarchyLevel> *viewHierarchy_Depth;
 		ITMImageHierarchy<ITMIntensityHierarchyLevel> *viewHierarchy_Intensity;
-		ITMImageHierarchy<ITMTemplatedHierarchyLevel<ITMFloat4Image> > *reprojectedPointsHierarchy;
-		ITMImageHierarchy<ITMTemplatedHierarchyLevel<ITMFloatImage> > *projectedIntensityHierarchy;
+		ITMImageHierarchy<ITMTemplatedHierarchyLevel<ORFloat4Image> > *reprojectedPointsHierarchy;
+		ITMImageHierarchy<ITMTemplatedHierarchyLevel<ORFloatImage> > *projectedIntensityHierarchy;
 
 		ITMTrackingState *trackingState;
 		const ITMView *view;
@@ -68,8 +68,8 @@ namespace ITMLib
 		ITMSceneHierarchyLevel *sceneHierarchyLevel_Depth;
 		ITMDepthHierarchyLevel *viewHierarchyLevel_Depth;
 		ITMIntensityHierarchyLevel *viewHierarchyLevel_Intensity;
-		ITMTemplatedHierarchyLevel<ITMFloat4Image> *reprojectedPointsLevel;
-		ITMTemplatedHierarchyLevel<ITMFloatImage > *projectedIntensityLevel;
+		ITMTemplatedHierarchyLevel<ORFloat4Image> *reprojectedPointsLevel;
+		ITMTemplatedHierarchyLevel<ORFloatImage > *projectedIntensityLevel;
 
 		bool useColour;
 		bool useDepth;
@@ -82,10 +82,10 @@ namespace ITMLib
 
 		virtual int ComputeGandH_Depth(float &f, float *nabla, float *hessian, Matrix4f approxInvPose) = 0;
 		virtual int ComputeGandH_RGB(float &f, float *nabla, float *hessian, Matrix4f approxPose) = 0;
-		virtual void ProjectCurrentIntensityFrame(ITMFloat4Image *points_out,
-												  ITMFloatImage *intensity_out,
-												  const ITMFloatImage *intensity_in,
-												  const ITMFloatImage *depth_in,
+		virtual void ProjectCurrentIntensityFrame(ORFloat4Image *points_out,
+												  ORFloatImage *intensity_out,
+												  const ORFloatImage *intensity_in,
+												  const ORFloatImage *depth_in,
 												  const Vector4f &intrinsics_depth,
 												  const Vector4f &intrinsics_rgb,
 												  const Matrix4f &scenePose) = 0;

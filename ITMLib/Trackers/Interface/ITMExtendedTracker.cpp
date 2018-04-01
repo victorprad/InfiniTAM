@@ -56,8 +56,8 @@ ITMExtendedTracker::ITMExtendedTracker(Vector2i imgSize_d,
 																					noHierarchyLevels, memoryType,
 																					false);
 
-		reprojectedPointsHierarchy = new ITMImageHierarchy<ITMTemplatedHierarchyLevel<ITMFloat4Image> >(imgSize_d, trackingRegime, noHierarchyLevels, memoryType, false);
-		projectedIntensityHierarchy = new ITMImageHierarchy<ITMTemplatedHierarchyLevel<ITMFloatImage> >(imgSize_d, trackingRegime, noHierarchyLevels, memoryType, false);
+		reprojectedPointsHierarchy = new ITMImageHierarchy<ITMTemplatedHierarchyLevel<ORFloat4Image> >(imgSize_d, trackingRegime, noHierarchyLevels, memoryType, false);
+		projectedIntensityHierarchy = new ITMImageHierarchy<ITMTemplatedHierarchyLevel<ORFloatImage> >(imgSize_d, trackingRegime, noHierarchyLevels, memoryType, false);
 	}
 	else
 	{
@@ -227,8 +227,8 @@ void ITMExtendedTracker::PrepareForEvaluation()
 		// Project RGB image according to the depth->rgb transform and cache it to speed up the energy computation
 		for (int i = 0; i < viewHierarchy_Intensity->GetNoLevels(); ++i)
 		{
-			ITMTemplatedHierarchyLevel<ITMFloat4Image> *pointsOut = reprojectedPointsHierarchy->GetLevel(i);
-			ITMTemplatedHierarchyLevel<ITMFloatImage> *intensityOut = projectedIntensityHierarchy->GetLevel(i);
+			ITMTemplatedHierarchyLevel<ORFloat4Image> *pointsOut = reprojectedPointsHierarchy->GetLevel(i);
+			ITMTemplatedHierarchyLevel<ORFloatImage> *intensityOut = projectedIntensityHierarchy->GetLevel(i);
 
 			const ITMIntensityHierarchyLevel *intensityIn = viewHierarchy_Intensity->GetLevel(i);
 			const ITMDepthHierarchyLevel *depthIn = viewHierarchy_Depth->GetLevel(i);

@@ -127,7 +127,7 @@ RealSense2Engine::~RealSense2Engine()
 	}
 }
 
-void RealSense2Engine::getImages(ITMUChar4Image *rgbImage, ITMShortImage *rawDepthImage)
+void RealSense2Engine::getImages(ORUChar4Image *rgbImage, ORShortImage *rawDepthImage)
 {
 	dataAvailable = false;
 	
@@ -180,7 +180,7 @@ RealSense2Engine::RealSense2Engine(const char *calibFilename, bool alignColourWi
 }
 RealSense2Engine::~RealSense2Engine()
 {}
-void RealSense2Engine::getImages(ITMUChar4Image *rgbImage, ITMShortImage *rawDepthImage)
+void RealSense2Engine::getImages(ORUChar4Image *rgbImage, ORShortImage *rawDepthImage)
 { return; }
 bool RealSense2Engine::hasMoreImages(void) const
 { return false; }

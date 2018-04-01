@@ -53,7 +53,7 @@ void UIEngine::glutDisplayFunction()
 	glColor3f(1.0f, 1.0f, 1.0f);
 	glEnable(GL_TEXTURE_2D);
 
-	ITMUChar4Image** showImgs = uiEngine->outImage;
+	ORUChar4Image** showImgs = uiEngine->outImage;
 	Vector4f *winReg = uiEngine->winReg;
 	glMatrixMode(GL_PROJECTION);
 	glPushMatrix();
@@ -135,7 +135,7 @@ void UIEngine::glutIdleFunction()
 		//	{
 		//		char outFile[255];
 
-		//		ITMUChar4Image *saveImage = uiEngine->saveImage;
+		//		ORUChar4Image *saveImage = uiEngine->saveImage;
 
 		//		glReadBuffer(GL_BACK);
 		//		glReadPixels(0, 0, saveImage->noDims.x, saveImage->noDims.x, GL_RGBA, GL_UNSIGNED_BYTE, (unsigned char*)saveImage->GetData(false));
@@ -560,13 +560,13 @@ void UIEngine::Initialise(int & argc, char** argv, ImageSourceEngine *imageSourc
 	if (deviceType == DEVICE_CUDA) allocateGPU = true;
 
 	for (int w = 0; w < NUM_WIN; w++)
-		outImage[w] = new ITMUChar4Image(imageSource->getDepthImageSize(), true, allocateGPU);
+		outImage[w] = new ORUChar4Image(imageSource->getDepthImageSize(), true, allocateGPU);
 
-	inputRGBImage = new ITMUChar4Image(imageSource->getRGBImageSize(), true, allocateGPU);
-	inputRawDepthImage = new ITMShortImage(imageSource->getDepthImageSize(), true, allocateGPU);
+	inputRGBImage = new ORUChar4Image(imageSource->getRGBImageSize(), true, allocateGPU);
+	inputRawDepthImage = new ORShortImage(imageSource->getDepthImageSize(), true, allocateGPU);
 	inputIMUMeasurement = new ITMIMUMeasurement();
 
-	saveImage = new ITMUChar4Image(imageSource->getDepthImageSize(), true, false);
+	saveImage = new ORUChar4Image(imageSource->getDepthImageSize(), true, false);
 
 	outImageType[0] = ITMMainEngine::InfiniTAM_IMAGE_SCENERAYCAST;
 	outImageType[1] = ITMMainEngine::InfiniTAM_IMAGE_ORIGINAL_DEPTH;
@@ -596,12 +596,12 @@ void UIEngine::Initialise(int & argc, char** argv, ImageSourceEngine *imageSourc
 
 void UIEngine::SaveScreenshot(const char *filename) const
 {
-	ITMUChar4Image screenshot(getWindowSize(), true, false);
+	ORUChar4Image screenshot(getWindowSize(), true, false);
 	GetScreenshot(&screenshot);
 	SaveImageToFile(&screenshot, filename, true);
 }
 
-void UIEngine::GetScreenshot(ITMUChar4Image *dest) const
+void UIEngine::GetScreenshot(ORUChar4Image *dest) const
 {
 	glReadPixels(0, 0, dest->noDims.x, dest->noDims.y, GL_RGBA, GL_UNSIGNED_BYTE, dest->GetData(MEMORYDEVICE_CPU));
 }

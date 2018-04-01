@@ -11,10 +11,10 @@ namespace ITMLib
 	protected:
 		int ComputeGandH_Depth(float &f, float *nabla, float *hessian, Matrix4f approxInvPose);
 		int ComputeGandH_RGB(float &f, float *nabla, float *hessian, Matrix4f approxInvPose);
-		void ProjectCurrentIntensityFrame(ITMFloat4Image *points_out,
-										  ITMFloatImage *intensity_out,
-										  const ITMFloatImage *intensity_in,
-										  const ITMFloatImage *depth_in,
+		void ProjectCurrentIntensityFrame(ORFloat4Image *points_out,
+										  ORFloatImage *intensity_out,
+										  const ORFloatImage *intensity_in,
+										  const ORFloatImage *depth_in,
 										  const Vector4f &intrinsics_depth,
 										  const Vector4f &intrinsics_rgb,
 										  const Matrix4f &scenePose);

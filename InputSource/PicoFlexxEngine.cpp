@@ -177,7 +177,7 @@ PicoFlexxEngine::~PicoFlexxEngine()
 	}
 }
 
-void PicoFlexxEngine::getImages(ITMUChar4Image *rgbImage, ITMShortImage *rawDepthImage)
+void PicoFlexxEngine::getImages(ORUChar4Image *rgbImage, ORShortImage *rawDepthImage)
 {
 	lock_guard<mutex> lock(data->mtx);
 
@@ -210,7 +210,7 @@ PicoFlexxEngine::PicoFlexxEngine(const char *calibFilename, const char *deviceUR
 	printf("compiled without LibRoyale support\n");
 }
 PicoFlexxEngine::~PicoFlexxEngine() {}
-void PicoFlexxEngine::getImages(ITMUChar4Image *rgbImage, ITMShortImage *rawDepthImage) { }
+void PicoFlexxEngine::getImages(ORUChar4Image *rgbImage, ORShortImage *rawDepthImage) { }
 bool PicoFlexxEngine::hasMoreImages(void) const { return false; }
 Vector2i PicoFlexxEngine::getDepthImageSize(void) const { return Vector2i(0, 0); }
 Vector2i PicoFlexxEngine::getRGBImageSize(void) const { return Vector2i(0, 0); }

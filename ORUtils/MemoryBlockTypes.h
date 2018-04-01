@@ -5,20 +5,20 @@
 #include "Math.h"
 #include "MemoryBlock.h"
 
-typedef ORUtils::MemoryBlock<bool> ITMBoolMemoryBlock;
-typedef ORUtils::MemoryBlock<float> ITMFloatMemoryBlock;
-typedef ORUtils::MemoryBlock<Vector2f> ITMFloat2MemoryBlock;
-typedef ORUtils::MemoryBlock<Vector3f> ITMFloat3MemoryBlock;
-typedef ORUtils::MemoryBlock<Vector4f> ITMFloat4MemoryBlock;
-typedef ORUtils::MemoryBlock<int> ITMIntMemoryBlock;
-typedef ORUtils::MemoryBlock<Vector2i> ITMInt2MemoryBlock;
-typedef ORUtils::MemoryBlock<Vector3i> ITMInt3MemoryBlock;
-typedef ORUtils::MemoryBlock<Vector4i> ITMInt4MemoryBlock;
-typedef ORUtils::MemoryBlock<short> ITMShortMemoryBlock;
-typedef ORUtils::MemoryBlock<Vector2s> ITMShort2MemoryBlock;
-typedef ORUtils::MemoryBlock<Vector3s> ITMShort3MemoryBlock;
-typedef ORUtils::MemoryBlock<Vector4s> ITMShort4MemoryBlock;
-typedef ORUtils::MemoryBlock<uchar> ITMUCharMemoryBlock;
-typedef ORUtils::MemoryBlock<Vector4u> ITMUChar4MemoryBlock;
-typedef ORUtils::MemoryBlock<uint> ITMUIntMemoryBlock;
-typedef ORUtils::MemoryBlock<ushort> ITMUShortMemoryBlock;
+typedef ORUtils::MemoryBlock<bool> ORBoolMemoryBlock;
+typedef ORUtils::MemoryBlock<float> ORFloatMemoryBlock;
+typedef ORUtils::MemoryBlock<Vector2f> ORFloat2MemoryBlock;
+typedef ORUtils::MemoryBlock<Vector3f> ORFloat3MemoryBlock;
+typedef ORUtils::MemoryBlock<Vector4f> ORFloat4MemoryBlock;
+typedef ORUtils::MemoryBlock<int> ORIntMemoryBlock;
+typedef ORUtils::MemoryBlock<Vector2i> ORInt2MemoryBlock;
+typedef ORUtils::MemoryBlock<Vector3i> ORInt3MemoryBlock;
+typedef ORUtils::MemoryBlock<Vector4i> ORInt4MemoryBlock;
+typedef ORUtils::MemoryBlock<short> ORShortMemoryBlock;
+typedef ORUtils::MemoryBlock<Vector2s> ORShort2MemoryBlock;
+typedef ORUtils::MemoryBlock<Vector3s> ORShort3MemoryBlock;
+typedef ORUtils::MemoryBlock<Vector4s> ORShort4MemoryBlock;
+typedef ORUtils::MemoryBlock<uchar> ORUCharMemoryBlock;
+typedef ORUtils::MemoryBlock<Vector4u> ORUChar4MemoryBlock;
+typedef ORUtils::MemoryBlock<uint> ORUIntMemoryBlock;
+typedef ORUtils::MemoryBlock<ushort> ORUShortMemoryBlock;

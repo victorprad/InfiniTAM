@@ -85,7 +85,7 @@ Kinect2Engine::~Kinect2Engine()
 	SafeRelease(data->kinectSensor);
 }
 
-void Kinect2Engine::getImages(ITMUChar4Image *rgbImage, ITMShortImage *rawDepthImage)
+void Kinect2Engine::getImages(ORUChar4Image *rgbImage, ORShortImage *rawDepthImage)
 {
 	//Vector4u *rgb = rgbImage->GetData(MEMORYDEVICE_CPU);
 	//if (colorAvailable)
@@ -140,7 +140,7 @@ Kinect2Engine::Kinect2Engine(const char *calibFilename) : BaseImageSourceEngine(
 }
 Kinect2Engine::~Kinect2Engine()
 {}
-void Kinect2Engine::getImages(ITMUChar4Image *rgbImage, ITMShortImage *rawDepthImage)
+void Kinect2Engine::getImages(ORUChar4Image *rgbImage, ORShortImage *rawDepthImage)
 { return; }
 bool Kinect2Engine::hasMoreImages(void) const
 { return false; }

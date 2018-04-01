@@ -9,15 +9,15 @@ namespace ITMLib
 	class ITMViewBuilder_CUDA : public ITMViewBuilder
 	{
 	public:
-		void ConvertDisparityToDepth(ITMFloatImage *depth_out, const ITMShortImage *depth_in, const ITMIntrinsics *depthIntrinsics, 
+		void ConvertDisparityToDepth(ORFloatImage *depth_out, const ORShortImage *depth_in, const ITMIntrinsics *depthIntrinsics, 
 			Vector2f disparityCalibParams);
-		void ConvertDepthAffineToFloat(ITMFloatImage *depth_out, const ITMShortImage *depth_in, Vector2f depthCalibParams);
+		void ConvertDepthAffineToFloat(ORFloatImage *depth_out, const ORShortImage *depth_in, Vector2f depthCalibParams);
 
-		void DepthFiltering(ITMFloatImage *image_out, const ITMFloatImage *image_in);
-		void ComputeNormalAndWeights(ITMFloat4Image *normal_out, ITMFloatImage *sigmaZ_out, const ITMFloatImage *depth_in, Vector4f intrinsic);
+		void DepthFiltering(ORFloatImage *image_out, const ORFloatImage *image_in);
+		void ComputeNormalAndWeights(ORFloat4Image *normal_out, ORFloatImage *sigmaZ_out, const ORFloatImage *depth_in, Vector4f intrinsic);
 
-		void UpdateView(ITMView **view, ITMUChar4Image *rgbImage, ITMShortImage *rawDepthImage, bool useBilateralFilter, bool modelSensorNoise = false, bool storePreviousImage = true);
-		void UpdateView(ITMView **view, ITMUChar4Image *rgbImage, ITMShortImage *depthImage, bool useBilateralFilter, ITMIMUMeasurement *imuMeasurement, bool modelSensorNoise = false, bool storePreviousImage = true);
+		void UpdateView(ITMView **view, ORUChar4Image *rgbImage, ORShortImage *rawDepthImage, bool useBilateralFilter, bool modelSensorNoise = false, bool storePreviousImage = true);
+		void UpdateView(ITMView **view, ORUChar4Image *rgbImage, ORShortImage *depthImage, bool useBilateralFilter, ITMIMUMeasurement *imuMeasurement, bool modelSensorNoise = false, bool storePreviousImage = true);
 
 		ITMViewBuilder_CUDA(const ITMRGBDCalib& calib);
 		~ITMViewBuilder_CUDA(void);

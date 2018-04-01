@@ -23,8 +23,8 @@ void CLIEngine::Initialise(ImageSourceEngine *imageSource, IMUSourceEngine *imuS
 	bool allocateGPU = false;
 	if (deviceType == DEVICE_CUDA) allocateGPU = true;
 
-	inputRGBImage = new ITMUChar4Image(imageSource->getRGBImageSize(), true, allocateGPU);
-	inputRawDepthImage = new ITMShortImage(imageSource->getDepthImageSize(), true, allocateGPU);
+	inputRGBImage = new ORUChar4Image(imageSource->getRGBImageSize(), true, allocateGPU);
+	inputRawDepthImage = new ORShortImage(imageSource->getDepthImageSize(), true, allocateGPU);
 	inputIMUMeasurement = new ITMIMUMeasurement();
 
 #ifndef COMPILE_WITHOUT_CUDA

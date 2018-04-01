@@ -78,8 +78,8 @@ ImageFileReader<PathGenerator>::ImageFileReader(const char *calibFilename, const
 	currentFrameNo = initialFrameNo;
 	cachedFrameNo = -1;
 
-	cached_rgb = new ITMUChar4Image(true, false);
-	cached_depth = new ITMShortImage(true, false);
+	cached_rgb = new ORUChar4Image(true, false);
+	cached_depth = new ORShortImage(true, false);
 	cacheIsValid = false;
 }
 
@@ -123,7 +123,7 @@ bool ImageFileReader<PathGenerator>::hasMoreImages(void) const
 }
 
 template <typename PathGenerator>
-void ImageFileReader<PathGenerator>::getImages(ITMUChar4Image *rgb, ITMShortImage *rawDepth)
+void ImageFileReader<PathGenerator>::getImages(ORUChar4Image *rgb, ORShortImage *rawDepth)
 {
 	loadIntoCache();
 	rgb->SetFrom(cached_rgb, ORUtils::MemoryBlock<Vector4u>::CPU_TO_CPU);
@@ -197,8 +197,8 @@ void RawFileReader::loadIntoCache(void) const
 	//TODO> make nicer
     if (cached_rgb == NULL && cached_depth == NULL)
     {
-        cached_rgb = new ITMUChar4Image(imgSize, MEMORYDEVICE_CPU);
-        cached_depth = new ITMShortImage(imgSize, MEMORYDEVICE_CPU);
+        cached_rgb = new ORUChar4Image(imgSize, MEMORYDEVICE_CPU);
+        cached_depth = new ORShortImage(imgSize, MEMORYDEVICE_CPU);
     }
     
 	char str[2048]; FILE *f; bool success = false;
@@ -241,7 +241,7 @@ bool RawFileReader::hasMoreImages(void) const
 	return ((cached_rgb != NULL) || (cached_depth != NULL));
 }
 
-void RawFileReader::getImages(ITMUChar4Image *rgb, ITMShortImage *rawDepth)
+void RawFileReader::getImages(ORUChar4Image *rgb, ORShortImage *rawDepth)
 {
 	bool bUsedCache = false;
 
@@ -276,7 +276,7 @@ bool BlankImageGenerator::hasMoreImages(void) const
 	return true;
 }
 
-void BlankImageGenerator::getImages(ITMUChar4Image *rgb, ITMShortImage *rawDepth)
+void BlankImageGenerator::getImages(ORUChar4Image *rgb, ORShortImage *rawDepth)
 {
 	rgb->Clear();
 	rawDepth->Clear();

@@ -198,7 +198,7 @@ void ITMSurfelVisualisationEngine_CUDA<TSurfel>::CreateICPMaps(const ITMSurfelSc
 
 template <typename TSurfel>
 void ITMSurfelVisualisationEngine_CUDA<TSurfel>::RenderDepthImage(const ITMSurfelScene<TSurfel> *scene, const ORUtils::SE3Pose *pose,
-                                                                  const ITMSurfelRenderState *renderState, ITMFloatImage *outputImage) const
+                                                                  const ITMSurfelRenderState *renderState, ORFloatImage *outputImage) const
 {
   const Vector3f cameraPosition = pose->GetT();
   float *outputImagePtr = outputImage->GetData(MEMORYDEVICE_CUDA);
@@ -221,7 +221,7 @@ void ITMSurfelVisualisationEngine_CUDA<TSurfel>::RenderDepthImage(const ITMSurfe
 
 template <typename TSurfel>
 void ITMSurfelVisualisationEngine_CUDA<TSurfel>::RenderImage(const ITMSurfelScene<TSurfel> *scene, const ORUtils::SE3Pose *pose, const ITMSurfelRenderState *renderState,
-                                                             ITMUChar4Image *outputImage, RenderImageType type) const
+                                                             ORUChar4Image *outputImage, RenderImageType type) const
 {
   // Prevent colour rendering if the surfels don't store colour information.
   if(type == Base::RENDER_COLOUR && !TSurfel::hasColourInformation) type = Base::RENDER_LAMBERTIAN;

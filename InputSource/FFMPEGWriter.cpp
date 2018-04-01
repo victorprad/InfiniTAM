@@ -388,7 +388,7 @@ bool FFMPEGWriter::open(const char *filename, int size_x, int size_y, bool isDep
 }
 
 
-bool FFMPEGWriter::writeFrame(ITMUChar4Image *rgbImage)
+bool FFMPEGWriter::writeFrame(ORUChar4Image *rgbImage)
 {
 	if (!isOpen()) return false;
 
@@ -411,7 +411,7 @@ bool FFMPEGWriter::writeFrame(ITMUChar4Image *rgbImage)
 	return (ret>=0);
 }
 
-bool FFMPEGWriter::writeFrame(ITMShortImage *depthImage)
+bool FFMPEGWriter::writeFrame(ORShortImage *depthImage)
 {
 	if (!isOpen()) return false;
 
@@ -455,9 +455,9 @@ FFMPEGWriter::~FFMPEGWriter(void)
 {}
 bool FFMPEGWriter::open(const char *filename, int size_x, int size_y, bool isDepth, int fps)
 { printf("compiled without FFMPEG\n"); return false; }
-bool FFMPEGWriter::writeFrame(ITMUChar4Image *rgbImage)
+bool FFMPEGWriter::writeFrame(ORUChar4Image *rgbImage)
 { return false; }
-bool FFMPEGWriter::writeFrame(ITMShortImage *depthImage)
+bool FFMPEGWriter::writeFrame(ORShortImage *depthImage)
 { return false; }
 bool FFMPEGWriter::close(void)
 { return false; }

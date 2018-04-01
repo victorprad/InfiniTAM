@@ -90,7 +90,7 @@ void ITMMultiVisualisationEngine_CPU<TVoxel, TIndex>::CreateExpectedDepths(const
 }
 
 template<class TVoxel, class TIndex>
-void ITMMultiVisualisationEngine_CPU<TVoxel, TIndex>::RenderImage(const ORUtils::SE3Pose *pose, const ITMIntrinsics *intrinsics, ITMRenderState *_renderState, ITMUChar4Image *outputImage, IITMVisualisationEngine::RenderImageType type) const
+void ITMMultiVisualisationEngine_CPU<TVoxel, TIndex>::RenderImage(const ORUtils::SE3Pose *pose, const ITMIntrinsics *intrinsics, ITMRenderState *_renderState, ORUChar4Image *outputImage, IITMVisualisationEngine::RenderImageType type) const
 {
 	ITMRenderStateMultiScene<TVoxel, TIndex> *renderState = (ITMRenderStateMultiScene<TVoxel, TIndex>*)_renderState;
 

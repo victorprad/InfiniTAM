@@ -69,12 +69,12 @@ namespace ITMLib
 		virtual ITMTrackingState* GetTrackingState(void) = 0;
 
 		/// Process a frame with rgb and depth images and optionally a corresponding imu measurement
-        virtual ITMTrackingState::TrackingResult ProcessFrame(ITMUChar4Image *rgbImage, ITMShortImage *rawDepthImage, ITMIMUMeasurement *imuMeasurement = NULL) = 0;
+        virtual ITMTrackingState::TrackingResult ProcessFrame(ORUChar4Image *rgbImage, ORShortImage *rawDepthImage, ITMIMUMeasurement *imuMeasurement = NULL) = 0;
 
 		/// Get a result image as output
 		virtual Vector2i GetImageSize(void) const = 0;
 
-		virtual void GetImage(ITMUChar4Image *out, GetImageType getImageType, ORUtils::SE3Pose *pose = NULL, ITMIntrinsics *intrinsics = NULL) = 0;
+		virtual void GetImage(ORUChar4Image *out, GetImageType getImageType, ORUtils::SE3Pose *pose = NULL, ITMIntrinsics *intrinsics = NULL) = 0;
 
 		/// Extracts a mesh from the current scene and saves it to the model file specified by the file name
 		virtual void SaveSceneToMesh(const char *fileName) { };
