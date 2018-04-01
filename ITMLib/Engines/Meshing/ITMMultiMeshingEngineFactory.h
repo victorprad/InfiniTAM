@@ -23,21 +23,21 @@ namespace ITMLib
 		 * \param deviceType  The device on which the meshing engine should operate.
 		 */
 		template <typename TVoxel, typename TIndex>
-		static ITMMultiMeshingEngine<TVoxel, TIndex> *MakeMeshingEngine(ITMLibSettings::DeviceType deviceType)
+		static ITMMultiMeshingEngine<TVoxel, TIndex> *MakeMeshingEngine(DeviceType deviceType)
 		{
 			ITMMultiMeshingEngine<TVoxel, TIndex> *meshingEngine = NULL;
 
 			switch (deviceType)
 			{
-			case ITMLibSettings::DEVICE_CPU:
+			case DEVICE_CPU:
 				meshingEngine = new ITMMultiMeshingEngine_CPU<TVoxel, TIndex>();
 				break;
-			case ITMLibSettings::DEVICE_CUDA:
+			case DEVICE_CUDA:
 #ifndef COMPILE_WITHOUT_CUDA
 				meshingEngine = new ITMMultiMeshingEngine_CUDA<TVoxel, TIndex>();
 #endif
 				break;
-			case ITMLibSettings::DEVICE_METAL:
+			case DEVICE_METAL:
 #ifdef COMPILE_WITH_METAL
 				meshingEngine = new ITMMultiMeshingEngine_CPU<TVoxel, TIndex>();
 #endif

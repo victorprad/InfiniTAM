@@ -29,6 +29,7 @@ SE3Pose.cpp
 SET(headers
 Cholesky.h
 CUDADefines.h
+DeviceType.h
 FileUtils.h
 HomkerMap.h
 Image.h

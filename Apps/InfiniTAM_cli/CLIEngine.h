@@ -38,8 +38,7 @@ namespace InfiniTAM
 
 			float processedTime;
 
-			void Initialise(InputSource::ImageSourceEngine *imageSource, InputSource::IMUSourceEngine *imuSource, ITMLib::ITMMainEngine *mainEngine,
-				ITMLib::ITMLibSettings::DeviceType deviceType);
+			void Initialise(InputSource::ImageSourceEngine *imageSource, InputSource::IMUSourceEngine *imuSource, ITMLib::ITMMainEngine *mainEngine, DeviceType deviceType);
 			void Shutdown();
 
 			void Run();

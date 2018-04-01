@@ -4,6 +4,7 @@
 
 #include "ITMSceneParams.h"
 #include "ITMSurfelSceneParams.h"
+#include "../../ORUtils/DeviceType.h"
 #include "../../ORUtils/MemoryDeviceType.h"
 
 namespace ITMLib
@@ -11,13 +12,6 @@ namespace ITMLib
 	class ITMLibSettings
 	{
 	public:
-		/// The device used to run the DeviceAgnostic code
-		typedef enum {
-			DEVICE_CPU,
-			DEVICE_CUDA,
-			DEVICE_METAL
-		} DeviceType;
-
 		typedef enum
 		{
 			FAILUREMODE_RELOCALISE,
@@ -37,7 +31,7 @@ namespace ITMLib
 			LIBMODE_BASIC,
 			LIBMODE_BASIC_SURFELS,
 			LIBMODE_LOOPCLOSURE
-		}LibMode;
+		} LibMode;
 
 		/// Select the type of device to use
 		DeviceType deviceType;

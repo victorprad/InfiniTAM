@@ -30,7 +30,7 @@ ITMMultiEngine<TVoxel, TIndex>::ITMMultiEngine(const ITMLibSettings *settings, c
 
 	this->settings = settings;
 
-	const ITMLibSettings::DeviceType deviceType = settings->deviceType;
+	const DeviceType deviceType = settings->deviceType;
 	lowLevelEngine = ITMLowLevelEngineFactory::MakeLowLevelEngine(deviceType);
 	viewBuilder = ITMViewBuilderFactory::MakeViewBuilder(calib, deviceType);
 	visualisationEngine = ITMVisualisationEngineFactory::MakeVisualisationEngine<TVoxel, TIndex>(deviceType);
@@ -339,16 +339,16 @@ void ITMMultiEngine<TVoxel, TIndex>::GetImage(ITMUChar4Image *out, GetImageType 
 	{
 	case ITMMultiEngine::InfiniTAM_IMAGE_ORIGINAL_RGB:
 		out->ChangeDims(view->rgb->noDims);
-		if (settings->deviceType == ITMLibSettings::DEVICE_CUDA)
+		if (settings->deviceType == DEVICE_CUDA)
 			out->SetFrom(view->rgb, ORUtils::MemoryBlock<Vector4u>::CUDA_TO_CPU);
 		else out->SetFrom(view->rgb, ORUtils::MemoryBlock<Vector4u>::CPU_TO_CPU);
 		break;
 	case ITMMultiEngine::InfiniTAM_IMAGE_ORIGINAL_DEPTH:
 		out->ChangeDims(view->depth->noDims);
-		if (settings->deviceType == ITMLibSettings::DEVICE_CUDA) view->depth->UpdateHostFromDevice();
+		if (settings->deviceType == DEVICE_CUDA) view->depth->UpdateHostFromDevice();
 		ITMVisualisationEngine<TVoxel, TIndex>::DepthToUchar4(out, view->depth);
 		break;
-    case ITMMultiEngine::InfiniTAM_IMAGE_COLOUR_FROM_VOLUME: //TODO: add colour rendering
+	case ITMMultiEngine::InfiniTAM_IMAGE_COLOUR_FROM_VOLUME: //TODO: add colour rendering
 	case ITMMultiEngine::InfiniTAM_IMAGE_SCENERAYCAST:
 	case ITMMultiEngine::InfiniTAM_IMAGE_COLOUR_FROM_NORMAL:
 	case ITMMultiEngine::InfiniTAM_IMAGE_COLOUR_FROM_CONFIDENCE:
@@ -379,7 +379,7 @@ void ITMMultiEngine<TVoxel, TIndex>::GetImage(ITMUChar4Image *out, GetImageType 
 
 		ORUtils::Image<Vector4u> *srcImage = activeLocalMap->renderState->raycastImage;
 		out->ChangeDims(srcImage->noDims);
-		if (settings->deviceType == ITMLibSettings::DEVICE_CUDA)
+		if (settings->deviceType == DEVICE_CUDA)
 			out->SetFrom(srcImage, ORUtils::MemoryBlock<Vector4u>::CUDA_TO_CPU);
 		else out->SetFrom(srcImage, ORUtils::MemoryBlock<Vector4u>::CPU_TO_CPU);
 		break;
@@ -403,7 +403,7 @@ void ITMMultiEngine<TVoxel, TIndex>::GetImage(ITMUChar4Image *out, GetImageType 
 			visualisationEngine->CreateExpectedDepths(activeData->scene, pose, intrinsics, renderState_freeview);
 			visualisationEngine->RenderImage(activeData->scene, pose, intrinsics, renderState_freeview, renderState_freeview->raycastImage, type);
 
-			if (settings->deviceType == ITMLibSettings::DEVICE_CUDA)
+			if (settings->deviceType == DEVICE_CUDA)
 				out->SetFrom(renderState_freeview->raycastImage, ORUtils::MemoryBlock<Vector4u>::CUDA_TO_CPU);
 			else out->SetFrom(renderState_freeview->raycastImage, ORUtils::MemoryBlock<Vector4u>::CPU_TO_CPU);
 		}
@@ -413,7 +413,7 @@ void ITMMultiEngine<TVoxel, TIndex>::GetImage(ITMUChar4Image *out, GetImageType 
 			multiVisualisationEngine->PrepareRenderState(*mapManager, renderState_multiscene);
 			multiVisualisationEngine->CreateExpectedDepths(pose, intrinsics, renderState_multiscene);
 			multiVisualisationEngine->RenderImage(pose, intrinsics, renderState_multiscene, renderState_multiscene->raycastImage, type);
-			if (settings->deviceType == ITMLibSettings::DEVICE_CUDA)
+			if (settings->deviceType == DEVICE_CUDA)
 				out->SetFrom(renderState_multiscene->raycastImage, ORUtils::MemoryBlock<Vector4u>::CUDA_TO_CPU);
 			else out->SetFrom(renderState_multiscene->raycastImage, ORUtils::MemoryBlock<Vector4u>::CPU_TO_CPU);
 		}
