@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "../../../Utils/ITMMath.h"
+#include "../../../../ORUtils/Math.h"
 #include "../../../../ORUtils/PlatformIndependence.h"
 
 _CPU_AND_GPU_CODE_ inline void convertDisparityToDepth(DEVICEPTR(float) *d_out, int x, int y, const CONSTPTR(short) *d_in,

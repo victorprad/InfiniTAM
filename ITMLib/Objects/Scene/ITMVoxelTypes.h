@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "../../Utils/ITMMath.h"
+#include "../../../ORUtils/Math.h"
 
 /** \brief
     Stores the information of a single voxel in the volume

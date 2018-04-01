@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "../../../Utils/ITMMath.h"
+#include "../../../../ORUtils/Math.h"
 
 _CPU_AND_GPU_CODE_ inline void convertColourToIntensity(DEVICEPTR(float) *imageData_out, int x, int y, Vector2i dims,
 		const CONSTPTR(Vector4u) *imageData_in)

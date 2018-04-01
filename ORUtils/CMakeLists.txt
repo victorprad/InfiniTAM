@@ -35,6 +35,7 @@ HomkerMap.h
 Image.h
 KeyValueConfig.h
 LexicalCast.h
+Math.h
 MathUtils.h
 Matrix.h
 MemoryBlock.h

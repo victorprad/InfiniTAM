@@ -8,7 +8,7 @@
 #include <iostream>
 #endif
 
-#include "../../Utils/ITMMath.h"
+#include "../../../ORUtils/Math.h"
 #include "../../../ORUtils/MemoryBlock.h"
 #include "../../../ORUtils/MemoryBlockPersister.h"
 

@@ -3,8 +3,8 @@
 #pragma once
 
 #include "TrackerIterationType.h"
-#include "../../Utils/ITMMath.h"
 #include "../../../ORUtils/Image.h"
+#include "../../../ORUtils/Math.h"
 
 namespace ITMLib
 {

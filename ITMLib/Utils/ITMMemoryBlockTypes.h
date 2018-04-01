@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "ITMMath.h"
+#include "../../ORUtils/Math.h"
 #include "../../ORUtils/MemoryBlock.h"
 
 typedef ORUtils::MemoryBlock<bool> ITMBoolMemoryBlock;

@@ -5,7 +5,7 @@
 #include <math.h>
 #endif
 
-#include "ITMMath.h"
+#include "../../ORUtils/Math.h"
 #include "../../ORUtils/PlatformIndependence.h"
 
 template<typename T> _CPU_AND_GPU_CODE_ inline Vector4f interpolateBilinear(const CONSTPTR(ORUtils::Vector4<T>) *source,
