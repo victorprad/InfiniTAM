@@ -5,7 +5,7 @@
 #include <vector>
 
 #include "../ITMLib/Objects/Camera/ITMRGBDCalib.h"
-#include "../ITMLib/Utils/ITMImageTypes.h"
+#include "../ORUtils/ImageTypes.h"
 
 namespace InputSource {
 

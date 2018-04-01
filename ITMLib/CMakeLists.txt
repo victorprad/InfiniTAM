@@ -456,9 +456,7 @@ Utils/ITMLibSettings.cpp
 
 SET(ITMLIB_UTILS_HEADERS
 Utils/ITMCUDAUtils.h
-Utils/ITMImageTypes.h
 Utils/ITMLibSettings.h
-Utils/ITMMemoryBlockTypes.h
 Utils/ITMPixelUtils.h
 Utils/ITMProjectionUtils.h
 Utils/ITMSceneParams.h

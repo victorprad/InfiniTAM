@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "../../../Utils/ITMImageTypes.h"
+#include "../../../../ORUtils/ImageTypes.h"
 
 namespace ITMLib
 {

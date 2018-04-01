@@ -33,6 +33,7 @@ DeviceType.h
 FileUtils.h
 HomkerMap.h
 Image.h
+ImageTypes.h
 KeyValueConfig.h
 LexicalCast.h
 Math.h
@@ -40,6 +41,7 @@ MathUtils.h
 Matrix.h
 MemoryBlock.h
 MemoryBlockPersister.h
+MemoryBlockTypes.h
 MemoryDeviceType.h
 NVTimer.h
 PlatformIndependence.h

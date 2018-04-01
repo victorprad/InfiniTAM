@@ -2,8 +2,8 @@
 
 #pragma once
 
-#include "../../ORUtils/Image.h"
-#include "../../ORUtils/Math.h"
+#include "Image.h"
+#include "Math.h"
 
 typedef ORUtils::Image<bool> ITMBoolImage;
 typedef ORUtils::Image<float> ITMFloatImage;

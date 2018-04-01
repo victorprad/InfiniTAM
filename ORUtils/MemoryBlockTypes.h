@@ -2,8 +2,8 @@
 
 #pragma once
 
-#include "../../ORUtils/Math.h"
-#include "../../ORUtils/MemoryBlock.h"
+#include "Math.h"
+#include "MemoryBlock.h"
 
 typedef ORUtils::MemoryBlock<bool> ITMBoolMemoryBlock;
 typedef ORUtils::MemoryBlock<float> ITMFloatMemoryBlock;

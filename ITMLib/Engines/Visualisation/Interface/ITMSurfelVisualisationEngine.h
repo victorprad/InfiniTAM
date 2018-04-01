@@ -8,7 +8,7 @@
 #include "../../../Objects/Scene/ITMSurfelScene.h"
 #include "../../../Objects/Tracking/ITMTrackingState.h"
 #include "../../../Objects/Views/ITMView.h"
-#include "../../../Utils/ITMImageTypes.h"
+#include "../../../../ORUtils/ImageTypes.h"
 #include "../../../../ORUtils/SE3Pose.h"
 
 namespace ITMLib
