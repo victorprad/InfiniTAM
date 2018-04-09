@@ -79,5 +79,5 @@ ITMLibSettings::ITMLibSettings(void)
 
 MemoryDeviceType ITMLibSettings::GetMemoryType() const
 {
-	return deviceType == ITMLibSettings::DEVICE_CUDA ? MEMORYDEVICE_CUDA : MEMORYDEVICE_CPU;
+	return deviceType == DEVICE_CUDA ? MEMORYDEVICE_CUDA : MEMORYDEVICE_CPU;
 }

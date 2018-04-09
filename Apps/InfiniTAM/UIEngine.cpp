@@ -490,7 +490,7 @@ void UIEngine::glutMouseWheelFunction(int button, int dir, int x, int y)
 }
 
 void UIEngine::Initialise(int & argc, char** argv, ImageSourceEngine *imageSource, IMUSourceEngine *imuSource, ITMMainEngine *mainEngine,
-	const char *outFolder, ITMLibSettings::DeviceType deviceType)
+	const char *outFolder, DeviceType deviceType)
 {
 	this->freeviewActive = false;
 	this->integrationActive = true;
@@ -557,7 +557,7 @@ void UIEngine::Initialise(int & argc, char** argv, ImageSourceEngine *imageSourc
 #endif
 
 	bool allocateGPU = false;
-	if (deviceType == ITMLibSettings::DEVICE_CUDA) allocateGPU = true;
+	if (deviceType == DEVICE_CUDA) allocateGPU = true;
 
 	for (int w = 0; w < NUM_WIN; w++)
 		outImage[w] = new ITMUChar4Image(imageSource->getDepthImageSize(), true, allocateGPU);

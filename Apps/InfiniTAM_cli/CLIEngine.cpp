@@ -12,8 +12,7 @@ using namespace ITMLib;
 
 CLIEngine* CLIEngine::instance;
 
-void CLIEngine::Initialise(ImageSourceEngine *imageSource, IMUSourceEngine *imuSource, ITMMainEngine *mainEngine,
-	ITMLibSettings::DeviceType deviceType)
+void CLIEngine::Initialise(ImageSourceEngine *imageSource, IMUSourceEngine *imuSource, ITMMainEngine *mainEngine, DeviceType deviceType)
 {
 	this->imageSource = imageSource;
 	this->imuSource = imuSource;
@@ -22,7 +21,7 @@ void CLIEngine::Initialise(ImageSourceEngine *imageSource, IMUSourceEngine *imuS
 	this->currentFrameNo = 0;
 
 	bool allocateGPU = false;
-	if (deviceType == ITMLibSettings::DEVICE_CUDA) allocateGPU = true;
+	if (deviceType == DEVICE_CUDA) allocateGPU = true;
 
 	inputRGBImage = new ITMUChar4Image(imageSource->getRGBImageSize(), true, allocateGPU);
 	inputRawDepthImage = new ITMShortImage(imageSource->getDepthImageSize(), true, allocateGPU);

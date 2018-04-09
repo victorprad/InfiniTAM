@@ -12,21 +12,21 @@ namespace ITMLib
 
 //#################### PUBLIC STATIC MEMBER FUNCTIONS ####################
 
-ITMViewBuilder *ITMViewBuilderFactory::MakeViewBuilder(const ITMRGBDCalib& calib, ITMLibSettings::DeviceType deviceType)
+ITMViewBuilder *ITMViewBuilderFactory::MakeViewBuilder(const ITMRGBDCalib& calib, DeviceType deviceType)
 {
   ITMViewBuilder *viewBuilder = NULL;
 
   switch(deviceType)
   {
-    case ITMLibSettings::DEVICE_CPU:
+    case DEVICE_CPU:
       viewBuilder = new ITMViewBuilder_CPU(calib);
       break;
-    case ITMLibSettings::DEVICE_CUDA:
+    case DEVICE_CUDA:
 #ifndef COMPILE_WITHOUT_CUDA
       viewBuilder = new ITMViewBuilder_CUDA(calib);
 #endif
       break;
-    case ITMLibSettings::DEVICE_METAL:
+    case DEVICE_METAL:
 #ifdef COMPILE_WITH_METAL
       viewBuilder = new ITMViewBuilder_CPU(calib);
 #endif

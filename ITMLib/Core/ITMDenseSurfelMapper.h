@@ -4,7 +4,7 @@
 
 #include "../Engines/Reconstruction/Interface/ITMSurfelSceneReconstructionEngine.h"
 #include "../Objects/RenderStates/ITMSurfelRenderState.h"
-#include "../Utils/ITMLibSettings.h"
+#include "../../ORUtils/DeviceType.h"
 
 namespace ITMLib
 {
@@ -27,7 +27,7 @@ namespace ITMLib
      * \param depthImageSize  The size of the depth images.
      * \param deviceType      The device on which the mapper should operate.
      */
-    ITMDenseSurfelMapper(const Vector2i& depthImageSize, ITMLibSettings::DeviceType deviceType);
+    ITMDenseSurfelMapper(const Vector2i& depthImageSize, DeviceType deviceType);
 
     //#################### DESTRUCTOR ####################
   public:
