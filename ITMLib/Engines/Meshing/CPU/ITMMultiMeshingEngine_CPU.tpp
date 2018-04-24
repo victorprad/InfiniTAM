@@ -66,6 +66,10 @@ inline void ITMMultiMeshingEngine_CPU<TVoxel, ITMVoxelBlockHash>::MeshScene(ITMM
 					triangles[noTriangles].p1 = vertList[triangleTable[cubeIndex][i + 1]] * factor;
 					triangles[noTriangles].p2 = vertList[triangleTable[cubeIndex][i + 2]] * factor;
 
+					// MultiMeshingEngine does not support colour yet. We use a neutral gray as a placeholder.
+					const Vector4u colour(127, 127, 127, 255);
+					triangles[noTriangles].c0 = triangles[noTriangles].c1 = triangles[noTriangles].c2 = colour;
+
 					if (noTriangles < noMaxTriangles - 1) noTriangles++;
 				}
 			}
