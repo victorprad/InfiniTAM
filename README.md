@@ -1,6 +1,6 @@
-# InfiniTAM v3
+# InfiniTAM v3.5
 
-This is the main branch of the software bundle "InfiniTAM", the current version is actively maintained by:
+This is the infinitam\_v3.5 branch of the software bundle "InfiniTAM", the current version of which is actively maintained by:
 
   Victor Adrian Prisacariu <victor@robots.ox.ac.uk>  
   Olaf Kaehler <olaf@robots.ox.ac.uk>  
