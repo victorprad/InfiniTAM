@@ -1,9 +1,9 @@
 #! /bin/bash -e
 
 # Check that valid parameters have been specified.
-if [ $# -ne 2 ] || ([ "$1" != "11" ] && [ "$1" != "12" ] && [ "$1" != "14" ]) || ([ "$2" != "Debug" ] && [ "$2" != "Release" ])
+if [ $# -ne 2 ] || ([ "$1" != "11" ] && [ "$1" != "12" ] && [ "$1" != "14" ] && [ "$1" != "15" ]) || ([ "$2" != "Debug" ] && [ "$2" != "Release" ])
 then
-  echo "Usage: build-win.sh {11|12|14} {Debug|Release}"
+  echo "Usage: build-win.sh {11|12|14|15} {Debug|Release}"
   exit
 fi
 
