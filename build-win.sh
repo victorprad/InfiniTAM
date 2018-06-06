@@ -38,7 +38,7 @@ then
 
   # Note: We need to configure twice to handle conditional building.
   echo "[InfiniTAM] ...Configuring using CMake..."
-  cmake -G "Visual Studio $1 Win64" ..
+  cmake -G "Visual Studio $1 Win64" -T v140 ..
   cmake ..
 
   cd ..
