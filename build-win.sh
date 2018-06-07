@@ -10,6 +10,16 @@ fi
 # Check that msbuild is on the system path.
 ./require-msbuild.sh
 
+# Determine the toolset and generator to use.
+CMAKE_GENERATOR="Visual Studio $1 Win64"
+CMAKE_TOOLSET_STRING=""
+
+if [ "$1" == "15" ]
+then
+  CMAKE_GENERATOR="Visual Studio 15 2017 Win64"
+  CMAKE_TOOLSET_STRING="-T v140"
+fi
+
 # Download and extract freeglut if it's not already present.
 if [ ! -d freeglut ]
 then
@@ -38,7 +48,7 @@ then
 
   # Note: We need to configure twice to handle conditional building.
   echo "[InfiniTAM] ...Configuring using CMake..."
-  cmake -G "Visual Studio $1 Win64" -T v140 ..
+  cmake -G "$CMAKE_GENERATOR" $CMAKE_TOOLSET_STRING ..
   cmake ..
 
   cd ..
