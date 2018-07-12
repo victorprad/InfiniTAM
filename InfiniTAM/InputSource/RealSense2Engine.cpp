@@ -5,6 +5,7 @@
 #include "../ORUtils/FileUtils.h"
 
 #include <cstdio>
+#include <cstring>
 #include <stdexcept>
 
 #include <iostream>
