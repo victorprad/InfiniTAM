@@ -5,8 +5,8 @@
 #include <math.h>
 #endif
 
-#include "../../ORUtils/Math.h"
-#include "../../ORUtils/PlatformIndependence.h"
+#include "Math.h"
+#include "PlatformIndependence.h"
 
 template<typename T> _CPU_AND_GPU_CODE_ inline Vector2f project(const THREADPTR(ORUtils::Vector3<T>) &point_3d, const THREADPTR(Vector4f) &intrinsics)
 {

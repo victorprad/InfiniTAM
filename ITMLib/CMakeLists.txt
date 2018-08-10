@@ -458,7 +458,6 @@ SET(ITMLIB_UTILS_HEADERS
 Utils/ITMCUDAUtils.h
 Utils/ITMLibSettings.h
 Utils/ITMPixelUtils.h
-Utils/ITMProjectionUtils.h
 Utils/ITMSceneParams.h
 Utils/ITMSurfelSceneParams.h
 )

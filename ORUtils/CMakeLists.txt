@@ -45,6 +45,7 @@ MemoryBlockTypes.h
 MemoryDeviceType.h
 NVTimer.h
 PlatformIndependence.h
+ProjectionUtils.h
 SE3Pose.h
 SVMClassifier.h
 Vector.h

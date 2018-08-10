@@ -2,8 +2,9 @@
 
 #pragma once
 
+#include "../../../ORUtils/ProjectionUtils.h"
+
 #include "../../Utils/ITMPixelUtils.h"
-#include "../../Utils/ITMProjectionUtils.h"
 
 // Tukey loss
 _CPU_AND_GPU_CODE_ inline float tukey_rho(float r, float c)
