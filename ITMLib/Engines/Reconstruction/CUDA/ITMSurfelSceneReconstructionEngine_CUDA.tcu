@@ -4,7 +4,7 @@
 
 #ifdef _MSC_VER
   // Suppress some VC++ warnings that are produced when including the Thrust headers.
-  #pragma warning(disable:4267)
+  #pragma warning(disable:4244 4267)
 #else
   // Suppress some GCC warnings that are produced when including the Thrust headers.
   #pragma GCC diagnostic ignored "-Wunused-private-field"
