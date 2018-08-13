@@ -16,6 +16,9 @@ namespace ORUtils
 	class Image : private MemoryBlock<T>
 	{
 	public:
+		/** Expose public MemoryBlock<T> typedefs. */
+		using typename MemoryBlock<T>::ElementType;
+
 		/** Expose public MemoryBlock<T> member variables. */
 		using MemoryBlock<T>::dataSize;
 

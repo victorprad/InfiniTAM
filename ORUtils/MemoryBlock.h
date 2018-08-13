@@ -39,6 +39,8 @@ namespace ORUtils
 		void *data_metalBuffer;
 #endif
 	public:
+		typedef T ElementType;
+
 		enum MemoryCopyDirection { CPU_TO_CPU, CPU_TO_CUDA, CUDA_TO_CPU, CUDA_TO_CUDA };
 
 		/** Total number of allocated entries in the data array. */
