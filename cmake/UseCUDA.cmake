@@ -15,7 +15,7 @@ IF(WITH_CUDA)
 
   # Set the compute capability flags.
   FOREACH(compute_capability ${CUDA_COMPUTE_CAPABILITY})
-    LIST(APPEND CUDA_NVCC_FLAGS --generate-code arch=compute_${compute_capability},code=sm_${compute_capability})
+    LIST(APPEND CUDA_NVCC_FLAGS --generate-code arch=compute_${compute_capability},code=compute_${compute_capability} --generate-code arch=compute_${compute_capability},code=sm_${compute_capability})
   ENDFOREACH()
 
   # Enable fast math.
