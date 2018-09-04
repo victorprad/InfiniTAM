@@ -44,7 +44,13 @@ namespace ITMLib
 
 		ORUtils::Image<Vector4u> *raycastImage;
 
+	private:
+		ORUtils::Image<Vector2f> *defaultRenderingRangeImage;
+		MemoryDeviceType memoryDeviceType;
+
+	public:
 		ITMRenderState(const Vector2i &imgSize, float vf_min, float vf_max, MemoryDeviceType memoryType)
+			: memoryDeviceType(memoryType)
 		{
 			renderingRangeImage = new ORUtils::Image<Vector2f>(imgSize, memoryType);
 			raycastResult = new ORUtils::Image<Vector4f>(imgSize, memoryType);
@@ -52,31 +58,33 @@ namespace ITMLib
 			fwdProjMissingPoints = new ORUtils::Image<int>(imgSize, memoryType);
 			raycastImage = new ORUtils::Image<Vector4u>(imgSize, memoryType);
 
-			ORUtils::Image<Vector2f> *buffImage = new ORUtils::Image<Vector2f>(imgSize, MEMORYDEVICE_CPU);
+			defaultRenderingRangeImage = new ORUtils::Image<Vector2f>(imgSize, true, memoryType == MEMORYDEVICE_CUDA); // Always allocate on the CPU, to allow the call to Fill.
+			defaultRenderingRangeImage->Fill(Vector2f(vf_min, vf_max));
 
-			Vector2f v_lims(vf_min, vf_max);
-			for (int i = 0; i < imgSize.x * imgSize.y; i++) buffImage->GetData(MEMORYDEVICE_CPU)[i] = v_lims;
-
-			if (memoryType == MEMORYDEVICE_CUDA)
-			{
-#ifndef COMPILE_WITHOUT_CUDA
-				renderingRangeImage->SetFrom(buffImage, ORUtils::MemoryBlock<Vector2f>::CPU_TO_CUDA);
-#endif
-			}
-			else renderingRangeImage->SetFrom(buffImage, ORUtils::MemoryBlock<Vector2f>::CPU_TO_CPU);
-
-			delete buffImage;
-
-			noFwdProjMissingPoints = 0;
+			Reset();
 		}
 
 		virtual ~ITMRenderState()
 		{
+			delete defaultRenderingRangeImage;
 			delete renderingRangeImage;
 			delete raycastResult;
 			delete forwardProjection;
 			delete fwdProjMissingPoints;
 			delete raycastImage;
+		}
+
+		virtual void Reset()
+		{
+			if(memoryDeviceType == MEMORYDEVICE_CUDA)
+			{
+#ifndef COMPILE_WITHOUT_CUDA
+				renderingRangeImage->SetFrom(defaultRenderingRangeImage, ORUtils::MemoryBlock<Vector2f>::CUDA_TO_CUDA);
+#endif
+			}
+			else renderingRangeImage->SetFrom(defaultRenderingRangeImage, ORUtils::MemoryBlock<Vector2f>::CPU_TO_CPU);
+
+			noFwdProjMissingPoints = 0;
 		}
 	};
 }

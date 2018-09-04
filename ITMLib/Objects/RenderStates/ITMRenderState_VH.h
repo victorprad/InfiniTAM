@@ -44,11 +44,19 @@ namespace ITMLib
 
 			noVisibleEntries = 0;
 		}
+
 		~ITMRenderState_VH()
 		{
 			delete visibleEntryIDs;
 			delete entriesVisibleType;
 		}
+
+		virtual void Reset()
+		{
+			ITMRenderState::Reset();
+			noVisibleEntries = 0;
+		}
+
 		/** Get the list of "visible entries", that are currently
 		processed by the tracker.
 		*/
