@@ -19,7 +19,7 @@ Previous maintainers and contributors are:
 
 For more information about InfiniTAM please visit the project website <http://www.infinitam.org>. 
 
-Other related projects can be found in the Oxford Active Vision Library <http://www.oxvisionlib.org>.
+Other related projects can be found on the AVLCode website <http://www.avlcode.org>.
 
 # 1. Building the System
 
