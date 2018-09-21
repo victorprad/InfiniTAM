@@ -83,7 +83,7 @@ namespace ITMLib
 			return projectionParamsSimple.fx * projectionParamsSimple.fy < 0.f;
 		}
 
-		ITMIntrinsics(const Vector2i& imgSize = Vector2i(640,480))
+		explicit ITMIntrinsics(const Vector2i& imgSize = Vector2i(640,480))
 		{
 			// These are derived from the standard calibration parameters for a Kinect RGB camera. They're not at all accurate though.
 			float fx = 580.0f * imgSize.x / 640.0f;
