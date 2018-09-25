@@ -7,7 +7,7 @@ This is the main branch of the software bundle "InfiniTAM", the current version 
   Stuart Golodetz <smg@robots.ox.ac.uk>  
   Michael Sapienza <michael.sapienza@eng.ox.ac.uk>  
   Tommaso Cavallari <tommaso.cavallari@unibo.it>
-  
+
 Previous maintainers and contributors are:
 
   Carl Yuheng Ren <carl@robots.ox.ac.uk>  
@@ -17,7 +17,7 @@ Previous maintainers and contributors are:
   Ian D Reid <ian.reid@adelaide.edu.au>  
   David W Murray <dwm@robots.ox.ac.uk>
 
-For more information about InfiniTAM please visit the project website <http://www.infinitam.org>. 
+For more information about InfiniTAM please visit the project website <http://www.infinitam.org>.
 
 Other related projects can be found on the AVLCode website <http://www.avlcode.org>.
 
@@ -45,19 +45,23 @@ Several 3rd party libraries are needed for compiling InfiniTAM. The given versio
   - OpenNI (e.g. version 2.2.0.33)
     OPTIONAL but REQUIRED to get live images from suitable hardware
     also make sure you have freenect/OpenNI2-FreenectDriver if you need it
-    available at http://structure.io/openni
+    available at http://structure.io/openni  
+    Enable with `-DWITH_OPENNI=ON` when running cmake
 
   - libpng (e.g. version 1.6)
     OPTIONAL, allows to read PNG input files
-    available at http://libpng.org
+    available at http://libpng.org  
+    Enable with `-DWITH_PNG=ON` when running cmake
 
   - FFMPEG (e.g. version 2.8.6)
     OPTIONAL, allows writing and playback of lossless FFV1 encoded videos
-    available at https://www.ffmpeg.org/
+    available at https://www.ffmpeg.org/  
+    Enable with `-DWITH_FFMPEG=ON` when running cmake
 
   - librealsense (e.g. github version from 2016-MAR-22)
     OPTIONAL, allows to get live images from Intel Realsense cameras
-    available at https://github.com/IntelRealSense/librealsense
+    available at https://github.com/IntelRealSense/librealsense  
+    Enable with `-DWITH_REALSENSE=ON` when running cmake
 
   - librealsense2 (e.g. Intel® RealSense™ SDK 2.X)
     OPTIONAL, allows to get live images from Intel Realsense cameras
@@ -66,7 +70,8 @@ Several 3rd party libraries are needed for compiling InfiniTAM. The given versio
   - libuvc (e.g. github version from 2015-OCT-27)
     OPTIONAL, deprecated alternative to librealsense
     currently this works only with branch olafkaehler/master
-    available at https://github.com/olafkaehler/libuvc
+    available at https://github.com/olafkaehler/libuvc  
+    Enable with `-DWITH_UVC=ON` when running cmake
 
   - doxygen (e.g. version 1.8.2)
     OPTIONAL, builds a nice reference manual

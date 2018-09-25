@@ -1,32 +1,24 @@
 # - Find OpenNI
 # This module defines
-#  OpenNI_INCLUDE_DIR, where to find OpenNI include files
-#  OpenNI_LIBRARIES, the libraries needed to use OpenNI
-#  OpenNI_FOUND, If false, do not try to use OpenNI.
-# also defined, but not for general use are
+#  OpenNI_INCLUDE_DIR, where to find OpenNI include files.
 #  OpenNI_LIBRARY, where to find the OpenNI library.
+#  OpenNI_FOUND, If false, do not try to use OpenNI.
 
-set(OPEN_NI_ROOT "/usr/local" CACHE FILEPATH "Root directory of OpenNI2")
+IF(MSVC_IDE)
+  FIND_PATH(OPENNI_ROOT LICENSE HINTS "C:/Program Files/OpenNI2")
+ELSEIF(APPLE)
+  FIND_PATH(OPENNI_ROOT primesense-usb.rules HINTS ~/Downloads/OpenNI-MacOSX-x64-2.2)
+ELSEIF("${CMAKE_SYSTEM}" MATCHES "Linux")
+  FIND_PATH(OPENNI_ROOT LICENSE HINTS ~/Software/OpenNI2 ~/OpenNI2)
+ELSE()
+  MESSAGE(FATAL_ERROR "OpenNI not currently set up to work on this platform.")
+ENDIF()
 
-# Finally the library itself
-find_library(OpenNI_LIBRARY
-NAMES OpenNI
-PATHS "${OPEN_NI_ROOT}/Lib" "C:/Program Files (x86)/OpenNI/Lib" "C:/Program Files/OpenNI/Lib" ${CMAKE_LIB_PATH}
-)
+FIND_PATH(OPENNI_INCLUDE_DIR OpenNI.h HINTS "${OPENNI_ROOT}/Include")
+FIND_LIBRARY(OPENNI_LIBRARY OpenNI2 HINTS "${OPENNI_ROOT}/Bin/x64-Release" "${OPENNI_ROOT}/Lib" "${OPENNI_ROOT}/Redist")
 
-find_path(OpenNI_INCLUDE_DIR OpenNI.h PATH "${OPEN_NI_ROOT}/Include")
-
-find_library(OpenNI_LIBRARY OpenNI2 PATH "${OPEN_NI_ROOT}/Bin/x64-Release/")
-
-# handle the QUIETLY and REQUIRED arguments and set JPEG_FOUND to TRUE if
-# all listed variables are TRUE
-#include(${CMAKE_CURRENT_LIST_DIR}/FindPackageHandleStandardArgs.cmake)
-#include(${CMAKE_MODULE_PATH}/FindPackageHandleStandardArgs.cmake)
-find_package_handle_standard_args(OpenNI DEFAULT_MSG OpenNI_LIBRARY OpenNI_INCLUDE_DIR)
-
-if(OPENNI_FOUND)
-  set(OpenNI_LIBRARIES ${OpenNI_LIBRARY})
-endif()
-
-mark_as_advanced(OpenNI_LIBRARY OpenNI_INCLUDE_DIR)
-
+IF(OPENNI_LIBRARY AND OPENNI_INCLUDE_DIR AND OPENNI_ROOT)
+	set(OPENNI_FOUND TRUE)
+ELSE()
+	set(OPENNI_FOUND FALSE)
+ENDIF()
