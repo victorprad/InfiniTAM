@@ -11,8 +11,9 @@
 #endif
 
 #include <thrust/device_ptr.h>
+#include <thrust/functional.h>
+#include <thrust/remove.h>
 #include <thrust/scan.h>
-#include <thrust/sort.h>
 
 // Reenable the suppressed warnings for the rest of the translation unit.
 #ifdef _MSC_VER
@@ -444,10 +445,14 @@ void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::RemoveMarkedSurfels(ITMSu
   TSurfel *surfels = scene->GetSurfels()->GetData(MEMORYDEVICE_CUDA);
 
   thrust::device_ptr<unsigned int> surfelRemovalMaskBegin(surfelRemovalMask);
-  thrust::device_ptr<unsigned int> surfelRemovalMaskEnd = surfelRemovalMaskBegin + surfelCount;
   thrust::device_ptr<TSurfel> surfelsBegin(surfels);
-  thrust::sort_by_key(surfelRemovalMaskBegin, surfelRemovalMaskEnd, surfelsBegin);
-  scene->DeallocateRemovedSurfels(thrust::reduce(surfelRemovalMaskBegin, surfelRemovalMaskEnd));
+  thrust::device_ptr<TSurfel> surfelsEnd(surfels + surfelCount);
+
+  // Actually moves all surfels having an associated surfelRemovalMask value of 1 to the end of the array.
+  thrust::device_ptr<TSurfel> surfelsNewEnd = thrust::remove_if(surfelsBegin, surfelsEnd, surfelRemovalMaskBegin, thrust::identity<unsigned int>());
+
+  size_t removedSurfelsCount = surfelsEnd - surfelsNewEnd;
+  scene->DeallocateRemovedSurfels(removedSurfelsCount);
 }
 
 }
