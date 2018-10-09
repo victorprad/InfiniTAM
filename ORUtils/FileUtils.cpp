@@ -12,11 +12,17 @@
 #include <sys/stat.h>
 #endif
 
-#ifdef USE_LIBPNG
+
+#ifdef WITH_OPENCV
+#include <opencv2/imgcodecs.hpp>
+#include <opencv2/imgproc.hpp>
+#elif USE_LIBPNG
 #include <png.h>
 #endif
 
 using namespace std;
+
+#ifndef WITH_OPENCV
 
 static const char *pgm_ascii_id = "P2";
 static const char *ppm_ascii_id = "P3";
@@ -255,8 +261,23 @@ static bool pnm_writedata(FILE *f, int xsize, int ysize, FormatType type, const 
 	return true;
 }
 
+#endif
+
 void SaveImageToFile(const ORUtils::Image<ORUtils::Vector4<unsigned char> > * image, const char* fileName, bool flipVertical)
 {
+#ifdef WITH_OPENCV
+	cv::Mat imageWrapper(image->noDims.y, image->noDims.x, CV_8UC4, const_cast<ORUtils::Vector4<unsigned char>* >(image->GetData(MEMORYDEVICE_CPU))); // Format is RGBA, read-only data.
+
+	cv::Mat outImage; // Has to be BGR. to be saved properly.
+	cv::cvtColor(imageWrapper, outImage, cv::COLOR_RGBA2BGR);
+
+	if(flipVertical)
+	{
+		cv::flip(outImage, outImage, 0); // Flip around the x axis, converting from top-left to bottom-left origin.
+	}
+
+	cv::imwrite(fileName, outImage);
+#else
 	FILE *f = fopen(fileName, "wb");
 	if (!pnm_writeheader(f, image->noDims.x, image->noDims.y, RGB_8u)) {
 		fclose(f); return;
@@ -291,10 +312,19 @@ void SaveImageToFile(const ORUtils::Image<ORUtils::Vector4<unsigned char> > * im
 	pnm_writedata(f, image->noDims.x, image->noDims.y, RGB_8u, data);
 	delete[] data;
 	fclose(f);
+#endif
 }
 
 void SaveImageToFile(const ORUtils::Image<short>* image, const char* fileName)
 {
+#ifdef WITH_OPENCV
+	cv::Mat imageWrapper(image->noDims.y, image->noDims.x, CV_16SC1, const_cast<short*>(image->GetData(MEMORYDEVICE_CPU))); // Read-only data.
+
+	cv::Mat outImage; // Has to be CV_16U, to be saved properly.
+	imageWrapper.convertTo(outImage, CV_16U);
+
+	cv::imwrite(fileName, outImage);
+#else
 	short *data = (short*)malloc(sizeof(short) * image->dataSize);
 	const short *dataSource = image->GetData(MEMORYDEVICE_CPU);
 	for (size_t i = 0; i < image->dataSize; i++) data[i] = (dataSource[i] << 8) | ((dataSource[i] >> 8) & 255);
@@ -307,10 +337,19 @@ void SaveImageToFile(const ORUtils::Image<short>* image, const char* fileName)
 	fclose(f);
 
 	delete data;
+#endif
 }
 
 void SaveImageToFile(const ORUtils::Image<float>* image, const char* fileName)
 {
+#ifdef WITH_OPENCV
+	cv::Mat imageWrapper(image->noDims.y, image->noDims.x, CV_32FC1, const_cast<float*>(image->GetData(MEMORYDEVICE_CPU))); // Read-only data.
+
+	cv::Mat outImage; // Has to be CV_16U, to be saved properly.
+	imageWrapper.convertTo(outImage, CV_16U, 1000.0); // The conversion to 16U automatically saturates negative float values to 0.
+
+	cv::imwrite(fileName, outImage);
+#else
 	unsigned short *data = new unsigned short[image->dataSize];
 	for (size_t i = 0; i < image->dataSize; i++)
 	{
@@ -326,10 +365,33 @@ void SaveImageToFile(const ORUtils::Image<float>* image, const char* fileName)
 	fclose(f);
 
 	delete[] data;
+#endif
 }
 
 bool ReadImageFromFile(ORUtils::Image<ORUtils::Vector4<unsigned char> > * image, const char* fileName)
 {
+#ifdef WITH_OPENCV
+	cv::Mat cvImage = cv::imread(fileName, cv::IMREAD_COLOR); // Always read the image as CV_8UC3, BGR encoding.
+
+	// Check that we read a proper image, early out otherwise.
+	if(cvImage.empty() || cvImage.type() != CV_8UC3)
+	{
+		image->Clear();
+		return false;
+	}
+
+	// Resize output image, no-op in most cases.
+	ORUtils::Vector2<int> newSize(cvImage.cols, cvImage.rows);
+	image->ChangeDims(newSize);
+
+	// Create a wrapper Mat around the ORImage.
+	cv::Mat imageWrapper(cvImage.size(), CV_8UC4, image->GetData(MEMORYDEVICE_CPU));
+
+	// Copy the data from the cv::Mat, converting from BGR to RGBA.
+	cv::cvtColor(cvImage, imageWrapper, cv::COLOR_BGR2RGBA);
+
+	return true;
+#else
 	PNGReaderData pngData;
 	bool usepng = false;
 
@@ -379,10 +441,33 @@ bool ReadImageFromFile(ORUtils::Image<ORUtils::Vector4<unsigned char> > * image,
 	}
 
 	return true;
+#endif
 }
 
 bool ReadImageFromFile(ORUtils::Image<short> *image, const char *fileName)
 {
+#ifdef WITH_OPENCV
+	cv::Mat cvImage = cv::imread(fileName, cv::IMREAD_ANYDEPTH); // short images are read as CV_16UC1
+
+	// Check that we read a proper image, early out otherwise.
+	if(cvImage.empty() || cvImage.type() != CV_16UC1)
+	{
+		image->Clear();
+		return false;
+	}
+
+	// Resize output image, no-op in most cases.
+	ORUtils::Vector2<int> newSize(cvImage.cols, cvImage.rows);
+	image->ChangeDims(newSize);
+
+	// Create a wrapper Mat around the ORImage.
+	cv::Mat imageWrapper(cvImage.size(), CV_16SC1, image->GetData(MEMORYDEVICE_CPU));
+
+	// Copy the data from the cv::Mat, converting from 16U to 16S.
+	cvImage.convertTo(imageWrapper, CV_16S);
+
+	return true;
+#else
 	PNGReaderData pngData;
 	bool usepng = false;
 
@@ -427,6 +512,7 @@ bool ReadImageFromFile(ORUtils::Image<short> *image, const char *fileName)
 	delete[] data;
 
 	return true;
+#endif
 }
 
 void MakeDir(const char *dirName)
