@@ -39,9 +39,11 @@ void ITMColorTracker::TrackCamera(ITMTrackingState *trackingState, const ITMView
 		minimizeLM(*this, currentPara);
 	}
 
+    const Matrix4f paraM = currentPara.GetM();
+    if (HasNaN(paraM)) return ; 
 	// these following will coerce the result back into the chosen
 	// parameterization for rotations
-	trackingState->pose_d->SetM(view->calib.trafo_rgb_to_depth.calib * currentPara.GetM());
+	trackingState->pose_d->SetM(view->calib.trafo_rgb_to_depth.calib * paraM);
 
 	trackingState->pose_d->Coerce();
 
