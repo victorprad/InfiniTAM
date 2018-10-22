@@ -325,7 +325,7 @@ void SaveImageToFile(const ORUtils::Image<short>* image, const char* fileName)
 
 	cv::imwrite(fileName, outImage);
 #else
-	short *data = (short*)malloc(sizeof(short) * image->dataSize);
+	short *data = new short[image->dataSize];
 	const short *dataSource = image->GetData(MEMORYDEVICE_CPU);
 	for (size_t i = 0; i < image->dataSize; i++) data[i] = (dataSource[i] << 8) | ((dataSource[i] >> 8) & 255);
 
@@ -336,7 +336,7 @@ void SaveImageToFile(const ORUtils::Image<short>* image, const char* fileName)
 	pnm_writedata(f, image->noDims.x, image->noDims.y, MONO_16u, data);
 	fclose(f);
 
-	delete data;
+	delete[] data;
 #endif
 }
 
