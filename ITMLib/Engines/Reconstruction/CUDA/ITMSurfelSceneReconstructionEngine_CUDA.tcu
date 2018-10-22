@@ -444,14 +444,15 @@ void ITMSurfelSceneReconstructionEngine_CUDA<TSurfel>::RemoveMarkedSurfels(ITMSu
   unsigned int *surfelRemovalMask = this->m_surfelRemovalMaskMB->GetData(MEMORYDEVICE_CUDA);
   TSurfel *surfels = scene->GetSurfels()->GetData(MEMORYDEVICE_CUDA);
 
-  thrust::device_ptr<unsigned int> surfelRemovalMaskBegin(surfelRemovalMask);
   thrust::device_ptr<TSurfel> surfelsBegin(surfels);
   thrust::device_ptr<TSurfel> surfelsEnd(surfels + surfelCount);
+  thrust::device_ptr<unsigned int> surfelRemovalMaskBegin(surfelRemovalMask);
 
-  // Actually moves all surfels having an associated surfelRemovalMask value of 1 to the end of the array.
+  // Move all surfels with a mask value of 1 to the end of the array.
   thrust::device_ptr<TSurfel> surfelsNewEnd = thrust::remove_if(surfelsBegin, surfelsEnd, surfelRemovalMaskBegin, thrust::identity<unsigned int>());
 
-  size_t removedSurfelsCount = surfelsEnd - surfelsNewEnd;
+  // Decrease the number of allocated surfels accordingly.
+  const size_t removedSurfelsCount = surfelsEnd - surfelsNewEnd;
   scene->DeallocateRemovedSurfels(removedSurfelsCount);
 }
 
