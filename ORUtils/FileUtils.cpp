@@ -12,7 +12,6 @@
 #include <sys/stat.h>
 #endif
 
-
 #ifdef WITH_OPENCV
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/imgproc.hpp>
@@ -266,16 +265,20 @@ static bool pnm_writedata(FILE *f, int xsize, int ysize, FormatType type, const 
 void SaveImageToFile(const ORUtils::Image<ORUtils::Vector4<unsigned char> > * image, const char* fileName, bool flipVertical)
 {
 #ifdef WITH_OPENCV
-	cv::Mat imageWrapper(image->noDims.y, image->noDims.x, CV_8UC4, const_cast<ORUtils::Vector4<unsigned char>* >(image->GetData(MEMORYDEVICE_CPU))); // Format is RGBA, read-only data.
+	// Wrap the RGBA image to be saved with a cv::Mat.
+	cv::Mat imageWrapper(image->noDims.y, image->noDims.x, CV_8UC4, const_cast<ORUtils::Vector4<unsigned char>* >(image->GetData(MEMORYDEVICE_CPU)));
 
-	cv::Mat outImage; // Has to be BGR. to be saved properly.
+	// Convert the image to BGR so that it can be saved properly.
+	cv::Mat outImage;
 	cv::cvtColor(imageWrapper, outImage, cv::COLOR_RGBA2BGR);
 
 	if(flipVertical)
 	{
-		cv::flip(outImage, outImage, 0); // Flip around the x axis, converting from top-left to bottom-left origin.
+		// Flip around the x axis, converting from a top-left to a bottom-left origin.
+		cv::flip(outImage, outImage, 0);
 	}
 
+	// Write the converted image to disk.
 	cv::imwrite(fileName, outImage);
 #else
 	FILE *f = fopen(fileName, "wb");
@@ -318,11 +321,14 @@ void SaveImageToFile(const ORUtils::Image<ORUtils::Vector4<unsigned char> > * im
 void SaveImageToFile(const ORUtils::Image<short>* image, const char* fileName)
 {
 #ifdef WITH_OPENCV
-	cv::Mat imageWrapper(image->noDims.y, image->noDims.x, CV_16SC1, const_cast<short*>(image->GetData(MEMORYDEVICE_CPU))); // Read-only data.
+	// Wrap the image to be saved with a cv::Mat.
+	cv::Mat imageWrapper(image->noDims.y, image->noDims.x, CV_16SC1, const_cast<short*>(image->GetData(MEMORYDEVICE_CPU)));
 
-	cv::Mat outImage; // Has to be CV_16U, to be saved properly.
+	// Convert the image to an unsigned short image to allow it to be saved properly.
+	cv::Mat outImage;
 	imageWrapper.convertTo(outImage, CV_16U);
 
+	// Write the converted image to disk.
 	cv::imwrite(fileName, outImage);
 #else
 	short *data = new short[image->dataSize];
@@ -343,11 +349,14 @@ void SaveImageToFile(const ORUtils::Image<short>* image, const char* fileName)
 void SaveImageToFile(const ORUtils::Image<float>* image, const char* fileName)
 {
 #ifdef WITH_OPENCV
-	cv::Mat imageWrapper(image->noDims.y, image->noDims.x, CV_32FC1, const_cast<float*>(image->GetData(MEMORYDEVICE_CPU))); // Read-only data.
+	// Wrap the image to be saved with a cv::Mat.
+	cv::Mat imageWrapper(image->noDims.y, image->noDims.x, CV_32FC1, const_cast<float*>(image->GetData(MEMORYDEVICE_CPU)));
 
-	cv::Mat outImage; // Has to be CV_16U, to be saved properly.
-	imageWrapper.convertTo(outImage, CV_16U, 1000.0); // The conversion to 16U automatically saturates negative float values to 0.
+	// Convert the image to an unsigned short image, scaling by 1000 and automatically saturating negative float values to 0.
+	cv::Mat outImage;
+	imageWrapper.convertTo(outImage, CV_16U, 1000.0);
 
+	// Write the converted image to disk.
 	cv::imwrite(fileName, outImage);
 #else
 	unsigned short *data = new unsigned short[image->dataSize];
@@ -371,23 +380,24 @@ void SaveImageToFile(const ORUtils::Image<float>* image, const char* fileName)
 bool ReadImageFromFile(ORUtils::Image<ORUtils::Vector4<unsigned char> > * image, const char* fileName)
 {
 #ifdef WITH_OPENCV
-	cv::Mat cvImage = cv::imread(fileName, cv::IMREAD_COLOR); // Always read the image as CV_8UC3, BGR encoding.
+	// Read in a 24-bit BGR image.
+	cv::Mat cvImage = cv::imread(fileName, cv::IMREAD_COLOR);
 
-	// Check that we read a proper image, early out otherwise.
+	// If the image wasn't read in successfully, early out.
 	if(cvImage.empty() || cvImage.type() != CV_8UC3)
 	{
 		image->Clear();
 		return false;
 	}
 
-	// Resize output image, no-op in most cases.
+	// Resize the output image to be the same size as the image we've just read in (this is a no-op in most cases).
 	ORUtils::Vector2<int> newSize(cvImage.cols, cvImage.rows);
 	image->ChangeDims(newSize);
 
-	// Create a wrapper Mat around the ORImage.
+	// Wrap the output image with a cv::Mat.
 	cv::Mat imageWrapper(cvImage.size(), CV_8UC4, image->GetData(MEMORYDEVICE_CPU));
 
-	// Copy the data from the cv::Mat, converting from BGR to RGBA.
+	// Copy the image we've just read in into the output image, converting from BGR to RGBA in the process.
 	cv::cvtColor(cvImage, imageWrapper, cv::COLOR_BGR2RGBA);
 
 	return true;
@@ -447,23 +457,24 @@ bool ReadImageFromFile(ORUtils::Image<ORUtils::Vector4<unsigned char> > * image,
 bool ReadImageFromFile(ORUtils::Image<short> *image, const char *fileName)
 {
 #ifdef WITH_OPENCV
-	cv::Mat cvImage = cv::imread(fileName, cv::IMREAD_ANYDEPTH); // short images are read as CV_16UC1
+	// Read in the image. (Note that short images are read as CV_16UC1.)
+	cv::Mat cvImage = cv::imread(fileName, cv::IMREAD_ANYDEPTH);
 
-	// Check that we read a proper image, early out otherwise.
+	// If the image wasn't read in successfully, early out.
 	if(cvImage.empty() || cvImage.type() != CV_16UC1)
 	{
 		image->Clear();
 		return false;
 	}
 
-	// Resize output image, no-op in most cases.
+	// Resize the output image to be the same size as the image we've just read in (this is a no-op in most cases).
 	ORUtils::Vector2<int> newSize(cvImage.cols, cvImage.rows);
 	image->ChangeDims(newSize);
 
-	// Create a wrapper Mat around the ORImage.
+	// Wrap the output image with a cv::Mat.
 	cv::Mat imageWrapper(cvImage.size(), CV_16SC1, image->GetData(MEMORYDEVICE_CPU));
 
-	// Copy the data from the cv::Mat, converting from 16U to 16S.
+	// Copy the image we've just read in into the output image, converting from 16U to 16S in the process.
 	cvImage.convertTo(imageWrapper, CV_16S);
 
 	return true;
