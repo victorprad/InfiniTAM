@@ -410,7 +410,11 @@ void ITMExtendedTracker::UpdatePoseQuality(int noValidPoints_old, float *hessian
 
 void ITMExtendedTracker::TrackCamera(ITMTrackingState *trackingState, const ITMView *view)
 {
-	if (!trackingState->HasValidPointCloud()) return;
+	if (!trackingState->HasValidPointCloud())
+	{
+		trackingState->trackerResult = ITMTrackingState::TRACKING_GOOD;
+		return;
+	}
 
 	if (trackingState->age_pointCloud >= 0) trackingState->framesProcessed++;
 	else trackingState->framesProcessed = 0;
