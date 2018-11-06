@@ -24,7 +24,11 @@ ITMColorTracker::~ITMColorTracker(void)
 
 void ITMColorTracker::TrackCamera(ITMTrackingState *trackingState, const ITMView *view)
 {
-	if (!trackingState->HasValidPointCloud()) return;
+	if (!trackingState->HasValidPointCloud())
+	{
+		trackingState->trackerResult = ITMTrackingState::TRACKING_GOOD;
+		return;
+	}
 
 	this->view = view; this->trackingState = trackingState;
 
