@@ -108,6 +108,11 @@ namespace ORUtils {
 			return r;
 		}
 
+		// scalar * mat4
+		_CPU_AND_GPU_CODE_ inline friend Matrix4 operator * (const T &scalar, const Matrix4 &rhs)	{
+			return rhs * scalar;
+		}
+
 		_CPU_AND_GPU_CODE_ inline friend Matrix4 operator / (const Matrix4 &lhs, const T &rhs)	{ 
 			Matrix4 r;
 			for (int i = 0; i < 16; i++) r.m[i] = lhs.m[i] / rhs;
@@ -295,6 +300,11 @@ namespace ORUtils {
 			for (int x = 0; x < 3; x++) for (int y = 0; y < 3; y++) for (int k = 0; k < 3; k++)
 				r(x, y) += lhs(k, y) * rhs(x, k);
 			return r;
+		}
+
+		// scalar * mat3
+		_CPU_AND_GPU_CODE_ inline friend Matrix3 operator * (const T &scalar, const Matrix3 &rhs)	{
+			return rhs * scalar;
 		}
 
 		_CPU_AND_GPU_CODE_ inline friend Matrix3 operator + (const Matrix3 &lhs, const Matrix3 &rhs) {
