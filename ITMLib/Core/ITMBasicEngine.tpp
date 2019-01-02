@@ -26,7 +26,7 @@ ITMBasicEngine<TVoxel,TIndex>::ITMBasicEngine(const ITMLibSettings *settings, co
 	MemoryDeviceType memoryType = settings->GetMemoryType();
 	this->scene = new ITMScene<TVoxel,TIndex>(&settings->sceneParams, settings->swappingMode == ITMLibSettings::SWAPPINGMODE_ENABLED, memoryType);
 
-	const DeviceType deviceType = settings->deviceType;
+	const ORUtils::DeviceType deviceType = settings->deviceType;
 
 	lowLevelEngine = ITMLowLevelEngineFactory::MakeLowLevelEngine(deviceType);
 	viewBuilder = ITMViewBuilderFactory::MakeViewBuilder(calib, deviceType);
@@ -319,7 +319,7 @@ ITMTrackingState::TrackingResult ITMBasicEngine<TVoxel,TIndex>::ProcessFrame(ORU
 		if (addKeyframeIdx >= 0)
 		{
 			ORUtils::MemoryBlock<Vector4u>::MemoryCopyDirection memoryCopyDirection =
-				settings->deviceType == DEVICE_CUDA ? ORUtils::MemoryBlock<Vector4u>::CUDA_TO_CUDA : ORUtils::MemoryBlock<Vector4u>::CPU_TO_CPU;
+				settings->deviceType == ORUtils::DEVICE_CUDA ? ORUtils::MemoryBlock<Vector4u>::CUDA_TO_CUDA : ORUtils::MemoryBlock<Vector4u>::CPU_TO_CPU;
 
 			kfRaycast->SetFrom(renderState_live->raycastImage, memoryCopyDirection);
 		}
@@ -358,13 +358,13 @@ void ITMBasicEngine<TVoxel,TIndex>::GetImage(ORUChar4Image *out, GetImageType ge
 	{
 	case ITMBasicEngine::InfiniTAM_IMAGE_ORIGINAL_RGB:
 		out->ChangeDims(view->rgb->noDims);
-		if (settings->deviceType == DEVICE_CUDA) 
+		if (settings->deviceType == ORUtils::DEVICE_CUDA)
 			out->SetFrom(view->rgb, ORUtils::MemoryBlock<Vector4u>::CUDA_TO_CPU);
 		else out->SetFrom(view->rgb, ORUtils::MemoryBlock<Vector4u>::CPU_TO_CPU);
 		break;
 	case ITMBasicEngine::InfiniTAM_IMAGE_ORIGINAL_DEPTH:
 		out->ChangeDims(view->depth->noDims);
-		if (settings->deviceType == DEVICE_CUDA) view->depth->UpdateHostFromDevice();
+		if (settings->deviceType == ORUtils::DEVICE_CUDA) view->depth->UpdateHostFromDevice();
 		ITMVisualisationEngine<TVoxel, TIndex>::DepthToUchar4(out, view->depth);
 
 		break;
@@ -401,7 +401,7 @@ void ITMBasicEngine<TVoxel,TIndex>::GetImage(ORUChar4Image *out, GetImageType ge
 		else srcImage = renderState_live->raycastImage;
 
 		out->ChangeDims(srcImage->noDims);
-		if (settings->deviceType == DEVICE_CUDA)
+		if (settings->deviceType == ORUtils::DEVICE_CUDA)
 			out->SetFrom(srcImage, ORUtils::MemoryBlock<Vector4u>::CUDA_TO_CPU);
 		else out->SetFrom(srcImage, ORUtils::MemoryBlock<Vector4u>::CPU_TO_CPU);
 
@@ -426,7 +426,7 @@ void ITMBasicEngine<TVoxel,TIndex>::GetImage(ORUChar4Image *out, GetImageType ge
 		visualisationEngine->CreateExpectedDepths(scene, pose, intrinsics, renderState_freeview);
 		visualisationEngine->RenderImage(scene, pose, intrinsics, renderState_freeview, renderState_freeview->raycastImage, type);
 
-		if (settings->deviceType == DEVICE_CUDA)
+		if (settings->deviceType == ORUtils::DEVICE_CUDA)
 			out->SetFrom(renderState_freeview->raycastImage, ORUtils::MemoryBlock<Vector4u>::CUDA_TO_CPU);
 		else out->SetFrom(renderState_freeview->raycastImage, ORUtils::MemoryBlock<Vector4u>::CPU_TO_CPU);
 		break;

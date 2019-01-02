@@ -15,11 +15,11 @@ namespace ITMLib
 
 template <typename TSurfel>
 ITMSurfelVisualisationEngine<TSurfel> *
-ITMSurfelVisualisationEngineFactory<TSurfel>::make_surfel_visualisation_engine(DeviceType deviceType)
+ITMSurfelVisualisationEngineFactory<TSurfel>::make_surfel_visualisation_engine(ORUtils::DeviceType deviceType)
 {
   ITMSurfelVisualisationEngine<TSurfel> *visualisationEngine = NULL;
 
-  if(deviceType == DEVICE_CUDA)
+  if(deviceType == ORUtils::DEVICE_CUDA)
   {
 #ifndef COMPILE_WITHOUT_CUDA
     visualisationEngine = new ITMSurfelVisualisationEngine_CUDA<TSurfel>;

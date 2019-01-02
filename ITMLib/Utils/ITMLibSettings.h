@@ -34,7 +34,7 @@ namespace ITMLib
 		} LibMode;
 
 		/// Select the type of device to use
-		DeviceType deviceType;
+		ORUtils::DeviceType deviceType;
 
 		bool useApproximateRaycast;
 

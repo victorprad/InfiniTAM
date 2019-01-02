@@ -2,6 +2,7 @@
 
 #include "ITMLibSettings.h"
 using namespace ITMLib;
+using namespace ORUtils;
 
 #include <climits>
 #include <cmath>

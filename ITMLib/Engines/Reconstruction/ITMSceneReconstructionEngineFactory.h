@@ -26,21 +26,21 @@ struct ITMSceneReconstructionEngineFactory
    * \param deviceType  The device on which the scene reconstruction engine should operate.
    */
   template <typename TVoxel, typename TIndex>
-  static ITMSceneReconstructionEngine<TVoxel,TIndex> *MakeSceneReconstructionEngine(DeviceType deviceType)
+  static ITMSceneReconstructionEngine<TVoxel,TIndex> *MakeSceneReconstructionEngine(ORUtils::DeviceType deviceType)
   {
     ITMSceneReconstructionEngine<TVoxel,TIndex> *sceneRecoEngine = NULL;
 
     switch(deviceType)
     {
-      case DEVICE_CPU:
+      case ORUtils::DEVICE_CPU:
         sceneRecoEngine = new ITMSceneReconstructionEngine_CPU<TVoxel,TIndex>;
         break;
-      case DEVICE_CUDA:
+      case ORUtils::DEVICE_CUDA:
 #ifndef COMPILE_WITHOUT_CUDA
         sceneRecoEngine = new ITMSceneReconstructionEngine_CUDA<TVoxel,TIndex>;
 #endif
         break;
-      case DEVICE_METAL:
+      case ORUtils::DEVICE_METAL:
 #ifdef COMPILE_WITH_METAL
         sceneRecoEngine = new ITMSceneReconstructionEngine_Metal<TVoxel,TIndex>;
 #endif

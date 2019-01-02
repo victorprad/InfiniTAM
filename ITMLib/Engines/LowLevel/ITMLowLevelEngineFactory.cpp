@@ -1,6 +1,7 @@
 // Copyright 2014-2017 Oxford University Innovation Limited and the authors of InfiniTAM
 
 #include "ITMLowLevelEngineFactory.h"
+using namespace ORUtils;
 
 #include "CPU/ITMLowLevelEngine_CPU.h"
 #ifndef COMPILE_WITHOUT_CUDA

@@ -22,6 +22,6 @@ namespace ITMLib
      * \param deviceType      The device on which the surfel scene reconstruction engine should operate.
      * \return                The surfel scene reconstruction engine.
      */
-    static ITMSurfelSceneReconstructionEngine<TSurfel> *make_surfel_scene_reconstruction_engine(const Vector2i& depthImageSize, DeviceType deviceType);
+    static ITMSurfelSceneReconstructionEngine<TSurfel> *make_surfel_scene_reconstruction_engine(const Vector2i& depthImageSize, ORUtils::DeviceType deviceType);
   };
 }
