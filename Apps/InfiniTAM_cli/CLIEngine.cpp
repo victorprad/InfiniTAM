@@ -9,6 +9,7 @@
 using namespace InfiniTAM::Engine;
 using namespace InputSource;
 using namespace ITMLib;
+using namespace ORUtils;
 
 CLIEngine* CLIEngine::instance;
 

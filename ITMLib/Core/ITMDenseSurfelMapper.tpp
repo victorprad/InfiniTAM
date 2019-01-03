@@ -10,7 +10,7 @@ namespace ITMLib
 //#################### CONSTRUCTORS ####################
 
 template <typename TSurfel>
-ITMDenseSurfelMapper<TSurfel>::ITMDenseSurfelMapper(const Vector2i& depthImageSize, DeviceType deviceType)
+ITMDenseSurfelMapper<TSurfel>::ITMDenseSurfelMapper(const Vector2i& depthImageSize, ORUtils::DeviceType deviceType)
 : m_reconstructionEngine(ITMSurfelSceneReconstructionEngineFactory<TSurfel>::make_surfel_scene_reconstruction_engine(depthImageSize, deviceType))
 {}
 

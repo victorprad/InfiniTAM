@@ -21,6 +21,6 @@ namespace ITMLib
      * \param deviceType  The device on which the surfel visualisation engine should operate.
      * \return            The surfel visualisation engine.
      */
-    static ITMSurfelVisualisationEngine<TSurfel> *make_surfel_visualisation_engine(DeviceType deviceType);
+    static ITMSurfelVisualisationEngine<TSurfel> *make_surfel_visualisation_engine(ORUtils::DeviceType deviceType);
   };
 }

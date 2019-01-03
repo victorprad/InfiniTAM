@@ -26,21 +26,21 @@ struct ITMSwappingEngineFactory
    * \param deviceType  The device on which the swapping engine should operate.
    */
   template <typename TVoxel, typename TIndex>
-  static ITMSwappingEngine<TVoxel,TIndex> *MakeSwappingEngine(DeviceType deviceType)
+  static ITMSwappingEngine<TVoxel,TIndex> *MakeSwappingEngine(ORUtils::DeviceType deviceType)
   {
     ITMSwappingEngine<TVoxel,TIndex> *swappingEngine = NULL;
 
     switch(deviceType)
     {
-      case DEVICE_CPU:
+      case ORUtils::DEVICE_CPU:
         swappingEngine = new ITMSwappingEngine_CPU<TVoxel,TIndex>;
         break;
-      case DEVICE_CUDA:
+      case ORUtils::DEVICE_CUDA:
 #ifndef COMPILE_WITHOUT_CUDA
         swappingEngine = new ITMSwappingEngine_CUDA<TVoxel,TIndex>;
 #endif
         break;
-      case DEVICE_METAL:
+      case ORUtils::DEVICE_METAL:
 #ifdef COMPILE_WITH_METAL
         swappingEngine = new ITMSwappingEngine_CPU<TVoxel,TIndex>;
 #endif

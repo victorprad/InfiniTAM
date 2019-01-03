@@ -28,6 +28,7 @@
 using namespace InfiniTAM::Engine;
 using namespace InputSource;
 using namespace ITMLib;
+using namespace ORUtils;
 
 UIEngine* UIEngine::instance;
 

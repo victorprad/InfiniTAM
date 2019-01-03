@@ -20,7 +20,7 @@ struct ITMLowLevelEngineFactory
    *
    * \param deviceType  The device on which the low-level engine should operate.
    */
-  static ITMLowLevelEngine *MakeLowLevelEngine(DeviceType deviceType);
+  static ITMLowLevelEngine *MakeLowLevelEngine(ORUtils::DeviceType deviceType);
 };
 
 }

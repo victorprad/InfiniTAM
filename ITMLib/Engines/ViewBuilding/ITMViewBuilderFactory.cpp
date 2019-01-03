@@ -1,6 +1,7 @@
 // Copyright 2014-2017 Oxford University Innovation Limited and the authors of InfiniTAM
 
 #include "ITMViewBuilderFactory.h"
+using namespace ORUtils;
 
 #include "CPU/ITMViewBuilder_CPU.h"
 #ifndef COMPILE_WITHOUT_CUDA

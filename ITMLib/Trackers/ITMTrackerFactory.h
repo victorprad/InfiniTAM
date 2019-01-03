@@ -37,7 +37,7 @@ namespace ITMLib
 	{
 	private:
 		//#################### TYPEDEFS ####################
-		typedef ITMTracker* MakerFunc(const Vector2i&,const Vector2i&,DeviceType,const ORUtils::KeyValueConfig &,const ITMLowLevelEngine*,ITMIMUCalibrator*,const ITMSceneParams*);
+		typedef ITMTracker* MakerFunc(const Vector2i&,const Vector2i&,ORUtils::DeviceType,const ORUtils::KeyValueConfig &,const ITMLowLevelEngine*,ITMIMUCalibrator*,const ITMSceneParams*);
 
 		/// Tracker types
 		typedef enum {
@@ -102,7 +102,7 @@ namespace ITMLib
 	/**
 	 * \brief Makes a tracker of the type specified in the trackerConfig string.
 	 */
-	ITMTracker *Make(DeviceType deviceType, const char *trackerConfig, const Vector2i & imgSize_rgb, const Vector2i & imgSize_d, const ITMLowLevelEngine *lowLevelEngine,
+	ITMTracker *Make(ORUtils::DeviceType deviceType, const char *trackerConfig, const Vector2i & imgSize_rgb, const Vector2i & imgSize_d, const ITMLowLevelEngine *lowLevelEngine,
 		ITMIMUCalibrator *imuCalibrator, const ITMSceneParams *sceneParams) const
 	{
 		ORUtils::KeyValueConfig cfg(trackerConfig);
@@ -176,7 +176,7 @@ namespace ITMLib
 	/**
 	 * \brief Makes a colour tracker.
 	 */
-	static ITMTracker *MakeColourTracker(const Vector2i& imgSize_rgb, const Vector2i& imgSize_d, DeviceType deviceType, const ORUtils::KeyValueConfig & cfg,
+	static ITMTracker *MakeColourTracker(const Vector2i& imgSize_rgb, const Vector2i& imgSize_d, ORUtils::DeviceType deviceType, const ORUtils::KeyValueConfig & cfg,
 		const ITMLowLevelEngine *lowLevelEngine, ITMIMUCalibrator *imuCalibrator, const ITMSceneParams *sceneParams)
 	{
 		int verbose = 0;
@@ -189,15 +189,15 @@ namespace ITMLib
 		ITMColorTracker *ret = NULL;
 		switch (deviceType)
 		{
-		case DEVICE_CPU:
+		case ORUtils::DEVICE_CPU:
 			ret = new ITMColorTracker_CPU(imgSize_rgb, &(levels[0]), static_cast<int>(levels.size()), lowLevelEngine);
 			break;
-		case DEVICE_CUDA:
+		case ORUtils::DEVICE_CUDA:
 #ifndef COMPILE_WITHOUT_CUDA
 			ret = new ITMColorTracker_CUDA(imgSize_rgb, &(levels[0]), static_cast<int>(levels.size()), lowLevelEngine);
 #endif
 			break;
-		case DEVICE_METAL:
+		case ORUtils::DEVICE_METAL:
 #ifdef COMPILE_WITH_METAL
 			ret = new ITMColorTracker_CPU(imgSize_rgb, &(levels[0]), static_cast<int>(levels.size()), lowLevelEngine);
 #endif
@@ -211,7 +211,7 @@ namespace ITMLib
 	/**
 	 * \brief Makes an ICP tracker.
 	 */
-	static ITMTracker *MakeICPTracker(const Vector2i& imgSize_rgb, const Vector2i& imgSize_d, DeviceType deviceType, const ORUtils::KeyValueConfig & cfg,
+	static ITMTracker *MakeICPTracker(const Vector2i& imgSize_rgb, const Vector2i& imgSize_d, ORUtils::DeviceType deviceType, const ORUtils::KeyValueConfig & cfg,
 		const ITMLowLevelEngine *lowLevelEngine, ITMIMUCalibrator *imuCalibrator, const ITMSceneParams *sceneParams)
 	{
 		const char *levelSetup = "rrrbb";
@@ -237,15 +237,15 @@ namespace ITMLib
 		ITMDepthTracker *ret = NULL;
 		switch (deviceType)
 		{
-		case DEVICE_CPU:
+		case ORUtils::DEVICE_CPU:
 			ret = new ITMDepthTracker_CPU(imgSize_d, &(levels[0]), static_cast<int>(levels.size()), smallStepSizeCriterion, failureDetectorThd, lowLevelEngine);
 			break;
-		case DEVICE_CUDA:
+		case ORUtils::DEVICE_CUDA:
 #ifndef COMPILE_WITHOUT_CUDA
 			ret = new ITMDepthTracker_CUDA(imgSize_d, &(levels[0]), static_cast<int>(levels.size()), smallStepSizeCriterion, failureDetectorThd, lowLevelEngine);
 #endif
 			break;
-		case DEVICE_METAL:
+		case ORUtils::DEVICE_METAL:
 #ifdef COMPILE_WITH_METAL
 			ret = new ITMDepthTracker_CPU(imgSize_d, &(levels[0]), static_cast<int>(levels.size()), smallStepSizeCriterion, failureDetectorThd, lowLevelEngine);
 #endif
@@ -261,7 +261,7 @@ namespace ITMLib
 	/**
 	* \brief Makes an Extended tracker.
 	*/
-	static ITMTracker *MakeExtendedTracker(const Vector2i& imgSize_rgb, const Vector2i& imgSize_d, DeviceType deviceType, const ORUtils::KeyValueConfig & cfg,
+	static ITMTracker *MakeExtendedTracker(const Vector2i& imgSize_rgb, const Vector2i& imgSize_d, ORUtils::DeviceType deviceType, const ORUtils::KeyValueConfig & cfg,
 		const ITMLowLevelEngine *lowLevelEngine, ITMIMUCalibrator *imuCalibrator, const ITMSceneParams *sceneParams)
 	{
 		const char *levelSetup = "rrbb";
@@ -305,7 +305,7 @@ namespace ITMLib
 		ITMExtendedTracker *ret = NULL;
 		switch (deviceType)
 		{
-		case DEVICE_CPU:
+		case ORUtils::DEVICE_CPU:
 			ret = new ITMExtendedTracker_CPU(imgSize_d,
 											 imgSize_rgb,
 											 useDepth,
@@ -323,7 +323,7 @@ namespace ITMLib
 											 framesToWeight,
 											 lowLevelEngine);
 			break;
-		case DEVICE_CUDA:
+		case ORUtils::DEVICE_CUDA:
 #ifndef COMPILE_WITHOUT_CUDA
 			ret = new ITMExtendedTracker_CUDA(imgSize_d,
 												imgSize_rgb,
@@ -343,7 +343,7 @@ namespace ITMLib
 												lowLevelEngine);
 #endif
 			break;
-		case DEVICE_METAL:
+		case ORUtils::DEVICE_METAL:
 #ifdef COMPILE_WITH_METAL
 			ret = new ITMExtendedTracker_Metal(imgSize_d, imgSize_rgb, useDepth, useColour, colourWeight, &(levels[0]), static_cast<int>(levels.size()), smallStepSizeCriterion, failureDetectorThd,
 				scene->sceneParams->viewFrustum_min, scene->sceneParams->viewFrustum_max, tukeyCutOff, framesToSkip, framesToWeight, lowLevelEngine);
@@ -359,7 +359,7 @@ namespace ITMLib
 	/**
 	 * \brief Makes an IMU tracker.
 	 */
-	static ITMTracker* MakeIMUTracker(const Vector2i& imgSize_rgb, const Vector2i& imgSize_d, DeviceType deviceType, const ORUtils::KeyValueConfig & cfg,
+	static ITMTracker* MakeIMUTracker(const Vector2i& imgSize_rgb, const Vector2i& imgSize_d, ORUtils::DeviceType deviceType, const ORUtils::KeyValueConfig & cfg,
 		const ITMLowLevelEngine *lowLevelEngine, ITMIMUCalibrator *imuCalibrator, const ITMSceneParams *sceneParams)
 	{
 		const char *levelSetup = "tb";
@@ -385,15 +385,15 @@ namespace ITMLib
 		ITMDepthTracker *dTracker = NULL;
 		switch (deviceType)
 		{
-		case DEVICE_CPU:
+		case ORUtils::DEVICE_CPU:
 			dTracker = new ITMDepthTracker_CPU(imgSize_d, &(levels[0]), static_cast<int>(levels.size()), smallStepSizeCriterion, failureDetectorThd, lowLevelEngine);
 			break;
-		case DEVICE_CUDA:
+		case ORUtils::DEVICE_CUDA:
 #ifndef COMPILE_WITHOUT_CUDA
 			dTracker = new ITMDepthTracker_CUDA(imgSize_d, &(levels[0]), static_cast<int>(levels.size()), smallStepSizeCriterion, failureDetectorThd, lowLevelEngine);
 #endif
 			break;
-		case DEVICE_METAL:
+		case ORUtils::DEVICE_METAL:
 #ifdef COMPILE_WITH_METAL
 			dTracker = new ITMDepthTracker_CPU(imgSize_d, &(levels[0]), static_cast<int>(levels.size()), smallStepSizeCriterion, failureDetectorThd, lowLevelEngine);
 #endif
@@ -414,7 +414,7 @@ namespace ITMLib
 	/**
 	* \brief Makes an Extended IMU tracker.
 	*/
-	static ITMTracker* MakeExtendedIMUTracker(const Vector2i& imgSize_rgb, const Vector2i& imgSize_d, DeviceType deviceType, const ORUtils::KeyValueConfig & cfg,
+	static ITMTracker* MakeExtendedIMUTracker(const Vector2i& imgSize_rgb, const Vector2i& imgSize_d, ORUtils::DeviceType deviceType, const ORUtils::KeyValueConfig & cfg,
 		const ITMLowLevelEngine *lowLevelEngine, ITMIMUCalibrator *imuCalibrator, const ITMSceneParams *sceneParams)
 	{
 		ITMTracker *dTracker = MakeExtendedTracker(imgSize_rgb, imgSize_d, deviceType, cfg,
@@ -430,7 +430,7 @@ namespace ITMLib
 	/**
 	 * \brief Makes a file based tracker.
 	 */
-	static ITMTracker *MakeFileBasedTracker(const Vector2i& imgSize_rgb, const Vector2i& imgSize_d, DeviceType deviceType, const ORUtils::KeyValueConfig & cfg,
+	static ITMTracker *MakeFileBasedTracker(const Vector2i& imgSize_rgb, const Vector2i& imgSize_d, ORUtils::DeviceType deviceType, const ORUtils::KeyValueConfig & cfg,
 		const ITMLowLevelEngine *lowLevelEngine, ITMIMUCalibrator *imuCalibrator, const ITMSceneParams *sceneParams)
 	{
 		int verbose = 0;
@@ -447,7 +447,7 @@ namespace ITMLib
 	/**
 	 * \brief Makes a force fail tracker.
 	 */
-	static ITMTracker *MakeForceFailTracker(const Vector2i& imgSize_rgb, const Vector2i& imgSize_d, DeviceType deviceType, const ORUtils::KeyValueConfig & cfg,
+	static ITMTracker *MakeForceFailTracker(const Vector2i& imgSize_rgb, const Vector2i& imgSize_d, ORUtils::DeviceType deviceType, const ORUtils::KeyValueConfig & cfg,
 		const ITMLowLevelEngine *lowLevelEngine, ITMIMUCalibrator *imuCalibrator, const ITMSceneParams *sceneParams)
 	{
 		return new ITMForceFailTracker;

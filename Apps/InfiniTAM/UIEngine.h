@@ -90,7 +90,7 @@ namespace InfiniTAM
 			ORUChar4Image *saveImage;
 
 			void Initialise(int & argc, char** argv, InputSource::ImageSourceEngine *imageSource, InputSource::IMUSourceEngine *imuSource,
-				ITMLib::ITMMainEngine *mainEngine, const char *outFolder, DeviceType deviceType);
+				ITMLib::ITMMainEngine *mainEngine, const char *outFolder, ORUtils::DeviceType deviceType);
 			void Shutdown();
 
 			void Run();
