@@ -251,6 +251,14 @@ namespace ORUtils {
 		_CPU_AND_GPU_CODE_ Matrix3() {}
 		_CPU_AND_GPU_CODE_ Matrix3(T t) { setValues(t); }
 		_CPU_AND_GPU_CODE_ Matrix3(const T *m)	{ setValues(m); }
+
+		template <typename U>
+		_CPU_AND_GPU_CODE_TEMPLATE_
+		explicit Matrix3(const U *m)
+		{
+			setValues(m);
+		}
+
 		_CPU_AND_GPU_CODE_ Matrix3(T a00, T a01, T a02, T a10, T a11, T a12, T a20, T a21, T a22)	{
 			this->m00 = a00; this->m01 = a01; this->m02 = a02;
 			this->m10 = a10; this->m11 = a11; this->m12 = a12;
@@ -272,6 +280,17 @@ namespace ORUtils {
 		// set values
 		_CPU_AND_GPU_CODE_ inline void setValues(const T *mp) { memcpy(this->m, mp, sizeof(T) * 9); }
 		_CPU_AND_GPU_CODE_ inline void setValues(const T r)	{ for (int i = 0; i < 9; i++)	this->m[i] = r; }
+
+		template <typename U>
+		_CPU_AND_GPU_CODE_TEMPLATE_
+		inline void setValues(const U *mp)
+		{
+			for (int i = 0; i < 9; ++i)
+			{
+				this->m[i] = static_cast<T>(mp[i]);
+			}
+		}
+
 		_CPU_AND_GPU_CODE_ inline void setZeros() { memset(this->m, 0, sizeof(T) * 9); }
 		_CPU_AND_GPU_CODE_ inline void setIdentity() { setZeros(); this->m00 = this->m11 = this->m22 = 1; }
 		_CPU_AND_GPU_CODE_ inline void setScale(T s) { this->m00 = this->m11 = this->m22 = s; }
