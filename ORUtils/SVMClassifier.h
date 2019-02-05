@@ -43,7 +43,7 @@ namespace ORUtils
 
 		~SVMClassifier()
 		{
-			delete w;
+			delete[] w;
 		}
 	};
 }
