@@ -9,6 +9,7 @@
 
 #include <iostream>
 #include <iomanip>
+#include <cstring>
 
 #ifdef COMPILE_WITH_RealSense2
 #include "librealsense2/rs.hpp"
