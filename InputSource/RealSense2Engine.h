@@ -3,6 +3,7 @@
 #pragma once
 
 #include "ImageSourceEngine.h"
+#include <memory>
 
 #ifdef COMPILE_WITH_RealSense2
 namespace rs2 { class pipeline; class context; class device; }
