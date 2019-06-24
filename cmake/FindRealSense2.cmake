@@ -3,7 +3,7 @@
 SET(REALSENSE2_ROOT "/usr/local" CACHE FILEPATH "Root directory of librealsense")
 
 FIND_PATH(RealSense2_INCLUDE_DIR librealsense2/rs.hpp HINTS "${REALSENSE2_ROOT}/include")
-FIND_LIBRARY(RealSense2_LIBRARY librealsense2 HINTS "${REALSENSE2_ROOT}/lib" "${REALSENSE2_ROOT}/lib/librealsense2.dylib")
+FIND_LIBRARY(RealSense2_LIBRARY realsense2 HINTS "${REALSENSE2_ROOT}/lib" "${REALSENSE2_ROOT}/lib/librealsense2.dylib")
 
 # handle the QUIETLY and REQUIRED arguments and set REALSENSE2_FOUND to TRUE if
 # all listed variables are TRUE
