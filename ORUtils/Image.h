@@ -87,8 +87,8 @@ namespace ORUtils
 		}
 
 		// Suppress the default copy constructor and assignment operator
-		Image(const Image&);
-		Image& operator=(const Image&);
+		Image(const Image&) { throw std::runtime_error("Suppressed"); }
+		Image& operator=(const Image&) { throw std::runtime_error("Suppressed"); }
 	};
 }
 

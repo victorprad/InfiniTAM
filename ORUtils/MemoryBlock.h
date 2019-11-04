@@ -73,6 +73,16 @@ namespace ORUtils
 		inline const void *GetMetalBuffer() const { return data_metalBuffer; }
 #endif
 
+		MemoryBlock()
+		{
+			this->dataSize = 0;
+			this->data_cpu = NULL;
+			this->data_cuda = NULL;
+			this->isAllocated_CPU = false;
+			this->isAllocated_CUDA = false;
+			this->isMetalCompatible = false;
+		}
+
 		/** Initialize an empty memory block of the given size,
 		on CPU only or GPU only or on both. CPU might also use the
 		Metal compatible allocator (i.e. with 16384 alignment).
