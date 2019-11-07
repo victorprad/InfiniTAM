@@ -56,6 +56,8 @@ namespace ITMLib
 		/// Gives access to the internal world representation
 		ITMScene<TVoxel, TIndex>* GetScene(void) { return scene; }
 
+		ITMTrackingState::TrackingResult ProcessFrame(ORUChar4Image *rgbImage, ORShortImage *rawDepthImage) { return ProcessFrame(rgbImage, rawDepthImage, NULL); }
+
 		ITMTrackingState::TrackingResult ProcessFrame(ORUChar4Image *rgbImage, ORShortImage *rawDepthImage, ITMIMUMeasurement *imuMeasurement = NULL);
 
 		/// Extracts a mesh from the current scene and saves it to the model file specified by the file name

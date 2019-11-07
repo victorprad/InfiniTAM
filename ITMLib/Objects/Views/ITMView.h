@@ -61,7 +61,7 @@ namespace ITMLib
 		}
 
 		// Suppress the default copy constructor and assignment operator
-		ITMView(const ITMView&);
-		ITMView& operator=(const ITMView&);
+		ITMView(const ITMView&) { throw std::runtime_error("Suppressed"); }
+		ITMView& operator=(const ITMView&) { throw std::runtime_error("Suppressed"); }
 	};
 }

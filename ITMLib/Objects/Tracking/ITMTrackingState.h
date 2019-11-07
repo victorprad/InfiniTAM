@@ -96,7 +96,7 @@ namespace ITMLib
 		}
 
 		// Suppress the default copy constructor and assignment operator
-		ITMTrackingState(const ITMTrackingState&);
-		ITMTrackingState& operator=(const ITMTrackingState&);
+		ITMTrackingState(const ITMTrackingState&) { throw std::runtime_error("Suppressed"); }
+		ITMTrackingState& operator=(const ITMTrackingState&) { throw std::runtime_error("Suppressed"); }
 	};
 }

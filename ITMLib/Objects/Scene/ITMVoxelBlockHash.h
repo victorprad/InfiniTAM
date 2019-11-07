@@ -155,8 +155,8 @@ namespace ITMLib
 		}
 
 		// Suppress the default copy constructor and assignment operator
-		ITMVoxelBlockHash(const ITMVoxelBlockHash&);
-		ITMVoxelBlockHash& operator=(const ITMVoxelBlockHash&);
+		ITMVoxelBlockHash(const ITMVoxelBlockHash&) { throw std::runtime_error("Suppressed"); }
+		ITMVoxelBlockHash& operator=(const ITMVoxelBlockHash&) { throw std::runtime_error("Suppressed"); }
 #endif
 	};
 }

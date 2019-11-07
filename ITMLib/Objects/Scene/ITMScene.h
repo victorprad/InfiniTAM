@@ -53,7 +53,12 @@ namespace ITMLib
 		}
 
 		// Suppress the default copy constructor and assignment operator
-		ITMScene(const ITMScene&);
-		ITMScene& operator=(const ITMScene&);
+		ITMScene(const ITMScene& rhs)
+		: index(rhs.index), localVBA(rhs.localVBA)
+		{
+			throw std::runtime_error("Suppressed");
+		}
+
+		ITMScene& operator=(const ITMScene&) { throw std::runtime_error("Suppressed"); }
 	};
 }
